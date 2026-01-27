@@ -10,13 +10,13 @@ export const athletes: Athlete[] = [
     id: 1,
     name: "Gema Cruz",
     category: "-63kg JNR",
-    image: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1000&auto=format&fit=crop"
+    image: "/athletes/gema.jpeg"
   },
   {
     id: 2,
     name: "Alejandro Hermosilla",
     category: "-83kg Open",
-    image: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=1000&auto=format&fit=crop"
+    image: "/athletes/alejandro.jpg"
   },
   {
     id: 3,
