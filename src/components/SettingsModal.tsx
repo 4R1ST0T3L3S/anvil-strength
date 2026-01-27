@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, User, Save, Loader, Camera, Trash2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -46,7 +47,14 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setError('');
+
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        setError('El archivo debe ser una imagen válida');
+        return;
+      }
+
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         setError('La imagen es demasiado grande (máx 10MB)');
         return;
@@ -55,6 +63,9 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData({ ...formData, profile_image: reader.result as string });
+      };
+      reader.onerror = () => {
+        setError('Error al leer el archivo de imagen');
       };
       reader.readAsDataURL(file);
     }
@@ -72,27 +83,25 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/profile', {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (authError || !authUser) throw new Error('No se pudo encontrar el usuario autenticado');
 
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Error al actualizar el perfil');
-        }
-      } else {
-        if (!response.ok) {
-          throw new Error('El servidor no pudo procesar la imagen por su tamaño. Intenta con una más pequeña.');
-        }
-      }
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authUser.id,
+          name: formData.name,
+          nickname: formData.nickname,
+          age_category: formData.age_category,
+          weight_category: formData.weight_category,
+          squat_pr: formData.squat_pr ? parseFloat(formData.squat_pr as string) : null,
+          bench_pr: formData.bench_pr ? parseFloat(formData.bench_pr as string) : null,
+          deadlift_pr: formData.deadlift_pr ? parseFloat(formData.deadlift_pr as string) : null,
+          bio: formData.bio,
+          profile_image: formData.profile_image,
+        });
+
+      if (updateError) throw updateError;
 
       const updatedUser = { ...user, ...formData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -100,7 +109,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
       setSuccess('Perfil actualizado con éxito');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error al actualizar el perfil');
     } finally {
       setIsLoading(false);
     }

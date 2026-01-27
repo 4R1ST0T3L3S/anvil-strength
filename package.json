@@ -4,24 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node server/index.js\" \"vite\"",
-    "dev:frontend": "vite",
-    "dev:backend": "node server/index.js",
-    "build": "node ./node_modules/vite/bin/vite.js build",
+    "dev": "vite",
+    "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "concurrently": "^9.2.1",
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
+    "@supabase/supabase-js": "^2.93.1",
     "framer-motion": "^12.29.2",
-    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "sqlite3": "^5.1.7"
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@types/react": "^19.2.9",

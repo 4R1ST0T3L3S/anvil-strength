@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, User, Send, Trash2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface Comment {
   id: number;
   content: string;
   author: string;
-  user_id: number;
+  user_id: string;
   created_at: string;
 }
 
@@ -28,8 +29,6 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = 'http://localhost:3000/api';
-
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -42,9 +41,13 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${API_URL}/posts`);
-      const data = await response.json();
-      setPosts(data);
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setPosts(data || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
@@ -52,9 +55,14 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
 
   const fetchComments = async (postId: number) => {
     try {
-      const response = await fetch(`${API_URL}/posts/${postId}/comments`);
-      const data = await response.json();
-      setComments(data);
+      const { data, error } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setComments(data || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -66,20 +74,24 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/posts/${selectedPost.id}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newComment })
-      });
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error('Usuario no autenticado');
 
-      if (response.ok) {
-        setNewComment('');
-        fetchComments(selectedPost.id);
-      }
+      const { error } = await supabase
+        .from('comments')
+        .insert([
+          {
+            post_id: selectedPost.id,
+            user_id: authUser.id,
+            content: newComment,
+            author: user.nickname || user.name || 'Atleta'
+          }
+        ]);
+
+      if (error) throw error;
+
+      setNewComment('');
+      fetchComments(selectedPost.id);
     } catch (error) {
       console.error('Error adding comment:', error);
     } finally {
@@ -91,15 +103,14 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
     if (!user) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
 
-      if (response.ok && selectedPost) {
+      if (error) throw error;
+
+      if (selectedPost) {
         fetchComments(selectedPost.id);
       }
     } catch (error) {

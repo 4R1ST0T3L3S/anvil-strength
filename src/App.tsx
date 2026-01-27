@@ -8,6 +8,7 @@ import { BlogSection } from './components/BlogSection';
 import { SettingsModal } from './components/SettingsModal';
 import { athletes, Athlete } from './data/athletes';
 import { coaches, Coach } from './data/coaches';
+import { supabase } from './lib/supabase';
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,19 +27,51 @@ function App() {
     };
     window.addEventListener('scroll', handleScroll);
     
-    // Check for stored user
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Initial session check
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        // Fetch profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        const userData = { ...session.user, ...profile };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+    };
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        const userData = { ...session.user, ...profile };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        localStorage.removeItem('user');
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {

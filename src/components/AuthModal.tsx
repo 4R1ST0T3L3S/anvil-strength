@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { X, Mail, Lock, User, Loader, Camera, Trash2 } from 'lucide-react';
+import { X, Mail, Lock, User, Loader, Camera } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -28,14 +29,25 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setError('');
+
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        setError('El archivo debe ser una imagen válida');
+        return;
+      }
+
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
         setError('La imagen es demasiado grande (máx 10MB)');
         return;
       }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData({ ...formData, profile_image: reader.result as string });
+      };
+      reader.onerror = () => {
+        setError('Error al leer el archivo de imagen');
       };
       reader.readAsDataURL(file);
     }
@@ -52,37 +64,74 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
     setIsLoading(true);
 
     try {
-      const endpoint = isLogin ? 'http://localhost:3000/api/login' : 'http://localhost:3000/api/register';
-      const body = isLogin 
-        ? { email: formData.email, password: formData.password }
-        : formData;
+      if (isLogin) {
+        // Login con Supabase
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+        if (authError) throw authError;
 
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Error en la autenticación');
+        // Obtener perfil extendido
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error al obtener perfil:', profileError);
         }
-        
-        // Guardar token y usuario
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        onLogin(data.user);
-        onClose();
+
+        const userData = { ...data.user, ...profile };
+        localStorage.setItem('user', JSON.stringify(userData));
+        onLogin(userData);
       } else {
-        if (!response.ok) {
-          throw new Error('El servidor no pudo procesar la solicitud. Es posible que la imagen sea demasiado grande.');
+        // Registro con Supabase
+        const { data, error: authError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (authError) throw authError;
+
+        if (data.user) {
+          // Crear perfil en la tabla 'profiles'
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: data.user.id,
+                name: formData.name,
+                nickname: formData.nickname,
+                age_category: formData.age_category,
+                weight_category: formData.weight_category,
+                bio: formData.bio,
+                profile_image: formData.profile_image,
+              },
+            ]);
+
+          if (profileError) throw profileError;
+
+          const userData = {
+            ...data.user,
+            name: formData.name,
+            nickname: formData.nickname,
+            age_category: formData.age_category,
+            weight_category: formData.weight_category,
+            bio: formData.bio,
+            profile_image: formData.profile_image,
+          };
+          
+          localStorage.setItem('user', JSON.stringify(userData));
+          onLogin(userData);
         }
       }
+      
+      onClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Ocurrió un error inesperado');
     } finally {
       setIsLoading(false);
     }
