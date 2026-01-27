@@ -17,9 +17,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   const [formData, setFormData] = useState({
     name: '',
     nickname: '',
-    age: '',
-    weight: '',
-    height: '',
+    age_category: '',
+    weight_category: '',
     squat_pr: '',
     bench_pr: '',
     deadlift_pr: '',
@@ -32,9 +31,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
       setFormData({
         name: user.name || '',
         nickname: user.nickname || '',
-        age: user.age || '',
-        weight: user.weight || '',
-        height: user.height || '',
+        age_category: user.age_category || '',
+        weight_category: user.weight_category || '',
         squat_pr: user.squat_pr || '',
         bench_pr: user.bench_pr || '',
         deadlift_pr: user.deadlift_pr || '',
@@ -202,16 +200,72 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Biography Section */}
-            <div className="space-y-4 flex flex-col">
-              <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Biografía / Objetivos</h3>
-              <textarea
-                rows={10}
-                className="w-full flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
-                value={formData.bio}
-                onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                placeholder="Escribe tus objetivos..."
-              />
+            {/* Categories & Biography */}
+            <div className="space-y-6 flex flex-col">
+              <div className="space-y-4">
+                <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Categorías Powerlifting</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Cat. Edad</label>
+                    <select
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors"
+                      value={formData.age_category}
+                      onChange={(e) => setFormData({...formData, age_category: e.target.value})}
+                    >
+                      <option value="" disabled>Seleccionar</option>
+                      <option value="Sub-Junior">Sub-Junior</option>
+                      <option value="Junior">Junior</option>
+                      <option value="Senior">Senior (Open)</option>
+                      <option value="Master 1">Master 1</option>
+                      <option value="Master 2">Master 2</option>
+                      <option value="Master 3">Master 3</option>
+                      <option value="Master 4">Master 4</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Cat. Peso</label>
+                    <select
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors"
+                      value={formData.weight_category}
+                      onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
+                    >
+                      <option value="" disabled>Seleccionar</option>
+                      <optgroup label="Masculino">
+                        <option value="-59kg">-59kg</option>
+                        <option value="-66kg">-66kg</option>
+                        <option value="-74kg">-74kg</option>
+                        <option value="-83kg">-83kg</option>
+                        <option value="-93kg">-93kg</option>
+                        <option value="-105kg">-105kg</option>
+                        <option value="-120kg">-120kg</option>
+                        <option value="+120kg">+120kg</option>
+                      </optgroup>
+                      <optgroup label="Femenino">
+                        <option value="-47kg">-47kg</option>
+                        <option value="-52kg">-52kg</option>
+                        <option value="-57kg">-57kg</option>
+                        <option value="-63kg">-63kg</option>
+                        <option value="-69kg">-69kg</option>
+                        <option value="-76kg">-76kg</option>
+                        <option value="-84kg">-84kg</option>
+                        <option value="+84kg">+84kg</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 flex-1 flex flex-col">
+                <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Biografía / Objetivos</h3>
+                <textarea
+                  rows={6}
+                  className="w-full flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  placeholder="Escribe tus objetivos..."
+                />
+              </div>
             </div>
 
             {/* Performance Info */}

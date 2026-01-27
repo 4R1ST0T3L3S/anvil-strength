@@ -18,15 +18,11 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
     nickname: '',
     email: '',
     password: '',
-    age: '',
-    weight: '',
-    height: '',
-    squat_pr: '',
-    bench_pr: '',
-     deadlift_pr: '',
-     bio: '',
-     profile_image: ''
-   });
+    age_category: '',
+    weight_category: '',
+    bio: '',
+    profile_image: ''
+  });
 
   if (!isOpen) return null;
 
@@ -223,6 +219,53 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
           {!isLogin && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="grid grid-cols-2 gap-4">
+                <select
+                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors"
+                  value={formData.age_category}
+                  onChange={(e) => setFormData({...formData, age_category: e.target.value})}
+                  required
+                >
+                  <option value="" disabled>Cat. Edad</option>
+                  <option value="Sub-Junior">Sub-Junior</option>
+                  <option value="Junior">Junior</option>
+                  <option value="Senior">Senior (Open)</option>
+                  <option value="Master 1">Master 1</option>
+                  <option value="Master 2">Master 2</option>
+                  <option value="Master 3">Master 3</option>
+                  <option value="Master 4">Master 4</option>
+                </select>
+
+                <select
+                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors"
+                  value={formData.weight_category}
+                  onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
+                  required
+                >
+                  <option value="" disabled>Cat. Peso</option>
+                  <optgroup label="Masculino">
+                    <option value="-59kg">-59kg</option>
+                    <option value="-66kg">-66kg</option>
+                    <option value="-74kg">-74kg</option>
+                    <option value="-83kg">-83kg</option>
+                    <option value="-93kg">-93kg</option>
+                    <option value="-105kg">-105kg</option>
+                    <option value="-120kg">-120kg</option>
+                    <option value="+120kg">+120kg</option>
+                  </optgroup>
+                  <optgroup label="Femenino">
+                    <option value="-47kg">-47kg</option>
+                    <option value="-52kg">-52kg</option>
+                    <option value="-57kg">-57kg</option>
+                    <option value="-63kg">-63kg</option>
+                    <option value="-69kg">-69kg</option>
+                    <option value="-76kg">-76kg</option>
+                    <option value="-84kg">-84kg</option>
+                    <option value="+84kg">+84kg</option>
+                  </optgroup>
+                </select>
+              </div>
+
               <textarea
                 placeholder="Biografía / Objetivos"
                 rows={4}
