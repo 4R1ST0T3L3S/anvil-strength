@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, FileText, Mail, Dumbbell, ChevronDown, Instagram, Menu, X, User, ShoppingBag } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 
 function App() {
