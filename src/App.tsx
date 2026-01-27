@@ -355,16 +355,16 @@ function App() {
         </div>
 
         {/* Federation Logos */}
-        <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 opacity-60 hover:opacity-100 transition-opacity hidden md:flex">
+        <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 hidden md:flex">
           <img 
             src="/Logo-ipf.png" 
             alt="IPF Approved" 
-            className="h-12 w-auto brightness-0 invert"
+            className="h-10 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
           <img 
             src="/logo-aep.png" 
             alt="AEP Federación" 
-            className="h-14 w-auto brightness-0 invert"
+            className="h-10 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
       </section>
@@ -555,16 +555,16 @@ function App() {
         </div>
 
         {/* Federation Logos */}
-        <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 opacity-60 hover:opacity-100 transition-opacity hidden md:flex">
+        <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 hidden md:flex">
           <img 
             src="/Logo-ipf.png" 
             alt="IPF Approved" 
-            className="h-10 w-auto brightness-0 invert"
+            className="h-10 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
           <img 
             src="/logo-aep.png" 
             alt="AEP Federación" 
-            className="h-12 w-auto brightness-0 invert"
+            className="h-10 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
       </section>
