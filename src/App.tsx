@@ -125,34 +125,45 @@ function App() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Evento de Auth detectado:', event);
+      
       if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session) {
-        let { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileError && profileError.code === 'PGRST116') {
-          // Si el perfil no existe (ej: después de un reset de DB), lo creamos básico
-          const { data: newProfile } = await supabase
+        try {
+          console.log('Recuperando perfil para:', session.user.id);
+          let { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .insert([{ 
-              id: session.user.id, 
-              name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-              nickname: session.user.user_metadata?.nickname || 'Atleta'
-            }])
-            .select()
+            .select('*')
+            .eq('id', session.user.id)
             .single();
-          profile = newProfile;
+          
+          if (profileError && profileError.code === 'PGRST116') {
+            console.log('Perfil no encontrado, creando perfil de emergencia...');
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert([{ 
+                id: session.user.id, 
+                name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+                nickname: session.user.user_metadata?.nickname || 'Atleta'
+              }])
+              .select()
+              .single();
+            
+            if (createError) console.error('Error creando perfil:', createError);
+            profile = newProfile;
+          }
+          
+          const userData = { ...session.user, ...profile };
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          setIsAuthModalOpen(false);
+          console.log('Usuario cargado correctamente');
+        } catch (err) {
+          console.error('Error crítico en onAuthStateChange:', err);
         }
-        
-        const userData = { ...session.user, ...profile };
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        setIsAuthModalOpen(false); // Aseguramos que el modal se cierre
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         localStorage.removeItem('user');
+        console.log('Sesión cerrada');
       }
     });
 

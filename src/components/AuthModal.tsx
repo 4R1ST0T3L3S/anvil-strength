@@ -65,19 +65,19 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
     setIsLoading(true);
 
     try {
+      console.log('Iniciando proceso de autenticación...');
       if (isLogin) {
-        // Login con Supabase
         const { data, error: authError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
 
-        if (authError) throw authError;
-
-        // No necesitamos buscar el perfil aquí, App.tsx lo hará mediante onAuthStateChange
-        // Solo cerramos el modal
+        if (authError) {
+          console.error('Error de Auth:', authError.message);
+          throw authError;
+        }
+        console.log('Login exitoso, cerrando modal...');
       } else {
-        // Registro con Supabase
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -89,32 +89,25 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
           }
         });
 
-        if (authError) throw authError;
+        if (authError) {
+          console.error('Error de Registro:', authError.message);
+          throw authError;
+        }
 
-        if (data.user && data.session) {
-          // Crear perfil inmediatamente si tenemos sesión
-          await supabase.from('profiles').upsert([{
-            id: data.user.id,
-            name: formData.name,
-            nickname: formData.nickname,
-            age_category: formData.age_category,
-            weight_category: formData.weight_category,
-            bio: formData.bio,
-            profile_image: formData.profile_image,
-          }]);
-        } else if (data.user && !data.session) {
-          // Caso: Email verification enabled
+        if (data.user && !data.session) {
           setError('Cuenta creada. Por favor revisa tu email para confirmar tu cuenta.');
           setIsLoading(false);
           return;
         }
+        console.log('Registro exitoso, cerrando modal...');
       }
       
+      // Forzamos el cierre inmediato
+      setIsLoading(false);
       onClose();
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Ocurrió un error inesperado');
-    } finally {
+      console.error('Error capturado en handleSubmit:', err);
+      setError(err.message || 'Error de conexión con el servidor');
       setIsLoading(false);
     }
   };
