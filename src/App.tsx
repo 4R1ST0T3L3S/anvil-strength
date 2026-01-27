@@ -353,6 +353,20 @@ function App() {
             </a>
           </div>
         </div>
+
+        {/* Federation Logos */}
+        <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 opacity-60 hover:opacity-100 transition-opacity hidden md:flex">
+          <img 
+            src="https://www.powerlifting.sport/fileadmin/ipf/data/logos/IPF_logo.png" 
+            alt="IPF Approved" 
+            className="h-12 w-auto brightness-0 invert"
+          />
+          <img 
+            src="https://www.powerlifting.es/wp-content/uploads/2021/03/logo-aep-nuevo.png" 
+            alt="AEP Federación" 
+            className="h-14 w-auto brightness-0 invert"
+          />
+        </div>
       </section>
 
       {/* Filosofía Section */}
@@ -539,9 +553,21 @@ function App() {
              </button>
           </div>
         </div>
-      </section>
 
-      {/* Footer */}
+        {/* Federation Logos */}
+        <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 opacity-60 hover:opacity-100 transition-opacity hidden md:flex">
+          <img 
+            src="https://www.powerlifting.sport/fileadmin/ipf/data/logos/IPF_logo.png" 
+            alt="IPF Approved" 
+            className="h-10 w-auto brightness-0 invert"
+          />
+          <img 
+            src="https://www.powerlifting.es/wp-content/uploads/2021/03/logo-aep-nuevo.png" 
+            alt="AEP Federación" 
+            className="h-12 w-auto brightness-0 invert"
+          />
+        </div>
+      </section>
       <footer className="bg-black py-16 border-t border-white/10">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
