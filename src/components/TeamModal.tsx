@@ -6,9 +6,10 @@ interface TeamModalProps {
   isOpen: boolean;
   onClose: () => void;
   athletes: Athlete[];
+  onAthleteClick?: (athlete: Athlete) => void;
 }
 
-export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes }) => {
+export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes, onAthleteClick }) => {
   if (!isOpen) return null;
 
   return (

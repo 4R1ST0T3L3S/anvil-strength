@@ -348,6 +348,13 @@ function App() {
         isOpen={isTeamModalOpen}
         onClose={() => setIsTeamModalOpen(false)}
         athletes={athletes}
+        onAthleteClick={setSelectedAthlete}
+      />
+
+      <AthleteDetailsModal
+        isOpen={!!selectedAthlete}
+        onClose={() => setSelectedAthlete(null)}
+        athlete={selectedAthlete}
       />
     </div>
   );
