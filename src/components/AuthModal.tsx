@@ -223,64 +223,9 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
           {!isLogin && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  type="number"
-                  placeholder="Edad"
-                  className="bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                  value={formData.age}
-                  onChange={(e) => setFormData({...formData, age: e.target.value})}
-                />
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Peso (kg)"
-                  className="bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({...formData, weight: e.target.value})}
-                />
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Alt (cm)"
-                  className="bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                  value={formData.height}
-                  onChange={(e) => setFormData({...formData, height: e.target.value})}
-                />
-              </div>
-              
-              <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Mejores Marcas (PRs)</div>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="SQ (kg)"
-                  className="bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                  value={formData.squat_pr}
-                  onChange={(e) => setFormData({...formData, squat_pr: e.target.value})}
-                />
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="BP (kg)"
-                  className="bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                  value={formData.bench_pr}
-                  onChange={(e) => setFormData({...formData, bench_pr: e.target.value})}
-                />
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="DL (kg)"
-                  className="bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                  value={formData.deadlift_pr}
-                  onChange={(e) => setFormData({...formData, deadlift_pr: e.target.value})}
-                />
-              </div>
-
               <textarea
                 placeholder="Biografía / Objetivos"
-                rows={2}
+                rows={4}
                 className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red resize-none"
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}

@@ -116,11 +116,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
 
         <div className="text-center mb-10">
           <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">
-            Ajustes de Perfil
+            Mi Perfil
           </h2>
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">
-            Gestiona tu información de atleta
-          </p>
         </div>
 
         {error && (
@@ -205,52 +202,16 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Physical Data */}
-            <div className="space-y-4">
-              <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Datos Físicos</h3>
-              
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Edad</label>
-                  <input
-                    type="number"
-                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
-                    value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Peso (kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
-                    value={formData.weight}
-                    onChange={(e) => setFormData({...formData, weight: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Alt (cm)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
-                    value={formData.height}
-                    onChange={(e) => setFormData({...formData, height: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase">Biografía / Objetivos</label>
-                <textarea
-                  rows={4}
-                  className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                  placeholder="Escribe tus objetivos..."
-                />
-              </div>
+            {/* Biography Section */}
+            <div className="space-y-4 flex flex-col">
+              <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Biografía / Objetivos</h3>
+              <textarea
+                rows={10}
+                className="w-full flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
+                value={formData.bio}
+                onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                placeholder="Escribe tus objetivos..."
+              />
             </div>
 
             {/* Performance Info */}
