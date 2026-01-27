@@ -298,10 +298,10 @@ function App() {
           </p>
           
           <div className="flex flex-col md:flex-row gap-6 justify-center">
-             <button className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-sm font-bold uppercase tracking-wider transition-all">
+             <a href="https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-sm font-bold uppercase tracking-wider transition-all">
                 <FileText size={20} />
                 Formulario de Inscripción
-             </button>
+             </a>
              <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-sm font-bold uppercase tracking-wider transition-all">
                 <FileText size={20} />
                 Normativa del Equipo
