@@ -22,7 +22,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
     squat_pr: '',
     bench_pr: '',
     deadlift_pr: '',
-    bio: ''
+    bio: '',
+    profile_image: ''
   });
 
   useEffect(() => {
@@ -36,7 +37,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
         squat_pr: user.squat_pr || '',
         bench_pr: user.bench_pr || '',
         deadlift_pr: user.deadlift_pr || '',
-        bio: user.bio || ''
+        bio: user.bio || '',
+        profile_image: user.profile_image || ''
       });
     }
   }, [user, isOpen]);
@@ -218,6 +220,17 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
               className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none"
               value={formData.bio}
               onChange={(e) => setFormData({...formData, bio: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-500 uppercase">URL de Foto de Perfil</label>
+            <input
+              type="url"
+              className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+              value={formData.profile_image}
+              onChange={(e) => setFormData({...formData, profile_image: e.target.value})}
+              placeholder="https://ejemplo.com/mi-foto.jpg"
             />
           </div>
 

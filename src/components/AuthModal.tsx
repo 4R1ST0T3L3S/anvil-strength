@@ -22,9 +22,10 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
     height: '',
     squat_pr: '',
     bench_pr: '',
-    deadlift_pr: '',
-    bio: ''
-  });
+     deadlift_pr: '',
+     bio: '',
+     profile_image: ''
+   });
 
   if (!isOpen) return null;
 
@@ -223,6 +224,14 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red resize-none"
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
+              />
+
+              <input
+                type="url"
+                placeholder="URL de Foto de Perfil"
+                className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
+                value={formData.profile_image}
+                onChange={(e) => setFormData({...formData, profile_image: e.target.value})}
               />
             </div>
           )}

@@ -104,7 +104,15 @@ function App() {
                   <span className="hidden md:block text-white text-sm font-bold uppercase tracking-widest border-b-2 border-anvil-red pb-0.5 group-hover:border-white transition-colors">
                     {user.nickname || user.name}
                   </span>
-                  <User className="h-5 w-5 text-anvil-red group-hover:text-white transition-colors" />
+                  {user.profile_image ? (
+                    <img 
+                      src={user.profile_image} 
+                      alt={user.nickname || user.name} 
+                      className="h-8 w-8 rounded-full object-cover border-2 border-anvil-red group-hover:border-white transition-colors"
+                    />
+                  ) : (
+                    <User className="h-5 w-5 text-anvil-red group-hover:text-white transition-colors" />
+                  )}
                 </button>
 
                 {/* Dropdown Menu */}
