@@ -215,31 +215,31 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Coach 1 */}
-            <div className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-sm">
-              <img src="/coaches/estelles.png" alt="Javier Estelles" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
-                <h3 className="text-3xl font-bold text-white uppercase mb-1">Javier Estelles</h3>
-                <p className="text-anvil-red font-bold tracking-wider mb-4">ENTRENADOR Y NUTRICIONISTA</p>
-                <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                  <a href="https://www.instagram.com/javierestelles?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors"><Instagram size={20} /></a>
-                  <a href="#" className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors"><Mail size={20} /></a>
+            {coaches.map((coach) => (
+              <div 
+                key={coach.id}
+                className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-sm cursor-pointer"
+                onClick={() => setSelectedCoach(coach)}
+              >
+                <img 
+                  src={coach.image} 
+                  alt={coach.name} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
+                  <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
+                  <p className="text-anvil-red font-bold tracking-wider mb-4">{coach.role}</p>
+                  <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
+                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
+                      <Instagram size={20} />
+                    </button>
+                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors" onClick={(e) => { e.stopPropagation(); if (coach.email) window.location.href = `mailto:${coach.email}`; }}>
+                      <Mail size={20} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Coach 2 */}
-            <div className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-sm">
-              <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" alt="Javier Bou" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
-                <h3 className="text-3xl font-bold text-white uppercase mb-1">Javier Bou</h3>
-                <p className="text-anvil-red font-bold tracking-wider mb-4">ENTRENADOR DE POWERLIFTING</p>
-                <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                  <a href="https://www.instagram.com/boustrength?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors"><Instagram size={20} /></a>
-                  <a href="#" className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors"><Mail size={20} /></a>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
