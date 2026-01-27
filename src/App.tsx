@@ -81,15 +81,16 @@ function App() {
           </nav>
 
           {/* Right Icons (SBD Style) */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="flex items-center space-x-4 md:space-x-6">
             {user ? (
               <div className="flex items-center gap-4">
-                <span className="text-white text-sm font-bold uppercase">{user.name}</span>
+                <span className="hidden md:block text-white text-sm font-bold uppercase">{user.name}</span>
                 <button 
                   onClick={handleLogout}
                   className="text-gray-300 hover:text-anvil-red text-xs font-bold uppercase"
                 >
-                  Salir
+                  <span className="hidden md:inline">Salir</span>
+                  <span className="md:hidden"><User className="h-5 w-5 text-anvil-red" /></span>
                 </button>
               </div>
             ) : (
@@ -100,7 +101,7 @@ function App() {
                 <User className="h-5 w-5" />
               </button>
             )}
-            <button className="text-gray-300 hover:text-white relative">
+            <button className="hidden md:block text-gray-300 hover:text-white relative">
               <ShoppingBag className="h-5 w-5" />
               <span className="absolute -top-2 -right-2 bg-anvil-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">0</span>
             </button>
