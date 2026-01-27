@@ -1,6 +1,7 @@
 // Forzando actualización de claves
 import React, { useState, useEffect } from 'react';
-import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { TeamModal } from './components/TeamModal';
 import { AthleteDetailsModal } from './components/AthleteDetailsModal';
@@ -21,6 +22,68 @@ function App() {
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+
+  const [isPaused, setIsPaused] = useState(false);
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [lastInteraction, setLastInteraction] = useState(Date.now());
+
+  useEffect(() => {
+    if (isPaused || isManualMode) return;
+    const timer = setInterval(() => {
+      setIsTransitioning(true);
+      setCarouselIndex((prev) => prev + 1);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [isPaused, isManualMode]);
+
+  // Watchdog timer to resume auto-slide after 30s
+  useEffect(() => {
+    if (!isManualMode) return;
+    
+    const checkIdle = setInterval(() => {
+      const now = Date.now();
+      if (now - lastInteraction > 30000 && !selectedAthlete) {
+        setIsManualMode(false);
+      }
+    }, 1000);
+    
+    return () => clearInterval(checkIdle);
+  }, [isManualMode, lastInteraction, selectedAthlete]);
+
+  const handleManualNav = (direction: 'prev' | 'next') => {
+    setIsManualMode(true);
+    setLastInteraction(Date.now());
+    
+    if (direction === 'next') {
+      setIsTransitioning(true);
+      setCarouselIndex((prev) => prev + 1);
+    } else {
+      if (carouselIndex === 0) {
+        setIsTransitioning(false);
+        setCarouselIndex(athletes.length);
+        setTimeout(() => {
+          setIsTransitioning(true);
+          setCarouselIndex(athletes.length - 1);
+        }, 10);
+      } else {
+        setIsTransitioning(true);
+        setCarouselIndex((prev) => prev - 1);
+      }
+    }
+  };
+
+  // Reset to start when reaching the end of the first set
+  useEffect(() => {
+    if (carouselIndex === athletes.length) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setCarouselIndex(0);
+      }, 800); // Match the transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [carouselIndex]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -320,9 +383,9 @@ function App() {
       </section>
 
       {/* Atletas Section */}
-      <section id="atletas" className="min-h-screen flex flex-col justify-center py-32 bg-[#1c1c1c]">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="flex justify-between items-end mb-16">
+      <section id="atletas" className="py-32 bg-[#1c1c1c] overflow-hidden">
+        <div className="max-w-[1400px] mx-auto px-6 mb-16">
+          <div className="flex justify-between items-end">
              <div>
                 <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nuestros Atletas</h2>
                 <div className="w-20 h-1 bg-anvil-red"></div>
@@ -334,21 +397,55 @@ function App() {
                Ver todo el equipo &rarr;
              </button>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-             {athletes.slice(0, 4).map((athlete) => (
-                <div 
-                  key={athlete.id} 
-                  className="group relative aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl"
-                  onClick={() => setSelectedAthlete(athlete)}
-                >
-                   <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-                   <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
-                      <p className="text-white font-bold uppercase">{athlete.name}</p>
-                      <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
-                   </div>
-                </div>
-             ))}
+        </div>
+
+        {/* Infinite Carousel */}
+        <div className="relative group/carousel">
+          {/* Gradient Fades */}
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
+
+          {/* Navigation Arrows */}
+          <button 
+            onClick={() => handleManualNav('prev')}
+            className="absolute left-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
+          >
+            <ChevronLeft size={32} />
+          </button>
+          <button 
+            onClick={() => handleManualNav('next')}
+            className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
+          >
+            <ChevronRight size={32} />
+          </button>
+
+          <div 
+            className="flex overflow-hidden"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+          >
+            <motion.div 
+              className="flex gap-4 px-4"
+              animate={{ x: -(carouselIndex * (280 + 16)) }}
+              transition={isTransitioning ? { 
+                duration: 0.8, 
+                ease: [0.4, 0, 0.2, 1] 
+              } : { duration: 0 }}
+            >
+               {[...athletes, ...athletes, ...athletes, ...athletes].map((athlete, index) => (
+                  <div 
+                    key={`${athlete.id}-${index}`} 
+                    className="relative flex-shrink-0 w-[280px] aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl group"
+                    onClick={() => setSelectedAthlete(athlete)}
+                  >
+                     <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                     <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
+                        <p className="text-white font-bold uppercase">{athlete.name}</p>
+                        <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
+                     </div>
+                  </div>
+               ))}
+            </motion.div>
           </div>
         </div>
       </section>
