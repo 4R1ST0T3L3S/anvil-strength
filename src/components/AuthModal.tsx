@@ -160,7 +160,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                   type="text"
                   placeholder="Nombre completo"
                   autoComplete="name"
-                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required={!isLogin}
@@ -175,7 +175,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                   name="nickname"
                   type="text"
                   placeholder="Mote / Apodo (Ej: El Toro)"
-                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors font-bold"
+                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
                   value={formData.nickname}
                   onChange={(e) => setFormData({...formData, nickname: e.target.value})}
                   required={!isLogin}
@@ -193,7 +193,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
               type="email"
               placeholder="Email"
               autoComplete="username email"
-              className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+              className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
               required
@@ -210,7 +210,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
               type="password"
               placeholder="Contraseña"
               autoComplete={isLogin ? "current-password" : "new-password"}
-              className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+              className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               required
@@ -221,7 +221,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="grid grid-cols-2 gap-4">
                 <select
-                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
+                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                   value={formData.age_category}
                   onChange={(e) => setFormData({...formData, age_category: e.target.value})}
                   required
@@ -237,7 +237,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 </select>
 
                 <select
-                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
+                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                   value={formData.weight_category}
                   onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
                   required
@@ -269,7 +269,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
               <textarea
                 placeholder="Biografía / Objetivos"
                 rows={4}
-                className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red resize-none"
+                className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red resize-none"
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
               />
@@ -279,7 +279,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-white text-black font-black uppercase py-4 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-6"
+            className="w-full bg-white text-black font-black uppercase py-4 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-6 shadow-xl shadow-black/20"
           >
             {isLoading ? <Loader className="animate-spin" size={20} /> : (isLogin ? 'Entrar' : 'Registrarse')}
           </button>

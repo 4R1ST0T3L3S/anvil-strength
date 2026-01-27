@@ -83,7 +83,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   href={coach.instagram} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-sm group"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl group"
                 >
                   <Instagram size={20} />
                   <span className="font-bold uppercase text-sm">Instagram</span>
@@ -93,7 +93,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                     href={coach.contactForm}
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl"
                   >
                     <FileText size={20} />
                     <span className="font-bold uppercase text-sm">Formulario</span>
@@ -102,7 +102,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                 {coach.email && (
                   <a 
                     href={`mailto:${coach.email}`}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl"
                   >
                     <Mail size={20} />
                     <span className="font-bold uppercase text-sm">Email</span>

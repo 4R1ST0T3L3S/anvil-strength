@@ -132,7 +132,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Top Section: Photo + Names */}
-          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center bg-white/5 p-6 border border-white/5 rounded-sm">
+          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center bg-white/5 p-6 border border-white/5 rounded-xl">
             {/* Photo Section */}
             <div className="relative group">
               <input
@@ -144,7 +144,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
               />
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-32 h-32 md:w-40 md:h-40 rounded-sm border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative"
+                className="w-32 h-32 md:w-40 md:h-40 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative"
               >
                 {formData.profile_image ? (
                   <>
@@ -179,7 +179,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nombre Completo</label>
                 <input
                   type="text"
-                  className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+                  className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required
@@ -190,7 +190,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                 <label className="text-[10px] font-bold text-anvil-red uppercase tracking-wider">Mote / Apodo</label>
                 <input
                   type="text"
-                  className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors font-bold tracking-widest"
+                  className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold tracking-widest"
                   value={formData.nickname}
                   onChange={(e) => setFormData({...formData, nickname: e.target.value})}
                   required
@@ -208,7 +208,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-500 uppercase">Cat. Edad</label>
                     <select
-                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                       value={formData.age_category}
                       onChange={(e) => setFormData({...formData, age_category: e.target.value})}
                     >
@@ -226,7 +226,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-500 uppercase">Cat. Peso</label>
                     <select
-                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
+                      className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                       value={formData.weight_category}
                       onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
                     >
@@ -260,7 +260,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                 <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Biografía / Objetivos</h3>
                 <textarea
                   rows={6}
-                  className="w-full flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
+                  className="w-full flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
                   value={formData.bio}
                   onChange={(e) => setFormData({...formData, bio: e.target.value})}
                   placeholder="Escribe tus objetivos..."
@@ -278,7 +278,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <input
                     type="number"
                     step="0.1"
-                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
+                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red"
                     value={formData.squat_pr}
                     onChange={(e) => setFormData({...formData, squat_pr: e.target.value})}
                   />
@@ -289,7 +289,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <input
                     type="number"
                     step="0.1"
-                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
+                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red"
                     value={formData.bench_pr}
                     onChange={(e) => setFormData({...formData, bench_pr: e.target.value})}
                   />
@@ -300,7 +300,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <input
                     type="number"
                     step="0.1"
-                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
+                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red"
                     value={formData.deadlift_pr}
                     onChange={(e) => setFormData({...formData, deadlift_pr: e.target.value})}
                   />
@@ -312,7 +312,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-white text-black font-black uppercase py-5 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-8 shadow-xl"
+            className="w-full bg-white text-black font-black uppercase py-5 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-8 shadow-xl"
           >
             {isLoading ? <Loader className="animate-spin" size={20} /> : <><Save size={20} /> Guardar Cambios</>}
           </button>

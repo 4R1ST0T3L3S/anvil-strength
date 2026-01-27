@@ -42,7 +42,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
             {athletes.map((athlete) => (
               <div 
                 key={athlete.id} 
-                className="group relative aspect-[4/5] bg-[#252525] overflow-hidden rounded-sm cursor-pointer"
+                className="group relative aspect-[4/5] bg-[#252525] overflow-hidden rounded-xl cursor-pointer shadow-lg"
                 onClick={() => onAthleteClick?.(athlete)}
               >
                 <img 

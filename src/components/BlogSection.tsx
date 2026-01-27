@@ -128,9 +128,9 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
                 <div 
                   key={post.id}
                   onClick={() => setSelectedPost(post)}
-                  className={`p-6 border cursor-pointer transition-all ${
+                  className={`p-6 border cursor-pointer transition-all rounded-xl ${
                     selectedPost?.id === post.id 
-                      ? 'border-anvil-red bg-white/5' 
+                      ? 'border-anvil-red bg-white/5 shadow-lg shadow-anvil-red/5' 
                       : 'border-white/5 hover:border-white/20'
                   }`}
                 >
@@ -150,7 +150,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
           <div className="lg:col-span-2">
             {selectedPost ? (
               <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="bg-[#252525] p-8 rounded-sm">
+                <div className="bg-[#252525] p-8 rounded-xl shadow-xl">
                   <h3 className="text-3xl font-black uppercase mb-4">{selectedPost.title}</h3>
                   <div className="prose prose-invert max-w-none text-gray-300">
                     {selectedPost.content}
@@ -172,19 +172,19 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Escribe un comentario..."
-                        className="flex-1 bg-white/5 border border-white/10 rounded-sm px-4 py-2 text-white focus:outline-none focus:border-anvil-red transition-colors"
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-anvil-red transition-colors"
                       />
                       <button 
                         type="submit"
                         disabled={loading || !newComment.trim()}
-                        className="bg-anvil-red hover:bg-red-700 disabled:bg-gray-600 text-white px-6 py-2 rounded-sm font-bold uppercase flex items-center gap-2 transition-colors"
+                        className="bg-anvil-red hover:bg-red-700 disabled:bg-gray-600 text-white px-6 py-2 rounded-xl font-bold uppercase flex items-center gap-2 transition-colors"
                       >
                         <Send size={18} />
                         <span className="hidden sm:inline">Enviar</span>
                       </button>
                     </form>
                   ) : (
-                    <div className="bg-white/5 p-4 rounded-sm border border-white/10 text-center">
+                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 text-center">
                       <p className="text-gray-400 text-sm">
                         Debes <span className="text-white font-bold">iniciar sesión</span> para comentar.
                       </p>
@@ -194,7 +194,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
                   {/* Comments List */}
                   <div className="space-y-4">
                     {comments.map((comment) => (
-                      <div key={comment.id} className="bg-white/5 p-4 rounded-sm border border-white/5 group">
+                      <div key={comment.id} className="bg-white/5 p-4 rounded-xl border border-white/5 group">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-sm uppercase text-anvil-red">{comment.author}</span>

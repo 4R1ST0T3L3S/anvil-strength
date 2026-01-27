@@ -72,14 +72,14 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             
             {/* Main Stats */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#252525] p-4 rounded-sm border border-white/5">
+              <div className="bg-[#252525] p-4 rounded-xl border border-white/5 shadow-lg">
                 <div className="flex items-center gap-2 mb-2 text-gray-400">
                   <Activity size={16} />
                   <span className="text-xs font-bold uppercase tracking-wider">GL Points</span>
                 </div>
                 <p className="text-3xl font-black text-white">{athlete.stats.glPoints}</p>
               </div>
-              <div className="bg-[#252525] p-4 rounded-sm border border-white/5">
+              <div className="bg-[#252525] p-4 rounded-xl border border-white/5 shadow-lg">
                 <div className="flex items-center gap-2 mb-2 text-gray-400">
                   <Trophy size={16} />
                   <span className="text-xs font-bold uppercase tracking-wider">Total</span>
@@ -95,15 +95,15 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
                 Mejores Marcas
               </h3>
               <div className="grid grid-cols-3 gap-2">
-                <div className="text-center p-3 bg-[#252525] rounded-sm">
+                <div className="text-center p-3 bg-[#252525] rounded-xl shadow-lg">
                   <p className="text-xs text-gray-500 uppercase mb-1">Squat</p>
                   <p className="text-xl font-bold text-white">{athlete.stats.squat}</p>
                 </div>
-                <div className="text-center p-3 bg-[#252525] rounded-sm">
+                <div className="text-center p-3 bg-[#252525] rounded-xl shadow-lg">
                   <p className="text-xs text-gray-500 uppercase mb-1">Bench</p>
                   <p className="text-xl font-bold text-white">{athlete.stats.bench}</p>
                 </div>
-                <div className="text-center p-3 bg-[#252525] rounded-sm">
+                <div className="text-center p-3 bg-[#252525] rounded-xl shadow-lg">
                   <p className="text-xs text-gray-500 uppercase mb-1">Deadlift</p>
                   <p className="text-xl font-bold text-white">{athlete.stats.deadlift}</p>
                 </div>
@@ -111,7 +111,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             </div>
 
             {/* Last Competition */}
-            <div className="bg-anvil-red/10 p-4 rounded-sm border border-anvil-red/20">
+            <div className="bg-anvil-red/10 p-4 rounded-xl border border-anvil-red/20 shadow-lg">
               <p className="text-xs text-anvil-red font-bold uppercase tracking-wider mb-1">Última Competición</p>
               <p className="text-white font-bold">{athlete.stats.lastCompetition}</p>
             </div>

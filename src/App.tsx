@@ -99,7 +99,7 @@ function App() {
               <div className="relative">
                 <button 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 group"
+                  className="flex items-center gap-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition-all border border-white/5 group"
                 >
                   <span className="hidden md:block text-white text-sm font-bold uppercase tracking-widest border-b-2 border-anvil-red pb-0.5 group-hover:border-white transition-colors">
                     {user.nickname || user.name}
@@ -169,7 +169,7 @@ function App() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-[#1c1c1c] border-t border-white/10 absolute w-full">
+          <div className="md:hidden bg-[#1c1c1c] border-t border-white/10 absolute w-full rounded-b-xl shadow-2xl">
             <div className="px-4 pt-2 pb-4 space-y-1">
               {navLinks.map((link) => (
                 <a
@@ -204,14 +204,14 @@ function App() {
             <a 
               href="#afiliacion" 
               onClick={(e) => handleNavClick(e, '#afiliacion')}
-              className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-sm transition-all uppercase tracking-wider"
+              className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
             >
               Únete al equipo
             </a>
             <a 
               href="#filosofia" 
               onClick={(e) => handleNavClick(e, '#filosofia')}
-              className="inline-block border-2 border-white text-white hover:bg-white hover:text-black font-black py-4 px-10 rounded-sm transition-all uppercase tracking-wider"
+              className="inline-block border-2 border-white text-white hover:bg-white hover:text-black font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
             >
               Nuestra Filosofía
             </a>
@@ -239,10 +239,10 @@ function App() {
             </div>
           </div>
           <div className="relative">
-             <div className="aspect-[4/5] bg-gray-800 rounded-sm overflow-hidden grayscale hover:grayscale-0 transition-all duration-500">
+             <div className="aspect-[4/5] bg-gray-800 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
                 <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop" alt="Filosofía" className="w-full h-full object-cover" />
              </div>
-             <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block"></div>
+             <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block rounded-xl"></div>
           </div>
         </div>
       </section>
@@ -259,7 +259,7 @@ function App() {
             {coaches.map((coach) => (
               <div 
                 key={coach.id}
-                className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-sm cursor-pointer"
+                className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-xl cursor-pointer"
                 onClick={() => setSelectedCoach(coach)}
               >
                 <img 
@@ -271,10 +271,10 @@ function App() {
                   <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
                   <p className="text-anvil-red font-bold tracking-wider mb-4">{coach.role}</p>
                   <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
+                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
                       <Instagram size={20} />
                     </button>
-                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors" onClick={(e) => { e.stopPropagation(); if (coach.email) window.location.href = `mailto:${coach.email}`; }}>
+                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); if (coach.email) window.location.href = `mailto:${coach.email}`; }}>
                       <Mail size={20} />
                     </button>
                   </div>
@@ -305,7 +305,7 @@ function App() {
              {athletes.slice(0, 4).map((athlete) => (
                 <div 
                   key={athlete.id} 
-                  className="group relative aspect-[4/5] bg-[#252525] overflow-hidden cursor-pointer"
+                  className="group relative aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl"
                   onClick={() => setSelectedAthlete(athlete)}
                 >
                    <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
@@ -336,7 +336,7 @@ function App() {
               { title: "Copa Regional Norte", result: "1er Lugar por Equipos", desc: "Dominio total categoría -93kg" },
               { title: "Mundial Powerlifting", result: "Top 10 Mundial", desc: "Representación Internacional" }
             ].map((item, i) => (
-              <div key={i} className="bg-[#1c1c1c] p-10 border border-white/5 hover:border-anvil-red/50 transition-colors group">
+              <div key={i} className="bg-[#1c1c1c] p-10 border border-white/5 hover:border-anvil-red/50 transition-colors group rounded-xl shadow-xl">
                 <Trophy className="h-10 w-10 text-anvil-red mb-6" />
                 <h3 className="text-2xl font-bold text-white uppercase mb-2">{item.title}</h3>
                 <p className="text-xl text-gray-300 font-bold mb-4">{item.result}</p>
@@ -359,11 +359,11 @@ function App() {
           </p>
           
           <div className="flex flex-col md:flex-row gap-6 justify-center">
-             <a href="https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-sm font-bold uppercase tracking-wider transition-all">
+             <a href="https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
                 <FileText size={20} />
                 Formulario de Inscripción
              </a>
-             <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-sm font-bold uppercase tracking-wider transition-all">
+             <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
                 <FileText size={20} />
                 Normativa del Equipo
              </button>
