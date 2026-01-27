@@ -55,8 +55,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
         return;
       }
 
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        setError('La imagen es demasiado grande (máx 10MB)');
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        setError('La imagen es demasiado grande (máx 2MB)');
         return;
       }
 

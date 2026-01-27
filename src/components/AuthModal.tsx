@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Mail, Lock, User, Loader, Camera } from 'lucide-react';
+import { X, Mail, Lock, User as UserIcon, Loader, Camera } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
@@ -37,8 +37,9 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         return;
       }
 
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        setError('La imagen es demasiado grande (máx 10MB)');
+      // 2MB limit for base64 strings to be safe with database/payload limits
+      if (file.size > 2 * 1024 * 1024) { 
+        setError('La imagen es demasiado grande (máx 2MB)');
         return;
       }
 
@@ -89,48 +90,67 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         onLogin(userData);
       } else {
         // Registro con Supabase
+        // Incluimos metadatos básicos en el registro
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
+          options: {
+            data: {
+              full_name: formData.name,
+              nickname: formData.nickname,
+            }
+          }
         });
 
         if (authError) throw authError;
 
         if (data.user) {
-          // Crear perfil en la tabla 'profiles'
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: data.user.id,
-                name: formData.name,
-                nickname: formData.nickname,
-                age_category: formData.age_category,
-                weight_category: formData.weight_category,
-                bio: formData.bio,
-                profile_image: formData.profile_image,
-              },
-            ]);
+          // Si tenemos sesión, intentamos crear el perfil inmediatamente
+          // Si no (requiere confirmación de email), no podremos escribir en la tabla profiles si RLS lo impide para usuarios no autenticados
+          if (data.session) {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .upsert([
+                {
+                  id: data.user.id,
+                  name: formData.name,
+                  nickname: formData.nickname,
+                  age_category: formData.age_category,
+                  weight_category: formData.weight_category,
+                  bio: formData.bio,
+                  profile_image: formData.profile_image,
+                },
+              ]);
 
-          if (profileError) throw profileError;
+            if (profileError) {
+                console.error('Error creando perfil:', profileError);
+                // No lanzamos error aquí para no bloquear el registro, el usuario puede editar su perfil luego
+            }
 
-          const userData = {
-            ...data.user,
-            name: formData.name,
-            nickname: formData.nickname,
-            age_category: formData.age_category,
-            weight_category: formData.weight_category,
-            bio: formData.bio,
-            profile_image: formData.profile_image,
-          };
-          
-          localStorage.setItem('user', JSON.stringify(userData));
-          onLogin(userData);
+            const userData = {
+              ...data.user,
+              name: formData.name,
+              nickname: formData.nickname,
+              age_category: formData.age_category,
+              weight_category: formData.weight_category,
+              bio: formData.bio,
+              profile_image: formData.profile_image,
+            };
+            
+            localStorage.setItem('user', JSON.stringify(userData));
+            onLogin(userData);
+          } else {
+            // Caso: Email verification enabled
+            setError('Cuenta creada. Por favor revisa tu email para confirmar tu cuenta antes de iniciar sesión.');
+            setIsLoading(false);
+            return; 
+          }
         }
       }
       
       onClose();
     } catch (err: any) {
+      console.error(err);
       setError(err.message || 'Ocurrió un error inesperado');
     } finally {
       setIsLoading(false);
@@ -208,7 +228,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             <>
               <div className="relative">
                 <label htmlFor="name" className="sr-only">Nombre completo</label>
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                 <input
                   id="name"
                   name="name"
@@ -224,7 +244,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
               <div className="relative">
                 <label htmlFor="nickname" className="sr-only">Mote / Apodo</label>
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-anvil-red" size={20} />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-anvil-red" size={20} />
                 <input
                   id="nickname"
                   name="nickname"
@@ -256,7 +276,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
           </div>
 
           <div className="relative">
-            <label htmlFor="password" alt="Contraseña" className="sr-only">Contraseña</label>
+            <label htmlFor="password" className="sr-only">Contraseña</label>
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
             <input
               key={isLogin ? 'login-password' : 'register-password'}
