@@ -74,41 +74,10 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
         if (authError) throw authError;
 
-        // Obtener perfil extendido
-        let { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileError && profileError.code === 'PGRST116') {
-          // El usuario existe en Auth pero NO en Profiles (ej: se reseteó la DB)
-          // Intentamos crear un perfil básico para permitir el acceso
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert([{ 
-              id: data.user.id, 
-              name: data.user.email?.split('@')[0] || 'Atleta',
-              nickname: 'Atleta'
-            }])
-            .select()
-            .single();
-          
-          if (!createError) {
-            profile = newProfile;
-          } else {
-            console.error('Error creando perfil de emergencia:', createError);
-          }
-        } else if (profileError) {
-          console.error('Error al obtener perfil:', profileError);
-        }
-
-        const userData = { ...data.user, ...profile };
-        localStorage.setItem('user', JSON.stringify(userData));
-        onLogin(userData);
+        // No necesitamos buscar el perfil aquí, App.tsx lo hará mediante onAuthStateChange
+        // Solo cerramos el modal
       } else {
         // Registro con Supabase
-        // Incluimos metadatos básicos en el registro
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -122,47 +91,22 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
         if (authError) throw authError;
 
-        if (data.user) {
-          // Si tenemos sesión, intentamos crear el perfil inmediatamente
-          // Si no (requiere confirmación de email), no podremos escribir en la tabla profiles si RLS lo impide para usuarios no autenticados
-          if (data.session) {
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .upsert([
-                {
-                  id: data.user.id,
-                  name: formData.name,
-                  nickname: formData.nickname,
-                  age_category: formData.age_category,
-                  weight_category: formData.weight_category,
-                  bio: formData.bio,
-                  profile_image: formData.profile_image,
-                },
-              ]);
-
-            if (profileError) {
-                console.error('Error creando perfil:', profileError);
-                // No lanzamos error aquí para no bloquear el registro, el usuario puede editar su perfil luego
-            }
-
-            const userData = {
-              ...data.user,
-              name: formData.name,
-              nickname: formData.nickname,
-              age_category: formData.age_category,
-              weight_category: formData.weight_category,
-              bio: formData.bio,
-              profile_image: formData.profile_image,
-            };
-            
-            localStorage.setItem('user', JSON.stringify(userData));
-            onLogin(userData);
-          } else {
-            // Caso: Email verification enabled
-            setError('Cuenta creada. Por favor revisa tu email para confirmar tu cuenta antes de iniciar sesión.');
-            setIsLoading(false);
-            return; 
-          }
+        if (data.user && data.session) {
+          // Crear perfil inmediatamente si tenemos sesión
+          await supabase.from('profiles').upsert([{
+            id: data.user.id,
+            name: formData.name,
+            nickname: formData.nickname,
+            age_category: formData.age_category,
+            weight_category: formData.weight_category,
+            bio: formData.bio,
+            profile_image: formData.profile_image,
+          }]);
+        } else if (data.user && !data.session) {
+          // Caso: Email verification enabled
+          setError('Cuenta creada. Por favor revisa tu email para confirmar tu cuenta.');
+          setIsLoading(false);
+          return;
         }
       }
       
