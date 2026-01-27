@@ -143,11 +143,12 @@ function App() {
           <div className="absolute inset-0 bg-black/40" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent" />
         </div>
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto mt-60 md:mt-80">
-          <h1 className="text-4xl sm:text-6xl md:text-9xl font-black tracking-tighter mb-8 text-white">
-            ANVIL<span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">STRENGTH</span>
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto mt-20 md:mt-80">
+          <h1 className="text-5xl sm:text-6xl md:text-9xl font-black tracking-tighter mb-8 text-white flex flex-col md:block items-center gap-2 md:gap-0">
+            <span>ANVIL</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">STRENGTH</span>
           </h1>
-          <p className="text-lg md:text-3xl text-gray-200 mb-12 font-bold tracking-wide uppercase">
+          <p className="text-lg md:text-3xl text-gray-200 mb-12 font-bold tracking-wide uppercase max-w-lg mx-auto md:max-w-none">
             Trabajamos con datos no con sensaciones
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
