@@ -13,6 +13,7 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
+  const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
