@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
+import { TeamModal } from './components/TeamModal';
+import { athletes } from './data/athletes';
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -244,16 +246,21 @@ function App() {
                 <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nuestros Atletas</h2>
                 <div className="w-20 h-1 bg-anvil-red"></div>
              </div>
-             <a href="#" className="hidden md:block text-gray-400 hover:text-white font-bold uppercase tracking-wider text-sm">Ver todo el equipo &rarr;</a>
+             <button 
+               onClick={() => setIsTeamModalOpen(true)}
+               className="hidden md:block text-gray-400 hover:text-white font-bold uppercase tracking-wider text-sm transition-colors"
+             >
+               Ver todo el equipo &rarr;
+             </button>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-             {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="group relative aspect-[4/5] bg-[#252525] overflow-hidden">
-                   <img src={`https://images.unsplash.com/photo-${i === 1 ? '1541534741688-6078c6bfb5c5' : i === 2 ? '1526506118085-60ce8714f8c5' : i === 3 ? '1599058945522-28d584b6f0ff' : '1581009146145-b5ef050c2e1e'}?q=80&w=1000&auto=format&fit=crop`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+             {athletes.slice(0, 4).map((athlete) => (
+                <div key={athlete.id} className="group relative aspect-[4/5] bg-[#252525] overflow-hidden">
+                   <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                    <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
-                      <p className="text-white font-bold uppercase">Atleta {i}</p>
-                      <p className="text-xs text-gray-400 uppercase">-93kg Open</p>
+                      <p className="text-white font-bold uppercase">{athlete.name}</p>
+                      <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
                    </div>
                 </div>
              ))}
@@ -334,6 +341,12 @@ function App() {
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
         onLogin={setUser}
+      />
+      
+      <TeamModal
+        isOpen={isTeamModalOpen}
+        onClose={() => setIsTeamModalOpen(false)}
+        athletes={athletes}
       />
     </div>
   );
