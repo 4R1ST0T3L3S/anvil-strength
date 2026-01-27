@@ -1,3 +1,4 @@
+// Forzando actualización de claves
 import React, { useState, useEffect } from 'react';
 import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
