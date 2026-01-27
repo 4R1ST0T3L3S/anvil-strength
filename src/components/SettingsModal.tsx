@@ -47,8 +47,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('La imagen es demasiado grande (máx 5MB)');
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        setError('La imagen es demasiado grande (máx 10MB)');
         return;
       }
 
@@ -82,10 +82,16 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al actualizar el perfil');
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al actualizar el perfil');
+        }
+      } else {
+        if (!response.ok) {
+          throw new Error('El servidor no pudo procesar la imagen por su tamaño. Intenta con una más pequeña.');
+        }
       }
 
       const updatedUser = { ...user, ...formData };

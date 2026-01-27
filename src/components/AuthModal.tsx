@@ -29,8 +29,8 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setError('La imagen es demasiado grande (máx 5MB)');
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        setError('La imagen es demasiado grande (máx 10MB)');
         return;
       }
       const reader = new FileReader();
@@ -63,18 +63,24 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         body: JSON.stringify(body)
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error en la autenticación');
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error en la autenticación');
+        }
+        
+        // Guardar token y usuario
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        onLogin(data.user);
+        onClose();
+      } else {
+        if (!response.ok) {
+          throw new Error('El servidor no pudo procesar la solicitud. Es posible que la imagen sea demasiado grande.');
+        }
       }
-
-      // Guardar token y usuario
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      onLogin(data.user);
-      onClose();
     } catch (err: any) {
       setError(err.message);
     } finally {
