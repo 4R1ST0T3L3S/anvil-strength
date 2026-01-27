@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { TeamModal } from './components/TeamModal';
-import { athletes } from './data/athletes';
+import { AthleteDetailsModal } from './components/AthleteDetailsModal';
+import { athletes, Athlete } from './data/athletes';
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
