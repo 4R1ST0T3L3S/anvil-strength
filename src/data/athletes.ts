@@ -62,12 +62,12 @@ export const athletes: Athlete[] = [
     category: "-105kg SBJ",
     image: "/athletes/Pau.png",
     stats: {
-      lastCompetition: "Debutante",
+      lastCompetition: "AEP2 SBD Cup",
       glsPoints: 0,
-      total: 0,
-      squat: 0,
-      bench: 0,
-      deadlift: 0
+      total: 640,
+      squat: 270,
+      bench: 140,
+      deadlift: 230
     }
   }
 ];
