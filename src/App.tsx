@@ -350,7 +350,7 @@ function App() {
         isOpen={isTeamModalOpen}
         onClose={() => setIsTeamModalOpen(false)}
         athletes={athletes}
-        onAthleteClick={setSelectedAthlete}
+        onAthleteClick={handleAthleteClick}
       />
 
       <AthleteDetailsModal
