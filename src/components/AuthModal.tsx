@@ -129,7 +129,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h2>
           <p className="text-gray-400 text-sm">
-            {isLogin ? 'Bienvenido de nuevo, atleta.' : 'Únete al equipo Anvil Strength.'}
+            {isLogin ? 'Bienvenido de nuevo, atleta.' : 'Únete al Anvil Strength Club.'}
           </p>
         </div>
 

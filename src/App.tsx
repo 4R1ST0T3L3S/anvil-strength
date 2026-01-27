@@ -556,7 +556,7 @@ function App() {
             </div>
           </div>
           <div className="mt-8 text-center md:text-left text-xs text-gray-700 font-medium uppercase tracking-widest">
-            © 2026 Anvil Strength Powerlifting Team. Todos los derechos reservados.
+            © 2026 Anvil Strength Powerlifting Club. Todos los derechos reservados.
           </div>
         </div>
       </footer>
