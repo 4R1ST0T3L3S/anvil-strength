@@ -77,7 +77,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/josep.png",
     stats: {
       lastCompetition: "AEP2 SBD Cup",
-      glsPoints: 0,
+      glsPoints: 95.8,
       total: 675,
       squat: 270,
       bench: 135,
