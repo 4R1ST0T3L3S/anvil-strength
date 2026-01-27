@@ -119,7 +119,7 @@ function App() {
                 {isUserMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)} />
-                    <div className="absolute right-0 mt-4 w-48 bg-[#1c1c1c] border border-white/10 shadow-2xl py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute right-0 mt-4 w-48 bg-[#1c1c1c] border border-white/10 shadow-2xl py-2 z-20 animate-in fade-in zoom-in-95 duration-200 rounded-lg overflow-hidden">
                       <button 
                         onClick={() => {
                           setIsSettingsModalOpen(true);
