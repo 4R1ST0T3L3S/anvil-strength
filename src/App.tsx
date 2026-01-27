@@ -4,6 +4,7 @@ import { AuthModal } from './components/AuthModal';
 import { TeamModal } from './components/TeamModal';
 import { AthleteDetailsModal } from './components/AthleteDetailsModal';
 import { CoachDetailsModal } from './components/CoachDetailsModal';
+import { BlogSection } from './components/BlogSection';
 import { athletes, Athlete } from './data/athletes';
 import { coaches, Coach } from './data/coaches';
 
@@ -51,6 +52,7 @@ function App() {
     { name: 'ENTRENADORES', href: '#entrenadores' },
     { name: 'ATLETAS', href: '#atletas' },
     { name: 'LOGROS', href: '#logros' },
+    { name: 'COMUNIDAD', href: '#blog' },
     { name: 'AFILIATE', href: '#afiliacion' },
   ];
 
@@ -277,6 +279,9 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* Blog/Comunidad Section */}
+      <BlogSection user={user} />
 
       {/* Logros Section */}
       <section id="logros" className="min-h-screen flex flex-col justify-center py-32 bg-[#252525]">
