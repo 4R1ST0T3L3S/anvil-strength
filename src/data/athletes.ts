@@ -34,12 +34,12 @@ export const athletes: Athlete[] = [
     category: "-83kg Open",
     image: "/athletes/alejandro.jpg",
     stats: {
-      lastCompetition: "AEP 3 Black On",
-      glsPoints: 102.3,
-      total: 650,
-      squat: 230,
-      bench: 150,
-      deadlift: 270
+      lastCompetition: "AEP3 Las Torres De Cotilla",
+      glsPoints: 92.0,
+      total: 602.5,
+      squat: 250,
+      bench: 127.5,
+      deadlift: 225
     }
   },
   {
