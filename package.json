@@ -7,7 +7,7 @@
     "dev": "concurrently \"node server/index.js\" \"vite\"",
     "dev:frontend": "vite",
     "dev:backend": "node server/index.js",
-    "build": "vite build",
+    "build": "node ./node_modules/vite/bin/vite.js build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
