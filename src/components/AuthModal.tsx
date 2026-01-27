@@ -75,13 +75,31 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         if (authError) throw authError;
 
         // Obtener perfil extendido
-        const { data: profile, error: profileError } = await supabase
+        let { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', data.user.id)
           .single();
 
-        if (profileError && profileError.code !== 'PGRST116') {
+        if (profileError && profileError.code === 'PGRST116') {
+          // El usuario existe en Auth pero NO en Profiles (ej: se reseteó la DB)
+          // Intentamos crear un perfil básico para permitir el acceso
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([{ 
+              id: data.user.id, 
+              name: data.user.email?.split('@')[0] || 'Atleta',
+              nickname: 'Atleta'
+            }])
+            .select()
+            .single();
+          
+          if (!createError) {
+            profile = newProfile;
+          } else {
+            console.error('Error creando perfil de emergencia:', createError);
+          }
+        } else if (profileError) {
           console.error('Error al obtener perfil:', profileError);
         }
 
