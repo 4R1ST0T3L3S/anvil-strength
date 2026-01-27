@@ -19,7 +19,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
         onClick={onClose}
       />
       
-      <div className="relative bg-[#1c1c1c] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-sm border border-white/10 shadow-2xl">
+      <div className="relative bg-[#1c1c1c] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-[#1c1c1c]/95 backdrop-blur border-b border-white/10 p-6 flex justify-between items-center">
           <div>

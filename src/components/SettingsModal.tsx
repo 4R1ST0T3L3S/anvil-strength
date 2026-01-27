@@ -104,7 +104,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-[#1c1c1c] w-full max-w-2xl rounded-sm border border-white/10 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-[#1c1c1c] w-full max-w-2xl rounded-xl border border-white/10 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"

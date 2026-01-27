@@ -18,7 +18,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
         onClick={onClose}
       />
       
-      <div className="relative bg-[#1c1c1c] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-sm border border-white/10 shadow-2xl flex flex-col md:flex-row">
+      <div className="relative bg-[#1c1c1c] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl flex flex-col md:flex-row">
         
         {/* Close Button Mobile */}
         <button 
