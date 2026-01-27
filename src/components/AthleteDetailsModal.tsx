@@ -75,9 +75,9 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
               <div className="bg-[#252525] p-4 rounded-sm border border-white/5">
                 <div className="flex items-center gap-2 mb-2 text-gray-400">
                   <Activity size={16} />
-                  <span className="text-xs font-bold uppercase tracking-wider">GLS Points</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">GL Points</span>
                 </div>
-                <p className="text-3xl font-black text-white">{athlete.stats.glsPoints}</p>
+                <p className="text-3xl font-black text-white">{athlete.stats.glPoints}</p>
               </div>
               <div className="bg-[#252525] p-4 rounded-sm border border-white/5">
                 <div className="flex items-center gap-2 mb-2 text-gray-400">

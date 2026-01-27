@@ -5,7 +5,7 @@ export interface Athlete {
   image: string;
   stats: {
     lastCompetition: string;
-    glsPoints: number;
+    glPoints: number;
     total: number;
     squat: number;
     bench: number;
@@ -21,7 +21,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/gema.jpeg",
     stats: {
       lastCompetition: "AEP3 Las Torres De Cotilla",
-      glsPoints: 85.0,
+      glPoints: 85.0,
       total: 297.5,
       squat: 120,
       bench: 52.5,
@@ -35,7 +35,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/alejandro.jpg",
     stats: {
       lastCompetition: "AEP3 Las Torres De Cotilla",
-      glsPoints: 92.0,
+      glPoints: 92.0,
       total: 602.5,
       squat: 250,
       bench: 127.5,
@@ -49,7 +49,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/marc.png",
     stats: {
       lastCompetition: "AEP2 SBD Cup",
-      glsPoints: 108.5,
+      glPoints: 108.5,
       total: 800,
       squat: 295,
       bench: 192.5,
@@ -63,7 +63,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/Pau.png",
     stats: {
       lastCompetition: "AEP2 SBD Cup",
-      glsPoints: 85.5,
+      glPoints: 85.5,
       total: 640,
       squat: 270,
       bench: 140,
@@ -77,7 +77,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/josep.png",
     stats: {
       lastCompetition: "AEP2 SBD Cup",
-      glsPoints: 95.8,
+      glPoints: 95.8,
       total: 675,
       squat: 270,
       bench: 135,
