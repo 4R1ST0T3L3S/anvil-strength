@@ -362,6 +362,12 @@ function App() {
         onClose={() => setSelectedAthlete(null)}
         athlete={selectedAthlete}
       />
+
+      <CoachDetailsModal
+        isOpen={!!selectedCoach}
+        onClose={() => setSelectedCoach(null)}
+        coach={selectedCoach}
+      />
     </div>
   );
 }
