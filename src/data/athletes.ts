@@ -69,5 +69,19 @@ export const athletes: Athlete[] = [
       bench: 140,
       deadlift: 230
     }
+  },
+  {
+    id: 5,
+    name: "Josep Lopez",
+    category: "-83kg Open",
+    image: "/athletes/josep.png",
+    stats: {
+      lastCompetition: "AEP2 SBD Cup",
+      glsPoints: 0,
+      total: 675,
+      squat: 270,
+      bench: 135,
+      deadlift: 270
+    }
   }
 ];
