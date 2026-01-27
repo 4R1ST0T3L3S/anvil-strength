@@ -48,12 +48,12 @@ export const athletes: Athlete[] = [
     category: "-105kg JNR",
     image: "/athletes/marc.png",
     stats: {
-      lastCompetition: "Copa Regional Norte",
-      glsPoints: 98.7,
-      total: 700,
-      squat: 250,
-      bench: 160,
-      deadlift: 290
+      lastCompetition: "AEP2 SBD Cup",
+      glsPoints: 108.5,
+      total: 800,
+      squat: 295,
+      bench: 192.5,
+      deadlift: 312.5
     }
   },
   {
