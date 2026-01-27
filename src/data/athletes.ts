@@ -58,12 +58,12 @@ export const athletes: Athlete[] = [
   },
   {
     id: 4,
-    name: "Pau",
+    name: "Pau Rodriguez",
     category: "-105kg SBJ",
     image: "/athletes/Pau.png",
     stats: {
       lastCompetition: "AEP2 SBD Cup",
-      glsPoints: 0,
+      glsPoints: 85.5,
       total: 640,
       squat: 270,
       bench: 140,
