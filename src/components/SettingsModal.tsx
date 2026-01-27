@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, User, Save, Loader, Dumbbell } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, User, Save, Loader, Camera, Trash2 } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -44,6 +45,27 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   }, [user, isOpen]);
 
   if (!isOpen) return null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        setError('La imagen es demasiado grande (máx 2MB)');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profile_image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setFormData({ ...formData, profile_image: '' });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,11 +114,11 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           <X size={24} />
         </button>
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">
             Ajustes de Perfil
           </h2>
-          <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">
             Gestiona tu información de atleta
           </p>
         </div>
@@ -113,17 +135,56 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Basic Info */}
-            <div className="space-y-4">
-              <h3 className="text-anvil-red text-xs font-black uppercase tracking-[0.2em] mb-4">Datos Personales</h3>
-              
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Top Section: Photo + Names */}
+          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center bg-white/5 p-6 border border-white/5 rounded-sm">
+            {/* Photo Section */}
+            <div className="relative group">
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-32 h-32 md:w-40 md:h-40 rounded-sm border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative"
+              >
+                {formData.profile_image ? (
+                  <>
+                    <img src={formData.profile_image} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold uppercase gap-2">
+                      <Camera size={20} />
+                      Cambiar Foto
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center p-4">
+                    <Camera className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+                    <span className="text-[10px] font-bold text-gray-500 uppercase">Subir Foto</span>
+                  </div>
+                )}
+              </div>
+              {formData.profile_image && (
+                <button 
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); removePhoto(); }}
+                  className="absolute -top-2 -right-2 bg-anvil-red text-white p-1.5 rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                  title="Eliminar foto"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Names Section */}
+            <div className="flex-1 w-full space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase">Nombre Completo</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nombre Completo</label>
                 <input
                   type="text"
-                  className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+                  className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required
@@ -131,22 +192,29 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-anvil-red uppercase">Mote / Apodo</label>
+                <label className="text-[10px] font-bold text-anvil-red uppercase tracking-wider">Mote / Apodo</label>
                 <input
                   type="text"
-                  className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors font-bold"
+                  className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors font-bold tracking-widest"
                   value={formData.nickname}
                   onChange={(e) => setFormData({...formData, nickname: e.target.value})}
                   required
                 />
               </div>
+            </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Physical Data */}
+            <div className="space-y-4">
+              <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Datos Físicos</h3>
+              
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Edad</label>
                   <input
                     type="number"
-                    className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
+                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
                     value={formData.age}
                     onChange={(e) => setFormData({...formData, age: e.target.value})}
                   />
@@ -156,7 +224,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <input
                     type="number"
                     step="0.1"
-                    className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
+                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
                     value={formData.weight}
                     onChange={(e) => setFormData({...formData, weight: e.target.value})}
                   />
@@ -166,78 +234,70 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   <input
                     type="number"
                     step="0.1"
-                    className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
+                    className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 focus:outline-none focus:border-anvil-red"
                     value={formData.height}
                     onChange={(e) => setFormData({...formData, height: e.target.value})}
                   />
                 </div>
               </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase">Biografía / Objetivos</label>
+                <textarea
+                  rows={4}
+                  className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
+                  value={formData.bio}
+                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  placeholder="Escribe tus objetivos..."
+                />
+              </div>
             </div>
 
             {/* Performance Info */}
             <div className="space-y-4">
-              <h3 className="text-anvil-red text-xs font-black uppercase tracking-[0.2em] mb-4">Marcas (PRs)</h3>
+              <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Marcas (PRs)</h3>
               
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase">Sentadilla (kg)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
-                  value={formData.squat_pr}
-                  onChange={(e) => setFormData({...formData, squat_pr: e.target.value})}
-                />
-              </div>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Sentadilla (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
+                    value={formData.squat_pr}
+                    onChange={(e) => setFormData({...formData, squat_pr: e.target.value})}
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase">Press de Banca (kg)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
-                  value={formData.bench_pr}
-                  onChange={(e) => setFormData({...formData, bench_pr: e.target.value})}
-                />
-              </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Press de Banca (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
+                    value={formData.bench_pr}
+                    onChange={(e) => setFormData({...formData, bench_pr: e.target.value})}
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase">Peso Muerto (kg)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
-                  value={formData.deadlift_pr}
-                  onChange={(e) => setFormData({...formData, deadlift_pr: e.target.value})}
-                />
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Peso Muerto (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red"
+                    value={formData.deadlift_pr}
+                    onChange={(e) => setFormData({...formData, deadlift_pr: e.target.value})}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-gray-500 uppercase">Biografía / Objetivos</label>
-            <textarea
-              rows={4}
-              className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors resize-none"
-              value={formData.bio}
-              onChange={(e) => setFormData({...formData, bio: e.target.value})}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-gray-500 uppercase">URL de Foto de Perfil</label>
-            <input
-              type="url"
-              className="w-full bg-[#252525] border border-white/10 text-white px-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
-              value={formData.profile_image}
-              onChange={(e) => setFormData({...formData, profile_image: e.target.value})}
-              placeholder="https://ejemplo.com/mi-foto.jpg"
-            />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-white text-black font-black uppercase py-4 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-8"
+            className="w-full bg-white text-black font-black uppercase py-5 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-8 shadow-xl"
           >
             {isLoading ? <Loader className="animate-spin" size={20} /> : <><Save size={20} /> Guardar Cambios</>}
           </button>

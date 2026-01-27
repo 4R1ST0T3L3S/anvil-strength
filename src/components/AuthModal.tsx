@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Mail, Lock, User, Loader } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Mail, Lock, User, Loader, Camera, Trash2 } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,6 +11,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -28,6 +29,26 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
    });
 
   if (!isOpen) return null;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError('La imagen es demasiado grande (máx 2MB)');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, profile_image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setFormData({ ...formData, profile_image: '' });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +114,45 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="flex flex-col items-center mb-6">
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-24 h-24 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative group"
+              >
+                {formData.profile_image ? (
+                  <>
+                    <img src={formData.profile_image} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                      <Camera size={20} />
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <Camera className="h-6 w-6 text-gray-500 mx-auto" />
+                    <span className="text-[8px] font-bold text-gray-500 uppercase">Foto</span>
+                  </div>
+                )}
+              </div>
+              {formData.profile_image && (
+                <button 
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); removePhoto(); }}
+                  className="text-[10px] text-anvil-red font-bold uppercase mt-2 hover:text-red-400"
+                >
+                  Eliminar
+                </button>
+              )}
+            </div>
+          )}
+
           {!isLogin && (
             <>
               <div className="relative">
@@ -224,14 +284,6 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red resize-none"
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
-              />
-
-              <input
-                type="url"
-                placeholder="URL de Foto de Perfil"
-                className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red"
-                value={formData.profile_image}
-                onChange={(e) => setFormData({...formData, profile_image: e.target.value})}
               />
             </div>
           )}
