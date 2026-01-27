@@ -364,7 +364,7 @@ function App() {
           <img 
             src="/logo-aep.png" 
             alt="AEP Federación" 
-            className="h-10 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+            className="h-14 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
       </section>
@@ -564,7 +564,7 @@ function App() {
           <img 
             src="/logo-aep.png" 
             alt="AEP Federación" 
-            className="h-10 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+            className="h-14 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
       </section>
