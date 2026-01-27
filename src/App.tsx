@@ -357,12 +357,12 @@ function App() {
         {/* Federation Logos */}
         <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 opacity-60 hover:opacity-100 transition-opacity hidden md:flex">
           <img 
-            src="https://www.powerlifting.sport/fileadmin/ipf/data/logos/IPF_logo.png" 
+            src="/Logo-ipf.png" 
             alt="IPF Approved" 
             className="h-12 w-auto brightness-0 invert"
           />
           <img 
-            src="https://www.powerlifting.es/wp-content/uploads/2021/03/logo-aep-nuevo.png" 
+            src="/logo-aep.png" 
             alt="AEP Federación" 
             className="h-14 w-auto brightness-0 invert"
           />
@@ -557,12 +557,12 @@ function App() {
         {/* Federation Logos */}
         <div className="absolute bottom-8 right-8 flex items-center gap-6 z-10 opacity-60 hover:opacity-100 transition-opacity hidden md:flex">
           <img 
-            src="https://www.powerlifting.sport/fileadmin/ipf/data/logos/IPF_logo.png" 
+            src="/Logo-ipf.png" 
             alt="IPF Approved" 
             className="h-10 w-auto brightness-0 invert"
           />
           <img 
-            src="https://www.powerlifting.es/wp-content/uploads/2021/03/logo-aep-nuevo.png" 
+            src="/logo-aep.png" 
             alt="AEP Federación" 
             className="h-12 w-auto brightness-0 invert"
           />
