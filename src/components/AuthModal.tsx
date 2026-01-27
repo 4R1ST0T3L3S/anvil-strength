@@ -221,47 +221,47 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="grid grid-cols-2 gap-4">
                 <select
-                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors"
+                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                   value={formData.age_category}
                   onChange={(e) => setFormData({...formData, age_category: e.target.value})}
                   required
                 >
-                  <option value="" disabled>Cat. Edad</option>
-                  <option value="Sub-Junior">Sub-Junior</option>
-                  <option value="Junior">Junior</option>
-                  <option value="Senior">Senior (Open)</option>
-                  <option value="Master 1">Master 1</option>
-                  <option value="Master 2">Master 2</option>
-                  <option value="Master 3">Master 3</option>
-                  <option value="Master 4">Master 4</option>
+                  <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Cat. Edad</option>
+                  <option value="Sub-Junior" className="bg-[#1c1c1c] text-white">Sub-Junior</option>
+                  <option value="Junior" className="bg-[#1c1c1c] text-white">Junior</option>
+                  <option value="Senior" className="bg-[#1c1c1c] text-white">Senior (Open)</option>
+                  <option value="Master 1" className="bg-[#1c1c1c] text-white">Master 1</option>
+                  <option value="Master 2" className="bg-[#1c1c1c] text-white">Master 2</option>
+                  <option value="Master 3" className="bg-[#1c1c1c] text-white">Master 3</option>
+                  <option value="Master 4" className="bg-[#1c1c1c] text-white">Master 4</option>
                 </select>
 
                 <select
-                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors"
+                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                   value={formData.weight_category}
                   onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
                   required
                 >
-                  <option value="" disabled>Cat. Peso</option>
-                  <optgroup label="Masculino">
-                    <option value="-59kg">-59kg</option>
-                    <option value="-66kg">-66kg</option>
-                    <option value="-74kg">-74kg</option>
-                    <option value="-83kg">-83kg</option>
-                    <option value="-93kg">-93kg</option>
-                    <option value="-105kg">-105kg</option>
-                    <option value="-120kg">-120kg</option>
-                    <option value="+120kg">+120kg</option>
+                  <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Cat. Peso</option>
+                  <optgroup label="Masculino" className="bg-[#1c1c1c] text-anvil-red font-bold">
+                    <option value="-59kg" className="bg-[#1c1c1c] text-white">-59kg</option>
+                    <option value="-66kg" className="bg-[#1c1c1c] text-white">-66kg</option>
+                    <option value="-74kg" className="bg-[#1c1c1c] text-white">-74kg</option>
+                    <option value="-83kg" className="bg-[#1c1c1c] text-white">-83kg</option>
+                    <option value="-93kg" className="bg-[#1c1c1c] text-white">-93kg</option>
+                    <option value="-105kg" className="bg-[#1c1c1c] text-white">-105kg</option>
+                    <option value="-120kg" className="bg-[#1c1c1c] text-white">-120kg</option>
+                    <option value="+120kg" className="bg-[#1c1c1c] text-white">+120kg</option>
                   </optgroup>
-                  <optgroup label="Femenino">
-                    <option value="-47kg">-47kg</option>
-                    <option value="-52kg">-52kg</option>
-                    <option value="-57kg">-57kg</option>
-                    <option value="-63kg">-63kg</option>
-                    <option value="-69kg">-69kg</option>
-                    <option value="-76kg">-76kg</option>
-                    <option value="-84kg">-84kg</option>
-                    <option value="+84kg">+84kg</option>
+                  <optgroup label="Femenino" className="bg-[#1c1c1c] text-anvil-red font-bold">
+                    <option value="-47kg" className="bg-[#1c1c1c] text-white">-47kg</option>
+                    <option value="-52kg" className="bg-[#1c1c1c] text-white">-52kg</option>
+                    <option value="-57kg" className="bg-[#1c1c1c] text-white">-57kg</option>
+                    <option value="-63kg" className="bg-[#1c1c1c] text-white">-63kg</option>
+                    <option value="-69kg" className="bg-[#1c1c1c] text-white">-69kg</option>
+                    <option value="-76kg" className="bg-[#1c1c1c] text-white">-76kg</option>
+                    <option value="-84kg" className="bg-[#1c1c1c] text-white">-84kg</option>
+                    <option value="+84kg" className="bg-[#1c1c1c] text-white">+84kg</option>
                   </optgroup>
                 </select>
               </div>
