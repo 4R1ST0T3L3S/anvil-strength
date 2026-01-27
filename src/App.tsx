@@ -3,7 +3,9 @@ import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag } from 'l
 import { AuthModal } from './components/AuthModal';
 import { TeamModal } from './components/TeamModal';
 import { AthleteDetailsModal } from './components/AthleteDetailsModal';
+import { CoachDetailsModal } from './components/CoachDetailsModal';
 import { athletes, Athlete } from './data/athletes';
+import { coaches, Coach } from './data/coaches';
 
 function App() {
   const [isScrolled, setIsScrolled] = useState(false);
