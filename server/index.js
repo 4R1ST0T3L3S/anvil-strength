@@ -51,6 +51,7 @@ function createTables() {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      nickname TEXT,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       age INTEGER,
@@ -103,7 +104,7 @@ function createTables() {
 
 // Register
 app.post('/api/register', async (req, res) => {
-  const { name, email, password, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio } = req.body;
+  const { name, nickname, email, password, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Nombre, email y contraseña son obligatorios' });
@@ -112,8 +113,8 @@ app.post('/api/register', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const sql = `INSERT INTO users (name, email, password, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    db.run(sql, [name, email, hashedPassword, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio], function(err) {
+    const sql = `INSERT INTO users (name, nickname, email, password, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.run(sql, [name, nickname, email, hashedPassword, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio], function(err) {
       if (err) {
         if (err.message.includes('UNIQUE constraint failed')) {
           return res.status(400).json({ error: 'El email ya está registrado' });
@@ -121,7 +122,7 @@ app.post('/api/register', async (req, res) => {
         return res.status(500).json({ error: err.message });
       }
       
-      const user = { id: this.lastID, name, email, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio };
+      const user = { id: this.lastID, name, nickname, email, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio };
       const token = jwt.sign({ id: this.lastID, email }, SECRET_KEY, { expiresIn: '24h' });
       res.status(201).json({ 
         message: 'Usuario registrado exitosamente',
@@ -165,7 +166,7 @@ app.post('/api/login', (req, res) => {
 
 // User Profile (Protected)
 app.get('/api/profile', authenticateToken, (req, res) => {
-  const sql = `SELECT id, name, email, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio, created_at FROM users WHERE id = ?`;
+  const sql = `SELECT id, name, nickname, email, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio, created_at FROM users WHERE id = ?`;
   db.get(sql, [req.user.id], (err, user) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -174,15 +175,15 @@ app.get('/api/profile', authenticateToken, (req, res) => {
 });
 
 app.put('/api/profile', authenticateToken, (req, res) => {
-  const { name, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio } = req.body;
+  const { name, nickname, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio } = req.body;
   
   const sql = `
     UPDATE users 
-    SET name = ?, age = ?, weight = ?, height = ?, squat_pr = ?, bench_pr = ?, deadlift_pr = ?, bio = ?
+    SET name = ?, nickname = ?, age = ?, weight = ?, height = ?, squat_pr = ?, bench_pr = ?, deadlift_pr = ?, bio = ?
     WHERE id = ?
   `;
   
-  db.run(sql, [name, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio, req.user.id], function(err) {
+  db.run(sql, [name, nickname, age, weight, height, squat_pr, bench_pr, deadlift_pr, bio, req.user.id], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Perfil actualizado correctamente' });
   });

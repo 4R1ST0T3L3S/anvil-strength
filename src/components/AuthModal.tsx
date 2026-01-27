@@ -14,6 +14,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   
   const [formData, setFormData] = useState({
     name: '',
+    nickname: '',
     email: '',
     password: '',
     age: '',
@@ -92,21 +93,38 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="relative">
-              <label htmlFor="name" className="sr-only">Nombre completo</label>
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-              <input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Nombre completo"
-                autoComplete="name"
-                className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required={!isLogin}
-              />
-            </div>
+            <>
+              <div className="relative">
+                <label htmlFor="name" className="sr-only">Nombre completo</label>
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Nombre completo"
+                  autoComplete="name"
+                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  required={!isLogin}
+                />
+              </div>
+
+              <div className="relative">
+                <label htmlFor="nickname" className="sr-only">Mote / Apodo</label>
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-anvil-red" size={20} />
+                <input
+                  id="nickname"
+                  name="nickname"
+                  type="text"
+                  placeholder="Mote / Apodo (Ej: El Toro)"
+                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 focus:outline-none focus:border-anvil-red transition-colors font-bold"
+                  value={formData.nickname}
+                  onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+                  required={!isLogin}
+                />
+              </div>
+            </>
           )}
 
           <div className="relative">

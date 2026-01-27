@@ -5,6 +5,7 @@ import { TeamModal } from './components/TeamModal';
 import { AthleteDetailsModal } from './components/AthleteDetailsModal';
 import { CoachDetailsModal } from './components/CoachDetailsModal';
 import { BlogSection } from './components/BlogSection';
+import { SettingsModal } from './components/SettingsModal';
 import { athletes, Athlete } from './data/athletes';
 import { coaches, Coach } from './data/coaches';
 
@@ -13,6 +14,8 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
   const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -93,15 +96,43 @@ function App() {
           {/* Right Icons (SBD Style) */}
           <div className="flex items-center space-x-4 md:space-x-6">
             {user ? (
-              <div className="flex items-center gap-4">
-                <span className="hidden md:block text-white text-sm font-bold uppercase">{user.name}</span>
+              <div className="relative">
                 <button 
-                  onClick={handleLogout}
-                  className="text-gray-300 hover:text-anvil-red text-xs font-bold uppercase"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 group"
                 >
-                  <span className="hidden md:inline">Salir</span>
-                  <span className="md:hidden"><User className="h-5 w-5 text-anvil-red" /></span>
+                  <span className="hidden md:block text-white text-sm font-bold uppercase tracking-widest border-b-2 border-anvil-red pb-0.5 group-hover:border-white transition-colors">
+                    {user.nickname || user.name}
+                  </span>
+                  <User className="h-5 w-5 text-anvil-red group-hover:text-white transition-colors" />
                 </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)} />
+                    <div className="absolute right-0 mt-4 w-48 bg-[#1c1c1c] border border-white/10 shadow-2xl py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
+                      <button 
+                        onClick={() => {
+                          setIsSettingsModalOpen(true);
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-wider text-gray-300 hover:text-white hover:bg-white/5 transition-colors border-b border-white/5"
+                      >
+                        Ajustes de Perfil
+                      </button>
+                      <button 
+                        onClick={() => {
+                          handleLogout();
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-wider text-anvil-red hover:text-red-400 hover:bg-white/5 transition-colors"
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <button 
@@ -375,6 +406,13 @@ function App() {
         isOpen={!!selectedCoach}
         onClose={() => setSelectedCoach(null)}
         coach={selectedCoach}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        user={user}
+        onUpdate={setUser}
       />
     </div>
   );
