@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Instagram, Mail } from 'lucide-react';
+import { X, Instagram, Mail, FileText } from 'lucide-react';
 import { Coach } from '../data/coaches';
 
 interface CoachDetailsModalProps {
@@ -78,7 +78,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           {/* Contact */}
           <div className="mt-auto">
              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Contacto</h3>
-             <div className="flex gap-4">
+             <div className="flex flex-wrap gap-4">
                 <a 
                   href={coach.instagram} 
                   target="_blank" 
@@ -88,6 +88,17 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   <Instagram size={20} />
                   <span className="font-bold uppercase text-sm">Instagram</span>
                 </a>
+                {coach.contactForm && (
+                  <a 
+                    href={coach.contactForm}
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-sm"
+                  >
+                    <FileText size={20} />
+                    <span className="font-bold uppercase text-sm">Formulario</span>
+                  </a>
+                )}
                 {coach.email && (
                   <a 
                     href={`mailto:${coach.email}`}
