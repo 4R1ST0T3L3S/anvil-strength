@@ -324,9 +324,9 @@ function App() {
                <a href="#" className="hover:text-white transition-colors">Aviso Legal</a>
             </div>
           </div>
-          <div className="mt-8 text-center md:text-left text-xs text-gray-700 font-medium uppercase tracking-widest">
-            © 2024 Anvil Strength Powerlifting Team.
-          </div>
+          <p className="mt-8 text-center md:text-left text-xs text-gray-700 font-medium uppercase tracking-widest">
+            © 2025 Anvil Strength Powerlifting Team. Todos los derechos reservados.
+          </p>
         </div>
       </footer>
 
