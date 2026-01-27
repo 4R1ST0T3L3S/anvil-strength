@@ -214,7 +214,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Coach 1 */}
             <div className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-sm">
-              <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=2070&auto=format&fit=crop" alt="Javier Estelles" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" />
+              <img src="/coaches/estelles.png" alt="Javier Estelles" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
                 <h3 className="text-3xl font-bold text-white uppercase mb-1">Javier Estelles</h3>
                 <p className="text-anvil-red font-bold tracking-wider mb-4">ENTRENADOR Y NUTRICIONISTA</p>
