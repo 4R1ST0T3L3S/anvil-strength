@@ -259,7 +259,11 @@ function App() {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
              {athletes.slice(0, 4).map((athlete) => (
-                <div key={athlete.id} className="group relative aspect-[4/5] bg-[#252525] overflow-hidden">
+                <div 
+                  key={athlete.id} 
+                  className="group relative aspect-[4/5] bg-[#252525] overflow-hidden cursor-pointer"
+                  onClick={() => setSelectedAthlete(athlete)}
+                >
                    <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
                    <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
                       <p className="text-white font-bold uppercase">{athlete.name}</p>
@@ -350,7 +354,7 @@ function App() {
         isOpen={isTeamModalOpen}
         onClose={() => setIsTeamModalOpen(false)}
         athletes={athletes}
-        onAthleteClick={handleAthleteClick}
+        onAthleteClick={setSelectedAthlete}
       />
 
       <AthleteDetailsModal

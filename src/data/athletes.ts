@@ -20,12 +20,12 @@ export const athletes: Athlete[] = [
     category: "-63kg JNR",
     image: "/athletes/gema.jpeg",
     stats: {
-      lastCompetition: "Campeonato Nacional 2024",
-      glsPoints: 95.5,
-      total: 380,
-      squat: 135,
-      bench: 75,
-      deadlift: 170
+      lastCompetition: "AEP3 Las Torres De Cotilla",
+      glsPoints: 85.0,
+      total: 297.5,
+      squat: 120,
+      bench: 52.5,
+      deadlift: 125
     }
   },
   {
