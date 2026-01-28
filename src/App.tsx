@@ -206,11 +206,14 @@ function App() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <a href="#" className="block hover:opacity-80 transition-opacity">
-              <img
-                src="/logo.svg"
-                alt="Anvil Strength Logo"
-                className="h-10 md:h-12 w-auto object-contain"
-              />
+              <picture>
+                <source srcSet="/logo-dark.png" media="(prefers-color-scheme: dark)" />
+                <img
+                  src="/logo-light.jpg"
+                  alt="Anvil Strength Logo"
+                  className="h-10 md:h-12 w-auto object-contain"
+                />
+              </picture>
             </a>
           </div>
 
