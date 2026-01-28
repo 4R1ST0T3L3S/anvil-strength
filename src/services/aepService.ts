@@ -11,8 +11,10 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSM
 // Fallback proxy strategy
 const fetchWithFallback = async (targetUrl: string): Promise<string> => {
     const proxies = [
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, // Usually very reliable
         `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
         `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+        // `https://thingproxy.freeboard.io/fetch/${targetUrl}` // Backup if needed
     ];
 
     let lastError: any;
@@ -20,18 +22,71 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
     for (const proxy of proxies) {
         try {
             console.log(`Trying proxy: ${proxy}`);
-            const response = await fetch(proxy);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per proxy
+
+            const response = await fetch(proxy, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
             if (!response.ok) throw new Error(`Status ${response.status}`);
             const text = await response.text();
             if (!text || text.trim().length === 0) throw new Error('Empty response');
+
             return text;
-        } catch (err) {
-            console.warn(`Proxy failed: ${proxy}`, err);
+        } catch (err: any) {
+            console.warn(`Proxy failed: ${proxy}`, err.name === 'AbortError' ? 'Timeout' : err.message);
             lastError = err;
         }
     }
 
-    throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
+    throw new Error(`All proxies failed. Last error: ${lastError?.message || 'Unknown'}`);
+};
+
+// Helper to parse Spanish date formats
+const parseDate = (dateStr: string): Date | null => {
+    try {
+        const year = 2026;
+        const months: { [key: string]: number } = {
+            'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+            'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+        };
+
+        const cleanStr = dateStr.toLowerCase().trim();
+
+        // Match standard format "DD-DD mmm" or "DD mmm"
+        // We only care about the END date for filtering "past" events
+        // Examples: "17-ene", "24-25 ene", "28-01 feb-mar"
+
+        // Find all month names in the string
+        const foundMonths = Object.keys(months).filter(m => cleanStr.includes(m));
+
+        if (foundMonths.length === 0) return null;
+
+        // Take the last month found (covers "feb-mar" case)
+        const lastMonthStr = foundMonths[foundMonths.length - 1];
+        const monthIndex = months[lastMonthStr];
+
+        // Find numbers. If range "24-25", we want 25. If "28-01", we want 01.
+        // We can split by tokens and find the number closest to the month string?
+        // Simpler: Extract all numbers, take the last one IF it appears *before* or near the month?
+        // Actually, "28-01 feb-mar" -> logic is tricky.
+
+        // Let's rely on the LAST number found in the string?
+        // "24-25 ene" -> 25. Correct.
+        // "17-ene" -> 17. Correct.
+        // "28-01 feb-mar" -> 01 (matches mar). Correct.
+
+        const numbers = cleanStr.match(/\d+/g);
+        if (!numbers) return null;
+
+        const day = parseInt(numbers[numbers.length - 1]);
+
+        if (day < 1 || day > 31) return null;
+
+        return new Date(year, monthIndex, day);
+    } catch (e) {
+        return null;
+    }
 };
 
 export const fetchCompetitions = async (): Promise<Competition[]> => {
