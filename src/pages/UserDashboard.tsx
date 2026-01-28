@@ -1,6 +1,7 @@
-import React from 'react';
-import { LogOut, Trophy, FileText, Utensils } from 'lucide-react';
-import { CalendarSection } from '../components/CalendarSection';
+```typescript
+import React, { useState } from 'react';
+import { LogOut, Calendar, Trophy, FileText, Utensils } from 'lucide-react';
+import { CalendarModal } from '../components/CalendarModal';
 
 interface UserDashboardProps {
     user: any;
@@ -8,6 +9,8 @@ interface UserDashboardProps {
 }
 
 export function UserDashboard({ user, onLogout }: UserDashboardProps) {
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
     return (
         <div className="min-h-screen bg-[#1c1c1c] text-white">
             {/* Dashboard Header */}
@@ -22,7 +25,9 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                         <span className="font-black text-xl tracking-tighter uppercase hidden md:block">Anvil Strength</span>
                     </div>
 
+                    {/* Right Side User Menu */}
                     <div className="flex items-center gap-6">
+                        {/* User Profile Info */}
                         <div className="flex items-center gap-3">
                             {user.profile_image ? (
                                 <img
@@ -41,6 +46,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                             </div>
                         </div>
 
+                        {/* Logout Button */}
                         <button
                             onClick={onLogout}
                             className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
@@ -77,9 +83,19 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                         <p className="text-gray-400">Gestiona tus inscripciones y revisa tus resultados históricos.</p>
                     </div>
 
-                    {/* Card: Calendario (Expanded to full width or large section) */}
-                    <div className="md:col-span-2">
-                        <CalendarSection />
+                    {/* Card: Calendario (Restored) */}
+                    <div 
+                        className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 transition-all group cursor-pointer active:scale-[0.98]"
+                        onClick={() => setIsCalendarOpen(true)}
+                    >
+                        <div className="flex items-start justify-between mb-6">
+                            <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                <Calendar size={32} />
+                            </div>
+                            {/* Removed "Próximamente" badge */}
+                        </div>
+                        <h3 className="text-2xl font-bold uppercase mb-2">Calendario</h3>
+                        <p className="text-gray-400">Consulta las fechas importantes y eventos del club.</p>
                     </div>
 
                     {/* Card: Planificaciones */}
@@ -91,7 +107,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest border border-white/10 px-2 py-1 rounded">Próximamente</span>
                         </div>
                         <h3 className="text-2xl font-bold uppercase mb-2">Mis Planificaciones</h3>
-                        <p className="text-gray-400">Accede a tus rutinas de entrenamiento personalizadas y registra tu progreso.</p>
+                        <p className="text-gray-400">Accede a tus rutinas de entrenamiento personalizadas.</p>
                     </div>
 
                     {/* Card: Dietas */}
@@ -108,6 +124,12 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
                 </div>
             </main>
+
+            <CalendarModal 
+                isOpen={isCalendarOpen} 
+                onClose={() => setIsCalendarOpen(false)} 
+            />
         </div>
     );
 }
+```
