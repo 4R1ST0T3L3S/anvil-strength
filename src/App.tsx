@@ -354,7 +354,7 @@ function App() {
         </div>
 
         {/* Federation Logos */}
-        <div className="absolute bottom-8 right-8 flex items-center gap-1 z-10">
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
           <img
             src="/Logo-ipf.png"
             alt="IPF Approved"
@@ -554,7 +554,7 @@ function App() {
         </div>
 
         {/* Federation Logos */}
-        <div className="absolute bottom-8 right-8 flex items-center gap-1 z-10">
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
           <img
             src="/Logo-ipf.png"
             alt="IPF Approved"
