@@ -59,12 +59,42 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-6 py-12">
-                {/* Welcome Section */}
+                {/* Welcome Section & Profile Stats */}
                 <div className="mb-12">
-                    <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
-                        Hola, <span className="text-anvil-red">{user.nickname || user.name?.split(' ')[0]}</span>
-                    </h1>
-                    <p className="text-gray-400 text-lg">Bienvenido a tu panel de atleta.</p>
+                    <div className="flex flex-col md:flex-row gap-8 items-start md:items-center justify-between mb-8">
+                        <div>
+                            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
+                                Hola, <span className="text-anvil-red">{user.nickname || user.name?.split(' ')[0]}</span>
+                            </h1>
+                            <p className="text-gray-400 text-lg">Bienvenido a tu panel de atleta.</p>
+                        </div>
+
+                        {/* Quick Stats (Instagram-like mini view) */}
+                        <div className="flex gap-6 bg-[#252525] p-4 rounded-xl border border-white/5">
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">SQ</p>
+                                <p className="text-xl font-black text-white">{user.squat_pr || '-'}<span className="text-xs text-gray-500 ml-1">kg</span></p>
+                            </div>
+                            <div className="w-px bg-white/10"></div>
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">BP</p>
+                                <p className="text-xl font-black text-white">{user.bench_pr || '-'}<span className="text-xs text-gray-500 ml-1">kg</span></p>
+                            </div>
+                            <div className="w-px bg-white/10"></div>
+                            <div className="text-center">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">DL</p>
+                                <p className="text-xl font-black text-white">{user.deadlift_pr || '-'}<span className="text-xs text-gray-500 ml-1">kg</span></p>
+                            </div>
+                            <div className="w-px bg-white/10"></div>
+                            <div className="text-center">
+                                <p className="text-[10px] text-anvil-red font-bold uppercase tracking-wider">Total</p>
+                                <p className="text-xl font-black text-white">
+                                    {(user.squat_pr || 0) + (user.bench_pr || 0) + (user.deadlift_pr || 0) || '-'}
+                                    <span className="text-xs text-gray-500 ml-1">kg</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Dashboard Grid */}

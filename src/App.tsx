@@ -10,7 +10,12 @@ import { UserDashboard } from './pages/UserDashboard';
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+
+  // Initialize from localStorage to prevent flash of logged-out state
+  const [user, setUser] = useState<any>(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
 
   useEffect(() => {
     // Initial session check
