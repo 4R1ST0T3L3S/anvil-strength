@@ -1,4 +1,3 @@
-```typescript
 import React, { useState } from 'react';
 import { LogOut, Calendar, Trophy, FileText, Utensils } from 'lucide-react';
 import { CalendarModal } from '../components/CalendarModal';
@@ -84,7 +83,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                     </div>
 
                     {/* Card: Calendario (Restored) */}
-                    <div 
+                    <div
                         className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 transition-all group cursor-pointer active:scale-[0.98]"
                         onClick={() => setIsCalendarOpen(true)}
                     >
@@ -125,11 +124,10 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 </div>
             </main>
 
-            <CalendarModal 
-                isOpen={isCalendarOpen} 
-                onClose={() => setIsCalendarOpen(false)} 
+            <CalendarModal
+                isOpen={isCalendarOpen}
+                onClose={() => setIsCalendarOpen(false)}
             />
         </div>
     );
 }
-```
