@@ -136,6 +136,8 @@ function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    localStorage.removeItem('user');
   };
 
   return (
