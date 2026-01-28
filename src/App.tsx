@@ -8,6 +8,7 @@ import { AthleteDetailsModal } from './components/AthleteDetailsModal';
 import { CoachDetailsModal } from './components/CoachDetailsModal';
 import { BlogSection } from './components/BlogSection';
 import { SettingsModal } from './components/SettingsModal';
+import { PWAPrompt } from './components/PWAPrompt';
 import { athletes, Athlete } from './data/athletes';
 import { coaches, Coach } from './data/coaches';
 import { supabase } from './lib/supabase';
@@ -617,6 +618,7 @@ function App() {
         user={user}
         onUpdate={setUser}
       />
+      <PWAPrompt />
     </div>
   );
 }
