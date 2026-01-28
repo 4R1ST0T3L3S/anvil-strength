@@ -13,7 +13,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     nickname: '',
@@ -38,7 +38,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
       }
 
       // 2MB limit for base64 strings to be safe with database/payload limits
-      if (file.size > 2 * 1024 * 1024) { 
+      if (file.size > 2 * 1024 * 1024) {
         setError('La imagen es demasiado grande (máx 2MB)');
         return;
       }
@@ -74,9 +74,15 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
 
         if (authError) {
           console.error('Error de Auth:', authError.message);
-          throw authError;
+          throw authError; // This jumps to catch block
         }
-        console.log('Login exitoso, cerrando modal...');
+
+        console.log('Login exitoso at Supabase level');
+        // We DO NOT call onClose() here immediately because App.tsx listens to the state change
+        // However, if we don't close it, it might hang if App.tsx crashes.
+        // Let's rely on success.
+
+        // onClose will be triggered by App.tsx when it detects the user
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
@@ -99,15 +105,25 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
           setIsLoading(false);
           return;
         }
-        console.log('Registro exitoso, cerrando modal...');
+        console.log('Registro exitoso');
       }
-      
-      // Forzamos el cierre inmediato
-      setIsLoading(false);
-      onClose();
+
+      // Safety timeout: If App.tsx doesn't close the modal in 2 seconds, we force close it 
+      // preventing "infinite loading" perception if something glitchy happens with the listener
+      setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+          onClose();
+        }
+      }, 2000);
+
     } catch (err: any) {
       console.error('Error capturado en handleSubmit:', err);
-      setError(err.message || 'Error de conexión con el servidor');
+      // Translate common Supabase errors to Spanish friendly messages
+      let msg = err.message;
+      if (msg.includes('Invalid login credentials')) msg = 'Email o contraseña incorrectos.';
+
+      setError(msg || 'Error de conexión con el servidor');
       setIsLoading(false);
     }
   };
@@ -115,9 +131,9 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      
+
       <div className="relative bg-[#1c1c1c] w-full max-w-md rounded-xl border border-white/10 shadow-2xl p-8">
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
         >
@@ -149,7 +165,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 accept="image/*"
                 onChange={handleFileChange}
               />
-              <div 
+              <div
                 onClick={() => fileInputRef.current?.click()}
                 className="w-24 h-24 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative group"
               >
@@ -168,7 +184,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 )}
               </div>
               {formData.profile_image && (
-                <button 
+                <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); removePhoto(); }}
                   className="text-[10px] text-anvil-red font-bold uppercase mt-2 hover:text-red-400"
@@ -192,7 +208,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                   autoComplete="name"
                   className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required={!isLogin}
                 />
               </div>
@@ -207,7 +223,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                   placeholder="Mote / Apodo (Ej: El Toro)"
                   className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
                   value={formData.nickname}
-                  onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                   required={!isLogin}
                 />
               </div>
@@ -225,7 +241,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
               autoComplete="username email"
               className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
               value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
             />
           </div>
@@ -242,7 +258,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
               autoComplete={isLogin ? "current-password" : "new-password"}
               className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
               value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
             />
           </div>
@@ -253,7 +269,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 <select
                   className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                   value={formData.age_category}
-                  onChange={(e) => setFormData({...formData, age_category: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, age_category: e.target.value })}
                   required
                 >
                   <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Cat. Edad</option>
@@ -269,7 +285,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 <select
                   className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                   value={formData.weight_category}
-                  onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, weight_category: e.target.value })}
                   required
                 >
                   <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Cat. Peso</option>
@@ -301,7 +317,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
                 rows={4}
                 className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red resize-none"
                 value={formData.bio}
-                onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               />
             </div>
           )}
