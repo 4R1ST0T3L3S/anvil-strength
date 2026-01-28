@@ -13,6 +13,7 @@ export default defineConfig({
         name: 'Anvil Strength Powerlifting',
         short_name: 'Anvil Strength',
         description: 'Anvil Strength Powerlifting App',
+        // v2: Force icon update
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
