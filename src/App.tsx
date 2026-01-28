@@ -41,21 +41,21 @@ function App() {
   // Watchdog timer to resume auto-slide after 30s
   useEffect(() => {
     if (!isManualMode) return;
-    
+
     const checkIdle = setInterval(() => {
       const now = Date.now();
       if (now - lastInteraction > 30000 && !selectedAthlete) {
         setIsManualMode(false);
       }
     }, 1000);
-    
+
     return () => clearInterval(checkIdle);
   }, [isManualMode, lastInteraction, selectedAthlete]);
 
   const handleManualNav = (direction: 'prev' | 'next') => {
     setIsManualMode(true);
     setLastInteraction(Date.now());
-    
+
     if (direction === 'next') {
       setIsTransitioning(true);
       setCarouselIndex((prev) => prev + 1);
@@ -90,7 +90,7 @@ function App() {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
-    
+
     // Initial session check
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -101,12 +101,12 @@ function App() {
           .select('*')
           .eq('id', session.user.id)
           .single();
-        
+
         if (profileError && profileError.code === 'PGRST116') {
           const { data: newProfile } = await supabase
             .from('profiles')
-            .insert([{ 
-              id: session.user.id, 
+            .insert([{
+              id: session.user.id,
               name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               nickname: session.user.user_metadata?.nickname || 'Atleta'
             }])
@@ -114,7 +114,7 @@ function App() {
             .single();
           profile = newProfile;
         }
-        
+
         const userData = { ...session.user, ...profile };
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -126,7 +126,7 @@ function App() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Evento de Auth detectado:', event);
-      
+
       if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session) {
         try {
           console.log('Recuperando perfil para:', session.user.id);
@@ -135,23 +135,23 @@ function App() {
             .select('*')
             .eq('id', session.user.id)
             .single();
-          
+
           if (profileError && profileError.code === 'PGRST116') {
             console.log('Perfil no encontrado, creando perfil de emergencia...');
             const { data: newProfile, error: createError } = await supabase
               .from('profiles')
-              .insert([{ 
-                id: session.user.id, 
+              .insert([{
+                id: session.user.id,
                 name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
                 nickname: session.user.user_metadata?.nickname || 'Atleta'
               }])
               .select()
               .single();
-            
+
             if (createError) console.error('Error creando perfil:', createError);
             profile = newProfile;
           }
-          
+
           const userData = { ...session.user, ...profile };
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
@@ -198,18 +198,17 @@ function App() {
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
       {/* SBD-style Header */}
-      <header 
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-[#1c1c1c] shadow-lg py-2' : 'bg-transparent py-6'
-        }`}
+      <header
+        className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1c1c1c] shadow-lg py-2' : 'bg-transparent py-6'
+          }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between md:justify-center md:gap-12">
           {/* Logo */}
           <div className="flex-shrink-0">
             <a href="#" className="block hover:opacity-80 transition-opacity">
-              <img 
-                src="/logo.svg" 
-                alt="Anvil Strength Logo" 
+              <img
+                src="/logo.svg"
+                alt="Anvil Strength Logo"
                 className="h-10 md:h-12 w-auto object-contain"
               />
             </a>
@@ -218,9 +217,9 @@ function App() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <a 
-                key={link.name} 
-                href={link.href} 
+              <a
+                key={link.name}
+                href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
                 className="text-sm font-bold tracking-wider text-gray-300 hover:text-white transition-colors uppercase"
               >
@@ -233,7 +232,7 @@ function App() {
           <div className="flex items-center space-x-4 md:space-x-6">
             {user ? (
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-3 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl transition-all border border-white/5 group"
                 >
@@ -241,9 +240,9 @@ function App() {
                     {user.nickname || user.name}
                   </span>
                   {user.profile_image ? (
-                    <img 
-                      src={user.profile_image} 
-                      alt={user.nickname || user.name} 
+                    <img
+                      src={user.profile_image}
+                      alt={user.nickname || user.name}
                       className="h-8 w-8 rounded-full object-cover border-2 border-anvil-red group-hover:border-white transition-colors"
                     />
                   ) : (
@@ -256,7 +255,7 @@ function App() {
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsUserMenuOpen(false)} />
                     <div className="absolute right-0 mt-4 w-48 bg-[#1c1c1c] border border-white/10 shadow-2xl py-2 z-20 animate-in fade-in zoom-in-95 duration-200 rounded-lg overflow-hidden">
-                      <button 
+                      <button
                         onClick={() => {
                           setIsSettingsModalOpen(true);
                           setIsUserMenuOpen(false);
@@ -265,7 +264,7 @@ function App() {
                       >
                         Ajustes de Perfil
                       </button>
-                      <button 
+                      <button
                         onClick={() => {
                           handleLogout();
                           setIsUserMenuOpen(false);
@@ -279,7 +278,7 @@ function App() {
                 )}
               </div>
             ) : (
-              <button 
+              <button
                 onClick={() => setIsAuthModalOpen(true)}
                 className="text-gray-300 hover:text-white"
               >
@@ -294,7 +293,7 @@ function App() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-white p-2"
             >
@@ -337,15 +336,15 @@ function App() {
             Trabajamos con datos no con sensaciones
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <a 
-              href="#afiliacion" 
+            <a
+              href="#afiliacion"
               onClick={(e) => handleNavClick(e, '#afiliacion')}
               className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
             >
               Únete al equipo
             </a>
-            <a 
-              href="#filosofia" 
+            <a
+              href="#filosofia"
               onClick={(e) => handleNavClick(e, '#filosofia')}
               className="inline-block border-2 border-white text-white hover:bg-white hover:text-black font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
             >
@@ -355,15 +354,15 @@ function App() {
         </div>
 
         {/* Federation Logos */}
-        <div className="absolute bottom-8 right-8 flex items-center gap-1 z-10 hidden md:flex">
-          <img 
-            src="/Logo-ipf.png" 
-            alt="IPF Approved" 
+        <div className="absolute bottom-8 right-8 flex items-center gap-1 z-10">
+          <img
+            src="/Logo-ipf.png"
+            alt="IPF Approved"
             className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
-          <img 
-            src="/logo-aep.png" 
-            alt="AEP Federación" 
+          <img
+            src="/logo-aep.png"
+            alt="AEP Federación"
             className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
@@ -374,7 +373,7 @@ function App() {
         <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
           <div className="text-center md:text-left">
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 uppercase">
-              Forjados en <br/> <span className="text-anvil-red">Hierro</span>
+              Forjados en <br /> <span className="text-anvil-red">Hierro</span>
             </h2>
             <div className="space-y-6 text-lg text-gray-400 leading-relaxed font-medium">
               <p>
@@ -389,10 +388,10 @@ function App() {
             </div>
           </div>
           <div className="relative">
-             <div className="aspect-[4/5] bg-gray-800 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
-                <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop" alt="Filosofía" className="w-full h-full object-cover" />
-             </div>
-             <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block rounded-xl"></div>
+            <div className="aspect-[4/5] bg-gray-800 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
+              <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop" alt="Filosofía" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block rounded-xl"></div>
           </div>
         </div>
       </section>
@@ -407,15 +406,15 @@ function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {coaches.map((coach) => (
-              <div 
+              <div
                 key={coach.id}
                 className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-xl cursor-pointer"
                 onClick={() => setSelectedCoach(coach)}
               >
-                <img 
-                  src={coach.image} 
-                  alt={coach.name} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" 
+                <img
+                  src={coach.image}
+                  alt={coach.name}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
                   <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
@@ -439,16 +438,16 @@ function App() {
       <section id="atletas" className="py-32 bg-[#1c1c1c] overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 mb-16">
           <div className="flex justify-between items-end">
-             <div>
-                <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nuestros Atletas</h2>
-                <div className="w-20 h-1 bg-anvil-red"></div>
-             </div>
-             <button 
-               onClick={() => setIsTeamModalOpen(true)}
-               className="hidden md:block text-gray-400 hover:text-white font-bold uppercase tracking-wider text-sm transition-colors"
-             >
-               Ver todo el equipo &rarr;
-             </button>
+            <div>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nuestros Atletas</h2>
+              <div className="w-20 h-1 bg-anvil-red"></div>
+            </div>
+            <button
+              onClick={() => setIsTeamModalOpen(true)}
+              className="hidden md:block text-gray-400 hover:text-white font-bold uppercase tracking-wider text-sm transition-colors"
+            >
+              Ver todo el equipo &rarr;
+            </button>
           </div>
         </div>
 
@@ -459,45 +458,45 @@ function App() {
           <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
 
           {/* Navigation Arrows */}
-          <button 
+          <button
             onClick={() => handleManualNav('prev')}
             className="absolute left-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
           >
             <ChevronLeft size={32} />
           </button>
-          <button 
+          <button
             onClick={() => handleManualNav('next')}
             className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
           >
             <ChevronRight size={32} />
           </button>
 
-          <div 
+          <div
             className="flex overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <motion.div 
+            <motion.div
               className="flex gap-4 px-4"
               animate={{ x: -(carouselIndex * (280 + 16)) }}
-              transition={isTransitioning ? { 
-                duration: 0.8, 
-                ease: [0.4, 0, 0.2, 1] 
+              transition={isTransitioning ? {
+                duration: 0.8,
+                ease: [0.4, 0, 0.2, 1]
               } : { duration: 0 }}
             >
-               {[...athletes, ...athletes, ...athletes, ...athletes].map((athlete, index) => (
-                  <div 
-                    key={`${athlete.id}-${index}`} 
-                    className="relative flex-shrink-0 w-[280px] aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl group"
-                    onClick={() => setSelectedAthlete(athlete)}
-                  >
-                     <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-                     <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
-                        <p className="text-white font-bold uppercase">{athlete.name}</p>
-                        <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
-                     </div>
+              {[...athletes, ...athletes, ...athletes, ...athletes].map((athlete, index) => (
+                <div
+                  key={`${athlete.id}-${index}`}
+                  className="relative flex-shrink-0 w-[280px] aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl group"
+                  onClick={() => setSelectedAthlete(athlete)}
+                >
+                  <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                  <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
+                    <p className="text-white font-bold uppercase">{athlete.name}</p>
+                    <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
                   </div>
-               ))}
+                </div>
+              ))}
             </motion.div>
           </div>
         </div>
@@ -513,7 +512,7 @@ function App() {
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Logros Recientes</h2>
             <p className="text-gray-400">Resultados que hablan por sí solos.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { title: "Campeonato Nacional 2024", result: "3 Medallas de Oro", desc: "Récord Nacional Peso Muerto" },
@@ -541,29 +540,29 @@ function App() {
           <p className="text-white/90 text-xl mb-12 font-medium">
             Únete a Anvil Strength. Descarga los documentos necesarios y comienza tu camino hacia la tarima.
           </p>
-          
+
           <div className="flex flex-col md:flex-row gap-6 justify-center">
-             <a href="https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
-                <FileText size={20} />
-                Formulario de Inscripción
-             </a>
-             <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
-                <FileText size={20} />
-                Normativa del Equipo
-             </button>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
+              <FileText size={20} />
+              Formulario de Inscripción
+            </a>
+            <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
+              <FileText size={20} />
+              Normativa del Equipo
+            </button>
           </div>
         </div>
 
         {/* Federation Logos */}
-        <div className="absolute bottom-8 right-8 flex items-center gap-1 z-10 hidden md:flex">
-          <img 
-            src="/Logo-ipf.png" 
-            alt="IPF Approved" 
+        <div className="absolute bottom-8 right-8 flex items-center gap-1 z-10">
+          <img
+            src="/Logo-ipf.png"
+            alt="IPF Approved"
             className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
-          <img 
-            src="/logo-aep.png" 
-            alt="AEP Federación" 
+          <img
+            src="/logo-aep.png"
+            alt="AEP Federación"
             className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
           />
         </div>
@@ -572,13 +571,13 @@ function App() {
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2">
-               {/* Footer Logo */}
-               <span className="font-black text-2xl tracking-tighter text-white">ANVIL STRENGTH</span>
+              {/* Footer Logo */}
+              <span className="font-black text-2xl tracking-tighter text-white">ANVIL STRENGTH</span>
             </div>
             <div className="flex gap-8 text-sm font-bold text-gray-500 uppercase tracking-wider">
-               <a href="https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
-               <a href="#" className="hover:text-white transition-colors">Email</a>
-               <a href="#" className="hover:text-white transition-colors">Aviso Legal</a>
+              <a href="https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
+              <a href="#" className="hover:text-white transition-colors">Email</a>
+              <a href="#" className="hover:text-white transition-colors">Aviso Legal</a>
             </div>
           </div>
           <div className="mt-8 text-center md:text-left text-xs text-gray-700 font-medium uppercase tracking-widest">
@@ -587,12 +586,12 @@ function App() {
         </div>
       </footer>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
         onLogin={setUser}
       />
-      
+
       <TeamModal
         isOpen={isTeamModalOpen}
         onClose={() => setIsTeamModalOpen(false)}
