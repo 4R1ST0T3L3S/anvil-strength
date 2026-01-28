@@ -39,7 +39,12 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
                     for (let i = 0; i < Math.min(rows.length, 20); i++) { // Check first 20 rows
                         const rowStr = JSON.stringify(rows[i]).toLowerCase();
-                        if (rowStr.includes('fecha') && (rowStr.includes('campeonato') || rowStr.includes('nombre'))) {
+                        // Adjusted candidates based on screenshot: "FECHA" and ("COMPETICIONES" or "LOCALIDAD" or "ORGANIZADOR")
+                        if (rowStr.includes('fecha') && (
+                            rowStr.includes('competiciones') ||
+                            rowStr.includes('localidad') ||
+                            rowStr.includes('organizador')
+                        )) {
                             headerRowIndex = i;
                             break;
                         }
@@ -47,7 +52,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
                     if (headerRowIndex === -1) {
                         console.error('No header found in rows:', rows.slice(0, 10));
-                        reject(new Error('No se encontró la fila de cabecera (FECHA/CAMPEONATO)'));
+                        reject(new Error('No se encontró la fila de cabecera (FECHA/COMPETICIONES/LOCALIDAD)'));
                         return;
                     }
 
@@ -55,8 +60,11 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
                     const headers = rows[headerRowIndex].map(h => h.toString().toLowerCase().trim());
                     const dateIdx = headers.findIndex(h => h.includes('fecha'));
-                    const nameIdx = headers.findIndex(h => h.includes('campeonato') || h.includes('nombre'));
-                    const locIdx = headers.findIndex(h => h.includes('sede') || h.includes('lugar'));
+                    // Match "campeonato" or "competiciones" or "nombre"
+                    const nameIdx = headers.findIndex(h => h.includes('campeonato') || h.includes('competiciones') || h.includes('nombre'));
+                    // Match "sede" or "localidad" or "lugar"
+                    const locIdx = headers.findIndex(h => h.includes('sede') || h.includes('localidad') || h.includes('lugar'));
+                    // Match "inscripciones" or "link" or just "inscrip"
                     const linkIdx = headers.findIndex(h => h.includes('inscrip') || h.includes('link'));
 
                     if (dateIdx === -1 || nameIdx === -1) {
@@ -77,6 +85,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                             return item.fecha &&
                                 item.fecha.length > 2 &&
                                 !item.fecha.toLowerCase().includes('fecha') &&
+                                !item.fecha.toLowerCase().includes('trimestre') &&
                                 item.campeonato;
                         });
 
