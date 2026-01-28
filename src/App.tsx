@@ -45,42 +45,77 @@ function App() {
 
     checkUser();
 
+    // Helper to fetch profile with timeout
+    const fetchProfileSafely = async (userId: string, meta: any) => {
+      try {
+        console.log('Fetching profile for:', userId);
+
+        // Timeout promise
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+        );
+
+        // Fetch promise
+        const fetchPromise = supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        // Race them
+        let { data: profile, error: profileError } = await Promise.race([fetchPromise, timeout]) as any;
+
+        if (profileError && profileError.code === 'PGRST116') {
+          console.log('Perfil no encontrado, creando perfil...');
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([{
+              id: userId,
+              name: meta?.full_name || 'Atleta',
+              nickname: meta?.nickname || 'Atleta'
+            }])
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            throw createError;
+          }
+          profile = newProfile;
+        } else if (profileError) {
+          throw profileError;
+        }
+
+        return profile;
+      } catch (err) {
+        console.error('Error fetching/creating profile:', err);
+        // Fallback to minimal profile from metadata if DB fails
+        return {
+          id: userId,
+          name: meta?.full_name || 'Atleta',
+          nickname: meta?.nickname || 'Atleta'
+        };
+      }
+    };
+
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Evento de Auth detectado:', event);
 
       if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session) {
         try {
-          console.log('Recuperando perfil para:', session.user.id);
-          let { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError && profileError.code === 'PGRST116') {
-            console.log('Perfil no encontrado, creando perfil de emergencia...');
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert([{
-                id: session.user.id,
-                name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-                nickname: session.user.user_metadata?.nickname || 'Atleta'
-              }])
-              .select()
-              .single();
-
-            if (createError) console.error('Error creando perfil:', createError);
-            profile = newProfile;
-          }
+          const profile = await fetchProfileSafely(session.user.id, session.user.user_metadata);
 
           const userData = { ...session.user, ...profile };
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
-          setIsAuthModalOpen(false);
-          console.log('Usuario cargado correctamente');
+          setIsAuthModalOpen(false); // Close modal if open
+          console.log('Usuario cargado y modal cerrado');
         } catch (err) {
-          console.error('Error crítico en onAuthStateChange:', err);
+          console.error('Critical Auth Error:', err);
+          // Even on error, if we have a session, let them in with basic data
+          setUser(session.user);
+          setIsAuthModalOpen(false);
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
