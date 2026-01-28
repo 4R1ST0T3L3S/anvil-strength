@@ -8,71 +8,36 @@ export interface Competition {
 }
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSMIGAG6eqYDt4/export?format=csv&gid=577884253';
-// Using AllOrigins as a proxy to bypass CORS
-const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_URL)}`;
+// Fallback proxy strategy
+const fetchWithFallback = async (targetUrl: string): Promise<string> => {
+    const proxies = [
+        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
+    ];
 
-// Helper to parse Spanish date formats
-const parseDate = (dateStr: string): Date | null => {
-    try {
-        const year = 2026;
-        const months: { [key: string]: number } = {
-            'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
-            'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
-        };
+    let lastError: any;
 
-        const cleanStr = dateStr.toLowerCase().trim();
-
-        // Match standard format "DD-DD mmm" or "DD mmm"
-        // We only care about the END date for filtering "past" events
-        // Examples: "17-ene", "24-25 ene", "28-01 feb-mar"
-
-        // Find all month names in the string
-        const foundMonths = Object.keys(months).filter(m => cleanStr.includes(m));
-
-        if (foundMonths.length === 0) return null;
-
-        // Take the last month found (covers "feb-mar" case)
-        const lastMonthStr = foundMonths[foundMonths.length - 1];
-        const monthIndex = months[lastMonthStr];
-
-        // Find numbers. If range "24-25", we want 25. If "28-01", we want 01.
-        // We can split by tokens and find the number closest to the month string?
-        // Simpler: Extract all numbers, take the last one IF it appears *before* or near the month?
-        // Actually, "28-01 feb-mar" -> logic is tricky.
-
-        // Let's rely on the LAST number found in the string?
-        // "24-25 ene" -> 25. Correct.
-        // "17-ene" -> 17. Correct.
-        // "28-01 feb-mar" -> 01 (matches mar). Correct.
-
-        const numbers = cleanStr.match(/\d+/g);
-        if (!numbers) return null;
-
-        const day = parseInt(numbers[numbers.length - 1]);
-
-        if (day < 1 || day > 31) return null;
-
-        return new Date(year, monthIndex, day);
-    } catch (e) {
-        return null;
+    for (const proxy of proxies) {
+        try {
+            console.log(`Trying proxy: ${proxy}`);
+            const response = await fetch(proxy);
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            const text = await response.text();
+            if (!text || text.trim().length === 0) throw new Error('Empty response');
+            return text;
+        } catch (err) {
+            console.warn(`Proxy failed: ${proxy}`, err);
+            lastError = err;
+        }
     }
+
+    throw new Error(`All proxies failed. Last error: ${lastError?.message}`);
 };
 
 export const fetchCompetitions = async (): Promise<Competition[]> => {
     try {
-        console.log('Fetching calendar from:', PROXY_URL);
-        const response = await fetch(PROXY_URL);
-
-        if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-        }
-
-        const csvText = await response.text();
+        const csvText = await fetchWithFallback(SHEET_URL);
         console.log('CSV Raw Data Preview:', csvText.substring(0, 500)); // Debug log
-
-        if (!csvText || csvText.trim().length === 0) {
-            throw new Error('Recibido CSV vacío');
-        }
 
         return new Promise((resolve, reject) => {
             Papa.parse(csvText, {
