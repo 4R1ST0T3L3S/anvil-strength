@@ -11,6 +11,53 @@ const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSM
 // Using AllOrigins as a proxy to bypass CORS
 const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_URL)}`;
 
+// Helper to parse Spanish date formats
+const parseDate = (dateStr: string): Date | null => {
+    try {
+        const year = 2026;
+        const months: { [key: string]: number } = {
+            'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+            'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+        };
+
+        const cleanStr = dateStr.toLowerCase().trim();
+
+        // Match standard format "DD-DD mmm" or "DD mmm"
+        // We only care about the END date for filtering "past" events
+        // Examples: "17-ene", "24-25 ene", "28-01 feb-mar"
+
+        // Find all month names in the string
+        const foundMonths = Object.keys(months).filter(m => cleanStr.includes(m));
+
+        if (foundMonths.length === 0) return null;
+
+        // Take the last month found (covers "feb-mar" case)
+        const lastMonthStr = foundMonths[foundMonths.length - 1];
+        const monthIndex = months[lastMonthStr];
+
+        // Find numbers. If range "24-25", we want 25. If "28-01", we want 01.
+        // We can split by tokens and find the number closest to the month string?
+        // Simpler: Extract all numbers, take the last one IF it appears *before* or near the month?
+        // Actually, "28-01 feb-mar" -> logic is tricky.
+
+        // Let's rely on the LAST number found in the string?
+        // "24-25 ene" -> 25. Correct.
+        // "17-ene" -> 17. Correct.
+        // "28-01 feb-mar" -> 01 (matches mar). Correct.
+
+        const numbers = cleanStr.match(/\d+/g);
+        if (!numbers) return null;
+
+        const day = parseInt(numbers[numbers.length - 1]);
+
+        if (day < 1 || day > 31) return null;
+
+        return new Date(year, monthIndex, day);
+    } catch (e) {
+        return null;
+    }
+};
+
 export const fetchCompetitions = async (): Promise<Competition[]> => {
     try {
         console.log('Fetching calendar from:', PROXY_URL);
@@ -72,6 +119,10 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                         return;
                     }
 
+                    const today = new Date();
+                    const oneWeekAgo = new Date();
+                    oneWeekAgo.setDate(today.getDate() - 7);
+
                     const validData: Competition[] = rows
                         .slice(headerRowIndex + 1)
                         .map(row => ({
@@ -81,12 +132,27 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                             inscripciones: linkIdx !== -1 ? row[linkIdx] : ''
                         }))
                         .filter(item => {
-                            // Strict filtering: Must have date and name, and date shouldn't be the header repeated
-                            return item.fecha &&
+                            // 1. Basic Validity
+                            const isValid = item.fecha &&
                                 item.fecha.length > 2 &&
                                 !item.fecha.toLowerCase().includes('fecha') &&
                                 !item.fecha.toLowerCase().includes('trimestre') &&
                                 item.campeonato;
+
+                            if (!isValid) return false;
+
+                            // 2. Date Filtering (Remove if ended > 1 week ago)
+                            const itemDate = parseDate(item.fecha);
+
+                            // If we can't parse the date, we KEEP it to be safe (don't hide potentially valid events)
+                            if (!itemDate) return true;
+
+                            // If itemDate < oneWeekAgo => It's old, filter it out
+                            if (itemDate < oneWeekAgo) {
+                                return false;
+                            }
+
+                            return true;
                         });
 
                     console.log(`Parsed ${validData.length} valid competitions.`);

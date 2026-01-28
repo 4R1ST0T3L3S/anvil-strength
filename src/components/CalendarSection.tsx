@@ -99,7 +99,7 @@ export function CalendarSection() {
 
                             {/* Action */}
                             <div className="flex-shrink-0">
-                                {comp.inscripciones && comp.inscripciones.toLowerCase().startsWith('http') ? (
+                                {comp.inscripciones && comp.inscripciones.toLowerCase().startsWith('http') && (
                                     <a
                                         href={comp.inscripciones}
                                         target="_blank"
@@ -109,10 +109,6 @@ export function CalendarSection() {
                                         <span>Inscribirse</span>
                                         <ExternalLink size={16} />
                                     </a>
-                                ) : (
-                                    <span className="inline-block px-4 py-2 bg-white/5 text-gray-500 text-xs font-bold uppercase tracking-wider rounded-lg border border-white/5 cursor-not-allowed">
-                                        {comp.inscripciones || 'Cerrado'}
-                                    </span>
                                 )}
                             </div>
                         </div>
