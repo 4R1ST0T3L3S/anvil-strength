@@ -35,11 +35,37 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBo
 }
 
 function LoadingScreen({ message = 'Cargando Anvil Strength...' }: { message?: string }) {
+  const [showReset, setShowReset] = useState(false);
+
+  useEffect(() => {
+    // If loading takes > 8 seconds, show reset button
+    const timer = setTimeout(() => setShowReset(true), 8000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleForceLogout = async () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader className="animate-spin text-anvil-red" size={48} />
         <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">{message}</p>
+
+        {showReset && (
+          <div className="mt-8 text-center animate-fade-in">
+            <p className="text-xs text-red-400 mb-2">¿Tarda demasiado?</p>
+            <button
+              onClick={handleForceLogout}
+              className="text-xs border border-red-500/50 text-red-500 px-3 py-1 rounded hover:bg-red-500/10 transition-colors"
+            >
+              Forzar Cierre de Sesión
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

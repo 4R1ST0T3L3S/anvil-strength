@@ -12,79 +12,88 @@ export interface UserProfile {
 }
 
 const fetchUser = async (): Promise<UserProfile | null> => {
-    // 1. Get Session (Fast, Local)
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-    if (sessionError || !session?.user) {
-        return null; // No session, user is logged out
-    }
-
-    const userId = session.user.id;
-    const meta = session.user.user_metadata;
-    // user_metadata role fallback is critical for optimistic rendering
-    // Assuming 'athlete' if undefined, which is safe default
-    const sessionRole = (meta?.role as 'athlete' | 'coach' | 'admin') || 'athlete';
-
-    // Construct Optimistic User from Session
-    const optimisticUser: UserProfile = {
-        id: userId,
-        email: session.user.email,
-        name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
-        nickname: meta?.nickname,
-        profile_image: meta?.avatar_url,
-        role: sessionRole,
-        user_metadata: meta
-    };
-
-    // 2. Fetch Profile from DB (Slow, Remote)
-    // We wrap this in a short timeout (e.g. 5s). If it fails/times out, we return the Optimistic User.
+    // 1. Get Session with Strict Timeout (Prevent hanging on "Verifying session...")
     try {
-        const timeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Session check timeout')), 4000)
         );
 
-        const dbFetch = async () => {
-            let { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+        // This ensures we never wait more than 4s for Supabase to tell us the session
+        const { data: { session }, error: sessionError } = await Promise.race([
+            sessionPromise,
+            timeoutPromise
+        ]) as any;
 
-            // Handle creation if missing
-            if (error && error.code === 'PGRST116') {
-                const { data: newProfile, error: createError } = await supabase
+        if (sessionError || !session?.user) {
+            return null;
+        }
+
+        const userId = session.user.id;
+        const meta = session.user.user_metadata;
+        const sessionRole = (meta?.role as 'athlete' | 'coach' | 'admin') || 'athlete';
+
+        const optimisticUser: UserProfile = {
+            id: userId,
+            email: session.user.email,
+            name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+            nickname: meta?.nickname,
+            profile_image: meta?.avatar_url,
+            role: sessionRole,
+            user_metadata: meta
+        };
+
+        // 2. Fetch Profile (Background Update)
+        // If this fails/timesout, we just return the Optimistic User
+        try {
+            const dbTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+            );
+
+            const dbFetch = async () => {
+                let { data: profile, error } = await supabase
                     .from('profiles')
-                    .insert([{
-                        id: userId,
-                        full_name: optimisticUser.name,
-                        nickname: optimisticUser.nickname || 'Atleta',
-                        role: 'athlete'
-                    }])
-                    .select()
+                    .select('*')
+                    .eq('id', userId)
                     .single();
-                if (createError) throw createError;
-                profile = newProfile;
-            } else if (error) {
-                throw error;
+
+                if (error && error.code === 'PGRST116') {
+                    // Create if missing
+                    const { data: newProfile } = await supabase
+                        .from('profiles')
+                        .insert([{
+                            id: userId,
+                            full_name: optimisticUser.name,
+                            nickname: optimisticUser.nickname || 'Atleta',
+                            role: 'athlete'
+                        }])
+                        .select()
+                        .single();
+                    profile = newProfile;
+                }
+                return profile;
+            };
+
+            const profile = await Promise.race([dbFetch(), dbTimeout]) as any;
+
+            if (profile) {
+                return {
+                    ...optimisticUser,
+                    name: profile.full_name || profile.name || optimisticUser.name,
+                    nickname: profile.nickname || optimisticUser.nickname,
+                    role: profile.role || optimisticUser.role,
+                    profile_image: profile.avatar_url || profile.profile_image || optimisticUser.profile_image
+                };
             }
-            return profile;
-        };
+        } catch (e) {
+            console.warn('Profile sync failed, using session data');
+        }
 
-        const profile = await Promise.race([dbFetch(), timeout]) as any;
-
-        // Return Merged User (DB data overwrites session data)
-        return {
-            ...optimisticUser,
-            name: profile?.full_name || profile?.name || optimisticUser.name,
-            nickname: profile?.nickname || optimisticUser.nickname,
-            profile_image: profile?.avatar_url || profile?.profile_image || optimisticUser.profile_image,
-            role: profile?.role || optimisticUser.role,
-        };
-
-    } catch (error) {
-        console.warn('useUser: Profile fetch failed or timed out. Using session data.', error);
-        // Fallback: Return Optimistic User instead of throwing error!
         return optimisticUser;
+
+    } catch (e) {
+        console.error('Session check failed or timed out', e);
+        return null; // Fail safe to logged out state
     }
 };
 
@@ -92,8 +101,9 @@ export const useUser = () => {
     return useQuery({
         queryKey: ['user'],
         queryFn: fetchUser,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        retry: 2
+        staleTime: 1000 * 60 * 5,
+        retry: 0, // Fail fast now that we handle timeouts internally
+        refetchOnWindowFocus: false // Prevent inconsistent reloading
     });
 };
 
