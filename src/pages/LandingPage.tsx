@@ -255,7 +255,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     </div>
                     <div className="relative">
                         <div className="aspect-[4/5] bg-gray-800 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
-                            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop" alt="Filosofía" className="w-full h-full object-cover" />
+                            <img src="/filosofia-competition.jpg" alt="Filosofía" className="w-full h-full object-cover" />
                         </div>
                         <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block rounded-xl"></div>
                     </div>
