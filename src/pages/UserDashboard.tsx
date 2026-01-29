@@ -5,9 +5,10 @@ import { CalendarModal } from '../components/CalendarModal';
 interface UserDashboardProps {
     user: any;
     onLogout: () => void;
+    onOpenSettings: () => void;
 }
 
-export function UserDashboard({ user, onLogout }: UserDashboardProps) {
+export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardProps) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     return (
@@ -26,8 +27,12 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
                     {/* Right Side User Menu */}
                     <div className="flex items-center gap-6">
-                        {/* User Profile Info */}
-                        <div className="flex items-center gap-3">
+                        {/* User Profile Info (Clickable) */}
+                        <div
+                            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={onOpenSettings}
+                            title="Editar Perfil"
+                        >
                             {user.profile_image ? (
                                 <img
                                     src={user.profile_image}
@@ -41,7 +46,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                             )}
                             <div className="hidden md:block">
                                 <p className="text-sm font-bold text-white uppercase">{user.nickname || user.name}</p>
-                                <p className="text-xs text-gray-400">Atleta</p>
+                                <p className="text-xs text-gray-400">Mi Perfil</p>
                             </div>
                         </div>
 

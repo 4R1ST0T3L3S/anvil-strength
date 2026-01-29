@@ -143,7 +143,11 @@ function App() {
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
       {user ? (
-        <UserDashboard user={user} onLogout={handleLogout} />
+        <UserDashboard
+          user={user}
+          onLogout={handleLogout}
+          onOpenSettings={() => setIsSettingsModalOpen(true)}
+        />
       ) : (
         <LandingPage onLoginClick={() => setIsAuthModalOpen(true)} user={user} />
       )}
