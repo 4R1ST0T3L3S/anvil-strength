@@ -323,24 +323,51 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className="block text-sm font-bold text-gray-300 mb-2">Categoría de Peso</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={formData.weight_category}
                                             onChange={(e) => setFormData({ ...formData, weight_category: e.target.value })}
-                                            placeholder="Ej: -74kg"
-                                            className="w-full bg-[#1c1c1c] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-colors"
-                                        />
+                                            className="w-full bg-[#1c1c1c] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
+                                        >
+                                            <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Seleccionar</option>
+                                            <optgroup label="Masculino" className="bg-[#1c1c1c] text-anvil-red font-bold">
+                                                <option value="-59kg" className="bg-[#1c1c1c] text-white">-59kg</option>
+                                                <option value="-66kg" className="bg-[#1c1c1c] text-white">-66kg</option>
+                                                <option value="-74kg" className="bg-[#1c1c1c] text-white">-74kg</option>
+                                                <option value="-83kg" className="bg-[#1c1c1c] text-white">-83kg</option>
+                                                <option value="-93kg" className="bg-[#1c1c1c] text-white">-93kg</option>
+                                                <option value="-105kg" className="bg-[#1c1c1c] text-white">-105kg</option>
+                                                <option value="-120kg" className="bg-[#1c1c1c] text-white">-120kg</option>
+                                                <option value="+120kg" className="bg-[#1c1c1c] text-white">+120kg</option>
+                                            </optgroup>
+                                            <optgroup label="Femenino" className="bg-[#1c1c1c] text-anvil-red font-bold">
+                                                <option value="-47kg" className="bg-[#1c1c1c] text-white">-47kg</option>
+                                                <option value="-52kg" className="bg-[#1c1c1c] text-white">-52kg</option>
+                                                <option value="-57kg" className="bg-[#1c1c1c] text-white">-57kg</option>
+                                                <option value="-63kg" className="bg-[#1c1c1c] text-white">-63kg</option>
+                                                <option value="-69kg" className="bg-[#1c1c1c] text-white">-69kg</option>
+                                                <option value="-76kg" className="bg-[#1c1c1c] text-white">-76kg</option>
+                                                <option value="-84kg" className="bg-[#1c1c1c] text-white">-84kg</option>
+                                                <option value="+84kg" className="bg-[#1c1c1c] text-white">+84kg</option>
+                                            </optgroup>
+                                        </select>
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-300 mb-2">Categoría de Edad</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={formData.age_category}
                                             onChange={(e) => setFormData({ ...formData, age_category: e.target.value })}
-                                            placeholder="Ej: Sub-23"
-                                            className="w-full bg-[#1c1c1c] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-colors"
-                                        />
+                                            className="w-full bg-[#1c1c1c] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white"
+                                        >
+                                            <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Seleccionar</option>
+                                            <option value="Sub-Junior" className="bg-[#1c1c1c] text-white">Sub-Junior</option>
+                                            <option value="Junior" className="bg-[#1c1c1c] text-white">Junior</option>
+                                            <option value="Senior" className="bg-[#1c1c1c] text-white">Senior (Open)</option>
+                                            <option value="Master 1" className="bg-[#1c1c1c] text-white">Master 1</option>
+                                            <option value="Master 2" className="bg-[#1c1c1c] text-white">Master 2</option>
+                                            <option value="Master 3" className="bg-[#1c1c1c] text-white">Master 3</option>
+                                            <option value="Master 4" className="bg-[#1c1c1c] text-white">Master 4</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
