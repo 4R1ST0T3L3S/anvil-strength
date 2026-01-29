@@ -81,7 +81,7 @@ export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
                             )}
                             <div>
                                 <h3 className="font-bold text-lg leading-tight truncate">{athlete.full_name}</h3>
-                                <p className="text-sm text-gray-400">{athlete.nickname || 'Atleta'}</p>
+                                <p className="text-sm text-gray-400">{athlete.weight_category || athlete.age_category || 'Atleta'}</p>
                             </div>
                         </div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, User, Send, Trash2 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import { getDisplayName } from '../../../utils/userDisplayName';
 
 interface Comment {
   id: number;
@@ -86,7 +87,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
             post_id: selectedPost.id,
             user_id: authUser.id,
             content: newComment,
-            author: user.nickname || user.name || 'Atleta'
+            author: getDisplayName(user)
           }
         ]);
 

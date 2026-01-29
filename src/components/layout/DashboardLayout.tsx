@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LogOut, Menu, X, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserProfile } from '../../hooks/useUser';
+import { getDisplayName, getUserInitials } from '../../utils/userDisplayName';
 
 interface MenuItem {
     icon: React.ReactNode;
@@ -98,11 +99,11 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                     <img src={user.profile_image} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                     <div className="w-8 h-8 rounded-full bg-anvil-red flex items-center justify-center text-xs font-bold text-white">
-                        {user.nickname?.[0]?.toUpperCase() || user.name?.[0]?.toUpperCase() || 'U'}
+                        {getUserInitials(user)}
                     </div>
                 )}
                 <div className="overflow-hidden">
-                    <p className="text-sm font-bold truncate text-white">{user.nickname || user.name}</p>
+                    <p className="text-sm font-bold truncate text-white">{getDisplayName(user)}</p>
                     <p className="text-xs text-gray-500 truncate">
                         {onOpenSettings ? 'Editar Perfil' : roleLabel === 'Coach' ? 'Entrenador' : 'Atleta'}
                     </p>
