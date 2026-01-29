@@ -34,7 +34,7 @@ function App() {
             .from('profiles')
             .insert([{
               id: session.user.id,
-              name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+              full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               nickname: session.user.user_metadata?.nickname || 'Atleta'
             }])
             .select()
@@ -42,7 +42,14 @@ function App() {
           profile = newProfile;
         }
 
-        const userData = { ...session.user, ...profile };
+        // Map DB columns (full_name, avatar_url) to UI expected keys (name, profile_image)
+        const userData = {
+          ...session.user,
+          ...profile,
+          name: profile?.full_name || profile?.name || session.user.user_metadata?.full_name,
+          profile_image: profile?.avatar_url || profile?.profile_image || session.user.user_metadata?.avatar_url
+        };
+
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
       }
@@ -76,7 +83,7 @@ function App() {
             .from('profiles')
             .insert([{
               id: userId,
-              name: meta?.full_name || 'Atleta',
+              full_name: meta?.full_name || 'Atleta',
               nickname: meta?.nickname || 'Atleta'
             }])
             .select()
@@ -111,7 +118,14 @@ function App() {
         try {
           const profile = await fetchProfileSafely(session.user.id, session.user.user_metadata);
 
-          const userData = { ...session.user, ...profile };
+          // Map DB columns (full_name, avatar_url) to UI expected keys (name, profile_image)
+          const userData = {
+            ...session.user,
+            ...profile,
+            name: profile?.full_name || profile?.name,
+            profile_image: profile?.avatar_url || profile?.profile_image
+          };
+
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
           setIsAuthModalOpen(false); // Close modal if open
