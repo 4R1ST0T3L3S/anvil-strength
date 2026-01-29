@@ -3,7 +3,8 @@ import {
     LayoutDashboard,
     Users,
     Calendar,
-    Trophy
+    Trophy,
+    User
 } from 'lucide-react';
 import { CoachHome } from '../components/coach/CoachHome';
 import { CoachAthletes } from '../components/coach/CoachAthletes';
@@ -55,6 +56,12 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             label: 'Mis Atletas',
             onClick: () => setCurrentView('athletes'),
             isActive: currentView === 'athletes' || currentView === 'athlete_details'
+        },
+        {
+            icon: <User size={20} />,
+            label: 'Mi Perfil',
+            onClick: () => window.location.href = '/profile',
+            isActive: false
         },
         {
             icon: <Trophy size={20} />,

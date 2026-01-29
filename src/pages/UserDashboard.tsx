@@ -4,7 +4,8 @@ import {
     FileText,
     Utensils,
     Calendar,
-    Trophy
+    Trophy,
+    User
 } from 'lucide-react';
 import { CalendarModal } from '../components/modals/CalendarModal';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
@@ -48,6 +49,12 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
             label: 'Mi Planificación',
             onClick: () => setCurrentView('planning'),
             isActive: currentView === 'planning'
+        },
+        {
+            icon: <User size={20} />,
+            label: 'Mi Perfil',
+            onClick: () => window.location.href = '/profile',
+            isActive: false
         },
         {
             icon: <Utensils size={20} />,

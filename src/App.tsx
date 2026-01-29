@@ -16,6 +16,7 @@ import { LandingPage } from './pages/LandingPage';
 
 import { UserDashboard } from './pages/UserDashboard';
 import { CoachDashboard } from './pages/CoachDashboard';
+import { ProfilePage } from './pages/ProfilePage';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErrorBoundary: () => void }) {
@@ -150,6 +151,13 @@ function App() {
               <Navigate to="/dashboard" replace />
             ) : (
               <CoachDashboard user={user} onLogout={handleLogout} />
+            )
+          } />
+          <Route path="/profile" element={
+            !user ? (
+              <Navigate to="/" replace />
+            ) : (
+              <ProfilePage onLogout={handleLogout} />
             )
           } />
           <Route path="*" element={<Navigate to="/" replace />} />

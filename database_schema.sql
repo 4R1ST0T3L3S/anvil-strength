@@ -1,117 +1,399 @@
--- =============================================
--- ESQUEMA DE BASE DE DATOS - ANVIL STRENGTH (ACTUALIZADO - COACH CENTER)
--- =============================================
+-- =====================================================
+-- ANVIL STRENGTH - COMPLETE DATABASE SCHEMA
+-- =====================================================
+-- Last Updated: 2026-01-29
+-- Description: Complete Supabase database setup with RLS policies
+-- =====================================================
 
--- ... (Keep previous sections but I will provide the FULL content including the new table)
+-- =====================================================
+-- 1. EXTENSIONS
+-- =====================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. Limpieza de políticas
-DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
-DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
-DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
-DROP POLICY IF EXISTS "Lectura: Ver propio perfil o si eres Coach" ON public.profiles;
-DROP POLICY IF EXISTS "Escritura: Editar propio o si eres Coach" ON public.profiles;
-DROP POLICY IF EXISTS "Insertar: Registro libre" ON public.profiles;
-DROP POLICY IF EXISTS "Lectura: Propio o Coach" ON public.profiles;
-DROP POLICY IF EXISTS "Escritura: Propio o Coach" ON public.profiles;
-DROP POLICY IF EXISTS "Creación: Registro" ON public.profiles;
+-- =====================================================
+-- 2. TABLES
+-- =====================================================
 
--- 2. Asegurar Tabla Profiles
-CREATE TABLE IF NOT EXISTS public.profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  username TEXT,
-  full_name TEXT,
-  nickname TEXT DEFAULT 'Atleta',
-  avatar_url TEXT,
-  website TEXT,
-  biography TEXT,
-  age_category TEXT,
-  weight_category TEXT,
-  squat_pr NUMERIC DEFAULT 0,
-  bench_pr NUMERIC DEFAULT 0,
-  deadlift_pr NUMERIC DEFAULT 0,
-  total_pr NUMERIC GENERATED ALWAYS AS (squat_pr + bench_pr + deadlift_pr) STORED,
-  CONSTRAINT username_length CHECK (char_length(username) >= 3)
+-- Profiles Table (extends auth.users)
+CREATE TABLE IF NOT EXISTS profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
+    name TEXT,
+    nickname TEXT,
+    role TEXT NOT NULL CHECK (role IN ('athlete', 'coach')),
+    profile_image TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    -- Athlete-specific fields
+    weight_category TEXT,
+    age_category TEXT,
+    squat_pr NUMERIC,
+    bench_pr NUMERIC,
+    deadlift_pr NUMERIC,
+    
+    -- Coach-specific fields
+    biography TEXT
 );
 
--- 3. Añadir Columnas Roles (Si no existen)
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'athlete' CHECK (role IN ('athlete', 'coach', 'admin'));
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS coach_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
-
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
--- 4. Nueva Tabla: Competition Entries (Para 'Agenda Equipo')
-CREATE TABLE IF NOT EXISTS public.competition_entries (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  athlete_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-  competition_name TEXT NOT NULL,
-  target_date DATE,
-  category TEXT, -- ej: "-93kg"
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- Coach-Athlete Relationships
+CREATE TABLE IF NOT EXISTS coach_athletes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coach_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    athlete_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(coach_id, athlete_id)
 );
 
-ALTER TABLE public.competition_entries ENABLE ROW LEVEL SECURITY;
-
--- 5. Función Helper
-CREATE OR REPLACE FUNCTION public.get_my_role()
-RETURNS text
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public
-STABLE
-AS $$
-  SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1;
-$$;
-
--- 6. Políticas de Seguridad Profiles (RBAC)
-
--- LECTURA
-CREATE POLICY "Lectura: Propio o Coach" ON public.profiles
-FOR SELECT USING (
-  auth.uid() = id 
-  OR 
-  (public.get_my_role() IN ('coach', 'admin'))
+-- Training Plans
+CREATE TABLE IF NOT EXISTS training_plans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    athlete_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    coach_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'archived')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ESCRITURA
-CREATE POLICY "Escritura: Propio o Coach" ON public.profiles
-FOR UPDATE USING (
-  auth.uid() = id 
-  OR 
-  (public.get_my_role() IN ('coach', 'admin'))
+-- Workouts (part of a training plan)
+CREATE TABLE IF NOT EXISTS workouts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    plan_id UUID NOT NULL REFERENCES training_plans(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    name TEXT NOT NULL,
+    notes TEXT,
+    completed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- CREACIÓN
-CREATE POLICY "Creación: Registro" ON public.profiles
-FOR INSERT WITH CHECK (
-  auth.uid() = id
+-- Exercises within workouts
+CREATE TABLE IF NOT EXISTS exercises (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    workout_id UUID NOT NULL REFERENCES workouts(id) ON DELETE CASCADE,
+    exercise_name TEXT NOT NULL,
+    sets INTEGER NOT NULL,
+    reps TEXT, -- Can be "5", "5-8", "AMRAP", etc.
+    weight NUMERIC,
+    rpe NUMERIC, -- Rate of Perceived Exertion (1-10)
+    notes TEXT,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. Políticas de Seguridad Competition Entries
-
--- Los coaches pueden gestionar todo en esta tabla (leer, crear, editar, borrar)
--- Nota: Simplificamos para que el coach pueda gestionar todo, idealmente se filtraría por coach_id del atleta
-CREATE POLICY "Coaches manage entries" ON public.competition_entries
-FOR ALL USING (
-  public.get_my_role() IN ('coach', 'admin')
+-- Competition Calendar
+CREATE TABLE IF NOT EXISTS competitions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    date DATE NOT NULL,
+    location TEXT,
+    federation TEXT,
+    athlete_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'completed', 'cancelled')),
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Los atletas pueden ver sus propias entradas
-CREATE POLICY "Athletes view own entries" ON public.competition_entries
-FOR SELECT USING (
-  auth.uid() = athlete_id
+-- =====================================================
+-- 3. ROW LEVEL SECURITY (RLS) POLICIES
+-- =====================================================
+
+-- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coach_athletes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE training_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workouts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exercises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE competitions ENABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- PROFILES POLICIES
+-- =====================================================
+
+-- SELECT: Users can read their own profile and coaches can read their athletes
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+CREATE POLICY "Users can view own profile"
+ON profiles FOR SELECT
+TO authenticated
+USING (
+    auth.uid() = id 
+    OR 
+    id IN (
+        SELECT athlete_id FROM coach_athletes WHERE coach_id = auth.uid()
+    )
 );
 
--- 8. Trigger updated_at
-CREATE OR REPLACE FUNCTION public.handle_updated_at() 
+-- INSERT: Allow new user registration (handled by auth triggers)
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+CREATE POLICY "Users can insert own profile"
+ON profiles FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = id);
+
+-- UPDATE: Users can update their own profile
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+CREATE POLICY "Users can update own profile"
+ON profiles FOR UPDATE
+TO authenticated
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+-- =====================================================
+-- COACH_ATHLETES POLICIES
+-- =====================================================
+
+-- SELECT: Coaches can see their athletes, athletes can see their coaches
+DROP POLICY IF EXISTS "View coach-athlete relationships" ON coach_athletes;
+CREATE POLICY "View coach-athlete relationships"
+ON coach_athletes FOR SELECT
+TO authenticated
+USING (
+    coach_id = auth.uid() 
+    OR 
+    athlete_id = auth.uid()
+);
+
+-- INSERT: Only coaches can create relationships
+DROP POLICY IF EXISTS "Coaches can add athletes" ON coach_athletes;
+CREATE POLICY "Coaches can add athletes"
+ON coach_athletes FOR INSERT
+TO authenticated
+WITH CHECK (
+    coach_id = auth.uid() 
+    AND 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'coach')
+);
+
+-- DELETE: Only coaches can remove relationships
+DROP POLICY IF EXISTS "Coaches can remove athletes" ON coach_athletes;
+CREATE POLICY "Coaches can remove athletes"
+ON coach_athletes FOR DELETE
+TO authenticated
+USING (
+    coach_id = auth.uid() 
+    AND 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'coach')
+);
+
+-- =====================================================
+-- TRAINING_PLANS POLICIES
+-- =====================================================
+
+-- SELECT: Athletes see their own plans, coaches see their athletes' plans
+DROP POLICY IF EXISTS "View training plans" ON training_plans;
+CREATE POLICY "View training plans"
+ON training_plans FOR SELECT
+TO authenticated
+USING (
+    athlete_id = auth.uid() 
+    OR 
+    coach_id = auth.uid()
+    OR
+    athlete_id IN (
+        SELECT athlete_id FROM coach_athletes WHERE coach_id = auth.uid()
+    )
+);
+
+-- INSERT: Coaches can create plans for their athletes
+DROP POLICY IF EXISTS "Coaches can create plans" ON training_plans;
+CREATE POLICY "Coaches can create plans"
+ON training_plans FOR INSERT
+TO authenticated
+WITH CHECK (
+    coach_id = auth.uid() 
+    AND 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'coach')
+    AND
+    athlete_id IN (
+        SELECT athlete_id FROM coach_athletes WHERE coach_id = auth.uid()
+    )
+);
+
+-- UPDATE: Coaches can update plans they created
+DROP POLICY IF EXISTS "Coaches can update plans" ON training_plans;
+CREATE POLICY "Coaches can update plans"
+ON training_plans FOR UPDATE
+TO authenticated
+USING (coach_id = auth.uid())
+WITH CHECK (coach_id = auth.uid());
+
+-- =====================================================
+-- WORKOUTS POLICIES
+-- =====================================================
+
+-- SELECT: See workouts from accessible plans
+DROP POLICY IF EXISTS "View workouts" ON workouts;
+CREATE POLICY "View workouts"
+ON workouts FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM training_plans 
+        WHERE training_plans.id = workouts.plan_id
+        AND (
+            training_plans.athlete_id = auth.uid() 
+            OR 
+            training_plans.coach_id = auth.uid()
+        )
+    )
+);
+
+-- INSERT: Coaches can add workouts to their plans
+DROP POLICY IF EXISTS "Coaches can create workouts" ON workouts;
+CREATE POLICY "Coaches can create workouts"
+ON workouts FOR INSERT
+TO authenticated
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM training_plans 
+        WHERE training_plans.id = workouts.plan_id
+        AND training_plans.coach_id = auth.uid()
+    )
+);
+
+-- UPDATE: Coaches can update workouts, athletes can mark as completed
+DROP POLICY IF EXISTS "Update workouts" ON workouts;
+CREATE POLICY "Update workouts"
+ON workouts FOR UPDATE
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM training_plans 
+        WHERE training_plans.id = workouts.plan_id
+        AND (
+            training_plans.coach_id = auth.uid()
+            OR
+            training_plans.athlete_id = auth.uid()
+        )
+    )
+);
+
+-- =====================================================
+-- EXERCISES POLICIES
+-- =====================================================
+
+-- SELECT: See exercises from accessible workouts
+DROP POLICY IF EXISTS "View exercises" ON exercises;
+CREATE POLICY "View exercises"
+ON exercises FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM workouts 
+        INNER JOIN training_plans ON workouts.plan_id = training_plans.id
+        WHERE workouts.id = exercises.workout_id
+        AND (
+            training_plans.athlete_id = auth.uid() 
+            OR 
+            training_plans.coach_id = auth.uid()
+        )
+    )
+);
+
+-- INSERT: Coaches can add exercises
+DROP POLICY IF EXISTS "Coaches can create exercises" ON exercises;
+CREATE POLICY "Coaches can create exercises"
+ON exercises FOR INSERT
+TO authenticated
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM workouts 
+        INNER JOIN training_plans ON workouts.plan_id = training_plans.id
+        WHERE workouts.id = exercises.workout_id
+        AND training_plans.coach_id = auth.uid()
+    )
+);
+
+-- UPDATE: Coaches can update exercises
+DROP POLICY IF EXISTS "Coaches can update exercises" ON exercises;
+CREATE POLICY "Coaches can update exercises"
+ON exercises FOR UPDATE
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM workouts 
+        INNER JOIN training_plans ON workouts.plan_id = training_plans.id
+        WHERE workouts.id = exercises.workout_id
+        AND training_plans.coach_id = auth.uid()
+    )
+);
+
+-- =====================================================
+-- COMPETITIONS POLICIES
+-- =====================================================
+
+-- SELECT: Users can see all competitions or their own
+DROP POLICY IF EXISTS "View competitions" ON competitions;
+CREATE POLICY "View competitions"
+ON competitions FOR SELECT
+TO authenticated
+USING (TRUE); -- All authenticated users can view competitions
+
+-- INSERT: Athletes can add their own competitions
+DROP POLICY IF EXISTS "Athletes can create competitions" ON competitions;
+CREATE POLICY "Athletes can create competitions"
+ON competitions FOR INSERT
+TO authenticated
+WITH CHECK (athlete_id = auth.uid());
+
+-- UPDATE: Athletes can update their own competitions
+DROP POLICY IF EXISTS "Athletes can update competitions" ON competitions;
+CREATE POLICY "Athletes can update competitions"
+ON competitions FOR UPDATE
+TO authenticated
+USING (athlete_id = auth.uid())
+WITH CHECK (athlete_id = auth.uid());
+
+-- DELETE: Athletes can delete their own competitions
+DROP POLICY IF EXISTS "Athletes can delete competitions" ON competitions;
+CREATE POLICY "Athletes can delete competitions"
+ON competitions FOR DELETE
+TO authenticated
+USING (athlete_id = auth.uid());
+
+-- =====================================================
+-- 4. FUNCTIONS & TRIGGERS
+-- =====================================================
+
+-- Function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
+    NEW.updated_at = NOW();
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS on_profile_updated ON public.profiles;
-CREATE TRIGGER on_profile_updated
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
+-- Apply updated_at trigger to relevant tables
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
+CREATE TRIGGER update_profiles_updated_at
+    BEFORE UPDATE ON profiles
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_training_plans_updated_at ON training_plans;
+CREATE TRIGGER update_training_plans_updated_at
+    BEFORE UPDATE ON training_plans
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_workouts_updated_at ON workouts;
+CREATE TRIGGER update_workouts_updated_at
+    BEFORE UPDATE ON workouts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- 5. STORAGE BUCKETS (for profile images)
+-- =====================================================
+-- Note: Storage buckets must be created via Supabase Dashboard
+-- Bucket name: 'profiles'
+-- Public: true
+-- Allowed MIME types: image/jpeg, image/png, image/webp
+-- Max file size: 5MB
+
+-- =====================================================
+-- END OF SCHEMA
+-- =====================================================

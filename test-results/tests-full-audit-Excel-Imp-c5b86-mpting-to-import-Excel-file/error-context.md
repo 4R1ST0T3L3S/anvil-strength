@@ -1,0 +1,288 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "Anvil Strength Logo" [ref=e8] [cursor=pointer]:
+          - /url: "#"
+          - img "Anvil Strength Logo" [ref=e9]
+        - navigation [ref=e10]:
+          - link "FILOSOFÍA" [ref=e11] [cursor=pointer]:
+            - /url: "#filosofia"
+          - link "ENTRENADORES" [ref=e12] [cursor=pointer]:
+            - /url: "#entrenadores"
+          - link "ATLETAS" [ref=e13] [cursor=pointer]:
+            - /url: "#atletas"
+          - link "LOGROS" [ref=e14] [cursor=pointer]:
+            - /url: "#logros"
+          - link "COMUNIDAD" [ref=e15] [cursor=pointer]:
+            - /url: "#blog"
+          - link "AFILIATE" [ref=e16] [cursor=pointer]:
+            - /url: "#afiliacion"
+        - generic [ref=e17]:
+          - button "Iniciar Sesión" [ref=e18] [cursor=pointer]:
+            - generic [ref=e19]: Iniciar Sesión
+          - button "0" [ref=e20] [cursor=pointer]:
+            - img [ref=e21]
+            - generic [ref=e24]: "0"
+    - generic [ref=e25]:
+      - generic [ref=e29]:
+        - heading "ANVILSTRENGTH" [level=1] [ref=e30]
+        - paragraph [ref=e31]: Trabajamos con datos no con sensaciones
+        - generic [ref=e32]:
+          - button "Iniciar Sesión" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: Iniciar Sesión
+          - link "Únete al equipo" [ref=e35] [cursor=pointer]:
+            - /url: "#afiliacion"
+      - generic [ref=e36]:
+        - img "IPF Approved" [ref=e37]
+        - img "AEP Federación" [ref=e38]
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - heading "Forjados en Hierro" [level=2] [ref=e42]:
+          - text: Forjados en
+          - text: Hierro
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: No somos un club que se basa en sensaciones o planificaciones tradicionales. Llevamos la ciencia al límite.
+          - paragraph [ref=e45]: Nos basamos en VBT (Velocity Based Training), llevando la calidad, personalización y precisión al máximo en cada entrenamiento.
+          - paragraph [ref=e46]: No construimos perdedores, construimos atletas de alto rendimiento. Porque para rendir como tal, necesitas programaciones de alto nivel. En un deporte con normas de competición, debes entrenar con normas de competición.
+      - img "Filosofía" [ref=e49]
+    - generic [ref=e52]:
+      - generic [ref=e53]:
+        - heading "¿Por qué Anvil?" [level=2] [ref=e54]
+        - paragraph [ref=e55]: Más que un club, somos una herramienta para tu éxito. Sin costes ocultos, con tecnología punta.
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - img [ref=e59]
+          - heading "0% Comisiones" [level=3] [ref=e62]
+          - paragraph [ref=e63]: Solo pagas las tasas oficiales de la AEP. Nos llevamos un 0% de comisión. Tu dinero va a tu deporte.
+        - generic [ref=e64]:
+          - img [ref=e66]
+          - heading "App Exclusiva" [level=3] [ref=e68]
+          - paragraph [ref=e69]: Acceso a nuestra plataforma privada para gestionar toda tu carrera deportiva desde el bolsillo.
+        - generic [ref=e70]:
+          - img [ref=e72]
+          - heading "Comunidad" [level=3] [ref=e77]
+          - paragraph [ref=e78]: Chat directo con tu entrenador, dietista y compañeros de equipo. Nunca entrenarás solo.
+        - generic [ref=e79]:
+          - img [ref=e81]
+          - heading "Calendario" [level=3] [ref=e83]
+          - paragraph [ref=e84]: Visualiza tus competiciones, eventos de equipo y planificación anual de un vistazo.
+        - generic [ref=e85]:
+          - img [ref=e87]
+          - heading "Competiciones" [level=3] [ref=e93]
+          - paragraph [ref=e94]: Gestión de inscripciones y seguimiento de tus marcas en cada campeonato.
+        - generic [ref=e95]:
+          - img [ref=e97]
+          - heading "Planificación" [level=3] [ref=e99]
+          - paragraph [ref=e100]: Recibe y visualiza tu programación de entrenamiento detallada semana a semana.
+    - generic [ref=e102]:
+      - heading "Entrenadores" [level=2] [ref=e104]
+      - generic [ref=e106]:
+        - generic [ref=e107] [cursor=pointer]:
+          - img "Javier Estelles" [ref=e108]
+          - generic [ref=e109]:
+            - heading "Javier Estelles" [level=3] [ref=e110]
+            - paragraph [ref=e111]: ENTRENADOR Y NUTRICIONISTA
+            - generic [ref=e112]:
+              - button [ref=e113]:
+                - img [ref=e114]
+              - button [ref=e117]:
+                - img [ref=e118]
+        - generic [ref=e121] [cursor=pointer]:
+          - img "Javier Bou" [ref=e122]
+          - generic [ref=e123]:
+            - heading "Javier Bou" [level=3] [ref=e124]
+            - paragraph [ref=e125]: ENTRENADOR DE POWERLIFTING
+            - generic [ref=e126]:
+              - button [ref=e127]:
+                - img [ref=e128]
+              - button [ref=e131]:
+                - img [ref=e132]
+    - generic [ref=e135]:
+      - generic [ref=e137]:
+        - heading "Nuestros Atletas" [level=2] [ref=e139]
+        - button "Ver todo el equipo →" [ref=e141] [cursor=pointer]
+      - generic [ref=e142]:
+        - button [ref=e143] [cursor=pointer]:
+          - img [ref=e144]
+        - button [ref=e146] [cursor=pointer]:
+          - img [ref=e147]
+        - generic [ref=e150]:
+          - generic [ref=e151] [cursor=pointer]:
+            - img "Gema Cruz" [ref=e152]
+            - generic [ref=e153]:
+              - paragraph [ref=e154]: Gema Cruz
+              - paragraph [ref=e155]: "-63kg JNR"
+          - generic [ref=e156] [cursor=pointer]:
+            - img "Alejandro Hermosilla" [ref=e157]
+            - generic [ref=e158]:
+              - paragraph [ref=e159]: Alejandro Hermosilla
+              - paragraph [ref=e160]: "-83kg Open"
+          - generic [ref=e161] [cursor=pointer]:
+            - img "Marc Alonso" [ref=e162]
+            - generic [ref=e163]:
+              - paragraph [ref=e164]: Marc Alonso
+              - paragraph [ref=e165]: "-105kg JNR"
+          - generic [ref=e166] [cursor=pointer]:
+            - img "Pau Rodriguez" [ref=e167]
+            - generic [ref=e168]:
+              - paragraph [ref=e169]: Pau Rodriguez
+              - paragraph [ref=e170]: "-105kg SBJ"
+          - generic [ref=e171] [cursor=pointer]:
+            - img "Josep Lopez" [ref=e172]
+            - generic [ref=e173]:
+              - paragraph [ref=e174]: Josep Lopez
+              - paragraph [ref=e175]: "-83kg Open"
+          - generic [ref=e176] [cursor=pointer]:
+            - img "Gema Cruz" [ref=e177]
+            - generic [ref=e178]:
+              - paragraph [ref=e179]: Gema Cruz
+              - paragraph [ref=e180]: "-63kg JNR"
+          - generic [ref=e181] [cursor=pointer]:
+            - img "Alejandro Hermosilla" [ref=e182]
+            - generic [ref=e183]:
+              - paragraph [ref=e184]: Alejandro Hermosilla
+              - paragraph [ref=e185]: "-83kg Open"
+          - generic [ref=e186] [cursor=pointer]:
+            - img "Marc Alonso" [ref=e187]
+            - generic [ref=e188]:
+              - paragraph [ref=e189]: Marc Alonso
+              - paragraph [ref=e190]: "-105kg JNR"
+          - generic [ref=e191] [cursor=pointer]:
+            - img "Pau Rodriguez" [ref=e192]
+            - generic [ref=e193]:
+              - paragraph [ref=e194]: Pau Rodriguez
+              - paragraph [ref=e195]: "-105kg SBJ"
+          - generic [ref=e196] [cursor=pointer]:
+            - img "Josep Lopez" [ref=e197]
+            - generic [ref=e198]:
+              - paragraph [ref=e199]: Josep Lopez
+              - paragraph [ref=e200]: "-83kg Open"
+          - generic [ref=e201] [cursor=pointer]:
+            - img "Gema Cruz" [ref=e202]
+            - generic [ref=e203]:
+              - paragraph [ref=e204]: Gema Cruz
+              - paragraph [ref=e205]: "-63kg JNR"
+          - generic [ref=e206] [cursor=pointer]:
+            - img "Alejandro Hermosilla" [ref=e207]
+            - generic [ref=e208]:
+              - paragraph [ref=e209]: Alejandro Hermosilla
+              - paragraph [ref=e210]: "-83kg Open"
+          - generic [ref=e211] [cursor=pointer]:
+            - img "Marc Alonso" [ref=e212]
+            - generic [ref=e213]:
+              - paragraph [ref=e214]: Marc Alonso
+              - paragraph [ref=e215]: "-105kg JNR"
+          - generic [ref=e216] [cursor=pointer]:
+            - img "Pau Rodriguez" [ref=e217]
+            - generic [ref=e218]:
+              - paragraph [ref=e219]: Pau Rodriguez
+              - paragraph [ref=e220]: "-105kg SBJ"
+          - generic [ref=e221] [cursor=pointer]:
+            - img "Josep Lopez" [ref=e222]
+            - generic [ref=e223]:
+              - paragraph [ref=e224]: Josep Lopez
+              - paragraph [ref=e225]: "-83kg Open"
+          - generic [ref=e226] [cursor=pointer]:
+            - img "Gema Cruz" [ref=e227]
+            - generic [ref=e228]:
+              - paragraph [ref=e229]: Gema Cruz
+              - paragraph [ref=e230]: "-63kg JNR"
+          - generic [ref=e231] [cursor=pointer]:
+            - img "Alejandro Hermosilla" [ref=e232]
+            - generic [ref=e233]:
+              - paragraph [ref=e234]: Alejandro Hermosilla
+              - paragraph [ref=e235]: "-83kg Open"
+          - generic [ref=e236] [cursor=pointer]:
+            - img "Marc Alonso" [ref=e237]
+            - generic [ref=e238]:
+              - paragraph [ref=e239]: Marc Alonso
+              - paragraph [ref=e240]: "-105kg JNR"
+          - generic [ref=e241] [cursor=pointer]:
+            - img "Pau Rodriguez" [ref=e242]
+            - generic [ref=e243]:
+              - paragraph [ref=e244]: Pau Rodriguez
+              - paragraph [ref=e245]: "-105kg SBJ"
+          - generic [ref=e246] [cursor=pointer]:
+            - img "Josep Lopez" [ref=e247]
+            - generic [ref=e248]:
+              - paragraph [ref=e249]: Josep Lopez
+              - paragraph [ref=e250]: "-83kg Open"
+    - generic [ref=e252]:
+      - heading "Comunidad" [level=2] [ref=e255]
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - heading "Últimas Noticias" [level=3] [ref=e259]
+          - paragraph [ref=e260]: No hay publicaciones todavía.
+        - paragraph [ref=e263]: Selecciona una noticia para leer y comentar
+    - generic [ref=e265]:
+      - generic [ref=e266]:
+        - heading "Logros Recientes" [level=2] [ref=e267]
+        - paragraph [ref=e268]: Resultados que hablan por sí solos.
+      - generic [ref=e269]:
+        - generic [ref=e270]:
+          - img [ref=e271]
+          - heading "Campeonato Nacional 2024" [level=3] [ref=e277]
+          - paragraph [ref=e278]: 3 Medallas de Oro
+          - paragraph [ref=e279]: Récord Nacional Peso Muerto
+        - generic [ref=e280]:
+          - img [ref=e281]
+          - heading "Copa Regional Norte" [level=3] [ref=e287]
+          - paragraph [ref=e288]: 1er Lugar por Equipos
+          - paragraph [ref=e289]: Dominio total categoría -93kg
+        - generic [ref=e290]:
+          - img [ref=e291]
+          - heading "Mundial Powerlifting" [level=3] [ref=e297]
+          - paragraph [ref=e298]: Top 10 Mundial
+          - paragraph [ref=e299]: Representación Internacional
+    - generic [ref=e300]:
+      - generic [ref=e302]:
+        - heading "¿Listo para competir?" [level=2] [ref=e303]
+        - paragraph [ref=e304]: Únete a Anvil Strength. Descarga los documentos necesarios y comienza tu camino hacia la tarima.
+        - generic [ref=e305]:
+          - link "Formulario de Inscripción" [ref=e306] [cursor=pointer]:
+            - /url: https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform
+            - img [ref=e307]
+            - text: Formulario de Inscripción
+          - button "Normativa del Equipo" [ref=e310] [cursor=pointer]:
+            - img [ref=e311]
+            - text: Normativa del Equipo
+      - generic [ref=e314]:
+        - img "IPF Approved" [ref=e315]
+        - img "AEP Federación" [ref=e316]
+    - contentinfo [ref=e317]:
+      - generic [ref=e318]:
+        - generic [ref=e319]:
+          - generic [ref=e321]: ANVIL STRENGTH
+          - generic [ref=e322]:
+            - link "Instagram" [ref=e323] [cursor=pointer]:
+              - /url: https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==
+            - link "Email" [ref=e324] [cursor=pointer]:
+              - /url: "#"
+            - link "Aviso Legal" [ref=e325] [cursor=pointer]:
+              - /url: "#"
+        - generic [ref=e326]: © 2026 Anvil Strength Powerlifting Club. Todos los derechos reservados.
+  - generic [ref=e329]:
+    - button [ref=e330] [cursor=pointer]:
+      - img [ref=e331]
+    - generic [ref=e334]:
+      - heading "Iniciar Sesión" [level=2] [ref=e335]
+      - paragraph [ref=e336]: Bienvenido de nuevo, atleta.
+    - generic [ref=e337]:
+      - generic [ref=e338]:
+        - generic [ref=e339]: Correo electrónico
+        - img [ref=e340]
+        - textbox "Correo electrónico" [ref=e343]:
+          - /placeholder: Email
+          - text: jotabou@protonmail.com
+      - generic [ref=e344]:
+        - generic [ref=e345]: Contraseña
+        - img [ref=e346]
+        - textbox "Contraseña" [ref=e349]: k47nZKQ!&UQYgg3Qx$H5
+      - button [disabled] [ref=e350]:
+        - img [ref=e351]
+    - button "¿No tienes cuenta? Regístrate" [ref=e361] [cursor=pointer]
+```

@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e8]:
+        - img "Anvil" [ref=e9]
+        - generic [ref=e10]: Coach
+      - navigation [ref=e11]:
+        - button "Dashboard" [ref=e12] [cursor=pointer]:
+          - img [ref=e13]
+          - text: Dashboard
+        - button "Mis Atletas" [ref=e18] [cursor=pointer]:
+          - img [ref=e19]
+          - text: Mis Atletas
+        - button "Mi Perfil" [ref=e24] [cursor=pointer]:
+          - img [ref=e25]
+          - text: Mi Perfil
+        - button "Agenda Equipo" [ref=e28] [cursor=pointer]:
+          - img [ref=e29]
+          - text: Agenda Equipo
+        - button "Calendario AEP" [ref=e35] [cursor=pointer]:
+          - img [ref=e36]
+          - text: Calendario AEP
+      - generic [ref=e38]:
+        - generic [ref=e40]:
+          - paragraph [ref=e41]: RPE Hater
+          - paragraph [ref=e42]: Entrenador
+        - link "Volver a la Web" [ref=e43] [cursor=pointer]:
+          - /url: /
+          - img [ref=e44]
+          - text: Volver a la Web
+        - button "Cerrar Sesión" [active] [ref=e47] [cursor=pointer]:
+          - img [ref=e48]
+          - text: Cerrar Sesión
+  - main [ref=e51]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - heading "Bienvenido, Javier" [level=1] [ref=e55]
+        - paragraph [ref=e56]: Resumen del estado del equipo
+      - generic [ref=e57]:
+        - generic [ref=e58]:
+          - img [ref=e60]
+          - generic [ref=e65]:
+            - paragraph [ref=e66]: Atletas Activos
+            - paragraph [ref=e67]: "4"
+            - paragraph [ref=e68]: En seguimiento
+        - generic [ref=e69]:
+          - img [ref=e71]
+          - generic [ref=e77]:
+            - paragraph [ref=e78]: Próximo Evento
+            - paragraph [ref=e79]: "-"
+            - paragraph [ref=e80]: Sin eventos próximos
+        - generic [ref=e81]:
+          - img [ref=e83]
+          - generic [ref=e85]:
+            - paragraph [ref=e86]: Avisos
+            - paragraph [ref=e87]: "0"
+            - paragraph [ref=e88]: Requieren atención
+      - generic [ref=e89]:
+        - heading "Actividad Reciente" [level=3] [ref=e90]:
+          - img [ref=e91]
+          - text: Actividad Reciente
+        - generic [ref=e94]: No hay actividad reciente registrada
+```
