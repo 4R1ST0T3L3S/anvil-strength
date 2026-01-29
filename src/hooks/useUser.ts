@@ -15,7 +15,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
     console.log('useUser: Starting fetchUser');
 
     const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
     );
 
     const fetchLogic = async () => {
@@ -89,7 +89,7 @@ export const useUser = () => {
         queryKey: ['user'],
         queryFn: fetchUser,
         staleTime: 1000 * 60 * 5, // 5 minutes
-        retry: 0
+        retry: 2
     });
 };
 

@@ -40,7 +40,6 @@ function LoadingScreen({ message = 'Cargando Anvil Strength...' }: { message?: s
       <div className="flex flex-col items-center gap-4">
         <Loader className="animate-spin text-anvil-red" size={48} />
         <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">{message}</p>
-        <p className="text-gray-600 text-xs mt-4">v1.1.0 (Live Check)</p>
       </div>
     </div>
   );
