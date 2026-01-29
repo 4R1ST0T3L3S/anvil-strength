@@ -4,7 +4,7 @@ import { Trophy, FileText, Mail, Instagram, Menu, X, ShoppingBag, ChevronLeft, C
 import { TeamModal } from '../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../components/modals/CoachDetailsModal';
-import { BlogSection } from '../features/landing/components/BlogSection';
+import { ReviewsSection } from '../features/reviews/components/ReviewsSection';
 import { BenefitsSection } from '../features/landing/components/BenefitsSection';
 import { SmartAuthButton } from '../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../data/athletes';
@@ -104,7 +104,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
         { name: 'ENTRENADORES', href: '#entrenadores' },
         { name: 'ATLETAS', href: '#atletas' },
         { name: 'LOGROS', href: '#logros' },
-        { name: 'COMUNIDAD', href: '#blog' },
+        { name: 'OPINIONES', href: '#reviews' },
         { name: 'AFILIATE', href: '#afiliacion' },
     ];
 
@@ -207,16 +207,30 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
 
                 {/* Federation Logos */}
                 <div className="absolute bottom-[10%] md:bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
-                    <img
-                        src="/Logo-ipf.png"
-                        alt="IPF Approved"
-                        className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
-                    />
-                    <img
-                        src="/logo-aep.png"
-                        alt="AEP Federación"
-                        className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                    />
+                    <a
+                        href="https://www.powerlifting.sport/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block hover:scale-105 transition-transform"
+                    >
+                        <img
+                            src="/Logo-ipf.png"
+                            alt="IPF Approved"
+                            className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
+                        />
+                    </a>
+                    <a
+                        href="https://powerliftingspain.es/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block hover:scale-105 transition-transform"
+                    >
+                        <img
+                            src="/logo-aep.png"
+                            alt="AEP Federación"
+                            className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                        />
+                    </a>
                 </div>
             </section>
 
@@ -225,17 +239,14 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
                     <div className="text-center md:text-left">
                         <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 uppercase">
-                            Forjados en <br /> <span className="text-anvil-red">Hierro</span>
+                            WHERE <span className="text-anvil-red">CHAMPIONS</span> <br /> ARE <span className="text-anvil-red">FORGED</span>
                         </h2>
                         <div className="space-y-6 text-lg text-gray-400 leading-relaxed font-medium">
                             <p>
-                                No somos un club que se basa en sensaciones o planificaciones tradicionales. <span className="text-white font-bold">Llevamos la ciencia al límite.</span>
+                                No somos un club convencional, buscamos que tu experiencia en tarima sea inmejorable. Como nuestro propio lema dice, <span className="text-white font-bold">FORJAMOS CAMPEONES.</span>
                             </p>
                             <p>
-                                Nos basamos en <span className="text-anvil-red font-bold">VBT (Velocity Based Training)</span>, llevando la calidad, personalización y precisión al máximo en cada entrenamiento.
-                            </p>
-                            <p>
-                                No construimos perdedores, <span className="text-white font-bold">construimos atletas de alto rendimiento</span>. Porque para rendir como tal, necesitas programaciones de alto nivel. En un deporte con normas de competición, <span className="text-anvil-red font-bold">debes entrenar con normas de competición.</span>
+                                En Anvil Strength no solo te unes a un club, <span className="text-anvil-red font-bold">te unes a una familia.</span> Queremos que tu camino vaya más allá de la competición; por eso, contamos con los mejores entrenadores del panorama para garantizarte un proceso claro, directo y sin trabas. <span className="text-white font-bold">Tú pones el esfuerzo, nosotros la estructura.</span>
                             </p>
                         </div>
                     </div>
@@ -283,6 +294,16 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                         </button>
                                     </div>
                                 </div>
+                                {/* Coach Logo in Bottom Right */}
+                                {coach.logo && (
+                                    <div className="absolute bottom-4 right-4 z-10">
+                                        <img
+                                            src={coach.logo}
+                                            alt={`${coach.name} logo`}
+                                            className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -357,8 +378,8 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 </div>
             </section>
 
-            {/* Blog/Comunidad Section */}
-            <BlogSection user={user} />
+            {/* Reviews Section */}
+            <ReviewsSection isAuthenticated={!!user} />
 
             {/* Logros Section */}
             <section id="logros" className="min-h-screen flex flex-col justify-center py-32 bg-[#252525]">
@@ -410,16 +431,30 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
 
                 {/* Federation Logos */}
                 <div className="absolute bottom-[10%] md:bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
-                    <img
-                        src="/Logo-ipf.png"
-                        alt="IPF Approved"
-                        className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
-                    />
-                    <img
-                        src="/logo-aep.png"
-                        alt="AEP Federación"
-                        className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                    />
+                    <a
+                        href="https://www.powerlifting.sport/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block hover:scale-105 transition-transform"
+                    >
+                        <img
+                            src="/Logo-ipf.png"
+                            alt="IPF Approved"
+                            className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
+                        />
+                    </a>
+                    <a
+                        href="https://powerliftingspain.es/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block hover:scale-105 transition-transform"
+                    >
+                        <img
+                            src="/logo-aep.png"
+                            alt="AEP Federación"
+                            className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                        />
+                    </a>
                 </div>
             </section>
             <footer className="bg-black py-16 border-t border-white/10">

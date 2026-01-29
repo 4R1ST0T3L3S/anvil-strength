@@ -96,8 +96,28 @@ CREATE TABLE IF NOT EXISTS competitions (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Athlete Reviews (NEW - 2026-01-29)
+CREATE TABLE IF NOT EXISTS athlete_reviews (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    athlete_name TEXT NOT NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT NOT NULL CHECK (length(review_text) >= 10 AND length(review_text) <= 1000),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
 -- =====================================================
--- 3. ROW LEVEL SECURITY (RLS) POLICIES
+-- 3. INDEXES
+-- =====================================================
+
+-- Athlete Reviews Indexes
+CREATE INDEX IF NOT EXISTS idx_athlete_reviews_user_id ON athlete_reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_athlete_reviews_created_at ON athlete_reviews(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_athlete_reviews_rating ON athlete_reviews(rating);
+
+-- =====================================================
+-- 4. ROW LEVEL SECURITY (RLS) POLICIES
 -- =====================================================
 
 -- Enable RLS on all tables
@@ -107,6 +127,7 @@ ALTER TABLE training_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exercises ENABLE ROW LEVEL SECURITY;
 ALTER TABLE competitions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE athlete_reviews ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
 -- PROFILES POLICIES
@@ -354,7 +375,36 @@ TO authenticated
 USING (athlete_id = auth.uid());
 
 -- =====================================================
--- 4. FUNCTIONS & TRIGGERS
+-- ATHLETE REVIEWS POLICIES (NEW)
+-- =====================================================
+
+-- SELECT: Anyone can view reviews (public read)
+DROP POLICY IF EXISTS "Anyone can view reviews" ON athlete_reviews;
+CREATE POLICY "Anyone can view reviews"
+ON athlete_reviews FOR SELECT
+USING (TRUE);
+
+-- INSERT: Only authenticated users can create reviews
+DROP POLICY IF EXISTS "Authenticated users can create reviews" ON athlete_reviews;
+CREATE POLICY "Authenticated users can create reviews"
+ON athlete_reviews FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- UPDATE: Users can update their own reviews only
+DROP POLICY IF EXISTS "Users can update own reviews" ON athlete_reviews;
+CREATE POLICY "Users can update own reviews"
+ON athlete_reviews FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- DELETE: Users can delete their own reviews only
+DROP POLICY IF EXISTS "Users can delete own reviews" ON athlete_reviews;
+CREATE POLICY "Users can delete own reviews"
+ON athlete_reviews FOR DELETE
+USING (auth.uid() = user_id);
+
+-- =====================================================
+-- 5. FUNCTIONS & TRIGGERS
 -- =====================================================
 
 -- Function to update updated_at timestamp
@@ -385,8 +435,15 @@ CREATE TRIGGER update_workouts_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+-- Trigger for athlete_reviews updated_at (NEW)
+DROP TRIGGER IF EXISTS athlete_reviews_updated_at ON athlete_reviews;
+CREATE TRIGGER athlete_reviews_updated_at
+    BEFORE UPDATE ON athlete_reviews
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- =====================================================
--- 5. STORAGE BUCKETS (for profile images)
+-- 6. STORAGE BUCKETS (for profile images)
 -- =====================================================
 -- Note: Storage buckets must be created via Supabase Dashboard
 -- Bucket name: 'profiles'

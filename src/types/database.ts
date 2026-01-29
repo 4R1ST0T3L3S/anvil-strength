@@ -49,3 +49,13 @@ export interface TrainingSession {
     notes?: string;
     // Add more fields as we discover them
 }
+
+export interface AthleteReview {
+    id: string;
+    user_id: string;
+    athlete_name: string;
+    rating: number; // 1-5 stars
+    review_text: string;
+    created_at: string;
+    updated_at: string;
+}
