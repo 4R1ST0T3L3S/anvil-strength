@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
@@ -8,10 +8,14 @@ import { SettingsModal } from './components/SettingsModal';
 import { PWAPrompt } from './components/PWAPrompt';
 import { Loader } from 'lucide-react';
 
-// Lazy Load Pages
-const LandingPage = React.lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
-const UserDashboard = React.lazy(() => import('./pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
-const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+// Lazy Load Pages - REVERTED for Debugging
+// const LandingPage = React.lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
+// const UserDashboard = React.lazy(() => import('./pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
+// const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+
+import { LandingPage } from './pages/LandingPage';
+import { UserDashboard } from './pages/UserDashboard';
+import { CoachDashboard } from './pages/CoachDashboard';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) {
   return (
@@ -30,12 +34,12 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBo
   );
 }
 
-function LoadingScreen() {
+function LoadingScreen({ message = 'Cargando Anvil Strength...' }: { message?: string }) {
   return (
     <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader className="animate-spin text-anvil-red" size={48} />
-        <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">Cargando Anvil Strength...</p>
+        <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">{message}</p>
       </div>
     </div>
   );
@@ -81,7 +85,7 @@ function App() {
   // Determine View
   let content;
   if (isLoading) {
-    content = <LoadingScreen />;
+    content = <LoadingScreen message="Verificando sesión..." />;
   } else if (isError) {
     content = (
       <div className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
@@ -129,9 +133,7 @@ function App() {
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Suspense fallback={<LoadingScreen />}>
-          {content}
-        </Suspense>
+        {content}
       </ErrorBoundary>
 
       <AuthModal
