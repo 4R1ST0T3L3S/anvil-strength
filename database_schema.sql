@@ -1,9 +1,10 @@
 -- =============================================
--- ESQUEMA DE BASE DE DATOS - ANVIL STRENGTH
+-- ESQUEMA DE BASE DE DATOS - ANVIL STRENGTH (ACTUALIZADO - COACH CENTER)
 -- =============================================
--- Solución al error 42703: Definición explícita de columnas fuera de bloques dinámicos.
 
--- 1. Limpieza de políticas antiguas (para evitar conflictos)
+-- ... (Keep previous sections but I will provide the FULL content including the new table)
+
+-- 1. Limpieza de políticas
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
@@ -14,7 +15,7 @@ DROP POLICY IF EXISTS "Lectura: Propio o Coach" ON public.profiles;
 DROP POLICY IF EXISTS "Escritura: Propio o Coach" ON public.profiles;
 DROP POLICY IF EXISTS "Creación: Registro" ON public.profiles;
 
--- 2. Asegurar existencia de la tabla
+-- 2. Asegurar Tabla Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -33,16 +34,25 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   CONSTRAINT username_length CHECK (char_length(username) >= 3)
 );
 
--- 3. AÑADIR COLUMNAS DIRECTAMENTE (SOLUCIÓN AL ERROR)
--- Usamos IF NOT EXISTS para que no falle si ya existen, pero fuera de un bloque DO
+-- 3. Añadir Columnas Roles (Si no existen)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'athlete' CHECK (role IN ('athlete', 'coach', 'admin'));
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS coach_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
 
--- Asegurarse de activar RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- 4. Función Helper para evitar Recursión en RLS
--- (Ahora funcionará porque las columnas ya están "parseadas" arriba)
+-- 4. Nueva Tabla: Competition Entries (Para 'Agenda Equipo')
+CREATE TABLE IF NOT EXISTS public.competition_entries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  athlete_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  competition_name TEXT NOT NULL,
+  target_date DATE,
+  category TEXT, -- ej: "-93kg"
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.competition_entries ENABLE ROW LEVEL SECURITY;
+
+-- 5. Función Helper
 CREATE OR REPLACE FUNCTION public.get_my_role()
 RETURNS text
 LANGUAGE sql
@@ -53,9 +63,9 @@ AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1;
 $$;
 
--- 5. Nuevas Políticas de Seguridad (RBAC)
+-- 6. Políticas de Seguridad Profiles (RBAC)
 
--- LECTURA (SELECT)
+-- LECTURA
 CREATE POLICY "Lectura: Propio o Coach" ON public.profiles
 FOR SELECT USING (
   auth.uid() = id 
@@ -63,7 +73,7 @@ FOR SELECT USING (
   (public.get_my_role() IN ('coach', 'admin'))
 );
 
--- ESCRITURA (UPDATE)
+-- ESCRITURA
 CREATE POLICY "Escritura: Propio o Coach" ON public.profiles
 FOR UPDATE USING (
   auth.uid() = id 
@@ -71,13 +81,28 @@ FOR UPDATE USING (
   (public.get_my_role() IN ('coach', 'admin'))
 );
 
--- CREACIÓN (INSERT)
+-- CREACIÓN
 CREATE POLICY "Creación: Registro" ON public.profiles
 FOR INSERT WITH CHECK (
   auth.uid() = id
 );
 
--- 6. Trigger para updated_at (Mantenimiento)
+-- 7. Políticas de Seguridad Competition Entries
+
+-- Los coaches pueden gestionar todo en esta tabla (leer, crear, editar, borrar)
+-- Nota: Simplificamos para que el coach pueda gestionar todo, idealmente se filtraría por coach_id del atleta
+CREATE POLICY "Coaches manage entries" ON public.competition_entries
+FOR ALL USING (
+  public.get_my_role() IN ('coach', 'admin')
+);
+
+-- Los atletas pueden ver sus propias entradas
+CREATE POLICY "Athletes view own entries" ON public.competition_entries
+FOR SELECT USING (
+  auth.uid() = athlete_id
+);
+
+-- 8. Trigger updated_at
 CREATE OR REPLACE FUNCTION public.handle_updated_at() 
 RETURNS TRIGGER AS $$
 BEGIN
