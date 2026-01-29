@@ -164,7 +164,11 @@ function App() {
   // Update view when user state changes
   useEffect(() => {
     if (user) {
-      setCurrentView('dashboard');
+      if (user.role === 'coach') {
+        setCurrentView('coach_dashboard');
+      } else {
+        setCurrentView('dashboard');
+      }
     } else {
       setCurrentView('landing');
     }
@@ -178,12 +182,11 @@ function App() {
           onLogout={handleLogout}
           onOpenSettings={() => setIsSettingsModalOpen(true)}
           onGoToHome={() => setCurrentView('landing')}
-          onGoToCoachDashboard={() => setCurrentView('coach_dashboard')}
         />
       ) : user && currentView === 'coach_dashboard' ? (
         <CoachDashboard
           user={user}
-          onBack={() => setCurrentView('dashboard')}
+          onLogout={handleLogout}
         />
       ) : (
         <LandingPage
