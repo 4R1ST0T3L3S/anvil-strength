@@ -13,12 +13,12 @@ import { CoachTeamSchedule } from '../components/coach/CoachTeamSchedule';
 
 interface CoachDashboardProps {
     user: any;
-    onBack: () => void;
+    onLogout: () => void;
 }
 
 type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details';
 
-export function CoachDashboard({ user, onBack }: CoachDashboardProps) {
+export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
 
@@ -116,11 +116,11 @@ export function CoachDashboard({ user, onBack }: CoachDashboardProps) {
                         </div>
                     </div>
                     <button
-                        onClick={onBack}
+                        onClick={onLogout}
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
                     >
                         <LogOut size={16} />
-                        Volver a Mi Perfil
+                        Cerrar Sesión
                     </button>
                 </div>
             </aside>
