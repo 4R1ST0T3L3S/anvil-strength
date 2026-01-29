@@ -65,7 +65,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setIsLoading(true);
 
     try {
-      console.log('Iniciando proceso de autenticación...');
+
       if (isLogin) {
         const { error: authError } = await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -77,7 +77,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           throw authError; // This jumps to catch block
         }
 
-        console.log('Login exitoso at Supabase level');
+
         // We DO NOT call onClose() here immediately because App.tsx listens to the state change
         // However, if we don't close it, it might hang if App.tsx crashes.
         // Let's rely on success.
@@ -105,7 +105,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           setIsLoading(false);
           return;
         }
-        console.log('Registro exitoso');
+
       }
 
       // Safety timeout: If App.tsx doesn't close the modal in 2 seconds, we force close it 

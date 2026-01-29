@@ -19,9 +19,9 @@ export function CalendarSection() {
                     c.campeonato
                 );
                 setCompetitions(filtered);
-            } catch (err: any) {
+            } catch (err) {
                 console.error('Calendar Error:', err);
-                setError(err.message || 'No se pudo cargar el calendario. Inténtalo más tarde.');
+                setError(err instanceof Error ? err.message : 'No se pudo cargar el calendario. Inténtalo más tarde.');
             } finally {
                 setLoading(false);
             }

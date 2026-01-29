@@ -18,8 +18,10 @@ interface Post {
   created_at: string;
 }
 
+import { UserProfile } from '../../../hooks/useUser';
+
 interface BlogSectionProps {
-  user: any;
+  user: UserProfile | null | undefined;
 }
 
 export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
@@ -140,8 +142,8 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
                   key={post.id}
                   onClick={() => setSelectedPost(post)}
                   className={`p-6 border cursor-pointer transition-all rounded-xl ${selectedPost?.id === post.id
-                      ? 'border-anvil-red bg-white/5 shadow-lg shadow-anvil-red/5'
-                      : 'border-white/5 hover:border-white/20'
+                    ? 'border-anvil-red bg-white/5 shadow-lg shadow-anvil-red/5'
+                    : 'border-white/5 hover:border-white/20'
                     }`}
                 >
                   <h4 className="text-lg font-bold uppercase mb-2">{post.title}</h4>

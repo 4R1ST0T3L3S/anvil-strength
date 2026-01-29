@@ -18,12 +18,13 @@ import { UserDashboard } from './pages/UserDashboard';
 import { CoachDashboard } from './pages/CoachDashboard';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) {
+function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErrorBoundary: () => void }) {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
   return (
     <div role="alert" className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
       <h2 className="text-2xl font-bold text-anvil-red mb-2">Algo salió mal</h2>
       <pre className="text-gray-400 text-sm bg-black/50 p-4 rounded mb-4 max-w-lg overflow-auto">
-        {error.message}
+        {errorMessage}
       </pre>
       <button
         onClick={resetErrorBoundary}
@@ -123,21 +124,16 @@ function App() {
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={
-            !user ? (
-              <LandingPage
-                onLoginClick={handleLoginClick}
-                user={null}
-                onGoToDashboard={() => { }}
-              />
-            ) : (
-              <Navigate to="/dashboard" replace />
-            )
+            <LandingPage
+              onLoginClick={handleLoginClick}
+              user={user}
+            />
           } />
           <Route path="/dashboard" element={
             !user ? (
               <Navigate to="/" replace />
             ) : user.role === 'coach' ? (
-              <CoachDashboard user={user} onLogout={handleLogout} />
+              <Navigate to="/coach-dashboard" replace />
             ) : (
               <UserDashboard
                 user={user}
@@ -145,6 +141,15 @@ function App() {
                 onOpenSettings={handleOpenSettings}
                 onGoToHome={() => { }}
               />
+            )
+          } />
+          <Route path="/coach-dashboard" element={
+            !user ? (
+              <Navigate to="/" replace />
+            ) : user.role !== 'coach' ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <CoachDashboard user={user} onLogout={handleLogout} />
             )
           } />
           <Route path="*" element={<Navigate to="/" replace />} />

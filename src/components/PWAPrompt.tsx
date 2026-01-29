@@ -2,21 +2,38 @@ import { useState, useEffect } from 'react';
 import { X, Share, PlusSquare } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+interface WindowWithStandalone extends Window {
+    MSStream?: unknown;
+    navigator: Navigator & {
+        standalone?: boolean;
+    };
+}
+
 export const PWAPrompt = () => {
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showPrompt, setShowPrompt] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
 
     useEffect(() => {
         // Check if it's iOS
-        const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-        setIsIOS(isIOSDevice);
+        const customWindow = window as WindowWithStandalone;
+        const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !customWindow.MSStream;
 
         // Check if already in standalone mode
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || customWindow.navigator.standalone;
 
         if (isStandalone) {
             return;
+        }
+
+        // Update iOS state outside of render cycle
+        if (isIOSDevice !== isIOS) {
+            setIsIOS(isIOSDevice);
         }
 
         if (isIOSDevice) {
@@ -25,9 +42,9 @@ export const PWAPrompt = () => {
             return () => clearTimeout(timer);
         } else {
             // Android / Desktop logic
-            const handleBeforeInstallPrompt = (e: any) => {
+            const handleBeforeInstallPrompt = (e: Event) => {
                 e.preventDefault();
-                setDeferredPrompt(e);
+                setDeferredPrompt(e as BeforeInstallPromptEvent);
                 setShowPrompt(true);
             };
 
@@ -37,12 +54,12 @@ export const PWAPrompt = () => {
                 window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             };
         }
-    }, []);
+    }, [isIOS]); // Add isIOS to dependencies
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;
 
-        deferredPrompt.prompt();
+        await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === 'accepted') {

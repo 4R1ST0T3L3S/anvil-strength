@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, Menu, X, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TeamModal } from '../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../components/modals/CoachDetailsModal';
 import { BlogSection } from '../features/landing/components/BlogSection';
 import { BenefitsSection } from '../features/landing/components/BenefitsSection';
+import { SmartAuthButton } from '../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../data/athletes';
 import { coaches, Coach } from '../data/coaches';
 
+import { UserProfile } from '../hooks/useUser';
+
 interface LandingPageProps {
     onLoginClick: () => void;
-    user?: any; // Just in case we need to show user specific things on landing later
-    onGoToDashboard?: () => void;
+    user?: UserProfile | null;
 }
 
-export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPageProps) {
+export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
@@ -140,24 +142,7 @@ export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPage
                     </nav>
 
                     <div className="flex items-center space-x-4 md:space-x-6">
-                        {user ? (
-                            <button
-                                onClick={onGoToDashboard}
-                                className="text-gray-300 hover:text-white flex items-center gap-2"
-                            >
-                                <User className="h-5 w-5" />
-                                <span className="hidden md:inline text-sm font-bold uppercase">Mis Cosas</span>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={onLoginClick}
-                                data-testid="login-button"
-                                className="text-gray-300 hover:text-white flex items-center gap-2"
-                            >
-                                <User className="h-5 w-5" />
-                                <span className="hidden md:inline text-sm font-bold uppercase">Acceso</span>
-                            </button>
-                        )}
+                        <SmartAuthButton variant="ghost" onLoginClick={onLoginClick} />
                         <button className="hidden md:block text-gray-300 hover:text-white relative">
                             <ShoppingBag className="h-5 w-5" />
                             <span className="absolute -top-2 -right-2 bg-anvil-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">0</span>
@@ -209,19 +194,13 @@ export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPage
                         Trabajamos con datos no con sensaciones
                     </p>
                     <div className="flex flex-col md:flex-row gap-4 justify-center">
+                        <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full md:w-auto" />
                         <a
                             href="#afiliacion"
                             onClick={(e) => handleNavClick(e, '#afiliacion')}
                             className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
                         >
                             Únete al equipo
-                        </a>
-                        <a
-                            href="#filosofia"
-                            onClick={(e) => handleNavClick(e, '#filosofia')}
-                            className="inline-block border-2 border-white text-white hover:bg-white hover:text-black font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
-                        >
-                            Nuestra Filosofía
                         </a>
                     </div>
                 </div>

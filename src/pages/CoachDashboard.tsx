@@ -12,8 +12,10 @@ import { CoachTeamSchedule } from '../components/coach/CoachTeamSchedule';
 import { CalendarModal } from '../components/modals/CalendarModal';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 
+import { UserProfile } from '../hooks/useUser';
+
 interface CoachDashboardProps {
-    user: any;
+    user: UserProfile;
     onLogout: () => void;
 }
 

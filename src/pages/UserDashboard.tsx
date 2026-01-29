@@ -9,8 +9,10 @@ import {
 import { CalendarModal } from '../components/modals/CalendarModal';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 
+import { UserProfile } from '../hooks/useUser';
+
 interface UserDashboardProps {
-    user: any;
+    user: UserProfile;
     onLogout: () => void;
     onOpenSettings: () => void;
     onGoToHome: () => void;

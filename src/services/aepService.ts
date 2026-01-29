@@ -21,7 +21,7 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
 
     for (const proxy of proxies) {
         try {
-            console.log(`Trying proxy: ${proxy}`);
+
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per proxy
 
@@ -95,7 +95,7 @@ const parseDate = (dateStr: string): Date | null => {
 export const fetchCompetitions = async (): Promise<Competition[]> => {
     try {
         const csvText = await fetchWithFallback(SHEET_URL);
-        console.log('CSV Raw Data Preview:', csvText.substring(0, 500)); // Debug log
+
 
         return new Promise((resolve, reject) => {
             Papa.parse(csvText, {
@@ -126,7 +126,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                         return;
                     }
 
-                    console.log(`Header found at row ${headerRowIndex}:`, rows[headerRowIndex]);
+
 
                     const headers = rows[headerRowIndex].map(h => h.toString().toLowerCase().trim());
                     const dateIdx = headers.findIndex(h => h.includes('fecha'));
@@ -178,7 +178,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                             return true;
                         });
 
-                    console.log(`Parsed ${validData.length} valid competitions.`);
+
                     resolve(validData);
                 },
                 error: (error: Error) => {

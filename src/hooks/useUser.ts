@@ -16,7 +16,7 @@ export interface UserProfile {
     squat_pr?: number;
     bench_pr?: number;
     deadlift_pr?: number;
-    user_metadata?: any;
+    user_metadata?: Record<string, unknown>;
 }
 
 const fetchUser = async (): Promise<UserProfile | null> => {
@@ -99,14 +99,13 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     deadlift_pr: profile.deadlift_pr
                 };
             }
-        } catch (e) {
+        } catch {
             console.warn('Profile sync failed, using session data');
         }
 
         return optimisticUser;
 
-    } catch (e) {
-        console.error('Session check failed or timed out', e);
+    } catch {
         return null;
     }
 };
