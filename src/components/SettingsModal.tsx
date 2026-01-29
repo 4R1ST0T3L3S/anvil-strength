@@ -30,15 +30,15 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || '',
+        name: user.full_name || user.name || '',
         nickname: user.nickname || '',
         age_category: user.age_category || '',
         weight_category: user.weight_category || '',
         squat_pr: user.squat_pr || '',
         bench_pr: user.bench_pr || '',
         deadlift_pr: user.deadlift_pr || '',
-        biography: user.biography || '',
-        profile_image: user.profile_image || ''
+        biography: user.biography || user.bio || '',
+        profile_image: user.avatar_url || user.profile_image || ''
       });
     }
   }, [user, isOpen]);
@@ -90,7 +90,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
         .from('profiles')
         .upsert({
           id: authUser.id,
-          name: formData.name,
+          full_name: formData.name,
           nickname: formData.nickname,
           age_category: formData.age_category,
           weight_category: formData.weight_category,
@@ -98,12 +98,17 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           bench_pr: formData.bench_pr ? parseFloat(formData.bench_pr as string) : null,
           deadlift_pr: formData.deadlift_pr ? parseFloat(formData.deadlift_pr as string) : null,
           biography: formData.biography,
-          profile_image: formData.profile_image,
+          avatar_url: formData.profile_image,
         });
 
       if (updateError) throw updateError;
 
-      const updatedUser = { ...user, ...formData };
+      const updatedUser = {
+        ...user,
+        ...formData,
+        full_name: formData.name, // Ensure local state mirrors DB
+        avatar_url: formData.profile_image
+      };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       onUpdate(updatedUser);
       setSuccess('Perfil actualizado con éxito');
