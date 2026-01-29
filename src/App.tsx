@@ -154,16 +154,33 @@ function App() {
     localStorage.removeItem('user');
   };
 
+  // Navigation state
+  const [currentView, setCurrentView] = useState<'dashboard' | 'landing'>('landing');
+
+  // Update view when user state changes
+  useEffect(() => {
+    if (user) {
+      setCurrentView('dashboard');
+    } else {
+      setCurrentView('landing');
+    }
+  }, [user]);
+
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
-      {user ? (
+      {user && currentView === 'dashboard' ? (
         <UserDashboard
           user={user}
           onLogout={handleLogout}
           onOpenSettings={() => setIsSettingsModalOpen(true)}
+          onGoToHome={() => setCurrentView('landing')}
         />
       ) : (
-        <LandingPage onLoginClick={() => setIsAuthModalOpen(true)} user={user} />
+        <LandingPage
+          onLoginClick={() => setIsAuthModalOpen(true)}
+          user={user}
+          onGoToDashboard={() => setCurrentView('dashboard')}
+        />
       )}
 
       <AuthModal

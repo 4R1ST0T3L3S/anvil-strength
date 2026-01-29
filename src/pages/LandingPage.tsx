@@ -11,9 +11,10 @@ import { coaches, Coach } from '../data/coaches';
 interface LandingPageProps {
     onLoginClick: () => void;
     user?: any; // Just in case we need to show user specific things on landing later
+    onGoToDashboard?: () => void;
 }
 
-export function LandingPage({ onLoginClick, user }: LandingPageProps) {
+export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPageProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
@@ -137,15 +138,24 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         ))}
                     </nav>
 
-                    {/* Right Icons (SBD Style) */}
                     <div className="flex items-center space-x-4 md:space-x-6">
-                        <button
-                            onClick={onLoginClick}
-                            className="text-gray-300 hover:text-white flex items-center gap-2"
-                        >
-                            <User className="h-5 w-5" />
-                            <span className="hidden md:inline text-sm font-bold uppercase">Acceso</span>
-                        </button>
+                        {user ? (
+                            <button
+                                onClick={onGoToDashboard}
+                                className="text-gray-300 hover:text-white flex items-center gap-2"
+                            >
+                                <User className="h-5 w-5" />
+                                <span className="hidden md:inline text-sm font-bold uppercase">Mis Cosas</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={onLoginClick}
+                                className="text-gray-300 hover:text-white flex items-center gap-2"
+                            >
+                                <User className="h-5 w-5" />
+                                <span className="hidden md:inline text-sm font-bold uppercase">Acceso</span>
+                            </button>
+                        )}
                         <button className="hidden md:block text-gray-300 hover:text-white relative">
                             <ShoppingBag className="h-5 w-5" />
                             <span className="absolute -top-2 -right-2 bg-anvil-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">0</span>

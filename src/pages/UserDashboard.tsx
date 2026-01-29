@@ -6,9 +6,10 @@ interface UserDashboardProps {
     user: any;
     onLogout: () => void;
     onOpenSettings: () => void;
+    onGoToHome: () => void;
 }
 
-export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardProps) {
+export function UserDashboard({ user, onLogout, onOpenSettings, onGoToHome }: UserDashboardProps) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     return (
@@ -16,7 +17,11 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
             {/* Dashboard Header */}
             <header className="bg-[#252525] border-b border-white/10 py-4 px-6">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <div className="flex items-center gap-4">
+                    <div
+                        className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={onGoToHome}
+                        title="Ir a Inicio"
+                    >
                         <img
                             src="/logo.svg"
                             alt="Anvil Strength"
