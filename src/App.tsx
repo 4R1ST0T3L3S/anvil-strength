@@ -6,6 +6,7 @@ import { PWAPrompt } from './components/PWAPrompt';
 import { supabase } from './lib/supabase';
 import { LandingPage } from './pages/LandingPage';
 import { UserDashboard } from './pages/UserDashboard';
+import { CoachDashboard } from './pages/CoachDashboard';
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -35,7 +36,8 @@ function App() {
             .insert([{
               id: session.user.id,
               full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-              nickname: session.user.user_metadata?.nickname || 'Atleta'
+              nickname: session.user.user_metadata?.nickname || 'Atleta',
+              role: 'athlete'
             }])
             .select()
             .single();
@@ -47,7 +49,8 @@ function App() {
           ...session.user,
           ...profile,
           name: profile?.full_name || profile?.name || session.user.user_metadata?.full_name,
-          profile_image: profile?.avatar_url || profile?.profile_image || session.user.user_metadata?.avatar_url
+          profile_image: profile?.avatar_url || profile?.profile_image || session.user.user_metadata?.avatar_url,
+          role: profile?.role || 'athlete'
         };
 
         setUser(userData);
@@ -105,7 +108,8 @@ function App() {
         return {
           id: userId,
           name: meta?.full_name || 'Atleta',
-          nickname: meta?.nickname || 'Atleta'
+          nickname: meta?.nickname || 'Atleta',
+          role: 'athlete'
         };
       }
     };
@@ -123,7 +127,9 @@ function App() {
             ...session.user,
             ...profile,
             name: profile?.full_name || profile?.name,
-            profile_image: profile?.avatar_url || profile?.profile_image
+            name: profile?.full_name || profile?.name,
+            profile_image: profile?.avatar_url || profile?.profile_image,
+            role: profile?.role || 'athlete'
           };
 
           setUser(userData);
@@ -155,7 +161,7 @@ function App() {
   };
 
   // Navigation state
-  const [currentView, setCurrentView] = useState<'dashboard' | 'landing'>('landing');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'landing' | 'coach_dashboard'>('landing');
 
   // Update view when user state changes
   useEffect(() => {
@@ -174,6 +180,12 @@ function App() {
           onLogout={handleLogout}
           onOpenSettings={() => setIsSettingsModalOpen(true)}
           onGoToHome={() => setCurrentView('landing')}
+          onGoToCoachDashboard={() => setCurrentView('coach_dashboard')}
+        />
+      ) : user && currentView === 'coach_dashboard' ? (
+        <CoachDashboard
+          user={user}
+          onBack={() => setCurrentView('dashboard')}
         />
       ) : (
         <LandingPage

@@ -7,9 +7,10 @@ interface UserDashboardProps {
     onLogout: () => void;
     onOpenSettings: () => void;
     onGoToHome: () => void;
+    onGoToCoachDashboard: () => void;
 }
 
-export function UserDashboard({ user, onLogout, onOpenSettings, onGoToHome }: UserDashboardProps) {
+export function UserDashboard({ user, onLogout, onOpenSettings, onGoToHome, onGoToCoachDashboard }: UserDashboardProps) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     return (
@@ -32,6 +33,16 @@ export function UserDashboard({ user, onLogout, onOpenSettings, onGoToHome }: Us
 
                     {/* Right Side User Menu */}
                     <div className="flex items-center gap-6">
+                        {/* Coach/Admin Button */}
+                        {user.role === 'coach' && (
+                            <button
+                                onClick={onGoToCoachDashboard}
+                                className="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-bold uppercase transition-colors border border-white/10"
+                            >
+                                <span className="text-anvil-red">●</span> Panel Entrenador
+                            </button>
+                        )}
+
                         {/* User Profile Info (Clickable) */}
                         <div
                             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
