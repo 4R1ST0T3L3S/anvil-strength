@@ -26,7 +26,7 @@ export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPage
     const [isTransitioning, setIsTransitioning] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
     const [isManualMode, setIsManualMode] = useState(false);
-    const [lastInteraction, setLastInteraction] = useState(Date.now());
+    const [lastInteraction, setLastInteraction] = useState(() => Date.now());
 
     useEffect(() => {
         if (isPaused || isManualMode) return;
@@ -150,6 +150,7 @@ export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPage
                         ) : (
                             <button
                                 onClick={onLoginClick}
+                                data-testid="login-button"
                                 className="text-gray-300 hover:text-white flex items-center gap-2"
                             >
                                 <User className="h-5 w-5" />

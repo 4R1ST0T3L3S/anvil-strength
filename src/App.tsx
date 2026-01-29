@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
@@ -13,10 +13,9 @@ import { Loader } from 'lucide-react';
 // const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
 
 import { LandingPage } from './pages/LandingPage';
+
 import { UserDashboard } from './pages/UserDashboard';
 import { CoachDashboard } from './pages/CoachDashboard';
-import { PageTransition } from './components/PageTransition';
-import { AnimatePresence } from 'framer-motion';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) {
