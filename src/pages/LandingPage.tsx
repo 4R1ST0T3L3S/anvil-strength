@@ -248,6 +248,9 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                             <p>
                                 En Anvil Strength no solo te unes a un club, <span className="text-anvil-red font-bold">te unes a una familia.</span> Queremos que tu camino vaya más allá de la competición; por eso, contamos con los mejores entrenadores del panorama para garantizarte un proceso claro, directo y sin trabas. <span className="text-white font-bold">Tú pones el esfuerzo, nosotros la estructura.</span>
                             </p>
+                            <p>
+                                No construimos perdedores, <span className="text-white font-bold">construimos atletas de alto rendimiento</span>, porque para rendir como tal necesitas planificaciones de alto rendimiento. En un deporte con normas de competición, <span className="text-anvil-red font-bold">entrena con normas de competición.</span>
+                            </p>
                         </div>
                     </div>
                     <div className="relative">
