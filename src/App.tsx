@@ -5,7 +5,6 @@ import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
 import { AuthModal } from './components/AuthModal';
 import { SettingsModal } from './components/SettingsModal';
-import { PWAPrompt } from './components/PWAPrompt';
 import { Loader } from 'lucide-react';
 
 // Lazy Load Pages - REVERTED for Debugging
@@ -16,6 +15,9 @@ import { Loader } from 'lucide-react';
 import { LandingPage } from './pages/LandingPage';
 import { UserDashboard } from './pages/UserDashboard';
 import { CoachDashboard } from './pages/CoachDashboard';
+import { PageTransition } from './components/PageTransition';
+import { AnimatePresence } from 'framer-motion';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) {
   return (
@@ -76,15 +78,13 @@ function App() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const { data: user, isLoading, isError, error } = useUser();
   const queryClient = useQueryClient();
+  const location = useLocation();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+      if (['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) {
         await queryClient.invalidateQueries({ queryKey: ['user'] });
-
-        if (event === 'SIGNED_IN') {
-          setIsAuthModalOpen(false);
-        }
+        if (event === 'SIGNED_IN') setIsAuthModalOpen(false);
       }
     });
 
@@ -95,25 +95,15 @@ function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    queryClient.setQueryData(['user'], null);
   };
 
   const handleLoginClick = () => setIsAuthModalOpen(true);
   const handleOpenSettings = () => setIsSettingsModalOpen(true);
 
-  // Handlers for modal updates to refresh data
-  const handleProfileUpdate = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['user'] });
-    // We don't necessarily close the modal here, depends on user UX preference, 
-    // but usually SettingsModal stays open or closes itself.
-  };
+  if (isLoading) return <LoadingScreen message="Verificando sesión..." />;
 
-  // Determine View
-  let content;
-  if (isLoading) {
-    content = <LoadingScreen message="Verificando sesión..." />;
-  } else if (isError) {
-    content = (
+  if (isError) {
+    return (
       <div className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
         <h2 className="text-xl font-bold text-anvil-red mb-2">Error de conexión</h2>
         <p className="text-gray-400 mb-4 text-center max-w-md">
@@ -127,39 +117,43 @@ function App() {
         </button>
       </div>
     );
-  } else if (!user) {
-    content = (
-      <LandingPage
-        onLoginClick={handleLoginClick}
-        user={null}
-        onGoToDashboard={() => { /* No-op since we redirect if logged in, or show login */ }}
-      />
-    );
-  } else {
-    // Authenticated
-    if (user.role === 'coach') {
-      content = (
-        <CoachDashboard
-          user={user}
-          onLogout={handleLogout}
-        />
-      );
-    } else {
-      content = (
-        <UserDashboard
-          user={user}
-          onLogout={handleLogout}
-          onOpenSettings={handleOpenSettings}
-          onGoToHome={() => { /* Probably handled by Sidebar logic now */ }}
-        />
-      );
-    }
   }
 
   return (
-    <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
+    <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans overflow-x-hidden">
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        {content}
+        <AnimatePresence mode="wait" initial={false}>
+          <PageTransition key={location.pathname}>
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={
+                !user ? (
+                  <LandingPage
+                    onLoginClick={handleLoginClick}
+                    user={null}
+                    onGoToDashboard={() => { }}
+                  />
+                ) : (
+                  <Navigate to="/dashboard" replace />
+                )
+              } />
+              <Route path="/dashboard" element={
+                !user ? (
+                  <Navigate to="/" replace />
+                ) : user.role === 'coach' ? (
+                  <CoachDashboard user={user} onLogout={handleLogout} />
+                ) : (
+                  <UserDashboard
+                    user={user}
+                    onLogout={handleLogout}
+                    onOpenSettings={handleOpenSettings}
+                    onGoToHome={() => { }}
+                  />
+                )
+              } />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </PageTransition>
+        </AnimatePresence>
       </ErrorBoundary>
 
       <AuthModal
@@ -168,13 +162,14 @@ function App() {
         onLogin={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
       />
 
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        user={user}
-        onUpdate={handleProfileUpdate}
-      />
-      <PWAPrompt />
+      {user && (
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          user={user}
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
+        />
+      )}
     </div>
   );
 }

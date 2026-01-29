@@ -11,18 +11,15 @@
   background-color: #0a0a0a;
 }
 
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overscroll-behavior-x: none;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-}
-
-/* Ocultar barra de desplazamiento pero permitir scroll */
-::-webkit-scrollbar {
-  display: none;
-}
-
-html {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  overscroll-behavior-x: none;
 }
