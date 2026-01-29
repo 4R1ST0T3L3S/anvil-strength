@@ -122,38 +122,34 @@ function App() {
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans overflow-x-hidden">
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <AnimatePresence mode="wait" initial={false}>
-          <PageTransition key={location.pathname}>
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={
-                !user ? (
-                  <LandingPage
-                    onLoginClick={handleLoginClick}
-                    user={null}
-                    onGoToDashboard={() => { }}
-                  />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              } />
-              <Route path="/dashboard" element={
-                !user ? (
-                  <Navigate to="/" replace />
-                ) : user.role === 'coach' ? (
-                  <CoachDashboard user={user} onLogout={handleLogout} />
-                ) : (
-                  <UserDashboard
-                    user={user}
-                    onLogout={handleLogout}
-                    onOpenSettings={handleOpenSettings}
-                    onGoToHome={() => { }}
-                  />
-                )
-              } />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </PageTransition>
-        </AnimatePresence>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={
+            !user ? (
+              <LandingPage
+                onLoginClick={handleLoginClick}
+                user={null}
+                onGoToDashboard={() => { }}
+              />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          } />
+          <Route path="/dashboard" element={
+            !user ? (
+              <Navigate to="/" replace />
+            ) : user.role === 'coach' ? (
+              <CoachDashboard user={user} onLogout={handleLogout} />
+            ) : (
+              <UserDashboard
+                user={user}
+                onLogout={handleLogout}
+                onOpenSettings={handleOpenSettings}
+                onGoToHome={() => { }}
+              />
+            )
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </ErrorBoundary>
 
       <AuthModal
