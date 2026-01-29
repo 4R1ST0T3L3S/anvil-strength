@@ -127,11 +127,9 @@ function App() {
             ...session.user,
             ...profile,
             name: profile?.full_name || profile?.name,
-            name: profile?.full_name || profile?.name,
             profile_image: profile?.avatar_url || profile?.profile_image,
             role: profile?.role || 'athlete'
           };
-
           setUser(userData);
           localStorage.setItem('user', JSON.stringify(userData));
           setIsAuthModalOpen(false); // Close modal if open
