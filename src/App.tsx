@@ -44,7 +44,7 @@ function LoadingScreen() {
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const { data: user, isLoading } = useUser();
+  const { data: user, isLoading, isError, error } = useUser();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -82,6 +82,21 @@ function App() {
   let content;
   if (isLoading) {
     content = <LoadingScreen />;
+  } else if (isError) {
+    content = (
+      <div className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
+        <h2 className="text-xl font-bold text-anvil-red mb-2">Error de conexión</h2>
+        <p className="text-gray-400 mb-4 text-center max-w-md">
+          {error instanceof Error ? error.message : 'No se pudo cargar el perfil.'}
+        </p>
+        <button
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
+          className="bg-white text-black px-6 py-3 rounded-lg font-black uppercase tracking-wider hover:bg-gray-200 transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
   } else if (!user) {
     content = (
       <LandingPage

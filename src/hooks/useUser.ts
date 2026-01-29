@@ -12,49 +12,76 @@ export interface UserProfile {
 }
 
 const fetchUser = async (): Promise<UserProfile | null> => {
-    // 1. Get Session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return null;
+    console.log('useUser: Starting fetchUser');
 
-    const userId = session.user.id;
-    const meta = session.user.user_metadata;
+    const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+    );
 
-    // 2. Fetch Profile from DB
-    let { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+    const fetchLogic = async () => {
+        // 1. Get Session
+        console.log('useUser: Getting session...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    // 3. Handle missing profile (Create if needed)
-    if (error && error.code === 'PGRST116') {
-        const { data: newProfile, error: createError } = await supabase
+        if (sessionError) {
+            console.error('useUser: Session error', sessionError);
+            throw sessionError;
+        }
+
+        if (!session?.user) {
+            console.log('useUser: No session found');
+            return null;
+        }
+
+        const userId = session.user.id;
+        const meta = session.user.user_metadata;
+        console.log('useUser: Session found for', userId);
+
+        // 2. Fetch Profile from DB
+        console.log('useUser: Fetching profile...');
+        let { data: profile, error } = await supabase
             .from('profiles')
-            .insert([{
-                id: userId,
-                full_name: meta?.full_name || session.user.email?.split('@')[0],
-                nickname: meta?.nickname || 'Atleta',
-                role: 'athlete'
-            }])
-            .select()
+            .select('*')
+            .eq('id', userId)
             .single();
 
-        if (createError) throw createError;
-        profile = newProfile;
-    } else if (error) {
-        throw error;
-    }
+        // 3. Handle missing profile (Create if needed)
+        if (error && error.code === 'PGRST116') {
+            console.log('useUser: Profile not found, creating...');
+            const { data: newProfile, error: createError } = await supabase
+                .from('profiles')
+                .insert([{
+                    id: userId,
+                    full_name: meta?.full_name || session.user.email?.split('@')[0],
+                    nickname: meta?.nickname || 'Atleta',
+                    role: 'athlete'
+                }])
+                .select()
+                .single();
 
-    // 4. Transform to application User object
-    return {
-        id: userId,
-        email: session.user.email,
-        name: profile?.full_name || profile?.name || meta?.full_name,
-        nickname: profile?.nickname,
-        profile_image: profile?.avatar_url || profile?.profile_image || meta?.avatar_url,
-        role: profile?.role || 'athlete',
-        user_metadata: meta
+            if (createError) {
+                console.error('useUser: Error creating profile', createError);
+                throw createError;
+            }
+            profile = newProfile;
+        } else if (error) {
+            console.error('useUser: Profile fetch error', error);
+            throw error;
+        }
+
+        // 4. Transform to application User object
+        return {
+            id: userId,
+            email: session.user.email,
+            name: profile?.full_name || profile?.name || meta?.full_name,
+            nickname: profile?.nickname,
+            profile_image: profile?.avatar_url || profile?.profile_image || meta?.avatar_url,
+            role: profile?.role || 'athlete',
+            user_metadata: meta
+        };
     };
+
+    return Promise.race([fetchLogic(), timeout]) as Promise<UserProfile | null>;
 };
 
 export const useUser = () => {
