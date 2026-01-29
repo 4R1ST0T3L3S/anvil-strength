@@ -360,7 +360,7 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-300 mb-2">Press Banca (kg)</label>
+                                        <label className="block text-sm font-bold text-gray-300 mb-2">Press de Banca (kg)</label>
                                         <input
                                             type="number"
                                             value={formData.bench_pr || ''}
