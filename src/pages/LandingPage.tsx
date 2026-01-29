@@ -5,6 +5,7 @@ import { TeamModal } from '../components/TeamModal';
 import { AthleteDetailsModal } from '../components/AthleteDetailsModal';
 import { CoachDetailsModal } from '../components/CoachDetailsModal';
 import { BlogSection } from '../components/BlogSection';
+import { BenefitsSection } from '../components/BenefitsSection';
 import { athletes, Athlete } from '../data/athletes';
 import { coaches, Coach } from '../data/coaches';
 
@@ -267,6 +268,9 @@ export function LandingPage({ onLoginClick, user, onGoToDashboard }: LandingPage
                     </div>
                 </div>
             </section>
+
+            {/* Benefits Section */}
+            <BenefitsSection />
 
             {/* Entrenadores Section */}
             <section id="entrenadores" className="min-h-[70vh] flex flex-col justify-center py-20 bg-[#252525]">
