@@ -14,7 +14,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     nickname: '',
@@ -23,7 +23,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
     squat_pr: '',
     bench_pr: '',
     deadlift_pr: '',
-    bio: '',
+    biography: '',
     profile_image: ''
   });
 
@@ -37,7 +37,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
         squat_pr: user.squat_pr || '',
         bench_pr: user.bench_pr || '',
         deadlift_pr: user.deadlift_pr || '',
-        bio: user.bio || '',
+        biography: user.biography || '',
         profile_image: user.profile_image || ''
       });
     }
@@ -97,7 +97,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
           squat_pr: formData.squat_pr ? parseFloat(formData.squat_pr as string) : null,
           bench_pr: formData.bench_pr ? parseFloat(formData.bench_pr as string) : null,
           deadlift_pr: formData.deadlift_pr ? parseFloat(formData.deadlift_pr as string) : null,
-          bio: formData.bio,
+          biography: formData.biography,
           profile_image: formData.profile_image,
         });
 
@@ -118,9 +118,9 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-      
+
       <div className="relative bg-[#1c1c1c] w-full max-w-2xl rounded-xl border border-white/10 shadow-2xl p-8 max-h-[90vh] overflow-y-auto">
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
         >
@@ -157,7 +157,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                 accept="image/*"
                 onChange={handleFileChange}
               />
-              <div 
+              <div
                 onClick={() => fileInputRef.current?.click()}
                 className="w-32 h-32 md:w-40 md:h-40 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative"
               >
@@ -177,7 +177,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                 )}
               </div>
               {formData.profile_image && (
-                <button 
+                <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); removePhoto(); }}
                   className="absolute -top-2 -right-2 bg-anvil-red text-white p-1.5 rounded-full hover:bg-red-700 transition-colors shadow-lg"
@@ -196,7 +196,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   type="text"
                   className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
               </div>
@@ -207,7 +207,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                   type="text"
                   className="w-full bg-[#1c1c1c] border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold tracking-widest"
                   value={formData.nickname}
-                  onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                   required
                 />
               </div>
@@ -225,7 +225,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                     <select
                       className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                       value={formData.age_category}
-                      onChange={(e) => setFormData({...formData, age_category: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, age_category: e.target.value })}
                     >
                       <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Seleccionar</option>
                       <option value="Sub-Junior" className="bg-[#1c1c1c] text-white">Sub-Junior</option>
@@ -243,7 +243,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                     <select
                       className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
                       value={formData.weight_category}
-                      onChange={(e) => setFormData({...formData, weight_category: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, weight_category: e.target.value })}
                     >
                       <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Seleccionar</option>
                       <optgroup label="Masculino" className="bg-[#1c1c1c] text-anvil-red font-bold">
@@ -276,8 +276,8 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                 <textarea
                   rows={6}
                   className="w-full flex-1 bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors resize-none text-sm"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  value={formData.biography}
+                  onChange={(e) => setFormData({ ...formData, biography: e.target.value })}
                   placeholder="Escribe tus objetivos..."
                 />
               </div>
@@ -286,7 +286,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
             {/* Performance Info */}
             <div className="space-y-4">
               <h3 className="text-white text-xs font-black uppercase tracking-[0.2em] mb-4 border-l-2 border-anvil-red pl-3">Marcas (PRs)</h3>
-              
+
               <div className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Sentadilla (kg)</label>
@@ -295,7 +295,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                     step="0.1"
                     className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red"
                     value={formData.squat_pr}
-                    onChange={(e) => setFormData({...formData, squat_pr: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, squat_pr: e.target.value })}
                   />
                 </div>
 
@@ -306,7 +306,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                     step="0.1"
                     className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red"
                     value={formData.bench_pr}
-                    onChange={(e) => setFormData({...formData, bench_pr: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, bench_pr: e.target.value })}
                   />
                 </div>
 
@@ -317,7 +317,7 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
                     step="0.1"
                     className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red"
                     value={formData.deadlift_pr}
-                    onChange={(e) => setFormData({...formData, deadlift_pr: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, deadlift_pr: e.target.value })}
                   />
                 </div>
               </div>
