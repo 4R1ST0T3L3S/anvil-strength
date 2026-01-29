@@ -65,10 +65,8 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
         {
             icon: <Calendar size={20} />,
             label: 'Calendario AEP',
-            onClick: () => { }, // External link handled by isExternal
-            isActive: false,
-            isExternal: true,
-            href: 'https://www.powerlifting-aep.es/calendario/'
+            onClick: () => setIsCalendarOpen(true),
+            isActive: false
         },
         {
             icon: <User size={20} />,
