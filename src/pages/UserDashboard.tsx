@@ -51,12 +51,6 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
             isActive: currentView === 'planning'
         },
         {
-            icon: <User size={20} />,
-            label: 'Mi Perfil',
-            onClick: () => window.location.href = '/profile',
-            isActive: false
-        },
-        {
             icon: <Utensils size={20} />,
             label: 'Mi Nutrición',
             onClick: () => setCurrentView('nutrition'),
@@ -75,6 +69,12 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
             isActive: false,
             isExternal: true,
             href: 'https://www.powerlifting-aep.es/calendario/'
+        },
+        {
+            icon: <User size={20} />,
+            label: 'Mi Perfil',
+            onClick: () => window.location.href = '/profile',
+            isActive: false
         }
     ];
 

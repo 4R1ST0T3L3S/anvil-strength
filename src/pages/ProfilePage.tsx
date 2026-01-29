@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useUser } from '../hooks/useUser';
 import { Loader, Save, Upload, X } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { Home, Users, Calendar, BarChart3, User } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Trophy, User, FileText, Utensils } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfilePageProps {
@@ -36,9 +36,9 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
     useEffect(() => {
         if (user) {
             setFormData({
-                name: user.name || '',
+                name: user.full_name || user.nickname || '',
                 nickname: user.nickname || '',
-                profile_image: user.profile_image || '',
+                profile_image: user.avatar_url || '',
                 weight_category: user.weight_category || '',
                 age_category: user.age_category || '',
                 squat_pr: user.squat_pr || 0,
@@ -46,7 +46,7 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
                 deadlift_pr: user.deadlift_pr || 0,
                 biography: user.biography || ''
             });
-            setImagePreview(user.profile_image || null);
+            setImagePreview(user.avatar_url || null);
         }
     }, [user]);
 
@@ -106,20 +106,20 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
             }
 
             const updateData: Record<string, unknown> = {
-                name: formData.name,
+                full_name: formData.name,
                 nickname: formData.nickname,
-                profile_image: profileImageUrl
+                avatar_url: profileImageUrl
             };
 
             // Add role-specific fields
             if (user.role === 'athlete') {
-                updateData.weight_category = formData.weight_category;
-                updateData.age_category = formData.age_category;
+                updateData.weight_category = formData.weight_category || null;
+                updateData.age_category = formData.age_category || null;
                 updateData.squat_pr = formData.squat_pr || null;
                 updateData.bench_pr = formData.bench_pr || null;
                 updateData.deadlift_pr = formData.deadlift_pr || null;
             } else if (user.role === 'coach') {
-                updateData.biography = formData.biography;
+                updateData.biography = formData.biography || null;
             }
 
             const { error } = await supabase
@@ -156,15 +156,75 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
         );
     }
 
+    // Complete menu items matching respective dashboards
     const menuItems = user.role === 'coach' ? [
-        { icon: <Home size={20} />, label: 'Dashboard', onClick: () => navigate('/coach-dashboard'), isActive: false },
-        { icon: <Users size={20} />, label: 'Atletas', onClick: () => navigate('/coach-dashboard'), isActive: false },
-        { icon: <User size={20} />, label: 'Mi Perfil', onClick: () => navigate('/profile'), isActive: true }
+        {
+            icon: <LayoutDashboard size={20} />,
+            label: 'Dashboard',
+            onClick: () => navigate('/coach-dashboard'),
+            isActive: false
+        },
+        {
+            icon: <Users size={20} />,
+            label: 'Mis Atletas',
+            onClick: () => navigate('/coach-dashboard'),
+            isActive: false
+        },
+        {
+            icon: <Trophy size={20} />,
+            label: 'Agenda Equipo',
+            onClick: () => navigate('/coach-dashboard'),
+            isActive: false
+        },
+        {
+            icon: <Calendar size={20} />,
+            label: 'Calendario AEP',
+            onClick: () => navigate('/coach-dashboard'),
+            isActive: false
+        },
+        {
+            icon: <User size={20} />,
+            label: 'Mi Perfil',
+            onClick: () => navigate('/profile'),
+            isActive: true
+        }
     ] : [
-        { icon: <Home size={20} />, label: 'Home', onClick: () => navigate('/dashboard'), isActive: false },
-        { icon: <Calendar size={20} />, label: 'Planificación', onClick: () => navigate('/dashboard'), isActive: false },
-        { icon: <BarChart3 size={20} />, label: 'Progreso', onClick: () => navigate('/dashboard'), isActive: false },
-        { icon: <User size={20} />, label: 'Mi Perfil', onClick: () => navigate('/profile'), isActive: true }
+        {
+            icon: <LayoutDashboard size={20} />,
+            label: 'Home',
+            onClick: () => navigate('/dashboard'),
+            isActive: false
+        },
+        {
+            icon: <FileText size={20} />,
+            label: 'Mi Planificación',
+            onClick: () => navigate('/dashboard'),
+            isActive: false
+        },
+        {
+            icon: <Utensils size={20} />,
+            label: 'Mi Nutrición',
+            onClick: () => navigate('/dashboard'),
+            isActive: false
+        },
+        {
+            icon: <Trophy size={20} />,
+            label: 'Mis Competiciones',
+            onClick: () => navigate('/dashboard'),
+            isActive: false
+        },
+        {
+            icon: <Calendar size={20} />,
+            label: 'Calendario AEP',
+            onClick: () => navigate('/dashboard'),
+            isActive: false
+        },
+        {
+            icon: <User size={20} />,
+            label: 'Mi Perfil',
+            onClick: () => navigate('/profile'),
+            isActive: true
+        }
     ];
 
     return (

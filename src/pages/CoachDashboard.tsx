@@ -58,12 +58,6 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             isActive: currentView === 'athletes' || currentView === 'athlete_details'
         },
         {
-            icon: <User size={20} />,
-            label: 'Mi Perfil',
-            onClick: () => window.location.href = '/profile',
-            isActive: false
-        },
-        {
             icon: <Trophy size={20} />,
             label: 'Agenda Equipo',
             onClick: () => setCurrentView('schedule'),
@@ -74,6 +68,12 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             label: 'Calendario AEP',
             onClick: () => setIsCalendarOpen(true),
             isActive: false // Opens modal, doesn't change view
+        },
+        {
+            icon: <User size={20} />,
+            label: 'Mi Perfil',
+            onClick: () => window.location.href = '/profile',
+            isActive: false
         }
     ];
 

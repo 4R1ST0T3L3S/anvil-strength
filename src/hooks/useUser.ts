@@ -6,9 +6,9 @@ import { Profile, Role } from '../types/database';
 export interface UserProfile {
     id: string;
     email?: string;
-    name: string;
+    full_name: string; // Changed from 'name' to match database schema
     nickname?: string;
-    profile_image?: string;
+    avatar_url?: string; // Changed from 'profile_image' to match database schema
     role: Role;
     age_category?: string;
     weight_category?: string;
@@ -17,6 +17,9 @@ export interface UserProfile {
     bench_pr?: number;
     deadlift_pr?: number;
     user_metadata?: Record<string, unknown>;
+    // Backward compatibility aliases (deprecated)
+    name?: string; // Alias for full_name
+    profile_image?: string; // Alias for avatar_url
 }
 
 const fetchUser = async (): Promise<UserProfile | null> => {
@@ -45,11 +48,14 @@ const fetchUser = async (): Promise<UserProfile | null> => {
         const optimisticUser: UserProfile = {
             id: userId,
             email: session.user.email,
-            name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+            full_name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
             nickname: meta?.nickname,
-            profile_image: meta?.avatar_url,
+            avatar_url: meta?.avatar_url,
             role: sessionRole,
-            user_metadata: meta
+            user_metadata: meta,
+            // Backward compatibility aliases
+            name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+            profile_image: meta?.avatar_url
         };
 
         // 2. Fetch Profile (Background Update)
@@ -87,16 +93,19 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             if (profile) {
                 return {
                     ...optimisticUser,
-                    name: profile.full_name || optimisticUser.name,
+                    full_name: profile.full_name || optimisticUser.full_name,
                     nickname: profile.nickname || optimisticUser.nickname,
                     role: profile.role || optimisticUser.role,
-                    profile_image: profile.avatar_url || optimisticUser.profile_image,
+                    avatar_url: profile.avatar_url || optimisticUser.avatar_url,
                     age_category: profile.age_category,
                     weight_category: profile.weight_category,
                     biography: profile.biography,
                     squat_pr: profile.squat_pr,
                     bench_pr: profile.bench_pr,
-                    deadlift_pr: profile.deadlift_pr
+                    deadlift_pr: profile.deadlift_pr,
+                    // Backward compatibility
+                    name: profile.full_name || optimisticUser.full_name,
+                    profile_image: profile.avatar_url || optimisticUser.avatar_url
                 };
             }
         } catch {

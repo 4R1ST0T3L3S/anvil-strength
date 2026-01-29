@@ -150,7 +150,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold">
+          <div data-testid="auth-error-message" className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold">
             {error}
           </div>
         )}
@@ -234,6 +234,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <label htmlFor="email" className="sr-only">Correo electrónico</label>
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
             <input
+              data-testid="auth-email-input"
               id="email"
               name="email"
               type="email"
@@ -250,6 +251,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <label htmlFor="password" className="sr-only">Contraseña</label>
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
             <input
+              data-testid="auth-password-input"
               key={isLogin ? 'login-password' : 'register-password'}
               id="password"
               name="password"
@@ -323,6 +325,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           )}
 
           <button
+            data-testid="auth-submit-button"
             type="submit"
             disabled={isLoading}
             className="w-full bg-white text-black font-black uppercase py-4 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-6 shadow-xl shadow-black/20"

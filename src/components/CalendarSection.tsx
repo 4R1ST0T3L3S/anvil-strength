@@ -10,6 +10,7 @@ export function CalendarSection() {
     useEffect(() => {
         const loadData = async () => {
             try {
+                setError(null); // Reset error state
                 const data = await fetchCompetitions();
                 // Additional filtering to remove placeholder rows often found in these sheets
                 const filtered = data.filter(c =>
@@ -18,10 +19,37 @@ export function CalendarSection() {
                     !c.fecha.toLowerCase().includes('fecha') &&
                     c.campeonato
                 );
+
                 setCompetitions(filtered);
             } catch (err) {
-                console.error('Calendar Error:', err);
-                setError(err instanceof Error ? err.message : 'No se pudo cargar el calendario. Inténtalo más tarde.');
+                // Detailed error logging for debugging
+                console.error('❌ ERROR AL CARGAR CALENDARIO AEP:', {
+                    error: err,
+                    errorType: err instanceof Error ? err.constructor.name : typeof err,
+                    message: err instanceof Error ? err.message : String(err),
+                    stack: err instanceof Error ? err.stack : undefined
+                });
+
+                // User-friendly error messages based on error type
+                let userMessage = 'No se pudo cargar el calendario de la AEP.';
+
+                if (err instanceof Error) {
+                    const errMsg = err.message.toLowerCase();
+
+                    if (errMsg.includes('network') || errMsg.includes('fetch') || errMsg.includes('cors')) {
+                        userMessage = '🌐 Problema de conexión con el servidor de la AEP. Por favor, revisa tu conexión a internet.';
+                    } else if (errMsg.includes('403') || errMsg.includes('forbidden') || errMsg.includes('unauthorized')) {
+                        userMessage = '🔒 No tienes permiso para ver el calendario. Contacta con tu entrenador.';
+                    } else if (errMsg.includes('404') || errMsg.includes('not found')) {
+                        userMessage = '📅 El calendario de la AEP no está disponible temporalmente.';
+                    } else if (errMsg.includes('timeout')) {
+                        userMessage = '⏱️ La petición tardó demasiado. Reintenta en unos segundos.';
+                    } else {
+                        userMessage = `⚠️ ${err.message}`;
+                    }
+                }
+
+                setError(userMessage);
             } finally {
                 setLoading(false);
             }
