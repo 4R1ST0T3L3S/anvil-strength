@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Users, Trophy, AlertTriangle, TrendingUp } from 'lucide-react';
 
@@ -23,7 +23,7 @@ export function CoachHome({ user }: { user: any }) {
 
                 // 2. Get Next Competition
                 const today = new Date().toISOString().split('T')[0];
-                const { data: nextComp, error: compError } = await supabase
+                const { data: nextComp } = await supabase
                     .from('competition_entries')
                     .select('competition_name, target_date')
                     .gte('target_date', today)

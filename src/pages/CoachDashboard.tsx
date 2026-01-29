@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     LayoutDashboard,
     Users,
@@ -9,7 +9,7 @@ import { CoachHome } from '../components/coach/CoachHome';
 import { CoachAthletes } from '../components/coach/CoachAthletes';
 import { CoachAthleteDetails } from '../components/coach/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/coach/CoachTeamSchedule';
-import { CalendarModal } from '../components/CalendarModal';
+import { CalendarModal } from '../components/modals/CalendarModal';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 
 interface CoachDashboardProps {

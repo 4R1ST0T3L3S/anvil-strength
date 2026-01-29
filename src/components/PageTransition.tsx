@@ -16,7 +16,7 @@ export const PageTransition = ({ children }: PageTransitionProps) => {
 
     // Bind the drag gesture
     const bind = useDrag(
-        ({ movement: [mx], velocity: [vx], direction: [dx], cancel, last }) => {
+        ({ movement: [mx], velocity: [vx], last }) => {
             // Logic:
             // 1. Must be a right swipe (mx > 0, dx > 0)
             // 2. Must not be on a root path

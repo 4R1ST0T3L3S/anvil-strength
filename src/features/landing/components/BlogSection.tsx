@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, User, Send, Trash2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 interface Comment {
   id: number;
@@ -45,7 +45,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
         .from('posts')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       setPosts(data || []);
     } catch (error) {
@@ -136,14 +136,13 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
               <p className="text-gray-500 italic">No hay publicaciones todavía.</p>
             ) : (
               posts.map((post) => (
-                <div 
+                <div
                   key={post.id}
                   onClick={() => setSelectedPost(post)}
-                  className={`p-6 border cursor-pointer transition-all rounded-xl ${
-                    selectedPost?.id === post.id 
-                      ? 'border-anvil-red bg-white/5 shadow-lg shadow-anvil-red/5' 
+                  className={`p-6 border cursor-pointer transition-all rounded-xl ${selectedPost?.id === post.id
+                      ? 'border-anvil-red bg-white/5 shadow-lg shadow-anvil-red/5'
                       : 'border-white/5 hover:border-white/20'
-                  }`}
+                    }`}
                 >
                   <h4 className="text-lg font-bold uppercase mb-2">{post.title}</h4>
                   <div className="flex items-center gap-2 text-xs text-gray-500 uppercase font-bold">
@@ -185,7 +184,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
                         placeholder="Escribe un comentario..."
                         className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-anvil-red transition-colors"
                       />
-                      <button 
+                      <button
                         type="submit"
                         disabled={loading || !newComment.trim()}
                         className="bg-anvil-red hover:bg-red-700 disabled:bg-gray-600 text-white px-6 py-2 rounded-xl font-bold uppercase flex items-center gap-2 transition-colors"
@@ -214,7 +213,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ user }) => {
                             </span>
                           </div>
                           {user && user.id === comment.user_id && (
-                            <button 
+                            <button
                               onClick={() => handleDeleteComment(comment.id)}
                               className="text-gray-600 hover:text-red-500 transition-colors"
                             >

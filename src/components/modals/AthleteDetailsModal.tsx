@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Trophy, Dumbbell, Activity } from 'lucide-react';
-import { Athlete } from '../data/athletes';
+import { Athlete } from '../../data/athletes';
 
 interface AthleteDetailsModalProps {
   isOpen: boolean;
@@ -13,15 +13,15 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <div 
+      <div
         className="absolute inset-0 bg-black/90 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       <div className="relative bg-[#1c1c1c] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl flex flex-col md:flex-row">
-        
+
         {/* Close Button Mobile */}
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 p-2 bg-black/50 rounded-full text-white md:hidden"
         >
@@ -30,8 +30,8 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
 
         {/* Image Section */}
         <div className="w-full md:w-1/2 aspect-[3/4] md:aspect-auto relative">
-          <img 
-            src={athlete.image} 
+          <img
+            src={athlete.image}
             alt={athlete.name}
             className="w-full h-full object-cover"
           />
@@ -50,7 +50,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
         <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col">
           {/* Close Button Desktop */}
           <div className="hidden md:flex justify-end mb-8">
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors"
             >
@@ -69,7 +69,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
 
           {/* Stats Grid */}
           <div className="space-y-8">
-            
+
             {/* Main Stats */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#252525] p-4 rounded-xl border border-white/5 shadow-lg">

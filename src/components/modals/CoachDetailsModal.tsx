@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Instagram, Mail, FileText } from 'lucide-react';
-import { Coach } from '../data/coaches';
+import { Coach } from '../../data/coaches';
 
 interface CoachDetailsModalProps {
   isOpen: boolean;
@@ -13,15 +13,15 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <div 
+      <div
         className="absolute inset-0 bg-black/90 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       <div className="relative bg-[#1c1c1c] w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl flex flex-col md:flex-row">
-        
+
         {/* Close Button Mobile */}
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 p-2 bg-black/50 rounded-full text-white md:hidden"
         >
@@ -30,8 +30,8 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
 
         {/* Image Section */}
         <div className="w-full md:w-1/2 aspect-[3/4] md:aspect-auto relative">
-          <img 
-            src={coach.image} 
+          <img
+            src={coach.image}
             alt={coach.name}
             className="w-full h-full object-cover"
           />
@@ -50,7 +50,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
         <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col">
           {/* Close Button Desktop */}
           <div className="hidden md:flex justify-end mb-8">
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors"
             >
@@ -77,38 +77,38 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
 
           {/* Contact */}
           <div className="mt-auto">
-             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Contacto</h3>
-             <div className="flex flex-wrap gap-4">
-                <a 
-                  href={coach.instagram} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl group"
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Contacto</h3>
+            <div className="flex flex-wrap gap-4">
+              <a
+                href={coach.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl group"
+              >
+                <Instagram size={20} />
+                <span className="font-bold uppercase text-sm">Instagram</span>
+              </a>
+              {coach.contactForm && (
+                <a
+                  href={coach.contactForm}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl"
                 >
-                  <Instagram size={20} />
-                  <span className="font-bold uppercase text-sm">Instagram</span>
+                  <FileText size={20} />
+                  <span className="font-bold uppercase text-sm">Formulario</span>
                 </a>
-                {coach.contactForm && (
-                  <a 
-                    href={coach.contactForm}
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl"
-                  >
-                    <FileText size={20} />
-                    <span className="font-bold uppercase text-sm">Formulario</span>
-                  </a>
-                )}
-                {coach.email && (
-                  <a 
-                    href={`mailto:${coach.email}`}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl"
-                  >
-                    <Mail size={20} />
-                    <span className="font-bold uppercase text-sm">Email</span>
-                  </a>
-                )}
-             </div>
+              )}
+              {coach.email && (
+                <a
+                  href={`mailto:${coach.email}`}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#252525] hover:bg-anvil-red text-white transition-colors rounded-xl"
+                >
+                  <Mail size={20} />
+                  <span className="font-bold uppercase text-sm">Email</span>
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>

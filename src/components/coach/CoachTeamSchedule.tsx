@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Calendar, User, MapPin } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export function CoachTeamSchedule() {
     const [competitions, setCompetitions] = useState<any[]>([]);

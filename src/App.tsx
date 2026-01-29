@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
-import { AuthModal } from './components/AuthModal';
-import { SettingsModal } from './components/SettingsModal';
+import { AuthModal } from './features/auth/components/AuthModal';
+import { SettingsModal } from './components/modals/SettingsModal';
 import { Loader } from 'lucide-react';
 
 // Lazy Load Pages - REVERTED for Debugging
@@ -154,7 +154,6 @@ function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLogin={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
       />
 
       {user && (

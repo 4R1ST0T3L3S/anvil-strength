@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../services/aepService';
 

@@ -17,7 +17,7 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
         // `https://thingproxy.freeboard.io/fetch/${targetUrl}` // Backup if needed
     ];
 
-    let lastError: any;
+    let lastError: unknown;
 
     for (const proxy of proxies) {
         try {
@@ -33,13 +33,16 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
             if (!text || text.trim().length === 0) throw new Error('Empty response');
 
             return text;
-        } catch (err: any) {
-            console.warn(`Proxy failed: ${proxy}`, err.name === 'AbortError' ? 'Timeout' : err.message);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            const errorName = err instanceof Error ? err.name : 'Error';
+            console.warn(`Proxy failed: ${proxy}`, errorName === 'AbortError' ? 'Timeout' : errorMessage);
             lastError = err;
         }
     }
 
-    throw new Error(`All proxies failed. Last error: ${lastError?.message || 'Unknown'}`);
+    const lastErrorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+    throw new Error(`All proxies failed. Last error: ${lastErrorMessage || 'Unknown'}`);
 };
 
 // Helper to parse Spanish date formats
@@ -84,7 +87,7 @@ const parseDate = (dateStr: string): Date | null => {
         if (day < 1 || day > 31) return null;
 
         return new Date(year, monthIndex, day);
-    } catch (e) {
+    } catch {
         return null;
     }
 };
@@ -178,15 +181,16 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                     console.log(`Parsed ${validData.length} valid competitions.`);
                     resolve(validData);
                 },
-                error: (error: any) => {
+                error: (error: Error) => {
                     console.error('PapaParse logic error:', error);
                     reject(new Error(`Error parseando CSV: ${error.message}`));
                 }
             });
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Service catch block:', error);
         // Propagate the error message
-        throw new Error(error.message || 'Error desconocido al cargar el calendario');
+        const message = error instanceof Error ? error.message : 'Error desconocido al cargar el calendario';
+        throw new Error(message);
     }
 };

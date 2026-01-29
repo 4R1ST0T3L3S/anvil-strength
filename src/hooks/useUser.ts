@@ -1,5 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+
+import { Profile, Role } from '../types/database';
 
 export interface UserProfile {
     id: string;
@@ -7,23 +9,30 @@ export interface UserProfile {
     name: string;
     nickname?: string;
     profile_image?: string;
-    role: 'athlete' | 'coach' | 'admin';
+    role: Role;
+    age_category?: string;
+    weight_category?: string;
+    biography?: string;
+    squat_pr?: number;
+    bench_pr?: number;
+    deadlift_pr?: number;
     user_metadata?: any;
 }
 
 const fetchUser = async (): Promise<UserProfile | null> => {
-    // 1. Get Session with Strict Timeout (Prevent hanging on "Verifying session...")
+    // 1. Get Session with Strict Timeout
     try {
         const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) =>
+        const timeoutPromise = new Promise<{ data: { session: null }; error: Error }>((_, reject) =>
             setTimeout(() => reject(new Error('Session check timeout')), 4000)
         );
 
-        // This ensures we never wait more than 4s for Supabase to tell us the session
-        const { data: { session }, error: sessionError } = await Promise.race([
-            sessionPromise,
-            timeoutPromise
-        ]) as any;
+        // Safe Promise.race typing
+        const result = await Promise.race([sessionPromise, timeoutPromise]);
+
+        // Type guard or check structure
+        const session = 'data' in result ? result.data.session : null;
+        const sessionError = 'error' in result ? result.error : null;
 
         if (sessionError || !session?.user) {
             return null;
@@ -31,7 +40,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
 
         const userId = session.user.id;
         const meta = session.user.user_metadata;
-        const sessionRole = (meta?.role as 'athlete' | 'coach' | 'admin') || 'athlete';
+        const sessionRole = (meta?.role as Role) || 'athlete';
 
         const optimisticUser: UserProfile = {
             id: userId,
@@ -44,14 +53,13 @@ const fetchUser = async (): Promise<UserProfile | null> => {
         };
 
         // 2. Fetch Profile (Background Update)
-        // If this fails/timesout, we just return the Optimistic User
         try {
-            const dbTimeout = new Promise((_, reject) =>
+            const dbTimeout = new Promise<null>((_, reject) =>
                 setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
             );
 
-            const dbFetch = async () => {
-                let { data: profile, error } = await supabase
+            const dbFetch = async (): Promise<Profile | null> => {
+                const { data, error } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', userId)
@@ -69,20 +77,26 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                         }])
                         .select()
                         .single();
-                    profile = newProfile;
+                    return newProfile as Profile;
                 }
-                return profile;
+                return data as Profile;
             };
 
-            const profile = await Promise.race([dbFetch(), dbTimeout]) as any;
+            const profile = await Promise.race([dbFetch(), dbTimeout]);
 
             if (profile) {
                 return {
                     ...optimisticUser,
-                    name: profile.full_name || profile.name || optimisticUser.name,
+                    name: profile.full_name || optimisticUser.name,
                     nickname: profile.nickname || optimisticUser.nickname,
                     role: profile.role || optimisticUser.role,
-                    profile_image: profile.avatar_url || profile.profile_image || optimisticUser.profile_image
+                    profile_image: profile.avatar_url || optimisticUser.profile_image,
+                    age_category: profile.age_category,
+                    weight_category: profile.weight_category,
+                    biography: profile.biography,
+                    squat_pr: profile.squat_pr,
+                    bench_pr: profile.bench_pr,
+                    deadlift_pr: profile.deadlift_pr
                 };
             }
         } catch (e) {
@@ -93,7 +107,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
 
     } catch (e) {
         console.error('Session check failed or timed out', e);
-        return null; // Fail safe to logged out state
+        return null;
     }
 };
 
@@ -101,22 +115,7 @@ export const useUser = () => {
     return useQuery({
         queryKey: ['user'],
         queryFn: fetchUser,
-        staleTime: 1000 * 60 * 5,
-        retry: 0, // Fail fast now that we handle timeouts internally
-        refetchOnWindowFocus: false // Prevent inconsistent reloading
-    });
-};
-
-export const useLogout = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async () => {
-            await supabase.auth.signOut();
-        },
-        onSuccess: () => {
-            queryClient.setQueryData(['user'], null);
-            queryClient.clear();
-            localStorage.removeItem('user'); // Cleanup legacy local storage
-        }
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        retry: 1
     });
 };

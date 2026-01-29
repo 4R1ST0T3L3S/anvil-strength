@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, FileText, Mail, Instagram, Menu, X, User, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
-import { TeamModal } from '../components/TeamModal';
-import { AthleteDetailsModal } from '../components/AthleteDetailsModal';
-import { CoachDetailsModal } from '../components/CoachDetailsModal';
-import { BlogSection } from '../components/BlogSection';
-import { BenefitsSection } from '../components/BenefitsSection';
+import { TeamModal } from '../components/modals/TeamModal';
+import { AthleteDetailsModal } from '../components/modals/AthleteDetailsModal';
+import { CoachDetailsModal } from '../components/modals/CoachDetailsModal';
+import { BlogSection } from '../features/landing/components/BlogSection';
+import { BenefitsSection } from '../features/landing/components/BenefitsSection';
 import { athletes, Athlete } from '../data/athletes';
 import { coaches, Coach } from '../data/coaches';
 

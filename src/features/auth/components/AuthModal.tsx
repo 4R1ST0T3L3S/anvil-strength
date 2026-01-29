@@ -1,14 +1,14 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { X, Mail, Lock, User as UserIcon, Loader, Camera } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../../lib/supabase';
+
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (user: any) => void;
 }
 
-export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -67,7 +67,7 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
     try {
       console.log('Iniciando proceso de autenticación...');
       if (isLogin) {
-        const { data, error: authError } = await supabase.auth.signInWithPassword({
+        const { error: authError } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
@@ -117,10 +117,10 @@ export function AuthModal({ isOpen, onClose, onLogin }: AuthModalProps) {
         }
       }, 2000);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error capturado en handleSubmit:', err);
       // Translate common Supabase errors to Spanish friendly messages
-      let msg = err.message;
+      let msg = err instanceof Error ? err.message : 'Error desconocido';
       if (msg.includes('Invalid login credentials')) msg = 'Email o contraseña incorrectos.';
 
       setError(msg || 'Error de conexión con el servidor');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     LayoutDashboard,
     FileText,
@@ -6,7 +6,7 @@ import {
     Calendar,
     Trophy
 } from 'lucide-react';
-import { CalendarModal } from '../components/CalendarModal';
+import { CalendarModal } from '../components/modals/CalendarModal';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 
 interface UserDashboardProps {

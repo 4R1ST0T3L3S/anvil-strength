@@ -1,7 +1,6 @@
-import React from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarSection } from './CalendarSection';
+import { CalendarSection } from '../CalendarSection';
 
 interface CalendarModalProps {
     isOpen: boolean;

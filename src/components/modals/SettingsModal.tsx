@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, User, Save, Loader, Camera, Trash2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useState, useEffect, useRef } from 'react';
+import { X, Save, Loader, Camera, Trash2 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+
+
+import { UserProfile } from '../../hooks/useUser';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: any;
-  onUpdate: (user: any) => void;
+  user: UserProfile | null;
+  onUpdate: (user: UserProfile) => void;
 }
 
 export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModalProps) {
@@ -30,15 +33,15 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.full_name || user.name || '',
+        name: user.name || '',
         nickname: user.nickname || '',
         age_category: user.age_category || '',
         weight_category: user.weight_category || '',
-        squat_pr: user.squat_pr || '',
-        bench_pr: user.bench_pr || '',
-        deadlift_pr: user.deadlift_pr || '',
-        biography: user.biography || user.bio || '',
-        profile_image: user.avatar_url || user.profile_image || ''
+        squat_pr: user.squat_pr?.toString() || '',
+        bench_pr: user.bench_pr?.toString() || '',
+        deadlift_pr: user.deadlift_pr?.toString() || '',
+        biography: user.biography || '',
+        profile_image: user.profile_image || ''
       });
     }
   }, [user, isOpen]);
@@ -103,11 +106,17 @@ export function SettingsModal({ isOpen, onClose, user, onUpdate }: SettingsModal
 
       if (updateError) throw updateError;
 
-      const updatedUser = {
-        ...user,
-        ...formData,
-        full_name: formData.name, // Ensure local state mirrors DB
-        avatar_url: formData.profile_image
+      const updatedUser: UserProfile = {
+        ...user!,
+        name: formData.name,
+        nickname: formData.nickname,
+        age_category: formData.age_category,
+        weight_category: formData.weight_category,
+        squat_pr: formData.squat_pr ? parseFloat(formData.squat_pr as string) : undefined,
+        bench_pr: formData.bench_pr ? parseFloat(formData.bench_pr as string) : undefined,
+        deadlift_pr: formData.deadlift_pr ? parseFloat(formData.deadlift_pr as string) : undefined,
+        biography: formData.biography,
+        profile_image: formData.profile_image
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       onUpdate(updatedUser);
