@@ -10,6 +10,7 @@ import { CoachHome } from '../components/coach/CoachHome';
 import { CoachAthletes } from '../components/coach/CoachAthletes';
 import { CoachAthleteDetails } from '../components/coach/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/coach/CoachTeamSchedule';
+import { CalendarModal } from '../components/CalendarModal';
 
 interface CoachDashboardProps {
     user: any;
@@ -21,6 +22,7 @@ type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_detail
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     const handleSelectAthlete = (id: string) => {
         setSelectedAthleteId(id);
@@ -62,8 +64,8 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                     <button
                         onClick={() => setCurrentView('home')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'home'
-                                ? 'bg-anvil-red text-white font-bold'
-                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-anvil-red text-white font-bold'
+                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
                             }`}
                     >
                         <LayoutDashboard size={20} />
@@ -73,8 +75,8 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                     <button
                         onClick={() => setCurrentView('athletes')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'athletes' || currentView === 'athlete_details'
-                                ? 'bg-anvil-red text-white font-bold'
-                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-anvil-red text-white font-bold'
+                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
                             }`}
                     >
                         <Users size={20} />
@@ -84,23 +86,21 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                     <button
                         onClick={() => setCurrentView('schedule')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'schedule'
-                                ? 'bg-anvil-red text-white font-bold'
-                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                            ? 'bg-anvil-red text-white font-bold'
+                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
                             }`}
                     >
                         <Trophy size={20} />
                         Agenda Equipo
                     </button>
 
-                    <a
-                        href="https://www.powerlifting-aep.es/calendario/"
-                        target="_blank"
-                        rel="noreferrer"
+                    <button
+                        onClick={() => setIsCalendarOpen(true)}
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
                     >
                         <Calendar size={20} />
                         Calendario AEP
-                    </a>
+                    </button>
                 </nav>
 
                 <div className="p-4 border-t border-white/5">
@@ -129,6 +129,11 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             <main className="flex-1 overflow-y-auto bg-[#1c1c1c]">
                 {renderContent()}
             </main>
+
+            <CalendarModal
+                isOpen={isCalendarOpen}
+                onClose={() => setIsCalendarOpen(false)}
+            />
         </div>
     );
 }
