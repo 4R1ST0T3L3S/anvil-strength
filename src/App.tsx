@@ -1,212 +1,135 @@
-// Forzando actualización de claves
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ErrorBoundary } from 'react-error-boundary';
+import { supabase } from './lib/supabase';
+import { useUser } from './hooks/useUser';
 import { AuthModal } from './components/AuthModal';
 import { SettingsModal } from './components/SettingsModal';
 import { PWAPrompt } from './components/PWAPrompt';
-import { supabase } from './lib/supabase';
-import { LandingPage } from './pages/LandingPage';
-import { UserDashboard } from './pages/UserDashboard';
-import { CoachDashboard } from './pages/CoachDashboard';
+import { Loader } from 'lucide-react';
+
+// Lazy Load Pages
+const LandingPage = React.lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
+const UserDashboard = React.lazy(() => import('./pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
+const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+
+function ErrorFallback({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) {
+  return (
+    <div role="alert" className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
+      <h2 className="text-2xl font-bold text-anvil-red mb-2">Algo salió mal</h2>
+      <pre className="text-gray-400 text-sm bg-black/50 p-4 rounded mb-4 max-w-lg overflow-auto">
+        {error.message}
+      </pre>
+      <button
+        onClick={resetErrorBoundary}
+        className="px-4 py-2 bg-white text-black font-bold rounded hover:bg-gray-200"
+      >
+        Intentar de nuevo
+      </button>
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader className="animate-spin text-anvil-red" size={48} />
+        <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">Cargando Anvil Strength...</p>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-
-  // Initialize from localStorage to prevent flash of logged-out state
-  const [user, setUser] = useState<any>(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const { data: user, isLoading } = useUser();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Initial session check
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // Fetch profile
-        let { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        await queryClient.invalidateQueries({ queryKey: ['user'] });
 
-        if (profileError && profileError.code === 'PGRST116') {
-          const { data: newProfile } = await supabase
-            .from('profiles')
-            .insert([{
-              id: session.user.id,
-              full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-              nickname: session.user.user_metadata?.nickname || 'Atleta',
-              role: 'athlete'
-            }])
-            .select()
-            .single();
-          profile = newProfile;
-        }
-
-        // Map DB columns (full_name, avatar_url) to UI expected keys (name, profile_image)
-        const userData = {
-          ...session.user,
-          ...profile,
-          name: profile?.full_name || profile?.name || session.user.user_metadata?.full_name,
-          profile_image: profile?.avatar_url || profile?.profile_image || session.user.user_metadata?.avatar_url,
-          role: profile?.role || 'athlete'
-        };
-
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-      }
-    };
-
-    checkUser();
-
-    // Helper to fetch profile with timeout
-    const fetchProfileSafely = async (userId: string, meta: any) => {
-      try {
-        console.log('Fetching profile for:', userId);
-
-        // Timeout promise
-        const timeout = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
-        );
-
-        // Fetch promise
-        const fetchPromise = supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-
-        // Race them
-        let { data: profile, error: profileError } = await Promise.race([fetchPromise, timeout]) as any;
-
-        if (profileError && profileError.code === 'PGRST116') {
-          console.log('Perfil no encontrado, creando perfil...');
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert([{
-              id: userId,
-              full_name: meta?.full_name || 'Atleta',
-              nickname: meta?.nickname || 'Atleta'
-            }])
-            .select()
-            .single();
-
-          if (createError) {
-            console.error('Error creating profile:', createError);
-            throw createError;
-          }
-          profile = newProfile;
-        } else if (profileError) {
-          throw profileError;
-        }
-
-        return profile;
-      } catch (err) {
-        console.error('Error fetching/creating profile:', err);
-        // Fallback to minimal profile from metadata if DB fails
-        return {
-          id: userId,
-          name: meta?.full_name || 'Atleta',
-          nickname: meta?.nickname || 'Atleta',
-          role: 'athlete'
-        };
-      }
-    };
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Evento de Auth detectado:', event);
-
-      if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session) {
-        try {
-          const profile = await fetchProfileSafely(session.user.id, session.user.user_metadata);
-
-          // Map DB columns (full_name, avatar_url) to UI expected keys (name, profile_image)
-          const userData = {
-            ...session.user,
-            ...profile,
-            name: profile?.full_name || profile?.name,
-            profile_image: profile?.avatar_url || profile?.profile_image,
-            role: profile?.role || 'athlete'
-          };
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-          setIsAuthModalOpen(false); // Close modal if open
-          console.log('Usuario cargado y modal cerrado');
-        } catch (err) {
-          console.error('Critical Auth Error:', err);
-          // Even on error, if we have a session, let them in with basic data
-          setUser(session.user);
+        if (event === 'SIGNED_IN') {
           setIsAuthModalOpen(false);
         }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        localStorage.removeItem('user');
-        console.log('Sesión cerrada');
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    localStorage.removeItem('user');
+    queryClient.setQueryData(['user'], null);
   };
 
-  // Navigation state
-  const [currentView, setCurrentView] = useState<'dashboard' | 'landing' | 'coach_dashboard'>('landing');
+  const handleLoginClick = () => setIsAuthModalOpen(true);
+  const handleOpenSettings = () => setIsSettingsModalOpen(true);
 
-  // Update view when user state changes
-  useEffect(() => {
-    if (user) {
-      if (user.role === 'coach') {
-        setCurrentView('coach_dashboard');
-      } else {
-        setCurrentView('dashboard');
-      }
-    } else {
-      setCurrentView('landing');
-    }
-  }, [user]);
+  // Handlers for modal updates to refresh data
+  const handleProfileUpdate = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['user'] });
+    // We don't necessarily close the modal here, depends on user UX preference, 
+    // but usually SettingsModal stays open or closes itself.
+  };
 
-  return (
-    <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
-      {user && currentView === 'dashboard' ? (
-        <UserDashboard
-          user={user}
-          onLogout={handleLogout}
-          onOpenSettings={() => setIsSettingsModalOpen(true)}
-          onGoToHome={() => setCurrentView('landing')}
-        />
-      ) : user && currentView === 'coach_dashboard' ? (
+  // Determine View
+  let content;
+  if (isLoading) {
+    content = <LoadingScreen />;
+  } else if (!user) {
+    content = (
+      <LandingPage
+        onLoginClick={handleLoginClick}
+        user={null}
+        onGoToDashboard={() => { /* No-op since we redirect if logged in, or show login */ }}
+      />
+    );
+  } else {
+    // Authenticated
+    if (user.role === 'coach') {
+      content = (
         <CoachDashboard
           user={user}
           onLogout={handleLogout}
         />
-      ) : (
-        <LandingPage
-          onLoginClick={() => setIsAuthModalOpen(true)}
+      );
+    } else {
+      content = (
+        <UserDashboard
           user={user}
-          onGoToDashboard={() => setCurrentView('dashboard')}
+          onLogout={handleLogout}
+          onOpenSettings={handleOpenSettings}
+          onGoToHome={() => { /* Probably handled by Sidebar logic now */ }}
         />
-      )}
+      );
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans">
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <Suspense fallback={<LoadingScreen />}>
+          {content}
+        </Suspense>
+      </ErrorBoundary>
 
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onLogin={setUser}
+        onLogin={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
       />
 
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         user={user}
-        onUpdate={setUser}
+        onUpdate={handleProfileUpdate}
       />
       <PWAPrompt />
     </div>

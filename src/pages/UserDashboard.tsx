@@ -4,17 +4,16 @@ import {
     FileText,
     Utensils,
     Calendar,
-    Trophy,
-    LogOut,
-    User
+    Trophy
 } from 'lucide-react';
 import { CalendarModal } from '../components/CalendarModal';
+import { DashboardLayout } from '../components/layout/DashboardLayout';
 
 interface UserDashboardProps {
     user: any;
     onLogout: () => void;
     onOpenSettings: () => void;
-    onGoToHome: () => void; // Keeps the prop for consistency if needed, but sidebar handles nav
+    onGoToHome: () => void;
 }
 
 type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions';
@@ -22,6 +21,53 @@ type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions';
 export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardProps) {
     const [currentView, setCurrentView] = useState<AthleteView>('home');
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+    // Security Check
+    if (user?.role === 'coach') {
+        return (
+            <div className="flex h-screen items-center justify-center bg-[#1c1c1c] text-white">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-anvil-red mb-2">Acceso Denegado</h1>
+                    <p className="text-gray-400">Esta cuenta de entrenador no tiene acceso al panel de atleta.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const menuItems = [
+        {
+            icon: <LayoutDashboard size={20} />,
+            label: 'Home',
+            onClick: () => setCurrentView('home'),
+            isActive: currentView === 'home'
+        },
+        {
+            icon: <FileText size={20} />,
+            label: 'Mi Planificación',
+            onClick: () => setCurrentView('planning'),
+            isActive: currentView === 'planning'
+        },
+        {
+            icon: <Utensils size={20} />,
+            label: 'Mi Nutrición',
+            onClick: () => setCurrentView('nutrition'),
+            isActive: currentView === 'nutrition'
+        },
+        {
+            icon: <Trophy size={20} />,
+            label: 'Mis Competiciones',
+            onClick: () => setCurrentView('competitions'),
+            isActive: currentView === 'competitions'
+        },
+        {
+            icon: <Calendar size={20} />,
+            label: 'Calendario AEP',
+            onClick: () => { }, // External link handled by isExternal
+            isActive: false,
+            isExternal: true,
+            href: 'https://www.powerlifting-aep.es/calendario/'
+        }
+    ];
 
     const renderContent = () => {
         switch (currentView) {
@@ -111,97 +157,21 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
     };
 
     return (
-        <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
-            {/* Sidebar */}
-            <aside className="w-64 bg-[#252525] flex flex-col border-r border-white/5 hidden md:flex">
-                <div className="p-6 border-b border-white/5">
-                    <div className="flex items-center gap-3">
-                        <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
-                        <span className="font-black text-xl tracking-tighter uppercase">Athlete</span>
-                    </div>
-                </div>
-
-                <nav className="flex-1 p-4 space-y-2">
-                    <button
-                        onClick={() => setCurrentView('home')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'home' ? 'bg-anvil-red text-white font-bold' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
-                    >
-                        <LayoutDashboard size={20} />
-                        Home
-                    </button>
-                    <button
-                        onClick={() => setCurrentView('planning')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'planning' ? 'bg-anvil-red text-white font-bold' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
-                    >
-                        <FileText size={20} />
-                        Mi Planificación
-                    </button>
-                    <button
-                        onClick={() => setCurrentView('nutrition')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'nutrition' ? 'bg-anvil-red text-white font-bold' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
-                    >
-                        <Utensils size={20} />
-                        Mi Nutrición
-                    </button>
-                    <button
-                        onClick={() => setCurrentView('competitions')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${currentView === 'competitions' ? 'bg-anvil-red text-white font-bold' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
-                    >
-                        <Trophy size={20} />
-                        Mis Competiciones
-                    </button>
-                    <a
-                        href="https://www.powerlifting-aep.es/calendario/"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-                    >
-                        <Calendar size={20} />
-                        Calendario AEP
-                    </a>
-                </nav>
-
-                <div className="p-4 border-t border-white/5">
-                    <div
-                        className="flex items-center gap-3 px-4 py-3 mb-2 cursor-pointer hover:bg-white/5 rounded-lg transition-colors"
-                        onClick={onOpenSettings}
-                    >
-                        {user.profile_image ? (
-                            <img src={user.profile_image} alt="" className="w-8 h-8 rounded-full object-cover" />
-                        ) : (
-                            <div className="w-8 h-8 rounded-full bg-anvil-red flex items-center justify-center text-xs font-bold">
-                                {user.nickname?.[0] || 'A'}
-                            </div>
-                        )}
-                        <div className="overflow-hidden">
-                            <p className="text-sm font-bold truncate">{user.nickname || user.name}</p>
-                            <p className="text-xs text-gray-500 truncate">Editar Perfil</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
-                    >
-                        <LogOut size={16} />
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </aside>
-
-            {/* Mobile Header (Only visible on mobile) */}
-            <div className="md:hidden">
-                {/* Mobile menu implementation would go here, simplified for now to just show content */}
-            </div>
-
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto bg-[#1c1c1c] w-full">
+        <DashboardLayout
+            user={user}
+            onLogout={onLogout}
+            onOpenSettings={onOpenSettings}
+            menuItems={menuItems}
+            roleLabel="Athlete"
+        >
+            <div className="h-full overflow-y-auto">
                 {renderContent()}
-            </main>
+            </div>
 
             <CalendarModal
                 isOpen={isCalendarOpen}
                 onClose={() => setIsCalendarOpen(false)}
             />
-        </div>
+        </DashboardLayout>
     );
 }
