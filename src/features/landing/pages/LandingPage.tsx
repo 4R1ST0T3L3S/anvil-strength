@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, FileText, Mail, Instagram, Menu, X, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, Menu, X, ShoppingBag, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
@@ -106,6 +106,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
         { name: 'LOGROS', href: '#logros' },
         { name: 'OPINIONES', href: '#reviews' },
         { name: 'AFILIATE', href: '#afiliacion' },
+        { name: 'CONTACTO', href: '#contacto' },
     ];
 
     return (
@@ -459,6 +460,56 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                             className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
                         />
                     </a>
+                </div>
+            </section>
+
+            {/* Contacto Section */}
+            <section id="contacto" className="py-20 bg-[#1c1c1c] border-t border-white/5">
+                <div className="max-w-4xl mx-auto px-6 text-center">
+                    <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-2 text-white">Contacto</h2>
+                    <div className="w-20 h-1 bg-anvil-red mx-auto mb-12"></div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Instagram */}
+                        <a
+                            href="https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
+                        >
+                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
+                                <Instagram size={32} />
+                            </div>
+                            <h3 className="font-bold text-xl uppercase mb-2 text-white">Instagram</h3>
+                            <p className="text-gray-400 text-sm">Síguenos y mándanos DM</p>
+                        </a>
+
+                        {/* Email */}
+                        <a
+                            href="mailto:info@anvilstrength.com"
+                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
+                        >
+                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
+                                <Mail size={32} />
+                            </div>
+                            <h3 className="font-bold text-xl uppercase mb-2 text-white">Email</h3>
+                            <p className="text-gray-400 text-sm">info@anvilstrength.com</p>
+                        </a>
+
+                        {/* WhatsApp (Generic/Placeholder for now as no number provided) */}
+                        <a
+                            href="https://wa.me/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
+                        >
+                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
+                                <MessageCircle size={32} />
+                            </div>
+                            <h3 className="font-bold text-xl uppercase mb-2 text-white">WhatsApp</h3>
+                            <p className="text-gray-400 text-sm">Escríbenos directamente</p>
+                        </a>
+                    </div>
                 </div>
             </section>
             <footer className="bg-black py-16 border-t border-white/10">
