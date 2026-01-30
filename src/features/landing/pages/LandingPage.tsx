@@ -472,7 +472,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Instagram */}
                         <a
-                            href="https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                            href="https://www.instagram.com/anvilstrength_"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
@@ -481,24 +481,24 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                 <Instagram size={32} />
                             </div>
                             <h3 className="font-bold text-xl uppercase mb-2 text-white">Instagram</h3>
-                            <p className="text-gray-400 text-sm">Síguenos y mándanos DM</p>
+                            <p className="text-gray-400 text-sm">@anvilstrength_</p>
                         </a>
 
                         {/* Email */}
                         <a
-                            href="mailto:info@anvilstrength.com"
+                            href="mailto:anvilstrengthclub@gmail.com"
                             className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
                         >
                             <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
                                 <Mail size={32} />
                             </div>
                             <h3 className="font-bold text-xl uppercase mb-2 text-white">Email</h3>
-                            <p className="text-gray-400 text-sm">info@anvilstrength.com</p>
+                            <p className="text-gray-400 text-sm">anvilstrengthclub@gmail.com</p>
                         </a>
 
-                        {/* WhatsApp (Generic/Placeholder for now as no number provided) */}
+                        {/* WhatsApp */}
                         <a
-                            href="https://wa.me/"
+                            href="https://wa.me/34640761674"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
@@ -507,7 +507,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                 <MessageCircle size={32} />
                             </div>
                             <h3 className="font-bold text-xl uppercase mb-2 text-white">WhatsApp</h3>
-                            <p className="text-gray-400 text-sm">Escríbenos directamente</p>
+                            <p className="text-gray-400 text-sm">+34 640 76 16 74</p>
                         </a>
                     </div>
                 </div>

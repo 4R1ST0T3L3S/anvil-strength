@@ -19,7 +19,7 @@ export const coaches: Coach[] = [
     logo: "/javier-estelles-logo.png",
     instagram: "https://www.instagram.com/javierestelles?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
     contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSfACXcjom-FbRi1a-PNyrJdvY_wAO9Hpa3_hktaNY82QDx4tg/viewform",
-    bio: "Graduado en Ciencias de la Actividad Física y el Deporte, y en Nutrición Humana y Dietética. Especialista en rendimiento deportivo y composición corporal. Mi enfoque combina la ciencia del entrenamiento con estrategias nutricionales optimizadas para sacar el máximo potencial de cada atleta."
+    bio: "CIENCIA. RENDIMIENTO. PASIÓN.\n\nDoctorando en Ciencias de la Actividad Física y del Deporte (UV).\nMáster Oficial en Alto Rendimiento Deportivo (UCAM).\nGrado en Ciencias de la Actividad Física y del Deporte (UCV).\n\nProfesor en Apta Vital Sport.\nEntrenador especialista en Powerlifting y Halterofilia.\n\nFusiono el rigor académico con la experiencia práctica para llevar tu rendimiento al siguiente nivel."
   },
   {
     id: 2,
