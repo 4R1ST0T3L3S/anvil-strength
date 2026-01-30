@@ -7,10 +7,10 @@ import {
     Trophy,
     User
 } from 'lucide-react';
-import { CalendarModal } from '../components/modals/CalendarModal';
-import { DashboardLayout } from '../components/layout/DashboardLayout';
+import { CalendarModal } from '../../../components/modals/CalendarModal';
+import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
-import { UserProfile } from '../hooks/useUser';
+import { UserProfile } from '../../../hooks/useUser';
 
 interface UserDashboardProps {
     user: UserProfile;

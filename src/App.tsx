@@ -1,78 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
 import { AuthModal } from './features/auth/components/AuthModal';
 import { SettingsModal } from './components/modals/SettingsModal';
-import { Loader } from 'lucide-react';
+import { ErrorFallback } from './components/ui/ErrorFallback';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { DashboardSkeleton } from './components/skeletons/DashboardSkeleton';
+import { ProfileSkeleton } from './components/skeletons/ProfileSkeleton';
+import { ReloadPrompt } from './components/pwa/ReloadPrompt';
+import { Toaster } from 'sonner';
 
-// Lazy Load Pages - REVERTED for Debugging
-// const LandingPage = React.lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
-// const UserDashboard = React.lazy(() => import('./pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
-// const CoachDashboard = React.lazy(() => import('./pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+// Lazy Load Pages
+// Landing Page is kept eager for LCP/First Fold performance, or can be lazy if it's very heavy. 
+// Given the user request, I will lazy load Dashboard/Profile which are behind auth.
+import { LandingPage } from './features/landing/pages/LandingPage';
 
-import { LandingPage } from './pages/LandingPage';
+const UserDashboard = lazy(() => import('./features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
+const CoachDashboard = lazy(() => import('./features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+const ProfilePage = lazy(() => import('./features/profile/pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
 
-import { UserDashboard } from './pages/UserDashboard';
-import { CoachDashboard } from './pages/CoachDashboard';
-import { ProfilePage } from './pages/ProfilePage';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-function ErrorFallback({ error, resetErrorBoundary }: { error: unknown; resetErrorBoundary: () => void }) {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  return (
-    <div role="alert" className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
-      <h2 className="text-2xl font-bold text-anvil-red mb-2">Algo salió mal</h2>
-      <pre className="text-gray-400 text-sm bg-black/50 p-4 rounded mb-4 max-w-lg overflow-auto">
-        {errorMessage}
-      </pre>
-      <button
-        onClick={resetErrorBoundary}
-        className="px-4 py-2 bg-white text-black font-bold rounded hover:bg-gray-200"
-      >
-        Intentar de nuevo
-      </button>
-    </div>
-  );
-}
 
-function LoadingScreen({ message = 'Cargando Anvil Strength...' }: { message?: string }) {
-  const [showReset, setShowReset] = useState(false);
-
-  useEffect(() => {
-    // If loading takes > 8 seconds, show reset button
-    const timer = setTimeout(() => setShowReset(true), 8000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleForceLogout = async () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.reload();
-  };
-
-  return (
-    <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader className="animate-spin text-anvil-red" size={48} />
-        <p className="text-gray-400 font-bold tracking-widest uppercase text-sm">{message}</p>
-
-        {showReset && (
-          <div className="mt-8 text-center animate-fade-in">
-            <p className="text-xs text-red-400 mb-2">¿Tarda demasiado?</p>
-            <button
-              onClick={handleForceLogout}
-              className="text-xs border border-red-500/50 text-red-500 px-3 py-1 rounded hover:bg-red-500/10 transition-colors"
-            >
-              Forzar Cierre de Sesión
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -101,7 +52,7 @@ function App() {
   const handleLoginClick = () => setIsAuthModalOpen(true);
   const handleOpenSettings = () => setIsSettingsModalOpen(true);
 
-  if (isLoading) return <LoadingScreen message="Verificando sesión..." />;
+  if (isLoading) return <LoadingSpinner fullscreen message="Verificando sesión..." />;
 
   if (isError) {
     return (
@@ -122,6 +73,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans overflow-x-hidden">
+      <ReloadPrompt />
+      <Toaster position="top-center" theme="dark" richColors />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={
@@ -136,12 +89,14 @@ function App() {
             ) : user.role === 'coach' ? (
               <Navigate to="/coach-dashboard" replace />
             ) : (
-              <UserDashboard
-                user={user}
-                onLogout={handleLogout}
-                onOpenSettings={handleOpenSettings}
-                onGoToHome={() => { }}
-              />
+              <Suspense fallback={<DashboardSkeleton />}>
+                <UserDashboard
+                  user={user}
+                  onLogout={handleLogout}
+                  onOpenSettings={handleOpenSettings}
+                  onGoToHome={() => { }}
+                />
+              </Suspense>
             )
           } />
           <Route path="/coach-dashboard" element={
@@ -150,14 +105,18 @@ function App() {
             ) : user.role !== 'coach' ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <CoachDashboard user={user} onLogout={handleLogout} />
+              <Suspense fallback={<DashboardSkeleton />}>
+                <CoachDashboard user={user} onLogout={handleLogout} />
+              </Suspense>
             )
           } />
           <Route path="/profile" element={
             !user ? (
               <Navigate to="/" replace />
             ) : (
-              <ProfilePage onLogout={handleLogout} />
+              <Suspense fallback={<ProfileSkeleton />}>
+                <ProfilePage onLogout={handleLogout} />
+              </Suspense>
             )
           } />
           <Route path="*" element={<Navigate to="/" replace />} />

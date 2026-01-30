@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { Search, Dumbbell } from 'lucide-react';
+import { Skeleton } from '../../../components/ui/Skeleton';
 
 interface CoachAthletesProps {
     onSelectAthlete: (id: string) => void;
@@ -38,8 +39,36 @@ export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
 
     if (loading) {
         return (
-            <div className="p-8 flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-anvil-red"></div>
+            <div className="p-8">
+                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-2">
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-4 w-64" />
+                    </div>
+                    <Skeleton className="h-10 w-full md:w-64 rounded-lg" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                        <div key={i} className="bg-[#252525] rounded-xl border border-white/5 p-6 space-y-4">
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="w-16 h-16 rounded-full" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-5 w-32" />
+                                    <Skeleton className="h-3 w-20" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 py-3 border-t border-white/5">
+                                <Skeleton className="h-8 w-full" />
+                                <Skeleton className="h-8 w-full" />
+                                <Skeleton className="h-8 w-full" />
+                            </div>
+                            <div className="flex justify-between">
+                                <Skeleton className="h-3 w-16" />
+                                <Skeleton className="h-3 w-12" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -73,7 +102,7 @@ export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
                     >
                         <div className="flex items-center gap-4 mb-4">
                             {athlete.avatar_url ? (
-                                <img src={athlete.avatar_url} alt={athlete.full_name} className="w-16 h-16 rounded-full object-cover border-2 border-white/10 group-hover:border-anvil-red transition-colors" />
+                                <img src={athlete.avatar_url} alt={athlete.full_name} className="w-16 h-16 rounded-full object-cover border-2 border-white/10 group-hover:border-anvil-red transition-colors" loading="lazy" />
                             ) : (
                                 <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-xl font-bold border-2 border-white/10 group-hover:border-anvil-red transition-colors">
                                     {athlete.full_name?.[0] || 'A'}

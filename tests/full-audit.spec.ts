@@ -258,3 +258,97 @@ test.describe('Logout Functionality', () => {
         }
     });
 });
+
+/**
+ * TEST SUITE 7: V2 Critical Features Audit (Invites, Feedback, Notifications)
+ */
+test.describe('V2 Critical Features Audit', () => {
+
+    // TEST A: The Fortress (Invite Only)
+    test('Registration requires valid invitation code', async ({ page }) => {
+        await page.goto('http://localhost:5173');
+
+        // Open Auth Modal
+        await page.getByText('Empezar Ahora').first().click();
+
+        // Switch to Register (assuming button text)
+        const registerSwitch = page.getByText(/no tienes cuenta/i);
+        if (await registerSwitch.isVisible()) {
+            await registerSwitch.click();
+        }
+
+        // Fill form with hacker data
+        await page.fill('input[type="email"]', 'random@hacker.com');
+        await page.fill('input[type="password"]', 'password123');
+
+        // Assuming invitation code input exists
+        const inviteInput = page.locator('input[placeholder*="invita"]');
+        if (await inviteInput.isVisible()) {
+            await inviteInput.fill('BAD_CODE');
+        }
+
+        // Attempt Register
+        await page.click('button:has-text("Registrarse")');
+
+        // Expect Error Toast (generic check for "invitación")
+        await expect(page.getByText(/invitación/i)).toBeVisible({ timeout: 5000 });
+    });
+
+    // TEST B: Visual Feedback (Toasts & Skeletons)
+    test('Profile page shows Success Toast on save', async ({ page }) => {
+        await page.goto('http://localhost:5173');
+        await page.getByText('Iniciar Sesión').first().click();
+        await page.fill('input[type="email"]', 'jotabou@protonmail.com');
+        await page.fill('input[type="password"]', 'k47nZKQ!&UQYgg3Qx$H5');
+        await page.click('button:has-text("Iniciar Sesión")');
+
+        await page.waitForTimeout(3000);
+
+        await page.goto('http://localhost:5173/profile');
+        await page.waitForSelector('form', { state: 'visible' });
+
+        const nameInput = page.locator('input[type="text"]').first();
+        await nameInput.fill(`Jota Validated ${Date.now()}`);
+        await page.click('button:has-text("Guardar")');
+
+        // Expect Success Toast
+        await expect(page.getByText(/actualizado correctamente/i)).toBeVisible();
+    });
+
+    // TEST C: Notification Trigger
+    test('Notification Bell shows red dot when unread notifications exist', async ({ page }) => {
+        // Mock notifications
+        await page.route('**/rest/v1/notifications*', async route => {
+            if (route.request().method() === 'GET') {
+                await route.fulfill({
+                    json: [{
+                        id: 'mock-1',
+                        user_id: 'test-user',
+                        title: 'Test Notification',
+                        message: 'Mocked alert',
+                        is_read: false,
+                        created_at: new Date().toISOString()
+                    }]
+                });
+            } else {
+                await route.continue();
+            }
+        });
+
+        await page.goto('http://localhost:5173');
+        await page.getByText('Iniciar Sesión').first().click();
+        await page.fill('input[type="email"]', 'jotabou@protonmail.com');
+        await page.fill('input[type="password"]', 'k47nZKQ!&UQYgg3Qx$H5');
+        await page.click('button:has-text("Iniciar Sesión")');
+
+        await page.waitForTimeout(3000);
+
+        // Check for Red Dot
+        const redDot = page.locator('button .bg-anvil-red').first();
+        await expect(redDot).toBeVisible();
+
+        // Click Bell
+        await page.locator('button:has(.lucide-bell)').click();
+        await expect(page.getByText('Test Notification')).toBeVisible();
+    });
+});

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LogOut, Menu, X, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { NotificationBell } from '../ui/NotificationBell';
 import { UserProfile } from '../../hooks/useUser';
 import { getDisplayName, getUserInitials } from '../../utils/userDisplayName';
 
@@ -45,6 +46,10 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
             <div className="flex items-center gap-3">
                 <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
                 <span className="font-black text-xl tracking-tighter uppercase">{roleLabel}</span>
+            </div>
+            {/* Bell for Desktop in Sidebar (optional, or better in a top bar if existed. Here it fits in header of sidebar) */}
+            <div className="md:block hidden">
+                <NotificationBell />
             </div>
             {/* Close button for mobile */}
             <button onClick={toggleMobileMenu} className="md:hidden text-gray-400 hover:text-white">
@@ -157,6 +162,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="md:hidden fixed top-0 w-full bg-[#252525] border-b border-white/5 z-40 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
+                    <NotificationBell />
                 </div>
                 <button onClick={toggleMobileMenu} className="text-white">
                     <Menu size={28} />

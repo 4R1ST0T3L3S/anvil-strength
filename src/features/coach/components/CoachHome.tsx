@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { Users, Trophy, AlertTriangle, TrendingUp } from 'lucide-react';
 
 export function CoachHome({ user }: { user: any }) {

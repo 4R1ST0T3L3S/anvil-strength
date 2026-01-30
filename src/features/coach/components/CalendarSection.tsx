@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle } from 'lucide-react';
-import { fetchCompetitions, Competition } from '../services/aepService';
+import { fetchCompetitions, Competition } from '../../../services/aepService';
 
 export function CalendarSection() {
     const [competitions, setCompetitions] = useState<Competition[]>([]);

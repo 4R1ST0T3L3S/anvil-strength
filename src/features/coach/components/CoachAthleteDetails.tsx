@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { ArrowLeft, Upload, FileText, TrendingUp, User } from 'lucide-react';
 
 interface CoachAthleteDetailsProps {

@@ -6,14 +6,14 @@ import {
     Trophy,
     User
 } from 'lucide-react';
-import { CoachHome } from '../components/coach/CoachHome';
-import { CoachAthletes } from '../components/coach/CoachAthletes';
-import { CoachAthleteDetails } from '../components/coach/CoachAthleteDetails';
-import { CoachTeamSchedule } from '../components/coach/CoachTeamSchedule';
-import { CalendarModal } from '../components/modals/CalendarModal';
-import { DashboardLayout } from '../components/layout/DashboardLayout';
+import { CoachHome } from '../components/CoachHome';
+import { CoachAthletes } from '../components/CoachAthletes';
+import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
+import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
+import { CalendarModal } from '../../../components/modals/CalendarModal';
+import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
-import { UserProfile } from '../hooks/useUser';
+import { UserProfile } from '../../../hooks/useUser';
 
 interface CoachDashboardProps {
     user: UserProfile;

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useUser } from '../hooks/useUser';
+import { supabase } from '../../../lib/supabase';
+import { useUser } from '../../../hooks/useUser';
 import { Loader, Save, Upload, X } from 'lucide-react';
-import { DashboardLayout } from '../components/layout/DashboardLayout';
+import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { LayoutDashboard, Users, Calendar, Trophy, User, FileText, Utensils } from 'lucide-react';
+import { ProfileSkeleton } from '../../../components/skeletons/ProfileSkeleton';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfilePageProps {
@@ -141,20 +142,10 @@ export function ProfilePage({ onLogout }: ProfilePageProps) {
     };
 
     if (userLoading) {
-        return (
-            <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
-                <Loader className="animate-spin text-anvil-red" size={48} />
-            </div>
-        );
+        return <ProfileSkeleton />;
     }
 
-    if (!user) {
-        return (
-            <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center text-white">
-                <p>No se pudo cargar el perfil</p>
-            </div>
-        );
-    }
+    if (!user) return null;
 
     // Complete menu items matching respective dashboards
     const menuItems = user.role === 'coach' ? [
