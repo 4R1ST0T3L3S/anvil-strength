@@ -35,7 +35,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
         const barWeight = 20;
         const collarsWeight = hasCollars ? 5 : 0;
         const weightPerSide = (parseFloat(targetWeight) - (barWeight + collarsWeight)) / 2;
-        
+
         if (isNaN(weightPerSide) || weightPerSide <= 0) {
             setPlatesNeeded([]);
             return;
@@ -64,12 +64,12 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
     if (!isOpen) return null;
 
     return (
-        <div 
-            className="fixed inset-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl pt-[48px] md:pt-0"
+        <div
+            className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[95vh] md:w-[95vw] md:max-w-4xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
-                
+
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0">
                     <div className="flex items-center gap-4 md:gap-5">
@@ -81,7 +81,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                             <p className="text-[10px] md:text-[12px] font-black text-anvil-red uppercase tracking-[0.3em]">Anvil Lab Tools</p>
                         </div>
                     </div>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-all"
                     >
@@ -91,72 +91,72 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
 
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 md:space-y-16 custom-scrollbar overflow-x-hidden flex flex-col items-center">
-                    
+
                     {/* Visual Bar Display - Clean Screenshot Style */}
                     <div className="w-full relative py-10 md:py-20 flex items-center justify-start overflow-hidden shrink-0">
                         <div className="relative flex items-center scale-90 md:scale-110 origin-left">
                             {/* Main Bar (The part you hold) - Grey/Silver */}
                             <div className="w-32 md:w-48 h-3 md:h-4 bg-[#999999] shrink-0"></div>
-                            
+
                             {/* The Collar Stopper (Thin grey part) */}
                             <div className="w-2 h-8 bg-[#888888] shrink-0"></div>
 
                             {/* The Main Collar (The thick grey part) */}
                             <div className="w-6 h-12 bg-[#cccccc] rounded-sm shadow-xl relative z-30 shrink-0"></div>
-                            
+
                             {/* The Sleeve (Where plates go) */}
                             <div className="relative flex items-center z-10 shrink-0">
                                 {/* Sleeve metal rod - Fixed length, doesn't reach the end */}
                                 <div className="w-60 md:w-80 h-8 bg-[#aaaaaa] rounded-r-sm z-0 shadow-sm border-y border-white/5"></div>
-                                
-                                {/* Plates stacked on the sleeve */}
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-0.5 pl-1">
-                                        <AnimatePresence mode="popLayout">
-                                            {platesNeeded.map((plate, i) => (
-                                                <motion.div
-                                                    key={`${plate.weight}-${i}`}
-                                                    initial={{ x: 100, opacity: 0 }}
-                                                    animate={{ x: 0, opacity: 1 }}
-                                                    exit={{ x: -20, opacity: 0 }}
-                                                    className={`${plate.height} w-3 md:w-5 rounded-sm flex items-center justify-center text-[6px] md:text-[10px] font-black border-x border-black/30 shadow-2xl shrink-0`}
-                                                    style={{ 
-                                                        backgroundColor: plate.color,
-                                                        color: plate.weight === 2.5 || plate.weight === 20 || plate.weight === 0.25 ? 'white' : 'black'
-                                                    }}
-                                                >
-                                                    <span className="rotate-90 leading-none tracking-tighter">{plate.label}</span>
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
 
-                                        {/* Competition Collar (Silver) - Now INSIDE the flex container to stick to plates */}
-                                        {hasCollars && (
-                                            <motion.div 
-                                                initial={{ x: 30, opacity: 0 }}
+                                {/* Plates stacked on the sleeve */}
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-0.5 pl-1">
+                                    <AnimatePresence mode="popLayout">
+                                        {platesNeeded.map((plate, i) => (
+                                            <motion.div
+                                                key={`${plate.weight}-${i}`}
+                                                initial={{ x: 100, opacity: 0 }}
                                                 animate={{ x: 0, opacity: 1 }}
-                                                className="w-4 md:w-6 h-14 md:h-24 bg-[#dddddd] rounded-sm shadow-2xl z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
+                                                exit={{ x: -20, opacity: 0 }}
+                                                className={`${plate.height} w-3 md:w-5 rounded-sm flex items-center justify-center text-[6px] md:text-[10px] font-black border-x border-black/30 shadow-2xl shrink-0`}
+                                                style={{
+                                                    backgroundColor: plate.color,
+                                                    color: plate.weight === 2.5 || plate.weight === 20 || plate.weight === 0.25 ? 'white' : 'black'
+                                                }}
                                             >
-                                                <span className="text-[6px] md:text-[8px] font-black text-black rotate-90 relative z-10 leading-none">2.5</span>
-                                                
-                                                {/* Competition Lever (Palanca) */}
-                                                <div className="absolute -top-6 md:-top-10 left-1/2 -translate-x-1/2 w-1 md:w-1.5 h-8 md:h-12 bg-[#bbbbbb] rounded-full border border-black/10 shadow-lg origin-bottom -rotate-12">
-                                                    <div className="absolute top-0 left-0 w-full h-1/3 bg-white/20 rounded-full"></div>
-                                                </div>
+                                                <span className="rotate-90 leading-none tracking-tighter">{plate.label}</span>
                                             </motion.div>
-                                        )}
-                                    </div>
+                                        ))}
+                                    </AnimatePresence>
+
+                                    {/* Competition Collar (Silver) - Now INSIDE the flex container to stick to plates */}
+                                    {hasCollars && (
+                                        <motion.div
+                                            initial={{ x: 30, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            className="w-4 md:w-6 h-14 md:h-24 bg-[#dddddd] rounded-sm shadow-2xl z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
+                                        >
+                                            <span className="text-[6px] md:text-[8px] font-black text-black rotate-90 relative z-10 leading-none">2.5</span>
+
+                                            {/* Competition Lever (Palanca) */}
+                                            <div className="absolute -top-6 md:-top-10 left-1/2 -translate-x-1/2 w-1 md:w-1.5 h-8 md:h-12 bg-[#bbbbbb] rounded-full border border-black/10 shadow-lg origin-bottom -rotate-12">
+                                                <div className="absolute top-0 left-0 w-full h-1/3 bg-white/20 rounded-full"></div>
+                                            </div>
+                                        </motion.div>
+                                    )}
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Controls */}
+                    {/* Controls */}
                     <div className="w-full max-w-xl space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Target Weight Input */}
                             <div className="bg-black/40 border-2 border-white/5 rounded-[2rem] p-8 transition-all group focus-within:border-anvil-red">
                                 <label className="block text-[10px] font-black text-gray-600 mb-2 uppercase tracking-widest group-focus-within:text-anvil-red">Peso Total (kg)</label>
                                 <div className="flex items-center gap-2">
-                                    <input 
+                                    <input
                                         type="number"
                                         value={targetWeight}
                                         onChange={(e) => setTargetWeight(e.target.value)}
@@ -171,13 +171,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                             <div className="bg-black/40 border-2 border-white/5 rounded-[2rem] p-8 flex flex-col justify-between">
                                 <label className="block text-[10px] font-black text-gray-600 mb-2 uppercase tracking-widest">Cierres de Competición</label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <button 
+                                    <button
                                         onClick={() => setHasCollars(true)}
                                         className={`py-3 rounded-xl font-black italic transition-all ${hasCollars ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' : 'bg-white/5 text-gray-500 hover:text-white'}`}
                                     >
                                         SÍ
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => setHasCollars(false)}
                                         className={`py-3 rounded-xl font-black italic transition-all ${!hasCollars ? 'bg-white text-black' : 'bg-white/5 text-gray-500 hover:text-white'}`}
                                     >
@@ -202,18 +202,18 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                         return acc;
                                     }, {} as Record<number, number>)
                                 )
-                                .sort(([weightA], [weightB]) => parseFloat(weightB) - parseFloat(weightA))
-                                .map(([weight, count]) => {
-                                    const plate = PLATES_CONFIG.find(p => p.weight === parseFloat(weight));
-                                    return (
-                                        <div key={weight} className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-white/5">
-                                            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: plate?.color }}></div>
-                                            <span className="text-sm font-black text-white italic">
-                                                x{count} de {weight}kg
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                                    .sort(([weightA], [weightB]) => parseFloat(weightB) - parseFloat(weightA))
+                                    .map(([weight, count]) => {
+                                        const plate = PLATES_CONFIG.find(p => p.weight === parseFloat(weight));
+                                        return (
+                                            <div key={weight} className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-white/5">
+                                                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: plate?.color }}></div>
+                                                <span className="text-sm font-black text-white italic">
+                                                    x{count} de {weight}kg
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
                                 {hasCollars && (
                                     <div className="flex items-center gap-2 bg-gray-400/20 px-4 py-2 rounded-xl border border-gray-400/30">
                                         <div className="w-3 h-3 rounded-full bg-gray-400 shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>

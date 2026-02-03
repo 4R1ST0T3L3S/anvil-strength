@@ -8,16 +8,16 @@ interface OneRMCalculatorProps {
 }
 
 // Custom Select Component for App Aesthetic
-function CustomSelect({ 
-    value, 
-    onChange, 
-    options, 
+function CustomSelect({
+    value,
+    onChange,
+    options,
     label,
-    className = "" 
-}: { 
-    value: any; 
-    onChange: (val: any) => void; 
-    options: { label: string; value: any }[]; 
+    className = ""
+}: {
+    value: any;
+    onChange: (val: any) => void;
+    options: { label: string; value: any }[];
     label: string;
     className?: string;
 }) {
@@ -35,8 +35,8 @@ function CustomSelect({
                 <span className="text-2xl md:text-4xl font-black text-white italic leading-none truncate px-4">
                     {options.find(opt => opt.value === value)?.label || value}
                 </span>
-                <ChevronDown 
-                    className="text-anvil-red shrink-0 w-4 h-4 md:w-6 md:h-6 absolute right-0" 
+                <ChevronDown
+                    className="text-anvil-red shrink-0 w-4 h-4 md:w-6 md:h-6 absolute right-0"
                 />
             </button>
 
@@ -44,14 +44,14 @@ function CustomSelect({
                 {isOpen && (
                     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
                         {/* Backdrop */}
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
                             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                         />
-                        
+
                         {/* Options List */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -70,11 +70,10 @@ function CustomSelect({
                                             onChange(option.value);
                                             setIsOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-6 py-5 rounded-2xl text-left transition-all mb-1 last:mb-0 ${
-                                            value === option.value 
-                                            ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20 scale-[1.02]' 
-                                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                                        }`}
+                                        className={`w-full flex items-center justify-between px-6 py-5 rounded-2xl text-left transition-all mb-1 last:mb-0 ${value === option.value
+                                                ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20 scale-[1.02]'
+                                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                            }`}
                                     >
                                         <span className="font-black italic uppercase tracking-wider text-lg">
                                             {option.label}
@@ -83,7 +82,7 @@ function CustomSelect({
                                     </button>
                                 ))}
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsOpen(false)}
                                 className="w-full py-5 bg-white/5 text-gray-500 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors border-t border-white/5"
                             >
@@ -120,7 +119,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
     const calculate1RM = () => {
         const w = parseFloat(weight);
         const r = parseInt(reps);
-        
+
         if (isNaN(w) || isNaN(r) || w <= 0 || r <= 0) {
             setEstimated1RM(0);
             return;
@@ -153,12 +152,12 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
     if (!isOpen) return null;
 
     return (
-        <div 
-            className="fixed inset-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl pt-[48px] md:pt-0"
+        <div
+            className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[95vh] md:w-[95vw] md:max-w-2xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
-                
+
                 {/* Premium Header */}
                 <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0">
                     <div className="flex items-center gap-4 md:gap-5">
@@ -171,7 +170,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button 
+                        <button
                             onClick={onClose}
                             className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-all"
                         >
@@ -182,16 +181,16 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
                 {/* Body - Scrollable */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 md:space-y-14 custom-scrollbar overflow-x-hidden flex flex-col items-center">
-                    
+
                     {/* Method Toggle */}
                     <div className="grid grid-cols-2 p-2 bg-black/60 rounded-[2rem] border border-white/5 shrink-0 max-w-md mx-auto w-full">
-                        <button 
+                        <button
                             onClick={() => setMethod('rpe')}
                             className={`flex items-center justify-center gap-3 py-4 md:py-6 rounded-[1.6rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all ${method === 'rpe' ? 'bg-white text-black shadow-2xl scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
                         >
                             <Activity className="w-5 h-5 md:w-6 md:h-6" /> Por RPE
                         </button>
-                        <button 
+                        <button
                             onClick={() => setMethod('velocity')}
                             className={`flex items-center justify-center gap-3 py-4 md:py-6 rounded-[1.6rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all ${method === 'velocity' ? 'bg-white text-black shadow-2xl scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
                         >
@@ -220,7 +219,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             <div className="col-span-6 bg-black/40 border-2 border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all group flex flex-col justify-between min-h-[110px] md:min-h-[160px] text-center">
                                 <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Peso Levantado</label>
                                 <div className="flex items-center justify-center gap-2">
-                                    <input 
+                                    <input
                                         type="number"
                                         value={weight}
                                         onChange={(e) => setWeight(e.target.value)}
@@ -234,7 +233,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             {/* Reps */}
                             <div className="col-span-3 bg-black/40 border-2 border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all group flex flex-col justify-between min-h-[110px] md:min-h-[160px] text-center">
                                 <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
-                                <input 
+                                <input
                                     type="number"
                                     value={reps}
                                     onChange={(e) => setReps(e.target.value)}
@@ -245,7 +244,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
                             {/* RPE or Velocity Input */}
                             {method === 'rpe' ? (
-                                <CustomSelect 
+                                <CustomSelect
                                     className="col-span-3 min-h-[110px] md:min-h-[160px]"
                                     label="RPE"
                                     value={rpe}
@@ -255,7 +254,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             ) : (
                                 <div className="col-span-3 bg-black/40 border-2 border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all group flex flex-col justify-between min-h-[110px] md:min-h-[160px] relative">
                                     <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">V (m/s)</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         step="0.01"
                                         value={velocity}
@@ -268,7 +267,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                         </div>
 
                         {/* Ejercicio Custom Select */}
-                        <CustomSelect 
+                        <CustomSelect
                             label="Ejercicio / Movimiento"
                             value={exercise}
                             onChange={setExercise}
@@ -283,11 +282,11 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
                 {/* Footer CTA */}
                 <div className="p-8 md:p-12 pb-12 md:pb-16 bg-[#252525] border-t border-white/5 shrink-0">
-                    <button 
+                    <button
                         onClick={calculate1RM}
                         className="group w-full bg-white text-black hover:bg-anvil-red hover:text-white py-6 md:py-8 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"
                     >
-                        <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> 
+                        <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         Calcular 1RM
                     </button>
                 </div>
