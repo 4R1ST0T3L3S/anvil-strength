@@ -74,7 +74,9 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => window.location.href = '/profile',
-            isActive: false
+            isActive: false,
+            isExternal: true, // Mark as external to trigger link behavior
+            href: '/profile' 
         }
     ];
 
