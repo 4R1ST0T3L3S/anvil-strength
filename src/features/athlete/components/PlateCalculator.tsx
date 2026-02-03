@@ -68,7 +68,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#1c1c1c] border-2 border-white/10 w-full h-full md:w-[95vw] md:h-[95vh] md:max-w-4xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-14 md:mt-0">
+            <div className="bg-[#1c1c1c] border-2 border-white/10 w-full h-[calc(100vh-3.5rem)] md:h-[95vh] md:w-[95vw] md:max-w-4xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-14 md:mt-0">
                 
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0">
@@ -90,7 +90,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 md:space-y-16 custom-scrollbar overflow-x-hidden flex flex-col items-center justify-center">
+                <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 md:space-y-16 custom-scrollbar overflow-x-hidden flex flex-col items-center">
                     
                     {/* Visual Bar Display - Clean Screenshot Style */}
                     <div className="w-full relative py-10 md:py-20 flex items-center justify-start overflow-hidden shrink-0">
