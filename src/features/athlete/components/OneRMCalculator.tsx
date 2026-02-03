@@ -71,8 +71,8 @@ function CustomSelect({
                                             setIsOpen(false);
                                         }}
                                         className={`w-full flex items-center justify-between px-6 py-5 rounded-2xl text-left transition-all mb-1 last:mb-0 ${value === option.value
-                                                ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20 scale-[1.02]'
-                                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                            ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20 scale-[1.02]'
+                                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                             }`}
                                     >
                                         <span className="font-black italic uppercase tracking-wider text-lg">
@@ -221,6 +221,8 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                 <div className="flex items-center justify-center gap-2">
                                     <input
                                         type="number"
+                                        inputMode="decimal"
+                                        step="0.1"
                                         value={weight}
                                         onChange={(e) => setWeight(e.target.value)}
                                         placeholder="0"
@@ -235,6 +237,8 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                 <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={reps}
                                     onChange={(e) => setReps(e.target.value)}
                                     placeholder="0"
@@ -256,6 +260,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                     <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">V (m/s)</label>
                                     <input
                                         type="number"
+                                        inputMode="decimal"
                                         step="0.01"
                                         value={velocity}
                                         onChange={(e) => setVelocity(e.target.value)}

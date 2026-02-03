@@ -73,10 +73,18 @@ function App() {
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={
-            <LandingPage
-              onLoginClick={handleLoginClick}
-              user={user}
-            />
+            user ? (
+              user.role === 'coach' ? (
+                <Navigate to="/coach-dashboard" replace />
+              ) : (
+                <Navigate to="/dashboard" replace />
+              )
+            ) : (
+              <LandingPage
+                onLoginClick={handleLoginClick}
+                user={user}
+              />
+            )
           } />
           <Route path="/dashboard" element={
             !user ? (

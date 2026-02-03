@@ -158,6 +158,8 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="number"
+                                        inputMode="decimal"
+                                        step="0.1"
                                         value={targetWeight}
                                         onChange={(e) => setTargetWeight(e.target.value)}
                                         placeholder="20"

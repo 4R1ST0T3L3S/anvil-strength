@@ -101,6 +101,8 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                             <div className="flex items-center gap-2">
                                 <input
                                     type="number"
+                                    inputMode="decimal"
+                                    step="0.1"
                                     value={oneRM}
                                     onChange={(e) => setOneRM(e.target.value)}
                                     placeholder="0"
@@ -115,6 +117,8 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                             <div className="flex items-center gap-2">
                                 <input
                                     type="number"
+                                    inputMode="decimal"
+                                    step="0.1"
                                     value={targetWeight}
                                     onChange={(e) => setTargetWeight(e.target.value)}
                                     placeholder="0"
@@ -141,8 +145,8 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: i * 0.05 }}
                                         className={`flex items-center justify-between p-5 md:p-6 rounded-[1.5rem] border-2 transition-all ${set.percentage === 100
-                                                ? 'bg-blue-600/20 border-blue-600 shadow-lg shadow-blue-600/10'
-                                                : 'bg-black/40 border-white/5 hover:border-white/10'
+                                            ? 'bg-blue-600/20 border-blue-600 shadow-lg shadow-blue-600/10'
+                                            : 'bg-black/40 border-white/5 hover:border-white/10'
                                             }`}
                                     >
                                         <div className="flex items-center gap-4 md:gap-6">

@@ -122,6 +122,8 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     </div>
 );
 
+import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
+
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     user,
     onLogout,
@@ -130,10 +132,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     children,
     roleLabel
 }) => {
-
+    const bindSwipe = useSwipeNavigation();
 
     return (
-        <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
+        <div {...bindSwipe()} className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans touch-pan-y">
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50">
                 <SidebarContent
@@ -163,9 +165,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </main>
 
             {/* Mobile Bottom Navigation (Instagram Style) */}
-            <nav 
-                className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c]/95 backdrop-blur-md border-t border-white/[0.03] z-50 px-8 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.6)]" 
-                style={{ 
+            <nav
+                className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c]/95 backdrop-blur-md border-t border-white/[0.03] z-50 px-8 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.6)]"
+                style={{
                     paddingBottom: 'env(safe-area-inset-bottom)',
                     height: 'calc(4.5rem + env(safe-area-inset-bottom))'
                 }}
