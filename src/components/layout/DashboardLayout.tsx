@@ -146,7 +146,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </aside>
 
             {/* Mobile Header (Simplified - Logo & Notification) */}
-            <div className="md:hidden fixed top-0 w-full bg-[#1c1c1c]/95 backdrop-blur-md border-b border-white/[0.03] z-[10001] px-4 py-3 flex items-center justify-between">
+            <div className="md:hidden fixed top-0 w-full h-[48px] bg-[#1c1c1c]/95 backdrop-blur-md border-b border-white/[0.03] z-[10001] px-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <img src="/logo.svg" alt="Anvil" className="h-6 w-auto" />
                     <div className="flex items-baseline gap-2">
