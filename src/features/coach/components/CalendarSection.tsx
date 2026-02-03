@@ -12,13 +12,40 @@ export function CalendarSection() {
             try {
                 setError(null); // Reset error state
                 const data = await fetchCompetitions();
-                // Additional filtering to remove placeholder rows often found in these sheets
-                const filtered = data.filter(c =>
-                    c.fecha &&
-                    c.fecha.length > 2 &&
-                    !c.fecha.toLowerCase().includes('fecha') &&
-                    c.campeonato
-                );
+
+                // Definimos las keywords para las zonas permitidas en AEP-2 y AEP-3
+                const allowedRegionsValues = [
+                    'valencia', 'alicante', 'castellon', 'castellón',
+                    'baleares', 'palma', 'mallorca', 'ibiza', 'menorca',
+                    'murcia', 'cartagena'
+                ];
+
+                const filtered = data.filter(c => {
+                    // Filtro base de validez (ya existía)
+                    const isValid = c.fecha &&
+                        c.fecha.length > 2 &&
+                        !c.fecha.toLowerCase().includes('fecha') &&
+                        c.campeonato;
+
+                    if (!isValid) return false;
+
+                    // Lógica de Negocio: AEP-2 y AEP-3 solo zonas permitidas
+                    const name = c.campeonato.toLowerCase();
+                    const sede = c.sede.toLowerCase();
+
+                    // Detectar si es AEP-2 o AEP-3
+                    const isRestrictedType = name.includes('aep-2') || name.includes('aep 2') ||
+                        name.includes('aep-3') || name.includes('aep 3');
+
+                    if (isRestrictedType) {
+                        // Si es tipo restringido, debe ser de una zona permitida
+                        const isAllowedRegion = allowedRegionsValues.some(region => sede.includes(region));
+                        return isAllowedRegion;
+                    }
+
+                    // AEP-1 y otros campeonatos se muestran siempre
+                    return true;
+                });
 
                 setCompetitions(filtered);
             } catch (err) {

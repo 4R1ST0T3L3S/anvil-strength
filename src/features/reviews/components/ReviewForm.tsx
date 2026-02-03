@@ -38,8 +38,8 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
 
             // Hide success message after 3 seconds
             setTimeout(() => setSuccess(false), 3000);
-        } catch (err: any) {
-            setError(err.message || 'Error al publicar la reseña');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Error al publicar la reseña');
         } finally {
             setIsSubmitting(false);
         }
@@ -85,10 +85,10 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
                     className="w-full bg-[#252525] border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-anvil-red transition-colors resize-none"
                 />
                 <p className={`text-xs mt-2 ${!isValid && characterCount > 0
-                        ? 'text-red-500'
-                        : characterCount > 900
-                            ? 'text-yellow-500'
-                            : 'text-gray-500'
+                    ? 'text-red-500'
+                    : characterCount > 900
+                        ? 'text-yellow-500'
+                        : 'text-gray-500'
                     }`}>
                     {characterCount}/1000 caracteres {characterCount < 10 && '(mínimo 10)'}
                 </p>

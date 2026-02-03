@@ -19,7 +19,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
             setError('');
             const data = await reviewsService.getAllReviews();
             setReviews(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error loading reviews:', err);
             setError('Error al cargar las reseñas');
         } finally {

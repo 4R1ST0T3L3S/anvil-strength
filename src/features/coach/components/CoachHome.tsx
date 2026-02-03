@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { UserProfile } from '../../../hooks/useUser';
 import { Users, Trophy, AlertTriangle, TrendingUp } from 'lucide-react';
 
-export function CoachHome({ user }: { user: any }) {
+export function CoachHome({ user }: { user: UserProfile }) {
     const [stats, setStats] = useState({
         totalAthletes: 0,
         nextCompDays: null as number | null,
@@ -70,7 +71,7 @@ export function CoachHome({ user }: { user: any }) {
     return (
         <div className="p-8">
             <header className="mb-8">
-                <h1 className="text-3xl font-black uppercase tracking-tighter">Bienvenido, {user.user_metadata?.full_name?.split(' ')[0] || 'Coach'}</h1>
+                <h1 className="text-3xl font-black uppercase tracking-tighter">Bienvenido, {user.full_name?.split(' ')[0] || 'Coach'}</h1>
                 <p className="text-gray-400">Resumen del estado del equipo</p>
             </header>
 

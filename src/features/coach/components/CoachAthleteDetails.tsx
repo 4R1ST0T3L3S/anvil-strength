@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { UserProfile } from '../../../hooks/useUser';
 import { ArrowLeft, Upload, FileText, TrendingUp, User } from 'lucide-react';
 
 interface CoachAthleteDetailsProps {
@@ -10,7 +11,7 @@ interface CoachAthleteDetailsProps {
 type Tab = 'planning' | 'progress' | 'profile';
 
 export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsProps) {
-    const [athlete, setAthlete] = useState<any>(null);
+    const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
 
@@ -59,7 +60,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                             <p className="text-sm text-gray-400 flex items-center gap-2">
                                 {athlete.weight_category || '-'} • {athlete.age_category || '-'}
                                 <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                                Total: {athlete.total_pr || 0}kg
+                                Total: {((athlete.squat_pr || 0) + (athlete.bench_pr || 0) + (athlete.deadlift_pr || 0))}kg
                             </p>
                         </div>
                     </div>
@@ -147,7 +148,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 uppercase font-bold block mb-1">Instagram</label>
-                                <p className="text-blue-400">{athlete.username ? `@${athlete.username}` : '-'}</p>
+                                <p className="text-blue-400">{athlete.nickname ? `@${athlete.nickname}` : '-'}</p>
                             </div>
                         </div>
                     </div>

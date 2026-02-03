@@ -2,8 +2,27 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Calendar } from 'lucide-react';
 
+interface CompetitionEntry {
+    id: string;
+    competition_name: string;
+    target_date: string;
+    category?: string;
+    profiles: {
+        id: string;
+        full_name: string;
+        nickname?: string;
+        avatar_url?: string;
+    } | null;
+}
+
+interface CompetitionGroup {
+    name: string;
+    date: string;
+    entries: CompetitionEntry[];
+}
+
 export function CoachTeamSchedule() {
-    const [competitions, setCompetitions] = useState<any[]>([]);
+    const [competitions, setCompetitions] = useState<CompetitionGroup[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -26,7 +45,7 @@ export function CoachTeamSchedule() {
                 if (error) throw error;
 
                 // Group by competition
-                const grouped = (data || []).reduce((acc: any, entry: any) => {
+                const grouped = (data || []).reduce((acc: Record<string, CompetitionGroup>, entry: CompetitionEntry) => {
                     const key = `${entry.competition_name}-${entry.target_date}`;
                     if (!acc[key]) {
                         acc[key] = {
@@ -35,7 +54,7 @@ export function CoachTeamSchedule() {
                             entries: []
                         };
                     }
-                    acc[key].entries.push(entry);
+                    acc[key].entries.push(entry as CompetitionEntry);
                     return acc;
                 }, {});
 
@@ -65,7 +84,7 @@ export function CoachTeamSchedule() {
                         No hay competiciones programadas.
                     </div>
                 ) : (
-                    competitions.map((comp: any, index: number) => (
+                    competitions.map((comp: CompetitionGroup, index: number) => (
                         <div key={index} className="bg-[#252525] border border-white/5 rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/20">
                                 <div className="flex items-center gap-4">
@@ -85,7 +104,7 @@ export function CoachTeamSchedule() {
                             <div className="p-6">
                                 <h4 className="text-xs uppercase font-bold text-gray-500 mb-4">Equipo Asistente</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {comp.entries.map((entry: any) => (
+                                    {comp.entries.map((entry: CompetitionEntry) => (
                                         <div key={entry.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5">
                                             {entry.profiles?.avatar_url ? (
                                                 <img src={entry.profiles.avatar_url} alt="" className="w-10 h-10 rounded-full" />

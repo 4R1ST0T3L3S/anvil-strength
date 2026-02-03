@@ -1,0 +1,11 @@
+
+> anvil-strength@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+
+
+C:\Users\G512\Proton Drive\jotabou\My files\Proyecto Anvil Streght\src\features\coach\components\CoachTeamSchedule.tsx
+  48:100  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Ô£û 1 problem (0 errors, 1 warning)
+
+ESLint found too many warnings (maximum: 0).

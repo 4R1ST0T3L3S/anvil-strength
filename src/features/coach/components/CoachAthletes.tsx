@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { UserProfile } from '../../../hooks/useUser';
 import { Search, Dumbbell } from 'lucide-react';
 import { Skeleton } from '../../../components/ui/Skeleton';
 
@@ -8,7 +9,7 @@ interface CoachAthletesProps {
 }
 
 export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
-    const [athletes, setAthletes] = useState<any[]>([]);
+    const [athletes, setAthletes] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 

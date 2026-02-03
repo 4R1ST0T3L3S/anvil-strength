@@ -7,11 +7,11 @@ export function ReloadPrompt() {
         needRefresh: [needRefresh],
         updateServiceWorker,
     } = useRegisterSW({
-        onRegistered(r) {
-            console.log('SW Registered: ' + r);
+        onRegistered(_r) {
+            // SW Registered
         },
-        onRegisterError(error) {
-            console.log('SW registration error', error);
+        onRegisterError(_error) {
+            // SW Registration Error
         },
     });
 
