@@ -12,7 +12,7 @@ import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { CalendarModal } from '../../../components/modals/CalendarModal';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
-import { runDbConnectivityTest } from '../../../test-db-connection'; import { Beaker } from 'lucide-react';
+
 
 import { UserProfile } from '../../../hooks/useUser';
 
@@ -76,12 +76,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             onClick: () => window.location.href = '/profile',
             isActive: false
         },
-        {
-            icon: <Beaker size={20} className="text-yellow-500" />,
-            label: 'QA: Test DB',
-            onClick: () => runDbConnectivityTest(),
-            isActive: false
-        }
+
     ];
 
     const renderContent = () => {
