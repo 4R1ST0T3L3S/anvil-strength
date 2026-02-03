@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, Upload, FileText, TrendingUp, User } from 'lucide-react';
+import { ArrowLeft, TrendingUp, User, FileText } from 'lucide-react';
+import { WorkoutBuilder } from '../../planning/WorkoutBuilder';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
@@ -14,6 +15,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
+
 
     useEffect(() => {
         const fetchAthlete = async () => {
@@ -94,28 +96,8 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
 
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
-                    <div className="max-w-4xl mx-auto space-y-6">
-                        {/* Import Excel Section */}
-                        <div className="bg-[#252525] border border-white/10 border-dashed rounded-xl p-8 text-center hover:border-anvil-red/50 transition-colors group cursor-pointer">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-anvil-red/10 transition-colors">
-                                <Upload className="text-gray-400 group-hover:text-anvil-red" size={32} />
-                            </div>
-                            <h3 className="text-lg font-bold mb-2">Importar Excel de Entrenamiento</h3>
-                            <p className="text-gray-400 text-sm max-w-sm mx-auto mb-4">
-                                Arrastra o selecciona el archivo Excel (.xlsx) con la planificación de {athlete.nickname}.
-                            </p>
-                            <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full text-sm font-bold transition-colors">
-                                Seleccionar Archivo
-                            </button>
-                        </div>
-
-                        {/* Current Week Placeholder */}
-                        <div className="bg-[#252525] border border-white/5 rounded-xl p-6">
-                            <h3 className="text-lg font-bold mb-4">Semana Actual</h3>
-                            <div className="text-center py-12 text-gray-500 bg-black/20 rounded-lg border border-white/5">
-                                No hay planificación cargada para esta semana.
-                            </div>
-                        </div>
+                    <div className="max-w-6xl mx-auto h-full pb-6">
+                        <WorkoutBuilder athleteId={athleteId} />
                     </div>
                 )}
 

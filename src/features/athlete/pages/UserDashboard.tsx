@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { CalendarModal } from '../../../components/modals/CalendarModal';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
+// import { AthleteTrainingPlan } from '../components/AthleteTrainingPlan';
+import { WorkoutLogger } from '../../training/WorkoutLogger';
 
 import { UserProfile } from '../../../hooks/useUser';
 
@@ -153,7 +155,8 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
                     </div>
                 );
             case 'planning':
-                return <div className="p-8 text-gray-500">Vista de Planificación (Próximamente)</div>;
+                // return <AthleteTrainingPlan userId={user.id} />;
+                return <WorkoutLogger athleteId={user.id} />;
             case 'nutrition':
                 return <div className="p-8 text-gray-500">Vista de Nutrición (Próximamente)</div>;
             case 'competitions':
