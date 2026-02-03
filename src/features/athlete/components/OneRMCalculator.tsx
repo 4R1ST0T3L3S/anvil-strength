@@ -154,10 +154,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
     return (
         <div 
-            className="fixed inset-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
+            className="fixed inset-x-0 bottom-0 top-[48px] md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#1c1c1c] border-2 border-white/10 w-full h-[calc(100dvh-48px)] md:h-[95vh] md:w-[95vw] md:max-w-2xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-[48px] md:mt-0">
+            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t border-white/10 w-full h-full md:h-[95vh] md:w-[95vw] md:max-w-2xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
                 
                 {/* Premium Header */}
                 <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0">
