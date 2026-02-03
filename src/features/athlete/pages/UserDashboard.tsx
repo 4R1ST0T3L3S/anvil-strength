@@ -82,7 +82,7 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
         switch (currentView) {
             case 'home':
                 return (
-                    <div className="p-8">
+                    <div className="p-4 md:p-8">
                         <header className="mb-8">
                             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
                                 Hola, <span className="text-anvil-red">{user.name?.split(' ')[0] || 'Atleta'}</span>
