@@ -7,25 +7,26 @@ import {
     Trophy,
     User
 } from 'lucide-react';
-import { CalendarModal } from '../../../components/modals/CalendarModal';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 // import { AthleteTrainingPlan } from '../components/AthleteTrainingPlan';
 import { WorkoutLogger } from '../../training/WorkoutLogger';
+import { CalendarSection } from '../../coach/components/CalendarSection';
+import { ProfileSection } from '../../profile/components/ProfileSection';
+import { AthleteHome } from '../components/AthleteHome';
+import { AthleteNutritionView } from '../components/AthleteNutritionView';
 
-import { UserProfile } from '../../../hooks/useUser';
+import { UserProfile, useUser } from '../../../hooks/useUser';
 
 interface UserDashboardProps {
     user: UserProfile;
     onLogout: () => void;
-    onOpenSettings: () => void;
-    onGoToHome: () => void;
 }
 
-type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions';
+type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
 
-export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardProps) {
+export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const [currentView, setCurrentView] = useState<AthleteView>('home');
-    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const { refetch } = useUser();
 
     // Security Check
     if (user?.role === 'coach') {
@@ -67,102 +68,36 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
         {
             icon: <Calendar size={20} />,
             label: 'Calendario AEP',
-            onClick: () => setIsCalendarOpen(true),
-            isActive: false
+            onClick: () => setCurrentView('calendar'),
+            isActive: currentView === 'calendar'
         },
         {
             icon: <User size={20} />,
             label: 'Mi Perfil',
-            onClick: () => window.location.href = '/profile',
-            isActive: false,
-            isExternal: true, // Mark as external to trigger link behavior
-            href: '/profile' 
+            onClick: () => setCurrentView('profile'),
+            isActive: currentView === 'profile'
         }
     ];
 
     const renderContent = () => {
         switch (currentView) {
             case 'home':
-                return (
-                    <div className="p-4 md:p-8">
-                        <header className="mb-8">
-                            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
-                                Hola, <span className="text-anvil-red">{user.name?.split(' ')[0] || 'Atleta'}</span>
-                            </h1>
-                            {user.nickname && (
-                                <p className="text-gray-400 font-bold tracking-widest text-sm uppercase mb-2">
-                                    Alias <span className="text-white">{user.nickname}</span>
-                                </p>
-                            )}
-                            <p className="text-gray-400 text-lg">Bienvenido a tu panel de atleta.</p>
-                        </header>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                            {/* Card: Planificaciones */}
-                            <div
-                                onClick={() => setCurrentView('planning')}
-                                className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 transition-all group cursor-pointer"
-                            >
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="p-3 bg-green-500/10 rounded-lg text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
-                                        <FileText size={32} />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold uppercase mb-2">Mi Planificación</h3>
-                                <p className="text-gray-400">Accede a tus rutinas de entrenamiento.</p>
-                            </div>
-
-                            {/* Card: Competiciones */}
-                            <div
-                                onClick={() => setCurrentView('competitions')}
-                                className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 transition-all group cursor-pointer"
-                            >
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="p-3 bg-anvil-red/10 rounded-lg text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-colors">
-                                        <Trophy size={32} />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold uppercase mb-2">Mis Competiciones</h3>
-                                <p className="text-gray-400">Gestiona tus inscripciones.</p>
-                            </div>
-
-                            {/* Card: Nutrición */}
-                            <div
-                                onClick={() => setCurrentView('nutrition')}
-                                className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 transition-all group cursor-pointer"
-                            >
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="p-3 bg-orange-500/10 rounded-lg text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                                        <Utensils size={32} />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold uppercase mb-2">Mi Nutrición</h3>
-                                <p className="text-gray-400">Visualiza tu plan nutricional.</p>
-                            </div>
-
-                            {/* Card: Calendario */}
-                            <div
-                                className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 transition-all group cursor-pointer active:scale-[0.98]"
-                                onClick={() => setIsCalendarOpen(true)}
-                            >
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="p-3 bg-blue-500/10 rounded-lg text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                                        <Calendar size={32} />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl font-bold uppercase mb-2">Calendario</h3>
-                                <p className="text-gray-400">Eventos AEP y del club.</p>
-                            </div>
-                        </div>
-                    </div>
-                );
+                return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view)} />;
             case 'planning':
                 // return <AthleteTrainingPlan userId={user.id} />;
                 return <WorkoutLogger athleteId={user.id} />;
             case 'nutrition':
-                return <div className="p-8 text-gray-500">Vista de Nutrición (Próximamente)</div>;
+                return <AthleteNutritionView user={user} />;
             case 'competitions':
                 return <div className="p-8 text-gray-500">Vista de Competiciones (Próximamente)</div>;
+            case 'calendar':
+                return (
+                    <div className="p-4 md:p-8">
+                        <CalendarSection />
+                    </div>
+                );
+            case 'profile':
+                return <ProfileSection user={user} onUpdate={() => refetch()} />;
             default:
                 return null;
         }
@@ -172,18 +107,11 @@ export function UserDashboard({ user, onLogout, onOpenSettings }: UserDashboardP
         <DashboardLayout
             user={user}
             onLogout={onLogout}
-            onOpenSettings={onOpenSettings}
+            onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
             roleLabel="Athlete"
         >
-            <div className="h-full overflow-y-auto">
-                {renderContent()}
-            </div>
-
-            <CalendarModal
-                isOpen={isCalendarOpen}
-                onClose={() => setIsCalendarOpen(false)}
-            />
+            {renderContent()}
         </DashboardLayout>
     );
 }

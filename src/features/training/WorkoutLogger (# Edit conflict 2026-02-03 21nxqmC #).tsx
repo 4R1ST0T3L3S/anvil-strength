@@ -87,29 +87,9 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 
                 setSessions(formatted);
                 if (formatted.length > 0) {
-                    // 4. Calculate today's day number relative to block start
-                    const startDate = new Date(active.start_date);
-                    const today = new Date();
-                    
-                    // Reset hours to compare dates only
-                    startDate.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
-                    
-                    const diffTime = today.getTime() - startDate.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
-                    // 5. Try to find session for this specific date or day_number
-                    const todayStr = today.toISOString().split('T')[0];
-                    const sessionForToday = formatted.find(s => 
-                        (s as any).date === todayStr || s.day_number === diffDays
-                    );
-
-                    if (sessionForToday) {
-                        setActiveSessionId(sessionForToday.id);
-                    } else {
-                        // Default to first available if no exact match for today
-                        setActiveSessionId(formatted[0].id);
-                    }
+                    // Try to find today's session based on day of week? (Optimization)
+                    // For now, default to first available
+                    setActiveSessionId(formatted[0].id);
                 }
             } catch (err) {
                 console.error(err);
@@ -125,21 +105,10 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 
     if (!block) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-black text-gray-400 p-8 text-center space-y-6">
-                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
-                    <AlertCircle size={64} />
-                </div>
-                <div className="max-w-xs">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Sin Plan Activo</h3>
-                    <p className="text-sm leading-relaxed">
-                        Tu entrenador aún no ha activado tu próximo mesociclo. Contacta con él para empezar a registrar tus marcas.
-                    </p>
-                </div>
-                <div className="pt-4">
-                    <div className="px-6 py-3 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest text-gray-500">
-                        Esperando programación...
-                    </div>
-                </div>
+            <div className="h-screen flex flex-col items-center justify-center bg-black text-gray-400 p-6 text-center">
+                <AlertCircle size={48} className="mb-4 text-gray-600" />
+                <h3 className="text-xl font-bold text-white mb-2">Sin Entrenamiento Activo</h3>
+                <p>No tienes ningún mesociclo asignado o activo actualmente.</p>
             </div>
         );
     }

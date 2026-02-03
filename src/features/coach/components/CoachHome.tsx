@@ -15,18 +15,36 @@ export function CoachHome({ user }: { user: UserProfile }) {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // 1. Get Total Athletes
-                const { count: athleteCount, error: countError } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
+                // 1. Get athletes assigned to this coach
+                const { data: athleteLinks, error: linksError } = await supabase
+                    .from('coach_athletes')
+                    .select('athlete_id')
+                    .eq('coach_id', user.id);
 
-                if (countError) throw countError;
+                if (linksError) throw linksError;
 
-                // 2. Get Next Competition
+                const athleteIds = athleteLinks?.map(link => link.athlete_id) || [];
+
+                if (athleteIds.length === 0) {
+                    setStats({
+                        totalAthletes: 0,
+                        nextCompDays: null,
+                        nextCompName: '',
+                        activeWarnings: 0
+                    });
+                    setLoading(false);
+                    return;
+                }
+
+                // 2. Get Total Athletes Count (Only those assigned to this coach)
+                const athleteCount = athleteIds.length;
+
+                // 3. Get Next Competition for these athletes
                 const today = new Date().toISOString().split('T')[0];
                 const { data: nextComp } = await supabase
                     .from('competition_entries')
                     .select('competition_name, target_date')
+                    .in('athlete_id', athleteIds)
                     .gte('target_date', today)
                     .order('target_date', { ascending: true })
                     .limit(1)

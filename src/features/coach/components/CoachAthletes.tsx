@@ -5,10 +5,11 @@ import { Search, Dumbbell } from 'lucide-react';
 import { Skeleton } from '../../../components/ui/Skeleton';
 
 interface CoachAthletesProps {
+    user: UserProfile;
     onSelectAthlete: (id: string) => void;
 }
 
-export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
+export function CoachAthletes({ user, onSelectAthlete }: CoachAthletesProps) {
     const [athletes, setAthletes] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -16,9 +17,27 @@ export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
     useEffect(() => {
         const fetchAthletes = async () => {
             try {
+                // 1. Get athlete IDs assigned to this coach
+                const { data: links, error: linksError } = await supabase
+                    .from('coach_athletes')
+                    .select('athlete_id')
+                    .eq('coach_id', user.id);
+
+                if (linksError) throw linksError;
+
+                const athleteIds = links?.map(l => l.athlete_id) || [];
+
+                if (athleteIds.length === 0) {
+                    setAthletes([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // 2. Fetch profiles for these athletes
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('*')
+                    .in('id', athleteIds)
                     .order('full_name', { ascending: true });
 
                 if (error) throw error;
@@ -31,7 +50,7 @@ export function CoachAthletes({ onSelectAthlete }: CoachAthletesProps) {
         };
 
         fetchAthletes();
-    }, []);
+    }, [user.id]);
 
     const filteredAthletes = athletes.filter(athlete =>
         (athlete.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||

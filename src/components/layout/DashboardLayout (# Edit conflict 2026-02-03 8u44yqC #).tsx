@@ -146,30 +146,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </aside>
 
             {/* Mobile Header (Simplified - Logo & Notification) */}
-            <div className="md:hidden fixed top-0 w-full bg-[#1c1c1c]/95 backdrop-blur-md border-b border-white/[0.03] z-[10001] px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div className="md:hidden fixed top-0 w-full bg-[#1c1c1c]/90 backdrop-blur border-b border-white/5 z-40 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
                     <img src="/logo.svg" alt="Anvil" className="h-6 w-auto" />
-                    <div className="flex items-baseline gap-2">
-                        <span className="font-black text-sm tracking-tighter uppercase italic">Anvil Strength</span>
-                        <span className="text-[8px] text-gray-700 font-bold uppercase tracking-widest">v1.1</span>
-                    </div>
+                    <span className="text-[10px] text-gray-600">v1.1</span>
                 </div>
                 <NotificationBell />
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 h-full overflow-y-auto pt-16 pb-24 md:pt-0 md:pb-0 bg-[#1c1c1c]">
+            <main className="flex-1 md:ml-64 h-full overflow-y-auto pt-14 pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c]">
                 {children}
             </main>
 
             {/* Mobile Bottom Navigation (Instagram Style) */}
-            <nav 
-                className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c]/95 backdrop-blur-md border-t border-white/[0.03] z-50 px-8 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.6)]" 
-                style={{ 
-                    paddingBottom: 'env(safe-area-inset-bottom)',
-                    height: 'calc(4.5rem + env(safe-area-inset-bottom))'
-                }}
-            >
+            <nav className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c] border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
                 {menuItems.map((item, index) => {
                     // Filter out items that shouldn't appear in bottom nav (like profile if handled separately, but user asked for all icons)
                     // Usually Bottom Nav has 4-5 items max. We have ~6. 

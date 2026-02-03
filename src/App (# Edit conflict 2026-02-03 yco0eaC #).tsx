@@ -4,19 +4,22 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
 import { AuthModal } from './features/auth/components/AuthModal';
+import { SettingsModal } from './components/modals/SettingsModal';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { DashboardSkeleton } from './components/skeletons/DashboardSkeleton';
+import { ProfileSkeleton } from './components/skeletons/ProfileSkeleton';
 import { ReloadPrompt } from './components/pwa/ReloadPrompt';
 import { Toaster } from 'sonner';
 
 // Lazy Load Pages
 // Landing Page is kept eager for LCP/First Fold performance, or can be lazy if it's very heavy. 
-// Given the user request, I will lazy load Dashboard which is behind auth.
+// Given the user request, I will lazy load Dashboard/Profile which are behind auth.
 import { LandingPage } from './features/landing/pages/LandingPage';
 
 const UserDashboard = lazy(() => import('./features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('./features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+const ProfilePage = lazy(() => import('./features/profile/pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
 
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
@@ -24,6 +27,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const { data: user, isLoading, isError, error } = useUser();
   const queryClient = useQueryClient();
   const location = useLocation();
@@ -46,6 +50,7 @@ function App() {
   };
 
   const handleLoginClick = () => setIsAuthModalOpen(true);
+  const handleOpenSettings = () => setIsSettingsModalOpen(true);
 
   if (isLoading) return <LoadingSpinner fullscreen message="Verificando sesión..." />;
 
@@ -88,6 +93,8 @@ function App() {
                 <UserDashboard
                   user={user}
                   onLogout={handleLogout}
+                  onOpenSettings={handleOpenSettings}
+                  onGoToHome={() => { }}
                 />
               </Suspense>
             )
@@ -103,6 +110,15 @@ function App() {
               </Suspense>
             )
           } />
+          <Route path="/profile" element={
+            !user ? (
+              <Navigate to="/" replace />
+            ) : (
+              <Suspense fallback={<ProfileSkeleton />}>
+                <ProfilePage onLogout={handleLogout} />
+              </Suspense>
+            )
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </ErrorBoundary>
@@ -111,6 +127,15 @@ function App() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
+
+      {user && (
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          user={user}
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
+        />
+      )}
     </div>
   );
 }

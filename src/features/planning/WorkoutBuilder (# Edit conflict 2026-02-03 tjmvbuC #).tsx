@@ -211,17 +211,6 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
         await supabase.from('training_sessions').update({ name }).eq('id', sessionId);
     };
 
-    const updateSessionDate = async (sessionId: string, date: string) => {
-        setBlockData(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                sessions: prev.sessions.map(s => s.id === sessionId ? { ...s, date } : s)
-            };
-        });
-        await supabase.from('training_sessions').update({ date }).eq('id', sessionId);
-    };
-
     // --- Exercises ---
     const addExercise = async (sessionId: string, exerciseLibraryItem: ExerciseLibrary) => {
         // Server create structure immediately to get ID
@@ -446,7 +435,6 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
                             session={session}
                             exerciseLibrary={exerciseLibrary}
                             onUpdateName={updateSessionName}
-                            onUpdateDate={updateSessionDate}
                             onAddExercise={addExercise}
                             onRemoveExercise={removeExercise}
                             onAddSet={addSet}
@@ -469,31 +457,20 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
 // ==========================================
 // SUB-COMPONENT: DAY COLUMN
 // ==========================================
-function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAddExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet }: any) {
+function DayColumn({ session, exerciseLibrary, onUpdateName, onAddExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet }: any) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     return (
         <div className="w-[400px] flex flex-col bg-[#252525] border border-white/5 rounded-2xl overflow-hidden shadow-xl h-full">
             {/* Header */}
-            <div className="p-4 bg-[#2a2a2a] border-b border-white/5 space-y-2">
-                <div className="flex justify-between items-center group">
-                    <input
-                        className="bg-transparent font-black text-lg text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight"
-                        value={session.name || `Día ${session.day_number}`}
-                        onChange={(e) => onUpdateName(session.id, e.target.value)}
-                        placeholder="NOMBRE DÍA"
-                    />
-                    <div className="text-xs text-gray-600 font-mono">#{session.day_number}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="date"
-                        value={session.date || ''}
-                        onChange={(e) => onUpdateDate(session.id, e.target.value)}
-                        className="bg-black/20 text-[10px] font-bold text-gray-400 border border-white/5 rounded px-2 py-1 outline-none focus:border-anvil-red transition-colors"
-                    />
-                    {!session.date && <span className="text-[10px] text-gray-600 italic">Sin fecha asignada</span>}
-                </div>
+            <div className="p-4 bg-[#2a2a2a] border-b border-white/5 flex justify-between items-center group">
+                <input
+                    className="bg-transparent font-black text-lg text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight"
+                    value={session.name || `Día ${session.day_number}`}
+                    onChange={(e) => onUpdateName(session.id, e.target.value)}
+                    placeholder="NOMBRE DÍA"
+                />
+                <div className="text-xs text-gray-600 font-mono">#{session.day_number}</div>
             </div>
 
             {/* Exercises List */}

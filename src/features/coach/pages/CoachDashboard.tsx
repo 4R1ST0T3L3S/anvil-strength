@@ -10,23 +10,24 @@ import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
 import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
-import { CalendarModal } from '../../../components/modals/CalendarModal';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
+import { CalendarSection } from '../components/CalendarSection';
+import { ProfileSection } from '../../profile/components/ProfileSection';
 
 
-import { UserProfile } from '../../../hooks/useUser';
+import { UserProfile, useUser } from '../../../hooks/useUser';
 
 interface CoachDashboardProps {
     user: UserProfile;
     onLogout: () => void;
 }
 
-type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details';
+type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile';
 
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const [currentView, setCurrentView] = useState<ViewState>('home');
+    const { refetch } = useUser();
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
-    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     // Security Check
     if (user?.role !== 'coach') {
@@ -67,14 +68,14 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
         {
             icon: <Calendar size={20} />,
             label: 'Calendario AEP',
-            onClick: () => setIsCalendarOpen(true),
-            isActive: false // Opens modal, doesn't change view
+            onClick: () => setCurrentView('calendar'),
+            isActive: currentView === 'calendar'
         },
         {
             icon: <User size={20} />,
             label: 'Mi Perfil',
-            onClick: () => window.location.href = '/profile',
-            isActive: false
+            onClick: () => setCurrentView('profile'),
+            isActive: currentView === 'profile'
         },
 
     ];
@@ -84,16 +85,24 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             case 'home':
                 return <CoachHome user={user} />;
             case 'athletes':
-                return <CoachAthletes onSelectAthlete={handleSelectAthlete} />;
+                return <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} />;
             case 'athlete_details':
                 return selectedAthleteId ? (
                     <CoachAthleteDetails
                         athleteId={selectedAthleteId}
                         onBack={() => setCurrentView('athletes')}
                     />
-                ) : <CoachAthletes onSelectAthlete={handleSelectAthlete} />;
+                ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} />;
             case 'schedule':
-                return <CoachTeamSchedule />;
+                return <CoachTeamSchedule user={user} />;
+            case 'calendar':
+                return (
+                    <div className="p-4 md:p-8">
+                        <CalendarSection />
+                    </div>
+                );
+            case 'profile':
+                return <ProfileSection user={user} onUpdate={() => refetch()} />;
             default:
                 return <CoachHome user={user} />;
         }
@@ -103,17 +112,11 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
         <DashboardLayout
             user={user}
             onLogout={onLogout}
+            onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
             roleLabel="Coach"
         >
-            <div className="h-full overflow-y-auto">
-                {renderContent()}
-            </div>
-
-            <CalendarModal
-                isOpen={isCalendarOpen}
-                onClose={() => setIsCalendarOpen(false)}
-            />
+            {renderContent()}
         </DashboardLayout>
     );
 }

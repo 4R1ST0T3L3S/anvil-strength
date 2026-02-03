@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { Calendar } from 'lucide-react';
+import { UserProfile } from '../../../hooks/useUser';
 
 interface CompetitionEntry {
     id: string;
     competition_name: string;
     target_date: string;
+    athlete_id: string;
     category?: string;
     profiles: {
         id: string;
@@ -21,14 +23,30 @@ interface CompetitionGroup {
     entries: CompetitionEntry[];
 }
 
-export function CoachTeamSchedule() {
+export function CoachTeamSchedule({ user }: { user: UserProfile }) {
     const [competitions, setCompetitions] = useState<CompetitionGroup[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchSchedule = async () => {
             try {
-                // Fetch entries with athlete data
+                // 1. Get athletes assigned to this coach
+                const { data: athleteLinks, error: linksError } = await supabase
+                    .from('coach_athletes')
+                    .select('athlete_id')
+                    .eq('coach_id', user.id);
+
+                if (linksError) throw linksError;
+
+                const athleteIds = athleteLinks?.map(link => link.athlete_id) || [];
+
+                if (athleteIds.length === 0) {
+                    setCompetitions([]);
+                    setLoading(false);
+                    return;
+                }
+
+                // 2. Fetch entries ONLY for these athletes
                 const { data, error } = await supabase
                     .from('competition_entries')
                     .select(`
@@ -40,6 +58,7 @@ export function CoachTeamSchedule() {
                             avatar_url
                         )
                     `)
+                    .in('athlete_id', athleteIds)
                     .order('target_date', { ascending: true });
 
                 if (error) throw error;
