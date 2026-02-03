@@ -87,7 +87,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
             const formattedSessions: ExtendedSession[] = (sessions || []).map(s => ({
                 ...s,
                 exercises: (s.session_exercises || [])
-                    .sort((a, b) => a.order_index - b.order_index)
+                    .sort((a: any, b: any) => a.order_index - b.order_index)
                     .map((e: any) => ({
                         ...e,
                         sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
@@ -116,7 +116,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
         try {
             await trainingService.createBlock({
                 athlete_id: athleteId,
-                coach_id: (await supabase.auth.getUser()).data.user?.id!, // Assumes authed
+                coach_id: (await supabase.auth.getUser()).data.user?.id || '', // Assumes authed
                 name: `Mesociclo ${monthName} ${now.getFullYear()}`,
                 is_active: true,
                 start_date: now.toISOString(),

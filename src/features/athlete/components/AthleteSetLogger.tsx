@@ -85,11 +85,11 @@ export function AthleteSetLogger({ sessionExerciseId }: AthleteSetLoggerProps) {
                         {/* Actual Reps */}
                         <div className="col-span-4">
                             <input
-                                type="text"
+                                type="number"
                                 placeholder="-"
                                 value={set.actual_reps || ''}
-                                onChange={(e) => handleUpdateActual(set.id, { actual_reps: e.target.value })}
-                                onBlur={(e) => handleBlur(set.id, { actual_reps: e.target.value })}
+                                onChange={(e) => handleUpdateActual(set.id, { actual_reps: e.target.value ? parseInt(e.target.value) : undefined })}
+                                onBlur={(e) => handleBlur(set.id, { actual_reps: e.target.value ? e.target.value : undefined })}
                                 className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-3 text-center text-white font-bold focus:border-anvil-red/50 focus:outline-none transition-colors"
                             />
                         </div>
@@ -109,11 +109,12 @@ export function AthleteSetLogger({ sessionExerciseId }: AthleteSetLoggerProps) {
                         {/* Actual RPE */}
                         <div className="col-span-2 relative">
                             <input
-                                type="text"
+                                type="number"
                                 placeholder="@"
+                                step="0.5"
                                 value={set.actual_rpe || ''}
-                                onChange={(e) => handleUpdateActual(set.id, { actual_rpe: e.target.value })}
-                                onBlur={(e) => handleBlur(set.id, { actual_rpe: e.target.value })}
+                                onChange={(e) => handleUpdateActual(set.id, { actual_rpe: e.target.value ? parseFloat(e.target.value) : undefined })}
+                                onBlur={(e) => handleBlur(set.id, { actual_rpe: e.target.value ? e.target.value : undefined })}
                                 className="w-full bg-[#0a0a0a] border border-white/10 rounded px-1 py-3 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors text-xs"
                             />
                             {savingId === set.id && (

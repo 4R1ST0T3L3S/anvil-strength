@@ -77,7 +77,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                 const formatted: ExtendedSession[] = (sessData || []).map(s => ({
                     ...s,
                     exercises: (s.session_exercises || [])
-                        .sort((a, b) => a.order_index - b.order_index)
+                        .sort((a: any, b: any) => a.order_index - b.order_index)
                         .map((e: any) => ({
                             ...e,
                             sets: (e.training_sets || [])

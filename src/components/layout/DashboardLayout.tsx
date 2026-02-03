@@ -1,5 +1,5 @@
 // import { useState } from 'react';
-import { LogOut, X, Home } from 'lucide-react';
+import { LogOut, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
 import { UserProfile } from '../../hooks/useUser';

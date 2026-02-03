@@ -15,7 +15,7 @@ import './index.css'
 // FORCE UNREGISTER ALL SERVICE WORKERS TO FIX CACHE ISSUES
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(function (registrations) {
-    for (let registration of registrations) {
+    for (const registration of registrations) {
       registration.unregister();
       console.log('Service Worker Unregistered');
     }
