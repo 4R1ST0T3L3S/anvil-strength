@@ -30,7 +30,6 @@ interface SidebarContentProps {
     menuItems: MenuItem[];
     onLogout: () => void;
     onOpenSettings?: () => void;
-    toggleMobileMenu: () => void;
 }
 
 const SidebarContent: React.FC<SidebarContentProps> = ({
@@ -38,8 +37,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     roleLabel,
     menuItems,
     onLogout,
-    onOpenSettings,
-    toggleMobileMenu
+    onOpenSettings
 }) => (
     <div className="flex flex-col h-full bg-[#252525] border-r border-white/5">
         <div className="p-6 border-b border-white/5 flex items-center justify-between">
@@ -51,10 +49,6 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
             <div className="md:block hidden">
                 <NotificationBell />
             </div>
-            {/* Close button for mobile */}
-            <button onClick={toggleMobileMenu} className="md:hidden text-gray-400 hover:text-white">
-                <X size={24} />
-            </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -71,7 +65,6 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                             target="_blank"
                             rel="noreferrer"
                             className={`${baseClasses} ${inactiveClasses}`}
-                            onClick={() => toggleMobileMenu()}
                         >
                             {item.icon}
                             {item.label}
@@ -82,10 +75,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                 return (
                     <button
                         key={index}
-                        onClick={() => {
-                            item.onClick();
-                            toggleMobileMenu();
-                        }}
+                        onClick={item.onClick}
                         className={`${baseClasses} ${item.isActive ? activeClasses : inactiveClasses}`}
                     >
                         {item.icon}
@@ -152,7 +142,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     menuItems={menuItems}
                     onLogout={onLogout}
                     onOpenSettings={onOpenSettings}
-                    toggleMobileMenu={toggleMobileMenu}
                 />
             </aside>
 
