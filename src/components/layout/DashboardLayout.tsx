@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { LogOut, Menu, X, Home } from 'lucide-react';
+// import { useState } from 'react';
+import { LogOut, X, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
 import { UserProfile } from '../../hooks/useUser';
@@ -140,9 +140,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     children,
     roleLabel
 }) => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
     return (
         <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
@@ -158,38 +156,56 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 />
             </aside>
 
-            {/* Mobile Header */}
-            <div className="md:hidden fixed top-0 w-full bg-[#252525] border-b border-white/5 z-40 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
-                    <NotificationBell />
-                </div>
-                <button onClick={toggleMobileMenu} className="text-white">
-                    <Menu size={28} />
-                </button>
+            {/* Mobile Header (Simplified - Logo & Notification) */}
+            <div className="md:hidden fixed top-0 w-full bg-[#1c1c1c]/90 backdrop-blur border-b border-white/5 z-40 px-4 py-3 flex items-center justify-between">
+                <img src="/logo.svg" alt="Anvil" className="h-6 w-auto" />
+                <NotificationBell />
             </div>
 
-            {/* Mobile Sidebar Overlay */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 md:hidden">
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={toggleMobileMenu} />
-                    <div className="fixed inset-y-0 left-0 w-64 shadow-xl z-50">
-                        <SidebarContent
-                            user={user}
-                            roleLabel={roleLabel}
-                            menuItems={menuItems}
-                            onLogout={onLogout}
-                            onOpenSettings={onOpenSettings}
-                            toggleMobileMenu={toggleMobileMenu}
-                        />
-                    </div>
-                </div>
-            )}
-
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 h-full overflow-y-auto pt-16 md:pt-0 bg-[#1c1c1c]">
+            <main className="flex-1 md:ml-64 h-full overflow-y-auto pt-14 pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c]">
                 {children}
             </main>
+
+            {/* Mobile Bottom Navigation (Instagram Style) */}
+            <nav className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c] border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
+                {menuItems.map((item, index) => {
+                    // Filter out items that shouldn't appear in bottom nav (like profile if handled separately, but user asked for all icons)
+                    // Usually Bottom Nav has 4-5 items max. We have ~6. 
+                    // Let's render them all but they might be tight.
+                    // The user explicitly asked for "icons situated in the inferior zone".
+
+                    // We should exclude external links if they are not primary navigation, 
+                    // or the "Profile" if we want to use the avatar. 
+                    // For now, I'll render the passed menuItems.
+
+                    if (item.label === 'QA: Test DB') return null; // Ensure this is definitely gone
+
+                    const isActive = item.isActive;
+
+                    return (
+                        <button
+                            key={index}
+                            onClick={item.onClick}
+                            className={`flex flex-col items-center justify-center p-2 transition-colors ${isActive ? 'text-anvil-red' : 'text-gray-500 hover:text-white'
+                                }`}
+                        >
+                            {/* Force icon size for mobile consistency */}
+                            <div className={isActive ? "scale-110 transition-transform" : ""}>
+                                {item.icon}
+                            </div>
+                            {/* Optional: No labels for pure "Instagram" look, or tiny labels? 
+                                User said "navigation done via icons". Usually implied no text or very small.
+                                I will hide text so it fits multiple icons.
+                            */}
+                        </button>
+                    );
+                })}
+
+                {/* Profile Avatar as last item if not present in menuItems? 
+                   In UserDashboard, "Mi Perfil" is a menu item. So it will be rendered above.
+                */}
+            </nav>
         </div>
     );
 };
