@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Calculator, TrendingUp, ChevronRight, Weight } from 'lucide-react';
+import { X, Calculator, Weight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlateCalculatorProps {
@@ -68,10 +68,10 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[95vh] md:w-[95vw] md:max-w-4xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Header */}
-                <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0">
+                <div className="p-4 md:px-6 md:py-3 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0 h-16 md:h-20">
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="w-12 h-12 md:w-16 md:h-16 bg-anvil-red rounded-[1rem] md:rounded-[1.4rem] flex items-center justify-center text-white shadow-2xl shadow-anvil-red/40 -rotate-3 border-2 border-white/10">
                             <Weight className="w-6 h-6 md:w-8 md:h-8" />
@@ -89,14 +89,19 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                     </button>
                 </div>
 
-                {/* Body */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 md:space-y-16 custom-scrollbar overflow-x-hidden flex flex-col items-center">
+                {/* Visual Bar - Restricted Height (35%) */}
+                <div className="bg-[#252525] border-b border-white/5 w-full shrink-0 h-[35%] flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_70%)]"></div>
 
-                    {/* Visual Bar Display - Clean Screenshot Style */}
-                    <div className="w-full relative py-10 md:py-20 flex items-center justify-start overflow-hidden shrink-0">
-                        <div className="relative flex items-center scale-90 md:scale-110 origin-left">
+                    {/* The Barbell Visualization */}
+                    <div className="relative z-10 scale-[0.6] md:scale-75 origin-center w-full max-w-[90%] flex items-center justify-center">
+                        {/* The Bar Itself */}
+                        <div className="flex items-center">
+                            {/* Bar End Cap */}
+                            <div className="w-4 h-4 bg-[#555555] rounded-full shadow-lg shrink-0"></div>
+
                             {/* Main Bar (The part you hold) - Grey/Silver */}
-                            <div className="w-32 md:w-48 h-3 md:h-4 bg-[#999999] shrink-0"></div>
+                            <div className="w-24 md:w-48 h-6 bg-[#999999] shadow-inner shrink-0 bg-gradient-to-b from-[#aaaaaa] to-[#888888]"></div>
 
                             {/* The Collar Stopper (Thin grey part) */}
                             <div className="w-2 h-8 bg-[#888888] shrink-0"></div>
@@ -107,7 +112,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                             {/* The Sleeve (Where plates go) */}
                             <div className="relative flex items-center z-10 shrink-0">
                                 {/* Sleeve metal rod - Fixed length, doesn't reach the end */}
-                                <div className="w-60 md:w-80 h-8 bg-[#aaaaaa] rounded-r-sm z-0 shadow-sm border-y border-white/5"></div>
+                                <div className="w-56 md:w-96 h-8 bg-[#aaaaaa] rounded-r-sm z-0 shadow-sm border-y border-white/5"></div>
 
                                 {/* Plates stacked on the sleeve */}
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-0.5 pl-1">
@@ -118,7 +123,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                 initial={{ x: 100, opacity: 0 }}
                                                 animate={{ x: 0, opacity: 1 }}
                                                 exit={{ x: -20, opacity: 0 }}
-                                                className={`${plate.height} w-3 md:w-5 rounded-sm flex items-center justify-center text-[6px] md:text-[10px] font-black border-x border-black/30 shadow-2xl shrink-0`}
+                                                className={`${plate.height} w-3 md:w-6 rounded-sm flex items-center justify-center text-[6px] md:text-[12px] font-black border-x border-black/30 shadow-2xl shrink-0`}
                                                 style={{
                                                     backgroundColor: plate.color,
                                                     color: plate.weight === 2.5 || plate.weight === 20 || plate.weight === 0.25 ? 'white' : 'black'
@@ -134,12 +139,12 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                         <motion.div
                                             initial={{ x: 30, opacity: 0 }}
                                             animate={{ x: 0, opacity: 1 }}
-                                            className="w-4 md:w-6 h-14 md:h-24 bg-[#dddddd] rounded-sm shadow-2xl z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
+                                            className="w-4 md:w-8 h-14 md:h-28 bg-[#dddddd] rounded-sm shadow-2xl z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
                                         >
-                                            <span className="text-[6px] md:text-[8px] font-black text-black rotate-90 relative z-10 leading-none">2.5</span>
+                                            <span className="text-[6px] md:text-[10px] font-black text-black rotate-90 relative z-10 leading-none">2.5</span>
 
                                             {/* Competition Lever (Palanca) */}
-                                            <div className="absolute -top-6 md:-top-10 left-1/2 -translate-x-1/2 w-1 md:w-1.5 h-8 md:h-12 bg-[#bbbbbb] rounded-full border border-black/10 shadow-lg origin-bottom -rotate-12">
+                                            <div className="absolute -top-6 md:-top-10 left-1/2 -translate-x-1/2 w-1 md:w-2 h-8 md:h-12 bg-[#bbbbbb] rounded-full border border-black/10 shadow-lg origin-bottom -rotate-12">
                                                 <div className="absolute top-0 left-0 w-full h-1/3 bg-white/20 rounded-full"></div>
                                             </div>
                                         </motion.div>
@@ -148,95 +153,127 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Controls */}
-                    <div className="w-full max-w-xl space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Target Weight Input */}
-                            <div className="bg-black/40 border-2 border-white/5 rounded-[2rem] p-8 transition-all group focus-within:border-anvil-red">
-                                <label className="block text-[10px] font-black text-gray-600 mb-2 uppercase tracking-widest group-focus-within:text-anvil-red">Peso Total (kg)</label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="number"
-                                        inputMode="decimal"
-                                        step="0.1"
-                                        value={targetWeight}
-                                        onChange={(e) => setTargetWeight(e.target.value)}
-                                        placeholder="20"
-                                        className="w-full bg-transparent text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic"
-                                    />
-                                    <span className="text-2xl font-black text-gray-800 uppercase italic">kg</span>
-                                </div>
-                            </div>
+                {/* Desktop Split View: Controls Left, List Right - Takes remaining space */}
+                <div className="md:grid md:grid-cols-2 md:gap-8 w-full max-w-6xl mx-auto p-4 md:p-6 flex-1 h-[65%] overflow-hidden">
 
-                            {/* Competition Collars Selector */}
-                            <div className="bg-black/40 border-2 border-white/5 rounded-[2rem] p-8 flex flex-col justify-between">
-                                <label className="block text-[10px] font-black text-gray-600 mb-2 uppercase tracking-widest">Cierres de Competición</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => setHasCollars(true)}
-                                        className={`py-3 rounded-xl font-black italic transition-all ${hasCollars ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' : 'bg-white/5 text-gray-500 hover:text-white'}`}
-                                    >
-                                        SÍ
-                                    </button>
-                                    <button
-                                        onClick={() => setHasCollars(false)}
-                                        className={`py-3 rounded-xl font-black italic transition-all ${!hasCollars ? 'bg-white text-black' : 'bg-white/5 text-gray-500 hover:text-white'}`}
-                                    >
-                                        NO
-                                    </button>
-                                </div>
+                    {/* LEFT: Controls - Flex Column with specific heights */}
+                    <div className="flex flex-col gap-4 h-full pt-2">
+                        {/* Input Section - Takes more space */}
+                        <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 flex flex-col justify-center flex-1 min-h-0">
+                            <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-1 uppercase tracking-widest text-center">Peso Total Objetivo</label>
+                            <div className="flex items-center justify-center gap-2">
+                                <input
+                                    type="number"
+                                    inputMode="decimal"
+                                    step="0.1"
+                                    value={targetWeight}
+                                    onChange={(e) => setTargetWeight(e.target.value)}
+                                    placeholder="20"
+                                    className="w-full bg-transparent text-center text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic tracking-tighter"
+                                />
+                                <span className="text-xl md:text-2xl font-black text-gray-800 uppercase italic">kg</span>
                             </div>
                         </div>
 
-                        {/* Inventory Info */}
-                        <div className="bg-[#252525] rounded-[2rem] p-8 border border-white/5">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xs font-black text-white uppercase tracking-widest italic">Discos por lado</h3>
-                                <div className="px-3 py-1 bg-anvil-red/10 rounded-full">
-                                    <span className="text-[10px] font-black text-anvil-red uppercase italic">IPF Standard</span>
+                        {/* Competition Collars Selector - Takes less space */}
+                        <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-3 flex flex-row items-center justify-between gap-4 shrink-0 h-20 md:h-24">
+                            <label className="block text-[9px] md:text-[10px] font-black text-gray-600 uppercase tracking-widest leading-tight">Cierres de<br />Competición</label>
+                            <div className="flex bg-black/60 p-1 rounded-lg border border-white/5 shrink-0">
+                                <button
+                                    onClick={() => setHasCollars(true)}
+                                    className={`px-3 py-2 rounded-md font-black italic text-[10px] md:text-xs transition-all ${hasCollars ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                                >
+                                    SÍ
+                                </button>
+                                <button
+                                    onClick={() => setHasCollars(false)}
+                                    className={`px-3 py-2 rounded-md font-black italic text-[10px] md:text-xs transition-all ${!hasCollars ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                                >
+                                    NO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT: Inventory Info - Ultra Compacted */}
+                    <div className="flex flex-col overflow-hidden h-full pt-2">
+                        <div className="bg-[#252525] rounded-2xl p-3 md:p-4 border border-white/5 flex-1 flex flex-col overflow-hidden">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-sm md:text-base font-black text-white uppercase tracking-widest italic">Discos (Por lado)</h3>
+                                <div className="px-3 py-1 bg-anvil-red/10 rounded-full border border-anvil-red/20">
+                                    <span className="text-[10px] md:text-xs font-black text-anvil-red uppercase italic">IPF Standard Calibrated</span>
                                 </div>
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                                {Object.entries(
-                                    platesNeeded.reduce((acc, plate) => {
-                                        acc[plate.weight] = (acc[plate.weight] || 0) + 1;
-                                        return acc;
-                                    }, {} as Record<number, number>)
-                                )
-                                    .sort(([weightA], [weightB]) => parseFloat(weightB) - parseFloat(weightA))
-                                    .map(([weight, count]) => {
-                                        const plate = PLATES_CONFIG.find(p => p.weight === parseFloat(weight));
-                                        return (
-                                            <div key={weight} className="flex items-center gap-2 bg-black/40 px-4 py-2 rounded-xl border border-white/5">
-                                                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: plate?.color }}></div>
-                                                <span className="text-sm font-black text-white italic">
-                                                    x{count} de {weight}kg
-                                                </span>
+                            <div className="flex flex-wrap content-start gap-3 flex-1">
+                                <AnimatePresence>
+                                    {Object.entries(
+                                        platesNeeded.reduce((acc, plate) => {
+                                            acc[plate.weight] = (acc[plate.weight] || 0) + 1;
+                                            return acc;
+                                        }, {} as Record<number, number>)
+                                    )
+                                        .sort(([weightA], [weightB]) => parseFloat(weightB) - parseFloat(weightA))
+                                        .map(([weight, count], idx) => {
+                                            const plate = PLATES_CONFIG.find(p => p.weight === parseFloat(weight));
+                                            return (
+                                                <motion.div
+                                                    key={weight}
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ delay: idx * 0.05 }}
+                                                    className="flex items-center gap-3 bg-black/40 pr-5 pl-2 py-3 rounded-2xl border border-white/5 hover:border-white/20 transition-colors"
+                                                >
+                                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border-2 border-white/5 flex items-center justify-center text-[8px] md:text-[10px] font-black text-black/50" style={{ backgroundColor: plate?.color }}>
+                                                        {weight}
+                                                    </div>
+                                                    <div className="flex flex-col leading-none">
+                                                        <span className="text-lg md:text-2xl font-black text-white italic">x{count}</span>
+                                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{weight} kg</span>
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    {hasCollars && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="flex items-center gap-3 bg-gray-400/10 pr-5 pl-2 py-3 rounded-2xl border border-gray-400/20"
+                                        >
+                                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-400 shadow-lg border-2 border-white/10 flex items-center justify-center">
+                                                <div className="w-1.5 h-4 bg-black/20 rounded-full rotate-45"></div>
                                             </div>
-                                        );
-                                    })}
-                                {hasCollars && (
-                                    <div className="flex items-center gap-2 bg-gray-400/20 px-4 py-2 rounded-xl border border-gray-400/30">
-                                        <div className="w-3 h-3 rounded-full bg-gray-400 shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
-                                        <span className="text-sm font-black text-white italic">x1 Cierre (2.5kg)</span>
-                                    </div>
-                                )}
+                                            <div className="flex flex-col leading-none">
+                                                <span className="text-lg md:text-2xl font-black text-white italic">x1</span>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Cierre</span>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 {!platesNeeded.length && !hasCollars && (
-                                    <p className="text-gray-600 italic text-sm font-bold">Introduce un peso superior a la barra...</p>
+                                    <div className="w-full h-32 flex flex-col items-center justify-center text-gray-700 space-y-2 border-2 border-dashed border-white/5 rounded-2xl">
+                                        <Calculator size={24} className="opacity-50" />
+                                        <p className="italic text-sm font-bold">Introduce un peso válido...</p>
+                                    </div>
                                 )}
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 {/* Footer */}
-                <div className="p-8 md:p-12 pb-12 md:pb-16 bg-[#252525] border-t border-white/5 shrink-0 text-center">
-                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] italic mb-4">
-                        Peso total cargado: {platesNeeded.reduce((acc, p) => acc + p.weight * 2, 20 + (hasCollars ? 5 : 0))} kg
+                <div className="p-4 md:px-6 md:py-4 bg-[#252525] border-t border-white/5 shrink-0 text-center flex items-center justify-center gap-3 h-16 md:h-20">
+                    <p className="text-[10px] md:text-xs font-black text-gray-500 uppercase tracking-[0.3em] italic">
+                        TOTAL EN BARRA:
                     </p>
+                    <span className="text-3xl md:text-5xl font-black text-white italic tracking-tighter">
+                        {platesNeeded.reduce((acc, p) => acc + p.weight * 2, 20 + (hasCollars ? 5 : 0))} <span className="text-anvil-red text-lg md:text-2xl">kg</span>
+                    </span>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

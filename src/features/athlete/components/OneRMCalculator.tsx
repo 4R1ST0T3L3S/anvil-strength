@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, Settings, ChevronDown, Activity, Zap, Calculator, TrendingUp, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, ChevronDown, Activity, Zap, Calculator, TrendingUp, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface OneRMCalculatorProps {
@@ -24,7 +24,7 @@ function CustomSelect({
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className={`bg-black/40 border-2 border-white/5 rounded-[1.2rem] md:rounded-[1.5rem] p-3 md:p-6 transition-all group flex flex-col justify-between overflow-hidden ${className}`}>
+        <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-3 md:p-4 transition-all group flex flex-col justify-between overflow-hidden ${className}`}>
             <label className="block text-[8px] md:text-[10px] font-black text-gray-600 mb-1 md:mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate">
                 {label}
             </label>
@@ -156,10 +156,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[95vh] md:w-[95vw] md:max-w-2xl md:rounded-[3rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Premium Header */}
-                <div className="p-6 md:p-8 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0">
+                <div className="p-4 md:px-6 md:py-3 border-b border-white/5 flex justify-between items-center bg-[#252525] shrink-0 h-16 md:h-20">
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="w-12 h-12 md:w-16 md:h-16 bg-anvil-red rounded-[1rem] md:rounded-[1.4rem] flex items-center justify-center text-white shadow-2xl shadow-anvil-red/40 -rotate-3 border-2 border-white/10">
                             <Calculator className="w-6 h-6 md:w-8 md:h-8" />
@@ -180,116 +180,126 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                 </div>
 
                 {/* Body - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 md:space-y-14 custom-scrollbar overflow-x-hidden flex flex-col items-center">
+                <div className="flex-1 p-4 md:p-8 flex flex-col justify-center overflow-hidden">
+                    <div className="flex flex-col md:grid md:grid-cols-12 md:gap-8 h-full">
 
-                    {/* Method Toggle */}
-                    <div className="grid grid-cols-2 p-2 bg-black/60 rounded-[2rem] border border-white/5 shrink-0 max-w-md mx-auto w-full">
-                        <button
-                            onClick={() => setMethod('rpe')}
-                            className={`flex items-center justify-center gap-3 py-4 md:py-6 rounded-[1.6rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all ${method === 'rpe' ? 'bg-white text-black shadow-2xl scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
-                        >
-                            <Activity className="w-5 h-5 md:w-6 md:h-6" /> Por RPE
-                        </button>
-                        <button
-                            onClick={() => setMethod('velocity')}
-                            className={`flex items-center justify-center gap-3 py-4 md:py-6 rounded-[1.6rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all ${method === 'velocity' ? 'bg-white text-black shadow-2xl scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
-                        >
-                            <Zap className="w-5 h-5 md:w-6 md:h-6" /> Por Velocidad
-                        </button>
-                    </div>
+                        {/* LEFT COLUMN: Controls */}
+                        <div className="col-span-12 md:col-span-5 space-y-8 md:space-y-10 order-2 md:order-1 flex flex-col justify-center">
 
-                    {/* Result Display */}
-                    <div className="relative group shrink-0">
-                        <div className="absolute -inset-10 bg-anvil-red/10 blur-[100px] rounded-full opacity-50"></div>
-                        <div className="relative flex flex-col items-center justify-center">
-                            <p className="text-gray-500 text-sm md:text-lg font-black uppercase tracking-[0.4em] mb-4">Tu 1RM Estimado</p>
-                            <div className="flex items-baseline gap-2 md:gap-4">
-                                <span className="text-8xl md:text-[12rem] font-black text-white italic tracking-tighter leading-none">
-                                    {Math.floor(estimated1RM)}
-                                </span>
-                                <span className="text-3xl md:text-6xl font-black text-anvil-red uppercase italic">kg</span>
+                            {/* Method Toggle */}
+                            <div className="grid grid-cols-2 p-2 bg-black/60 rounded-[2rem] border border-white/5 shrink-0 w-full">
+                                <button
+                                    onClick={() => setMethod('rpe')}
+                                    className={`flex items-center justify-center gap-3 py-4 md:py-5 rounded-[1.6rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all ${method === 'rpe' ? 'bg-white text-black shadow-2xl scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
+                                >
+                                    <Activity className="w-5 h-5 md:w-5 md:h-5" /> Por RPE
+                                </button>
+                                <button
+                                    onClick={() => setMethod('velocity')}
+                                    className={`flex items-center justify-center gap-3 py-4 md:py-5 rounded-[1.6rem] text-xs md:text-sm font-black uppercase tracking-widest transition-all ${method === 'velocity' ? 'bg-white text-black shadow-2xl scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
+                                >
+                                    <Zap className="w-5 h-5 md:w-5 md:h-5" /> Por Velocidad
+                                </button>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Inputs Grid */}
-                    <div className="space-y-6 md:space-y-8 shrink-0 max-w-2xl mx-auto w-full">
-                        <div className="grid grid-cols-12 gap-3 md:gap-6">
-                            {/* Peso */}
-                            <div className="col-span-6 bg-black/40 border-2 border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all group flex flex-col justify-between min-h-[110px] md:min-h-[160px] text-center">
-                                <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Peso Levantado</label>
-                                <div className="flex items-center justify-center gap-2">
-                                    <input
-                                        type="number"
-                                        inputMode="decimal"
-                                        step="0.1"
-                                        value={weight}
-                                        onChange={(e) => setWeight(e.target.value)}
-                                        placeholder="0"
-                                        className="w-full bg-transparent text-4xl md:text-6xl font-black text-white focus:outline-none placeholder:text-gray-800 italic text-center"
-                                    />
-                                    <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">kg</span>
+                            {/* Inputs Grid */}
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-12 gap-3 md:gap-4">
+                                    {/* Peso */}
+                                    <div className="col-span-12 md:col-span-6 bg-black/40 border-2 border-white/5 rounded-2xl p-3 md:p-4 transition-all group flex flex-col justify-between min-h-[80px] md:min-h-[100px] text-center">
+                                        <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Peso </label>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <input
+                                                type="number"
+                                                inputMode="decimal"
+                                                step="0.1"
+                                                value={weight}
+                                                onChange={(e) => setWeight(e.target.value)}
+                                                placeholder="0"
+                                                className="w-full bg-transparent text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic text-center"
+                                            />
+                                            <span className="text-xl md:text-2xl font-black text-gray-800 uppercase italic">kg</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Reps */}
+                                    <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-3 md:p-4 transition-all group flex flex-col justify-between min-h-[80px] md:min-h-[100px] text-center">
+                                        <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
+                                        <input
+                                            type="number"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            value={reps}
+                                            onChange={(e) => setReps(e.target.value)}
+                                            placeholder="0"
+                                            className="w-full bg-transparent text-4xl md:text-5xl font-black text-white focus:outline-none text-center placeholder:text-gray-800 italic"
+                                        />
+                                    </div>
+
+                                    {/* RPE or Velocity Input */}
+                                    {method === 'rpe' ? (
+                                        <CustomSelect
+                                            className="col-span-6 md:col-span-3 min-h-[80px] md:min-h-[100px]"
+                                            label="RPE"
+                                            value={rpe}
+                                            onChange={setRpe}
+                                            options={[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5].map(v => ({ label: `@${v}`, value: v }))}
+                                        />
+                                    ) : (
+                                        <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-3 md:p-4 transition-all group flex flex-col justify-between min-h-[80px] md:min-h-[100px] relative">
+                                            <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">V (m/s)</label>
+                                            <input
+                                                type="number"
+                                                inputMode="decimal"
+                                                step="0.01"
+                                                value={velocity}
+                                                onChange={(e) => setVelocity(e.target.value)}
+                                                placeholder="0.3"
+                                                className="w-full bg-transparent text-3xl md:text-4xl font-black text-white focus:outline-none placeholder:text-gray-800 italic text-center"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
 
-                            {/* Reps */}
-                            <div className="col-span-3 bg-black/40 border-2 border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all group flex flex-col justify-between min-h-[110px] md:min-h-[160px] text-center">
-                                <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
-                                <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    value={reps}
-                                    onChange={(e) => setReps(e.target.value)}
-                                    placeholder="0"
-                                    className="w-full bg-transparent text-4xl md:text-6xl font-black text-white focus:outline-none text-center placeholder:text-gray-800 italic"
-                                />
-                            </div>
-
-                            {/* RPE or Velocity Input */}
-                            {method === 'rpe' ? (
+                                {/* Ejercicio Custom Select */}
                                 <CustomSelect
-                                    className="col-span-3 min-h-[110px] md:min-h-[160px]"
-                                    label="RPE"
-                                    value={rpe}
-                                    onChange={setRpe}
-                                    options={[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5].map(v => ({ label: `@${v}`, value: v }))}
+                                    label="Ejercicio / Movimiento"
+                                    value={exercise}
+                                    onChange={setExercise}
+                                    options={[
+                                        { label: 'Sentadilla', value: 'Sentadilla' },
+                                        { label: 'Press de Banca', value: 'Press de Banca' },
+                                        { label: 'Peso Muerto', value: 'Peso Muerto' }
+                                    ]}
                                 />
-                            ) : (
-                                <div className="col-span-3 bg-black/40 border-2 border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 transition-all group flex flex-col justify-between min-h-[110px] md:min-h-[160px] relative">
-                                    <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-anvil-red transition-colors">V (m/s)</label>
-                                    <input
-                                        type="number"
-                                        inputMode="decimal"
-                                        step="0.01"
-                                        value={velocity}
-                                        onChange={(e) => setVelocity(e.target.value)}
-                                        placeholder="0.3"
-                                        className="w-full bg-transparent text-3xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic"
-                                    />
-                                </div>
-                            )}
+                            </div>
                         </div>
 
-                        {/* Ejercicio Custom Select */}
-                        <CustomSelect
-                            label="Ejercicio / Movimiento"
-                            value={exercise}
-                            onChange={setExercise}
-                            options={[
-                                { label: 'Sentadilla', value: 'Sentadilla' },
-                                { label: 'Press de Banca', value: 'Press de Banca' },
-                                { label: 'Peso Muerto', value: 'Peso Muerto' }
-                            ]}
-                        />
+                        {/* RIGHT COLUMN: Result Display (7 columns) */}
+                        <div className="col-span-12 md:col-span-7 relative group shrink-0 order-1 md:order-2 flex flex-col items-center justify-center p-8 md:p-0 min-h-[300px] md:min-h-auto border-b md:border-b-0 md:border-l border-white/5 bg-gradient-to-b from-anvil-red/5 to-transparent md:bg-none rounded-[3rem] md:rounded-none mb-8 md:mb-0">
+                            <div className="absolute inset-0 bg-anvil-red/10 blur-[100px] rounded-full opacity-50 md:opacity-30"></div>
+                            <div className="relative flex flex-col items-center justify-center text-center">
+                                <p className="text-gray-500 text-sm md:text-xl font-black uppercase tracking-[0.4em] mb-4 md:mb-8">Tu 1RM Estimado</p>
+                                <div className="flex items-baseline gap-2 md:gap-4">
+                                    <span className="text-8xl md:text-[10rem] lg:text-[14rem] font-black text-white italic tracking-tighter leading-none drop-shadow-2xl">
+                                        {Math.floor(estimated1RM)}
+                                    </span>
+                                    <span className="text-3xl md:text-5xl lg:text-7xl font-black text-anvil-red uppercase italic">kg</span>
+                                </div>
+                                <div className="mt-8 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                                    <p className="text-gray-600 text-xs font-bold uppercase tracking-widest">Basado en fórmula Epley/RPE Chart</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
                 {/* Footer CTA */}
-                <div className="p-8 md:p-12 pb-12 md:pb-16 bg-[#252525] border-t border-white/5 shrink-0">
+                <div className="p-4 md:px-6 md:py-4 bg-[#252525] border-t border-white/5 shrink-0">
                     <button
                         onClick={calculate1RM}
-                        className="group w-full bg-white text-black hover:bg-anvil-red hover:text-white py-6 md:py-8 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"
+                        className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-anvil-red hover:text-white py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"
                     >
                         <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         Calcular 1RM
