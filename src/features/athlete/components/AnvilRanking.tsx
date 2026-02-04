@@ -85,8 +85,8 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[#121212] w-full max-w-2xl max-h-[90vh] rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-[#121212] w-full md:max-w-2xl max-h-[85vh] md:max-h-[90vh] rounded-t-3xl md:rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
@@ -108,9 +108,9 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                 </div>
 
                 {/* List */}
-                <div className="overflow-y-auto flex-1 p-6 space-y-4">
+                <div className="overflow-y-auto flex-1 p-4 md:p-6 space-y-3">
                     {loading ? (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {[1, 2, 3].map(i => (
                                 <div key={i} className="h-24 bg-[#1c1c1c] rounded-2xl animate-pulse" />
                             ))}
@@ -119,46 +119,62 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                         athletes.map((athlete, index) => (
                             <div
                                 key={athlete.id}
-                                className="group relative bg-[#1c1c1c] border border-white/5 rounded-2xl p-4 flex items-center gap-4 hover:border-anvil-red/30 transition-all"
+                                className="group relative bg-[#1c1c1c] border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 hover:border-anvil-red/30 transition-all"
                             >
-                                {/* Rank */}
-                                <div className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-xl font-black text-lg ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                                    index === 1 ? 'bg-gray-400/20 text-gray-400' :
-                                        index === 2 ? 'bg-orange-700/20 text-orange-700' :
-                                            'bg-white/5 text-gray-500'
-                                    }`}>
-                                    {index <= 2 ? <Medal size={20} /> : `#${index + 1}`}
+                                {/* Top Row: Rank, Avatar, Name */}
+                                <div className="flex items-center gap-3">
+                                    {/* Rank */}
+                                    <div className={`w-8 h-8 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded-lg md:rounded-xl font-black text-sm md:text-lg ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
+                                        index === 1 ? 'bg-gray-400/20 text-gray-400' :
+                                            index === 2 ? 'bg-orange-700/20 text-orange-700' :
+                                                'bg-white/5 text-gray-500'
+                                        }`}>
+                                        {index <= 2 ? <Medal size={16} /> : `#${index + 1}`}
+                                    </div>
+
+                                    {/* Avatar */}
+                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0">
+                                        {athlete.avatar_url ? (
+                                            <img src={athlete.avatar_url} alt={athlete.full_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                                <UserIcon size={16} />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Name & Category */}
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-white font-bold uppercase truncate text-sm md:text-base">{athlete.full_name}</h3>
+                                        <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">
+                                            {athlete.weight_category}
+                                        </p>
+                                    </div>
+
+                                    {/* GL Score - Mobile inline */}
+                                    <div className="text-right md:hidden">
+                                        <p className="text-xl font-black text-white italic tracking-tighter">
+                                            {athlete.gl_points.toFixed(1)}
+                                        </p>
+                                        <p className="text-[8px] font-bold text-anvil-red uppercase">GL</p>
+                                    </div>
                                 </div>
 
-                                {/* Avatar */}
-                                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0">
-                                    {athlete.avatar_url ? (
-                                        <img src={athlete.avatar_url} alt={athlete.full_name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-500">
-                                            <UserIcon size={20} />
-                                        </div>
-                                    )}
+                                {/* Mobile: PRs Row */}
+                                <div className="flex md:hidden items-center justify-between gap-2 pl-11 text-[10px] text-gray-500">
+                                    <span>S: <span className="text-white font-bold">{athlete.squat_pr}</span></span>
+                                    <span>B: <span className="text-white font-bold">{athlete.bench_pr}</span></span>
+                                    <span>D: <span className="text-white font-bold">{athlete.deadlift_pr}</span></span>
+                                    <span className="text-gray-600">Total: {athlete.total}kg</span>
                                 </div>
 
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-white font-bold uppercase truncate">{athlete.full_name}</h3>
-                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider flex items-center gap-2">
-                                        <span>{athlete.weight_category}</span>
-                                        <span className="w-1 h-1 bg-gray-600 rounded-full" />
-                                        <span>Total: {athlete.total}kg</span>
-                                    </p>
-                                </div>
-
-                                {/* GL Score */}
-                                <div className="text-right">
+                                {/* Desktop: GL Score */}
+                                <div className="hidden md:block text-right shrink-0">
                                     <p className="text-2xl font-black text-white italic tracking-tighter">
                                         {athlete.gl_points.toFixed(1)}
                                     </p>
                                     <p className="text-[10px] font-bold text-anvil-red uppercase tracking-widest">GL Points</p>
                                 </div>
-
                                 {/* Hover Detail (Desktop) */}
                                 <div className="hidden md:group-hover:flex absolute inset-0 bg-black/90 z-10 rounded-2xl items-center justify-around px-8 animate-in fade-in duration-200">
                                     <div className="text-center">
