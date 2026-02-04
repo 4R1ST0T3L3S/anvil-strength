@@ -238,47 +238,7 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
                 )}
             </div>
 
-            {/* Mobile Tools Grid (Horizontal Scroll) */}
-            <div className="space-y-3">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Herramientas</h2>
-                <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x">
-                    <div
-                        onClick={() => setIs1RMCalcOpen(true)}
-                        className="snap-center bg-[#252525] border border-white/5 p-4 rounded-2xl flex flex-col justify-between w-40 shrink-0 h-32 active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-2 bg-anvil-red/10 rounded-lg text-anvil-red w-fit">
-                            <Calculator size={20} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-white uppercase text-xs leading-tight">Calc.<br />1RM</h3>
-                        </div>
-                    </div>
-                    <div
-                        onClick={() => setIsWarmUpCalcOpen(true)}
-                        className="snap-center bg-[#252525] border border-white/5 p-4 rounded-2xl flex flex-col justify-between w-40 shrink-0 h-32 active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 w-fit">
-                            <List size={20} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-white uppercase text-xs leading-tight">Aproximaciones</h3>
-                        </div>
-                    </div>
-                    <div
-                        onClick={() => setIsPlateCalcOpen(true)}
-                        className="snap-center bg-[#252525] border border-white/5 p-4 rounded-2xl flex flex-col justify-between w-40 shrink-0 h-32 active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-2 bg-green-500/10 rounded-lg text-green-500 w-fit">
-                            <Weight size={20} />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-white uppercase text-xs leading-tight">Carga de<br />Barra</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Coach Note */}
+            {/* Mobile Coach Note - Moved UP */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <MessageSquare size={16} /> Nota Coach
@@ -312,6 +272,57 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
                         <Trophy size={20} />
                     </div>
                     <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+                </div>
+            </div>
+
+            {/* Mobile Tools Grid - Moved DOWN & Vertical Stack */}
+            <div className="space-y-3">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Anvil Lab Tools</h2>
+                <div className="space-y-4">
+                    {/* 1. Plate Calculator */}
+                    <div
+                        onClick={() => setIsPlateCalcOpen(true)}
+                        className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
+                    >
+                        <div className="p-3 bg-green-500/10 rounded-xl text-green-500">
+                            <Weight size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-white uppercase text-sm">Carga de Barra</h3>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Calculadora de Discos</p>
+                        </div>
+                        <ChevronRight size={18} className="ml-auto text-gray-600" />
+                    </div>
+
+                    {/* 2. Warm Up Calculator */}
+                    <div
+                        onClick={() => setIsWarmUpCalcOpen(true)}
+                        className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
+                    >
+                        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500">
+                            <List size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-white uppercase text-sm">Aproximaciones</h3>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Escalera de Calentamiento</p>
+                        </div>
+                        <ChevronRight size={18} className="ml-auto text-gray-600" />
+                    </div>
+
+                    {/* 3. 1RM Calculator */}
+                    <div
+                        onClick={() => setIs1RMCalcOpen(true)}
+                        className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
+                    >
+                        <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red">
+                            <Calculator size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-white uppercase text-sm">Calculadora 1RM</h3>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">RPE & Velocidad</p>
+                        </div>
+                        <ChevronRight size={18} className="ml-auto text-gray-600" />
+                    </div>
                 </div>
             </div>
         </div>
