@@ -8,7 +8,7 @@ import {
     User
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
-// import { AthleteTrainingPlan } from '../components/AthleteTrainingPlan';
+
 import { WorkoutLogger } from '../../training/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
@@ -84,7 +84,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             case 'home':
                 return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view)} />;
             case 'planning':
-                // return <AthleteTrainingPlan userId={user.id} />;
+
                 return <WorkoutLogger athleteId={user.id} />;
             case 'nutrition':
                 return <AthleteNutritionView user={user} />;
