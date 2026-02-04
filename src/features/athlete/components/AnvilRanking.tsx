@@ -85,8 +85,8 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[#121212] w-full md:max-w-2xl max-h-[85vh] md:max-h-[90vh] rounded-t-3xl md:rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-[#121212] w-full h-full md:w-auto md:h-auto md:max-w-2xl md:max-h-[90vh] md:rounded-3xl border-0 md:border border-white/10 shadow-2xl overflow-hidden flex flex-col">
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
