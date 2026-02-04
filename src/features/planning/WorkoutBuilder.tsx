@@ -38,7 +38,6 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [currentWeek, setCurrentWeek] = useState(1);
-    const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set([1]));
 
     // Initial Load
     useEffect(() => {
@@ -515,25 +514,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
                 <WeekNavigator
                     weeks={weeks}
                     currentWeek={currentWeek}
-                    expandedWeeks={expandedWeeks}
-                    onSelectWeek={(week) => {
-                        setCurrentWeek(week);
-                        // Auto-expand when selecting
-                        setExpandedWeeks(prev => new Set([...prev, week]));
-                    }}
-                    onToggleExpand={(week) => {
-                        setExpandedWeeks(prev => {
-                            const newSet = new Set(prev);
-                            if (newSet.has(week)) {
-                                newSet.delete(week);
-                            } else {
-                                newSet.add(week);
-                            }
-                            return newSet;
-                        });
-                    }}
-                    onExpandAll={() => setExpandedWeeks(new Set(weeks))}
-                    onCollapseAll={() => setExpandedWeeks(new Set())}
+                    onSelectWeek={setCurrentWeek}
                     onAddWeek={handleAddWeek}
                     onCopyWeek={handleCopyWeek}
                 />
