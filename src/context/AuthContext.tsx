@@ -19,16 +19,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         // 1. Check active session on mount
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
+            if (error) {
+                console.error('Error getting session:', error);
+            }
             setSession(session);
             setLoading(false);
         });
 
-        // 2. Listen for auth changes
+        // 2. Listen for auth changes (including token refresh)
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth event:', event); // Debug logging
+
+            if (event === 'TOKEN_REFRESHED') {
+                // Token was refreshed, update session
+                setSession(session);
+            } else if (event === 'SIGNED_OUT') {
+                setSession(null);
+            } else {
+                setSession(session);
+            }
             setLoading(false);
         });
 
