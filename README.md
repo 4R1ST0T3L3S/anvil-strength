@@ -1,71 +1,116 @@
-# Anvil Strength App 🏋️‍♂️
+# ⚒️ Anvil Strength App
 
-Aplicación web progresiva (PWA) para la gestión del club de powerlifting [Anvil Strength](https://www.instagram.com/anvilstrength_).
+> **La plataforma definitiva para la gestión y el entrenamiento de Powerlifting.**
+> *Donde la fuerza se encuentra con la tecnología.*
 
-## Stack Tecnológico
+![Anvil Strength Banner](https://img.shields.io/badge/Anvil-Strength-red?style=for-the-badge&logo=dumbbell&logoColor=white) ![Status](https://img.shields.io/badge/Status-Active_Development-success?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=for-the-badge)
 
-- **Frontend**: React 18 + TypeScript + Vite autocompletado con `@/` aliases.
-- **Estilos**: Tailwind CSS + Lucide React.
-- **Estado**: TanStack Query (React Query).
-- **Backend / Auth**: Supabase.
-- **E2E Testing**: Playwright.
+**Anvil Strength App** es una aplicación web progresiva (PWA) diseñada para modernizar la experiencia de entrenamiento en clubes de fuerza. Conecta a entrenadores y atletas en un ecosistema digital fluido, permitiendo una planificación precisa, un seguimiento detallado y herramientas avanzadas para maximizar el rendimiento.
 
-## Requisitos Previos
+---
 
-- Node.js (v18 o superior).
-- Un navegador moderno (Chrome/Edge recomendado).
-- Cuenta de Supabase vinculada.
+## 🚀 Características Principales
 
-## Instalación
+La aplicación se divide en dos experiencias optimizadas:
 
-1.  **Clonar el repositorio**:
-    ```bash
-    git clone <repo-url>
-    cd anvil-strength
-    ```
+### 👨‍🏫 Para el Entrenador (Coach Mode)
 
-2.  **Instalar dependencias**:
-    ```bash
-    npm install
-    ```
+*   **Gestión de Equipo**: Visualiza y administra a todos tus atletas desde un panel centralizado.
+*   **Workout Builder**: Diseña mesociclos y sesiones de entrenamiento complejas con una interfaz intuitiva de arrastrar y soltar (o selección rápida).
+*   **Librería de Ejercicios**: Acceso a una base de datos completa de ejercicios categorizados por patrón de movimiento y grupo muscular.
+*   **Seguimiento**: Revisa el cumplimiento de las sesiones de tus atletas.
 
-3.  **Configurar entorno**:
-    Crea un archivo `.env` en la raíz basado en el ejemplo (necesitas `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`).
+### 🏋️‍♂️ Para el Atleta (Athlete Mode)
 
-## Desarrollo
+*   **Dashboard Personal**: Todo lo que necesitas en un solo vistazo (Entrenamiento de hoy, Notas del coach, Próximas competiciones).
+*   **Workout Logger Interactivo**:
+    *   Registra tus series, peso, RPE/RIR y notas en tiempo real.
+    *   Interfaz "Mobile-First" diseñada para usarse en el gimnasio.
+    *   Visualización clara de objetivos vs. realidad.
+*   **Anvil Lab Tools** (Herramientas avanzadas integradas):
+    *   🧮 **Calculadora 1RM**: Estima tus máximos basados en RPE y velocidad.
+    *   🧱 **Calculadora de Discos**: Visualización gráfica de cómo cargar la barra.
+    *   🔥 **Generador de Calentamiento**: Protocolos de aproximación automáticos basados en tu peso objetivo.
+*   **Sección de Nutrición**: Acceso rápido a planes nutricionales y macros.
 
-Para levantar el servidor de desarrollo en `http://localhost:5173`:
+---
 
-```bash
-npm run dev
-```
+## 💻 Stack Tecnológico
 
-### Comandos DX (Developer Experience)
+Construido con las últimas tecnologías para garantizar velocidad, escalabilidad y una gran experiencia de usuario (DX/UX).
 
-- **`npm run update-types`**: Descarga y regenera los tipos TypeScript de la base de datos de Supabase. (Requiere login con `npx supabase login`).
-- **`npm run lint`**: Analiza el código en busca de errores.
-- **`npm run test:e2e`**: Ejecuta las pruebas end-to-end con Playwright.
+| Capa | Tecnología | Descripción |
+| :--- | :--- | :--- |
+| **Frontend** | ![React](https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB) | Librería UI principal. |
+| **Lenguaje** | ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white) | Tipado estático para robustez. |
+| **Build Tool** | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | Entorno de desarrollo ultrarrápido. |
+| **Estilos** | ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) | Diseño moderno y responsive. |
+| **Backend / Auth** | ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white) | Base de datos PostgreSQL, Auth y Realtime. |
+| **Estado** | ![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=flat-square&logo=react-query&logoColor=white) | Gestión de estado asíncrono y caché. |
+| **Testing** | ![Playwright](https://img.shields.io/badge/Playwright-45ba4b?style=flat-square&logo=Playwright&logoColor=white) | Pruebas End-to-End fiables. |
 
-## Build
+---
 
-Para generar la versión de producción en la carpeta `dist/`:
+## 📂 Arquitectura del Proyecto
 
-```bash
-npm run build
-```
-
-## Arquitectura
-
-El proyecto sigue una arquitectura **Feature-Base**:
+El proyecto sigue una arquitectura **Feature-Base** para facilitar la escalabilidad y el mantenimiento:
 
 ```
 src/
-  features/        # Módulos principales (coach, athlete, landing, profile)
-  components/      # Componentes UI compartidos y Modales globales
-  hooks/           # Custom hooks globales (useUser)
-  lib/             # Configuración de librerías (supabase.ts)
-  types/           # Definiciones TS compartidas
+├── features/           # Módulos de negocio aislados
+│   ├── athlete/        # Vistas y lógica del atleta
+│   ├── coach/          # Vistas y lógica del entrenador
+│   ├── planning/       # Builder y gestión de planes
+│   ├── training/       # Ejecución y logger (WorkoutLogger)
+│   └── auth/           # Autenticación
+├── components/         # UI Kit compartido (Botones, Inputs, Layouts)
+├── hooks/              # Hooks globales (useUser, useAuth)
+├── lib/                # Configuración de terceros (supabase.ts)
+└── types/              # Definiciones de tipos globales
 ```
 
 ---
-Generated by Antigravity Agent.
+
+## 🛠️ Instalación y Desarrollo Locales
+
+Sigue estos pasos para levantar el proyecto en tu máquina:
+
+### 1. Requisitos Previos
+*   Node.js (v18+)
+*   Cuenta de Supabase (para las credenciales)
+
+### 2. Clonar e Instalar
+```bash
+git clone https://github.com/tu-usuario/anvil-strength.git
+cd anvil-strength
+npm install
+```
+
+### 3. Configuración de Entorno
+Crea un archivo `.env` en la raíz del proyecto y añade tus claves de API de Supabase:
+
+```env
+VITE_SUPABASE_URL=tu_url_de_supabase
+VITE_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
+```
+
+### 4. Ejecutar
+```bash
+npm run dev
+```
+El servidor arrancará en `http://localhost:5173`.
+
+---
+
+## ✨ Scripts Disponibles
+
+*   `npm run dev`: Inicia el servidor de desarrollo.
+*   `npm run build`: Compila la aplicación para producción.
+*   `npm run lint`: Busca problemas en el código.
+*   `npm run update-types`: Sincroniza los tipos con tu base de datos Supabase.
+
+---
+
+<div align="center">
+  <p>Desarrollado con 💪 para Anvil Strength</p>
+</div>
