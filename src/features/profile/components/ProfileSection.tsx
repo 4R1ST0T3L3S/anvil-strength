@@ -18,6 +18,7 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
     const [formData, setFormData] = useState({
         name: user.full_name || user.name || '',
         nickname: user.nickname || '',
+        gender: user.gender || '',
         weight_category: user.weight_category || '',
         age_category: user.age_category || '',
         squat_pr: user.squat_pr?.toString() || '',
@@ -30,6 +31,7 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
         setFormData({
             name: user.full_name || user.name || '',
             nickname: user.nickname || '',
+            gender: user.gender || '',
             weight_category: user.weight_category || '',
             age_category: user.age_category || '',
             squat_pr: user.squat_pr?.toString() || '',
@@ -87,7 +89,7 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
 
         try {
             let profileImageUrl = user.avatar_url || user.profile_image || '';
-            
+
             if (imageFile) {
                 const uploadedUrl = await uploadImage();
                 if (uploadedUrl) profileImageUrl = uploadedUrl;
@@ -99,6 +101,7 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
                 full_name: formData.name,
                 nickname: formData.nickname,
                 avatar_url: profileImageUrl,
+                gender: formData.gender || null,
                 age_category: formData.age_category || null,
                 weight_category: formData.weight_category || null,
                 biography: formData.biography || null
@@ -137,9 +140,8 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
             </header>
 
             {message && (
-                <div className={`mb-8 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
-                    message.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'
-                }`}>
+                <div className={`mb-8 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                    }`}>
                     {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
                     <p className="font-bold text-sm">{message.text}</p>
                 </div>
@@ -166,8 +168,8 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
                         {imagePreview && (
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={removePhoto}
                                 className="absolute top-1 right-1 bg-black/80 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg"
                             >
@@ -244,6 +246,18 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
                                     <option value="Master 2">Master 2</option>
                                     <option value="Master 3">Master 3</option>
                                     <option value="Master 4">Master 4</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sexo</label>
+                                <select
+                                    value={formData.gender}
+                                    onChange={e => setFormData({ ...formData, gender: e.target.value })}
+                                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                >
+                                    <option value="">Seleccionar...</option>
+                                    <option value="male">Masculino</option>
+                                    <option value="female">Femenino</option>
                                 </select>
                             </div>
                             <div className="space-y-2">

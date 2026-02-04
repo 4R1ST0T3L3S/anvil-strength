@@ -10,6 +10,7 @@ export interface UserProfile {
     nickname?: string;
     avatar_url?: string; // Changed from 'profile_image' to match database schema
     role: Role;
+    gender?: 'male' | 'female';
     age_category?: string;
     weight_category?: string;
     biography?: string;
@@ -52,6 +53,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             nickname: meta?.nickname,
             avatar_url: meta?.avatar_url,
             role: sessionRole,
+            gender: meta?.gender,
             user_metadata: meta,
             // Backward compatibility aliases
             name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
@@ -97,6 +99,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     nickname: profile.nickname || optimisticUser.nickname,
                     role: profile.role || optimisticUser.role,
                     avatar_url: profile.avatar_url || optimisticUser.avatar_url,
+                    gender: profile.gender || optimisticUser.gender,
                     age_category: profile.age_category,
                     weight_category: profile.weight_category,
                     biography: profile.biography,

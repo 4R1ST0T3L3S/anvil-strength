@@ -11,8 +11,6 @@ import {
     Trophy,
     Star,
     Calculator,
-    Zap,
-    Activity,
     List,
     Weight
 } from 'lucide-react';
@@ -21,6 +19,7 @@ import { Loader } from 'lucide-react';
 import { OneRMCalculator } from './OneRMCalculator';
 import { WarmUpCalculator } from './WarmUpCalculator';
 import { PlateCalculator } from './PlateCalculator';
+import { AnvilRanking } from './AnvilRanking';
 
 interface AthleteHomeProps {
     user: UserProfile;
@@ -40,6 +39,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
     const [isPlateCalcOpen, setIsPlateCalcOpen] = useState(false);
+    const [isRankingOpen, setIsRankingOpen] = useState(false);
 
     useEffect(() => {
         const fetchHomeData = async () => {
@@ -132,7 +132,8 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         coachMessage,
         setIs1RMCalcOpen,
         setIsWarmUpCalcOpen,
-        setIsPlateCalcOpen
+        setIsPlateCalcOpen,
+        setIsRankingOpen
     };
 
     return (
@@ -141,6 +142,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
             <DesktopHome {...commonProps} />
 
             {/* Modal Components */}
+            <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
             <OneRMCalculator
                 isOpen={is1RMCalcOpen}
                 onClose={() => setIs1RMCalcOpen(false)}
@@ -167,9 +169,10 @@ interface HomeViewProps {
     setIs1RMCalcOpen: (isOpen: boolean) => void;
     setIsWarmUpCalcOpen: (isOpen: boolean) => void;
     setIsPlateCalcOpen: (isOpen: boolean) => void;
+    setIsRankingOpen: (isOpen: boolean) => void;
 }
 
-function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, coachMessage, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen }: HomeViewProps) {
+function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, coachMessage, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 p-4">
             {/* Mobile Header */}
@@ -325,11 +328,35 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Anvil Ranking Club */}
+            <div className="space-y-3">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Comunidad</h2>
+                <div
+                    onClick={() => setIsRankingOpen(true)}
+                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all"
+                >
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                                <Trophy size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Ranking</h3>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Club Leaderboard</p>
+                            </div>
+                        </div>
+                        <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                    </div>
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                </div>
+            </div>
         </div>
     );
 }
 
-function DesktopHome({ user, onNavigate, activeBlock, todaySession, coachInfo, coachMessage, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, activeBlock, todaySession, coachInfo, coachMessage, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen }: HomeViewProps) {
     return (
         <div className="hidden md:block p-8 space-y-8 animate-in fade-in duration-500">
             {/* Welcome Header */}
@@ -507,6 +534,23 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, coachInfo, c
                             <div>
                                 <h3 className="font-bold text-white uppercase tracking-tight text-sm">Carga de Barra</h3>
                                 <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Calculadora de Discos</p>
+                            </div>
+                        </div>
+                        <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                    </div>
+
+                    {/* Ranking Card - Desktop */}
+                    <div
+                        onClick={() => setIsRankingOpen(true)}
+                        className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                                <Trophy size={24} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-white uppercase tracking-tight text-sm">Anvil Ranking</h3>
+                                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Club Leaderboard</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />

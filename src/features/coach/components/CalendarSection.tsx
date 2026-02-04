@@ -121,7 +121,7 @@ export function CalendarSection() {
             <div className="flex items-center gap-3 mb-6">
                 <CalendarIcon className="h-6 w-6 text-anvil-red" />
                 <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
-                    Calendario AEP 2025
+                    Calendario AEP 2026
                 </h2>
             </div>
 

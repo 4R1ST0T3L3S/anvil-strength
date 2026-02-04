@@ -6,6 +6,7 @@ export interface Profile {
     role: Role;
     full_name: string;
     nickname?: string;
+    gender?: 'male' | 'female';
     age_category?: string; // Sub-Junior, Junior, etc.
     weight_category?: string; // -93kg, etc.
     biography?: string;
