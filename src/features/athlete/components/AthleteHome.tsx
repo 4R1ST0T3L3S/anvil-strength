@@ -301,6 +301,18 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
                         {coachMessage ? `"${coachMessage}"` : '"¡A por la sesión de hoy! Mantén el foco."'}
                     </p>
                 </div>
+
+                {/* Mobile Next Competition */}
+                <div className="bg-anvil-red rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform">
+                    <div className="relative z-10">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Próxima Competición</p>
+                        <p className="text-lg font-black uppercase italic">Copa de España</p>
+                    </div>
+                    <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                        <Trophy size={20} />
+                    </div>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+                </div>
             </div>
         </div>
     );
