@@ -39,7 +39,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                 is_active: true // Default to active
             });
 
-            toast.success('Mesociclo creado correctamente');
+            toast.success('Bloque creado correctamente');
             setName('');
             setStartDate('');
             setEndDate('');
@@ -47,7 +47,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
             onClose();
         } catch (error) {
             console.error(error);
-            toast.error('Error al crear el mesociclo');
+            toast.error('Error al crear el bloque');
         } finally {
             setLoading(false);
         }
@@ -73,7 +73,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                     className="relative bg-[#1c1c1c] w-full max-w-lg rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
                 >
                     <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#252525]">
-                        <h2 className="text-xl font-black uppercase text-white">Nuevo Mesociclo</h2>
+                        <h2 className="text-xl font-black uppercase text-white">Nuevo Bloque</h2>
                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
                             <X size={20} />
                         </button>
@@ -89,7 +89,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Ej: Mesociclo 1 - Hipertrofia"
+                                placeholder="Ej: Bloque Fuerza Enero"
                                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-medium"
                                 autoFocus
                             />

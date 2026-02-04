@@ -97,15 +97,24 @@ CREATE TABLE IF NOT EXISTS training_blocks (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Training Sessions (Days)
+-- Training Sessions (Days within Weeks)
 CREATE TABLE IF NOT EXISTS training_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     block_id UUID NOT NULL REFERENCES training_blocks(id) ON DELETE CASCADE,
+    week_number INTEGER NOT NULL DEFAULT 1,
     day_number INTEGER NOT NULL,
-    name TEXT,
+    name TEXT DEFAULT 'Día 1',
     scheduled_date DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add week_number if it doesn't exist (for existing databases)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'training_sessions' AND column_name = 'week_number') THEN
+        ALTER TABLE training_sessions ADD COLUMN week_number INTEGER NOT NULL DEFAULT 1;
+    END IF;
+END $$;
 
 -- Session Exercises
 CREATE TABLE IF NOT EXISTS session_exercises (

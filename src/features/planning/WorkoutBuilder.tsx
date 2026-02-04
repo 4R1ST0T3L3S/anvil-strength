@@ -5,6 +5,7 @@ import { trainingService } from '../../services/trainingService';
 import { supabase } from '../../lib/supabase';
 import { Loader, Plus, Save, Copy, Trash2, Video, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { WeekNavigator } from '../coach/components/WeekNavigator';
 
 interface WorkoutBuilderProps {
     athleteId: string;
@@ -36,6 +37,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     const [exerciseLibrary, setExerciseLibrary] = useState<ExerciseLibrary[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [currentWeek, setCurrentWeek] = useState(1);
 
     // Initial Load
     useEffect(() => {
@@ -116,16 +118,16 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
         try {
             await trainingService.createBlock({
                 athlete_id: athleteId,
-                coach_id: (await supabase.auth.getUser()).data.user?.id || '', // Assumes authed
-                name: `Mesociclo ${monthName} ${now.getFullYear()}`,
+                coach_id: (await supabase.auth.getUser()).data.user?.id || '',
+                name: `Bloque ${monthName} ${now.getFullYear()}`,
                 is_active: true,
                 start_date: now.toISOString(),
             });
             await loadData();
-            toast.success("Nuevo mesociclo creado");
+            toast.success("Nuevo bloque creado");
         } catch (err) {
-            toast.error("Error creando mesociclo");
-            setLoading(false); // Only unset here if error, otherwise loadData does it
+            toast.error("Error creando bloque");
+            setLoading(false);
         }
     };
 
@@ -170,11 +172,14 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     // --- Sessions ---
     const addSession = async () => {
         if (!blockData) return;
-        const nextDay = blockData.sessions.length + 1;
+        // Count days only in current week
+        const sessionsInWeek = blockData.sessions.filter(s => s.week_number === currentWeek);
+        const nextDay = sessionsInWeek.length + 1;
         try {
             // Server Create for Structure
             const newSession = await trainingService.createSession({
                 block_id: blockData.id,
+                week_number: currentWeek,
                 day_number: nextDay,
                 name: `Día ${nextDay}`
             });
@@ -398,17 +403,84 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     // RENDER
     // ==========================================
 
+    // Get unique weeks from sessions
+    const weeks = useMemo(() => {
+        if (!blockData) return [1];
+        const weekSet = new Set(blockData.sessions.map(s => s.week_number));
+        return weekSet.size > 0 ? Array.from(weekSet).sort((a, b) => a - b) : [1];
+    }, [blockData]);
+
+    // Filter sessions for current week
+    const currentWeekSessions = useMemo(() => {
+        if (!blockData) return [];
+        return blockData.sessions.filter(s => s.week_number === currentWeek);
+    }, [blockData, currentWeek]);
+
+    // Add new week
+    const handleAddWeek = async () => {
+        const newWeekNumber = Math.max(...weeks) + 1;
+        setCurrentWeek(newWeekNumber);
+        // Create first day in new week
+        if (!blockData) return;
+        try {
+            const newSession = await trainingService.createSession({
+                block_id: blockData.id,
+                week_number: newWeekNumber,
+                day_number: 1,
+                name: 'Día 1'
+            });
+            setBlockData(prev => {
+                if (!prev) return null;
+                return { ...prev, sessions: [...prev.sessions, { ...newSession, exercises: [] }] };
+            });
+            toast.success(`Semana ${newWeekNumber} creada`);
+        } catch (err) {
+            toast.error("Error creando semana");
+        }
+    };
+
+    // Copy week to new week
+    const handleCopyWeek = async (fromWeek: number) => {
+        if (!blockData) return;
+        const sourceSessions = blockData.sessions.filter(s => s.week_number === fromWeek);
+        if (sourceSessions.length === 0) {
+            toast.error("No hay días para copiar");
+            return;
+        }
+        const newWeekNumber = Math.max(...weeks) + 1;
+        setCurrentWeek(newWeekNumber);
+
+        try {
+            for (const session of sourceSessions) {
+                const newSession = await trainingService.createSession({
+                    block_id: blockData.id,
+                    week_number: newWeekNumber,
+                    day_number: session.day_number,
+                    name: session.name || `Día ${session.day_number}`
+                });
+                // Copy exercises and sets would require more work - for now just copy structure
+                setBlockData(prev => {
+                    if (!prev) return null;
+                    return { ...prev, sessions: [...prev.sessions, { ...newSession, exercises: [] }] };
+                });
+            }
+            toast.success(`Semana ${fromWeek} copiada a Semana ${newWeekNumber}`);
+        } catch (err) {
+            toast.error("Error copiando semana");
+        }
+    };
+
     if (loading) return <div className="flex h-full items-center justify-center"><Loader className="animate-spin text-gray-400" /></div>;
 
     if (!blockData) {
         return (
             <div className="flex flex-col h-full items-center justify-center space-y-4">
-                <div className="text-gray-400 text-lg">No hay un mesociclo activo para este atleta.</div>
+                <div className="text-gray-400 text-lg">No hay un bloque activo para este atleta.</div>
                 <button
                     onClick={handleCreateBlock}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-blue-500/20"
+                    className="bg-anvil-red hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-anvil-red/20"
                 >
-                    <Plus size={20} /> Crear Nuevo Mesociclo
+                    <Plus size={20} /> Crear Nuevo Bloque
                 </button>
             </div>
         );
@@ -418,7 +490,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
         <div className="h-full flex flex-col relative">
 
             {/* Header Info */}
-            <div className="mb-6 flex justify-between items-center px-2">
+            <div className="mb-4 flex justify-between items-center px-2">
                 <div>
                     <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{blockData.name}</h2>
                     <p className="text-gray-500 text-sm">Planificando entrenamiento</p>
@@ -437,10 +509,21 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
                 )}
             </div>
 
-            {/* GRID CONTAINER */}
+            {/* Week Navigator */}
+            <div className="px-2 mb-4">
+                <WeekNavigator
+                    weeks={weeks}
+                    currentWeek={currentWeek}
+                    onSelectWeek={setCurrentWeek}
+                    onAddWeek={handleAddWeek}
+                    onCopyWeek={handleCopyWeek}
+                />
+            </div>
+
+            {/* GRID CONTAINER - Days in current week */}
             <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
                 <div className="flex h-full gap-4 px-2 min-w-max">
-                    {blockData.sessions.map((session) => (
+                    {currentWeekSessions.map((session) => (
                         <DayColumn
                             key={session.id}
                             session={session}

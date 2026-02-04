@@ -26,12 +26,13 @@ export interface TrainingBlock {
     created_at: string;
 }
 
-// 3. TRAINING SESSIONS (Días)
+// 3. TRAINING SESSIONS (Days within Weeks)
 export interface TrainingSession {
     id: string;
     block_id: string;
+    week_number: number; // 1, 2, 3...
     day_number: number; // 1, 2, 3...
-    name?: string | null; // "Torso Pesado"
+    name?: string | null; // "Día 1", "Torso Pesado", etc. (Editable)
     date?: string | null; // Optional specific date
     created_at: string;
     // Relations (Optional for UI rendering)
