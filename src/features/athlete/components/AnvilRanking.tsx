@@ -89,7 +89,7 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
             <div className="bg-[#121212] w-full h-full md:w-auto md:h-auto md:max-w-2xl md:max-h-[90vh] md:rounded-3xl border-0 md:border border-white/10 shadow-2xl overflow-hidden flex flex-col">
 
                 {/* Header */}
-                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
+                <div className="pt-14 md:pt-0 p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
                             <Trophy size={24} />
