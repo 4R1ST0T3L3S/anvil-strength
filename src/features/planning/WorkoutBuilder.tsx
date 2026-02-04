@@ -403,17 +403,17 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     // RENDER
     // ==========================================
 
-    // Get unique weeks from sessions
+    // Get unique weeks from sessions (treat null/undefined as week 1)
     const weeks = useMemo(() => {
         if (!blockData) return [1];
-        const weekSet = new Set(blockData.sessions.map(s => s.week_number));
+        const weekSet = new Set(blockData.sessions.map(s => s.week_number ?? 1));
         return weekSet.size > 0 ? Array.from(weekSet).sort((a, b) => a - b) : [1];
     }, [blockData]);
 
-    // Filter sessions for current week
+    // Filter sessions for current week (treat null/undefined as week 1)
     const currentWeekSessions = useMemo(() => {
         if (!blockData) return [];
-        return blockData.sessions.filter(s => s.week_number === currentWeek);
+        return blockData.sessions.filter(s => (s.week_number ?? 1) === currentWeek);
     }, [blockData, currentWeek]);
 
     // Add new week
