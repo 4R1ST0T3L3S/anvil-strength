@@ -117,7 +117,7 @@ const determineLevel = (name: string, rawLevel: string = ''): Competition['level
     // 0. EXPLICIT EXCEL COLUMN (Highest Priority if clear match)
     // Added 'aep2', 'aep1' (no space) support
     if (l.includes('aep-1') || l.includes('aep 1') || l.includes('aep1')) return 'AEP 1';
-    if (l.includes('aep-2') || l.includes('aep 2') || l.includes('aep2')) return 'AEP 2';
+    if (l.includes('aep-2') || l.includes('aep 2') || l.includes('aep2') || l.includes('este-2')) return 'AEP 2';
     if (l.includes('aep-3') || l.includes('aep 3') || l.includes('aep3')) return 'AEP 3';
     if (l.includes('nacional') || l.includes('españa')) return 'NACIONAL';
     if (l.includes('europeo') || l.includes('epf') || l.includes('western')) return 'EPF';
@@ -132,7 +132,7 @@ const determineLevel = (name: string, rawLevel: string = ''): Competition['level
 
     // 3. Regional (AEP Levels) - Fallback
     if (n.includes('aep-1') || n.includes('aep 1')) return 'AEP 1';
-    if (n.includes('aep-2') || n.includes('aep 2')) return 'AEP 2';
+    if (n.includes('aep-2') || n.includes('aep 2') || n.includes('este-2')) return 'AEP 2';
     if (n.includes('aep-3') || n.includes('aep 3') || n.includes('regional')) return 'AEP 3';
 
     // Default
