@@ -49,5 +49,19 @@ export const competitionsService = {
 
         if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
         return data as CompetitionAssignment | null;
+    },
+
+    async getCoachAssignments(coachId: string) {
+        const { data, error } = await supabase
+            .from('competitions')
+            .select(`
+                *,
+                athlete:profiles!athlete_id (full_name, avatar_url)
+            `)
+            .eq('coach_id', coachId)
+            .order('date', { ascending: true });
+
+        if (error) throw error;
+        return data; // Returns competitions with nested athlete profile
     }
 };
