@@ -9,32 +9,26 @@ interface RestTimerOverlayProps {
 }
 
 export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOverlayProps) {
-    const [timeLeft, setTimeLeft] = useState(0);
+    const [now, setNow] = useState(Date.now());
 
     useEffect(() => {
-        const calculateTimeLeft = () => {
-            const now = Date.now();
-            const diff = Math.ceil((endTime - now) / 1000);
-            return diff > 0 ? diff : 0;
-        };
-
-        // Initial calc
-        setTimeLeft(calculateTimeLeft());
-
         const interval = setInterval(() => {
-            const remaining = calculateTimeLeft();
-            setTimeLeft(remaining);
-            if (remaining <= 0) {
-                // Determine if we should auto-close or play sound? 
-                // For now, let's keep showing "00:00" until user acknowledges, or maybe auto-close?
-                // The prompt verification step says "Wait for 0:00 -> Verify it closes or notifies".
-                // Let's vibrate if supported
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-            }
-        }, 500); // Check twice a second to avoid lag
+            setNow(Date.now());
+        }, 500);
 
         return () => clearInterval(interval);
-    }, [endTime]);
+    }, []);
+
+    const diff = Math.ceil((endTime - now) / 1000);
+    const timeLeft = diff > 0 ? diff : 0;
+    const isFinished = timeLeft <= 0;
+
+    // Effect for sound/notification when finished
+    useEffect(() => {
+        if (isFinished) {
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        }
+    }, [isFinished]); // Only run when finished state changes
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -42,7 +36,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    const isFinished = timeLeft <= 0;
+
 
     return (
         <div className="fixed bottom-24 left-4 right-4 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">

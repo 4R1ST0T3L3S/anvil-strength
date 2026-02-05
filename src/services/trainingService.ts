@@ -308,7 +308,7 @@ export const trainingService = {
         // We'll trust supabase.auth.getUser() on the client side calls or pass it in. 
         // Ideally we pass coachId.
 
-        let insertPayload: any = { name };
+        const insertPayload: any = { name };
 
         if (coachId) {
             console.log("Creating exercise for coach:", coachId);

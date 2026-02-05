@@ -123,26 +123,26 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         }
     };
 
-    const handleCreateBlock = async () => {
-        setLoading(true);
-        const now = new Date();
-        const monthName = now.toLocaleString('default', { month: 'long' });
+    // const _handleCreateBlock = async () => {
+    //     setLoading(true);
+    //     const now = new Date();
+    //     const monthName = now.toLocaleString('default', { month: 'long' });
 
-        try {
-            await trainingService.createBlock({
-                athlete_id: athleteId,
-                coach_id: (await supabase.auth.getUser()).data.user?.id || '',
-                name: `Bloque ${monthName} ${now.getFullYear()}`,
-                is_active: true,
-                start_date: now.toISOString(),
-            });
-            await loadData();
-            toast.success("Nuevo bloque creado");
-        } catch (err) {
-            toast.error("Error creando bloque");
-            setLoading(false);
-        }
-    };
+    //     try {
+    //         await trainingService.createBlock({
+    //             athlete_id: athleteId,
+    //             coach_id: (await supabase.auth.getUser()).data.user?.id || '',
+    //             name: `Bloque ${monthName} ${now.getFullYear()}`,
+    //             is_active: true,
+    //             start_date: now.toISOString(),
+    //         });
+    //         await loadData();
+    //         toast.success("Nuevo bloque creado");
+    //     } catch (err) {
+    //         toast.error("Error creando bloque");
+    //         setLoading(false);
+    //     }
+    // };
 
     const handleSaveChanges = async () => {
         if (!blockData) return;
@@ -479,7 +479,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         toast.info("Funcionalidad de añadir semana en desarrollo");
     };
 
-    const handleCopyWeek = (week: number) => {
+    const handleCopyWeek = (_week: number) => {
         toast.info("Funcionalidad de copiar semana en desarrollo");
     };
 

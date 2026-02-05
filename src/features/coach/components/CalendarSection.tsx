@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../../../services/aepService';
+import { AssignCompetitionModal } from './AssignCompetitionModal';
 
 export function CalendarSection() {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -116,6 +118,7 @@ export function CalendarSection() {
         );
     }
 
+
     return (
         <div className="block">
             <div className="flex items-center gap-3 mb-6">
@@ -153,7 +156,14 @@ export function CalendarSection() {
                             </div>
 
                             {/* Action */}
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 flex items-center gap-2">
+                                <button
+                                    onClick={() => setSelectedCompetition(comp)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-anvil-red text-white text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-red-600 transition-colors"
+                                >
+                                    Asignar
+                                </button>
+
                                 {comp.inscripciones && comp.inscripciones.toLowerCase().startsWith('http') && (
                                     <a
                                         href={comp.inscripciones}
@@ -181,6 +191,13 @@ export function CalendarSection() {
                     Ver Calendario Oficial Completo &rarr;
                 </a>
             </div>
+
+            {/* Modal */}
+            <AssignCompetitionModal
+                isOpen={!!selectedCompetition}
+                onClose={() => setSelectedCompetition(null)}
+                competition={selectedCompetition}
+            />
         </div>
     );
 }

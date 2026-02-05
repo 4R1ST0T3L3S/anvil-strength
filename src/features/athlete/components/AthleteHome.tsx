@@ -4,15 +4,16 @@ import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, TrainingSession, SessionExercise } from '../../../types/training';
 import {
     Calendar,
-    MessageSquare,
-    Dumbbell,
+    BookOpen,
     ChevronRight,
-    Clock,
+    Dumbbell,
     Trophy,
-    Star,
-    Calculator,
+    Weight,
     List,
-    Weight
+    Calculator,
+    Clock,
+    FlaskConical,
+    Users
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';
@@ -20,6 +21,8 @@ import { OneRMCalculator } from './OneRMCalculator';
 import { WarmUpCalculator } from './WarmUpCalculator';
 import { PlateCalculator } from './PlateCalculator';
 import { AnvilRanking } from './AnvilRanking';
+import { getAnvilQuote } from '../../../lib/dailyQuotes';
+import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 
 interface AthleteHomeProps {
     user: UserProfile;
@@ -30,16 +33,24 @@ interface ExtendedSession extends TrainingSession {
     exercises: (SessionExercise & { exercise: { name: string } })[];
 }
 
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 14) return 'Buenos días'; // 6 AM - 2 PM
+    if (hour >= 14 && hour < 21) return 'Buenas tardes'; // 2 PM - 9 PM
+    return 'Buenas noches'; // 9 PM - 6 AM
+};
+
+
+
 export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const [loading, setLoading] = useState(true);
     const [activeBlock, setActiveBlock] = useState<TrainingBlock | null>(null);
     const [todaySession, setTodaySession] = useState<ExtendedSession | null>(null);
-    const [coachInfo, setCoachInfo] = useState<{ full_name: string; avatar_url?: string } | null>(null);
-    const [coachMessage, setCoachMessage] = useState<string | null>(null);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
     const [isPlateCalcOpen, setIsPlateCalcOpen] = useState(false);
     const [isRankingOpen, setIsRankingOpen] = useState(false);
+    const [nextCompetition, setNextCompetition] = useState<CompetitionAssignment | null>(null);
 
     useEffect(() => {
         const fetchHomeData = async () => {
@@ -92,25 +103,14 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                             );
                         }
 
+                        // 2.2 Fetch next competition
+                        const nextComp = await competitionsService.getNextCompetition(user.id);
+                        setNextCompetition(nextComp);
+
                         if (sessionForToday) {
                             setTodaySession(sessionForToday as ExtendedSession);
-
-                            // 2.3 Extract coach message from first exercise note if available
-                            const firstExWithNote = sessionForToday.session_exercises?.find((ex: any) => ex.notes);
-                            if (firstExWithNote) {
-                                setCoachMessage(firstExWithNote.notes);
-                            }
                         }
                     }
-
-                    // 3. Get Coach Info
-                    const { data: coachData } = await supabase
-                        .from('profiles')
-                        .select('full_name, avatar_url')
-                        .eq('id', active.coach_id)
-                        .single();
-
-                    if (coachData) setCoachInfo(coachData);
                 }
             } catch (error) {
                 console.error('Error fetching home data:', error);
@@ -135,13 +135,13 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         onNavigate,
         activeBlock,
         todaySession,
-        coachInfo,
-        coachMessage,
         setIs1RMCalcOpen,
         setIsWarmUpCalcOpen,
         setIsPlateCalcOpen,
-        setIsRankingOpen
+        setIsRankingOpen,
+        nextCompetition
     };
+
 
     return (
         <>
@@ -171,21 +171,20 @@ interface HomeViewProps {
     onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar') => void;
     activeBlock: TrainingBlock | null;
     todaySession: ExtendedSession | null;
-    coachInfo: { full_name: string; avatar_url?: string } | null;
-    coachMessage: string | null;
     setIs1RMCalcOpen: (isOpen: boolean) => void;
     setIsWarmUpCalcOpen: (isOpen: boolean) => void;
     setIsPlateCalcOpen: (isOpen: boolean) => void;
     setIsRankingOpen: (isOpen: boolean) => void;
+    nextCompetition: CompetitionAssignment | null;
 }
 
-function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, coachMessage, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen }: HomeViewProps) {
+function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 p-4">
             {/* Mobile Header */}
             <header>
                 <h1 className="text-3xl font-black uppercase tracking-tighter mb-1">
-                    Hola, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
+                    {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
                 </h1>
                 <p className="text-gray-400 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
                     <Calendar size={14} className="text-anvil-red" />
@@ -248,46 +247,70 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
                 )}
             </div>
 
-            {/* Mobile Coach Note - Moved UP */}
+            {/* Mobile Anvil Legend (Replaces Coach Note) */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <MessageSquare size={16} /> Nota Coach
+                    <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
                 </h2>
-                <div className="bg-[#252525] border border-white/5 rounded-2xl p-5 relative overflow-hidden">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border border-anvil-red/30 bg-[#1c1c1c]">
-                            {coachInfo?.avatar_url ? (
-                                <img src={coachInfo.avatar_url} alt="Coach" className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-base font-black text-gray-600 flex items-center justify-center h-full">C</span>
-                            )}
-                        </div>
-                        <div>
-                            <p className="text-xs font-black uppercase tracking-tighter text-white">Coach {coachInfo?.full_name?.split(' ')[0] || 'Anvil'}</p>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Enviado hoy</p>
-                        </div>
+                <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+                    {/* Background Effects */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50"></div>
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <BookOpen size={64} className="text-yellow-500 rotate-12" />
                     </div>
-                    <p className="text-gray-300 italic text-sm leading-relaxed">
-                        {coachMessage ? `"${coachMessage}"` : '"¡A por la sesión de hoy! Mantén el foco."'}
-                    </p>
-                </div>
 
-                {/* Mobile Next Competition */}
-                <div className="bg-anvil-red rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform">
                     <div className="relative z-10">
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Próxima Competición</p>
-                        <p className="text-lg font-black uppercase italic">Copa de España</p>
+
+                        <p className="text-xl font-black uppercase italic text-white leading-tight tracking-tight mb-2">
+                            "{getAnvilQuote()}"
+                        </p>
+
+                        <div className="w-12 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full mt-4"></div>
                     </div>
-                    <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                        <Trophy size={20} />
-                    </div>
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
                 </div>
+            </div>
+
+            {/* Mobile Next Competition */}
+            <div className="space-y-3">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <Trophy size={16} className="text-anvil-red" /> Próxima Competición
+                </h2>
+                {nextCompetition ? (
+                    <div className="bg-anvil-red rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform">
+                        <div className="relative z-10">
+                            <h3 className="text-lg font-black uppercase italic leading-tight mb-0.5">{nextCompetition.name}</h3>
+                            <div className="flex items-center gap-2 text-xs font-bold opacity-90">
+                                <Calendar size={12} />
+                                <span>{new Date(nextCompetition.date).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                            <Trophy size={20} />
+                        </div>
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
+                    </div>
+                ) : (
+                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-5 flex items-center justify-between relative overflow-hidden">
+                        <div className="relative z-10">
+                            <h3 className="text-sm font-bold text-gray-400 italic leading-tight">
+                                No hay competiciones a la vista.
+                            </h3>
+                            <p className="text-xs text-anvil-red font-bold mt-1 uppercase tracking-wider">
+                                ¡Toca seguir sumando kilos! 🚀
+                            </p>
+                        </div>
+                        <div className="relative z-10 bg-white/5 p-2 rounded-lg grayscale opacity-50">
+                            <Trophy size={20} className="text-gray-500" />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Mobile Tools Grid - Moved DOWN & Vertical Stack */}
             <div className="space-y-3">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Anvil Lab Tools</h2>
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
+                </h2>
                 <div className="space-y-4">
                     {/* 1. Plate Calculator */}
                     <div
@@ -338,7 +361,9 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
 
             {/* Mobile Anvil Ranking Club */}
             <div className="space-y-3">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Comunidad</h2>
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <Users size={16} className="text-anvil-red" /> Comunidad
+                </h2>
                 <div
                     onClick={() => setIsRankingOpen(true)}
                     className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all"
@@ -363,13 +388,13 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, coachInfo, co
     );
 }
 
-function DesktopHome({ user, onNavigate, activeBlock, todaySession, coachInfo, coachMessage, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="hidden md:block p-8 space-y-8 animate-in fade-in duration-500">
-            {/* Welcome Header */}
+            {/* Header */}
             <header>
                 <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-1">
-                    Hola, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
+                    {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
                 </h1>
                 <p className="text-gray-400 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
                     <Calendar size={14} className="text-anvil-red" />
@@ -380,7 +405,7 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, coachInfo, c
             {/* Main Grid: Today's Task & Coach Message */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* Today's Training Card - Stretches to match height */}
+                {/* Today's Training Card */}
                 <div className="lg:col-span-2 flex flex-col gap-4">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <Dumbbell size={16} /> Entrenamiento de hoy
@@ -437,63 +462,78 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, coachInfo, c
                     )}
                 </div>
 
-                {/* Coach Message Card */}
+                {/* Desktop Anvil Legend (Replaces Coach Message) */}
                 <div className="space-y-4">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                        <MessageSquare size={16} /> Nota del Entrenador
+                        <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
                     </h2>
 
-                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 h-fit relative overflow-hidden group">
-                        {/* Decorative Quote Mark */}
-                        <div className="absolute -top-4 -right-4 text-anvil-red/5 font-black text-9xl italic pointer-events-none">"</div>
-
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-anvil-red/30 bg-[#1c1c1c] flex items-center justify-center">
-                                {coachInfo?.avatar_url ? (
-                                    <img src={coachInfo.avatar_url} alt="Coach" className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-lg font-black text-gray-600">C</span>
-                                )}
-                            </div>
-                            <div>
-                                <p className="text-sm font-black uppercase tracking-tighter text-white">Coach {coachInfo?.full_name?.split(' ')[0] || 'Anvil'}</p>
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Enviado hoy</p>
-                            </div>
+                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 h-fit relative overflow-hidden group hover:border-yellow-500/30 transition-all">
+                        {/* Background Effects */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
+                        <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12">
+                            <BookOpen size={120} />
                         </div>
 
                         <div className="relative z-10">
-                            <p className="text-gray-300 leading-relaxed italic">
-                                {coachMessage ? `"${coachMessage}"` : '"¡A por la sesión de hoy! Mantén el foco en la técnica y respeta los tiempos de descanso."'}
-                            </p>
-                        </div>
-
-                        <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                            <div className="flex gap-1 text-anvil-red">
-                                <Star size={14} fill="currentColor" />
-                                <Star size={14} fill="currentColor" />
-                                <Star size={14} fill="currentColor" />
+                            <div className="flex items-center justify-end mb-8">
+                                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{new Date().toLocaleDateString('es-ES', { weekday: 'long' })}</span>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">Feedback pendiente</span>
+
+                            <p className="text-3xl md:text-4xl font-black uppercase italic text-white leading-none tracking-tighter mb-8 drop-shadow-lg">
+                                "{getAnvilQuote()}"
+                            </p>
+
+                            <div className="flex items-center justify-between border-t border-white/5 pt-6">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Anvil Strength Club</span>
+                                <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full"></div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Quick Stats or Promo */}
-                    <div className="bg-anvil-red rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative">
-                        <div className="relative z-10">
-                            <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Próxima Competición</p>
-                            <p className="text-xl font-black uppercase italic">Copa de España</p>
-                        </div>
-                        <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                            <Trophy size={24} />
-                        </div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+                    {/* Quick Stats or Promo - NEXT COMPETITION */}
+                    <div className="space-y-4">
+                        <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                            <Trophy size={16} className="text-anvil-red" /> Próxima Competición
+                        </h2>
+                        {nextCompetition ? (
+                            <div className="bg-anvil-red rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative">
+                                <div className="relative z-10">
+                                    <h3 className="text-xl font-black uppercase italic mb-1">{nextCompetition.name}</h3>
+                                    <div className="flex items-center gap-2 text-xs font-bold opacity-90">
+                                        <Calendar size={14} />
+                                        <span>{new Date(nextCompetition.date).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                                <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                                    <Trophy size={24} />
+                                </div>
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+                            </div>
+                        ) : (
+                            <div className="bg-[#252525] border border-white/5 rounded-2xl p-6 flex items-center justify-between relative overflow-hidden group">
+                                <div className="relative z-10">
+                                    <h3 className="text-base font-bold text-gray-400 italic leading-tight mb-1">
+                                        Sin competiciones asignadas
+                                    </h3>
+                                    <p className="text-sm text-anvil-red font-bold uppercase tracking-wider">
+                                        ¡Toca seguir sumando kilos! 🚀
+                                    </p>
+                                </div>
+                                <div className="relative z-10 bg-white/5 p-2 rounded-lg grayscale opacity-30 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500">
+                                    <Trophy size={24} className="text-gray-500 group-hover:text-anvil-red" />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* Quick Tools Section */}
             <div className="space-y-4 pt-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Anvil Lab Tools</h2>
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
+                </h2>
                 <div className="grid grid-cols-3 gap-6">
                     {/* 1RM Calculator Card */}
                     <div

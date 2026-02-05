@@ -1,7 +1,7 @@
 // import { useState } from 'react';
 import { LogOut, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { NotificationBell } from '../ui/NotificationBell';
+
 import { UserProfile } from '../../hooks/useUser';
 import { getDisplayName, getUserInitials } from '../../utils/userDisplayName';
 
@@ -45,10 +45,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                 <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
                 <span className="font-black text-xl tracking-tighter uppercase">{roleLabel}</span>
             </div>
-            {/* Bell for Desktop in Sidebar (optional, or better in a top bar if existed. Here it fits in header of sidebar) */}
-            <div className="md:block hidden">
-                <NotificationBell />
-            </div>
+
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -147,20 +144,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 />
             </aside>
 
-            {/* Mobile Header (Simplified - Logo & Notification) */}
-            <div className="md:hidden fixed top-0 w-full h-[48px] bg-[#1c1c1c]/95 backdrop-blur-md border-b border-white/[0.03] z-[10001] px-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <img src="/logo.svg" alt="Anvil" className="h-6 w-auto" />
-                    <div className="flex items-baseline gap-2">
-                        <span className="font-black text-sm tracking-tighter uppercase italic">Anvil Strength</span>
-                        <span className="text-[8px] text-gray-700 font-bold uppercase tracking-widest">v1.1</span>
-                    </div>
-                </div>
-                <NotificationBell />
-            </div>
+            {/* Mobile Header Removed */}
 
-            {/* Main Content */}
-            <main className="flex-1 md:ml-64 h-full overflow-y-auto pt-16 pb-24 md:pt-0 md:pb-0 bg-[#1c1c1c]">
+            {/* Main Content - Removed top padding since header is gone */}
+            <main className="flex-1 md:ml-64 h-full overflow-y-auto pb-24 md:pt-0 md:pb-0 bg-[#1c1c1c]">
                 {children}
             </main>
 

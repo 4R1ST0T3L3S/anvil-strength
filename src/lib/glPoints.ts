@@ -60,7 +60,7 @@ export const getGenderAndWeightFromCategory = (category: string): { gender: 'mal
 
     // Extract numerical weight
     const weightMatch = cat.match(/\d+/);
-    let weight = weightMatch ? parseInt(weightMatch[0]) : 75; // Fallback average weight if parse fails
+    const weight = weightMatch ? parseInt(weightMatch[0]) : 75; // Fallback average weight if parse fails
 
     // Handle "+120" or "+84" - Add a bit to represent super heavyweight? 
     // Standard practice often just uses the limit or a slight bump. 
