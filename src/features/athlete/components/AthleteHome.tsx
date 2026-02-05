@@ -67,23 +67,30 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                         .order('day_number', { ascending: true });
 
                     if (sessData && sessData.length > 0) {
-                        // 2.1 Calculate today's day number relative to block start
-                        const startDate = new Date(active.start_date);
+                        // 2.1 Calculate today's workout
                         const today = new Date();
+                        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                        const currentDayKey = days[today.getDay()]; // e.g., 'monday'
 
-                        // Reset hours to compare dates only
-                        startDate.setHours(0, 0, 0, 0);
-                        today.setHours(0, 0, 0, 0);
+                        // Priority 1: Match by explicit day_of_week (New Logic)
+                        let sessionForToday = sessData.find(s => s.day_of_week === currentDayKey);
 
-                        const diffTime = today.getTime() - startDate.getTime();
-                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                        // Priority 2: Fallback to Date diff if no explicit day set (Legacy Logic)
+                        if (!sessionForToday && active.start_date) {
+                            const startDate = new Date(active.start_date);
+                            // Reset hours
+                            startDate.setHours(0, 0, 0, 0);
+                            today.setHours(0, 0, 0, 0);
 
-                        // 2.2 Try to find session for this specific day_number
-                        const todayStr = today.toISOString().split('T')[0];
+                            const diffTime = today.getTime() - startDate.getTime();
+                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-                        const sessionForToday = sessData.find(s =>
-                            (s as any).date === todayStr || s.day_number === diffDays
-                        );
+                            const todayStr = today.toISOString().split('T')[0];
+
+                            sessionForToday = sessData.find(s =>
+                                (s as any).date === todayStr || s.day_number === diffDays
+                            );
+                        }
 
                         if (sessionForToday) {
                             setTodaySession(sessionForToday as ExtendedSession);

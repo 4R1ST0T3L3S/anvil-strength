@@ -36,6 +36,7 @@ export interface TrainingSession {
     day_number: number; // 1, 2, 3...
     name?: string | null; // "Día 1", "Torso Pesado", etc. (Editable)
     date?: string | null; // Optional specific date
+    day_of_week?: string | null; // 'monday', 'tuesday', etc.
     created_at: string;
     // Relations (Optional for UI rendering)
     exercises?: SessionExercise[];
