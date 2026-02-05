@@ -38,6 +38,42 @@ const getGreeting = () => {
     if (hour >= 6 && hour < 14) return 'Buenos días'; // 6 AM - 2 PM
     if (hour >= 14 && hour < 21) return 'Buenas tardes'; // 2 PM - 9 PM
     return 'Buenas noches'; // 9 PM - 6 AM
+    return 'Buenas noches'; // 9 PM - 6 AM
+};
+
+const getDaysRemaining = (dateStr: string) => {
+    const today = new Date();
+    const target = new Date(dateStr);
+
+    // Normalize to start of day to avoid timezone/hour issues affecting day count
+    today.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = today.getTime() - target.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // If it's today, diffDays is 0. If tomorrow, diffDays is -1.
+    // User requested format "-117 dias", so we return the signed difference.
+    return diffDays;
+};
+
+const formatCompetitionName = (name: string, location?: string) => {
+    // Clean up name: remove redundant "Campeonato" if present to keep it short?
+    // User wants "AEP2 Chiva".
+
+    let cleanName = name.replace(/Campeonato\s+/i, '').trim();
+
+    // If location is present, try to get just the city
+    let city = '';
+    if (location) {
+        city = location.split(',')[0].trim();
+    }
+
+    if (city) {
+        return `${cleanName} ${city}`;
+    }
+
+    return cleanName;
 };
 
 
@@ -278,10 +314,12 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                 {nextCompetition ? (
                     <div className="bg-anvil-red rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform">
                         <div className="relative z-10">
-                            <h3 className="text-lg font-black uppercase italic leading-tight mb-0.5">{nextCompetition.name}</h3>
+                            <h3 className="text-lg font-black uppercase italic leading-tight mb-0.5">
+                                {formatCompetitionName(nextCompetition.name, nextCompetition.location)}
+                            </h3>
                             <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                 <Calendar size={12} />
-                                <span>{new Date(nextCompetition.date).toLocaleDateString()}</span>
+                                <span>{getDaysRemaining(nextCompetition.date)} días</span>
                             </div>
                         </div>
                         <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -499,10 +537,12 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                         {nextCompetition ? (
                             <div className="bg-anvil-red rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative">
                                 <div className="relative z-10">
-                                    <h3 className="text-xl font-black uppercase italic mb-1">{nextCompetition.name}</h3>
+                                    <h3 className="text-xl font-black uppercase italic mb-1">
+                                        {formatCompetitionName(nextCompetition.name, nextCompetition.location)}
+                                    </h3>
                                     <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                         <Calendar size={14} />
-                                        <span>{new Date(nextCompetition.date).toLocaleDateString()}</span>
+                                        <span>{getDaysRemaining(nextCompetition.date)} días</span>
                                     </div>
                                 </div>
                                 <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">

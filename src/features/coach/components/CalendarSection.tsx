@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../../../services/aepService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
+import { useUser } from '../../../hooks/useUser';
 
 export function CalendarSection() {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+    const { data: user } = useUser();
 
     useEffect(() => {
         const loadData = async () => {
@@ -15,38 +17,14 @@ export function CalendarSection() {
                 setError(null); // Reset error state
                 const data = await fetchCompetitions();
 
-                // Definimos las keywords para las zonas permitidas en AEP-2 y AEP-3
-                const allowedRegionsValues = [
-                    'valencia', 'alicante', 'castellon', 'castellón',
-                    'baleares', 'palma', 'mallorca', 'ibiza', 'menorca',
-                    'murcia', 'cartagena'
-                ];
-
                 const filtered = data.filter(c => {
-                    // Filtro base de validez (ya existía)
+                    // Filtro base de validez (evitar filas vacías o cabeceras)
                     const isValid = c.fecha &&
                         c.fecha.length > 2 &&
                         !c.fecha.toLowerCase().includes('fecha') &&
                         c.campeonato;
 
-                    if (!isValid) return false;
-
-                    // Lógica de Negocio: AEP-2 y AEP-3 solo zonas permitidas
-                    const name = c.campeonato.toLowerCase();
-                    const sede = c.sede.toLowerCase();
-
-                    // Detectar si es AEP-2 o AEP-3
-                    const isRestrictedType = name.includes('aep-2') || name.includes('aep 2') ||
-                        name.includes('aep-3') || name.includes('aep 3');
-
-                    if (isRestrictedType) {
-                        // Si es tipo restringido, debe ser de una zona permitida
-                        const isAllowedRegion = allowedRegionsValues.some(region => sede.includes(region));
-                        return isAllowedRegion;
-                    }
-
-                    // AEP-1 y otros campeonatos se muestran siempre
-                    return true;
+                    return !!isValid;
                 });
 
                 setCompetitions(filtered);
@@ -157,12 +135,14 @@ export function CalendarSection() {
 
                             {/* Action */}
                             <div className="flex-shrink-0 flex items-center gap-2">
-                                <button
-                                    onClick={() => setSelectedCompetition(comp)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-anvil-red text-white text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-red-600 transition-colors"
-                                >
-                                    Asignar
-                                </button>
+                                {user?.role === 'coach' && (
+                                    <button
+                                        onClick={() => setSelectedCompetition(comp)}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-anvil-red text-white text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-red-600 transition-colors"
+                                    >
+                                        Asignar
+                                    </button>
+                                )}
 
                                 {comp.inscripciones && comp.inscripciones.toLowerCase().startsWith('http') && (
                                     <a
