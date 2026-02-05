@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 
 export interface Competition {
     fecha: string;
+    dateIso?: string;
     campeonato: string;
     sede: string;
     inscripciones: string;
