@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../../types/training';
-import { Loader, Video, Check, Camera, Play, AlertCircle } from 'lucide-react';
+import { Loader, Check, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { RestTimerOverlay } from './RestTimerOverlay';
 
 interface WorkoutLoggerProps {
     athleteId: string;
@@ -40,6 +41,24 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
     const [block, setBlock] = useState<TrainingBlock | null>(null);
     const [sessions, setSessions] = useState<ExtendedSession[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
+    // Timer State
+    const [timerEndTime, setTimerEndTime] = useState<number | null>(null);
+
+    const handleStartTimer = (seconds: number) => {
+        const now = Date.now();
+        setTimerEndTime(now + seconds * 1000);
+    };
+
+    const handleCloseTimer = () => {
+        setTimerEndTime(null);
+    };
+
+    const handleAddTimerSeconds = (seconds: number) => {
+        if (timerEndTime) {
+            setTimerEndTime(timerEndTime + seconds * 1000);
+        }
+    };
 
     // Initial Load
     useEffect(() => {
@@ -195,7 +214,6 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
             <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                 <div className="p-4">
                     <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
-                    <h2 className="text-2xl font-black italic">{activeSession?.name || `Día ${activeSession?.day_number}`}</h2>
                 </div>
 
                 {/* Day Tabs Scroll */}
@@ -211,8 +229,14 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                                     : "bg-[#2a2a2a] text-gray-400 border-transparent hover:bg-[#333]"
                             )}
                         >
-                            <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
-                            <span className="text-xl font-bold leading-none">{s.day_number}</span>
+                            {s.name ? (
+                                <span className="text-xs font-black uppercase tracking-wider">{s.name}</span>
+                            ) : (
+                                <>
+                                    <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
+                                    <span className="text-xl font-bold leading-none">{s.day_number}</span>
+                                </>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -221,7 +245,11 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
             {/* 2. Content (Exercise List) */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
                 {activeSession?.exercises.map(ex => (
-                    <LoggerExerciseCard key={ex.id} sessionExercise={ex} />
+                    <LoggerExerciseCard
+                        key={ex.id}
+                        sessionExercise={ex}
+                        onStartTimer={handleStartTimer}
+                    />
                 ))}
 
                 {activeSession?.exercises.length === 0 && (
@@ -230,6 +258,15 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                     </div>
                 )}
             </div>
+
+            {/* Overlay Timer */}
+            {timerEndTime && (
+                <RestTimerOverlay
+                    endTime={timerEndTime}
+                    onClose={handleCloseTimer}
+                    onAddSeconds={handleAddTimerSeconds}
+                />
+            )}
         </div>
     );
 }
@@ -237,7 +274,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 // ==========================================
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
-function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSessionExercise }) {
+function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise: ExtendedSessionExercise, onStartTimer: (s: number) => void }) {
     const [noteOpen, setNoteOpen] = useState(false);
 
     return (
@@ -255,16 +292,6 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
                         </button>
                     )}
                 </div>
-                {sessionExercise.exercise.video_url && (
-                    <a
-                        href={sessionExercise.exercise.video_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-                    >
-                        <Video size={20} />
-                    </a>
-                )}
             </div>
 
             {noteOpen && sessionExercise.notes && (
@@ -274,17 +301,22 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
             )}
 
             {/* Sets Header */}
-            <div className="grid grid-cols-[1.3fr_4rem_0.7fr] md:grid-cols-[1fr_1fr_2.5rem] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-xs uppercase font-bold text-gray-500 text-center">
+            <div className="grid grid-cols-[1.3fr_4rem_0.7fr] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-xs uppercase font-bold text-gray-500 text-center">
                 <span className="text-left pl-2">Series</span>
-                <span className="md:hidden text-center">RPE</span>
-                <span className="hidden md:block">Real (Kg / Reps / RPE)</span>
+                <span className="text-center">RPE</span>
                 <span className="text-right pr-4">Check</span>
             </div>
 
             {/* Sets List */}
             <div className="divide-y divide-white/5">
                 {sessionExercise.sets.map((set, idx) => (
-                    <LoggerSetRow key={set.id} set={set} index={idx} />
+                    <LoggerSetRow
+                        key={set.id}
+                        set={set}
+                        index={idx}
+                        onStartTimer={onStartTimer}
+                        defaultRestSeconds={sessionExercise.rest_seconds}
+                    />
                 ))}
             </div>
         </div>
@@ -294,14 +326,19 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
 // ==========================================
 // SUB-COMPONENT: SET ROW (The Core Logic)
 // ==========================================
-function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
+// ==========================================
+// SUB-COMPONENT: SET ROW (The Core Logic)
+// ==========================================
+function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: TrainingSet; index: number, onStartTimer: (s: number) => void, defaultRestSeconds?: number | null }) {
     // Local state for optimistic UI
     const [actualLoad, setActualLoad] = useState<string>(set.actual_load?.toString() ?? '');
     const [actualReps, setActualReps] = useState<string>(set.actual_reps?.toString() ?? '');
     const [actualRpe, setActualRpe] = useState<string>(set.actual_rpe?.toString() ?? '');
     const [isCompleted, setIsCompleted] = useState(!!(set.actual_reps && set.actual_load)); // Pseudo-logic for completion
-    const [hasVideo, setHasVideo] = useState(!!set.video_url);
     const [saving, setSaving] = useState(false);
+
+    // Effective Rest Logic
+    const effectiveRest = set.rest_seconds || defaultRestSeconds;
 
     // Debounce Ref
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -339,28 +376,23 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
         }, 1000); // 1 second debounce
     };
 
-    const handleVideoUpload = () => {
-        // Simulation
-        toast.promise(new Promise((resolve) => setTimeout(resolve, 1500)), {
-            loading: 'Subiendo video...',
-            success: () => {
-                setHasVideo(true);
-                return 'Video subido correctamente';
-            },
-            error: 'Error al subir'
-        });
-        // In real impl: Open file picker -> Upload to Storage -> Update DB video_url
-    };
-
     const toggleComplete = () => {
         // Instant visual feedback wrapper
-        setIsCompleted(!isCompleted);
-        if (!isCompleted) toast.success("Serie completada");
+        const newState = !isCompleted;
+        setIsCompleted(newState);
+
+        if (newState) {
+            toast.success("Serie completada");
+            // Trigger Timer if enabled
+            if (effectiveRest && effectiveRest > 0) {
+                onStartTimer(effectiveRest);
+            }
+        }
     };
 
     return (
         <div className={cn(
-            "grid grid-cols-[1.3fr_4rem_0.7fr] md:grid-cols-[1fr_1fr_2.5rem] gap-3 px-4 py-3 items-center transition-colors",
+            "grid grid-cols-[1.3fr_4rem_0.7fr] gap-3 px-4 py-3 items-center transition-colors",
             isCompleted ? "bg-green-500/10" : "hover:bg-white/5"
         )}>
             {/* Series Info (Merged Index + Target) - ALIGN LEFT */}
@@ -374,13 +406,13 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
                     </div>
                     <div className="flex items-center gap-2 text-xs">
                         {!!set.target_rpe && <span className="text-anvil-red">@{set.target_rpe}</span>}
-                        {!!set.rest_seconds && <span>{set.rest_seconds}s rest</span>}
+                        {!!effectiveRest && <span>{effectiveRest}s rest</span>}
                     </div>
                 </div>
             </div>
 
-            {/* Mobile RPE Input (New Column) */}
-            <div className="flex md:hidden justify-center">
+            {/* RPE Input (Mobile & Desktop Unified) */}
+            <div className="flex justify-center">
                 <input
                     type="number"
                     value={actualRpe}
@@ -390,31 +422,6 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
                         "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-sm font-bold focus:border-anvil-red outline-none placeholder-gray-700",
                         actualRpe ? "text-anvil-red border-anvil-red/50" : "text-white border-white/10"
                     )}
-                />
-            </div>
-
-            {/* Actual (Right - Inputs - Desktop Only) */}
-            <div className="hidden md:flex items-center gap-2">
-                <input
-                    type="number"
-                    value={actualLoad}
-                    onChange={(e) => handleChange('actual_load', e.target.value)}
-                    placeholder="kg"
-                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-anvil-red outline-none placeholder-gray-700"
-                />
-                <input
-                    type="number" // Reps can is string range? NO, Actual reps is usually number. Schema says integer.
-                    value={actualReps}
-                    onChange={(e) => handleChange('actual_reps', e.target.value)}
-                    placeholder="reps"
-                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-anvil-red outline-none placeholder-gray-700"
-                />
-                <input
-                    type="number"
-                    value={actualRpe}
-                    onChange={(e) => handleChange('actual_rpe', e.target.value)}
-                    placeholder="RPE"
-                    className="w-10 bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-xs font-medium text-anvil-red focus:border-anvil-red outline-none placeholder-gray-700 hidden sm:block"
                 />
             </div>
 
@@ -430,16 +437,6 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
                     )}
                 >
                     <Check size={16} strokeWidth={3} />
-                </button>
-
-                <button
-                    onClick={handleVideoUpload}
-                    className={cn(
-                        "transition-colors hidden md:block",
-                        hasVideo ? "text-anvil-red animate-pulse" : "text-gray-600 hover:text-gray-400"
-                    )}
-                >
-                    {hasVideo ? <Play size={16} fill="currentColor" /> : <Camera size={16} />}
                 </button>
             </div>
             {saving && <div className="absolute right-2 top-2"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}

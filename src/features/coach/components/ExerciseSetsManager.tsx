@@ -3,6 +3,7 @@ import { Plus, Trash2, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingSet } from '../../../types/training';
+import { DurationPicker } from './DurationPicker';
 
 interface ExerciseSetsManagerProps {
     sessionExerciseId: string;
@@ -153,13 +154,10 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
 
                         {/* Rest */}
                         <div className="col-span-2">
-                            <input
-                                type="number"
-                                value={set.rest_seconds || ''}
-                                onChange={(e) => handleUpdateSet(set.id, 'rest_seconds', e.target.value)}
-                                onBlur={(e) => handleBlur(set.id, { rest_seconds: e.target.value ? parseInt(e.target.value) : null })}
-                                placeholder="s"
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+                            <DurationPicker
+                                value={set.rest_seconds ?? null}
+                                onChange={(val) => handleUpdateSet(set.id, 'rest_seconds', val)}
+                                onBlur={() => handleBlur(set.id, { rest_seconds: set.rest_seconds })}
                             />
                         </div>
 
