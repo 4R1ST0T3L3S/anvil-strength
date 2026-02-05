@@ -181,7 +181,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                 </div>
 
                 {/* Body - Scrollable */}
-                <div className="flex-1 p-4 md:p-8 flex flex-col justify-center overflow-hidden">
+                <div className="flex-1 p-4 md:p-8 flex flex-col justify-center overflow-y-auto md:overflow-hidden">
                     <div className="flex flex-col md:grid md:grid-cols-12 md:gap-8 h-full">
 
                         {/* LEFT COLUMN: Controls */}

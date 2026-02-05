@@ -93,13 +93,13 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 overflow-hidden p-4 md:p-6 flex flex-col">
+                <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 flex flex-col">
                     <div className="md:grid md:grid-cols-12 md:gap-12 h-full">
 
                         {/* LEFT: Inputs & Button - Centered & Smaller */}
-                        <div className="col-span-12 md:col-span-6 flex flex-col justify-center h-full pt-4 md:pt-0">
-                            <div className="grid grid-rows-3 gap-6 h-[75%] w-full">
-                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center h-full">
+                        <div className="col-span-12 md:col-span-6 flex flex-col justify-center h-full pt-4 md:pt-0 shrink-0">
+                            <div className="flex flex-col md:grid md:grid-rows-3 gap-6 h-auto md:h-[75%] w-full">
+                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
                                     <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Tu 1RM Actual</label>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -115,7 +115,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                     </div>
                                 </div>
 
-                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center h-full">
+                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
                                     <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Peso Objetivo Hoy</label>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -133,7 +133,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
 
                                 <button
                                     onClick={calculateWarmUp}
-                                    className="group w-full h-full bg-blue-600 text-white hover:bg-blue-500 rounded-2xl font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-blue-600/20"
+                                    className="group w-full min-h-[80px] md:min-h-0 bg-blue-600 text-white hover:bg-blue-500 rounded-2xl font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-blue-600/20"
                                 >
                                     <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                     <span className="md:hidden">Calcular</span>
