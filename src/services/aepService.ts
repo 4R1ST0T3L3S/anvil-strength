@@ -148,12 +148,18 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
                     const validData: Competition[] = rows
                         .slice(headerRowIndex + 1)
-                        .map(row => ({
-                            fecha: row[dateIdx] || '',
-                            campeonato: row[nameIdx] || '',
-                            sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
-                            inscripciones: linkIdx !== -1 ? row[linkIdx] : ''
-                        }))
+                        .map(row => {
+                            const rawDate = row[dateIdx] || '';
+                            const parsed = parseDate(rawDate);
+
+                            return {
+                                fecha: rawDate,
+                                dateIso: parsed ? parsed.toISOString().split('T')[0] : undefined,
+                                campeonato: row[nameIdx] || '',
+                                sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
+                                inscripciones: linkIdx !== -1 ? row[linkIdx] : ''
+                            };
+                        })
                         .filter(item => {
                             // 1. Basic Validity
                             const isValid = item.fecha &&
@@ -165,12 +171,9 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                             if (!isValid) return false;
 
                             // 2. Date Filtering (Remove if ended > 1 week ago)
-                            const itemDate = parseDate(item.fecha);
+                            if (!item.dateIso) return true; // Keep if date parsing failed to be safe
 
-                            // If we can't parse the date, we KEEP it to be safe (don't hide potentially valid events)
-                            if (!itemDate) return true;
-
-                            // If itemDate < oneWeekAgo => It's old, filter it out
+                            const itemDate = new Date(item.dateIso);
                             if (itemDate < oneWeekAgo) {
                                 return false;
                             }

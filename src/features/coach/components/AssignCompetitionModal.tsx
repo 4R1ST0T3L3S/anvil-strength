@@ -78,10 +78,20 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
 
         setSubmitting(true);
         try {
+            // Determine date: use ISO if available, otherwise try to parse or default to today
+            // Postgres DATE accepts YYYY-MM-DD.
+            let finalDate = competition.dateIso;
+
+            if (!finalDate) {
+                // Should not happen with new logic, but fallback just in case
+                console.warn('Missing dateIso, falling back to today');
+                finalDate = new Date().toISOString().split('T')[0];
+            }
+
             await competitionsService.assignCompetition(
                 {
                     name: competition.campeonato,
-                    date: competition.fecha, // Note: This might need parsing if format is not YYYY-MM-DD
+                    date: finalDate,
                     location: competition.sede
                 },
                 Array.from(selectedAthletes),
@@ -91,9 +101,11 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
             toast.success(`Competición asignada a ${selectedAthletes.size} atletas`);
             onClose();
             setSelectedAthletes(new Set()); // Reset selection
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error assigning competition:', error);
-            toast.error('Error al asignar competición');
+            // Show more specific error
+            const msg = error.message || 'Error desconocido';
+            toast.error(`Error: ${msg}`);
         } finally {
             setSubmitting(false);
         }
