@@ -97,8 +97,9 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                 let currentWeek = Math.floor(diffDays / 7) + 1;
                 if (currentWeek < 1) currentWeek = 1;
 
-                // NEW: Filter sessions for Current Week ONLY
-                const currentWeekSessions = formatted.filter(s => s.week_number === currentWeek);
+                // NEW: Filter sessions for Current Week based on Absolute Day Number
+                // Week 1 = Days 1-7, Week 2 = Days 8-14, etc.
+                const currentWeekSessions = formatted.filter(s => Math.ceil(s.day_number / 7) === currentWeek);
 
                 // If no sessions for this week (e.g. week 5 but plan only has 4 weeks), maybe show last week?
                 // For now, let's strictly show current week. If empty, it will show "Descanso" or empty list.
@@ -160,7 +161,32 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
         );
     }
 
-    const activeSession = sessions.find(s => s.id === activeSessionId);
+    const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+
+    // FIX: Handle case where activeSession is undefined (e.g. empty week)
+    if (!activeSession && sessions.length === 0) {
+        return (
+            <div className="flex flex-col h-full bg-black text-white max-w-md mx-auto shadow-2xl overflow-hidden relative">
+                <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
+                    <div className="p-4">
+                        <h1 className="text-sm text-blue-400 font-bold tracking-wider uppercase mb-1">{block.name}</h1>
+                        <h2 className="text-2xl font-black italic">Semana de Descarga</h2>
+                    </div>
+                </div>
+                <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8 text-center space-y-6">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
+                        <Check size={32} />
+                    </div>
+                    <div className="max-w-xs">
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Semana Completada</h3>
+                        <p className="text-sm leading-relaxed">
+                            No hay sesiones programadas para esta semana. Si crees que es un error, contacta a tu entrenador.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full bg-black text-white max-w-md mx-auto shadow-2xl overflow-hidden relative">
