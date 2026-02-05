@@ -89,7 +89,7 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
             <div className="bg-[#121212] w-full h-full md:w-auto md:h-auto md:max-w-2xl md:max-h-[90vh] md:rounded-3xl border-0 md:border border-white/10 shadow-2xl overflow-hidden flex flex-col">
 
                 {/* Header */}
-                <div className="pt-14 md:pt-0 p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
+                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
                             <Trophy size={24} />
@@ -122,7 +122,7 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                                 className="group relative bg-[#1c1c1c] border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 hover:border-anvil-red/30 transition-all"
                             >
                                 {/* Top Row: Rank, Avatar, Name */}
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 w-full md:w-auto md:flex-1">
                                     {/* Rank */}
                                     <div className={`w-8 h-8 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded-lg md:rounded-xl font-black text-sm md:text-lg ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
                                         index === 1 ? 'bg-gray-400/20 text-gray-400' :

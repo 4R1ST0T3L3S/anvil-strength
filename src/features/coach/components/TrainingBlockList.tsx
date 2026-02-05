@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus, FolderOpen, Calendar, ChevronRight, Loader } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock } from '../../../types/training';
 import { CreateBlockModal } from './CreateBlockModal';
+import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
+import { toast } from 'sonner';
 
 interface TrainingBlockListProps {
     athleteId: string;
@@ -13,6 +15,10 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
     const [blocks, setBlocks] = useState<TrainingBlock[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    // Delete Confirmation State
+    const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchBlocks = async () => {
         try {
@@ -30,10 +36,28 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
         fetchBlocks();
     }, [athleteId]);
 
-    const formatDate = (dateStr?: string | null) => {
-        if (!dateStr) return 'Sin fecha';
-        return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    const handleDeleteClick = (e: React.MouseEvent, blockId: string) => {
+        e.stopPropagation(); // Prevent navigating to the block
+        setBlockToDelete(blockId);
     };
+
+    const confirmDelete = async () => {
+        if (!blockToDelete) return;
+        setIsDeleting(true);
+        try {
+            await trainingService.deleteBlock(blockToDelete);
+            toast.success('Bloque eliminado correctamente');
+            fetchBlocks();
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al eliminar el bloque');
+        } finally {
+            setIsDeleting(false);
+            setBlockToDelete(null);
+        }
+    };
+
+
 
     if (loading) {
         return (
@@ -94,14 +118,28 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                                         )}
                                     </div>
                                     <div className="flex items-center gap-4 text-xs text-gray-500 font-medium uppercase tracking-wider">
-                                        <span className="flex items-center gap-1">
+                                        <span className="flex items-center gap-2">
                                             <Calendar size={12} />
-                                            {formatDate(block.start_date)} - {formatDate(block.end_date)}
+                                            Semana {block.start_week || '?'} - Semana {block.end_week || '?'}
                                         </span>
+                                        {block.start_week && block.end_week && (
+                                            <span className="text-gray-600 normal-case">
+                                                ({formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)})
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="text-gray-600 group-hover:text-white transition-colors">
-                                    <ChevronRight size={20} />
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={(e) => handleDeleteClick(e, block.id)}
+                                        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-all"
+                                        title="Eliminar bloque"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                    <div className="text-gray-600 group-hover:text-white transition-colors">
+                                        <ChevronRight size={20} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -115,6 +153,38 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                 athleteId={athleteId}
                 onBlockCreated={fetchBlocks}
             />
+
+            {/* DELETE CONFIRMATION MODAL */}
+            {blockToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-[#1c1c1c] border border-white/10 rounded-xl max-w-sm w-full p-6 shadow-2xl">
+                        <div className="flex flex-col items-center text-center mb-6">
+                            <div className="w-12 h-12 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <h3 className="text-lg font-black uppercase text-white mb-2">¿Eliminar Bloque?</h3>
+                            <p className="text-gray-400 text-sm">
+                                Esta acción eliminará permanentemente el bloque y <span className="text-white font-bold">todas sus sesiones y registros</span>. No se puede deshacer.
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setBlockToDelete(null)}
+                                className="flex-1 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase text-xs tracking-wider transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold uppercase text-xs tracking-wider transition-colors flex items-center justify-center gap-2"
+                            >
+                                {isDeleting ? <Loader size={14} className="animate-spin" /> : 'Eliminar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

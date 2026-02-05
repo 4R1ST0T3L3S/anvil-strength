@@ -3,6 +3,8 @@ import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { ArrowLeft, TrendingUp, User, FileText } from 'lucide-react';
 import { WorkoutBuilder } from '../../planning/WorkoutBuilder';
+import { TrainingBlockList } from './TrainingBlockList';
+import { TrainingBlock } from '../../../types/training';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
@@ -15,6 +17,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
+    const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -44,16 +47,16 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#252525]">
+            <div className="flex items-center justify-between p-6">
                 <div className="flex items-center gap-4">
                     <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">
                         <ArrowLeft size={20} />
                     </button>
                     <div className="flex items-center gap-4">
                         {athlete.avatar_url ? (
-                            <img src={athlete.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+                            <img src={athlete.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
                         ) : (
-                            <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold">
+                            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold">
                                 {athlete.full_name?.[0]}
                             </div>
                         )}
@@ -97,7 +100,25 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
                     <div className="max-w-6xl mx-auto h-full pb-6">
-                        <WorkoutBuilder athleteId={athleteId} />
+                        {selectedBlockId ? (
+                            <div className="h-full flex flex-col">
+                                <button
+                                    onClick={() => setSelectedBlockId(null)}
+                                    className="self-start mb-2 text-sm text-gray-500 hover:text-white flex items-center gap-1 transition-colors"
+                                >
+                                    &larr; Ver todos los bloques
+                                </button>
+                                <WorkoutBuilder
+                                    athleteId={athleteId}
+                                    blockId={selectedBlockId}
+                                />
+                            </div>
+                        ) : (
+                            <TrainingBlockList
+                                athleteId={athleteId}
+                                onSelectBlock={(block: TrainingBlock) => setSelectedBlockId(block.id)}
+                            />
+                        )}
                     </div>
                 )}
 

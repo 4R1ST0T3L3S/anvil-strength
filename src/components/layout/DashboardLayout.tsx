@@ -40,7 +40,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     onOpenSettings
 }) => (
     <div className="flex flex-col h-full bg-[#252525] border-r border-white/5">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
                 <span className="font-black text-xl tracking-tighter uppercase">{roleLabel}</span>
@@ -85,7 +85,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
             })}
         </nav>
 
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4">
             <div
                 className={`flex items-center gap-3 px-4 py-3 mb-2 rounded-lg transition-colors ${onOpenSettings ? 'cursor-pointer hover:bg-white/5' : ''}`}
                 onClick={() => onOpenSettings && onOpenSettings()}

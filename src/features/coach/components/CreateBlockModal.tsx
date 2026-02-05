@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
 import { useAuth } from '../../../context/AuthContext';
+import { getWeekNumber, getDateRangeFromWeek } from '../../../utils/dateUtils';
 
 interface CreateBlockModalProps {
     isOpen: boolean;
@@ -15,12 +16,14 @@ interface CreateBlockModalProps {
 export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }: CreateBlockModalProps) {
     const { session } = useAuth();
     const [name, setName] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [startWeek, setStartWeek] = useState<number>(getWeekNumber());
+    const [endWeek, setEndWeek] = useState<number>(getWeekNumber() + 4);
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // 1. Basic Validation
         if (!name.trim()) {
             toast.error('El nombre del bloque es obligatorio');
             return;
@@ -28,26 +31,64 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
 
         if (!session?.user.id) return;
 
+        // 2. WeekLogic Validation
+        const currentWeek = getWeekNumber();
+        if (startWeek < currentWeek) {
+            toast.error(`No puedes crear un bloque en el pasado. La semana actual es ${currentWeek}.`);
+            return;
+        }
+
+        if (endWeek < startWeek) {
+            toast.error('La semana de fin debe ser posterior a la de inicio.');
+            return;
+        }
+
         setLoading(true);
         try {
+            // 3. Fetch existing blocks to check for overlaps
+            const existingBlocks = await trainingService.getBlocksByAthlete(athleteId);
+            const activeBlocks = existingBlocks.filter(b => b.is_active);
+
+            // Check overlap
+            const hasOverlap = activeBlocks.some(block => {
+                // Ensure we handle potentially missing start/end weeks safely (though DB should have them now)
+                if (!block.start_week || !block.end_week) return false;
+
+                // Overlap logic: (StartA <= EndB) and (EndA >= StartB)
+                return (startWeek <= block.end_week) && (endWeek >= block.start_week);
+            });
+
+            if (hasOverlap) {
+                toast.error('Ya existe un bloque activo en ese rango de semanas.');
+                setLoading(false);
+                return;
+            }
+
+            // Calculate approximate dates for backend compatibility/sorting
+            const currentYear = new Date().getFullYear();
+            const { start: startDateObj } = getDateRangeFromWeek(startWeek, currentYear);
+
             await trainingService.createBlock({
                 coach_id: session.user.id,
                 athlete_id: athleteId,
                 name: name.trim(),
-                start_date: startDate || null,
-                end_date: endDate || null,
-                is_active: true // Default to active
+                start_week: startWeek,
+                end_week: endWeek,
+                start_date: startDateObj.toISOString(),
+                // end_date not in DB schema yet, removing to prevent error
+                is_active: true
             });
 
             toast.success('Bloque creado correctamente');
             setName('');
-            setStartDate('');
-            setEndDate('');
+            setStartWeek(getWeekNumber());
+            setEndWeek(getWeekNumber() + 4);
             onBlockCreated();
             onClose();
-        } catch (error) {
-            console.error(error);
-            toast.error('Error al crear el bloque');
+        } catch (error: any) {
+            console.error('Error creating block:', error);
+            // Show specific error message to help debugging (e.g., missing column)
+            toast.error(`Error: ${error.message || 'Error al crear el bloque'}`);
         } finally {
             setLoading(false);
         }
@@ -95,29 +136,40 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                             />
                         </div>
 
-                        {/* Dates Grid */}
+                        {/* Weeks Grid */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                                    <CalendarIcon size={14} /> Inicio
+                                    <CalendarIcon size={14} /> Semana Inicio
                                 </label>
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all text-sm [color-scheme:dark]"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        min={getWeekNumber()}
+                                        max={53}
+                                        value={startWeek}
+                                        onChange={(e) => setStartWeek(parseInt(e.target.value) || getWeekNumber())}
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all font-bold pl-10"
+                                    />
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-mono">W</span>
+                                </div>
+                                <p className="text-[10px] text-gray-600">Actual: Semana {getWeekNumber()}</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                                    <CalendarIcon size={14} /> Fin (Opcional)
+                                    <CalendarIcon size={14} /> Semana Fin
                                 </label>
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all text-sm [color-scheme:dark]"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        min={startWeek}
+                                        max={53}
+                                        value={endWeek}
+                                        onChange={(e) => setEndWeek(parseInt(e.target.value) || startWeek)}
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all font-bold pl-10"
+                                    />
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-mono">W</span>
+                                </div>
                             </div>
                         </div>
 

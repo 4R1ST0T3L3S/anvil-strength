@@ -6,9 +6,11 @@ import { supabase } from '../../lib/supabase';
 import { Loader, Plus, Save, Copy, Trash2, Video, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { WeekNavigator } from '../coach/components/WeekNavigator';
+import { getWeekNumber, getDateRangeFromWeek } from '../../utils/dateUtils';
 
 interface WorkoutBuilderProps {
     athleteId: string;
+    blockId?: string | null;
 }
 
 // ==========================================
@@ -31,18 +33,18 @@ interface FullBlockData extends TrainingBlock {
 // ==========================================
 // COMPONENT: WORKOUT BUILDER
 // ==========================================
-export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
+export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     const [loading, setLoading] = useState(true);
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
     const [exerciseLibrary, setExerciseLibrary] = useState<ExerciseLibrary[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-    const [currentWeek, setCurrentWeek] = useState(1);
+    const [currentWeek, setCurrentWeek] = useState(() => getWeekNumber());
 
     // Initial Load
     useEffect(() => {
         loadData();
-    }, [athleteId]);
+    }, [athleteId, blockId]);
 
     // Warn before leaving if unsaved changes
     useEffect(() => {
@@ -59,9 +61,16 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     const loadData = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Active Block
-            const blocks = await trainingService.getBlocksByAthlete(athleteId);
-            const activeBlock = blocks.find(b => b.is_active);
+            let activeBlock: TrainingBlock | undefined;
+
+            if (blockId) {
+                // Fetch specific block
+                activeBlock = await trainingService.getBlock(blockId);
+            } else {
+                // 1. Fetch Active Block
+                const blocks = await trainingService.getBlocksByAthlete(athleteId);
+                activeBlock = blocks.find(b => b.is_active);
+            }
 
             if (!activeBlock) {
                 setBlockData(null);
@@ -403,25 +412,79 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
     // RENDER
     // ==========================================
 
-    // Get unique weeks from sessions (treat null/undefined as week 1)
+    // Get unique weeks from sessions (treat null/undefined as current week)
     const weeks = useMemo(() => {
-        if (!blockData) return [1];
-        const weekSet = new Set(blockData.sessions.map(s => s.week_number ?? 1));
-        return weekSet.size > 0 ? Array.from(weekSet).sort((a, b) => a - b) : [1];
+        if (!blockData) return [currentWeek];
+        const weekSet = new Set(blockData.sessions.map(s => s.week_number ?? currentWeek));
+
+        // Ensure current week is in the list if no sessions exist yet? 
+        // Or if block exists but empty, start with current week?
+        if (weekSet.size === 0) return [currentWeek];
+
+        return Array.from(weekSet).sort((a, b) => a - b);
     }, [blockData]);
 
-    // Filter sessions for current week (treat null/undefined as week 1)
+    // Filter sessions for current week
     const currentWeekSessions = useMemo(() => {
         if (!blockData) return [];
-        return blockData.sessions.filter(s => (s.week_number ?? 1) === currentWeek);
+        return blockData.sessions.filter(s => s.week_number === currentWeek);
     }, [blockData, currentWeek]);
 
-    // Add new week
+    // Add new week - Logic: Find max week in existing sessions and add 1
+    // If no sessions, start with current week.
     const handleAddWeek = async () => {
-        const newWeekNumber = Math.max(...weeks) + 1;
-        setCurrentWeek(newWeekNumber);
-        // Create first day in new week
+        const existingWeeks = blockData?.sessions.map(s => s.week_number || currentWeek) || [];
+        const maxWeek = existingWeeks.length > 0 ? Math.max(...existingWeeks) : (getWeekNumber() - 1);
+        const newWeekNumber = maxWeek + 1;
+
         if (!blockData) return;
+
+        // Check for extension and overlap
+        if (blockData.end_week && newWeekNumber > blockData.end_week) {
+            // Check overlap with OTHER active blocks
+            const allBlocks = await trainingService.getBlocksByAthlete(athleteId);
+            const otherActiveBlocks = allBlocks.filter(b => b.is_active && b.id !== blockData.id);
+
+            const hasOverlap = otherActiveBlocks.some(otherBlock => {
+                if (!otherBlock.start_week || !otherBlock.end_week) return false;
+                // Check if newWeekNumber falls within [otherBlock.start, otherBlock.end]
+                return newWeekNumber >= otherBlock.start_week && newWeekNumber <= otherBlock.end_week;
+            });
+
+            if (hasOverlap) {
+                toast.error(`No puedes extender el bloque: La semana ${newWeekNumber} coincide con otro bloque activo.`);
+                return;
+            }
+
+            // Valid extension: Update Block
+            try {
+                // Approximate new end date (current end date + 7 days or just estimate from week)
+                // Better: Get date from week number
+                const currentYear = new Date().getFullYear();
+                const { end: endDateObj } = getDateRangeFromWeek(newWeekNumber, currentYear);
+
+                await trainingService.updateBlock(blockData.id, {
+                    end_week: newWeekNumber,
+                    end_date: endDateObj.toISOString()
+                });
+
+                // Update local state for block metadata
+                setBlockData(prev => prev ? ({
+                    ...prev,
+                    end_week: newWeekNumber,
+                    end_date: endDateObj.toISOString()
+                }) : null);
+
+                toast.info(`Bloque extendido hasta la semana ${newWeekNumber}`);
+            } catch (err) {
+                console.error("Error extending block", err);
+                toast.error("Error al extender la duración del bloque");
+                return;
+            }
+        }
+
+        setCurrentWeek(newWeekNumber);
+
         try {
             const newSession = await trainingService.createSession({
                 block_id: blockData.id,
@@ -470,9 +533,34 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
         }
     };
 
+    const updateSessionExercise = async (sessionExerciseId: string, updates: Partial<SessionExercise>) => {
+        setHasUnsavedChanges(true); // Flag change
+
+        // Optimistic update
+        setBlockData(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                sessions: prev.sessions.map(s => ({
+                    ...s,
+                    exercises: s.exercises.map(ex => {
+                        if (ex.id !== sessionExerciseId) return ex;
+                        return { ...ex, ...updates };
+                    })
+                }))
+            };
+        });
+
+        // Debounced or direct server update? 
+        // For text inputs, we usually debounce, but here let's just trigger it.
+        // Ideally use a specialized hook, but simple fire-and-forget for now (or wait on blur).
+        // relying on onBlur for the actual server call from the component is safer for inputs.
+    };
+
     if (loading) return <div className="flex h-full items-center justify-center"><Loader className="animate-spin text-gray-400" /></div>;
 
     if (!blockData) {
+        // ... (existing empty block logic)
         return (
             <div className="flex flex-col h-full items-center justify-center space-y-4">
                 <div className="text-gray-400 text-lg">No hay un bloque activo para este atleta.</div>
@@ -517,6 +605,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
                     onSelectWeek={setCurrentWeek}
                     onAddWeek={handleAddWeek}
                     onCopyWeek={handleCopyWeek}
+                    blockEndWeek={blockData.end_week} // New Prop
                 />
             </div>
 
@@ -531,6 +620,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
                             onUpdateName={updateSessionName}
                             onUpdateDate={updateSessionDate}
                             onAddExercise={addExercise}
+                            onUpdateExercise={updateSessionExercise}
                             onRemoveExercise={removeExercise}
                             onAddSet={addSet}
                             onUpdateSet={updateSetField}
@@ -538,6 +628,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
                             onDuplicateSet={duplicateSet}
                         />
                     ))}
+        // ...
 
                     {/* ADD DAY COLUMN */}
                     <div className="w-16 flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl hover:border-white/30 hover:bg-white/5 transition-colors cursor-pointer" onClick={addSession}>
@@ -552,7 +643,7 @@ export function WorkoutBuilder({ athleteId }: WorkoutBuilderProps) {
 // ==========================================
 // SUB-COMPONENT: DAY COLUMN
 // ==========================================
-function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAddExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet }: any) {
+function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet }: any) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     return (
@@ -562,9 +653,9 @@ function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAdd
                 <div className="flex justify-between items-center group">
                     <input
                         className="bg-transparent font-black text-lg text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight"
-                        value={session.name || `Día ${session.day_number}`}
+                        value={session.name ?? ''}
                         onChange={(e) => onUpdateName(session.id, e.target.value)}
-                        placeholder="NOMBRE DÍA"
+                        placeholder={`DÍA ${session.day_number}`}
                     />
                     <div className="text-xs text-gray-600 font-mono">#{session.day_number}</div>
                 </div>
@@ -585,6 +676,7 @@ function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAdd
                     <ExerciseCard
                         key={ex.id}
                         sessionExercise={ex}
+                        onUpdateExercise={onUpdateExercise}
                         onAddSet={onAddSet}
                         onUpdateSet={onUpdateSet}
                         onRemoveSet={onRemoveSet}
@@ -621,17 +713,40 @@ function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAdd
 // ==========================================
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
-function ExerciseCard({ sessionExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: any) {
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: any) {
     const exerciseName = sessionExercise.exercise?.name || "Ejercicio desconocido";
+    const isVariant = exerciseName.toLowerCase().includes('variante') || exerciseName === 'Personalizado';
     const hasVideo = !!sessionExercise.exercise?.video_url;
+
+    const handleVariantChange = (val: string) => {
+        onUpdateExercise(sessionExercise.id, { variant_name: val } as any);
+    };
+
+    const handleVariantBlur = async () => {
+        await trainingService.updateSessionExercise(sessionExercise.id, { variant_name: sessionExercise.variant_name });
+    };
 
     return (
         <div className="bg-[#1c1c1c] rounded-xl border border-white/5 p-3 group relative hover:border-white/10 transition-colors">
             {/* Exercise Header */}
             <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-gray-200 text-sm leading-tight">{exerciseName}</h4>
-                    {hasVideo && <Video size={14} className="text-blue-500" />}
+                <div className="flex flex-col gap-1 w-full mr-2">
+                    <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-200 text-sm leading-tight">{exerciseName}</h4>
+                        {hasVideo && <Video size={14} className="text-blue-500" />}
+                    </div>
+
+                    {/* Variant Input */}
+                    {isVariant && (
+                        <input
+                            type="text"
+                            value={sessionExercise.variant_name || ''}
+                            onChange={(e) => handleVariantChange(e.target.value)}
+                            onBlur={handleVariantBlur}
+                            placeholder="Especificar variante..."
+                            className="w-full bg-black/20 text-xs text-anvil-red border-b border-white/10 focus:border-anvil-red outline-none py-1 placeholder-gray-700"
+                        />
+                    )}
                 </div>
                 <button onClick={onRemoveExercise} className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 size={14} />
@@ -700,7 +815,9 @@ function ExerciseCard({ sessionExercise, onAddSet, onUpdateSet, onRemoveSet, onR
     );
 }
 
-//Helper Input
+// ==========================================
+// SUB-COMPONENT: COMPACT INPUT
+// ==========================================
 function CompactInput({ value, onChange, placeholder, type = "text" }: any) {
     return (
         <input

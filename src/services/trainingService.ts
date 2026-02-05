@@ -40,6 +40,17 @@ export const trainingService = {
         return data;
     },
 
+    async getBlock(blockId: string): Promise<TrainingBlock> {
+        const { data, error } = await supabase
+            .from('training_blocks')
+            .select('*')
+            .eq('id', blockId)
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
     /**
      * Toggle block active status
      */
@@ -47,6 +58,31 @@ export const trainingService = {
         const { error } = await supabase
             .from('training_blocks')
             .update({ is_active: isActive })
+            .eq('id', blockId);
+
+        if (error) throw error;
+    },
+
+    async updateBlock(blockId: string, updates: Partial<TrainingBlock>): Promise<TrainingBlock> {
+        const { data, error } = await supabase
+            .from('training_blocks')
+            .update(updates)
+            .eq('id', blockId)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating training block:', error);
+            throw error;
+        }
+
+        return data;
+    },
+
+    async deleteBlock(blockId: string): Promise<void> {
+        const { error } = await supabase
+            .from('training_blocks')
+            .delete()
             .eq('id', blockId);
 
         if (error) throw error;
@@ -116,6 +152,21 @@ export const trainingService = {
                 exercise_id: exerciseId,
                 order_index: orderIndex
             })
+            .select(`
+                *,
+                exercise:exercise_library(*)
+            `)
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    async updateSessionExercise(id: string, updates: Partial<SessionExercise>): Promise<SessionExercise> {
+        const { data, error } = await supabase
+            .from('session_exercises')
+            .update(updates)
+            .eq('id', id)
             .select(`
                 *,
                 exercise:exercise_library(*)

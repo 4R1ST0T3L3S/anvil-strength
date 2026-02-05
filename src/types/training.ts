@@ -22,6 +22,8 @@ export interface TrainingBlock {
     name: string;
     start_date?: string | null;
     end_date?: string | null;
+    start_week?: number | null;
+    end_week?: number | null;
     is_active: boolean;
     created_at: string;
 }

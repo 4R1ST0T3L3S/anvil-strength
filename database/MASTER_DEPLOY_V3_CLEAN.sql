@@ -1,5 +1,5 @@
 -- =============================================
--- ANVIL STRENGTH - CORE TRAINING SCHEMA v2
+-- ANVIL STRENGTH - CORE TRAINING SCHEMA v3 (CLEAN DEPLOY)
 -- =============================================
 
 -- 1. CLEANUP (Drop tables in correct order to avoid FK errors)
@@ -17,7 +17,8 @@ CREATE TABLE exercise_library (
     name TEXT NOT NULL,
     video_url TEXT,
     muscle_group TEXT, -- 'Chest', 'Legs', 'Back', etc.
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT unique_exercise_name UNIQUE (name) -- PREVENTS DUPLICATES
 );
 
 -- Training Blocks (Mesociclos)
@@ -27,6 +28,8 @@ CREATE TABLE training_blocks (
     athlete_id UUID NOT NULL REFERENCES auth.users(id),
     name TEXT NOT NULL, -- "Mesociclo Febrero 2026"
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    start_week INTEGER, -- Track start week for validation
+    end_week INTEGER,   -- Track end week for validation
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -38,6 +41,7 @@ CREATE TABLE training_sessions (
     week_number INTEGER NOT NULL DEFAULT 1, -- Added for week navigation
     day_number INTEGER NOT NULL, -- 1, 2, 3... used for ordering within week/block
     name TEXT, -- "Día de Sentadilla", optional
+    date DATE, -- Specific date assignment
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -46,6 +50,7 @@ CREATE TABLE session_exercises (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL REFERENCES training_sessions(id) ON DELETE CASCADE,
     exercise_id UUID NOT NULL REFERENCES exercise_library(id),
+    variant_name TEXT, -- User custom variant name (e.g. "Pause Squat")
     notes TEXT, -- Coach notes specific to this day
     order_index INTEGER NOT NULL DEFAULT 0, -- To order exercises within a session
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -82,9 +87,6 @@ ALTER TABLE training_blocks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE training_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE session_exercises ENABLE ROW LEVEL SECURITY;
 ALTER TABLE training_sets ENABLE ROW LEVEL SECURITY;
-
--- Policy Helper: Is User a Coach? (Simplified check based on metadata or role table)
--- For this prompt we assume standard Auth.uid() checks.
 
 -- EXERCISE LIBRARY (Public Read, Coach Write)
 CREATE POLICY "Public Read Exercises" ON exercise_library FOR SELECT USING (true);
@@ -128,7 +130,7 @@ CREATE POLICY "Athlete Read Exercises" ON session_exercises FOR SELECT USING (
     )
 );
 
--- TRAINING SETS (The Tricky Part)
+-- TRAINING SETS
 -- Coach: Full Control
 CREATE POLICY "Coach Manage Sets" ON training_sets FOR ALL USING (
     EXISTS (
@@ -150,12 +152,6 @@ CREATE POLICY "Athlete Read Sets" ON training_sets FOR SELECT USING (
 );
 
 -- Athlete: Update (ONLY Actuals)
--- Note: Supabase/Postgres RLS for UPDATE checks the "USING" clause for row visibility
--- and "WITH CHECK" for the new data. 
--- To strictly limit COLUMNS, we usually use separate API endpoints or Database Triggers, 
--- but RLS is row-based.
--- For this prototype, we allow UPDATE if they own the block. The Frontend will enforce column limits, 
--- and a Trigger could strictly enforce it if needed (Skipping trigger for simplicity unless requested).
 CREATE POLICY "Athlete Update Sets" ON training_sets FOR UPDATE USING (
     EXISTS (
         SELECT 1 FROM session_exercises se
@@ -174,6 +170,7 @@ CREATE POLICY "Athlete Update Sets" ON training_sets FOR UPDATE USING (
 
 
 -- 4. SEED DATA (Basic Exercises)
+-- Using ON CONFLICT DO NOTHING to prevent duplicates if script runs multiple times
 INSERT INTO exercise_library (name, muscle_group) VALUES 
 ('Squat (Barra Baja)', 'Pierna'),
 ('Bench Press (Competición)', 'Pecho'),
@@ -184,4 +181,6 @@ INSERT INTO exercise_library (name, muscle_group) VALUES
 ('Remo con Barra', 'Espalda'),
 ('Sentadilla Búlgara', 'Pierna'),
 ('Face Pull', 'Hombro'),
-('Plancha Abdominal', 'Core');
+('Plancha Abdominal', 'Core'),
+('Personalizado', 'General') -- Added 'Personalizado' as a generic base for custom variants
+ON CONFLICT (name) DO NOTHING;
