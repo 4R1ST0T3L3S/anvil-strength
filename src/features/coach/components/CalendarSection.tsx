@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle, Users, Trophy } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../../../services/aepService';
-import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
+import { competitionsService } from '../../../services/competitionsService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
 import { useUser } from '../../../hooks/useUser';
 
@@ -127,8 +127,8 @@ export function CalendarSection() {
                     <button
                         onClick={() => setViewMode('AEP')}
                         className={`flex-1 md:flex-none px-4 py-2 rounded-md text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'AEP'
-                                ? 'bg-white text-black shadow-lg'
-                                : 'text-gray-500 hover:text-white hover:bg-white/5'
+                            ? 'bg-white text-black shadow-lg'
+                            : 'text-gray-500 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         Oficial AEP
@@ -136,8 +136,8 @@ export function CalendarSection() {
                     <button
                         onClick={() => setViewMode('TEAM')}
                         className={`flex-1 md:flex-none px-4 py-2 rounded-md text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${viewMode === 'TEAM'
-                                ? 'bg-anvil-red text-white shadow-lg'
-                                : 'text-gray-500 hover:text-white hover:bg-white/5'
+                            ? 'bg-anvil-red text-white shadow-lg'
+                            : 'text-gray-500 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <Users size={14} />
