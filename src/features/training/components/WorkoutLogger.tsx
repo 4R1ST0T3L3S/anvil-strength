@@ -142,7 +142,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 
     if (!block) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-black text-gray-400 p-8 text-center space-y-6">
+            <div className="h-full flex flex-col items-center justify-center bg-transparent text-gray-400 p-8 text-center space-y-6">
                 <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
                     <AlertCircle size={64} />
                 </div>
@@ -166,10 +166,10 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
     // FIX: Handle case where activeSession is undefined (e.g. empty week)
     if (!activeSession && sessions.length === 0) {
         return (
-            <div className="flex flex-col h-full bg-black text-white max-w-md mx-auto shadow-2xl overflow-hidden relative">
+            <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
                 <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                     <div className="p-4">
-                        <h1 className="text-sm text-blue-400 font-bold tracking-wider uppercase mb-1">{block.name}</h1>
+                        <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                         <h2 className="text-2xl font-black italic">Semana de Descarga</h2>
                     </div>
                 </div>
@@ -189,17 +189,17 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-black text-white max-w-md mx-auto shadow-2xl overflow-hidden relative">
+        <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
 
             {/* 1. Header & Navigation */}
             <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                 <div className="p-4">
-                    <h1 className="text-sm text-blue-400 font-bold tracking-wider uppercase mb-1">{block.name}</h1>
+                    <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                     <h2 className="text-2xl font-black italic">{activeSession?.name || `Día ${activeSession?.day_number}`}</h2>
                 </div>
 
                 {/* Day Tabs Scroll */}
-                <div className="flex overflow-x-auto px-4 gap-3 pb-2 scrollbar-hide">
+                <div className="flex overflow-x-auto px-4 gap-3 py-2 scrollbar-hide">
                     {sessions.map(s => (
                         <button
                             key={s.id}
@@ -249,7 +249,7 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
                     {sessionExercise.notes && (
                         <button
                             onClick={() => setNoteOpen(!noteOpen)}
-                            className="text-xs text-blue-400 mt-1 flex items-center gap-1 hover:underline"
+                            className="text-xs text-anvil-red mt-1 flex items-center gap-1 hover:underline"
                         >
                             Ver notas {noteOpen ? '▲' : '▼'}
                         </button>
@@ -274,11 +274,11 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
             )}
 
             {/* Sets Header */}
-            <div className="grid grid-cols-[1rem_1fr_1fr_2.5rem] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
-                <span>#</span>
-                <span>Objetivo</span>
-                <span>Real (Kg / Reps / RPE)</span>
-                <span>Log</span>
+            <div className="grid grid-cols-[1.3fr_4rem_0.7fr] md:grid-cols-[1fr_1fr_2.5rem] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-xs uppercase font-bold text-gray-500 text-center">
+                <span className="text-left pl-2">Series</span>
+                <span className="md:hidden text-center">RPE</span>
+                <span className="hidden md:block">Real (Kg / Reps / RPE)</span>
+                <span className="text-right pr-4">Check</span>
             </div>
 
             {/* Sets List */}
@@ -360,52 +360,66 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
 
     return (
         <div className={cn(
-            "grid grid-cols-[1rem_1fr_1fr_2.5rem] gap-3 px-4 py-3 items-center transition-colors",
+            "grid grid-cols-[1.3fr_4rem_0.7fr] md:grid-cols-[1fr_1fr_2.5rem] gap-3 px-4 py-3 items-center transition-colors",
             isCompleted ? "bg-green-500/10" : "hover:bg-white/5"
         )}>
-            {/* Index */}
-            <div className="text-center font-mono text-xs text-gray-500 font-bold">{index + 1}</div>
-
-            {/* Target (Left) */}
-            <div className="flex flex-col text-xs text-gray-400 space-y-0.5">
-                <div className="flex items-center gap-1">
-                    <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}kg` : '-'}</span>
-                    <span>x</span>
-                    <span className="font-bold text-gray-300">{set.target_reps || '-'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px]">
-                    {set.target_rpe && <span className="text-blue-400">@{set.target_rpe}</span>}
-                    {set.rest_seconds && <span>{set.rest_seconds}s rest</span>}
+            {/* Series Info (Merged Index + Target) - ALIGN LEFT */}
+            <div className="flex items-center justify-start gap-4">
+                <div className="text-center font-mono text-sm text-gray-500 font-bold w-6">{index + 1}</div>
+                <div className="flex flex-col text-sm text-gray-400 space-y-0.5">
+                    <div className="flex items-center gap-1">
+                        <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}kg` : '-'}</span>
+                        <span>x</span>
+                        <span className="font-bold text-gray-300">{set.target_reps || '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                        {!!set.target_rpe && <span className="text-anvil-red">@{set.target_rpe}</span>}
+                        {!!set.rest_seconds && <span>{set.rest_seconds}s rest</span>}
+                    </div>
                 </div>
             </div>
 
-            {/* Actual (Right - Inputs) */}
-            <div className="flex items-center gap-2">
+            {/* Mobile RPE Input (New Column) */}
+            <div className="flex md:hidden justify-center">
+                <input
+                    type="number"
+                    value={actualRpe}
+                    onChange={(e) => handleChange('actual_rpe', e.target.value)}
+                    placeholder="-"
+                    className={cn(
+                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-sm font-bold focus:border-anvil-red outline-none placeholder-gray-700",
+                        actualRpe ? "text-anvil-red border-anvil-red/50" : "text-white border-white/10"
+                    )}
+                />
+            </div>
+
+            {/* Actual (Right - Inputs - Desktop Only) */}
+            <div className="hidden md:flex items-center gap-2">
                 <input
                     type="number"
                     value={actualLoad}
                     onChange={(e) => handleChange('actual_load', e.target.value)}
                     placeholder="kg"
-                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-blue-500 outline-none placeholder-gray-700"
+                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-anvil-red outline-none placeholder-gray-700"
                 />
                 <input
                     type="number" // Reps can is string range? NO, Actual reps is usually number. Schema says integer.
                     value={actualReps}
                     onChange={(e) => handleChange('actual_reps', e.target.value)}
                     placeholder="reps"
-                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-blue-500 outline-none placeholder-gray-700"
+                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-anvil-red outline-none placeholder-gray-700"
                 />
                 <input
                     type="number"
                     value={actualRpe}
                     onChange={(e) => handleChange('actual_rpe', e.target.value)}
                     placeholder="RPE"
-                    className="w-10 bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-xs font-medium text-blue-300 focus:border-blue-500 outline-none placeholder-gray-700 hidden sm:block"
+                    className="w-10 bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-xs font-medium text-anvil-red focus:border-anvil-red outline-none placeholder-gray-700 hidden sm:block"
                 />
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-2 items-center">
+            {/* Actions - ALIGN RIGHT */}
+            <div className="flex flex-col gap-2 items-end pr-4">
                 <button
                     onClick={toggleComplete}
                     className={cn(
@@ -421,14 +435,14 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
                 <button
                     onClick={handleVideoUpload}
                     className={cn(
-                        "transition-colors",
-                        hasVideo ? "text-blue-400 animate-pulse" : "text-gray-600 hover:text-gray-400"
+                        "transition-colors hidden md:block",
+                        hasVideo ? "text-anvil-red animate-pulse" : "text-gray-600 hover:text-gray-400"
                     )}
                 >
                     {hasVideo ? <Play size={16} fill="currentColor" /> : <Camera size={16} />}
                 </button>
             </div>
-            {saving && <div className="absolute right-2 top-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div></div>}
+            {saving && <div className="absolute right-2 top-2"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}
         </div>
     );
 }
