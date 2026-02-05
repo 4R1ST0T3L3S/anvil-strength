@@ -1,4 +1,4 @@
-import { Plus, Copy, ChevronDown } from 'lucide-react';
+import { Plus, Copy, ChevronDown, Trash2 } from 'lucide-react';
 import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
 
 interface WeekNavigatorProps {
@@ -7,6 +7,7 @@ interface WeekNavigatorProps {
     onSelectWeek: (week: number) => void;
     onAddWeek: () => void;
     onCopyWeek: (fromWeek: number) => void;
+    onDeleteWeek: (week: number) => void;
     blockEndWeek?: number | null;
 }
 
@@ -16,6 +17,7 @@ export function WeekNavigator({
     onSelectWeek,
     onAddWeek,
     onCopyWeek,
+    onDeleteWeek,
     blockEndWeek
 }: WeekNavigatorProps) {
     return (
@@ -52,6 +54,15 @@ export function WeekNavigator({
 
             {/* Actions */}
             <div className="flex items-center gap-1 border-l border-white/10 pl-2 ml-2">
+                {/* Delete Current Week */}
+                <button
+                    onClick={() => onDeleteWeek(currentWeek)}
+                    className="p-2 rounded-lg bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-500 transition-all"
+                    title="Eliminar semana actual"
+                >
+                    <Trash2 size={16} />
+                </button>
+
                 {/* Copy Current Week */}
                 <button
                     onClick={() => onCopyWeek(currentWeek)}
@@ -64,8 +75,9 @@ export function WeekNavigator({
                 {/* Add New Week */}
                 <button
                     onClick={onAddWeek}
+                    disabled={blockEndWeek ? Math.max(...weeks) >= blockEndWeek : false}
                     className="p-2 rounded-lg bg-white/5 hover:bg-anvil-red/20 text-gray-400 hover:text-anvil-red transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-gray-400"
-                    title={blockEndWeek && Math.max(...weeks, currentWeek) >= blockEndWeek ? "Añadir semana (Extender bloque)" : "Añadir semana"}
+                    title={blockEndWeek && Math.max(...weeks) >= blockEndWeek ? "Límite de semanas alcanzado" : "Añadir semana"}
                 >
                     <Plus size={16} />
                 </button>

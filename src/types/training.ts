@@ -48,6 +48,9 @@ export interface SessionExercise {
     exercise_id: string;
     order_index: number;
     notes?: string | null;
+    rpe?: string | null; // Moved from Set level
+    velocity_avg?: string | null;
+    rest_seconds?: number | null; // Moved from Set level
     created_at: string;
 
     // Joint Relation

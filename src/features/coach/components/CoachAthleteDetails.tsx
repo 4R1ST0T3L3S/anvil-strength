@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { ArrowLeft, TrendingUp, User, FileText } from 'lucide-react';
-import { WorkoutBuilder } from '../../planning/WorkoutBuilder';
+import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import { TrainingBlock } from '../../../types/training';
 

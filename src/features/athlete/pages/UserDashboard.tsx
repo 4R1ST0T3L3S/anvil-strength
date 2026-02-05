@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
-import { WorkoutLogger } from '../../training/WorkoutLogger';
+import { WorkoutLogger } from '../../training/components/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AthleteHome } from '../components/AthleteHome';

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
-import { trainingService } from '../../services/trainingService';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../types/training';
+import { supabase } from '../../../lib/supabase';
+import { trainingService } from '../../../services/trainingService';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../../types/training';
 import { Loader, Video, Check, Camera, Play, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
@@ -85,31 +85,47 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                         }))
                 }));
 
-                setSessions(formatted);
-                if (formatted.length > 0) {
-                    // 4. Calculate today's day number relative to block start
-                    const startDate = new Date(active.start_date);
-                    const today = new Date();
-                    
-                    // Reset hours to compare dates only
-                    startDate.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
-                    
-                    const diffTime = today.getTime() - startDate.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                // NEW: Calculate Current Week
+                const startDate = new Date(active.start_date ?? new Date());
+                const today = new Date();
+                startDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
 
+                const diffTime = today.getTime() - startDate.getTime();
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                // Calculate week number (1-based). If negative (before start), default to 1.
+                let currentWeek = Math.floor(diffDays / 7) + 1;
+                if (currentWeek < 1) currentWeek = 1;
+
+                // NEW: Filter sessions for Current Week ONLY
+                const currentWeekSessions = formatted.filter(s => s.week_number === currentWeek);
+
+                // If no sessions for this week (e.g. week 5 but plan only has 4 weeks), maybe show last week?
+                // For now, let's strictly show current week. If empty, it will show "Descanso" or empty list.
+
+                setSessions(currentWeekSessions);
+
+                if (currentWeekSessions.length > 0) {
                     // 5. Try to find session for this specific date or day_number
                     const todayStr = today.toISOString().split('T')[0];
-                    const sessionForToday = formatted.find(s => 
-                        (s as any).date === todayStr || s.day_number === diffDays
+
+                    // day_number is usually absolute (1..30). logic checks if session matches today's absolute day index
+                    // But now we operate on filtered list.
+
+                    const sessionForToday = currentWeekSessions.find(s =>
+                        (s as any).date === todayStr || s.day_number === (diffDays + 1)
                     );
 
                     if (sessionForToday) {
                         setActiveSessionId(sessionForToday.id);
                     } else {
-                        // Default to first available if no exact match for today
-                        setActiveSessionId(formatted[0].id);
+                        // Default to first available in this week
+                        setActiveSessionId(currentWeekSessions[0].id);
                     }
+                } else {
+                    // Fallback logic if week is empty? 
+                    // Ideally we might want to warn or show "Week Completed" but for now let's just leave empty array
+                    setActiveSessionId(null);
                 }
             } catch (err) {
                 console.error(err);

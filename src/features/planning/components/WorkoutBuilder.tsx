@@ -1,12 +1,13 @@
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../types/training';
-import { trainingService } from '../../services/trainingService';
-import { supabase } from '../../lib/supabase';
-import { Loader, Plus, Save, Copy, Trash2, Video, Search } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
+import { trainingService } from '../../../services/trainingService';
+import { supabase } from '../../../lib/supabase';
+import { Loader, Plus, Save, Copy, Trash2, Video } from 'lucide-react';
 import { toast } from 'sonner';
-import { WeekNavigator } from '../coach/components/WeekNavigator';
-import { getWeekNumber, getDateRangeFromWeek } from '../../utils/dateUtils';
+import { WeekNavigator } from '../../coach/components/WeekNavigator';
+import { getWeekNumber } from '../../../utils/dateUtils';
+import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 
 interface WorkoutBuilderProps {
     athleteId: string;
@@ -36,10 +37,17 @@ interface FullBlockData extends TrainingBlock {
 export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     const [loading, setLoading] = useState(true);
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
-    const [exerciseLibrary, setExerciseLibrary] = useState<ExerciseLibrary[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [currentWeek, setCurrentWeek] = useState(() => getWeekNumber());
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+    }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
     // Initial Load
     useEffect(() => {
@@ -106,10 +114,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             }));
 
             setBlockData({ ...activeBlock, sessions: formattedSessions });
-
-            // 3. Fetch Exercise Library (for search)
-            const library = await trainingService.getExerciseLibrary();
-            setExerciseLibrary(library);
 
         } catch (err) {
             console.error(err);
@@ -237,22 +241,35 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     };
 
     // --- Exercises ---
-    const addExercise = async (sessionId: string, exerciseLibraryItem: ExerciseLibrary) => {
-        // Server create structure immediately to get ID
+    const addExercise = async (sessionId: string, exerciseName: string) => {
         const session = blockData?.sessions.find(s => s.id === sessionId);
         if (!session) return;
 
-        const nextOrder = session.exercises.length;
-
         try {
-            const newSessionExercise = await trainingService.addSessionExercise(sessionId, exerciseLibraryItem.id, nextOrder);
+            // 1. Find or Create Exercise ID
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("No user found");
 
-            // Add one empty set by default?
-            // Let's not add a set yet, purely the exercise card.
+            const exerciseId = await trainingService.findOrCreateExercise(exerciseName, user.id);
+
+            // 2. Add to Session
+            const nextOrder = session.exercises.length;
+            const newSessionExercise = await trainingService.addSessionExercise(sessionId, exerciseId, nextOrder);
+
+            // Fetch the exercise details again (or construct them) for local state
+            // Optimization: we could return full object from service, but fine to construct minimal for now
+            // We need the name to display immediately.
+            const exerciseDisplay: ExerciseLibrary = {
+                id: exerciseId,
+                name: exerciseName,
+                is_public: false, // assumption
+                created_at: new Date().toISOString()
+            };
 
             const extendedEx: ExtendedSessionExercise = {
                 ...newSessionExercise,
-                sets: [] // Empty sets initially
+                exercise: exerciseDisplay, // Attach details
+                sets: []
             };
 
             setBlockData(prev => {
@@ -268,8 +285,10 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     })
                 };
             });
-        } catch (err) {
-            toast.error("Error añadiendo ejercicio");
+        } catch (err: any) {
+            console.error("FAILED ADDING EXERCISE", err);
+            console.error("Details:", err.message, err.details, err.hint);
+            toast.error(`Error añadiendo ejercicio: ${err.message || 'Desconocido'}`);
         }
     };
 
@@ -408,135 +427,93 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     };
 
 
+    const removeSession = async (sessionId: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Eliminar día',
+            description: '¿Estás seguro de que quieres eliminar este día de entrenamiento? Esta acción no se puede deshacer.',
+            onConfirm: async () => {
+                try {
+                    await trainingService.deleteSession(sessionId);
+                    setBlockData(prev => {
+                        if (!prev) return null;
+                        return {
+                            ...prev,
+                            sessions: prev.sessions.filter(s => s.id !== sessionId)
+                        };
+                    });
+                    toast.success("Día eliminado");
+                } catch (err) {
+                    toast.error("Error eliminando día");
+                }
+            }
+        });
+    };
+
     // ==========================================
     // RENDER
     // ==========================================
 
-    // Get unique weeks from sessions (treat null/undefined as current week)
     const weeks = useMemo(() => {
-        if (!blockData) return [currentWeek];
-        const weekSet = new Set(blockData.sessions.map(s => s.week_number ?? currentWeek));
+        if (!blockData) return [];
 
-        // Ensure current week is in the list if no sessions exist yet? 
-        // Or if block exists but empty, start with current week?
-        if (weekSet.size === 0) return [currentWeek];
+        // Use start_week and end_week from block if available
+        const startWeek = blockData.start_week ?? 1;
+        const endWeek = blockData.end_week ?? 4;
 
-        return Array.from(weekSet).sort((a, b) => a - b);
+        // Generate array from startWeek to endWeek
+        const weekCount = Math.max(1, endWeek - startWeek + 1);
+        return Array.from({ length: weekCount }, (_, i) => startWeek + i);
     }, [blockData]);
 
-    // Filter sessions for current week
     const currentWeekSessions = useMemo(() => {
         if (!blockData) return [];
         return blockData.sessions.filter(s => s.week_number === currentWeek);
     }, [blockData, currentWeek]);
 
-    // Add new week - Logic: Find max week in existing sessions and add 1
-    // If no sessions, start with current week.
+    // Handlers for WeekNavigator needing data
     const handleAddWeek = async () => {
-        const existingWeeks = blockData?.sessions.map(s => s.week_number || currentWeek) || [];
-        const maxWeek = existingWeeks.length > 0 ? Math.max(...existingWeeks) : (getWeekNumber() - 1);
-        const newWeekNumber = maxWeek + 1;
-
         if (!blockData) return;
-
-        // Check for extension and overlap
-        if (blockData.end_week && newWeekNumber > blockData.end_week) {
-            // Check overlap with OTHER active blocks
-            const allBlocks = await trainingService.getBlocksByAthlete(athleteId);
-            const otherActiveBlocks = allBlocks.filter(b => b.is_active && b.id !== blockData.id);
-
-            const hasOverlap = otherActiveBlocks.some(otherBlock => {
-                if (!otherBlock.start_week || !otherBlock.end_week) return false;
-                // Check if newWeekNumber falls within [otherBlock.start, otherBlock.end]
-                return newWeekNumber >= otherBlock.start_week && newWeekNumber <= otherBlock.end_week;
-            });
-
-            if (hasOverlap) {
-                toast.error(`No puedes extender el bloque: La semana ${newWeekNumber} coincide con otro bloque activo.`);
-                return;
-            }
-
-            // Valid extension: Update Block
-            try {
-                // Approximate new end date (current end date + 7 days or just estimate from week)
-                // Better: Get date from week number
-                const currentYear = new Date().getFullYear();
-                const { end: endDateObj } = getDateRangeFromWeek(newWeekNumber, currentYear);
-
-                await trainingService.updateBlock(blockData.id, {
-                    end_week: newWeekNumber,
-                    end_date: endDateObj.toISOString()
-                });
-
-                // Update local state for block metadata
-                setBlockData(prev => prev ? ({
-                    ...prev,
-                    end_week: newWeekNumber,
-                    end_date: endDateObj.toISOString()
-                }) : null);
-
-                toast.info(`Bloque extendido hasta la semana ${newWeekNumber}`);
-            } catch (err) {
-                console.error("Error extending block", err);
-                toast.error("Error al extender la duración del bloque");
-                return;
-            }
-        }
-
-        setCurrentWeek(newWeekNumber);
-
-        try {
-            const newSession = await trainingService.createSession({
-                block_id: blockData.id,
-                week_number: newWeekNumber,
-                day_number: 1,
-                name: 'Día 1'
-            });
-            setBlockData(prev => {
-                if (!prev) return null;
-                return { ...prev, sessions: [...prev.sessions, { ...newSession, exercises: [] }] };
-            });
-            toast.success(`Semana ${newWeekNumber} creada`);
-        } catch (err) {
-            toast.error("Error creando semana");
-        }
+        // Implementation for adding week (extend block end date logic or mostly update week_count)
+        // For now just update local state if needed or toast
+        toast.info("Funcionalidad de añadir semana en desarrollo");
     };
 
-    // Copy week to new week
-    const handleCopyWeek = async (fromWeek: number) => {
-        if (!blockData) return;
-        const sourceSessions = blockData.sessions.filter(s => s.week_number === fromWeek);
-        if (sourceSessions.length === 0) {
-            toast.error("No hay días para copiar");
-            return;
-        }
-        const newWeekNumber = Math.max(...weeks) + 1;
-        setCurrentWeek(newWeekNumber);
-
-        try {
-            for (const session of sourceSessions) {
-                const newSession = await trainingService.createSession({
-                    block_id: blockData.id,
-                    week_number: newWeekNumber,
-                    day_number: session.day_number,
-                    name: session.name || `Día ${session.day_number}`
-                });
-                // Copy exercises and sets would require more work - for now just copy structure
-                setBlockData(prev => {
-                    if (!prev) return null;
-                    return { ...prev, sessions: [...prev.sessions, { ...newSession, exercises: [] }] };
-                });
-            }
-            toast.success(`Semana ${fromWeek} copiada a Semana ${newWeekNumber}`);
-        } catch (err) {
-            toast.error("Error copiando semana");
-        }
+    const handleCopyWeek = (week: number) => {
+        toast.info("Funcionalidad de copiar semana en desarrollo");
     };
 
-    const updateSessionExercise = async (sessionExerciseId: string, updates: Partial<SessionExercise>) => {
-        setHasUnsavedChanges(true); // Flag change
+    const handleDeleteWeek = async (week: number) => {
+        if (!blockData) return;
 
-        // Optimistic update
+        setConfirmModal({
+            isOpen: true,
+            title: `Eliminar Semana ${week}`,
+            description: `¿Estás seguro de que quieres eliminar la Semana ${week}? Se borrarán todas las sesiones asociadas y esta acción no se puede deshacer.`,
+            onConfirm: async () => {
+                try {
+                    setLoading(true);
+                    await trainingService.deleteWeek(blockData.id, week);
+                    await loadData();
+
+                    if (currentWeek === week) {
+                        setCurrentWeek(Math.max(1, week - 1));
+                    } else if (currentWeek > week) {
+                        setCurrentWeek(currentWeek - 1);
+                    }
+
+                    toast.success(`Semana ${week} eliminada`);
+                } catch (err) {
+                    console.error(err);
+                    toast.error("Error eliminando semana");
+                } finally {
+                    setLoading(false);
+                }
+            }
+        });
+    };
+
+    const updateSessionExercise = (sessionExerciseId: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => {
         setBlockData(prev => {
             if (!prev) return null;
             return {
@@ -545,34 +522,36 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     ...s,
                     exercises: s.exercises.map(ex => {
                         if (ex.id !== sessionExerciseId) return ex;
-                        return { ...ex, ...updates };
+                        // Handles nested exercise updates if any, or flat fields
+                        // Also handles merging 'exercise' object updates for local display
+                        const newEx = { ...ex, ...updates };
+                        if (updates.exercise) {
+                            newEx.exercise = { ...ex.exercise, ...updates.exercise } as any;
+                        }
+                        return newEx;
                     })
                 }))
             };
         });
-
-        // Debounced or direct server update? 
-        // For text inputs, we usually debounce, but here let's just trigger it.
-        // Ideally use a specialized hook, but simple fire-and-forget for now (or wait on blur).
-        // relying on onBlur for the actual server call from the component is safer for inputs.
     };
 
-    if (loading) return <div className="flex h-full items-center justify-center"><Loader className="animate-spin text-gray-400" /></div>;
-
-    if (!blockData) {
-        // ... (existing empty block logic)
+    if (loading) {
         return (
-            <div className="flex flex-col h-full items-center justify-center space-y-4">
-                <div className="text-gray-400 text-lg">No hay un bloque activo para este atleta.</div>
-                <button
-                    onClick={handleCreateBlock}
-                    className="bg-anvil-red hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-anvil-red/20"
-                >
-                    <Plus size={20} /> Crear Nuevo Bloque
-                </button>
+            <div className="flex h-full items-center justify-center">
+                <Loader className="animate-spin text-anvil-red" />
             </div>
         );
     }
+
+    if (!blockData) {
+        return (
+            <div className="flex h-full items-center justify-center text-gray-500">
+                No hay un bloque activo o no se pudo cargar.
+            </div>
+        );
+    }
+
+    console.log("WorkoutBuilder Render", { blockData, currentWeek });
 
     return (
         <div className="h-full flex flex-col relative">
@@ -605,6 +584,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     onSelectWeek={setCurrentWeek}
                     onAddWeek={handleAddWeek}
                     onCopyWeek={handleCopyWeek}
+                    onDeleteWeek={handleDeleteWeek}
                     blockEndWeek={blockData.end_week} // New Prop
                 />
             </div>
@@ -616,7 +596,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         <DayColumn
                             key={session.id}
                             session={session}
-                            exerciseLibrary={exerciseLibrary}
                             onUpdateName={updateSessionName}
                             onUpdateDate={updateSessionDate}
                             onAddExercise={addExercise}
@@ -626,9 +605,10 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                             onUpdateSet={updateSetField}
                             onRemoveSet={removeSet}
                             onDuplicateSet={duplicateSet}
+                            onRemoveSession={removeSession}
                         />
                     ))}
-        // ...
+
 
                     {/* ADD DAY COLUMN */}
                     <div className="w-16 flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl hover:border-white/30 hover:bg-white/5 transition-colors cursor-pointer" onClick={addSession}>
@@ -636,6 +616,18 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                variant="danger"
+            />
         </div>
     );
 }
@@ -643,30 +635,33 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
 // ==========================================
 // SUB-COMPONENT: DAY COLUMN
 // ==========================================
-function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet }: any) {
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet, onRemoveSession }: any) {
     const [isAddingEx, setIsAddingEx] = useState(false);
+
+    if (!session) {
+        console.error("DayColumn received null session!");
+        return null;
+    }
 
     return (
         <div className="w-[400px] flex flex-col bg-[#252525] border border-white/5 rounded-2xl overflow-hidden shadow-xl h-full">
             {/* Header */}
-            <div className="p-4 bg-[#2a2a2a] border-b border-white/5 space-y-2">
+            <div className="p-4 bg-[#2a2a2a] border-b border-white/5 space-y-2 group/header relative">
+                <button
+                    onClick={() => onRemoveSession(session.id)}
+                    className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-600 hover:text-red-500 opacity-0 group-hover/header:opacity-100 transition-opacity z-10"
+                    title="Eliminar día"
+                >
+                    <Trash2 size={16} />
+                </button>
+
                 <div className="flex justify-between items-center group">
                     <input
                         className="bg-transparent font-black text-lg text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight"
-                        value={session.name ?? ''}
+                        value={session?.name ?? ''}
                         onChange={(e) => onUpdateName(session.id, e.target.value)}
-                        placeholder={`DÍA ${session.day_number}`}
+                        placeholder={`DÍA ${session?.day_number}`}
                     />
-                    <div className="text-xs text-gray-600 font-mono">#{session.day_number}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <input
-                        type="date"
-                        value={session.date || ''}
-                        onChange={(e) => onUpdateDate(session.id, e.target.value)}
-                        className="bg-black/20 text-[10px] font-bold text-gray-400 border border-white/5 rounded px-2 py-1 outline-none focus:border-anvil-red transition-colors"
-                    />
-                    {!session.date && <span className="text-[10px] text-gray-600 italic">Sin fecha asignada</span>}
                 </div>
             </div>
 
@@ -685,7 +680,7 @@ function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAdd
                     />
                 ))}
 
-                {/* Add Exercise Button */}
+                {/* Add Exercise - Simple Input */}
                 <div className="relative">
                     {!isAddingEx ? (
                         <button
@@ -695,14 +690,34 @@ function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAdd
                             <Plus size={16} /> AÑADIR EJERCICIO
                         </button>
                     ) : (
-                        <ExerciseSelector
-                            library={exerciseLibrary}
-                            onSelect={(exLib: ExerciseLibrary) => {
-                                onAddExercise(session.id, exLib);
-                                setIsAddingEx(false);
-                            }}
-                            onCancel={() => setIsAddingEx(false)}
-                        />
+                        <div className="bg-[#1c1c1c] border border-white/20 rounded-xl p-3 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Escribe el nombre del ejercicio..."
+                                className="w-full bg-black/20 text-white font-bold p-2 rounded-lg border border-white/10 focus:border-anvil-red outline-none placeholder-gray-600 mb-2"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        const val = e.currentTarget.value.trim();
+                                        if (val) {
+                                            onAddExercise(session.id, val); // Pass string name instead of object check logic
+                                            setIsAddingEx(false);
+                                        }
+                                    } else if (e.key === 'Escape') {
+                                        setIsAddingEx(false);
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    if (!e.currentTarget.value.trim()) setIsAddingEx(false);
+                                    // Optional: save on blur if not empty? 
+                                    // Better to require explicit enter for "creating" to avoid accidental creates.
+                                }}
+                            />
+                            <div className="flex justify-end gap-2 text-[10px] text-gray-500">
+                                <span>[Enter] Guardar</span>
+                                <span>[Esc] Cancelar</span>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
@@ -714,7 +729,11 @@ function DayColumn({ session, exerciseLibrary, onUpdateName, onUpdateDate, onAdd
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
 function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: any) {
-    const exerciseName = sessionExercise.exercise?.name || "Ejercicio desconocido";
+    if (!sessionExercise) {
+        console.error("ExerciseCard received null sessionExercise");
+        return null;
+    }
+    const exerciseName = sessionExercise?.exercise?.name || "Ejercicio desconocido";
     const isVariant = exerciseName.toLowerCase().includes('variante') || exerciseName === 'Personalizado';
     const hasVideo = !!sessionExercise.exercise?.video_url;
 
@@ -723,7 +742,23 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
     };
 
     const handleVariantBlur = async () => {
-        await trainingService.updateSessionExercise(sessionExercise.id, { variant_name: sessionExercise.variant_name });
+        await trainingService.updateSessionExercise(sessionExercise.id, { variant_name: sessionExercise.variant_name } as any);
+    };
+
+    const handleNotesChange = (val: string) => {
+        onUpdateExercise(sessionExercise.id, { notes: val } as any);
+    };
+
+    const handleNotesBlur = async () => {
+        await trainingService.updateSessionExercise(sessionExercise.id, { notes: sessionExercise.notes } as any);
+    };
+
+    const handleGlobalUpdate = (field: string, val: any) => {
+        onUpdateExercise(sessionExercise.id, { [field]: val } as any);
+    };
+
+    const handleGlobalBlur = async (field: string, val: any) => {
+        await trainingService.updateSessionExercise(sessionExercise.id, { [field]: val } as any);
     };
 
     return (
@@ -736,17 +771,74 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                         {hasVideo && <Video size={14} className="text-blue-500" />}
                     </div>
 
-                    {/* Variant Input */}
-                    {isVariant && (
-                        <input
-                            type="text"
-                            value={sessionExercise.variant_name || ''}
-                            onChange={(e) => handleVariantChange(e.target.value)}
-                            onBlur={handleVariantBlur}
-                            placeholder="Especificar variante..."
-                            className="w-full bg-black/20 text-xs text-anvil-red border-b border-white/10 focus:border-anvil-red outline-none py-1 placeholder-gray-700"
+                    {/* Global Fields (RPE, Rest, Notes) & Variant */}
+                    <div className="mt-2 space-y-2">
+
+                        {/* Variant & RPE/Rest Row */}
+                        <div className="flex gap-2 justify-center">
+                            {/* Variant (if applicable) */}
+                            {isVariant && (
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        value={sessionExercise.variant_name || ''}
+                                        onChange={(e) => handleVariantChange(e.target.value)}
+                                        onBlur={handleVariantBlur}
+                                        placeholder="Variante..."
+                                        className="w-full bg-black/20 text-xs text-anvil-red border border-white/5 focus:border-anvil-red rounded-lg py-1 px-2 outline-none placeholder-gray-600"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Vel AVG */}
+                            <div className="w-20">
+                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">Vel AVG</div>
+                                <input
+                                    type="text"
+                                    value={sessionExercise.velocity_avg || ''}
+                                    onChange={(e) => handleGlobalUpdate('velocity_avg', e.target.value)}
+                                    onBlur={(e) => handleGlobalBlur('velocity_avg', e.target.value)}
+                                    placeholder="0.35"
+                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
+                                />
+                            </div>
+
+                            {/* RPE */}
+                            <div className="w-20">
+                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">RPE</div>
+                                <input
+                                    type="text"
+                                    value={sessionExercise.rpe || ''}
+                                    onChange={(e) => handleGlobalUpdate('rpe', e.target.value)}
+                                    onBlur={(e) => handleGlobalBlur('rpe', e.target.value)}
+                                    placeholder="@8"
+                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
+                                />
+                            </div>
+
+                            {/* Rest */}
+                            <div className="w-20">
+                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">Rest (s)</div>
+                                <input
+                                    type="number"
+                                    value={sessionExercise.rest_seconds || 0}
+                                    onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
+                                    onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
+                                    placeholder="90"
+                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Notes Input */}
+                        <textarea
+                            value={sessionExercise.notes || ''}
+                            onChange={(e) => handleNotesChange(e.target.value)}
+                            onBlur={handleNotesBlur}
+                            placeholder="Notas para el atleta..."
+                            className="w-full bg-black/20 text-xs text-gray-400 border border-white/5 rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 outline-none resize-none h-[50px]"
                         />
-                    )}
+                    </div>
                 </div>
                 <button onClick={onRemoveExercise} className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 size={14} />
@@ -756,50 +848,33 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
             {/* Sets Table */}
             <div className="space-y-1">
                 {/* Header Row */}
-                <div className="grid grid-cols-[20px_1fr_1fr_1fr_1fr_24px] gap-2 text-[10px] text-gray-500 font-bold uppercase text-center mb-1">
+                <div className="grid grid-cols-[20px_1fr_1fr_1fr_24px] gap-2 text-[10px] text-gray-500 font-bold uppercase text-center mb-1">
                     <span>#</span>
-                    <span>Kg</span>
                     <span>Reps</span>
-                    <span>RPE</span>
-                    <span>Rest</span>
+                    <span>Kg</span>
                     <span></span>
                 </div>
 
                 {sessionExercise.sets.map((set: TrainingSet, idx: number) => (
-                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_1fr_1fr_24px] gap-2 items-center group/row">
+                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_1fr_24px] gap-2 items-center group/row">
                         <span className="text-xs text-gray-600 text-center font-mono">{idx + 1}</span>
 
-                        <CompactInput
-                            value={set.target_load}
-                            onChange={(v: number | null) => onUpdateSet(set.id, 'target_load', v)}
-                            placeholder="-"
-                            type="number"
-                        />
                         <CompactInput
                             value={set.target_reps}
                             onChange={(v: string) => onUpdateSet(set.id, 'target_reps', v)}
                             placeholder="-"
                         />
                         <CompactInput
-                            value={set.target_rpe}
-                            onChange={(v: string) => onUpdateSet(set.id, 'target_rpe', v)}
+                            value={set.target_load}
+                            onChange={(v: number | null) => onUpdateSet(set.id, 'target_load', v)}
                             placeholder="-"
-                        />
-                        <CompactInput
-                            value={set.rest_seconds}
-                            onChange={(v: number | null) => onUpdateSet(set.id, 'rest_seconds', v)}
-                            placeholder="s"
                             type="number"
                         />
 
                         {/* Actions */}
                         <div className="flex justify-end opacity-0 group-hover/row:opacity-100 transition-opacity">
-                            <button onClick={() => onDuplicateSet(set)} className="text-gray-500 hover:text-blue-400 mr-1">
-                                <Copy size={12} />
-                            </button>
-                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-500 hover:text-red-400">
-                                <Trash2 size={12} />
-                            </button>
+                            <button onClick={() => onDuplicateSet(set)} className="text-gray-600 hover:text-blue-500 mr-1"><Copy size={12} /></button>
+                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-600 hover:text-red-500"><Trash2 size={12} /></button>
                         </div>
                     </div>
                 ))}
@@ -838,50 +913,4 @@ function CompactInput({ value, onChange, placeholder, type = "text" }: any) {
     )
 }
 
-// ==========================================
-// SUB-COMPONENT: EXERCISE SELECTOR
-// ==========================================
-function ExerciseSelector({ library, onSelect, onCancel }: any) {
-    const [search, setSearch] = useState("");
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (inputRef.current) inputRef.current.focus();
-    }, []);
-
-    const filtered = useMemo(() => {
-        if (!search) return library.slice(0, 5);
-        return library.filter((e: any) => e.name.toLowerCase().includes(search.toLowerCase())).slice(0, 10);
-    }, [library, search]);
-
-    return (
-        <div className="bg-[#2a2a2a] rounded-xl p-2 animate-in fade-in zoom-in duration-200">
-            <div className="relative mb-2">
-                <Search size={14} className="absolute left-2 top-2 text-gray-500" />
-                <input
-                    ref={inputRef}
-                    className="w-full bg-[#1c1c1c] rounded-lg pl-8 pr-2 py-1.5 text-sm text-white outline-none border border-white/10 focus:border-blue-500"
-                    placeholder="Buscar ejercicio..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
-            </div>
-            <div className="space-y-1">
-                {filtered.map((ex: any) => (
-                    <button
-                        key={ex.id}
-                        onClick={() => onSelect(ex)}
-                        className="w-full text-left px-2 py-1.5 text-xs text-gray-300 hover:bg-white/10 rounded flex justify-between items-center group"
-                    >
-                        <span>{ex.name}</span>
-                        {ex.muscle_group && <span className="text-[10px] text-gray-600 px-1.5 py-0.5 bg-black/20 rounded">{ex.muscle_group}</span>}
-                    </button>
-                ))}
-                {filtered.length === 0 && (
-                    <div className="text-center text-xs text-gray-600 py-2">No encontrado</div>
-                )}
-            </div>
-            <button onClick={onCancel} className="w-full mt-2 text-center text-[10px] text-red-400 hover:text-red-300 py-1">Cancelar</button>
-        </div>
-    )
-}
+// End of file

@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
@@ -6,19 +6,12 @@ import { useUser } from './hooks/useUser';
 import { AuthModal } from './features/auth/components/AuthModal';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
-import { DashboardSkeleton } from './components/skeletons/DashboardSkeleton';
+
 import { ReloadPrompt } from './components/pwa/ReloadPrompt';
 import { Toaster } from 'sonner';
 
-// Lazy Load Pages
-// Landing Page is kept eager for LCP/First Fold performance, or can be lazy if it's very heavy. 
-// Given the user request, I will lazy load Dashboard which is behind auth.
-import { LandingPage } from './features/landing/pages/LandingPage';
+import { AppRoutes } from './routes/AppRoutes';
 
-const UserDashboard = lazy(() => import('./features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
-const CoachDashboard = lazy(() => import('./features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
-
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 
 
@@ -26,7 +19,7 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: user, isLoading, isError, error } = useUser();
   const queryClient = useQueryClient();
-  const location = useLocation();
+
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
@@ -71,48 +64,11 @@ function App() {
       <ReloadPrompt />
       <Toaster position="top-center" theme="dark" richColors />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={
-            user ? (
-              user.role === 'coach' ? (
-                <Navigate to="/coach-dashboard" replace />
-              ) : (
-                <Navigate to="/dashboard" replace />
-              )
-            ) : (
-              <LandingPage
-                onLoginClick={handleLoginClick}
-                user={user}
-              />
-            )
-          } />
-          <Route path="/dashboard" element={
-            !user ? (
-              <Navigate to="/" replace />
-            ) : user.role === 'coach' ? (
-              <Navigate to="/coach-dashboard" replace />
-            ) : (
-              <Suspense fallback={<DashboardSkeleton />}>
-                <UserDashboard
-                  user={user}
-                  onLogout={handleLogout}
-                />
-              </Suspense>
-            )
-          } />
-          <Route path="/coach-dashboard" element={
-            !user ? (
-              <Navigate to="/" replace />
-            ) : user.role !== 'coach' ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Suspense fallback={<DashboardSkeleton />}>
-                <CoachDashboard user={user} onLogout={handleLogout} />
-              </Suspense>
-            )
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppRoutes
+          user={user}
+          onLoginClick={handleLoginClick}
+          onLogout={handleLogout}
+        />
       </ErrorBoundary>
 
       <AuthModal
