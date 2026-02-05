@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../../../lib/supabase';
 import { X, Trophy, Medal, User as UserIcon } from 'lucide-react';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
@@ -84,19 +85,22 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[#121212] w-full h-full md:w-auto md:h-auto md:max-w-2xl md:max-h-[90vh] md:rounded-3xl border-0 md:border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+    return createPortal(
+        <div
+            className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
+            onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:w-full md:max-w-2xl md:h-[85vh] md:rounded-3xl shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Header */}
-                <div className="p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
+                <div className="p-4 md:p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
-                            <Trophy size={24} />
+                        <div className="p-2 md:p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
+                            <Trophy size={20} className="md:w-6 md:h-6" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Anvil Ranking Club</h2>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Top GL Points Leaderboard</p>
+                            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">Anvil Ranking</h2>
+                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Top GL Points</p>
                         </div>
                     </div>
                     <button
@@ -107,8 +111,8 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                     </button>
                 </div>
 
-                {/* List */}
-                <div className="overflow-y-auto flex-1 p-4 md:p-6 space-y-3">
+                {/* List - Scrollable Area */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 custom-scrollbar">
                     {loading ? (
                         <div className="space-y-3">
                             {[1, 2, 3].map(i => (
@@ -119,7 +123,7 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                         athletes.map((athlete, index) => (
                             <div
                                 key={athlete.id}
-                                className="group relative bg-[#1c1c1c] border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 hover:border-anvil-red/30 transition-all"
+                                className="group relative bg-[#252525] border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 hover:border-anvil-red/30 transition-all"
                             >
                                 {/* Top Row: Rank, Avatar, Name */}
                                 <div className="flex items-center gap-3 w-full md:w-auto md:flex-1">
@@ -195,6 +199,7 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
