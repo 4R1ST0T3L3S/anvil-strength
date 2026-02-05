@@ -92,7 +92,8 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                 {
                     name: competition.campeonato,
                     date: finalDate,
-                    location: competition.sede
+                    location: competition.sede,
+                    level: competition.level // Pass level
                 },
                 Array.from(selectedAthletes),
                 session.user.id

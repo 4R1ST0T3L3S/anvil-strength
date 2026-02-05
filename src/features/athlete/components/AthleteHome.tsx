@@ -57,18 +57,28 @@ const getDaysRemaining = (dateStr: string) => {
     return diffDays;
 };
 
-const formatCompetitionName = (name: string, location?: string) => {
-    // Clean up name: remove redundant "Campeonato" if present to keep it short?
-    // User wants "AEP2 Chiva".
+const formatCompetitionName = (name: string, location?: string, level?: string) => {
+    // Priority: "LEVEL PLACE" (e.g. "AEP2 CHIVA")
 
-    let cleanName = name.replace(/Campeonato\s+/i, '').trim();
-
-    // If location is present, try to get just the city
+    // 1. Extract Place (City)
     let city = '';
     if (location) {
-        city = location.split(',')[0].trim();
+        city = location.split(',')[0].trim().toUpperCase();
+        // Remove known prefixes if redundant? Usually just "Valencia", "Madrid", etc.
     }
 
+    // 2. Use Level if available
+    let lvl = level ? level.toUpperCase() : '';
+
+    // If we have both Level and City, return formatted string
+    if (lvl && city) {
+        // Clean level nuances if needed (e.g., "AEP 2" -> "AEP2")
+        lvl = lvl.replace(/\s+/g, '');
+        return `${lvl} ${city}`;
+    }
+
+    // Fallback: If no level, try to guess from name or regular format
+    let cleanName = name.replace(/Campeonato\s+/i, '').trim();
     if (city) {
         return `${cleanName} ${city}`;
     }
@@ -315,7 +325,7 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                     <div className="bg-anvil-red rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform">
                         <div className="relative z-10">
                             <h3 className="text-lg font-black uppercase italic leading-tight mb-0.5">
-                                {formatCompetitionName(nextCompetition.name, nextCompetition.location)}
+                                {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
                             </h3>
                             <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                 <Calendar size={12} />
@@ -538,7 +548,7 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                             <div className="bg-anvil-red rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative">
                                 <div className="relative z-10">
                                     <h3 className="text-xl font-black uppercase italic mb-1">
-                                        {formatCompetitionName(nextCompetition.name, nextCompetition.location)}
+                                        {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
                                     </h3>
                                     <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                         <Calendar size={14} />

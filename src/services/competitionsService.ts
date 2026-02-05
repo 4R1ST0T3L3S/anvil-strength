@@ -7,12 +7,13 @@ export interface CompetitionAssignment {
     name: string;
     date: string;
     location?: string;
+    level?: string; // Add level optional for backward compatibility
     created_at: string;
 }
 
 export const competitionsService = {
     async assignCompetition(
-        competition: { name: string; date: string; location?: string },
+        competition: { name: string; date: string; location?: string; level?: string },
         athleteIds: string[],
         coachId: string
     ) {
@@ -21,7 +22,8 @@ export const competitionsService = {
             coach_id: coachId,
             name: competition.name,
             date: competition.date, // Ensure format YYYY-MM-DD
-            location: competition.location
+            location: competition.location,
+            level: competition.level
         }));
 
         const { data, error } = await supabase
