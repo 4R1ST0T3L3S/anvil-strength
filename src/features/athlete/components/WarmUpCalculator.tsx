@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, TrendingUp, Dumbbell, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -65,7 +66,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -196,7 +197,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                     </div>
                 </div>
             </div>
-        </div>
-
+        </div>,
+        document.body
     );
 }

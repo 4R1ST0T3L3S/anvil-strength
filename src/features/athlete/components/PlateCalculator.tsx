@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Calculator, Weight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -63,7 +64,8 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
 
     if (!isOpen) return null;
 
-    return (
+    // PORTAL FIX: Render directly to body to avoid z-index/transform stacking issues with Header
+    return createPortal(
         <div
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -274,6 +276,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                     </span>
                 </div>
             </div>
-        </div >
+        </div >,
+        document.body
     );
 }

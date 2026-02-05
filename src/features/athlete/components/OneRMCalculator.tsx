@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronDown, Activity, Zap, Calculator, TrendingUp, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -151,7 +152,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[9999] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -306,6 +307,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
