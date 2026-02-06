@@ -58,7 +58,7 @@ export function formatDateRange(start: Date, end: Date): string {
  * Returns the number of days remaining until a given date.
  */
 export function getDaysRemaining(targetDate: string | Date): number {
-    const target = new Date(targetDate);
+    const target = new Date(typeof targetDate === 'string' ? targetDate + 'T00:00:00' : targetDate);
     const today = new Date();
 
     // Reset time components to compare dates only

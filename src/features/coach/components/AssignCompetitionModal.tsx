@@ -92,6 +92,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                 {
                     name: competition.campeonato,
                     date: finalDate,
+                    end_date: competition.endDateIso, // Pass end_date
                     location: competition.sede,
                     level: competition.level // Pass level
                 },

@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 export interface Competition {
     fecha: string;
     dateIso?: string;
+    endDateIso?: string; // Add End Date ISO
     campeonato: string;
     sede: string;
     inscripciones: string;
@@ -49,7 +50,8 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
 // Helper to parse Spanish date formats and select the "Best" date based on rules:
 // - If AEP 3: Prefer SUNDAY
 // - If AEP 1 / AEP 2 / National: Prefer SATURDAY
-const parseBestDate = (dateStr: string, level: Competition['level']): { str: string, iso?: string } => {
+// - If range detected: Return range start and end
+const parseBestDate = (dateStr: string, level: Competition['level']): { str: string, iso?: string, endIso?: string } => {
     try {
         const year = 2026;
         const months: { [key: string]: number } = {
@@ -86,25 +88,24 @@ const parseBestDate = (dateStr: string, level: Competition['level']): { str: str
         // Multiple days: Apply Logic
         // Determine target Day of Week (0=Sun, 6=Sat)
         // Rule: AEP 3 -> Sunday (0). Others -> Saturday (6).
-        const targetDay = (level === 'AEP 3') ? 0 : 6;
 
-        let bestDay = dayCandidates[dayCandidates.length - 1]; // Default to last day (Sunday usually)
+        // NEWLOGIC: If range (e.g. 2 days), we want the START and END.
+        // Assuming consecutive days from the candidates.
+        dayCandidates.sort((a, b) => a - b);
+        const firstDay = dayCandidates[0];
+        const lastDay = dayCandidates[dayCandidates.length - 1];
 
-        for (const day of dayCandidates) {
-            const dateObj = new Date(year, monthIndex, day);
-            if (dateObj.getDay() === targetDay) {
-                bestDay = day;
-                break; // Found our target!
-            }
-        }
+        // Construct ISOs
+        const startIso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(firstDay).padStart(2, '0')}`;
+        const endIso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-        // Fix: Manually construct YYYY-MM-DD to avoid timezone shifts (toISOString() uses UTC)
-        // const iso = finalDate.toISOString().split('T')[0]; // <-- This causes the bug in GMT+X
-        const iso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(bestDay).padStart(2, '0')}`;
+        // formatted string "25-26 Ene"
+        const formattedStr = `${firstDay}-${lastDay} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`;
 
         return {
-            str: `${bestDay} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,
-            iso: iso
+            str: formattedStr,
+            iso: startIso,
+            endIso: endIso
         };
 
     } catch {
@@ -212,6 +213,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                             return {
                                 fecha: parsed.str, // Use the formatted "best" date string
                                 dateIso: parsed.iso,
+                                endDateIso: parsed.endIso,
                                 campeonato: name,
                                 sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
                                 inscripciones: linkIdx !== -1 ? row[linkIdx] : '',

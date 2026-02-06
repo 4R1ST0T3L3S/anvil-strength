@@ -6,6 +6,7 @@ export interface CompetitionAssignment {
     coach_id: string;
     name: string;
     date: string;
+    end_date?: string; // Add end_date
     location?: string;
     level?: string; // Add level optional for backward compatibility
     created_at: string;
@@ -13,7 +14,7 @@ export interface CompetitionAssignment {
 
 export const competitionsService = {
     async assignCompetition(
-        competition: { name: string; date: string; location?: string; level?: string },
+        competition: { name: string; date: string; end_date?: string; location?: string; level?: string },
         athleteIds: string[],
         coachId: string
     ) {
@@ -22,6 +23,7 @@ export const competitionsService = {
             coach_id: coachId,
             name: competition.name,
             date: competition.date, // Ensure format YYYY-MM-DD
+            end_date: competition.end_date, // Pass end_date (can be null)
             location: competition.location,
             level: competition.level
         }));
@@ -38,17 +40,26 @@ export const competitionsService = {
     async getNextCompetition(athleteId: string) {
         const today = new Date().toISOString().split('T')[0];
 
+        // Fetch all competitions to ensure robust filtering (consistent with CompetitionsView)
         const { data, error } = await supabase
             .from('competitions')
             .select('*')
             .eq('athlete_id', athleteId)
-            .gte('date', today)
-            .order('date', { ascending: true })
-            .limit(1)
-            .single();
+            .order('date', { ascending: true });
 
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
-        return data as CompetitionAssignment | null;
+        if (error) throw error;
+
+        const comps = data as CompetitionAssignment[];
+
+        // Find the first one that is "active" or "future"
+        // Active: end_date >= today
+        // Future: date >= today
+        const next = comps.filter(c => {
+            if (c.end_date) return c.end_date >= today;
+            return c.date >= today;
+        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+        return next || null;
     },
 
     async getAthleteCompetitions(athleteId: string) {

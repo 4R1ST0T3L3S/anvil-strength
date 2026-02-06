@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { UserProfile } from '../../../hooks/useUser';
 import { competitionsService } from '../../../services/competitionsService';
 import { Trophy, Calendar, MapPin, Medal, Clock, AlertCircle } from 'lucide-react';
-import { getDaysRemaining } from '../../../utils/dateUtils';
+import { getDaysRemaining, formatDateRange } from '../../../utils/dateUtils';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
 
 interface AthleteCompetitionsViewProps {
@@ -47,8 +47,18 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
 
     // Split competitions into Upcoming and Past
     const today = new Date().toISOString().split('T')[0];
-    const upcoming = competitions.filter(c => c.date >= today).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const past = competitions.filter(c => c.date < today).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Upcoming: Date >= Today OR EndDate >= Today
+    const upcoming = competitions.filter(c => {
+        if (c.end_date) return c.end_date >= today;
+        return c.date >= today;
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Past: Date < Today AND (No EndDate OR EndDate < Today)
+    const past = competitions.filter(c => {
+        if (c.end_date) return c.end_date < today;
+        return c.date < today;
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-12">
@@ -92,12 +102,16 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                                     <div className="flex items-center gap-2">
                                                         <Calendar size={18} className="text-anvil-red" />
                                                         <span className="font-semibold">
-                                                            {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
-                                                                weekday: 'long',
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric'
-                                                            })}
+                                                            {comp.end_date ? (
+                                                                formatDateRange(new Date(comp.date + 'T00:00:00'), new Date(comp.end_date + 'T00:00:00'))
+                                                            ) : (
+                                                                new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                                                                    weekday: 'long',
+                                                                    year: 'numeric',
+                                                                    month: 'long',
+                                                                    day: 'numeric'
+                                                                })
+                                                            )}
                                                         </span>
                                                     </div>
                                                     {comp.location && (
@@ -117,7 +131,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                                 </div>
                                                 <div className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
                                                     <Clock size={12} />
-                                                    Días Restantes
+                                                    {daysRemaining <= 0 && comp.end_date && getDaysRemaining(comp.end_date) >= 0 ? "En curso" : "Días Restantes"}
                                                 </div>
                                             </div>
                                         </div>

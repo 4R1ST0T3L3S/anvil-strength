@@ -23,6 +23,7 @@ import { PlateCalculator } from './PlateCalculator';
 import { AnvilRanking } from './AnvilRanking';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
+import { getDaysRemaining } from '../../../utils/dateUtils';
 
 interface AthleteHomeProps {
     user: UserProfile;
@@ -40,44 +41,41 @@ const getGreeting = () => {
     return 'Buenas noches'; // 9 PM - 6 AM
 };
 
-const getDaysRemaining = (dateStr: string) => {
-    const today = new Date();
-    const target = new Date(dateStr + 'T00:00:00');
 
-    // Normalize to start of day to avoid timezone/hour issues affecting day count
-    today.setHours(0, 0, 0, 0);
-    target.setHours(0, 0, 0, 0);
-
-    const diffTime = today.getTime() - target.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // If it's today, diffDays is 0. If tomorrow, diffDays is -1.
-    // User requested format "-117 dias", so we return the signed difference.
-    return diffDays;
-};
 
 const formatCompetitionName = (name: string, location?: string, level?: string) => {
-    // Priority: "LEVEL PLACE" (e.g. "AEP2 CHIVA")
+    // 1. Clean inputs
+    const cleanName = name.replace(/Campeonato\s+/i, '').trim(); // Remove redundant "Campeonato" if desired, or keep it? 
+    // User said: "AEP1 Campeonato de España Junior". So they might want "Campeonato" kept if it's in the name. 
+    // But usually names are long. Let's return the full name if it's AEP1.
 
-    // 1. Extract Place (City)
+    let lvl = level ? level.toUpperCase() : '';
+
+    // 2. Specific Logic for AEP 1 (National)
+    if (lvl.includes('AEP 1') || lvl.includes('AEP1')) {
+        return `AEP 1 ${name}`; // Return explicitly "AEP 1" + Full Name
+    }
+
+    // 3. Logic for others (AEP 2, AEP 3, etc.) - Keep "LEVEL PLACE" or similar if preferred, 
+    // or switch to standard "LEVEL NAME". 
+    // The previous logic "LEVEL CITY" is good for minor comps where "Open de Valencia" (Name) + "Valencia" (City) is redundant 
+    // OR where "Regional" (Name) needs context.
+
+    // Let's preserve the existing "LEVEL CITY" logic for non-AEP1 to be safe, 
+    // as the user only complained about AEP1.
+
+    // Extract Place (City)
     let city = '';
     if (location) {
         city = location.split(',')[0].trim().toUpperCase();
-        // Remove known prefixes if redundant? Usually just "Valencia", "Madrid", etc.
     }
 
-    // 2. Use Level if available
-    let lvl = level ? level.toUpperCase() : '';
-
-    // If we have both Level and City, return formatted string
     if (lvl && city) {
-        // Clean level nuances if needed (e.g., "AEP 2" -> "AEP2")
-        lvl = lvl.replace(/\s+/g, '');
+        lvl = lvl.replace(/\s+/g, ''); // "AEP 2" -> "AEP2"
         return `${lvl} ${city}`;
     }
 
-    // Fallback: If no level, try to guess from name or regular format
-    let cleanName = name.replace(/Campeonato\s+/i, '').trim();
+    // Fallback
     if (city) {
         return `${cleanName} ${city}`;
     }
@@ -159,15 +157,15 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                             );
                         }
 
-                        // 2.2 Fetch next competition
-                        const nextComp = await competitionsService.getNextCompetition(user.id);
-                        setNextCompetition(nextComp);
-
                         if (sessionForToday) {
                             setTodaySession(sessionForToday as ExtendedSession);
                         }
                     }
                 }
+
+                // 2.3 Fetch next competition (INDEPENDENT of active block)
+                const nextComp = await competitionsService.getNextCompetition(user.id);
+                setNextCompetition(nextComp);
             } catch (error) {
                 console.error('Error fetching home data:', error);
             } finally {
@@ -339,7 +337,12 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                             </h3>
                             <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                 <Calendar size={12} />
-                                <span>{getDaysRemaining(nextCompetition.date)} días</span>
+                                <span>
+                                    {getDaysRemaining(nextCompetition.date) <= 0 && nextCompetition.end_date && getDaysRemaining(nextCompetition.end_date) >= 0
+                                        ? "En curso"
+                                        : `${getDaysRemaining(nextCompetition.date)} días`
+                                    }
+                                </span>
                             </div>
                         </div>
                         <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -562,7 +565,12 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                                     </h3>
                                     <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                         <Calendar size={14} />
-                                        <span>{getDaysRemaining(nextCompetition.date)} días</span>
+                                        <span>
+                                            {getDaysRemaining(nextCompetition.date) <= 0 && nextCompetition.end_date && getDaysRemaining(nextCompetition.end_date) >= 0
+                                                ? "En curso"
+                                                : `${getDaysRemaining(nextCompetition.date)} días`
+                                            }
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
