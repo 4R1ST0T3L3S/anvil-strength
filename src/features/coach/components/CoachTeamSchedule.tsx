@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
-import { Calendar } from 'lucide-react';
+import { Calendar, Trash2 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
+import { competitionsService } from '../../../services/competitionsService';
 
 interface CompetitionEntry {
     id: string;
@@ -88,6 +89,26 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
         fetchSchedule();
     }, []);
 
+    const handleUnassign = async (entryId: string, athleteName: string, competitionName: string) => {
+        if (!confirm(`¿Estás seguro de que quieres desasignar a ${athleteName} de "${competitionName}"?`)) return;
+
+        try {
+            await competitionsService.removeAssignment(entryId);
+
+            // Optimistic update
+            setCompetitions(prevGroups => {
+                return prevGroups.map(group => ({
+                    ...group,
+                    entries: group.entries.filter(e => e.id !== entryId)
+                })).filter(group => group.entries.length > 0);
+            });
+
+        } catch (err) {
+            console.error('Error removing assignment:', err);
+            alert('Error al eliminar la asignación.');
+        }
+    };
+
     if (loading) return <div className="p-8 text-center">Cargando agenda...</div>;
 
     return (
@@ -136,6 +157,13 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                                                 <p className="font-bold text-sm">{entry.profiles?.full_name}</p>
                                                 <p className="text-xs text-gray-400">Categoría: {entry.category || 'N/A'}</p>
                                             </div>
+                                            <button
+                                                onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
+                                                className="ml-auto p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors group/delete"
+                                                title="Desasignar competición"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>

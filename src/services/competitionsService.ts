@@ -51,6 +51,20 @@ export const competitionsService = {
         return data as CompetitionAssignment | null;
     },
 
+    async getAthleteCompetitions(athleteId: string) {
+        const { data, error } = await supabase
+            .from('competitions')
+            .select('*')
+            .eq('athlete_id', athleteId)
+            .order('date', { ascending: false }); // Future first? No, normally descending for "history", but let's grab all and filter in frontend or here. Actually plan said "future first". Let's order by date ascending and split in frontend, or fetch all. Ascending effectively puts old ones first. Let's do descending so newest/future are around? Usually closest future is top.
+        // Let's just fetch all ordered by date descending (newest dates first)
+        // Wait, standard for lists is usually: Upcoming (closest first), Past (newest first).
+        // Let's just return all ordered by date descending for now.
+
+        if (error) throw error;
+        return data as CompetitionAssignment[];
+    },
+
     async getCoachAssignments(coachId: string) {
         const { data, error } = await supabase
             .from('competitions')

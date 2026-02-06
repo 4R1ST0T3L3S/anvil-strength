@@ -1,23 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle, Users, Trophy, Trash2 } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../../../services/aepService';
-import { competitionsService } from '../../../services/competitionsService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
 import { useUser } from '../../../hooks/useUser';
 
-interface TeamCompetitionGroup {
-    id: string; // use first assignment id as key
-    name: string;
-    date: string;
-    location?: string;
-    level?: string;
-    athletes: { full_name: string, avatar_url?: string }[];
-}
-
 export function CalendarSection() {
-    const [viewMode, setViewMode] = useState<'AEP' | 'TEAM'>('AEP');
     const [competitions, setCompetitions] = useState<Competition[]>([]);
-    const [teamCompetitions, setTeamCompetitions] = useState<TeamCompetitionGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
@@ -26,7 +14,6 @@ export function CalendarSection() {
     // Load AEP Calendar
     useEffect(() => {
         const loadAEPData = async () => {
-            if (viewMode !== 'AEP') return;
             try {
                 setLoading(true);
                 setError(null);
@@ -49,73 +36,12 @@ export function CalendarSection() {
             }
         };
 
-        const loadTeamData = async () => {
-            if (viewMode !== 'TEAM' || !user?.id) return;
-            try {
-                setLoading(true);
-                setError(null);
+        loadAEPData();
+    }, []);
 
-                const data = await competitionsService.getCoachAssignments(user.id);
 
-                // Group by Competition (Name + Date)
-                const groups: { [key: string]: TeamCompetitionGroup } = {};
 
-                if (data) {
-                    data.forEach((assignment: any) => {
-                        const key = `${assignment.name}-${assignment.date}`;
-                        if (!groups[key]) {
-                            groups[key] = {
-                                id: assignment.id,
-                                name: assignment.name,
-                                date: assignment.date,
-                                location: assignment.location,
-                                level: assignment.level,
-                                athletes: []
-                            };
-                        }
-                        groups[key].athletes.push({
-                            ...assignment.athlete,
-                            id: assignment.id // Store Assignment ID, not Athlete ID, for deletion
-                        });
-                    });
-                }
-
-                setTeamCompetitions(Object.values(groups));
-
-            } catch (err: any) {
-                console.error('Error fetching team calendar:', err);
-                setError('No se pudieron cargar las competiciones asignadas.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (viewMode === 'AEP') {
-            loadAEPData();
-        } else {
-            loadTeamData();
-        }
-    }, [viewMode, user?.id]);
-
-    const handleUnassign = async (assignmentId: string, athleteName: string) => {
-        if (!confirm(`¿Seguro que quieres desasignar a ${athleteName} de esta competición?`)) return;
-
-        try {
-            await competitionsService.removeAssignment(assignmentId);
-
-            // Optimistic update
-            setTeamCompetitions(prev => prev.map(group => ({
-                ...group,
-                athletes: group.athletes.filter(a => (a as any).id !== assignmentId) // Filter out the deleted assignment
-            })).filter(group => group.athletes.length > 0)); // Remove empty groups
-
-        } catch (err) {
-            console.error('Error removing assignment:', err);
-            alert('Error al desasignar.');
-        }
-    };
-
-    const getCompetitionMeta = (comp: Competition | TeamCompetitionGroup) => {
+    const getCompetitionMeta = (comp: Competition) => {
         // Handle both types (AEP Competition has 'level', Team Group needs mapping or might have it)
         const level = (comp as any).level || 'COMPETICIÓN';
 
@@ -132,36 +58,13 @@ export function CalendarSection() {
 
     return (
         <div className="block space-y-6">
-            {/* Header + Toggles */}
+            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <CalendarIcon className="h-6 w-6 text-anvil-red" />
                     <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
-                        {viewMode === 'AEP' ? 'Calendario AEP 2026' : 'Competiciones de Equipo'}
+                        Calendario AEP 2026
                     </h2>
-                </div>
-
-                {/* View Toggle */}
-                <div className="bg-[#1c1c1c] p-1 rounded-lg flex border border-white/10 w-full md:w-auto">
-                    <button
-                        onClick={() => setViewMode('AEP')}
-                        className={`flex-1 md:flex-none px-4 py-2 rounded-md text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'AEP'
-                            ? 'bg-white text-black shadow-lg'
-                            : 'text-gray-500 hover:text-white hover:bg-white/5'
-                            }`}
-                    >
-                        Oficial AEP
-                    </button>
-                    <button
-                        onClick={() => setViewMode('TEAM')}
-                        className={`flex-1 md:flex-none px-4 py-2 rounded-md text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${viewMode === 'TEAM'
-                            ? 'bg-anvil-red text-white shadow-lg'
-                            : 'text-gray-500 hover:text-white hover:bg-white/5'
-                            }`}
-                    >
-                        <Users size={14} />
-                        Equipo
-                    </button>
                 </div>
             </div>
 
@@ -173,11 +76,11 @@ export function CalendarSection() {
                 <div className="flex flex-col justify-center items-center h-64 bg-[#252525] rounded-xl border border-red-500/20 p-8 text-center">
                     <AlertCircle className="h-10 w-10 text-anvil-red mb-4" />
                     <p className="text-white font-bold mb-2">{error}</p>
-                    <button onClick={() => setViewMode(viewMode)} className="text-sm text-gray-400 hover:text-white underline">
+                    <button onClick={() => window.location.reload()} className="text-sm text-gray-400 hover:text-white underline">
                         Reintentar
                     </button>
                 </div>
-            ) : viewMode === 'AEP' ? (
+            ) : (
                 /* AEP VIEW */
                 <div className="grid grid-cols-1 gap-4">
                     {competitions.map((comp, index) => {
@@ -226,76 +129,6 @@ export function CalendarSection() {
                             </div>
                         );
                     })}
-                </div>
-            ) : (
-                /* TEAM VIEW */
-                <div className="space-y-4">
-                    {teamCompetitions.length === 0 ? (
-                        <div className="flex flex-col justify-center items-center h-64 bg-[#252525] rounded-xl border border-white/5 text-center p-8">
-                            <Trophy className="h-12 w-12 text-gray-600 mb-4" />
-                            <p className="text-gray-400 font-bold mb-2">No hay competiciones asignadas.</p>
-                            <p className="text-sm text-gray-500">
-                                Ve a la pestaña <span className="text-white font-bold cursor-pointer" onClick={() => setViewMode('AEP')}>"Oficial AEP"</span> para asignar competiciones a tus atletas.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-6">
-                            {teamCompetitions.map((group) => {
-                                const meta = getCompetitionMeta(group);
-                                return (
-                                    <div key={group.id} className="bg-[#1c1c1c] border border-white/10 rounded-xl overflow-hidden">
-                                        {/* Header */}
-                                        <div className={`p-5 border-b border-white/5 ${meta.bg.replace('/10', '/5')}`}>
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-black uppercase tracking-widest w-fit mb-2 ${meta.bg} ${meta.color}`}>
-                                                        {meta.level}
-                                                    </div>
-                                                    <h3 className="text-xl md:text-2xl font-black uppercase italic text-white leading-tight">
-                                                        {group.location || 'Ubicación desconocida'}
-                                                    </h3>
-                                                    <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">{group.name}</p>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-white font-bold uppercase bg-black/40 px-3 py-2 rounded-lg">
-                                                    <CalendarIcon size={16} className="text-gray-400" />
-                                                    <span>{group.date}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Athletes List */}
-                                        <div className="p-5">
-                                            <h4 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-4 flex items-center gap-2">
-                                                <Users size={14} /> Atletas Convocados ({group.athletes.length})
-                                            </h4>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                                {group.athletes.map((athlete: any, idx) => (
-                                                    <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-[#252525] border border-white/5 group/athlete">
-                                                        <div className="flex items-center gap-3 overflow-hidden">
-                                                            <div className="w-8 h-8 flex-shrink-0 rounded-full bg-anvil-red/20 flex items-center justify-center text-anvil-red font-bold text-xs uppercase">
-                                                                {athlete.full_name?.charAt(0) || 'A'}
-                                                            </div>
-                                                            <span className="text-sm font-bold text-gray-200 truncate">{athlete.full_name}</span>
-                                                        </div>
-
-                                                        {user?.role === 'coach' && (
-                                                            <button
-                                                                onClick={() => handleUnassign(athlete.id, athlete.full_name)}
-                                                                className="opacity-0 group-hover/athlete:opacity-100 p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all"
-                                                                title="Desasignar"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
                 </div>
             )}
 

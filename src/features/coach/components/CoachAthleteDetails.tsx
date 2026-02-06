@@ -1,23 +1,46 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, TrendingUp, User, FileText } from 'lucide-react';
+import { ArrowLeft, TrendingUp, User, FileText, Trophy, Trash2, Calendar, MapPin } from 'lucide-react';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import { TrainingBlock } from '../../../types/training';
+import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'progress' | 'profile';
+type Tab = 'planning' | 'progress' | 'profile' | 'competitions';
 
 export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsProps) {
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+    const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
+
+    const fetchCompetitions = async () => {
+        if (!athleteId) return;
+        try {
+            const data = await competitionsService.getAthleteCompetitions(athleteId);
+            setCompetitions(data || []);
+        } catch (error) {
+            console.error('Error fetching competitions:', error);
+        }
+    };
+
+    const handleRemoveCompetition = async (id: string, name: string) => {
+        if (!confirm(`¿Estás seguro de que quieres eliminar la asignación a "${name}"?`)) return;
+        try {
+            await competitionsService.removeAssignment(id);
+            setCompetitions(prev => prev.filter(c => c.id !== id));
+        } catch (error) {
+            console.error('Error removing competition:', error);
+            alert('Error al eliminar la competición');
+        }
+    };
 
 
     useEffect(() => {
@@ -39,6 +62,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
         };
 
         fetchAthlete();
+        fetchCompetitions();
     }, [athleteId]);
 
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
@@ -90,6 +114,12 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                         className={`px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'profile' ? 'bg-[#333] text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
                     >
                         <User size={16} /> Perfil
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('competitions')}
+                        className={`px-4 py-2 rounded-md text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'competitions' ? 'bg-[#333] text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                    >
+                        <Trophy size={16} /> Competiciones
                     </button>
                 </div>
             </div>
@@ -154,6 +184,70 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                                 <p className="text-blue-400">{athlete.nickname ? `@${athlete.nickname}` : '-'}</p>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* 4. COMPETICIONES */}
+                {activeTab === 'competitions' && (
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
+                                <Trophy className="text-anvil-red" />
+                                Competiciones Asignadas
+                            </h3>
+                        </div>
+
+                        {competitions.length === 0 ? (
+                            <div className="text-center py-12 bg-[#252525] border border-white/5 rounded-xl">
+                                <Trophy size={48} className="mx-auto text-gray-600 mb-4" />
+                                <p className="text-gray-400 font-medium">No hay competiciones asignadas.</p>
+                            </div>
+                        ) : (
+                            <div className="grid gap-4">
+                                {competitions.map((comp) => (
+                                    <div key={comp.id} className="bg-[#252525] border border-white/5 rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-white/10 transition-colors">
+                                        <div className="space-y-2">
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                {comp.level && (
+                                                    <span className="text-[10px] font-black uppercase tracking-widest bg-white/5 text-gray-400 px-2 py-1 rounded">
+                                                        {comp.level}
+                                                    </span>
+                                                )}
+                                                <h4 className="text-lg font-bold text-white uppercase leading-tight">
+                                                    {comp.name}
+                                                </h4>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-sm text-gray-400">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Calendar size={14} className="text-anvil-red" />
+                                                    <span>
+                                                        {new Date(comp.date).toLocaleDateString('es-ES', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                {comp.location && (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <MapPin size={14} />
+                                                        <span>{comp.location}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => handleRemoveCompetition(comp.id, comp.name)}
+                                            className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group"
+                                        >
+                                            <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
