@@ -36,6 +36,7 @@ export interface TrainingSession {
     day_number: number; // 1, 2, 3...
     name?: string | null; // "Día 1", "Torso Pesado", etc. (Editable)
     date?: string | null; // Optional specific date
+    day_of_week?: string | null; // 'monday', 'tuesday', etc.
     created_at: string;
     // Relations (Optional for UI rendering)
     exercises?: SessionExercise[];
@@ -48,6 +49,9 @@ export interface SessionExercise {
     exercise_id: string;
     order_index: number;
     notes?: string | null;
+    rpe?: string | null; // Moved from Set level
+    velocity_avg?: string | null;
+    rest_seconds?: number | null; // Moved from Set level
     created_at: string;
 
     // Joint Relation

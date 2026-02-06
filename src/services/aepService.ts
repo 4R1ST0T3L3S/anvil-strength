@@ -2,26 +2,27 @@ import Papa from 'papaparse';
 
 export interface Competition {
     fecha: string;
+    dateIso?: string;
     campeonato: string;
     sede: string;
     inscripciones: string;
+    level: 'IPF' | 'EPF' | 'NACIONAL' | 'AEP 1' | 'AEP 2' | 'AEP 3' | 'COMPETICIÓN';
 }
 
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSMIGAG6eqYDt4/export?format=csv&gid=577884253';
+
 // Fallback proxy strategy
 const fetchWithFallback = async (targetUrl: string): Promise<string> => {
     const proxies = [
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, // Usually very reliable
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
         `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
         `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
-        // `https://thingproxy.freeboard.io/fetch/${targetUrl}` // Backup if needed
     ];
 
     let lastError: unknown;
 
     for (const proxy of proxies) {
         try {
-
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per proxy
 
@@ -45,8 +46,10 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
     throw new Error(`All proxies failed. Last error: ${lastErrorMessage || 'Unknown'}`);
 };
 
-// Helper to parse Spanish date formats
-const parseDate = (dateStr: string): Date | null => {
+// Helper to parse Spanish date formats and select the "Best" date based on rules:
+// - If AEP 3: Prefer SUNDAY
+// - If AEP 1 / AEP 2 / National: Prefer SATURDAY
+const parseBestDate = (dateStr: string, level: Competition['level']): { str: string, iso?: string } => {
     try {
         const year = 2026;
         const months: { [key: string]: number } = {
@@ -55,61 +58,105 @@ const parseDate = (dateStr: string): Date | null => {
         };
 
         const cleanStr = dateStr.toLowerCase().trim();
-
-        // Match standard format "DD-DD mmm" or "DD mmm"
-        // We only care about the END date for filtering "past" events
-        // Examples: "17-ene", "24-25 ene", "28-01 feb-mar"
-
-        // Find all month names in the string
         const foundMonths = Object.keys(months).filter(m => cleanStr.includes(m));
 
-        if (foundMonths.length === 0) return null;
+        if (foundMonths.length === 0) return { str: dateStr }; // Return original if parse fails
 
-        // Take the last month found (covers "feb-mar" case)
         const lastMonthStr = foundMonths[foundMonths.length - 1];
         const monthIndex = months[lastMonthStr];
 
-        // Find numbers. If range "24-25", we want 25. If "28-01", we want 01.
-        // We can split by tokens and find the number closest to the month string?
-        // Simpler: Extract all numbers, take the last one IF it appears *before* or near the month?
-        // Actually, "28-01 feb-mar" -> logic is tricky.
-
-        // Let's rely on the LAST number found in the string?
-        // "24-25 ene" -> 25. Correct.
-        // "17-ene" -> 17. Correct.
-        // "28-01 feb-mar" -> 01 (matches mar). Correct.
-
+        // Extract all numbers (potential days)
         const numbers = cleanStr.match(/\d+/g);
-        if (!numbers) return null;
+        if (!numbers) return { str: dateStr };
 
-        const day = parseInt(numbers[numbers.length - 1]);
+        const dayCandidates = numbers.map(n => parseInt(n)).filter(n => n >= 1 && n <= 31);
 
-        if (day < 1 || day > 31) return null;
+        if (dayCandidates.length === 0) return { str: dateStr };
 
-        return new Date(year, monthIndex, day);
+        // If only one day, return it
+        if (dayCandidates.length === 1) {
+            // const d = new Date(year, monthIndex, dayCandidates[0]);
+            // Adjust simple string to be cleaner? e.g. "20 Ene"
+            return {
+                str: `${dayCandidates[0]} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,
+                iso: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(dayCandidates[0]).padStart(2, '0')}`
+            };
+        }
+
+        // Multiple days: Apply Logic
+        // Determine target Day of Week (0=Sun, 6=Sat)
+        // Rule: AEP 3 -> Sunday (0). Others -> Saturday (6).
+        const targetDay = (level === 'AEP 3') ? 0 : 6;
+
+        let bestDay = dayCandidates[dayCandidates.length - 1]; // Default to last day (Sunday usually)
+
+        for (const day of dayCandidates) {
+            const dateObj = new Date(year, monthIndex, day);
+            if (dateObj.getDay() === targetDay) {
+                bestDay = day;
+                break; // Found our target!
+            }
+        }
+
+        // Fix: Manually construct YYYY-MM-DD to avoid timezone shifts (toISOString() uses UTC)
+        // const iso = finalDate.toISOString().split('T')[0]; // <-- This causes the bug in GMT+X
+        const iso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(bestDay).padStart(2, '0')}`;
+
+        return {
+            str: `${bestDay} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,
+            iso: iso
+        };
+
     } catch {
-        return null;
+        return { str: dateStr };
     }
+};
+
+// Helper to determine competition level based on strict hierarchy AND explicit Excel column
+const determineLevel = (name: string, rawLevel: string = ''): Competition['level'] => {
+    const n = name.toLowerCase();
+    const l = rawLevel.toLowerCase().trim();
+
+    // 0. EXPLICIT EXCEL COLUMN (Highest Priority if clear match)
+    // Added 'aep2', 'aep1' (no space) support
+    if (l.includes('aep-1') || l.includes('aep 1') || l.includes('aep1')) return 'AEP 1';
+    if (l.includes('aep-2') || l.includes('aep 2') || l.includes('aep2') || l.includes('este-2')) return 'AEP 2';
+    if (l.includes('aep-3') || l.includes('aep 3') || l.includes('aep3')) return 'AEP 3';
+    if (l.includes('nacional') || l.includes('españa')) return 'NACIONAL';
+    if (l.includes('europeo') || l.includes('epf') || l.includes('western')) return 'EPF';
+    if (l.includes('mundial') || l.includes('world') || l.includes('ipf') || l.includes('olimpiada')) return 'IPF';
+
+    // 1. Fallback: Name-based Hierarchy (International)
+    if (n.includes('world') || n.includes('mundial') || n.includes('ipf') || n.includes('olimpiada')) return 'IPF';
+    if (n.includes('europeo') || n.includes('epf') || n.includes('western')) return 'EPF';
+
+    // 2. National
+    if (n.includes('nacional') || n.includes('españa') || n.includes('copa de españa')) return 'NACIONAL';
+
+    // 3. Regional (AEP Levels) - Fallback
+    if (n.includes('aep-1') || n.includes('aep 1')) return 'AEP 1';
+    if (n.includes('aep-2') || n.includes('aep 2') || n.includes('este-2')) return 'AEP 2';
+    if (n.includes('aep-3') || n.includes('aep 3') || n.includes('regional')) return 'AEP 3';
+
+    // Default
+    return 'COMPETICIÓN';
 };
 
 export const fetchCompetitions = async (): Promise<Competition[]> => {
     try {
         const csvText = await fetchWithFallback(SHEET_URL);
 
-
         return new Promise((resolve, reject) => {
             Papa.parse(csvText, {
-                header: false, // We will find headers manually
+                header: false,
                 skipEmptyLines: true,
                 complete: (results) => {
                     const rows = results.data as string[][];
-
-                    // Strategy: Find the row index that contains "FECHA" and "CAMPEONATO"
                     let headerRowIndex = -1;
 
-                    for (let i = 0; i < Math.min(rows.length, 20); i++) { // Check first 20 rows
+                    // Find Header
+                    for (let i = 0; i < Math.min(rows.length, 20); i++) {
                         const rowStr = JSON.stringify(rows[i]).toLowerCase();
-                        // Adjusted candidates based on screenshot: "FECHA" and ("COMPETICIONES" or "LOCALIDAD" or "ORGANIZADOR")
                         if (rowStr.includes('fecha') && (
                             rowStr.includes('competiciones') ||
                             rowStr.includes('localidad') ||
@@ -121,39 +168,56 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                     }
 
                     if (headerRowIndex === -1) {
-                        console.error('No header found in rows:', rows.slice(0, 10));
                         reject(new Error('No se encontró la fila de cabecera (FECHA/COMPETICIONES/LOCALIDAD)'));
                         return;
                     }
 
-
-
+                    // Map Indices
                     const headers = rows[headerRowIndex].map(h => h.toString().toLowerCase().trim());
                     const dateIdx = headers.findIndex(h => h.includes('fecha'));
-                    // Match "campeonato" or "competiciones" or "nombre"
                     const nameIdx = headers.findIndex(h => h.includes('campeonato') || h.includes('competiciones') || h.includes('nombre'));
-                    // Match "sede" or "localidad" or "lugar"
                     const locIdx = headers.findIndex(h => h.includes('sede') || h.includes('localidad') || h.includes('lugar'));
-                    // Match "inscripciones" or "link" or just "inscrip"
                     const linkIdx = headers.findIndex(h => h.includes('inscrip') || h.includes('link'));
+                    // User mentioned Column F (Index 5). We look for "Nivel", "Caracter", "Tipo" or fallback to index 5 if plausible.
+                    let levelIdx = headers.findIndex(h => h.includes('nivel') || h.includes('caracter') || h.includes('carácter') || h.includes('tipo'));
+
+                    // Fallback to Column F (Index 5 relative to table start) if header not found but matches typical structure
+                    if (levelIdx === -1 && headers.length > 5) {
+                        // Heuristic: If column 5 exists, use it. The user specifically mentioned Column F.
+                        levelIdx = 5;
+                        console.warn('Level header not found, falling back to Column F (Index 5)');
+                    }
 
                     if (dateIdx === -1 || nameIdx === -1) {
                         reject(new Error(`Cabeceras críticas no encontradas. Indices: Date=${dateIdx}, Name=${nameIdx}`));
                         return;
                     }
 
-                    const today = new Date();
                     const oneWeekAgo = new Date();
-                    oneWeekAgo.setDate(today.getDate() - 7);
+                    oneWeekAgo.setDate(new Date().getDate() - 7);
 
                     const validData: Competition[] = rows
                         .slice(headerRowIndex + 1)
-                        .map(row => ({
-                            fecha: row[dateIdx] || '',
-                            campeonato: row[nameIdx] || '',
-                            sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
-                            inscripciones: linkIdx !== -1 ? row[linkIdx] : ''
-                        }))
+                        .map(row => {
+                            const rawDateStr = row[dateIdx] || '';
+                            const name = row[nameIdx] || '';
+                            const rawLevel = levelIdx !== -1 ? (row[levelIdx] || '') : '';
+
+                            // 1. Determine Level First
+                            const level = determineLevel(name, rawLevel);
+
+                            // 2. Parse Date using Level Context
+                            const parsed = parseBestDate(rawDateStr, level);
+
+                            return {
+                                fecha: parsed.str, // Use the formatted "best" date string
+                                dateIso: parsed.iso,
+                                campeonato: name,
+                                sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
+                                inscripciones: linkIdx !== -1 ? row[linkIdx] : '',
+                                level: level
+                            };
+                        })
                         .filter(item => {
                             // 1. Basic Validity
                             const isValid = item.fecha &&
@@ -164,32 +228,22 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
                             if (!isValid) return false;
 
-                            // 2. Date Filtering (Remove if ended > 1 week ago)
-                            const itemDate = parseDate(item.fecha);
-
-                            // If we can't parse the date, we KEEP it to be safe (don't hide potentially valid events)
-                            if (!itemDate) return true;
-
-                            // If itemDate < oneWeekAgo => It's old, filter it out
-                            if (itemDate < oneWeekAgo) {
-                                return false;
-                            }
+                            // 2. Date Filtering
+                            if (!item.dateIso) return true;
+                            const itemDate = new Date(item.dateIso);
+                            if (itemDate < oneWeekAgo) return false;
 
                             return true;
                         });
 
-
                     resolve(validData);
                 },
                 error: (error: Error) => {
-                    console.error('PapaParse logic error:', error);
                     reject(new Error(`Error parseando CSV: ${error.message}`));
                 }
             });
         });
     } catch (error: unknown) {
-        console.error('Service catch block:', error);
-        // Propagate the error message
         const message = error instanceof Error ? error.message : 'Error desconocido al cargar el calendario';
         throw new Error(message);
     }

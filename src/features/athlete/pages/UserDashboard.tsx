@@ -9,11 +9,12 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
-import { WorkoutLogger } from '../../training/WorkoutLogger';
+import { WorkoutLogger } from '../../training/components/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
+import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
@@ -89,7 +90,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             case 'nutrition':
                 return <AthleteNutritionView user={user} />;
             case 'competitions':
-                return <div className="p-8 text-gray-500">Vista de Competiciones (Próximamente)</div>;
+                return <AthleteCompetitionsView user={user} />;
             case 'calendar':
                 return (
                     <div className="p-4 md:p-8">

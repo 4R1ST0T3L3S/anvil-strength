@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock } from '../../../types/training';
 import { CreateBlockModal } from './CreateBlockModal';
+import { EditBlockModal } from './EditBlockModal';
 import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
 import { toast } from 'sonner';
 
@@ -19,6 +20,9 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
     // Delete Confirmation State
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Edit Modal State
+    const [blockToEdit, setBlockToEdit] = useState<TrainingBlock | null>(null);
 
     const fetchBlocks = async () => {
         try {
@@ -131,6 +135,16 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setBlockToEdit(block);
+                                        }}
+                                        className="p-2 text-gray-600 hover:text-blue-500 hover:bg-blue-500/10 rounded-full transition-all"
+                                        title="Editar bloque"
+                                    >
+                                        <Pencil size={18} />
+                                    </button>
+                                    <button
                                         onClick={(e) => handleDeleteClick(e, block.id)}
                                         className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-all"
                                         title="Eliminar bloque"
@@ -152,6 +166,13 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                 onClose={() => setIsCreateModalOpen(false)}
                 athleteId={athleteId}
                 onBlockCreated={fetchBlocks}
+            />
+
+            <EditBlockModal
+                isOpen={blockToEdit !== null}
+                onClose={() => setBlockToEdit(null)}
+                block={blockToEdit}
+                onBlockUpdated={fetchBlocks}
             />
 
             {/* DELETE CONFIRMATION MODAL */}

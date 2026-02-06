@@ -16,6 +16,7 @@ interface CreateSessionModalProps {
 export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions, onSessionCreated }: CreateSessionModalProps) {
     const [name, setName] = useState('');
     const [dayNumber, setDayNumber] = useState(1);
+    const [dayOfWeek, setDayOfWeek] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -26,8 +27,23 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                 : 0;
             setDayNumber(maxDay + 1);
             setName(''); // Reset name
+            setDayOfWeek(''); // Reset dayOfWeek
         }
     }, [isOpen, existingSessions]);
+
+    // Helper for translation
+    const translateDay = (day: string) => {
+        const map: Record<string, string> = {
+            'monday': 'Lunes',
+            'tuesday': 'Martes',
+            'wednesday': 'Miércoles',
+            'thursday': 'Jueves',
+            'friday': 'Viernes',
+            'saturday': 'Sábado',
+            'sunday': 'Domingo'
+        };
+        return map[day] || day;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,8 +60,10 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
 
             await trainingService.createSession({
                 block_id: blockId,
+                week_number: 1, // Default to week 1 for base sessions
                 day_number: dayNumber,
                 name: name.trim() || null, // Optional
+                day_of_week: dayOfWeek || null,
             });
 
             toast.success('Sesión creada correctamente');
@@ -105,6 +123,27 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                             </div>
                         </div>
 
+                        {/* Day of Week Selector */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                Día de la Semana
+                            </label>
+                            <select
+                                value={dayOfWeek}
+                                onChange={(e) => setDayOfWeek(e.target.value)}
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white font-bold focus:outline-none focus:border-anvil-red/50 transition-all appearance-none cursor-pointer"
+                            >
+                                <option value="">Seleccionar día (Opcional)</option>
+                                <option value="monday">Lunes</option>
+                                <option value="tuesday">Martes</option>
+                                <option value="wednesday">Miércoles</option>
+                                <option value="thursday">Jueves</option>
+                                <option value="friday">Viernes</option>
+                                <option value="saturday">Sábado</option>
+                                <option value="sunday">Domingo</option>
+                            </select>
+                        </div>
+
                         {/* Name Input */}
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
@@ -116,7 +155,6 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ej: Torso Pesado, Pierna..."
                                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all"
-                                autoFocus
                             />
                         </div>
 
@@ -124,7 +162,10 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex gap-3 items-start">
                             <AlertCircle className="text-blue-400 flex-shrink-0 mt-0.5" size={16} />
                             <p className="text-xs text-blue-300 leading-relaxed">
-                                Estás creando el <strong>Día {dayNumber}</strong>. Podrás añadir ejercicios a este día en el siguiente paso.
+                                {dayOfWeek
+                                    ? <span>Planificado para el <strong>{translateDay(dayOfWeek)}</strong> del microciclo.</span>
+                                    : <span>Estás creando el <strong>Día {dayNumber}</strong>. Podrás añadir ejercicios a este día en el siguiente paso.</span>
+                                }
                             </p>
                         </div>
 

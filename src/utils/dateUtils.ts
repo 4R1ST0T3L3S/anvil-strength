@@ -53,3 +53,20 @@ export function formatDateRange(start: Date, end: Date): string {
     const format = (d: Date) => d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
     return `${format(start)} - ${format(end)}`;
 }
+
+/**
+ * Returns the number of days remaining until a given date.
+ */
+export function getDaysRemaining(targetDate: string | Date): number {
+    const target = new Date(targetDate);
+    const today = new Date();
+
+    // Reset time components to compare dates only
+    target.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+}

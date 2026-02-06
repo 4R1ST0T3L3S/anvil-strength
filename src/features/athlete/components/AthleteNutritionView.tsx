@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { 
-    Utensils, 
-    Zap, 
-    Droplets, 
-    Flame, 
-    Apple, 
-    ChevronRight, 
-    Clock, 
+import {
+    Utensils,
+    Zap,
+    Droplets,
+    Flame,
+    Apple,
+    ChevronRight,
+    Clock,
     AlertCircle,
     CheckCircle2
 } from 'lucide-react';
@@ -25,9 +25,9 @@ interface MacroTarget {
     icon: React.ReactNode;
 }
 
-export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
+export function AthleteNutritionView({ user: _user }: AthleteNutritionViewProps) {
     const [loading, setLoading] = useState(true);
-    const [planExists, setPlanExists] = useState(false);
+    const [planExists, _setPlanExists] = useState(false);
 
     useEffect(() => {
         // Simulation of fetching nutrition plan
@@ -132,8 +132,8 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                 <p className="text-[10px] font-bold text-gray-500">Objetivo</p>
                             </div>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <div 
-                                    className={`h-full ${macro.color} transition-all duration-1000`} 
+                                <div
+                                    className={`h-full ${macro.color} transition-all duration-1000`}
                                     style={{ width: '0%' }} // Starting at 0 for animation
                                 />
                             </div>
@@ -147,12 +147,12 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <Utensils size={16} /> Comidas del día
                 </h2>
-                
+
                 <div className="space-y-4">
                     {['Desayuno', 'Almuerzo', 'Merienda', 'Cena'].map((meal, i) => (
                         <div key={i} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-white/10 transition-all">
                             <div className="flex items-center gap-6">
-                                <div className="text-gray-600 font-black text-2xl italic group-hover:text-anvil-red transition-colors">0{i+1}</div>
+                                <div className="text-gray-600 font-black text-2xl italic group-hover:text-anvil-red transition-colors">0{i + 1}</div>
                                 <div>
                                     <h3 className="font-bold text-white uppercase tracking-tight">{meal}</h3>
                                     <p className="text-gray-500 text-xs">Ver recomendaciones de menú</p>

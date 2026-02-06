@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
-import { trainingService } from '../../services/trainingService';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../types/training';
-import { Loader, Video, Check, Camera, Play, AlertCircle } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
+import { trainingService } from '../../../services/trainingService';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../../types/training';
+import { Loader, Check, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { RestTimerOverlay } from './RestTimerOverlay';
 
 interface WorkoutLoggerProps {
     athleteId: string;
@@ -40,6 +41,24 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
     const [block, setBlock] = useState<TrainingBlock | null>(null);
     const [sessions, setSessions] = useState<ExtendedSession[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
+    // Timer State
+    const [timerEndTime, setTimerEndTime] = useState<number | null>(null);
+
+    const handleStartTimer = (seconds: number) => {
+        const now = Date.now();
+        setTimerEndTime(now + seconds * 1000);
+    };
+
+    const handleCloseTimer = () => {
+        setTimerEndTime(null);
+    };
+
+    const handleAddTimerSeconds = (seconds: number) => {
+        if (timerEndTime) {
+            setTimerEndTime(timerEndTime + seconds * 1000);
+        }
+    };
 
     // Initial Load
     useEffect(() => {
@@ -85,31 +104,48 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                         }))
                 }));
 
-                setSessions(formatted);
-                if (formatted.length > 0) {
-                    // 4. Calculate today's day number relative to block start
-                    const startDate = new Date(active.start_date);
-                    const today = new Date();
-                    
-                    // Reset hours to compare dates only
-                    startDate.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
-                    
-                    const diffTime = today.getTime() - startDate.getTime();
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                // NEW: Calculate Current Week
+                const startDate = new Date(active.start_date ?? new Date());
+                const today = new Date();
+                startDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
 
+                const diffTime = today.getTime() - startDate.getTime();
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                // Calculate week number (1-based). If negative (before start), default to 1.
+                let currentWeek = Math.floor(diffDays / 7) + 1;
+                if (currentWeek < 1) currentWeek = 1;
+
+                // NEW: Filter sessions for Current Week based on Absolute Day Number
+                // Week 1 = Days 1-7, Week 2 = Days 8-14, etc.
+                const currentWeekSessions = formatted.filter(s => Math.ceil(s.day_number / 7) === currentWeek);
+
+                // If no sessions for this week (e.g. week 5 but plan only has 4 weeks), maybe show last week?
+                // For now, let's strictly show current week. If empty, it will show "Descanso" or empty list.
+
+                setSessions(currentWeekSessions);
+
+                if (currentWeekSessions.length > 0) {
                     // 5. Try to find session for this specific date or day_number
                     const todayStr = today.toISOString().split('T')[0];
-                    const sessionForToday = formatted.find(s => 
-                        (s as any).date === todayStr || s.day_number === diffDays
+
+                    // day_number is usually absolute (1..30). logic checks if session matches today's absolute day index
+                    // But now we operate on filtered list.
+
+                    const sessionForToday = currentWeekSessions.find(s =>
+                        (s as any).date === todayStr || s.day_number === (diffDays + 1)
                     );
 
                     if (sessionForToday) {
                         setActiveSessionId(sessionForToday.id);
                     } else {
-                        // Default to first available if no exact match for today
-                        setActiveSessionId(formatted[0].id);
+                        // Default to first available in this week
+                        setActiveSessionId(currentWeekSessions[0].id);
                     }
+                } else {
+                    // Fallback logic if week is empty? 
+                    // Ideally we might want to warn or show "Week Completed" but for now let's just leave empty array
+                    setActiveSessionId(null);
                 }
             } catch (err) {
                 console.error(err);
@@ -125,7 +161,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 
     if (!block) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-black text-gray-400 p-8 text-center space-y-6">
+            <div className="h-full flex flex-col items-center justify-center bg-transparent text-gray-400 p-8 text-center space-y-6">
                 <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
                     <AlertCircle size={64} />
                 </div>
@@ -144,20 +180,44 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
         );
     }
 
-    const activeSession = sessions.find(s => s.id === activeSessionId);
+    const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+
+    // FIX: Handle case where activeSession is undefined (e.g. empty week)
+    if (!activeSession && sessions.length === 0) {
+        return (
+            <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
+                <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
+                    <div className="p-4">
+                        <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
+                        <h2 className="text-2xl font-black italic">Semana de Descarga</h2>
+                    </div>
+                </div>
+                <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8 text-center space-y-6">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
+                        <Check size={32} />
+                    </div>
+                    <div className="max-w-xs">
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Semana Completada</h3>
+                        <p className="text-sm leading-relaxed">
+                            No hay sesiones programadas para esta semana. Si crees que es un error, contacta a tu entrenador.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="flex flex-col h-full bg-black text-white max-w-md mx-auto shadow-2xl overflow-hidden relative">
+        <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
 
             {/* 1. Header & Navigation */}
             <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                 <div className="p-4">
-                    <h1 className="text-sm text-blue-400 font-bold tracking-wider uppercase mb-1">{block.name}</h1>
-                    <h2 className="text-2xl font-black italic">{activeSession?.name || `Día ${activeSession?.day_number}`}</h2>
+                    <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                 </div>
 
                 {/* Day Tabs Scroll */}
-                <div className="flex overflow-x-auto px-4 gap-3 pb-2 scrollbar-hide">
+                <div className="flex overflow-x-auto px-4 gap-3 py-2 scrollbar-hide">
                     {sessions.map(s => (
                         <button
                             key={s.id}
@@ -169,8 +229,14 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                                     : "bg-[#2a2a2a] text-gray-400 border-transparent hover:bg-[#333]"
                             )}
                         >
-                            <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
-                            <span className="text-xl font-bold leading-none">{s.day_number}</span>
+                            {s.name ? (
+                                <span className="text-xs font-black uppercase tracking-wider">{s.name}</span>
+                            ) : (
+                                <>
+                                    <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
+                                    <span className="text-xl font-bold leading-none">{s.day_number}</span>
+                                </>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -179,7 +245,11 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
             {/* 2. Content (Exercise List) */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
                 {activeSession?.exercises.map(ex => (
-                    <LoggerExerciseCard key={ex.id} sessionExercise={ex} />
+                    <LoggerExerciseCard
+                        key={ex.id}
+                        sessionExercise={ex}
+                        onStartTimer={handleStartTimer}
+                    />
                 ))}
 
                 {activeSession?.exercises.length === 0 && (
@@ -188,6 +258,15 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                     </div>
                 )}
             </div>
+
+            {/* Overlay Timer */}
+            {timerEndTime && (
+                <RestTimerOverlay
+                    endTime={timerEndTime}
+                    onClose={handleCloseTimer}
+                    onAddSeconds={handleAddTimerSeconds}
+                />
+            )}
         </div>
     );
 }
@@ -195,7 +274,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 // ==========================================
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
-function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSessionExercise }) {
+function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise: ExtendedSessionExercise, onStartTimer: (s: number) => void }) {
     const [noteOpen, setNoteOpen] = useState(false);
 
     return (
@@ -207,22 +286,12 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
                     {sessionExercise.notes && (
                         <button
                             onClick={() => setNoteOpen(!noteOpen)}
-                            className="text-xs text-blue-400 mt-1 flex items-center gap-1 hover:underline"
+                            className="text-xs text-anvil-red mt-1 flex items-center gap-1 hover:underline"
                         >
                             Ver notas {noteOpen ? '▲' : '▼'}
                         </button>
                     )}
                 </div>
-                {sessionExercise.exercise.video_url && (
-                    <a
-                        href={sessionExercise.exercise.video_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-                    >
-                        <Video size={20} />
-                    </a>
-                )}
             </div>
 
             {noteOpen && sessionExercise.notes && (
@@ -232,17 +301,22 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
             )}
 
             {/* Sets Header */}
-            <div className="grid grid-cols-[1rem_1fr_1fr_2.5rem] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
-                <span>#</span>
-                <span>Objetivo</span>
-                <span>Real (Kg / Reps / RPE)</span>
-                <span>Log</span>
+            <div className="grid grid-cols-[1.3fr_4rem_0.7fr] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-xs uppercase font-bold text-gray-500 text-center">
+                <span className="text-left pl-2">Series</span>
+                <span className="text-center">RPE</span>
+                <span className="text-right pr-4">Check</span>
             </div>
 
             {/* Sets List */}
             <div className="divide-y divide-white/5">
                 {sessionExercise.sets.map((set, idx) => (
-                    <LoggerSetRow key={set.id} set={set} index={idx} />
+                    <LoggerSetRow
+                        key={set.id}
+                        set={set}
+                        index={idx}
+                        onStartTimer={onStartTimer}
+                        defaultRestSeconds={sessionExercise.rest_seconds}
+                    />
                 ))}
             </div>
         </div>
@@ -252,14 +326,19 @@ function LoggerExerciseCard({ sessionExercise }: { sessionExercise: ExtendedSess
 // ==========================================
 // SUB-COMPONENT: SET ROW (The Core Logic)
 // ==========================================
-function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
+// ==========================================
+// SUB-COMPONENT: SET ROW (The Core Logic)
+// ==========================================
+function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: TrainingSet; index: number, onStartTimer: (s: number) => void, defaultRestSeconds?: number | null }) {
     // Local state for optimistic UI
     const [actualLoad, setActualLoad] = useState<string>(set.actual_load?.toString() ?? '');
     const [actualReps, setActualReps] = useState<string>(set.actual_reps?.toString() ?? '');
     const [actualRpe, setActualRpe] = useState<string>(set.actual_rpe?.toString() ?? '');
     const [isCompleted, setIsCompleted] = useState(!!(set.actual_reps && set.actual_load)); // Pseudo-logic for completion
-    const [hasVideo, setHasVideo] = useState(!!set.video_url);
     const [saving, setSaving] = useState(false);
+
+    // Effective Rest Logic
+    const effectiveRest = set.rest_seconds || defaultRestSeconds;
 
     // Debounce Ref
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -297,73 +376,57 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
         }, 1000); // 1 second debounce
     };
 
-    const handleVideoUpload = () => {
-        // Simulation
-        toast.promise(new Promise((resolve) => setTimeout(resolve, 1500)), {
-            loading: 'Subiendo video...',
-            success: () => {
-                setHasVideo(true);
-                return 'Video subido correctamente';
-            },
-            error: 'Error al subir'
-        });
-        // In real impl: Open file picker -> Upload to Storage -> Update DB video_url
-    };
-
     const toggleComplete = () => {
         // Instant visual feedback wrapper
-        setIsCompleted(!isCompleted);
-        if (!isCompleted) toast.success("Serie completada");
+        const newState = !isCompleted;
+        setIsCompleted(newState);
+
+        if (newState) {
+            toast.success("Serie completada");
+            // Trigger Timer if enabled
+            if (effectiveRest && effectiveRest > 0) {
+                onStartTimer(effectiveRest);
+            }
+        }
     };
 
     return (
         <div className={cn(
-            "grid grid-cols-[1rem_1fr_1fr_2.5rem] gap-3 px-4 py-3 items-center transition-colors",
+            "grid grid-cols-[1.3fr_4rem_0.7fr] gap-3 px-4 py-3 items-center transition-colors",
             isCompleted ? "bg-green-500/10" : "hover:bg-white/5"
         )}>
-            {/* Index */}
-            <div className="text-center font-mono text-xs text-gray-500 font-bold">{index + 1}</div>
-
-            {/* Target (Left) */}
-            <div className="flex flex-col text-xs text-gray-400 space-y-0.5">
-                <div className="flex items-center gap-1">
-                    <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}kg` : '-'}</span>
-                    <span>x</span>
-                    <span className="font-bold text-gray-300">{set.target_reps || '-'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px]">
-                    {set.target_rpe && <span className="text-blue-400">@{set.target_rpe}</span>}
-                    {set.rest_seconds && <span>{set.rest_seconds}s rest</span>}
+            {/* Series Info (Merged Index + Target) - ALIGN LEFT */}
+            <div className="flex items-center justify-start gap-4">
+                <div className="text-center font-mono text-sm text-gray-500 font-bold w-6">{index + 1}</div>
+                <div className="flex flex-col text-sm text-gray-400 space-y-0.5">
+                    <div className="flex items-center gap-1">
+                        <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}kg` : '-'}</span>
+                        <span>x</span>
+                        <span className="font-bold text-gray-300">{set.target_reps || '-'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                        {!!set.target_rpe && <span className="text-anvil-red">@{set.target_rpe}</span>}
+                        {!!effectiveRest && <span>{effectiveRest}s rest</span>}
+                    </div>
                 </div>
             </div>
 
-            {/* Actual (Right - Inputs) */}
-            <div className="flex items-center gap-2">
-                <input
-                    type="number"
-                    value={actualLoad}
-                    onChange={(e) => handleChange('actual_load', e.target.value)}
-                    placeholder="kg"
-                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-blue-500 outline-none placeholder-gray-700"
-                />
-                <input
-                    type="number" // Reps can is string range? NO, Actual reps is usually number. Schema says integer.
-                    value={actualReps}
-                    onChange={(e) => handleChange('actual_reps', e.target.value)}
-                    placeholder="reps"
-                    className="w-full bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-sm font-bold text-white focus:border-blue-500 outline-none placeholder-gray-700"
-                />
+            {/* RPE Input (Mobile & Desktop Unified) */}
+            <div className="flex justify-center">
                 <input
                     type="number"
                     value={actualRpe}
                     onChange={(e) => handleChange('actual_rpe', e.target.value)}
-                    placeholder="RPE"
-                    className="w-10 bg-[#111] border border-white/10 rounded-lg px-0 py-2 text-center text-xs font-medium text-blue-300 focus:border-blue-500 outline-none placeholder-gray-700 hidden sm:block"
+                    placeholder="-"
+                    className={cn(
+                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-sm font-bold focus:border-anvil-red outline-none placeholder-gray-700",
+                        actualRpe ? "text-anvil-red border-anvil-red/50" : "text-white border-white/10"
+                    )}
                 />
             </div>
 
-            {/* Actions */}
-            <div className="flex flex-col gap-2 items-center">
+            {/* Actions - ALIGN RIGHT */}
+            <div className="flex flex-col gap-2 items-end pr-4">
                 <button
                     onClick={toggleComplete}
                     className={cn(
@@ -375,18 +438,8 @@ function LoggerSetRow({ set, index }: { set: TrainingSet; index: number }) {
                 >
                     <Check size={16} strokeWidth={3} />
                 </button>
-
-                <button
-                    onClick={handleVideoUpload}
-                    className={cn(
-                        "transition-colors",
-                        hasVideo ? "text-blue-400 animate-pulse" : "text-gray-600 hover:text-gray-400"
-                    )}
-                >
-                    {hasVideo ? <Play size={16} fill="currentColor" /> : <Camera size={16} />}
-                </button>
             </div>
-            {saving && <div className="absolute right-2 top-2"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-ping"></div></div>}
+            {saving && <div className="absolute right-2 top-2"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}
         </div>
     );
 }

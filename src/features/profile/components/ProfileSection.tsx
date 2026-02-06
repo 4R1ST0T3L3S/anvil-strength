@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
+import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 
 interface ProfileSectionProps {
     user: UserProfile;
@@ -13,6 +14,7 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(user.avatar_url || user.profile_image || null);
+    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -129,6 +131,14 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
             setMessage({ type: 'error', text: 'No se pudo guardar la información' });
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
         }
     };
 
@@ -368,6 +378,28 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
                     </button>
                 </div>
             </form>
+
+            <div className="border-t border-white/5 pt-8 mt-8">
+                <button
+                    type="button"
+                    onClick={() => setShowLogoutConfirm(true)}
+                    className="w-full bg-[#1c1c1c] border border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
+                >
+                    <LogOut size={20} />
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+
+            <ConfirmationModal
+                isOpen={showLogoutConfirm}
+                onClose={() => setShowLogoutConfirm(false)}
+                onConfirm={handleLogout}
+                title="¿Cerrar Sesión?"
+                description="¿Estás seguro de que quieres cerrar sesión? Tendrás que volver a iniciar sesión para acceder a tu cuenta."
+                confirmText="Cerrar Sesión"
+                cancelText="Cancelar"
+                variant="danger"
+            />
         </div>
     );
 }
