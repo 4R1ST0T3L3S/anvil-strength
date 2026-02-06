@@ -86,6 +86,17 @@ const formatCompetitionName = (name: string, location?: string, level?: string) 
     return cleanName;
 };
 
+const getCompetitionColorClass = (level?: string) => {
+    const l = level?.toUpperCase() || '';
+    if (l.includes('AEP 3')) return 'bg-orange-500';
+    if (l.includes('AEP 2')) return 'bg-yellow-500'; // Consider changing text color for contrast if needed
+    if (l.includes('AEP 1')) return 'bg-blue-600';
+    if (l.includes('NACIONAL')) return 'bg-purple-600';
+    if (l.includes('EPF')) return 'bg-green-600';
+    if (l.includes('IPF')) return 'bg-[#D4AF37]';
+    return 'bg-anvil-red';
+};
+
 
 
 export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
@@ -322,7 +333,7 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                     <Trophy size={16} className="text-anvil-red" /> Próxima Competición
                 </h2>
                 {nextCompetition ? (
-                    <div className="bg-anvil-red rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform">
+                    <div className={`${getCompetitionColorClass(nextCompetition.level)} rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform shadow-lg`}>
                         <div className="relative z-10">
                             <h3 className="text-lg font-black uppercase italic leading-tight mb-0.5">
                                 {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
@@ -545,7 +556,7 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                             <Trophy size={16} className="text-anvil-red" /> Próxima Competición
                         </h2>
                         {nextCompetition ? (
-                            <div className="bg-anvil-red rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative">
+                            <div className={`${getCompetitionColorClass(nextCompetition.level)} rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative shadow-lg`}>
                                 <div className="relative z-10">
                                     <h3 className="text-xl font-black uppercase italic mb-1">
                                         {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
