@@ -38,12 +38,11 @@ const getGreeting = () => {
     if (hour >= 6 && hour < 14) return 'Buenos días'; // 6 AM - 2 PM
     if (hour >= 14 && hour < 21) return 'Buenas tardes'; // 2 PM - 9 PM
     return 'Buenas noches'; // 9 PM - 6 AM
-    return 'Buenas noches'; // 9 PM - 6 AM
 };
 
 const getDaysRemaining = (dateStr: string) => {
     const today = new Date();
-    const target = new Date(dateStr);
+    const target = new Date(dateStr + 'T00:00:00');
 
     // Normalize to start of day to avoid timezone/hour issues affecting day count
     today.setHours(0, 0, 0, 0);

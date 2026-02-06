@@ -129,7 +129,13 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold uppercase">{comp.name}</h3>
-                                        <p className="text-gray-400 text-sm">Fecha: <span className="text-white font-bold">{comp.date}</span></p>
+                                        <p className="text-gray-400 text-sm">Fecha: <span className="text-white font-bold">
+                                            {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </span></p>
                                     </div>
                                 </div>
                                 <span className="bg-white/10 px-3 py-1 rounded text-sm font-bold">
