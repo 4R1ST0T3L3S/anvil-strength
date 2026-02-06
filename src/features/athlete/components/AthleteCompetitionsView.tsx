@@ -92,7 +92,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                                     <div className="flex items-center gap-2">
                                                         <Calendar size={18} className="text-anvil-red" />
                                                         <span className="font-semibold">
-                                                            {new Date(comp.date).toLocaleDateString('es-ES', {
+                                                            {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
                                                                 weekday: 'long',
                                                                 year: 'numeric',
                                                                 month: 'long',
@@ -149,7 +149,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                         <div className="flex items-center gap-2">
                                             <Calendar size={14} />
                                             <span>
-                                                {new Date(comp.date).toLocaleDateString('es-ES', {
+                                                {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
                                                     year: 'numeric',
                                                     month: 'long',
                                                     day: 'numeric'

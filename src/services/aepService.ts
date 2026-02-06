@@ -75,11 +75,11 @@ const parseBestDate = (dateStr: string, level: Competition['level']): { str: str
 
         // If only one day, return it
         if (dayCandidates.length === 1) {
-            const d = new Date(year, monthIndex, dayCandidates[0]);
+            // const d = new Date(year, monthIndex, dayCandidates[0]);
             // Adjust simple string to be cleaner? e.g. "20 Ene"
             return {
                 str: `${dayCandidates[0]} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,
-                iso: d.toISOString().split('T')[0]
+                iso: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(dayCandidates[0]).padStart(2, '0')}`
             };
         }
 
@@ -98,10 +98,13 @@ const parseBestDate = (dateStr: string, level: Competition['level']): { str: str
             }
         }
 
-        const finalDate = new Date(year, monthIndex, bestDay);
+        // Fix: Manually construct YYYY-MM-DD to avoid timezone shifts (toISOString() uses UTC)
+        // const iso = finalDate.toISOString().split('T')[0]; // <-- This causes the bug in GMT+X
+        const iso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(bestDay).padStart(2, '0')}`;
+
         return {
             str: `${bestDay} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,
-            iso: finalDate.toISOString().split('T')[0]
+            iso: iso
         };
 
     } catch {
