@@ -23,6 +23,7 @@ import { PlateCalculator } from './PlateCalculator';
 import { AnvilRanking } from './AnvilRanking';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
+import { getDaysRemaining } from '../../../utils/dateUtils';
 
 interface AthleteHomeProps {
     user: UserProfile;
@@ -40,21 +41,7 @@ const getGreeting = () => {
     return 'Buenas noches'; // 9 PM - 6 AM
 };
 
-const getDaysRemaining = (dateStr: string) => {
-    const today = new Date();
-    const target = new Date(dateStr + 'T00:00:00');
 
-    // Normalize to start of day to avoid timezone/hour issues affecting day count
-    today.setHours(0, 0, 0, 0);
-    target.setHours(0, 0, 0, 0);
-
-    const diffTime = today.getTime() - target.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // If it's today, diffDays is 0. If tomorrow, diffDays is -1.
-    // User requested format "-117 dias", so we return the signed difference.
-    return diffDays;
-};
 
 const formatCompetitionName = (name: string, location?: string, level?: string) => {
     // Priority: "LEVEL PLACE" (e.g. "AEP2 CHIVA")
