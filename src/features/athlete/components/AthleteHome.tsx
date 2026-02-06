@@ -146,15 +146,15 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                             );
                         }
 
-                        // 2.2 Fetch next competition
-                        const nextComp = await competitionsService.getNextCompetition(user.id);
-                        setNextCompetition(nextComp);
-
                         if (sessionForToday) {
                             setTodaySession(sessionForToday as ExtendedSession);
                         }
                     }
                 }
+
+                // 2.3 Fetch next competition (INDEPENDENT of active block)
+                const nextComp = await competitionsService.getNextCompetition(user.id);
+                setNextCompetition(nextComp);
             } catch (error) {
                 console.error('Error fetching home data:', error);
             } finally {
