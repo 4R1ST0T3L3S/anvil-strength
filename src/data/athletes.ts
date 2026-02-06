@@ -21,7 +21,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/gema.jpeg",
     stats: {
       lastCompetition: "AEP3 Las Torres De Cotilla",
-      glPoints: 85.0,
+      glPoints: 66.2,
       total: 297.5,
       squat: 120,
       bench: 52.5,
@@ -35,7 +35,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/alejandro.jpg",
     stats: {
       lastCompetition: "AEP3 Las Torres De Cotilla",
-      glPoints: 92.0,
+      glPoints: 84.88,
       total: 602.5,
       squat: 250,
       bench: 127.5,
@@ -49,7 +49,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/marc.png",
     stats: {
       lastCompetition: "SBD Cup",
-      glPoints: 108.5,
+      glPoints: 100.06,
       total: 800,
       squat: 295,
       bench: 192.5,
@@ -63,7 +63,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/Pau.png",
     stats: {
       lastCompetition: "SBD Cup",
-      glPoints: 85.5,
+      glPoints: 79.65,
       total: 640,
       squat: 270,
       bench: 140,
@@ -77,7 +77,7 @@ export const athletes: Athlete[] = [
     image: "/athletes/josep.png",
     stats: {
       lastCompetition: "SBD Cup",
-      glPoints: 95.8,
+      glPoints: 94.15,
       total: 675,
       squat: 270,
       bench: 135,

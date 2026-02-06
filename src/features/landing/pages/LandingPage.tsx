@@ -396,9 +396,9 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { title: "Campeonato Nacional 2024", result: "3 Medallas de Oro", desc: "Récord Nacional Peso Muerto" },
-                            { title: "Copa Regional Norte", result: "1er Lugar por Equipos", desc: "Dominio total categoría -93kg" },
-                            { title: "Mundial Powerlifting", result: "Top 10 Mundial", desc: "Representación Internacional" }
+                            { title: "Campeonato Nacional SBJ 2024", result: "Medalla de Oro", desc: "Medalla de oro Press Banca SBJ -105 2024" },
+                            { title: "SBD CUP 2025", result: "2 Segundos puestos", desc: "Plata en la categoría de -83Kg y -105Kg. En esta última, un record de España (no oficial) en press banca con 192.5kg." },
+                            { title: "Campeonato Regional Murcia 2025", result: "2 Oros", desc: "Campeones en la categoría de -83Kg masculina y -63Kg femenina." }
                         ].map((item, i) => (
                             <div key={i} className="bg-[#1c1c1c] p-10 border border-white/5 hover:border-anvil-red/50 transition-colors group rounded-xl shadow-xl">
                                 <Trophy className="h-10 w-10 text-anvil-red mb-6" />

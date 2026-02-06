@@ -18,7 +18,9 @@ export const ANVIL_QUOTES = [
     "Busco relación seria con la barra olímpica.",
     "¿Descanso activo? Eso significa ir al rack caminando.",
     "La técnica es importante, pero el peso sube el ego.",
-    "Entrenar es el único momento donde sufrir es divertido."
+    "Entrenar es el único momento donde sufrir es divertido.",
+    "Imagina tener menos DL que Pau... Eso si es motivación para entrenar.",
+    "HOY ES DÍA DE PR ALERT"
 ];
 
 export function getAnvilQuote(): string {
