@@ -63,5 +63,14 @@ export const competitionsService = {
 
         if (error) throw error;
         return data; // Returns competitions with nested athlete profile
+    },
+
+    async removeAssignment(assignmentId: string) {
+        const { error } = await supabase
+            .from('competitions')
+            .delete()
+            .eq('id', assignmentId);
+
+        if (error) throw error;
     }
 };

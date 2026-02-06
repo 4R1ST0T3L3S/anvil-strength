@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle, Users, Trophy } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, ExternalLink, AlertCircle, Users, Trophy, Trash2 } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../../../services/aepService';
 import { competitionsService } from '../../../services/competitionsService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
@@ -73,9 +73,10 @@ export function CalendarSection() {
                                 athletes: []
                             };
                         }
-                        if (assignment.athlete) {
-                            groups[key].athletes.push(assignment.athlete);
-                        }
+                        groups[key].athletes.push({
+                            ...assignment.athlete,
+                            id: assignment.id // Store Assignment ID, not Athlete ID, for deletion
+                        });
                     });
                 }
 
@@ -95,6 +96,24 @@ export function CalendarSection() {
             loadTeamData();
         }
     }, [viewMode, user?.id]);
+
+    const handleUnassign = async (assignmentId: string, athleteName: string) => {
+        if (!confirm(`¿Seguro que quieres desasignar a ${athleteName} de esta competición?`)) return;
+
+        try {
+            await competitionsService.removeAssignment(assignmentId);
+
+            // Optimistic update
+            setTeamCompetitions(prev => prev.map(group => ({
+                ...group,
+                athletes: group.athletes.filter(a => (a as any).id !== assignmentId) // Filter out the deleted assignment
+            })).filter(group => group.athletes.length > 0)); // Remove empty groups
+
+        } catch (err) {
+            console.error('Error removing assignment:', err);
+            alert('Error al desasignar.');
+        }
+    };
 
     const getCompetitionMeta = (comp: Competition | TeamCompetitionGroup) => {
         // Handle both types (AEP Competition has 'level', Team Group needs mapping or might have it)
@@ -250,12 +269,24 @@ export function CalendarSection() {
                                                 <Users size={14} /> Atletas Convocados ({group.athletes.length})
                                             </h4>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                                {group.athletes.map((athlete, idx) => (
-                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-[#252525] border border-white/5">
-                                                        <div className="w-8 h-8 rounded-full bg-anvil-red/20 flex items-center justify-center text-anvil-red font-bold text-xs uppercase">
-                                                            {athlete.full_name?.charAt(0) || 'A'}
+                                                {group.athletes.map((athlete: any, idx) => (
+                                                    <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-[#252525] border border-white/5 group/athlete">
+                                                        <div className="flex items-center gap-3 overflow-hidden">
+                                                            <div className="w-8 h-8 flex-shrink-0 rounded-full bg-anvil-red/20 flex items-center justify-center text-anvil-red font-bold text-xs uppercase">
+                                                                {athlete.full_name?.charAt(0) || 'A'}
+                                                            </div>
+                                                            <span className="text-sm font-bold text-gray-200 truncate">{athlete.full_name}</span>
                                                         </div>
-                                                        <span className="text-sm font-bold text-gray-200 truncate">{athlete.full_name}</span>
+
+                                                        {user?.role === 'coach' && (
+                                                            <button
+                                                                onClick={() => handleUnassign(athlete.id, athlete.full_name)}
+                                                                className="opacity-0 group-hover/athlete:opacity-100 p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all"
+                                                                title="Desasignar"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
