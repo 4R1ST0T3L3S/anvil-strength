@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { Calendar, Trash2 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { competitionsService } from '../../../services/competitionsService';
@@ -31,50 +30,46 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
     useEffect(() => {
         const fetchSchedule = async () => {
             try {
-                // 1. Get athletes assigned to this coach
-                const { data: athleteLinks, error: linksError } = await supabase
-                    .from('coach_athletes')
-                    .select('athlete_id')
-                    .eq('coach_id', user.id);
+                // Fetch assignments directly using the service
+                const assignments = await competitionsService.getCoachAssignments(user.id);
 
-                if (linksError) throw linksError;
-
-                const athleteIds = athleteLinks?.map(link => link.athlete_id) || [];
-
-                if (athleteIds.length === 0) {
+                if (!assignments || assignments.length === 0) {
                     setCompetitions([]);
                     setLoading(false);
                     return;
                 }
 
-                // 2. Fetch entries ONLY for these athletes
-                const { data, error } = await supabase
-                    .from('competition_entries')
-                    .select(`
-                        *,
-                        profiles (
-                            id,
-                            full_name,
-                            nickname,
-                            avatar_url
-                        )
-                    `)
-                    .in('athlete_id', athleteIds)
-                    .order('target_date', { ascending: true });
-
-                if (error) throw error;
-
                 // Group by competition
-                const grouped = (data || []).reduce((acc: Record<string, CompetitionGroup>, entry: CompetitionEntry) => {
-                    const key = `${entry.competition_name}-${entry.target_date}`;
+                // We need to map the 'athlete' nested object to 'profiles' to match the existing rendering or update rendering
+                // Let's update the mapping to match the Grouping logic
+                const grouped = assignments.reduce((acc: Record<string, CompetitionGroup>, item: any) => {
+                    // Item has: id, name, date, location, level, athlete: { full_name, avatar_url }
+                    // We construct a unique key for the competition event
+                    const key = `${item.name}-${item.date}`;
+
                     if (!acc[key]) {
                         acc[key] = {
-                            name: entry.competition_name,
-                            date: entry.target_date,
+                            name: item.name,
+                            date: item.date,
                             entries: []
                         };
                     }
-                    acc[key].entries.push(entry as CompetitionEntry);
+
+                    // Map to the structure expected by the render or simplfy the interface
+                    // The current interface uses 'CompetitionEntry' with 'profiles'. 
+                    // Let's adapt the item to that structure.
+                    acc[key].entries.push({
+                        id: item.id,
+                        competition_name: item.name,
+                        target_date: item.date,
+                        athlete_id: item.athlete_id,
+                        category: item.level || 'N/A', // Using level as category equivalent for display
+                        profiles: {
+                            id: item.athlete_id,
+                            full_name: item.athlete?.full_name || 'Atleta',
+                            avatar_url: item.athlete?.avatar_url,
+                        }
+                    } as any);
                     return acc;
                 }, {});
 
@@ -87,7 +82,7 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
         };
 
         fetchSchedule();
-    }, []);
+    }, [user.id]);
 
     const handleUnassign = async (entryId: string, athleteName: string, competitionName: string) => {
         if (!confirm(`¿Estás seguro de que quieres desasignar a ${athleteName} de "${competitionName}"?`)) return;
@@ -97,10 +92,11 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
 
             // Optimistic update
             setCompetitions(prevGroups => {
-                return prevGroups.map(group => ({
+                const newGroups = prevGroups.map(group => ({
                     ...group,
                     entries: group.entries.filter(e => e.id !== entryId)
                 })).filter(group => group.entries.length > 0);
+                return newGroups;
             });
 
         } catch (err) {
@@ -145,7 +141,7 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                                 <h4 className="text-xs uppercase font-bold text-gray-500 mb-4">Equipo Asistente</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {comp.entries.map((entry: CompetitionEntry) => (
-                                        <div key={entry.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5">
+                                        <div key={entry.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5 hover:border-white/20 transition-colors">
                                             {entry.profiles?.avatar_url ? (
                                                 <img src={entry.profiles.avatar_url} alt="" className="w-10 h-10 rounded-full" />
                                             ) : (
@@ -155,7 +151,7 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                                             )}
                                             <div>
                                                 <p className="font-bold text-sm">{entry.profiles?.full_name}</p>
-                                                <p className="text-xs text-gray-400">Categoría: {entry.category || 'N/A'}</p>
+                                                <p className="text-xs text-gray-400">Nivel: {entry.category || 'N/A'}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
