@@ -48,7 +48,7 @@ export const athletes: Athlete[] = [
     category: "-105kg JNR",
     image: "/athletes/marc.png",
     stats: {
-      lastCompetition: "AEP2 SBD Cup",
+      lastCompetition: "SBD Cup",
       glPoints: 108.5,
       total: 800,
       squat: 295,
@@ -62,7 +62,7 @@ export const athletes: Athlete[] = [
     category: "-105kg SBJ",
     image: "/athletes/Pau.png",
     stats: {
-      lastCompetition: "AEP2 SBD Cup",
+      lastCompetition: "SBD Cup",
       glPoints: 85.5,
       total: 640,
       squat: 270,
@@ -76,12 +76,82 @@ export const athletes: Athlete[] = [
     category: "-83kg Open",
     image: "/athletes/josep.png",
     stats: {
-      lastCompetition: "AEP2 SBD Cup",
+      lastCompetition: "SBD Cup",
       glPoints: 95.8,
       total: 675,
       squat: 270,
       bench: 135,
       deadlift: 270
+    }
+  },
+  {
+    id: 6,
+    name: "Carlos Villena",
+    category: "-93kg JNR",
+    image: "/athletes/villena.jpg",
+    stats: {
+      lastCompetition: "AEP3 Las Torres De Cotilla",
+      glPoints: 61.16,
+      total: 465,
+      squat: 182.5,
+      bench: 117.5,
+      deadlift: 165
+    }
+  },
+  {
+    id: 7,
+    name: "Marina Rico",
+    category: "-69 JNR",
+    image: "/athletes/marina.jpg",
+    stats: {
+      lastCompetition: "III Project Energy Cup",
+      glPoints: 71.49,
+      total: 340,
+      squat: 127.5,
+      bench: 67.5,
+      deadlift: 145
+    }
+  },
+  {
+    id: 8,
+    name: "Elsa Fernandez-Arenas",
+    category: "-69 JNR",
+    image: "/athletes/elsa.jpeg",
+    stats: {
+      lastCompetition: "Campeonato de España Subjunior 2024",
+      glPoints: 55.41,
+      total: 262.5,
+      squat: 87.5,
+      bench: 52.5,
+      deadlift: 120
+    }
+  },
+  {
+    id: 9,
+    name: "Pau Camacho",
+    category: "-83kg JNR",
+    image: "/athletes/pauca.jpg",
+    stats: {
+      lastCompetition: "AEP2 Chiva 2025",
+      glPoints: 81.41,
+      total: 577.5,
+      squat: 212.5,
+      bench: 135,
+      deadlift: 230
+    }
+  },
+  {
+    id: 10,
+    name: "Santiago Badia",
+    category: "-105 SBJ",
+    image: "/athletes/santi.jpg",
+    stats: {
+      lastCompetition: "AEP2 Chiva 2025",
+      glPoints: 62.28,
+      total: 470,
+      squat: 165,
+      bench: 85,
+      deadlift: 220
     }
   }
 ];
