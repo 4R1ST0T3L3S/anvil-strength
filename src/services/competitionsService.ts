@@ -40,27 +40,26 @@ export const competitionsService = {
     async getNextCompetition(athleteId: string) {
         const today = new Date().toISOString().split('T')[0];
 
+        // Fetch all competitions to ensure robust filtering (consistent with CompetitionsView)
         const { data, error } = await supabase
             .from('competitions')
             .select('*')
             .eq('athlete_id', athleteId)
-            // Logic update: We want competitions that haven't ENDED yet.
-            // If end_date exists, use it. If not, use date.
-            // Since OR logic in Supabase/PostgREST can be tricky with mixed nulls, simpler approach:
-            // Fetch upcoming based on date >= today (standard) OR end_date >= today.
-            // But usually, standard fetch is fine, we filter in code if complex?
-            // Let's rely on standard 'date' for "start".
-            // Actually, if a comp started yesterday and ends tomorrow, its 'date' (start) is < today.
-            // So we miss it if we only do .gte('date', today).
-            // We should sort by date. Ideally we fetch future OR active.
-            // .or(`date.gte.${today},end_date.gte.${today}`)
-            .or(`date.gte.${today},end_date.gte.${today}`)
-            .order('date', { ascending: true })
-            .limit(1)
-            .single();
+            .order('date', { ascending: true });
 
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
-        return data as CompetitionAssignment | null;
+        if (error) throw error;
+
+        const comps = data as CompetitionAssignment[];
+
+        // Find the first one that is "active" or "future"
+        // Active: end_date >= today
+        // Future: date >= today
+        const next = comps.filter(c => {
+            if (c.end_date) return c.end_date >= today;
+            return c.date >= today;
+        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+        return next || null;
     },
 
     async getAthleteCompetitions(athleteId: string) {

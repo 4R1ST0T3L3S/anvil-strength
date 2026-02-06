@@ -25,7 +25,7 @@ export const coaches: Coach[] = [
     id: 2,
     name: "Javier Bou",
     role: "ENTRENADOR DE POWERLIFTING",
-    image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop", // Placeholder until updated
+    image: "/coaches/7D70E0F9-1BC6-4CE4-AEAA-85FCE74FC23A.jpeg",
     instagram: "https://www.instagram.com/boustrength?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
     contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSfACXcjom-FbRi1a-PNyrJdvY_wAO9Hpa3_hktaNY82QDx4tg/viewform",
     bio: "Apasionado del Powerlifting y el entrenamiento de fuerza. Con años de experiencia en competición y preparación de atletas, mi objetivo es perfeccionar la técnica y la programación para alcanzar números de élite. La disciplina y la constancia son los pilares de mi metodología."
