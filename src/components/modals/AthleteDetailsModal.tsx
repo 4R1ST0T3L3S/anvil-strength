@@ -29,11 +29,11 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
         </button>
 
         {/* Image Section */}
-        <div className="w-full md:w-1/2 aspect-[3/4] md:aspect-auto relative">
+        <div className="w-full md:w-1/2 aspect-[3/4] md:aspect-auto relative self-stretch">
           <img
             src={athlete.image}
             alt={athlete.name}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent md:hidden" />
           <div className="absolute bottom-0 left-0 p-6 md:hidden">
