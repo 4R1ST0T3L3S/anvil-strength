@@ -44,27 +44,38 @@ const getGreeting = () => {
 
 
 const formatCompetitionName = (name: string, location?: string, level?: string) => {
-    // Priority: "LEVEL PLACE" (e.g. "AEP2 CHIVA")
+    // 1. Clean inputs
+    const cleanName = name.replace(/Campeonato\s+/i, '').trim(); // Remove redundant "Campeonato" if desired, or keep it? 
+    // User said: "AEP1 Campeonato de España Junior". So they might want "Campeonato" kept if it's in the name. 
+    // But usually names are long. Let's return the full name if it's AEP1.
 
-    // 1. Extract Place (City)
+    let lvl = level ? level.toUpperCase() : '';
+
+    // 2. Specific Logic for AEP 1 (National)
+    if (lvl.includes('AEP 1') || lvl.includes('AEP1')) {
+        return `AEP 1 ${name}`; // Return explicitly "AEP 1" + Full Name
+    }
+
+    // 3. Logic for others (AEP 2, AEP 3, etc.) - Keep "LEVEL PLACE" or similar if preferred, 
+    // or switch to standard "LEVEL NAME". 
+    // The previous logic "LEVEL CITY" is good for minor comps where "Open de Valencia" (Name) + "Valencia" (City) is redundant 
+    // OR where "Regional" (Name) needs context.
+
+    // Let's preserve the existing "LEVEL CITY" logic for non-AEP1 to be safe, 
+    // as the user only complained about AEP1.
+
+    // Extract Place (City)
     let city = '';
     if (location) {
         city = location.split(',')[0].trim().toUpperCase();
-        // Remove known prefixes if redundant? Usually just "Valencia", "Madrid", etc.
     }
 
-    // 2. Use Level if available
-    let lvl = level ? level.toUpperCase() : '';
-
-    // If we have both Level and City, return formatted string
     if (lvl && city) {
-        // Clean level nuances if needed (e.g., "AEP 2" -> "AEP2")
-        lvl = lvl.replace(/\s+/g, '');
+        lvl = lvl.replace(/\s+/g, ''); // "AEP 2" -> "AEP2"
         return `${lvl} ${city}`;
     }
 
-    // Fallback: If no level, try to guess from name or regular format
-    let cleanName = name.replace(/Campeonato\s+/i, '').trim();
+    // Fallback
     if (city) {
         return `${cleanName} ${city}`;
     }
