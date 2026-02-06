@@ -6,6 +6,7 @@ export interface CompetitionAssignment {
     coach_id: string;
     name: string;
     date: string;
+    end_date?: string; // Add end_date
     location?: string;
     level?: string; // Add level optional for backward compatibility
     created_at: string;
@@ -13,7 +14,7 @@ export interface CompetitionAssignment {
 
 export const competitionsService = {
     async assignCompetition(
-        competition: { name: string; date: string; location?: string; level?: string },
+        competition: { name: string; date: string; end_date?: string; location?: string; level?: string },
         athleteIds: string[],
         coachId: string
     ) {
@@ -22,6 +23,7 @@ export const competitionsService = {
             coach_id: coachId,
             name: competition.name,
             date: competition.date, // Ensure format YYYY-MM-DD
+            end_date: competition.end_date, // Pass end_date (can be null)
             location: competition.location,
             level: competition.level
         }));
@@ -42,7 +44,17 @@ export const competitionsService = {
             .from('competitions')
             .select('*')
             .eq('athlete_id', athleteId)
-            .gte('date', today)
+            // Logic update: We want competitions that haven't ENDED yet.
+            // If end_date exists, use it. If not, use date.
+            // Since OR logic in Supabase/PostgREST can be tricky with mixed nulls, simpler approach:
+            // Fetch upcoming based on date >= today (standard) OR end_date >= today.
+            // But usually, standard fetch is fine, we filter in code if complex?
+            // Let's rely on standard 'date' for "start".
+            // Actually, if a comp started yesterday and ends tomorrow, its 'date' (start) is < today.
+            // So we miss it if we only do .gte('date', today).
+            // We should sort by date. Ideally we fetch future OR active.
+            // .or(`date.gte.${today},end_date.gte.${today}`)
+            .or(`date.gte.${today},end_date.gte.${today}`)
             .order('date', { ascending: true })
             .limit(1)
             .single();

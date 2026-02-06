@@ -326,7 +326,12 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                             </h3>
                             <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                 <Calendar size={12} />
-                                <span>{getDaysRemaining(nextCompetition.date)} días</span>
+                                <span>
+                                    {getDaysRemaining(nextCompetition.date) <= 0 && nextCompetition.end_date && getDaysRemaining(nextCompetition.end_date) >= 0
+                                        ? "En curso"
+                                        : `${getDaysRemaining(nextCompetition.date)} días`
+                                    }
+                                </span>
                             </div>
                         </div>
                         <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -549,7 +554,12 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                                     </h3>
                                     <div className="flex items-center gap-2 text-xs font-bold opacity-90">
                                         <Calendar size={14} />
-                                        <span>{getDaysRemaining(nextCompetition.date)} días</span>
+                                        <span>
+                                            {getDaysRemaining(nextCompetition.date) <= 0 && nextCompetition.end_date && getDaysRemaining(nextCompetition.end_date) >= 0
+                                                ? "En curso"
+                                                : `${getDaysRemaining(nextCompetition.date)} días`
+                                            }
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
