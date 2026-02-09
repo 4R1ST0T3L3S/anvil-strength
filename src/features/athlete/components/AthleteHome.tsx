@@ -111,14 +111,20 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
             try {
                 setLoading(true);
 
-                // 1. Get Active Block
-                const blocks = await trainingService.getBlocksByAthlete(user.id);
+                // Parallel fetch: blocks and competition at the same time
+                const [blocks, nextComp] = await Promise.all([
+                    trainingService.getBlocksByAthlete(user.id),
+                    competitionsService.getNextCompetition(user.id)
+                ]);
+
+                setNextCompetition(nextComp);
+
                 const active = blocks.find(b => b.is_active);
 
                 if (active) {
                     setActiveBlock(active);
 
-                    // 2. Get Sessions for this block
+                    // Get Sessions for this block
                     const { data: sessData } = await supabase
                         .from('training_sessions')
                         .select(`
@@ -132,18 +138,17 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                         .order('day_number', { ascending: true });
 
                     if (sessData && sessData.length > 0) {
-                        // 2.1 Calculate today's workout
+                        // Calculate today's workout
                         const today = new Date();
                         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-                        const currentDayKey = days[today.getDay()]; // e.g., 'monday'
+                        const currentDayKey = days[today.getDay()];
 
-                        // Priority 1: Match by explicit day_of_week (New Logic)
+                        // Priority 1: Match by explicit day_of_week
                         let sessionForToday = sessData.find(s => s.day_of_week === currentDayKey);
 
-                        // Priority 2: Fallback to Date diff if no explicit day set (Legacy Logic)
+                        // Priority 2: Fallback to Date diff if no explicit day set
                         if (!sessionForToday && active.start_date) {
                             const startDate = new Date(active.start_date);
-                            // Reset hours
                             startDate.setHours(0, 0, 0, 0);
                             today.setHours(0, 0, 0, 0);
 
@@ -153,7 +158,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                             const todayStr = today.toISOString().split('T')[0];
 
                             sessionForToday = sessData.find(s =>
-                                (s as any).date === todayStr || s.day_number === diffDays
+                                (s as { date?: string }).date === todayStr || s.day_number === diffDays
                             );
                         }
 
@@ -162,10 +167,6 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                         }
                     }
                 }
-
-                // 2.3 Fetch next competition (INDEPENDENT of active block)
-                const nextComp = await competitionsService.getNextCompetition(user.id);
-                setNextCompetition(nextComp);
             } catch (error) {
                 console.error('Error fetching home data:', error);
             } finally {

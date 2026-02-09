@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
@@ -15,7 +15,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
     const [savingId, setSavingId] = useState<string | null>(null);
 
     // Fetch sets on mount
-    const fetchSets = async () => {
+    const fetchSets = useCallback(async () => {
         try {
             const data = await trainingService.getSetsByExercise(sessionExerciseId);
             setSets(data);
@@ -24,11 +24,11 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
         } finally {
             setLoading(false);
         }
-    };
+    }, [sessionExerciseId]);
 
     useEffect(() => {
         fetchSets();
-    }, [sessionExerciseId]);
+    }, [sessionExerciseId, fetchSets]);
 
     // Handlers
     const handleAddSet = async () => {
@@ -65,7 +65,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
         }
     };
 
-    const handleUpdateSet = async (setId: string, field: keyof TrainingSet, value: any) => {
+    const handleUpdateSet = async (setId: string, field: keyof TrainingSet, value: string | number | null) => {
         // Optimistic update for UI responsiveness could be implemented here
         // For now, we update local state then debounce/save or save on blur
         // To keep it simple ensuring data integrity:

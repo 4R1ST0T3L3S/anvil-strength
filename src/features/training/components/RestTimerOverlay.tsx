@@ -9,7 +9,7 @@ interface RestTimerOverlayProps {
 }
 
 export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOverlayProps) {
-    const [now, setNow] = useState(Date.now());
+    const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
         const interval = setInterval(() => {

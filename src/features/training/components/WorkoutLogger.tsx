@@ -96,11 +96,10 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                 const formatted: ExtendedSession[] = (sessData || []).map(s => ({
                     ...s,
                     exercises: (s.session_exercises || [])
-                        .sort((a: any, b: any) => a.order_index - b.order_index)
-                        .map((e: any) => ({
+                        .sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
+                        .map((e: SessionExercise & { training_sets: TrainingSet[] }) => ({
                             ...e,
-                            sets: (e.training_sets || [])
-                                .sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
+                            sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
                         }))
                 }));
 
@@ -133,7 +132,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                     // But now we operate on filtered list.
 
                     const sessionForToday = currentWeekSessions.find(s =>
-                        (s as any).date === todayStr || s.day_number === (diffDays + 1)
+                        s.date === todayStr || s.day_number === (diffDays + 1)
                     );
 
                     if (sessionForToday) {
@@ -347,7 +346,7 @@ function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: T
     const persistChange = useCallback(async (updates: Partial<TrainingSet>) => {
         setSaving(true);
         try {
-            await trainingService.updateSetActuals(set.id, updates as any);
+            await trainingService.updateSetActuals(set.id, updates);
             // Verify completion locally for UI feedback
             const isDone = (updates.actual_reps || actualReps) && (updates.actual_load || actualLoad);
             if (isDone) setIsCompleted(true);

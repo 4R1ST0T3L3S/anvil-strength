@@ -51,7 +51,7 @@ const fetchWithFallback = async (targetUrl: string): Promise<string> => {
 // - If AEP 3: Prefer SUNDAY
 // - If AEP 1 / AEP 2 / National: Prefer SATURDAY
 // - If range detected: Return range start and end
-const parseBestDate = (dateStr: string, level: Competition['level']): { str: string, iso?: string, endIso?: string } => {
+const parseBestDate = (dateStr: string): { str: string, iso?: string, endIso?: string } => {
     try {
         const year = 2026;
         const months: { [key: string]: number } = {
@@ -208,7 +208,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                             const level = determineLevel(name, rawLevel);
 
                             // 2. Parse Date using Level Context
-                            const parsed = parseBestDate(rawDateStr, level);
+                            const parsed = parseBestDate(rawDateStr);
 
                             return {
                                 fecha: parsed.str, // Use the formatted "best" date string

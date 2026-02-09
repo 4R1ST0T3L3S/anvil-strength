@@ -82,7 +82,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         // However, if we don't close it, it might hang if App.tsx crashes.
         // Let's rely on success.
 
-        // onClose will be triggered by App.tsx when it detects the user
+        // Now that we removed the listener from App.tsx, we must close it here.
+        onClose();
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
@@ -106,6 +107,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           return;
         }
 
+        // If we have a session (auto-login after register), close modal
+        if (data.session) {
+          onClose();
+        }
       }
 
       // Safety timeout: If App.tsx doesn't close the modal in 2 seconds, we force close it 

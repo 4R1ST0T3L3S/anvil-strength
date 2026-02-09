@@ -42,7 +42,7 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                 // Group by competition
                 // We need to map the 'athlete' nested object to 'profiles' to match the existing rendering or update rendering
                 // Let's update the mapping to match the Grouping logic
-                const grouped = assignments.reduce((acc: Record<string, CompetitionGroup>, item: any) => {
+                const grouped = assignments.reduce((acc: Record<string, CompetitionGroup>, item: { id: string; name: string; date: string; athlete_id: string; level?: string; athlete?: { full_name: string; avatar_url: string } }) => {
                     // Item has: id, name, date, location, level, athlete: { full_name, avatar_url }
                     // We construct a unique key for the competition event
                     const key = `${item.name}-${item.date}`;
@@ -69,7 +69,7 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                             full_name: item.athlete?.full_name || 'Atleta',
                             avatar_url: item.athlete?.avatar_url,
                         }
-                    } as any);
+                    });
                     return acc;
                 }, {});
 

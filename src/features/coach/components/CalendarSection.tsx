@@ -28,7 +28,7 @@ export function CalendarSection() {
                 });
 
                 setCompetitions(filtered);
-            } catch (err: any) {
+            } catch (err) {
                 console.error('Error fetching AEP calendar:', err);
                 setError('No se pudo cargar el calendario de la AEP.');
             } finally {
@@ -43,7 +43,7 @@ export function CalendarSection() {
 
     const getCompetitionMeta = (comp: Competition) => {
         // Handle both types (AEP Competition has 'level', Team Group needs mapping or might have it)
-        const level = (comp as any).level || 'COMPETICIÓN';
+        const level = comp.level || 'COMPETICIÓN';
 
         switch (level) {
             case 'AEP 3': return { level, color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10', hover: 'hover:border-orange-500' };

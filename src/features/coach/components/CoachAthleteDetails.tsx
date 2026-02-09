@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { ArrowLeft, TrendingUp, User, FileText, Trophy, Trash2, Calendar, MapPin } from 'lucide-react';
@@ -21,7 +21,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
 
-    const fetchCompetitions = async () => {
+    const fetchCompetitions = useCallback(async () => {
         if (!athleteId) return;
         try {
             const data = await competitionsService.getAthleteCompetitions(athleteId);
@@ -29,7 +29,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
         } catch (error) {
             console.error('Error fetching competitions:', error);
         }
-    };
+    }, [athleteId]);
 
     const handleRemoveCompetition = async (id: string, name: string) => {
         if (!confirm(`¿Estás seguro de que quieres eliminar la asignación a "${name}"?`)) return;
@@ -63,7 +63,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
 
         fetchAthlete();
         fetchCompetitions();
-    }, [athleteId]);
+    }, [athleteId, fetchCompetitions]);
 
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
     if (!athlete) return <div className="p-8 text-center text-red-500">Atleta no encontrado</div>;

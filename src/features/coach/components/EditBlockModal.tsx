@@ -57,9 +57,9 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
             toast.success('Bloque actualizado correctamente');
             onBlockUpdated();
             onClose();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error updating block:', error);
-            toast.error(`Error: ${error.message || 'Error al actualizar el bloque'}`);
+            toast.error(`Error: ${(error as Error).message || 'Error al actualizar el bloque'}`);
         } finally {
             setLoading(false);
         }

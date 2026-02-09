@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock } from '../../../types/training';
@@ -24,7 +24,7 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
     // Edit Modal State
     const [blockToEdit, setBlockToEdit] = useState<TrainingBlock | null>(null);
 
-    const fetchBlocks = async () => {
+    const fetchBlocks = useCallback(async () => {
         try {
             setLoading(true);
             const data = await trainingService.getBlocksByAthlete(athleteId);
@@ -34,11 +34,11 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
         } finally {
             setLoading(false);
         }
-    };
+    }, [athleteId]);
 
     useEffect(() => {
         fetchBlocks();
-    }, [athleteId]);
+    }, [athleteId, fetchBlocks]);
 
     const handleDeleteClick = (e: React.MouseEvent, blockId: string) => {
         e.stopPropagation(); // Prevent navigating to the block
