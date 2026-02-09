@@ -182,7 +182,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
 
             {/* Hero Section */}
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
+                <div className="absolute inset-0 bg-[url('/portadaanvil2.jpg')] bg-cover bg-center">
                     <div className="absolute inset-0 bg-black/40" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent" />
                 </div>
