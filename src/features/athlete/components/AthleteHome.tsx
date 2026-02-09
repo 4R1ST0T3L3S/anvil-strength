@@ -153,7 +153,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                             const todayStr = today.toISOString().split('T')[0];
 
                             sessionForToday = sessData.find(s =>
-                                (s as any).date === todayStr || s.day_number === diffDays
+                                (s as { date?: string }).date === todayStr || s.day_number === diffDays
                             );
                         }
 

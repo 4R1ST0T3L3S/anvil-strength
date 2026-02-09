@@ -23,7 +23,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
         if (isOpen && exercises.length === 0) {
             fetchLibrary();
         }
-    }, [isOpen]);
+    }, [isOpen, exercises.length]);
 
     const fetchLibrary = async () => {
         try {

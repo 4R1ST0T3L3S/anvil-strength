@@ -49,6 +49,7 @@ export interface SessionExercise {
     exercise_id: string;
     order_index: number;
     notes?: string | null;
+    variant_name?: string | null; // For specific variations
     rpe?: string | null; // Moved from Set level
     velocity_avg?: string | null;
     rest_seconds?: number | null; // Moved from Set level

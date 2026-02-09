@@ -16,9 +16,9 @@ function CustomSelect({
     label,
     className = ""
 }: {
-    value: any;
-    onChange: (val: any) => void;
-    options: { label: string; value: any }[];
+    value: string | number;
+    onChange: (val: string | number) => void;
+    options: { label: string; value: string | number }[];
     label: string;
     className?: string;
 }) {
@@ -243,7 +243,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             className="col-span-6 md:col-span-3 min-h-[80px] md:min-h-[100px]"
                                             label="RPE"
                                             value={rpe}
-                                            onChange={setRpe}
+                                            onChange={(val) => setRpe(Number(val))}
                                             options={[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5].map(v => ({ label: `@${v}`, value: v }))}
                                         />
                                     ) : (
@@ -266,7 +266,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                 <CustomSelect
                                     label="Ejercicio / Movimiento"
                                     value={exercise}
-                                    onChange={setExercise}
+                                    onChange={(val) => setExercise(String(val))}
                                     options={[
                                         { label: 'Sentadilla', value: 'Sentadilla' },
                                         { label: 'Press de Banca', value: 'Press de Banca' },

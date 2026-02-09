@@ -27,7 +27,7 @@ interface MacroTarget {
 
 export function AthleteNutritionView({ user: _user }: AthleteNutritionViewProps) {
     const [loading, setLoading] = useState(true);
-    const [planExists, _setPlanExists] = useState(false);
+    const [planExists] = useState(false);
 
     useEffect(() => {
         // Simulation of fetching nutrition plan

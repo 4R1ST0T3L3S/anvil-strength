@@ -85,10 +85,10 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
             setEndWeek(getWeekNumber() + 4);
             onBlockCreated();
             onClose();
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error creating block:', error);
             // Show specific error message to help debugging (e.g., missing column)
-            toast.error(`Error: ${error.message || 'Error al crear el bloque'}`);
+            toast.error(`Error: ${(error as Error).message || 'Error al crear el bloque'}`);
         } finally {
             setLoading(false);
         }

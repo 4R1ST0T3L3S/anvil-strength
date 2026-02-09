@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Plus, MoreVertical } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingSession, SessionExercise } from '../../../types/training';
@@ -16,7 +16,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-    const fetchExercises = async () => {
+    const fetchExercises = useCallback(async () => {
         try {
             setLoading(true);
             const data = await trainingService.getSessionExercises(session.id);
@@ -26,11 +26,11 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [session.id]);
 
     useEffect(() => {
         fetchExercises();
-    }, [session.id]);
+    }, [session.id, fetchExercises]);
 
     return (
         <div className="flex flex-col h-full bg-[#1c1c1c]">

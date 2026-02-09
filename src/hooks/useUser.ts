@@ -117,7 +117,14 @@ const fetchUser = async (): Promise<UserProfile | null> => {
 
         return optimisticUser;
 
-    } catch {
+    } catch (error) {
+        // If it's a timeout or specific error, rethrow so useQuery sees it as an error
+        if (error instanceof Error && error.message.includes('timeout')) {
+            throw error;
+        }
+        // If it's a generic auth error (e.g., weird Supabase state), returning null is safer (logs out)
+        // But for network issues, we want Error state, not Logout state.
+        // Let's rely on standard error handling for everything except explicit "No Session".
         return null;
     }
 };

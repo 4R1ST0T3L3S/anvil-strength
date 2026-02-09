@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Search, User, Check, Trophy, Save, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -22,13 +22,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
     const [submitting, setSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        if (isOpen && session?.user.id) {
-            fetchAthletes();
-        }
-    }, [isOpen, session?.user.id]);
-
-    const fetchAthletes = async () => {
+    const fetchAthletes = useCallback(async () => {
         try {
             setLoading(true);
             // 1. Get athlete IDs assigned to this coach
@@ -61,7 +55,13 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
         } finally {
             setLoading(false);
         }
-    };
+    }, [session?.user.id]);
+
+    useEffect(() => {
+        if (isOpen && session?.user.id) {
+            fetchAthletes();
+        }
+    }, [isOpen, session?.user.id, fetchAthletes]);
 
     const toggleAthlete = (id: string) => {
         const newSelected = new Set(selectedAthletes);
@@ -103,10 +103,10 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
             toast.success(`Competición asignada a ${selectedAthletes.size} atletas`);
             onClose();
             setSelectedAthletes(new Set()); // Reset selection
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error assigning competition:', error);
             // Show more specific error
-            const msg = error.message || 'Error desconocido';
+            const msg = (error as Error).message || 'Error desconocido';
             toast.error(`Error: ${msg}`);
         } finally {
             setSubmitting(false);

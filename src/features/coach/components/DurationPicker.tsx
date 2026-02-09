@@ -25,14 +25,14 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
         onChange(total > 0 ? total : null);
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-            setIsOpen(false);
-            if (onBlur) onBlur();
-        }
-    };
-
     useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+                if (onBlur) onBlur();
+            }
+        };
+
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
         } else {
@@ -41,7 +41,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isOpen]);
+    }, [isOpen, onBlur]);
 
     return (
         <div className="relative w-full" ref={containerRef}>

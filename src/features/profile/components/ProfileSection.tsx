@@ -99,20 +99,20 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
                 profileImageUrl = '';
             }
 
-            const updateData: any = {
+            const updateData: Partial<UserProfile> = {
                 full_name: formData.name,
                 nickname: formData.nickname,
                 avatar_url: profileImageUrl,
-                gender: formData.gender || null,
-                age_category: formData.age_category || null,
-                weight_category: formData.weight_category || null,
-                biography: formData.biography || null
+                gender: (formData.gender as "male" | "female") || undefined,
+                age_category: formData.age_category || undefined,
+                weight_category: formData.weight_category || undefined,
+                biography: formData.biography || undefined
             };
 
             if (user.role === 'athlete') {
-                updateData.squat_pr = formData.squat_pr ? parseFloat(formData.squat_pr) : null;
-                updateData.bench_pr = formData.bench_pr ? parseFloat(formData.bench_pr) : null;
-                updateData.deadlift_pr = formData.deadlift_pr ? parseFloat(formData.deadlift_pr) : null;
+                updateData.squat_pr = formData.squat_pr ? parseFloat(formData.squat_pr) : undefined;
+                updateData.bench_pr = formData.bench_pr ? parseFloat(formData.bench_pr) : undefined;
+                updateData.deadlift_pr = formData.deadlift_pr ? parseFloat(formData.deadlift_pr) : undefined;
             }
 
             const { error } = await supabase

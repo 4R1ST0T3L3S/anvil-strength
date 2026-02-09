@@ -223,9 +223,9 @@ export const trainingService = {
         return data;
     },
 
-    async updateSetActuals(setId: string, actuals: { actual_reps?: string; actual_load?: number; actual_rpe?: string }): Promise<TrainingSet> {
+    async updateSetActuals(setId: string, actuals: Partial<TrainingSet>): Promise<TrainingSet> {
         // This is wrapper around updateSet but semantically for athletes
-        return this.updateSet(setId, actuals as unknown as Partial<TrainingSet>);
+        return this.updateSet(setId, actuals);
     },
 
     async deleteSet(setId: string): Promise<void> {
@@ -308,7 +308,7 @@ export const trainingService = {
         // We'll trust supabase.auth.getUser() on the client side calls or pass it in. 
         // Ideally we pass coachId.
 
-        const insertPayload: any = { name };
+        const insertPayload = { name };
 
         if (coachId) {
             console.log("Creating exercise for coach:", coachId);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calculator, Weight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,16 +30,13 @@ const PLATES_CONFIG: Plate[] = [
 export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
     const [targetWeight, setTargetWeight] = useState<string>('');
     const [hasCollars, setHasCollars] = useState<boolean>(false);
-    const [platesNeeded, setPlatesNeeded] = useState<Plate[]>([]);
-
-    const calculatePlates = () => {
+    const platesNeeded = useMemo(() => {
         const barWeight = 20;
         const collarsWeight = hasCollars ? 5 : 0;
         const weightPerSide = (parseFloat(targetWeight) - (barWeight + collarsWeight)) / 2;
 
         if (isNaN(weightPerSide) || weightPerSide <= 0) {
-            setPlatesNeeded([]);
-            return;
+            return [];
         }
 
         const result: Plate[] = [];
@@ -55,11 +52,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
             }
         });
 
-        setPlatesNeeded(result);
-    };
-
-    useEffect(() => {
-        calculatePlates();
+        return result;
     }, [targetWeight, hasCollars]);
 
     if (!isOpen) return null;

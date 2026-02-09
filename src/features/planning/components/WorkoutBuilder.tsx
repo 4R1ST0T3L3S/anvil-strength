@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
@@ -49,24 +49,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         onConfirm: () => void;
     }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
-    // Initial Load
-    useEffect(() => {
-        loadData();
-    }, [athleteId, blockId]);
-
-    // Warn before leaving if unsaved changes
-    useEffect(() => {
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            if (hasUnsavedChanges) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [hasUnsavedChanges]);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             let activeBlock: TrainingBlock | undefined;
@@ -106,8 +89,8 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             const formattedSessions: ExtendedSession[] = (sessions || []).map(s => ({
                 ...s,
                 exercises: (s.session_exercises || [])
-                    .sort((a: any, b: any) => a.order_index - b.order_index)
-                    .map((e: any) => ({
+                    .sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
+                    .map((e: SessionExercise & { training_sets: TrainingSet[] }) => ({
                         ...e,
                         sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
                     }))
@@ -121,7 +104,12 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [athleteId, blockId]);
+
+    // Initial Load
+    useEffect(() => {
+        loadData();
+    }, [athleteId, blockId, loadData]);
 
     // const _handleCreateBlock = async () => {
     //     setLoading(true);
@@ -204,7 +192,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     sessions: [...prev.sessions, { ...newSession, exercises: [] }]
                 };
             });
-        } catch (err) {
+        } catch {
             toast.error("Error añadiendo día");
         }
     };
@@ -285,10 +273,8 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     })
                 };
             });
-        } catch (err: any) {
-            console.error("FAILED ADDING EXERCISE", err);
-            console.error("Details:", err.message, err.details, err.hint);
-            toast.error(`Error añadiendo ejercicio: ${err.message || 'Desconocido'}`);
+        } catch (err) {
+            toast.error(`Error añadiendo ejercicio: ${(err as Error).message || 'Desconocido'}`);
         }
     };
 
@@ -309,7 +295,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     })
                 };
             });
-        } catch (err) {
+        } catch {
             toast.error("Error eliminando");
         }
     };
@@ -376,7 +362,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    const updateSetField = (setId: string, field: keyof TrainingSet, value: any) => {
+    const updateSetField = (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => {
         setHasUnsavedChanges(true);
         setBlockData(prev => {
             if (!prev) return null;
@@ -443,7 +429,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         };
                     });
                     toast.success("Día eliminado");
-                } catch (err) {
+                } catch {
                     toast.error("Error eliminando día");
                 }
             }
@@ -526,7 +512,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         // Also handles merging 'exercise' object updates for local display
                         const newEx = { ...ex, ...updates };
                         if (updates.exercise) {
-                            newEx.exercise = { ...ex.exercise, ...updates.exercise } as any;
+                            newEx.exercise = { ...ex.exercise, ...updates.exercise } as any; // Keeping as any for now due to complexity of nested optional ExerciseLibrary matching
                         }
                         return newEx;
                     })
@@ -635,7 +621,24 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
 // ==========================================
 // SUB-COMPONENT: DAY COLUMN
 // ==========================================
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet, onRemoveSession }: any) {
+// ==========================================
+// SUB-COMPONENT: DAY COLUMN
+// ==========================================
+interface DayColumnProps {
+    session: ExtendedSession;
+    onUpdateName: (id: string, name: string) => void;
+    onUpdateDate: (id: string, date: string) => void;
+    onAddExercise: (sessionId: string, name: string) => void;
+    onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
+    onRemoveExercise: (id: string, sessionId: string) => void;
+    onAddSet: (sessionExerciseId: string) => void;
+    onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
+    onRemoveSet: (setId: string) => void;
+    onDuplicateSet: (set: TrainingSet) => void;
+    onRemoveSession: (id: string) => void;
+}
+
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet, onRemoveSession }: DayColumnProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     if (!session) {
@@ -728,7 +731,17 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
 // ==========================================
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
-function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: any) {
+interface ExerciseCardProps {
+    sessionExercise: ExtendedSessionExercise;
+    onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
+    onAddSet: (sessionExerciseId: string) => void;
+    onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
+    onRemoveSet: (setId: string) => void;
+    onRemoveExercise: () => void;
+    onDuplicateSet: (set: TrainingSet) => void;
+}
+
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: ExerciseCardProps) {
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
@@ -861,12 +874,12 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
 
                         <CompactInput
                             value={set.target_reps}
-                            onChange={(v: string) => onUpdateSet(set.id, 'target_reps', v)}
+                            onChange={(v) => onUpdateSet(set.id, 'target_reps', v as string)}
                             placeholder="-"
                         />
                         <CompactInput
                             value={set.target_load}
-                            onChange={(v: number | null) => onUpdateSet(set.id, 'target_load', v)}
+                            onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
                             placeholder="-"
                             type="number"
                         />
@@ -893,7 +906,14 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
 // ==========================================
 // SUB-COMPONENT: COMPACT INPUT
 // ==========================================
-function CompactInput({ value, onChange, placeholder, type = "text" }: any) {
+interface CompactInputProps {
+    value?: string | number | null; // Allow undefined
+    onChange: (val: string | number | null) => void; // Strict type
+    placeholder?: string;
+    type?: 'text' | 'number';
+}
+
+function CompactInput({ value, onChange, placeholder, type = "text" }: CompactInputProps) {
     return (
         <input
             type={type}

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { Loader } from 'lucide-react';
@@ -17,35 +18,72 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const queryClient = useQueryClient();
+
     useEffect(() => {
-        // 1. Check active session on mount
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
-            if (error) {
-                console.error('Error getting session:', error);
+        let mounted = true;
+
+        const initializeAuth = async () => {
+            try {
+                // 1. Check active session on mount
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    console.error('Error getting session:', error);
+                    // If error (e.g. refresh token missing), ensure we are signed out
+                    if (mounted) {
+                        setSession(null);
+                        setLoading(false);
+                    }
+                    return;
+                }
+
+                if (mounted) {
+                    setSession(session);
+                    setLoading(false);
+                }
+            } catch (err) {
+                console.error("Auth initialization exception:", err);
+                if (mounted) {
+                    setSession(null);
+                    setLoading(false);
+                }
             }
-            setSession(session);
-            setLoading(false);
-        });
+        };
+
+        initializeAuth();
 
         // 2. Listen for auth changes (including token refresh)
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((event, session) => {
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Auth event:', event); // Debug logging
 
+            if (!mounted) return;
+
             if (event === 'TOKEN_REFRESHED') {
-                // Token was refreshed, update session
                 setSession(session);
             } else if (event === 'SIGNED_OUT') {
                 setSession(null);
+                queryClient.clear(); // Clear all cache on logout
+                // Force local storage clear just in case
+                if (typeof window !== 'undefined') {
+                    window.localStorage.removeItem('anvil-auth-token');
+                }
+            } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
+                setSession(session);
+                await queryClient.invalidateQueries({ queryKey: ['user'] });
             } else {
                 setSession(session);
             }
             setLoading(false);
         });
 
-        return () => subscription.unsubscribe();
-    }, []);
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
+    }, [queryClient]);
 
     if (loading) {
         return (

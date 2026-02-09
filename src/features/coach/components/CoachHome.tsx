@@ -76,7 +76,7 @@ export function CoachHome({ user }: { user: UserProfile }) {
         };
 
         fetchStats();
-    }, []);
+    }, [user.id]);
 
     if (loading) {
         return (

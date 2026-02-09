@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Calendar, Plus, Dumbbell, MoreVertical } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, TrainingSession } from '../../../types/training';
@@ -16,7 +16,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
     const [loading, setLoading] = useState(true);
     const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] = useState(false);
 
-    const fetchSessions = async () => {
+    const fetchSessions = useCallback(async () => {
         try {
             setLoading(true);
             const data = await trainingService.getSessionsByBlock(block.id);
@@ -26,11 +26,11 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
         } finally {
             setLoading(false);
         }
-    };
+    }, [block.id]);
 
     useEffect(() => {
         fetchSessions();
-    }, [block.id]);
+    }, [block.id, fetchSessions]);
 
     const formatDate = (dateStr?: string | null) => {
         if (!dateStr) return '—';

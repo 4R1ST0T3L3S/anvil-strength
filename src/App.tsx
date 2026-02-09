@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
@@ -21,18 +21,7 @@ function App() {
   const queryClient = useQueryClient();
 
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) {
-        await queryClient.invalidateQueries({ queryKey: ['user'] });
-        if (event === 'SIGNED_IN') setIsAuthModalOpen(false);
-      }
-    });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [queryClient]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
