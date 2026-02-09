@@ -510,9 +510,9 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         if (ex.id !== sessionExerciseId) return ex;
                         // Handles nested exercise updates if any, or flat fields
                         // Also handles merging 'exercise' object updates for local display
-                        const newEx = { ...ex, ...updates };
-                        if (updates.exercise) {
-                            newEx.exercise = { ...ex.exercise, ...updates.exercise } as any; // Keeping as any for now due to complexity of nested optional ExerciseLibrary matching
+                        const newEx: ExtendedSessionExercise = { ...ex, ...updates };
+                        if (updates.exercise && ex.exercise) {
+                            newEx.exercise = { ...ex.exercise, ...updates.exercise };
                         }
                         return newEx;
                     })
@@ -751,27 +751,27 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
     const hasVideo = !!sessionExercise.exercise?.video_url;
 
     const handleVariantChange = (val: string) => {
-        onUpdateExercise(sessionExercise.id, { variant_name: val } as any);
+        onUpdateExercise(sessionExercise.id, { variant_name: val });
     };
 
     const handleVariantBlur = async () => {
-        await trainingService.updateSessionExercise(sessionExercise.id, { variant_name: sessionExercise.variant_name } as any);
+        await trainingService.updateSessionExercise(sessionExercise.id, { variant_name: sessionExercise.variant_name });
     };
 
     const handleNotesChange = (val: string) => {
-        onUpdateExercise(sessionExercise.id, { notes: val } as any);
+        onUpdateExercise(sessionExercise.id, { notes: val });
     };
 
     const handleNotesBlur = async () => {
-        await trainingService.updateSessionExercise(sessionExercise.id, { notes: sessionExercise.notes } as any);
+        await trainingService.updateSessionExercise(sessionExercise.id, { notes: sessionExercise.notes });
     };
 
-    const handleGlobalUpdate = (field: string, val: any) => {
-        onUpdateExercise(sessionExercise.id, { [field]: val } as any);
+    const handleGlobalUpdate = (field: keyof SessionExercise, val: string | number | null) => {
+        onUpdateExercise(sessionExercise.id, { [field]: val });
     };
 
-    const handleGlobalBlur = async (field: string, val: any) => {
-        await trainingService.updateSessionExercise(sessionExercise.id, { [field]: val } as any);
+    const handleGlobalBlur = async (field: keyof SessionExercise, val: string | number | null) => {
+        await trainingService.updateSessionExercise(sessionExercise.id, { [field]: val });
     };
 
     return (
