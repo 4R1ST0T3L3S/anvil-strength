@@ -134,6 +134,7 @@ export const useUser = () => {
         queryKey: ['user'],
         queryFn: fetchUser,
         staleTime: 1000 * 60 * 5, // 5 minutes
-        retry: 1
+        retry: 2,
+        placeholderData: (previousData) => previousData, // Keep user during refetch
     });
 };

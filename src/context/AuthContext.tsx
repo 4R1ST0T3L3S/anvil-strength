@@ -23,67 +23,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         let mounted = true;
 
-        const initializeAuth = async () => {
-            try {
-                // 1. Check active session on mount
-                const { data: { session }, error } = await supabase.auth.getSession();
-
-                if (error) {
-                    console.error('Error getting session:', error);
-                    // If error (e.g. refresh token missing), ensure we are signed out
-                    if (mounted) {
-                        setSession(null);
-                        setLoading(false);
-                    }
-                    return;
-                }
-
-                if (mounted) {
-                    setSession(session);
-                    setLoading(false);
-                }
-            } catch (err) {
-                console.error("Auth initialization exception:", err);
-                if (mounted) {
-                    setSession(null);
-                    setLoading(false);
-                }
-            }
-        };
-
-        initializeAuth();
-
-        // 2. Listen for auth changes (including token refresh)
+        // Use onAuthStateChange as the SINGLE source of truth for session
+        // This handles both initial session restoration and subsequent changes
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth event:', event); // Debug logging
+        } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+            console.log('Auth event:', event, 'Session exists:', !!currentSession);
 
             if (!mounted) return;
 
-            if (event === 'TOKEN_REFRESHED') {
-                setSession(session);
-            } else if (event === 'SIGNED_OUT') {
-                setSession(null);
-                queryClient.clear(); // Clear all cache on logout
-                // Force local storage clear just in case
-                if (typeof window !== 'undefined') {
-                    window.localStorage.removeItem('anvil-auth-token');
-                }
-            } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
-                setSession(session);
-                await queryClient.invalidateQueries({ queryKey: ['user'] });
-            } else {
-                setSession(session);
+            switch (event) {
+                case 'INITIAL_SESSION':
+                    // This fires on page load with the persisted session (if any)
+                    setSession(currentSession);
+                    setLoading(false);
+                    break;
+                case 'SIGNED_IN':
+                case 'TOKEN_REFRESHED':
+                case 'USER_UPDATED':
+                    setSession(currentSession);
+                    // Use setTimeout to avoid Supabase deadlock warning
+                    setTimeout(() => {
+                        queryClient.invalidateQueries({ queryKey: ['user'] });
+                    }, 0);
+                    break;
+                case 'SIGNED_OUT':
+                    setSession(null);
+                    queryClient.clear();
+                    break;
+                default:
+                    // Handle any other events
+                    setSession(currentSession);
             }
-            setLoading(false);
         });
+
+        // Fallback timeout in case INITIAL_SESSION doesn't fire (edge case)
+        const fallbackTimeout = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn('Auth INITIAL_SESSION timeout, checking session manually');
+                supabase.auth.getSession().then(({ data: { session: fallbackSession } }) => {
+                    if (mounted) {
+                        setSession(fallbackSession);
+                        setLoading(false);
+                    }
+                });
+            }
+        }, 3000);
 
         return () => {
             mounted = false;
+            clearTimeout(fallbackTimeout);
             subscription.unsubscribe();
         };
-    }, [queryClient]);
+    }, [queryClient, loading]);
 
     if (loading) {
         return (

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { UserProfile } from '../hooks/useUser';
+import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
 
@@ -16,6 +17,10 @@ interface AppRoutesProps {
 
 export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
     const location = useLocation();
+    const { session } = useAuth();
+
+    // If we have an active session but user data hasn't loaded yet, don't redirect
+    const hasActiveSession = !!session;
 
     return (
         <Routes location={location} key={location.pathname}>
@@ -26,6 +31,9 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     ) : (
                         <Navigate to="/dashboard" replace />
                     )
+                ) : hasActiveSession ? (
+                    // Session exists but user not loaded yet - show loading, don't redirect
+                    <DashboardSkeleton />
                 ) : (
                     <LandingPage
                         onLoginClick={onLoginClick}
@@ -34,29 +42,35 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 )
             } />
             <Route path="/dashboard" element={
-                !user ? (
+                !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : user.role === 'coach' ? (
+                ) : !user && hasActiveSession ? (
+                    // Session exists but user not loaded - show loading instead of redirect
+                    <DashboardSkeleton />
+                ) : user?.role === 'coach' ? (
                     <Navigate to="/coach-dashboard" replace />
-                ) : (
+                ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
                         <UserDashboard
                             user={user}
                             onLogout={onLogout}
                         />
                     </Suspense>
-                )
+                ) : null
             } />
             <Route path="/coach-dashboard" element={
-                !user ? (
+                !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : user.role !== 'coach' ? (
+                ) : !user && hasActiveSession ? (
+                    // Session exists but user not loaded - show loading instead of redirect
+                    <DashboardSkeleton />
+                ) : user?.role !== 'coach' ? (
                     <Navigate to="/dashboard" replace />
-                ) : (
+                ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
                         <CoachDashboard user={user} onLogout={onLogout} />
                     </Suspense>
-                )
+                ) : null
             } />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -22,7 +22,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes garbage collection
+    },
+  },
+})
 
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'

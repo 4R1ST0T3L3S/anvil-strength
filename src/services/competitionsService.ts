@@ -40,26 +40,18 @@ export const competitionsService = {
     async getNextCompetition(athleteId: string) {
         const today = new Date().toISOString().split('T')[0];
 
-        // Fetch all competitions to ensure robust filtering (consistent with CompetitionsView)
+        // Optimized: filter in DB and get only 1 result
         const { data, error } = await supabase
             .from('competitions')
             .select('*')
             .eq('athlete_id', athleteId)
-            .order('date', { ascending: true });
+            .or(`date.gte.${today},end_date.gte.${today}`)
+            .order('date', { ascending: true })
+            .limit(1)
+            .maybeSingle();
 
         if (error) throw error;
-
-        const comps = data as CompetitionAssignment[];
-
-        // Find the first one that is "active" or "future"
-        // Active: end_date >= today
-        // Future: date >= today
-        const next = comps.filter(c => {
-            if (c.end_date) return c.end_date >= today;
-            return c.date >= today;
-        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-
-        return next || null;
+        return data as CompetitionAssignment | null;
     },
 
     async getAthleteCompetitions(athleteId: string) {

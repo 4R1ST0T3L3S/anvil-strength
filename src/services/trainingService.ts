@@ -12,7 +12,8 @@ export const trainingService = {
             .select('*')
             .eq('athlete_id', athleteId)
             .order('is_active', { ascending: false })
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(20);
 
         if (error) {
             console.error('Error fetching training blocks:', error);
