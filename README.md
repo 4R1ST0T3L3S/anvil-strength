@@ -3,7 +3,7 @@
 > **La plataforma definitiva para la gestión y el entrenamiento de Powerlifting.**
 > *Donde la fuerza se encuentra con la tecnología.*
 
-![Anvil Strength Banner](https://img.shields.io/badge/Anvil-Strength-red?style=for-the-badge&logo=dumbbell&logoColor=white) ![Status](https://img.shields.io/badge/Status-Active_Development-success?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=for-the-badge)
+![Anvil Strength Banner](https://img.shields.io/badge/Anvil-Strength-red?style=for-the-badge&logo=dumbbell&logoColor=white) ![Status](https://img.shields.io/badge/Status-Stable-success?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-1.3.0-blue?style=for-the-badge)
 
 **Anvil Strength App** es una aplicación web progresiva (PWA) diseñada para modernizar la experiencia de entrenamiento en clubes de fuerza. Conecta a entrenadores y atletas en un ecosistema digital fluido, permitiendo una planificación precisa, un seguimiento detallado y herramientas avanzadas para maximizar el rendimiento.
 
