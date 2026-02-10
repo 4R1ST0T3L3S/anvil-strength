@@ -83,28 +83,61 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const renderContent = () => {
         switch (currentView) {
             case 'home':
-                return <CoachHome user={user} />;
+                return <CoachHome user={user} onNavigate={setCurrentView} />;
             case 'athletes':
-                return <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} />;
+                return <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
             case 'athlete_details':
                 return selectedAthleteId ? (
                     <CoachAthleteDetails
                         athleteId={selectedAthleteId}
                         onBack={() => setCurrentView('athletes')}
                     />
-                ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} />;
+                ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
             case 'schedule':
-                return <CoachTeamSchedule user={user} />;
+                // Assuming CoachTeamSchedule doesn't have onBack yet, we might need to wrap it or add it
+                return (
+                    <div className="h-full flex flex-col">
+                        <div className="p-4 md:p-8 pb-0">
+                            <button
+                                onClick={() => setCurrentView('home')}
+                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+                            >
+                                ← Volver al Dashboard
+                            </button>
+                        </div>
+                        <CoachTeamSchedule user={user} />
+                    </div>
+                );
             case 'calendar':
                 return (
-                    <div className="p-4 md:p-8">
+                    <div className="p-4 md:p-8 h-full flex flex-col">
+                        <div className="mb-4">
+                            <button
+                                onClick={() => setCurrentView('home')}
+                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                            >
+                                ← Volver al Dashboard
+                            </button>
+                        </div>
                         <CalendarSection />
                     </div>
                 );
             case 'profile':
-                return <ProfileSection user={user} onUpdate={() => refetch()} />;
+                return (
+                    <div className="h-full flex flex-col">
+                        <div className="p-4 md:p-8 pb-0">
+                            <button
+                                onClick={() => setCurrentView('home')}
+                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+                            >
+                                ← Volver al Dashboard
+                            </button>
+                        </div>
+                        <ProfileSection user={user} onUpdate={() => refetch()} />
+                    </div>
+                );
             default:
-                return <CoachHome user={user} />;
+                return <CoachHome user={user} onNavigate={setCurrentView} />;
         }
     };
 
@@ -115,6 +148,8 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
             roleLabel="Coach"
+            hideSidebarOnDesktop={true}
+            hideMobileHeader={true}
         >
             {renderContent()}
         </DashboardLayout>

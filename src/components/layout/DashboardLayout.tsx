@@ -1,7 +1,7 @@
-// import { useState } from 'react';
-import { LogOut, Home } from 'lucide-react';
+import { useState } from 'react';
+import { LogOut, X, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import { NotificationBell } from '../ui/NotificationBell';
 import { UserProfile } from '../../hooks/useUser';
 import { getDisplayName, getUserInitials } from '../../utils/userDisplayName';
 
@@ -21,6 +21,8 @@ interface DashboardLayoutProps {
     menuItems: MenuItem[];
     children: React.ReactNode;
     roleLabel: string; // 'Athlete' or 'Coach'
+    hideSidebarOnDesktop?: boolean;
+    hideMobileHeader?: boolean;
 }
 
 // Extracted SidebarContent as a separate component to avoid creation during render
@@ -30,6 +32,7 @@ interface SidebarContentProps {
     menuItems: MenuItem[];
     onLogout: () => void;
     onOpenSettings?: () => void;
+    toggleMobileMenu: () => void;
 }
 
 const SidebarContent: React.FC<SidebarContentProps> = ({
@@ -37,15 +40,23 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     roleLabel,
     menuItems,
     onLogout,
-    onOpenSettings
+    onOpenSettings,
+    toggleMobileMenu
 }) => (
     <div className="flex flex-col h-full bg-[#252525] border-r border-white/5">
-        <div className="p-6 flex items-center justify-between">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <img src="/logo.svg" alt="Anvil" className="h-8 w-auto" />
                 <span className="font-black text-xl tracking-tighter uppercase">{roleLabel}</span>
             </div>
-
+            {/* Bell for Desktop in Sidebar (optional, or better in a top bar if existed. Here it fits in header of sidebar) */}
+            <div className="md:block hidden">
+                <NotificationBell />
+            </div>
+            {/* Close button for mobile */}
+            <button onClick={toggleMobileMenu} className="md:hidden text-gray-400 hover:text-white">
+                <X size={24} />
+            </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -62,6 +73,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                             target="_blank"
                             rel="noreferrer"
                             className={`${baseClasses} ${inactiveClasses}`}
+                            onClick={() => toggleMobileMenu()}
                         >
                             {item.icon}
                             {item.label}
@@ -72,7 +84,10 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                 return (
                     <button
                         key={index}
-                        onClick={item.onClick}
+                        onClick={() => {
+                            item.onClick();
+                            toggleMobileMenu();
+                        }}
                         className={`${baseClasses} ${item.isActive ? activeClasses : inactiveClasses}`}
                     >
                         {item.icon}
@@ -82,7 +97,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
             })}
         </nav>
 
-        <div className="p-4">
+        <div className="p-4 border-t border-white/5">
             <div
                 className={`flex items-center gap-3 px-4 py-3 mb-2 rounded-lg transition-colors ${onOpenSettings ? 'cursor-pointer hover:bg-white/5' : ''}`}
                 onClick={() => onOpenSettings && onOpenSettings()}
@@ -119,46 +134,50 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     </div>
 );
 
-import { useSwipeNavigation } from '../../hooks/useSwipeNavigation';
-
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     user,
     onLogout,
     onOpenSettings,
     menuItems,
     children,
-    roleLabel
+    roleLabel,
+    hideSidebarOnDesktop,
+    hideMobileHeader
 }) => {
-    const bindSwipe = useSwipeNavigation();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
     return (
-        <div {...bindSwipe()} className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans touch-pan-y">
+        <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50">
-                <SidebarContent
-                    user={user}
-                    roleLabel={roleLabel}
-                    menuItems={menuItems}
-                    onLogout={onLogout}
-                    onOpenSettings={onOpenSettings}
-                />
-            </aside>
+            {!hideSidebarOnDesktop && (
+                <aside className="hidden md:flex w-64 flex-col fixed inset-y-0 z-50">
+                    <SidebarContent
+                        user={user}
+                        roleLabel={roleLabel}
+                        menuItems={menuItems}
+                        onLogout={onLogout}
+                        onOpenSettings={onOpenSettings}
+                        toggleMobileMenu={toggleMobileMenu}
+                    />
+                </aside>
+            )}
 
-            {/* Mobile Header Removed */}
+            {/* Mobile Header (Simplified - Logo & Notification) */}
+            {!hideMobileHeader && (
+                <div className={`md:hidden fixed top-0 w-full bg-[#1c1c1c]/90 backdrop-blur border-b border-white/5 z-40 px-4 py-3 flex items-center justify-between`}>
+                    <img src="/logo.svg" alt="Anvil" className="h-6 w-auto" />
+                    <NotificationBell />
+                </div>
+            )}
 
-            {/* Main Content - Removed top padding since header is gone */}
-            <main className="flex-1 md:ml-64 h-full overflow-y-auto pb-24 md:pt-0 md:pb-0 bg-[#1c1c1c]">
+            {/* Main Content */}
+            <main className={`flex-1 ${!hideSidebarOnDesktop ? 'md:ml-64' : ''} h-full overflow-y-auto ${hideMobileHeader ? 'pt-0' : 'pt-14'} pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c]`}>
                 {children}
             </main>
 
             {/* Mobile Bottom Navigation (Instagram Style) */}
-            <nav
-                className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c]/95 backdrop-blur-md border-t border-white/[0.03] z-50 px-8 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.6)]"
-                style={{
-                    paddingBottom: 'env(safe-area-inset-bottom)',
-                    height: 'calc(4.5rem + env(safe-area-inset-bottom))'
-                }}
-            >
+            <nav className="md:hidden fixed bottom-0 w-full bg-[#1c1c1c] border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
                 {menuItems.map((item, index) => {
                     // Filter out items that shouldn't appear in bottom nav (like profile if handled separately, but user asked for all icons)
                     // Usually Bottom Nav has 4-5 items max. We have ~6. 

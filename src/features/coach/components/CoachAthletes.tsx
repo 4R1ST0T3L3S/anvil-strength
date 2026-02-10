@@ -7,9 +7,10 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 interface CoachAthletesProps {
     user: UserProfile;
     onSelectAthlete: (id: string) => void;
+    onBack?: () => void;
 }
 
-export function CoachAthletes({ user, onSelectAthlete }: CoachAthletesProps) {
+export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesProps) {
     const [athletes, setAthletes] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +26,7 @@ export function CoachAthletes({ user, onSelectAthlete }: CoachAthletesProps) {
 
                 if (linksError) throw linksError;
 
-                const athleteIds = links?.map(l => l.athlete_id) || [];
+                const athleteIds = links?.map((l: { athlete_id: any; }) => l.athlete_id) || [];
 
                 if (athleteIds.length === 0) {
                     setAthletes([]);
@@ -97,6 +98,14 @@ export function CoachAthletes({ user, onSelectAthlete }: CoachAthletesProps) {
         <div className="p-8">
             <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
+                    {onBack && (
+                        <button
+                            onClick={onBack}
+                            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                        >
+                            ← Volver al Dashboard
+                        </button>
+                    )}
                     <h1 className="text-3xl font-black uppercase tracking-tighter">Mis Atletas</h1>
                     <p className="text-gray-400">Selecciona un atleta para ver su ficha</p>
                 </div>
