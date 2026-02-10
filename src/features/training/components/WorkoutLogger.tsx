@@ -300,10 +300,12 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
             )}
 
             {/* Sets Header */}
-            <div className="grid grid-cols-[1.3fr_4rem_0.7fr] gap-3 px-4 py-2 bg-[#2a2a2a]/50 text-xs uppercase font-bold text-gray-500 text-center">
-                <span className="text-left pl-2">Series</span>
-                <span className="text-center">RPE</span>
-                <span className="text-right pr-4">Check</span>
+            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_3rem] gap-2 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
+                <span className="text-left pl-1">Obj</span>
+                <span>Kg</span>
+                <span>Reps</span>
+                <span>RPE</span>
+                <span className="text-right pr-2">OK</span>
             </div>
 
             {/* Sets List */}
@@ -322,9 +324,6 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
     );
 }
 
-// ==========================================
-// SUB-COMPONENT: SET ROW (The Core Logic)
-// ==========================================
 // ==========================================
 // SUB-COMPONENT: SET ROW (The Core Logic)
 // ==========================================
@@ -348,8 +347,11 @@ function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: T
         try {
             await trainingService.updateSetActuals(set.id, updates);
             // Verify completion locally for UI feedback
-            const isDone = (updates.actual_reps || actualReps) && (updates.actual_load || actualLoad);
-            if (isDone) setIsCompleted(true);
+            // We use the NEW values if present in updates, else falling back to state
+            const newReps = updates.actual_reps !== undefined ? updates.actual_reps : (actualReps ? Number(actualReps) : null);
+            const newLoad = updates.actual_load !== undefined ? updates.actual_load : (actualLoad ? Number(actualLoad) : null);
+
+            if (newReps && newLoad) setIsCompleted(true);
         } catch (err) {
             console.error(err);
             toast.error("Error guardando datos");
@@ -364,8 +366,6 @@ function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: T
         if (field === 'actual_load') setActualLoad(value);
         if (field === 'actual_reps') setActualReps(value);
         if (field === 'actual_rpe') setActualRpe(value);
-
-        // Reset Done status if clearing inputs? Optional.
 
         // Debounce Save
         if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -391,41 +391,66 @@ function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: T
 
     return (
         <div className={cn(
-            "grid grid-cols-[1.3fr_4rem_0.7fr] gap-3 px-4 py-3 items-center transition-colors",
+            "grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_3rem] gap-2 px-4 py-3 items-center transition-colors relative",
             isCompleted ? "bg-green-500/10" : "hover:bg-white/5"
         )}>
             {/* Series Info (Merged Index + Target) - ALIGN LEFT */}
-            <div className="flex items-center justify-start gap-4">
-                <div className="text-center font-mono text-sm text-gray-500 font-bold w-6">{index + 1}</div>
-                <div className="flex flex-col text-sm text-gray-400 space-y-0.5">
-                    <div className="flex items-center gap-1">
-                        <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}kg` : '-'}</span>
+            <div className="flex items-center justify-start gap-3 min-w-0">
+                <div className="text-center font-mono text-xs text-gray-500 font-bold min-w-[1.2rem]">{index + 1}</div>
+                <div className="flex flex-col text-xs text-gray-400 space-y-0.5 overflow-hidden">
+                    <div className="flex items-center gap-1 whitespace-nowrap">
+                        <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}` : '-'}</span>
+                        <span className="text-[10px]">kg</span>
                         <span>x</span>
                         <span className="font-bold text-gray-300">{set.target_reps || '-'}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                        {!!set.target_rpe && <span className="text-anvil-red">@{set.target_rpe}</span>}
-                        {!!effectiveRest && <span>{effectiveRest}s rest</span>}
                     </div>
                 </div>
             </div>
 
-            {/* RPE Input (Mobile & Desktop Unified) */}
+            {/* Load Input */}
+            <div className="flex justify-center">
+                <input
+                    type="number"
+                    value={actualLoad}
+                    onChange={(e) => handleChange('actual_load', e.target.value)}
+                    placeholder={set.target_load?.toString() || "-"}
+                    className={cn(
+                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-xs font-bold focus:border-anvil-red outline-none placeholder-gray-800",
+                        actualLoad ? "text-white border-white/20" : "text-gray-500 border-white/5"
+                    )}
+                />
+            </div>
+
+            {/* Reps Input */}
+            <div className="flex justify-center">
+                <input
+                    type="number"
+                    value={actualReps}
+                    onChange={(e) => handleChange('actual_reps', e.target.value)}
+                    placeholder={set.target_reps?.toString().split('-')[0] || "-"}
+                    className={cn(
+                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-xs font-bold focus:border-anvil-red outline-none placeholder-gray-800",
+                        actualReps ? "text-white border-white/20" : "text-gray-500 border-white/5"
+                    )}
+                />
+            </div>
+
+            {/* RPE Input */}
             <div className="flex justify-center">
                 <input
                     type="number"
                     value={actualRpe}
                     onChange={(e) => handleChange('actual_rpe', e.target.value)}
-                    placeholder="-"
+                    placeholder={set.target_rpe ? set.target_rpe.replace('@', '') : "-"}
                     className={cn(
-                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-sm font-bold focus:border-anvil-red outline-none placeholder-gray-700",
-                        actualRpe ? "text-anvil-red border-anvil-red/50" : "text-white border-white/10"
+                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-xs font-bold focus:border-anvil-red outline-none placeholder-gray-800",
+                        actualRpe ? "text-anvil-red border-anvil-red/50" : "text-white/50 border-white/5"
                     )}
                 />
             </div>
 
             {/* Actions - ALIGN RIGHT */}
-            <div className="flex flex-col gap-2 items-end pr-4">
+            <div className="flex flex-col gap-2 items-end justify-center h-full">
                 <button
                     onClick={toggleComplete}
                     className={cn(
@@ -435,10 +460,10 @@ function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: T
                             : "bg-[#333] text-gray-500 hover:bg-[#444] hover:text-white"
                     )}
                 >
-                    <Check size={16} strokeWidth={3} />
+                    <Check size={14} strokeWidth={3} />
                 </button>
             </div>
-            {saving && <div className="absolute right-2 top-2"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}
+            {saving && <div className="absolute right-1 top-1"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}
         </div>
     );
 }

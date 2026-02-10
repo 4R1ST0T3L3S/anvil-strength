@@ -118,8 +118,11 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                         type="number"
                                         min={1}
                                         max={53}
-                                        value={startWeek}
-                                        onChange={(e) => setStartWeek(parseInt(e.target.value) || 1)}
+                                        value={startWeek || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setStartWeek(val === '' ? 0 : parseInt(val));
+                                        }}
                                         className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all font-bold pl-10"
                                     />
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-mono">W</span>
@@ -134,8 +137,11 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                         type="number"
                                         min={startWeek}
                                         max={53}
-                                        value={endWeek}
-                                        onChange={(e) => setEndWeek(parseInt(e.target.value) || startWeek)}
+                                        value={endWeek || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setEndWeek(val === '' ? 0 : parseInt(val));
+                                        }}
                                         className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all font-bold pl-10"
                                     />
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-mono">W</span>

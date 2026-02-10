@@ -77,7 +77,7 @@ const parseBestDate = (dateStr: string): { str: string, iso?: string, endIso?: s
 
         // If only one day, return it
         if (dayCandidates.length === 1) {
-            // const d = new Date(year, monthIndex, dayCandidates[0]);
+
             // Adjust simple string to be cleaner? e.g. "20 Ene"
             return {
                 str: `${dayCandidates[0]} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,

@@ -6,6 +6,7 @@ import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
+import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
@@ -21,6 +22,13 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
 
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+    }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
+
     const fetchCompetitions = useCallback(async () => {
         if (!athleteId) return;
         try {
@@ -31,17 +39,28 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
         }
     }, [athleteId]);
 
-    const handleRemoveCompetition = async (id: string, name: string) => {
-        if (!confirm(`¿Estás seguro de que quieres eliminar la asignación a "${name}"?`)) return;
-        try {
-            await competitionsService.removeAssignment(id);
-            setCompetitions(prev => prev.filter(c => c.id !== id));
-        } catch (error) {
-            console.error('Error removing competition:', error);
-            alert('Error al eliminar la competición');
-        }
+    const handleRemoveCompetition = (id: string, name: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Eliminar Asignación',
+            description: `¿Estás seguro de que quieres eliminar la asignación a "${name}"?`,
+            onConfirm: async () => {
+                try {
+                    await competitionsService.removeAssignment(id);
+                    setCompetitions(prev => prev.filter(c => c.id !== id));
+                } catch (error) {
+                    console.error('Error removing competition:', error);
+                    // alert('Error al eliminar la competición');
+                }
+            }
+        });
     };
 
+
+    useEffect(() => {
+        setSelectedBlockId(null);
+        setActiveTab('planning');
+    }, [athleteId]);
 
     useEffect(() => {
         const fetchAthlete = async () => {
@@ -252,6 +271,16 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                 )}
 
             </div>
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText="Eliminar"
+                cancelText="Cancelar"
+                variant="danger"
+            />
         </div>
     );
 }

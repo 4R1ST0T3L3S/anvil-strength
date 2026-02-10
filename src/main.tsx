@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import './index.css'
 
-// import { registerSW } from 'virtual:pwa-register'
+
 
 // registerSW({
 //   onNeedRefresh() { },
@@ -17,7 +17,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(function (registrations) {
     for (const registration of registrations) {
       registration.unregister();
-      console.log('Service Worker Unregistered');
+
     }
   });
 }

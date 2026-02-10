@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Calendar, Trash2 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { competitionsService } from '../../../services/competitionsService';
+import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 
 interface CompetitionEntry {
     id: string;
@@ -24,6 +25,13 @@ interface CompetitionGroup {
 }
 
 export function CoachTeamSchedule({ user }: { user: UserProfile }) {
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        onConfirm: () => void;
+    }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
+
     const [competitions, setCompetitions] = useState<CompetitionGroup[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -84,25 +92,30 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
         fetchSchedule();
     }, [user.id]);
 
-    const handleUnassign = async (entryId: string, athleteName: string, competitionName: string) => {
-        if (!confirm(`¿Estás seguro de que quieres desasignar a ${athleteName} de "${competitionName}"?`)) return;
+    const handleUnassign = (entryId: string, athleteName: string, competitionName: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Desasignar Atleta',
+            description: `¿Estás seguro de que quieres desasignar a ${athleteName} de "${competitionName}"?`,
+            onConfirm: async () => {
+                try {
+                    await competitionsService.removeAssignment(entryId);
 
-        try {
-            await competitionsService.removeAssignment(entryId);
+                    // Optimistic update
+                    setCompetitions(prevGroups => {
+                        const newGroups = prevGroups.map(group => ({
+                            ...group,
+                            entries: group.entries.filter(e => e.id !== entryId)
+                        })).filter(group => group.entries.length > 0);
+                        return newGroups;
+                    });
 
-            // Optimistic update
-            setCompetitions(prevGroups => {
-                const newGroups = prevGroups.map(group => ({
-                    ...group,
-                    entries: group.entries.filter(e => e.id !== entryId)
-                })).filter(group => group.entries.length > 0);
-                return newGroups;
-            });
-
-        } catch (err) {
-            console.error('Error removing assignment:', err);
-            alert('Error al eliminar la asignación.');
-        }
+                } catch (err) {
+                    console.error('Error removing assignment:', err);
+                    // alert('Error al eliminar la asignación.'); // Removed alert, maybe add toast?
+                }
+            }
+        });
     };
 
     if (loading) return <div className="p-8 text-center">Cargando agenda...</div>;
@@ -120,8 +133,8 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                         No hay competiciones programadas.
                     </div>
                 ) : (
-                    competitions.map((comp: CompetitionGroup, index: number) => (
-                        <div key={index} className="bg-[#252525] border border-white/5 rounded-xl overflow-hidden">
+                    competitions.map((comp: CompetitionGroup) => (
+                        <div key={`${comp.name}-${comp.date}`} className="bg-[#252525] border border-white/5 rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/20">
                                 <div className="flex items-center gap-4">
                                     <div className="bg-anvil-red/20 text-anvil-red p-3 rounded-lg">
@@ -174,6 +187,17 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
                     ))
                 )}
             </div>
-        </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText="Desasignar"
+                cancelText="Cancelar"
+                variant="danger"
+            />
+        </div >
     );
 }

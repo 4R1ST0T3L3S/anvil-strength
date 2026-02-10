@@ -107,30 +107,21 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     }, [athleteId, blockId]);
 
     // Initial Load
+    // Initial Load
     useEffect(() => {
         loadData();
     }, [athleteId, blockId, loadData]);
 
-    // const _handleCreateBlock = async () => {
-    //     setLoading(true);
-    //     const now = new Date();
-    //     const monthName = now.toLocaleString('default', { month: 'long' });
+    // Ensure currentWeek is within block range when block loads
+    useEffect(() => {
+        if (blockData && typeof blockData.start_week === 'number' && typeof blockData.end_week === 'number') {
+            if (currentWeek < blockData.start_week || currentWeek > blockData.end_week) {
+                setCurrentWeek(blockData.start_week);
+            }
+        }
+    }, [blockData, currentWeek]);
 
-    //     try {
-    //         await trainingService.createBlock({
-    //             athlete_id: athleteId,
-    //             coach_id: (await supabase.auth.getUser()).data.user?.id || '',
-    //             name: `Bloque ${monthName} ${now.getFullYear()}`,
-    //             is_active: true,
-    //             start_date: now.toISOString(),
-    //         });
-    //         await loadData();
-    //         toast.success("Nuevo bloque creado");
-    //     } catch (err) {
-    //         toast.error("Error creando bloque");
-    //         setLoading(false);
-    //     }
-    // };
+
 
     const handleSaveChanges = async () => {
         if (!blockData) return;
@@ -537,7 +528,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         );
     }
 
-    console.log("WorkoutBuilder Render", { blockData, currentWeek });
+
 
     return (
         <div className="h-full flex flex-col relative">
@@ -621,9 +612,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
 // ==========================================
 // SUB-COMPONENT: DAY COLUMN
 // ==========================================
-// ==========================================
-// SUB-COMPONENT: DAY COLUMN
-// ==========================================
+
 interface DayColumnProps {
     session: ExtendedSession;
     onUpdateName: (id: string, name: string) => void;

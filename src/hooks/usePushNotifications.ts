@@ -119,7 +119,7 @@ export function usePushNotifications() {
             if (error) throw error;
 
             setState(s => ({ ...s, isSubscribed: true, isLoading: false }));
-            console.log('✅ Push subscription successful');
+
             return true;
 
         } catch (error) {
@@ -151,7 +151,7 @@ export function usePushNotifications() {
             }
 
             setState(s => ({ ...s, isSubscribed: false, isLoading: false }));
-            console.log('✅ Push unsubscription successful');
+
             return true;
 
         } catch (error) {
