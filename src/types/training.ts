@@ -25,6 +25,7 @@ export interface TrainingBlock {
     start_week?: number | null;
     end_week?: number | null;
     is_active: boolean;
+    color?: string | null;
     created_at: string;
 }
 

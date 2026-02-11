@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Copy, Trash2, Video } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { WeekNavigator } from '../../coach/components/WeekNavigator';
 import { getWeekNumber } from '../../../utils/dateUtils';
@@ -373,37 +373,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    const duplicateSet = (set: TrainingSet) => {
-        const newSetId = crypto.randomUUID();
-        setBlockData(prev => {
-            if (!prev) return null;
-            setHasUnsavedChanges(true);
-            return {
-                ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => {
-                        if (ex.id !== set.session_exercise_id) return ex;
-
-                        const nextOrder = ex.sets.length;
-                        const newSet: TrainingSet = {
-                            ...set,
-                            id: newSetId,
-                            order_index: nextOrder,
-                            created_at: new Date().toISOString(),
-                            actual_reps: null, // Reset actuals
-                            actual_load: null,
-                            actual_rpe: null
-                        };
-
-                        return { ...ex, sets: [...ex.sets, newSet] };
-                    })
-                }))
-            };
-        });
-    };
-
-
     const removeSession = async (sessionId: string) => {
         setConfirmModal({
             isOpen: true,
@@ -567,8 +536,8 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             </div>
 
             {/* GRID CONTAINER - Days in current week */}
-            <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
-                <div className="flex h-full gap-4 px-2 min-w-max">
+            <div className="flex-1 overflow-y-auto md:overflow-y-hidden md:overflow-x-auto pb-20 md:pb-4 custom-scrollbar">
+                <div className="flex flex-col md:flex-row h-auto md:h-full gap-4 px-2 md:min-w-max pb-safe">
                     {currentWeekSessions.map((session) => (
                         <DayColumn
                             key={session.id}
@@ -581,15 +550,20 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                             onAddSet={addSet}
                             onUpdateSet={updateSetField}
                             onRemoveSet={removeSet}
-                            onDuplicateSet={duplicateSet}
                             onRemoveSession={removeSession}
                         />
                     ))}
 
 
                     {/* ADD DAY COLUMN */}
-                    <div className="w-16 flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl hover:border-white/30 hover:bg-white/5 transition-colors cursor-pointer" onClick={addSession}>
-                        <Plus className="text-gray-500" />
+                    <div
+                        className="w-full md:w-16 min-h-[4rem] md:h-full flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl hover:border-white/30 hover:bg-white/5 transition-colors cursor-pointer mb-4 md:mb-0"
+                        onClick={addSession}
+                    >
+                        <div className="flex flex-row md:flex-col items-center gap-2 text-gray-500">
+                            <Plus />
+                            <span className="md:hidden font-bold uppercase text-sm">Añadir Día</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -623,11 +597,10 @@ interface DayColumnProps {
     onAddSet: (sessionExerciseId: string) => void;
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
-    onDuplicateSet: (set: TrainingSet) => void;
     onRemoveSession: (id: string) => void;
 }
 
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet, onRemoveSession }: DayColumnProps) {
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveSession }: DayColumnProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     if (!session) {
@@ -636,29 +609,27 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
     }
 
     return (
-        <div className="w-[400px] flex flex-col bg-[#252525] border border-white/5 rounded-2xl overflow-hidden shadow-xl h-full">
+        <div className="w-full md:w-[400px] flex flex-col bg-[#1a1a1a] border border-white/5 rounded-3xl overflow-hidden shadow-2xl h-auto md:h-full shrink-0 relative group/column">
             {/* Header */}
-            <div className="p-4 bg-[#2a2a2a] border-b border-white/5 space-y-2 group/header relative">
+            <div className="p-4 bg-[#202020] border-b border-white/5 relative flex justify-center items-center">
                 <button
                     onClick={() => onRemoveSession(session.id)}
-                    className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-600 hover:text-red-500 opacity-0 group-hover/header:opacity-100 transition-opacity z-10"
+                    className="absolute right-4 text-gray-600 hover:text-red-500 opacity-100 md:opacity-0 md:group-hover/column:opacity-100 transition-opacity"
                     title="Eliminar día"
                 >
                     <Trash2 size={16} />
                 </button>
 
-                <div className="flex justify-between items-center group">
-                    <input
-                        className="bg-transparent font-black text-lg text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight"
-                        value={session?.name ?? ''}
-                        onChange={(e) => onUpdateName(session.id, e.target.value)}
-                        placeholder={`DÍA ${session?.day_number}`}
-                    />
-                </div>
+                <input
+                    className="bg-transparent font-black text-xl text-center text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight py-1"
+                    value={session?.name ?? ''}
+                    onChange={(e) => onUpdateName(session.id, e.target.value)}
+                    placeholder={`DÍA ${session?.day_number}`}
+                />
             </div>
 
             {/* Exercises List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+            <div className="flex-1 overflow-visible md:overflow-y-auto p-3 space-y-4 custom-scrollbar min-h-[100px]">
                 {session.exercises.map((ex: ExtendedSessionExercise) => (
                     <ExerciseCard
                         key={ex.id}
@@ -668,31 +639,30 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                         onUpdateSet={onUpdateSet}
                         onRemoveSet={onRemoveSet}
                         onRemoveExercise={() => onRemoveExercise(ex.id, session.id)}
-                        onDuplicateSet={onDuplicateSet}
                     />
                 ))}
 
                 {/* Add Exercise - Simple Input */}
-                <div className="relative">
+                <div className="pt-2 pb-4">
                     {!isAddingEx ? (
                         <button
                             onClick={() => setIsAddingEx(true)}
-                            className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-gray-300 hover:border-white/30 hover:bg-white/5 transition-all text-sm font-bold flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-[#252525] hover:bg-[#2a2a2a] rounded-2xl text-gray-500 hover:text-anvil-red transition-all text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2 border border-transparent hover:border-anvil-red/20"
                         >
-                            <Plus size={16} /> AÑADIR EJERCICIO
+                            <Plus size={14} /> Añadir Ejercicio
                         </button>
                     ) : (
-                        <div className="bg-[#1c1c1c] border border-white/20 rounded-xl p-3 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-[#252525] border border-white/10 rounded-2xl p-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
                             <input
                                 autoFocus
                                 type="text"
                                 placeholder="Escribe el nombre del ejercicio..."
-                                className="w-full bg-black/20 text-white font-bold p-2 rounded-lg border border-white/10 focus:border-anvil-red outline-none placeholder-gray-600 mb-2"
+                                className="w-full bg-black/40 text-white font-bold text-center p-3 rounded-xl border border-white/5 focus:border-anvil-red outline-none placeholder-gray-600 mb-3"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         const val = e.currentTarget.value.trim();
                                         if (val) {
-                                            onAddExercise(session.id, val); // Pass string name instead of object check logic
+                                            onAddExercise(session.id, val);
                                             setIsAddingEx(false);
                                         }
                                     } else if (e.key === 'Escape') {
@@ -701,11 +671,9 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                                 }}
                                 onBlur={(e) => {
                                     if (!e.currentTarget.value.trim()) setIsAddingEx(false);
-                                    // Optional: save on blur if not empty? 
-                                    // Better to require explicit enter for "creating" to avoid accidental creates.
                                 }}
                             />
-                            <div className="flex justify-end gap-2 text-[10px] text-gray-500">
+                            <div className="flex justify-center gap-4 text-[10px] text-gray-500 font-mono">
                                 <span>[Enter] Guardar</span>
                                 <span>[Esc] Cancelar</span>
                             </div>
@@ -727,10 +695,9 @@ interface ExerciseCardProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveExercise: () => void;
-    onDuplicateSet: (set: TrainingSet) => void;
 }
 
-function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: ExerciseCardProps) {
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise }: ExerciseCardProps) {
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
@@ -764,93 +731,95 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
     };
 
     return (
-        <div className="bg-[#1c1c1c] rounded-xl border border-white/5 p-3 group relative hover:border-white/10 transition-colors">
-            {/* Exercise Header */}
-            <div className="flex justify-between items-start mb-3">
-                <div className="flex flex-col gap-1 w-full mr-2">
-                    <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-gray-200 text-sm leading-tight">{exerciseName}</h4>
-                        {hasVideo && <Video size={14} className="text-blue-500" />}
-                    </div>
+        <div className="bg-[#252525] rounded-2xl border border-white/5 p-4 group relative hover:border-white/10 transition-all shadow-sm">
+            {/* Delete Exercise Button (Absolute Top Right) */}
+            <button
+                onClick={onRemoveExercise}
+                className="absolute top-3 right-3 text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+            >
+                <Trash2 size={14} />
+            </button>
 
-                    {/* Global Fields (RPE, Rest, Notes) & Variant */}
-                    <div className="mt-2 space-y-2">
+            {/* Exercise Header - Centered */}
+            <div className="flex flex-col items-center mb-4 text-center">
+                <div className="flex items-center gap-2 mb-3">
+                    <h4 className="font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
+                    {hasVideo && <Video size={14} className="text-blue-500" />}
+                </div>
 
-                        {/* Variant & RPE/Rest Row */}
-                        <div className="flex gap-2 justify-center">
-                            {/* Variant (if applicable) */}
-                            {isVariant && (
-                                <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        value={sessionExercise.variant_name || ''}
-                                        onChange={(e) => handleVariantChange(e.target.value)}
-                                        onBlur={handleVariantBlur}
-                                        placeholder="Variante..."
-                                        className="w-full bg-black/20 text-xs text-anvil-red border border-white/5 focus:border-anvil-red rounded-lg py-1 px-2 outline-none placeholder-gray-600"
-                                    />
-                                </div>
-                            )}
+                {/* Global Fields Container */}
+                <div className="w-full space-y-3">
+                    {/* Variant (if applicable) */}
+                    {isVariant && (
+                        <div className="w-full px-4">
+                            <input
+                                type="text"
+                                value={sessionExercise.variant_name || ''}
+                                onChange={(e) => handleVariantChange(e.target.value)}
+                                onBlur={handleVariantBlur}
+                                placeholder="Nombre de la variante..."
+                                className="w-full bg-black/20 text-xs text-center text-anvil-red border border-white/5 focus:border-anvil-red rounded-lg py-1.5 px-3 outline-none placeholder-gray-600 transition-colors"
+                            />
+                        </div>
+                    )}
 
-                            {/* Vel AVG */}
-                            <div className="w-20">
-                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">Vel AVG</div>
-                                <input
-                                    type="text"
-                                    value={sessionExercise.velocity_avg || ''}
-                                    onChange={(e) => handleGlobalUpdate('velocity_avg', e.target.value)}
-                                    onBlur={(e) => handleGlobalBlur('velocity_avg', e.target.value)}
-                                    placeholder="0.35"
-                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
-                                />
-                            </div>
-
-                            {/* RPE */}
-                            <div className="w-20">
-                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">RPE</div>
-                                <input
-                                    type="text"
-                                    value={sessionExercise.rpe || ''}
-                                    onChange={(e) => handleGlobalUpdate('rpe', e.target.value)}
-                                    onBlur={(e) => handleGlobalBlur('rpe', e.target.value)}
-                                    placeholder="@8"
-                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
-                                />
-                            </div>
-
-                            {/* Rest */}
-                            <div className="w-20">
-                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">Rest (s)</div>
-                                <input
-                                    type="number"
-                                    value={sessionExercise.rest_seconds || 0}
-                                    onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
-                                    onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
-                                    placeholder="90"
-                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
-                                />
-                            </div>
+                    {/* Stats Grid */}
+                    <div className="flex justify-center gap-2">
+                        {/* Vel AVG */}
+                        <div className="w-20">
+                            <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">Vel AVG</div>
+                            <input
+                                type="text"
+                                value={sessionExercise.velocity_avg || ''}
+                                onChange={(e) => handleGlobalUpdate('velocity_avg', e.target.value)}
+                                onBlur={(e) => handleGlobalBlur('velocity_avg', e.target.value)}
+                                placeholder="-"
+                                className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
+                            />
                         </div>
 
-                        {/* Notes Input */}
-                        <textarea
-                            value={sessionExercise.notes || ''}
-                            onChange={(e) => handleNotesChange(e.target.value)}
-                            onBlur={handleNotesBlur}
-                            placeholder="Notas para el atleta..."
-                            className="w-full bg-black/20 text-xs text-gray-400 border border-white/5 rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 outline-none resize-none h-[50px]"
-                        />
+                        {/* RPE */}
+                        <div className="w-20">
+                            <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">RPE</div>
+                            <input
+                                type="text"
+                                value={sessionExercise.rpe || ''}
+                                onChange={(e) => handleGlobalUpdate('rpe', e.target.value)}
+                                onBlur={(e) => handleGlobalBlur('rpe', e.target.value)}
+                                placeholder="-"
+                                className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
+                            />
+                        </div>
+
+                        {/* Rest */}
+                        <div className="w-20">
+                            <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">Rest (s)</div>
+                            <input
+                                type="number"
+                                value={sessionExercise.rest_seconds || 0}
+                                onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
+                                onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
+                                placeholder="-"
+                                className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
+                            />
+                        </div>
                     </div>
+
+                    {/* Notes Input */}
+                    <textarea
+                        value={sessionExercise.notes || ''}
+                        onChange={(e) => handleNotesChange(e.target.value)}
+                        onBlur={handleNotesBlur}
+                        placeholder="Notas técnicas..."
+                        className="w-full bg-black/20 text-xs text-gray-400 text-center border border-white/5 rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 outline-none resize-none h-[40px] leading-tight transition-colors"
+                    />
                 </div>
-                <button onClick={onRemoveExercise} className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Trash2 size={14} />
-                </button>
             </div>
 
             {/* Sets Table */}
-            <div className="space-y-1">
+            <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-white/5">
                 {/* Header Row */}
-                <div className="grid grid-cols-[20px_1fr_1fr_1fr_24px] gap-2 text-[10px] text-gray-500 font-bold uppercase text-center mb-1">
+                <div className="grid grid-cols-[20px_1fr_1fr_20px] gap-2 text-[9px] text-gray-600 font-black uppercase text-center mb-2 px-1">
                     <span>#</span>
                     <span>Reps</span>
                     <span>Kg</span>
@@ -858,8 +827,8 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                 </div>
 
                 {sessionExercise.sets.map((set: TrainingSet, idx: number) => (
-                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_1fr_24px] gap-2 items-center group/row">
-                        <span className="text-xs text-gray-600 text-center font-mono">{idx + 1}</span>
+                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_20px] gap-2 items-center group/row">
+                        <span className="text-xs text-gray-600 text-center font-mono font-bold">{idx + 1}</span>
 
                         <CompactInput
                             value={set.target_reps}
@@ -874,20 +843,19 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                         />
 
                         {/* Actions */}
-                        <div className="flex justify-end opacity-0 group-hover/row:opacity-100 transition-opacity">
-                            <button onClick={() => onDuplicateSet(set)} className="text-gray-600 hover:text-blue-500 mr-1"><Copy size={12} /></button>
-                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-600 hover:text-red-500"><Trash2 size={12} /></button>
+                        <div className="flex justify-end opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
+                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-700 hover:text-red-500"><Trash2 size={12} /></button>
                         </div>
                     </div>
                 ))}
-            </div>
 
-            <button
-                onClick={() => onAddSet(sessionExercise.id)}
-                className="w-full mt-3 py-1 bg-white/5 hover:bg-white/10 rounded text-[10px] font-bold text-gray-400 transition-colors"
-            >
-                + SERIE
-            </button>
+                <button
+                    onClick={() => onAddSet(sessionExercise.id)}
+                    className="w-full mt-2 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                >
+                    <Plus size={10} /> AÑADIR SERIE
+                </button>
+            </div>
         </div>
     );
 }
