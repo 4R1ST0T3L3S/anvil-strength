@@ -3,10 +3,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video, Copy } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, Target } from 'lucide-react';
 import { toast } from 'sonner';
-import { WeekNavigator } from '../../coach/components/WeekNavigator';
-import { getWeekNumber } from '../../../utils/dateUtils';
+import { getWeekNumber, getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 
 interface WorkoutBuilderProps {
@@ -39,7 +38,16 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-    const [currentWeek, setCurrentWeek] = useState(() => getWeekNumber());
+    // Expanded weeks state - default to collapsed
+    const [expandedWeeks, setExpandedWeeks] = useState<number[]>([]);
+
+    // Custom Week Names State
+    const [weekNames, setWeekNames] = useState<Record<number, string>>({});
+    const [editingWeek, setEditingWeek] = useState<number | null>(null);
+    const [weekNameInput, setWeekNameInput] = useState("");
+
+    // Calculate current week number for status badges
+    const currentRealWeek = getWeekNumber();
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -51,23 +59,13 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
 
     const loadData = useCallback(async () => {
         setLoading(true);
+        if (!athleteId || !blockId) {
+            setBlockData(null);
+            setLoading(false);
+            return;
+        }
         try {
-            let activeBlock: TrainingBlock | undefined;
-
-            if (blockId) {
-                // Fetch specific block
-                activeBlock = await trainingService.getBlock(blockId);
-            } else {
-                // 1. Fetch Active Block
-                const blocks = await trainingService.getBlocksByAthlete(athleteId);
-                activeBlock = blocks.find(b => b.is_active);
-            }
-
-            if (!activeBlock) {
-                setBlockData(null);
-                setLoading(false);
-                return;
-            }
+            const block = await trainingService.getBlock(blockId);
 
             // 2. Fetch Sessions
             const { data: sessions, error: sessError } = await supabase
@@ -80,7 +78,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         training_sets (*)
                     )
                 `)
-                .eq('block_id', activeBlock.id)
+                .eq('block_id', blockId)
                 .order('day_number');
 
             if (sessError) throw sessError;
@@ -89,14 +87,18 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             const formattedSessions: ExtendedSession[] = (sessions || []).map(s => ({
                 ...s,
                 exercises: (s.session_exercises || [])
-                    .sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
-                    .map((e: SessionExercise & { training_sets: TrainingSet[] }) => ({
+                    .sort((a: any, b: any) => a.order_index - b.order_index)
+                    .map((e: any) => ({
                         ...e,
-                        sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
+                        sets: (e.training_sets || []).sort((a: any, b: any) => a.order_index - b.order_index)
                     }))
             }));
 
-            setBlockData({ ...activeBlock, sessions: formattedSessions });
+            // Fetch Week Names
+            const names = await trainingService.getWeeksByBlock(blockId);
+            setWeekNames(names);
+
+            setBlockData({ ...block, sessions: formattedSessions });
 
         } catch (err) {
             console.error(err);
@@ -107,20 +109,14 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     }, [athleteId, blockId]);
 
     // Initial Load
-    // Initial Load
     useEffect(() => {
         loadData();
     }, [athleteId, blockId, loadData]);
 
-    // Ensure currentWeek is within block range when block loads
+    // Reset expanded weeks when block changes (collapse all)
     useEffect(() => {
-        if (blockData && typeof blockData.start_week === 'number' && typeof blockData.end_week === 'number') {
-            if (currentWeek < blockData.start_week || currentWeek > blockData.end_week) {
-                setCurrentWeek(blockData.start_week);
-            }
-        }
-    }, [blockData, currentWeek]);
-
+        setExpandedWeeks([]);
+    }, [blockData?.id]);
 
 
     const handleSaveChanges = async () => {
@@ -133,8 +129,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             blockData.sessions.forEach(session => {
                 session.exercises.forEach(ex => {
                     ex.sets.forEach(set => {
-                        // Clean up potential temporary fields if any (none for now)
-                        // Make sure we send valid UUIDs (we generate them on creation)
                         allSets.push(set);
                     });
                 });
@@ -162,16 +156,16 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     // ==========================================
 
     // --- Sessions ---
-    const addSession = async () => {
+    const addSession = async (weekNumber: number) => {
         if (!blockData) return;
-        // Count days only in current week
-        const sessionsInWeek = blockData.sessions.filter(s => s.week_number === currentWeek);
+        // Count days only in target week
+        const sessionsInWeek = blockData.sessions.filter(s => s.week_number === weekNumber);
         const nextDay = sessionsInWeek.length + 1;
         try {
             // Server Create for Structure
             const newSession = await trainingService.createSession({
                 block_id: blockData.id,
-                week_number: currentWeek,
+                week_number: weekNumber,
                 day_number: nextDay,
                 name: `Día ${nextDay}`
             });
@@ -183,19 +177,18 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     sessions: [...prev.sessions, { ...newSession, exercises: [] }]
                 };
             });
+
+            // Ensure the week is expanded when adding a day
+            if (!expandedWeeks.includes(weekNumber)) {
+                setExpandedWeeks(prev => [...prev, weekNumber]);
+            }
+
         } catch {
             toast.error("Error añadiendo día");
         }
     };
 
     const updateSessionName = async (sessionId: string, name: string) => {
-        // Optimistic + Debounced Server Update could go here.
-        // For now just local update + background server update or included in batch?
-        // Requirement says "Save Changes" for *state*. 
-        // But typically Sessions/Exercises need to exist for Sets to link to.
-        // We'll update local state and let the user know structure changes are mostly auto-saved?
-        // Actually, let's keep session name local and save it? No, sessions table structure is separate from sets.
-        // Let's do autosave for Session Name (simple update)
         setBlockData(prev => {
             if (!prev) return null;
             return {
@@ -236,8 +229,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             const newSessionExercise = await trainingService.addSessionExercise(sessionId, exerciseId, nextOrder);
 
             // Fetch the exercise details again (or construct them) for local state
-            // Optimization: we could return full object from service, but fine to construct minimal for now
-            // We need the name to display immediately.
             const exerciseDisplay: ExerciseLibrary = {
                 id: exerciseId,
                 name: exerciseName,
@@ -360,13 +351,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     };
 
     const removeSet = (setId: string) => {
-        // Technically this should be a soft delete or tracked delete if we want to batch delete.
-        // Or we just delete from DB immediately if it exists?
-        // To keep it simple and consistent: "Delete is immediate for consistency, Update is batched".
-        // Or better: Track "deletedSetIds" and send them on Save.
-        // Let's verify requirement: "No guardes en BD con cada tecla". Deleting a row is not a keystroke.
-        // I will delete immediately from DB to avoid complexity of "Ghost sets".
-
         supabase.from('training_sets').delete().eq('id', setId).then(({ error }) => {
             if (error) toast.error("Error borrando serie");
         });
@@ -429,37 +413,39 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    // ==========================================
-    // RENDER
-    // ==========================================
-
-    const weeks = useMemo(() => {
-        if (!blockData) return [];
-
-        // Use start_week and end_week from block if available
-        const startWeek = blockData.start_week ?? 1;
-        const endWeek = blockData.end_week ?? 4;
-
-        // Generate array from startWeek to endWeek
-        const weekCount = Math.max(1, endWeek - startWeek + 1);
-        return Array.from({ length: weekCount }, (_, i) => startWeek + i);
-    }, [blockData]);
-
-    const currentWeekSessions = useMemo(() => {
-        if (!blockData) return [];
-        return blockData.sessions.filter(s => s.week_number === currentWeek);
-    }, [blockData, currentWeek]);
-
-    // Handlers for WeekNavigator needing data
+    // Handlers for Weeks
     const handleAddWeek = async () => {
         if (!blockData) return;
-        // Implementation for adding week (extend block end date logic or mostly update week_count)
-        // For now just update local state if needed or toast
-        toast.info("Funcionalidad de añadir semana en desarrollo");
+        try {
+            setLoading(true); // Optional: show loading state
+            const newEndWeek = await trainingService.addWeek(blockData.id);
+            await loadData();
+            setExpandedWeeks(prev => [...prev, newEndWeek]);
+            toast.success("Semana añadida");
+        } catch (err) {
+            console.error(err);
+            toast.error("Error añadiendo semana");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleCopyWeek = (_week: number) => {
-        toast.info("Funcionalidad de copiar semana en desarrollo");
+    const handleCopyWeek = async (week: number) => {
+        if (!blockData) return;
+
+        // Optional: Confirm? Or just do it. Let's just do it with a toast.
+        try {
+            setLoading(true);
+            const newEndWeek = await trainingService.copyWeek(blockData.id, week);
+            await loadData();
+            setExpandedWeeks(prev => [...prev, newEndWeek]);
+            toast.success(`Semana ${week} copiada a Semana ${newEndWeek}`);
+        } catch (err) {
+            console.error(err);
+            toast.error("Error copiando semana");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDeleteWeek = async (week: number) => {
@@ -474,13 +460,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     setLoading(true);
                     await trainingService.deleteWeek(blockData.id, week);
                     await loadData();
-
-                    if (currentWeek === week) {
-                        setCurrentWeek(Math.max(1, week - 1));
-                    } else if (currentWeek > week) {
-                        setCurrentWeek(currentWeek - 1);
-                    }
-
                     toast.success(`Semana ${week} eliminada`);
                 } catch (err) {
                     console.error(err);
@@ -501,8 +480,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     ...s,
                     exercises: s.exercises.map(ex => {
                         if (ex.id !== sessionExerciseId) return ex;
-                        // Handles nested exercise updates if any, or flat fields
-                        // Also handles merging 'exercise' object updates for local display
                         const newEx: ExtendedSessionExercise = { ...ex, ...updates };
                         if (updates.exercise && ex.exercise) {
                             newEx.exercise = { ...ex.exercise, ...updates.exercise };
@@ -513,6 +490,49 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             };
         });
     };
+
+    // Toggle week expansion
+    const handleStartEditWeekName = (week: number, currentName: string | undefined, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingWeek(week);
+        setWeekNameInput(currentName || "");
+    };
+
+    const handleSaveWeekName = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (editingWeek === null || !blockData) return;
+
+        try {
+            // Optimistic update
+            const newName = weekNameInput.trim();
+            setWeekNames(prev => ({ ...prev, [editingWeek]: newName }));
+            setEditingWeek(null);
+
+            await trainingService.saveWeekName(blockData.id, editingWeek, newName);
+            toast.success("Nombre de semana guardado");
+        } catch (err) {
+            console.error(err);
+            toast.error("Error guardando nombre");
+            // Revert on error if needed, but simple enough to just let user retry
+        }
+    };
+
+    const toggleWeek = (week: number) => {
+        setExpandedWeeks(prev =>
+            prev.includes(week)
+                ? prev.filter(w => w !== week)
+                : [...prev, week]
+        );
+    };
+
+    // RENDER HELPERS
+    const weeks = useMemo(() => {
+        if (!blockData) return [];
+        const startWeek = blockData.start_week ?? 1;
+        const endWeek = blockData.end_week ?? 4;
+        const weekCount = Math.max(1, endWeek - startWeek + 1);
+        return Array.from({ length: weekCount }, (_, i) => startWeek + i);
+    }, [blockData]);
 
     if (loading) {
         return (
@@ -530,77 +550,214 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         );
     }
 
-
-
     return (
-        <div className="h-full flex flex-col relative">
+        <div className="h-full flex flex-col relative overflow-hidden">
 
-            {/* Header Info */}
-            <div className="mb-4 flex justify-between items-center px-2">
-                <div>
-                    <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{blockData.name}</h2>
-                    <p className="text-gray-500 text-sm">Planificando entrenamiento</p>
-                </div>
+            {/* NEW HEADER DESIGN - Integrated & Clean */}
+            <div className="relative shrink-0 z-10 px-6 py-8">
 
-                {/* SAVE FLOATING BUTTON */}
-                {hasUnsavedChanges && (
-                    <button
-                        onClick={handleSaveChanges}
-                        disabled={isSaving}
-                        className="animate-bounce-in fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-400 text-black font-black px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 transition-transform hover:scale-105"
-                    >
-                        {isSaving ? <Loader className="animate-spin" /> : <Save size={20} />}
-                        GUARDAR CAMBIOS
-                    </button>
-                )}
-            </div>
+                <div className="relative z-10 flex flex-col gap-6">
 
-            {/* Week Navigator */}
-            <div className="px-2 mb-4">
-                <WeekNavigator
-                    weeks={weeks}
-                    currentWeek={currentWeek}
-                    onSelectWeek={setCurrentWeek}
-                    onAddWeek={handleAddWeek}
-                    onCopyWeek={handleCopyWeek}
-                    onDeleteWeek={handleDeleteWeek}
-                    blockEndWeek={blockData.end_week} // New Prop
-                />
-            </div>
+                    {/* Main Title Area */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h2 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
+                                {blockData.name}
+                            </h2>
+                            <div className="h-2 w-24 bg-anvil-red mt-4 rounded-full" />
+                        </div>
 
-            {/* GRID CONTAINER - Days in current week */}
-            <div className="flex-1 overflow-y-auto md:overflow-y-hidden md:overflow-x-auto pb-20 md:pb-4 custom-scrollbar">
-                <div className="flex flex-col md:flex-row h-auto md:h-full gap-4 px-2 md:min-w-max pb-safe">
-                    {currentWeekSessions.map((session) => (
-                        <DayColumn
-                            key={session.id}
-                            session={session}
-                            onUpdateName={updateSessionName}
-                            onUpdateDate={updateSessionDate}
-                            onAddExercise={addExercise}
-                            onUpdateExercise={updateSessionExercise}
-                            onRemoveExercise={removeExercise}
-                            onAddSet={addSet}
-                            onDuplicateSet={duplicateSet}
-                            onUpdateSet={updateSetField}
-                            onRemoveSet={removeSet}
-                            onRemoveSession={removeSession}
-                        />
-                    ))}
-
-
-                    {/* ADD DAY COLUMN */}
-                    <div
-                        className="w-full md:w-16 min-h-[4rem] md:h-full flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl hover:border-white/30 hover:bg-white/5 transition-colors cursor-pointer mb-4 md:mb-0"
-                        onClick={addSession}
-                    >
-                        <div className="flex flex-row md:flex-col items-center gap-2 text-gray-500">
-                            <Plus />
-                            <span className="md:hidden font-bold uppercase text-sm">Añadir Día</span>
+                        {/* Metadata Pills */}
+                        <div className="flex flex-wrap gap-3">
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+                                <Calendar size={14} className="text-gray-400" />
+                                <span className="text-sm font-medium text-gray-300">
+                                    Semana {blockData.start_week} - {blockData.end_week}
+                                    <span className="text-gray-500 mx-2">|</span>
+                                    {formatDateRange(
+                                        getDateRangeFromWeek(blockData.start_week ?? 1).start,
+                                        getDateRangeFromWeek(blockData.end_week ?? 1).end
+                                    )}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+                                <Target size={14} className="text-gray-400" />
+                                <span className="text-sm font-medium text-gray-300">{weeks.length} Semanas</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Floating Save Button - Ensure it's rendered if state allows */}
+            {hasUnsavedChanges && (
+                <button
+                    onClick={handleSaveChanges}
+                    disabled={isSaving}
+                    className="animate-bounce-in fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-400 text-black font-black px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 transition-transform hover:scale-105"
+                >
+                    {isSaving ? <Loader className="animate-spin" /> : <Save size={20} />}
+                    GUARDAR CAMBIOS
+                </button>
+            )}
+
+            {/* Weeks List (Accordion View) */}
+            <div className="flex-1 overflow-y-auto px-4 pb-20 custom-scrollbar space-y-4">
+                {weeks.map((week, index) => {
+                    const isExpanded = expandedWeeks.includes(week);
+                    const weekSessions = blockData.sessions.filter(s => s.week_number === week);
+
+                    // Determine Status
+                    let statusColor = "bg-blue-500/10 text-blue-500 border-blue-500/20";
+                    let statusText = "PRÓXIMA";
+
+                    if (week === currentRealWeek) {
+                        statusColor = "bg-green-500/10 text-green-500 border-green-500/20";
+                        statusText = "ACTIVA";
+                    } else if (week < currentRealWeek) {
+                        statusColor = "bg-red-500/10 text-red-500 border-red-500/20";
+                        statusText = "FINALIZADA";
+                    }
+
+                    return (
+                        <div key={week} className={`bg-[#1a1a1a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 ${week === currentRealWeek ? 'ring-1 ring-green-500/30' : ''}`}>
+                            {/* Week Header */}
+                            <div
+                                className={`
+                            px-6 py-5 flex items-center justify-between cursor-pointer transition-all duration-300
+                            ${isExpanded ? 'bg-white/5' : 'hover:bg-white/5'}
+                        `}
+                                onClick={() => toggleWeek(week)}
+                            >
+                                <div className="flex items-center gap-6">
+                                    {/* Status Badge */}
+                                    <div className={`px-3 py-1 rounded-md text-xs font-black tracking-wider border ${statusColor}`}>
+                                        {statusText}
+                                    </div>
+
+                                    {/* Title & info */}
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-3">
+                                            {editingWeek === week ? (
+                                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                    <input
+                                                        type="text"
+                                                        value={weekNameInput}
+                                                        onChange={(e) => setWeekNameInput(e.target.value)}
+                                                        className="bg-black/50 border border-white/10 rounded px-2 py-1 text-white font-black uppercase italic text-xl focus:outline-none focus:border-anvil-red w-64"
+                                                        placeholder="NOMBRE DE LA SEMANA"
+                                                        autoFocus
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleSaveWeekName(e as any);
+                                                        }}
+                                                    />
+                                                    <button
+                                                        onClick={handleSaveWeekName}
+                                                        className="p-1 hover:text-green-500 text-gray-400 transition-colors"
+                                                    >
+                                                        <Save size={18} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-3 group">
+                                                    <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">
+                                                        SEMANA {index + 1}
+                                                        {weekNames[week] && <span className="text-anvil-red ml-2">{weekNames[week]}</span>}
+                                                    </h3>
+                                                    <button
+                                                        onClick={(e) => handleStartEditWeekName(week, weekNames[week], e)}
+                                                        className="opacity-0 group-hover:opacity-100 p-1 hover:text-anvil-red text-gray-600 transition-all duration-200"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                                            <span>Semana {week} del año</span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                            {/* Date Range for this specific week */}
+                                            <span>
+                                                {formatDateRange(
+                                                    getDateRangeFromWeek(week).start,
+                                                    getDateRangeFromWeek(week).end
+                                                )}
+                                            </span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                            <span>{weekSessions.length} DÍAS PLANIFICADOS</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleCopyWeek(week); }}
+                                        className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                        title="Copiar semana"
+                                    >
+                                        <Copy size={18} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteWeek(week); }}
+                                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        title="Eliminar semana"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Accordion Content */}
+                            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                                <div className="overflow-hidden">
+                                    <div className="p-4 pt-0">
+                                        {/* Days Grid */}
+                                        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                                            {weekSessions.map((session) => (
+                                                <DayColumn
+                                                    key={session.id}
+                                                    session={session}
+                                                    onUpdateName={updateSessionName}
+                                                    onUpdateDate={updateSessionDate}
+                                                    onAddExercise={addExercise}
+                                                    onUpdateExercise={updateSessionExercise}
+                                                    onRemoveExercise={removeExercise}
+                                                    onAddSet={addSet}
+                                                    onDuplicateSet={duplicateSet}
+                                                    onUpdateSet={updateSetField}
+                                                    onRemoveSet={removeSet}
+                                                    onRemoveSession={removeSession}
+                                                />
+                                            ))}
+
+                                            {/* ADD DAY BUTTON (Specific to Week) */}
+                                            <div
+                                                className="min-w-[100px] w-32 flex items-center justify-center border-2 border-dashed border-white/10 rounded-3xl hover:border-anvil-red/50 hover:bg-anvil-red/5 transition-all cursor-pointer group shrink-0"
+                                                onClick={() => addSession(week)}
+                                            >
+                                                <div className="flex flex-col items-center gap-2 text-gray-600 group-hover:text-anvil-red transition-colors">
+                                                    <Plus className="group-hover:scale-110 transition-transform" />
+                                                    <span className="font-black uppercase text-xs tracking-wider">Añadir día</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* Add Week Button at Bottom */}
+                <button
+                    onClick={handleAddWeek}
+                    className="w-full py-6 border-2 border-dashed border-white/10 rounded-2xl text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all font-bold uppercase tracking-widest flex items-center justify-center gap-3"
+                >
+                    <Plus size={20} />
+                    Añadir Semana
+                </button>
+            </div>
+
 
             {/* Confirmation Modal */}
             <ConfirmationModal
