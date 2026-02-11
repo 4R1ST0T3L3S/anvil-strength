@@ -301,13 +301,11 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                 </div>
                                 {/* Coach Logo in Bottom Right */}
                                 {coach.logo && (
-                                    <div className="absolute bottom-4 right-4 z-10">
-                                        <img
-                                            src={coach.logo}
-                                            alt={`${coach.name} logo`}
-                                            className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                                        />
-                                    </div>
+                                    <img
+                                        src={coach.logo}
+                                        alt={`${coach.name} logo`}
+                                        className={`absolute z-10 ${coach.logoClassName || 'w-16 h-16 bottom-4 right-4'} object-contain opacity-80 group-hover:opacity-100 transition-opacity`}
+                                    />
                                 )}
                             </div>
                         ))}
