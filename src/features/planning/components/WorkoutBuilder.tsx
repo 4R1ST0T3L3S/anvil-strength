@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { WeekNavigator } from '../../coach/components/WeekNavigator';
 import { getWeekNumber } from '../../../utils/dateUtils';
@@ -314,12 +314,45 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                             // Inherit defaults if previous exists
                             target_reps: previousSet ? previousSet.target_reps : '',
                             target_rpe: previousSet ? previousSet.target_rpe : '',
+                            target_load: previousSet ? previousSet.target_load : null,
                             rest_seconds: previousSet ? previousSet.rest_seconds : 0,
                             is_video_required: false,
                             created_at: new Date().toISOString()
                         };
 
                         return { ...ex, sets: [...ex.sets, newSet] };
+                    })
+                }))
+            };
+        });
+    };
+
+    const duplicateSet = (setId: string) => {
+        setBlockData(prev => {
+            if (!prev) return null;
+            setHasUnsavedChanges(true);
+            return {
+                ...prev,
+                sessions: prev.sessions.map(s => ({
+                    ...s,
+                    exercises: s.exercises.map(ex => {
+                        const setIndex = ex.sets.findIndex(set => set.id === setId);
+                        if (setIndex === -1) return ex;
+                        const sourceSet = ex.sets[setIndex];
+                        const newSet: TrainingSet = {
+                            id: crypto.randomUUID(),
+                            session_exercise_id: sourceSet.session_exercise_id,
+                            order_index: (ex.sets.length + 1) * 10,
+                            target_reps: sourceSet.target_reps,
+                            target_rpe: sourceSet.target_rpe,
+                            target_load: sourceSet.target_load,
+                            rest_seconds: sourceSet.rest_seconds,
+                            is_video_required: sourceSet.is_video_required,
+                            created_at: new Date().toISOString()
+                        };
+                        const newSets = [...ex.sets];
+                        newSets.splice(setIndex + 1, 0, newSet);
+                        return { ...ex, sets: newSets };
                     })
                 }))
             };
@@ -548,6 +581,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                             onUpdateExercise={updateSessionExercise}
                             onRemoveExercise={removeExercise}
                             onAddSet={addSet}
+                            onDuplicateSet={duplicateSet}
                             onUpdateSet={updateSetField}
                             onRemoveSet={removeSet}
                             onRemoveSession={removeSession}
@@ -595,12 +629,13 @@ interface DayColumnProps {
     onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
     onRemoveExercise: (id: string, sessionId: string) => void;
     onAddSet: (sessionExerciseId: string) => void;
+    onDuplicateSet: (setId: string) => void;
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveSession: (id: string) => void;
 }
 
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveSession }: DayColumnProps) {
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession }: DayColumnProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     if (!session) {
@@ -636,6 +671,7 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                         sessionExercise={ex}
                         onUpdateExercise={onUpdateExercise}
                         onAddSet={onAddSet}
+                        onDuplicateSet={onDuplicateSet}
                         onUpdateSet={onUpdateSet}
                         onRemoveSet={onRemoveSet}
                         onRemoveExercise={() => onRemoveExercise(ex.id, session.id)}
@@ -692,12 +728,13 @@ interface ExerciseCardProps {
     sessionExercise: ExtendedSessionExercise;
     onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
     onAddSet: (sessionExerciseId: string) => void;
+    onDuplicateSet: (setId: string) => void;
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveExercise: () => void;
 }
 
-function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise }: ExerciseCardProps) {
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise }: ExerciseCardProps) {
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
@@ -819,7 +856,7 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
             {/* Sets Table */}
             <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-white/5">
                 {/* Header Row */}
-                <div className="grid grid-cols-[20px_1fr_1fr_20px] gap-2 text-[9px] text-gray-600 font-black uppercase text-center mb-2 px-1">
+                <div className="grid grid-cols-[20px_1fr_1fr_40px] gap-2 text-[9px] text-gray-600 font-black uppercase text-center mb-2 px-1">
                     <span>#</span>
                     <span>Reps</span>
                     <span>Kg</span>
@@ -827,7 +864,7 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                 </div>
 
                 {sessionExercise.sets.map((set: TrainingSet, idx: number) => (
-                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_20px] gap-2 items-center group/row">
+                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_40px] gap-2 items-center group/row">
                         <span className="text-xs text-gray-600 text-center font-mono font-bold">{idx + 1}</span>
 
                         <CompactInput
@@ -843,8 +880,9 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                         />
 
                         {/* Actions */}
-                        <div className="flex justify-end opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
-                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-700 hover:text-red-500"><Trash2 size={12} /></button>
+                        <div className="flex justify-end gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
+                            <button onClick={() => onDuplicateSet(set.id)} className="text-gray-700 hover:text-blue-400 p-0.5" title="Duplicar serie"><Copy size={11} /></button>
+                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-700 hover:text-red-500 p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
                         </div>
                     </div>
                 ))}
