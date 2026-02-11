@@ -18,7 +18,7 @@ export const coaches: Coach[] = [
     role: "ENTRENADOR DE POWERLIFTING",
     image: "/javier-estelles-new.jpg",
     logo: "/javier-estelles-logo.png",
-    logoClassName: "w-40 h-40 bottom-0 right-0",
+    logoClassName: "w-[68px] h-[68px] bottom-4 right-4 object-right-bottom",
     instagram: "https://www.instagram.com/javierestelles?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
     contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSfACXcjom-FbRi1a-PNyrJdvY_wAO9Hpa3_hktaNY82QDx4tg/viewform",
     bio: "CIENCIA. RENDIMIENTO. PASIÓN.\n\nDoctorando en Ciencias de la Actividad Física y del Deporte (UV).\nMáster Oficial en Alto Rendimiento Deportivo (UCAM).\nGrado en Ciencias de la Actividad Física y del Deporte (UCV).\n\nProfesor en Apta Vital Sport.\nEntrenador especialista en Powerlifting y Halterofilia.\n\nFusiono el rigor académico con la experiencia práctica para llevar tu rendimiento al siguiente nivel."
