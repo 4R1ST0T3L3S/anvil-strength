@@ -3,10 +3,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Copy, Trash2, Video } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, Target } from 'lucide-react';
 import { toast } from 'sonner';
-import { WeekNavigator } from '../../coach/components/WeekNavigator';
-import { getWeekNumber } from '../../../utils/dateUtils';
+import { getWeekNumber, getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 
 interface WorkoutBuilderProps {
@@ -39,7 +38,16 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-    const [currentWeek, setCurrentWeek] = useState(() => getWeekNumber());
+    // Expanded weeks state - default to collapsed
+    const [expandedWeeks, setExpandedWeeks] = useState<number[]>([]);
+
+    // Custom Week Names State
+    const [weekNames, setWeekNames] = useState<Record<number, string>>({});
+    const [editingWeek, setEditingWeek] = useState<number | null>(null);
+    const [weekNameInput, setWeekNameInput] = useState("");
+
+    // Calculate current week number for status badges
+    const currentRealWeek = getWeekNumber();
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -51,23 +59,13 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
 
     const loadData = useCallback(async () => {
         setLoading(true);
+        if (!athleteId || !blockId) {
+            setBlockData(null);
+            setLoading(false);
+            return;
+        }
         try {
-            let activeBlock: TrainingBlock | undefined;
-
-            if (blockId) {
-                // Fetch specific block
-                activeBlock = await trainingService.getBlock(blockId);
-            } else {
-                // 1. Fetch Active Block
-                const blocks = await trainingService.getBlocksByAthlete(athleteId);
-                activeBlock = blocks.find(b => b.is_active);
-            }
-
-            if (!activeBlock) {
-                setBlockData(null);
-                setLoading(false);
-                return;
-            }
+            const block = await trainingService.getBlock(blockId);
 
             // 2. Fetch Sessions
             const { data: sessions, error: sessError } = await supabase
@@ -80,7 +78,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         training_sets (*)
                     )
                 `)
-                .eq('block_id', activeBlock.id)
+                .eq('block_id', blockId)
                 .order('day_number');
 
             if (sessError) throw sessError;
@@ -89,14 +87,18 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             const formattedSessions: ExtendedSession[] = (sessions || []).map(s => ({
                 ...s,
                 exercises: (s.session_exercises || [])
-                    .sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
-                    .map((e: SessionExercise & { training_sets: TrainingSet[] }) => ({
+                    .sort((a: any, b: any) => a.order_index - b.order_index)
+                    .map((e: any) => ({
                         ...e,
-                        sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
+                        sets: (e.training_sets || []).sort((a: any, b: any) => a.order_index - b.order_index)
                     }))
             }));
 
-            setBlockData({ ...activeBlock, sessions: formattedSessions });
+            // Fetch Week Names
+            const names = await trainingService.getWeeksByBlock(blockId);
+            setWeekNames(names);
+
+            setBlockData({ ...block, sessions: formattedSessions });
 
         } catch (err) {
             console.error(err);
@@ -107,20 +109,14 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     }, [athleteId, blockId]);
 
     // Initial Load
-    // Initial Load
     useEffect(() => {
         loadData();
     }, [athleteId, blockId, loadData]);
 
-    // Ensure currentWeek is within block range when block loads
+    // Reset expanded weeks when block changes (collapse all)
     useEffect(() => {
-        if (blockData && typeof blockData.start_week === 'number' && typeof blockData.end_week === 'number') {
-            if (currentWeek < blockData.start_week || currentWeek > blockData.end_week) {
-                setCurrentWeek(blockData.start_week);
-            }
-        }
-    }, [blockData, currentWeek]);
-
+        setExpandedWeeks([]);
+    }, [blockData?.id]);
 
 
     const handleSaveChanges = async () => {
@@ -133,8 +129,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             blockData.sessions.forEach(session => {
                 session.exercises.forEach(ex => {
                     ex.sets.forEach(set => {
-                        // Clean up potential temporary fields if any (none for now)
-                        // Make sure we send valid UUIDs (we generate them on creation)
                         allSets.push(set);
                     });
                 });
@@ -162,16 +156,16 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     // ==========================================
 
     // --- Sessions ---
-    const addSession = async () => {
+    const addSession = async (weekNumber: number) => {
         if (!blockData) return;
-        // Count days only in current week
-        const sessionsInWeek = blockData.sessions.filter(s => s.week_number === currentWeek);
+        // Count days only in target week
+        const sessionsInWeek = blockData.sessions.filter(s => s.week_number === weekNumber);
         const nextDay = sessionsInWeek.length + 1;
         try {
             // Server Create for Structure
             const newSession = await trainingService.createSession({
                 block_id: blockData.id,
-                week_number: currentWeek,
+                week_number: weekNumber,
                 day_number: nextDay,
                 name: `Día ${nextDay}`
             });
@@ -183,19 +177,18 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     sessions: [...prev.sessions, { ...newSession, exercises: [] }]
                 };
             });
+
+            // Ensure the week is expanded when adding a day
+            if (!expandedWeeks.includes(weekNumber)) {
+                setExpandedWeeks(prev => [...prev, weekNumber]);
+            }
+
         } catch {
             toast.error("Error añadiendo día");
         }
     };
 
     const updateSessionName = async (sessionId: string, name: string) => {
-        // Optimistic + Debounced Server Update could go here.
-        // For now just local update + background server update or included in batch?
-        // Requirement says "Save Changes" for *state*. 
-        // But typically Sessions/Exercises need to exist for Sets to link to.
-        // We'll update local state and let the user know structure changes are mostly auto-saved?
-        // Actually, let's keep session name local and save it? No, sessions table structure is separate from sets.
-        // Let's do autosave for Session Name (simple update)
         setBlockData(prev => {
             if (!prev) return null;
             return {
@@ -236,8 +229,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             const newSessionExercise = await trainingService.addSessionExercise(sessionId, exerciseId, nextOrder);
 
             // Fetch the exercise details again (or construct them) for local state
-            // Optimization: we could return full object from service, but fine to construct minimal for now
-            // We need the name to display immediately.
             const exerciseDisplay: ExerciseLibrary = {
                 id: exerciseId,
                 name: exerciseName,
@@ -314,6 +305,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                             // Inherit defaults if previous exists
                             target_reps: previousSet ? previousSet.target_reps : '',
                             target_rpe: previousSet ? previousSet.target_rpe : '',
+                            target_load: previousSet ? previousSet.target_load : null,
                             rest_seconds: previousSet ? previousSet.rest_seconds : 0,
                             is_video_required: false,
                             created_at: new Date().toISOString()
@@ -326,14 +318,39 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    const removeSet = (setId: string) => {
-        // Technically this should be a soft delete or tracked delete if we want to batch delete.
-        // Or we just delete from DB immediately if it exists?
-        // To keep it simple and consistent: "Delete is immediate for consistency, Update is batched".
-        // Or better: Track "deletedSetIds" and send them on Save.
-        // Let's verify requirement: "No guardes en BD con cada tecla". Deleting a row is not a keystroke.
-        // I will delete immediately from DB to avoid complexity of "Ghost sets".
+    const duplicateSet = (setId: string) => {
+        setBlockData(prev => {
+            if (!prev) return null;
+            setHasUnsavedChanges(true);
+            return {
+                ...prev,
+                sessions: prev.sessions.map(s => ({
+                    ...s,
+                    exercises: s.exercises.map(ex => {
+                        const setIndex = ex.sets.findIndex(set => set.id === setId);
+                        if (setIndex === -1) return ex;
+                        const sourceSet = ex.sets[setIndex];
+                        const newSet: TrainingSet = {
+                            id: crypto.randomUUID(),
+                            session_exercise_id: sourceSet.session_exercise_id,
+                            order_index: (ex.sets.length + 1) * 10,
+                            target_reps: sourceSet.target_reps,
+                            target_rpe: sourceSet.target_rpe,
+                            target_load: sourceSet.target_load,
+                            rest_seconds: sourceSet.rest_seconds,
+                            is_video_required: sourceSet.is_video_required,
+                            created_at: new Date().toISOString()
+                        };
+                        const newSets = [...ex.sets];
+                        newSets.splice(setIndex + 1, 0, newSet);
+                        return { ...ex, sets: newSets };
+                    })
+                }))
+            };
+        });
+    };
 
+    const removeSet = (setId: string) => {
         supabase.from('training_sets').delete().eq('id', setId).then(({ error }) => {
             if (error) toast.error("Error borrando serie");
         });
@@ -373,37 +390,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    const duplicateSet = (set: TrainingSet) => {
-        const newSetId = crypto.randomUUID();
-        setBlockData(prev => {
-            if (!prev) return null;
-            setHasUnsavedChanges(true);
-            return {
-                ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => {
-                        if (ex.id !== set.session_exercise_id) return ex;
-
-                        const nextOrder = ex.sets.length;
-                        const newSet: TrainingSet = {
-                            ...set,
-                            id: newSetId,
-                            order_index: nextOrder,
-                            created_at: new Date().toISOString(),
-                            actual_reps: null, // Reset actuals
-                            actual_load: null,
-                            actual_rpe: null
-                        };
-
-                        return { ...ex, sets: [...ex.sets, newSet] };
-                    })
-                }))
-            };
-        });
-    };
-
-
     const removeSession = async (sessionId: string) => {
         setConfirmModal({
             isOpen: true,
@@ -427,37 +413,39 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    // ==========================================
-    // RENDER
-    // ==========================================
-
-    const weeks = useMemo(() => {
-        if (!blockData) return [];
-
-        // Use start_week and end_week from block if available
-        const startWeek = blockData.start_week ?? 1;
-        const endWeek = blockData.end_week ?? 4;
-
-        // Generate array from startWeek to endWeek
-        const weekCount = Math.max(1, endWeek - startWeek + 1);
-        return Array.from({ length: weekCount }, (_, i) => startWeek + i);
-    }, [blockData]);
-
-    const currentWeekSessions = useMemo(() => {
-        if (!blockData) return [];
-        return blockData.sessions.filter(s => s.week_number === currentWeek);
-    }, [blockData, currentWeek]);
-
-    // Handlers for WeekNavigator needing data
+    // Handlers for Weeks
     const handleAddWeek = async () => {
         if (!blockData) return;
-        // Implementation for adding week (extend block end date logic or mostly update week_count)
-        // For now just update local state if needed or toast
-        toast.info("Funcionalidad de añadir semana en desarrollo");
+        try {
+            setLoading(true); // Optional: show loading state
+            const newEndWeek = await trainingService.addWeek(blockData.id);
+            await loadData();
+            setExpandedWeeks(prev => [...prev, newEndWeek]);
+            toast.success("Semana añadida");
+        } catch (err) {
+            console.error(err);
+            toast.error("Error añadiendo semana");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleCopyWeek = (_week: number) => {
-        toast.info("Funcionalidad de copiar semana en desarrollo");
+    const handleCopyWeek = async (week: number) => {
+        if (!blockData) return;
+
+        // Optional: Confirm? Or just do it. Let's just do it with a toast.
+        try {
+            setLoading(true);
+            const newEndWeek = await trainingService.copyWeek(blockData.id, week);
+            await loadData();
+            setExpandedWeeks(prev => [...prev, newEndWeek]);
+            toast.success(`Semana ${week} copiada a Semana ${newEndWeek}`);
+        } catch (err) {
+            console.error(err);
+            toast.error("Error copiando semana");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDeleteWeek = async (week: number) => {
@@ -472,13 +460,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     setLoading(true);
                     await trainingService.deleteWeek(blockData.id, week);
                     await loadData();
-
-                    if (currentWeek === week) {
-                        setCurrentWeek(Math.max(1, week - 1));
-                    } else if (currentWeek > week) {
-                        setCurrentWeek(currentWeek - 1);
-                    }
-
                     toast.success(`Semana ${week} eliminada`);
                 } catch (err) {
                     console.error(err);
@@ -499,8 +480,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     ...s,
                     exercises: s.exercises.map(ex => {
                         if (ex.id !== sessionExerciseId) return ex;
-                        // Handles nested exercise updates if any, or flat fields
-                        // Also handles merging 'exercise' object updates for local display
                         const newEx: ExtendedSessionExercise = { ...ex, ...updates };
                         if (updates.exercise && ex.exercise) {
                             newEx.exercise = { ...ex.exercise, ...updates.exercise };
@@ -511,6 +490,49 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             };
         });
     };
+
+    // Toggle week expansion
+    const handleStartEditWeekName = (week: number, currentName: string | undefined, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingWeek(week);
+        setWeekNameInput(currentName || "");
+    };
+
+    const handleSaveWeekName = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (editingWeek === null || !blockData) return;
+
+        try {
+            // Optimistic update
+            const newName = weekNameInput.trim();
+            setWeekNames(prev => ({ ...prev, [editingWeek]: newName }));
+            setEditingWeek(null);
+
+            await trainingService.saveWeekName(blockData.id, editingWeek, newName);
+            toast.success("Nombre de semana guardado");
+        } catch (err) {
+            console.error(err);
+            toast.error("Error guardando nombre");
+            // Revert on error if needed, but simple enough to just let user retry
+        }
+    };
+
+    const toggleWeek = (week: number) => {
+        setExpandedWeeks(prev =>
+            prev.includes(week)
+                ? prev.filter(w => w !== week)
+                : [...prev, week]
+        );
+    };
+
+    // RENDER HELPERS
+    const weeks = useMemo(() => {
+        if (!blockData) return [];
+        const startWeek = blockData.start_week ?? 1;
+        const endWeek = blockData.end_week ?? 4;
+        const weekCount = Math.max(1, endWeek - startWeek + 1);
+        return Array.from({ length: weekCount }, (_, i) => startWeek + i);
+    }, [blockData]);
 
     if (loading) {
         return (
@@ -528,71 +550,214 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         );
     }
 
-
-
     return (
-        <div className="h-full flex flex-col relative">
+        <div className="h-full flex flex-col relative overflow-hidden">
 
-            {/* Header Info */}
-            <div className="mb-4 flex justify-between items-center px-2">
-                <div>
-                    <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">{blockData.name}</h2>
-                    <p className="text-gray-500 text-sm">Planificando entrenamiento</p>
-                </div>
+            {/* NEW HEADER DESIGN - Integrated & Clean */}
+            <div className="relative shrink-0 z-10 px-6 py-8">
 
-                {/* SAVE FLOATING BUTTON */}
-                {hasUnsavedChanges && (
-                    <button
-                        onClick={handleSaveChanges}
-                        disabled={isSaving}
-                        className="animate-bounce-in fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-400 text-black font-black px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 transition-transform hover:scale-105"
-                    >
-                        {isSaving ? <Loader className="animate-spin" /> : <Save size={20} />}
-                        GUARDAR CAMBIOS
-                    </button>
-                )}
-            </div>
+                <div className="relative z-10 flex flex-col gap-6">
 
-            {/* Week Navigator */}
-            <div className="px-2 mb-4">
-                <WeekNavigator
-                    weeks={weeks}
-                    currentWeek={currentWeek}
-                    onSelectWeek={setCurrentWeek}
-                    onAddWeek={handleAddWeek}
-                    onCopyWeek={handleCopyWeek}
-                    onDeleteWeek={handleDeleteWeek}
-                    blockEndWeek={blockData.end_week} // New Prop
-                />
-            </div>
+                    {/* Main Title Area */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h2 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
+                                {blockData.name}
+                            </h2>
+                            <div className="h-2 w-24 bg-anvil-red mt-4 rounded-full" />
+                        </div>
 
-            {/* GRID CONTAINER - Days in current week */}
-            <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
-                <div className="flex h-full gap-4 px-2 min-w-max">
-                    {currentWeekSessions.map((session) => (
-                        <DayColumn
-                            key={session.id}
-                            session={session}
-                            onUpdateName={updateSessionName}
-                            onUpdateDate={updateSessionDate}
-                            onAddExercise={addExercise}
-                            onUpdateExercise={updateSessionExercise}
-                            onRemoveExercise={removeExercise}
-                            onAddSet={addSet}
-                            onUpdateSet={updateSetField}
-                            onRemoveSet={removeSet}
-                            onDuplicateSet={duplicateSet}
-                            onRemoveSession={removeSession}
-                        />
-                    ))}
-
-
-                    {/* ADD DAY COLUMN */}
-                    <div className="w-16 flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl hover:border-white/30 hover:bg-white/5 transition-colors cursor-pointer" onClick={addSession}>
-                        <Plus className="text-gray-500" />
+                        {/* Metadata Pills */}
+                        <div className="flex flex-wrap gap-3">
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+                                <Calendar size={14} className="text-gray-400" />
+                                <span className="text-sm font-medium text-gray-300">
+                                    Semana {blockData.start_week} - {blockData.end_week}
+                                    <span className="text-gray-500 mx-2">|</span>
+                                    {formatDateRange(
+                                        getDateRangeFromWeek(blockData.start_week ?? 1).start,
+                                        getDateRangeFromWeek(blockData.end_week ?? 1).end
+                                    )}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+                                <Target size={14} className="text-gray-400" />
+                                <span className="text-sm font-medium text-gray-300">{weeks.length} Semanas</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Floating Save Button - Ensure it's rendered if state allows */}
+            {hasUnsavedChanges && (
+                <button
+                    onClick={handleSaveChanges}
+                    disabled={isSaving}
+                    className="animate-bounce-in fixed bottom-8 right-8 z-50 bg-green-500 hover:bg-green-400 text-black font-black px-6 py-4 rounded-full shadow-2xl flex items-center gap-3 transition-transform hover:scale-105"
+                >
+                    {isSaving ? <Loader className="animate-spin" /> : <Save size={20} />}
+                    GUARDAR CAMBIOS
+                </button>
+            )}
+
+            {/* Weeks List (Accordion View) */}
+            <div className="flex-1 overflow-y-auto px-4 pb-20 custom-scrollbar space-y-4">
+                {weeks.map((week, index) => {
+                    const isExpanded = expandedWeeks.includes(week);
+                    const weekSessions = blockData.sessions.filter(s => s.week_number === week);
+
+                    // Determine Status
+                    let statusColor = "bg-blue-500/10 text-blue-500 border-blue-500/20";
+                    let statusText = "PRÓXIMA";
+
+                    if (week === currentRealWeek) {
+                        statusColor = "bg-green-500/10 text-green-500 border-green-500/20";
+                        statusText = "ACTIVA";
+                    } else if (week < currentRealWeek) {
+                        statusColor = "bg-red-500/10 text-red-500 border-red-500/20";
+                        statusText = "FINALIZADA";
+                    }
+
+                    return (
+                        <div key={week} className={`bg-[#1a1a1a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 ${week === currentRealWeek ? 'ring-1 ring-green-500/30' : ''}`}>
+                            {/* Week Header */}
+                            <div
+                                className={`
+                            px-6 py-5 flex items-center justify-between cursor-pointer transition-all duration-300
+                            ${isExpanded ? 'bg-white/5' : 'hover:bg-white/5'}
+                        `}
+                                onClick={() => toggleWeek(week)}
+                            >
+                                <div className="flex items-center gap-6">
+                                    {/* Status Badge */}
+                                    <div className={`px-3 py-1 rounded-md text-xs font-black tracking-wider border ${statusColor}`}>
+                                        {statusText}
+                                    </div>
+
+                                    {/* Title & info */}
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-3">
+                                            {editingWeek === week ? (
+                                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                    <input
+                                                        type="text"
+                                                        value={weekNameInput}
+                                                        onChange={(e) => setWeekNameInput(e.target.value)}
+                                                        className="bg-black/50 border border-white/10 rounded px-2 py-1 text-white font-black uppercase italic text-xl focus:outline-none focus:border-anvil-red w-64"
+                                                        placeholder="NOMBRE DE LA SEMANA"
+                                                        autoFocus
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleSaveWeekName(e as any);
+                                                        }}
+                                                    />
+                                                    <button
+                                                        onClick={handleSaveWeekName}
+                                                        className="p-1 hover:text-green-500 text-gray-400 transition-colors"
+                                                    >
+                                                        <Save size={18} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-3 group">
+                                                    <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase">
+                                                        SEMANA {index + 1}
+                                                        {weekNames[week] && <span className="text-anvil-red ml-2">{weekNames[week]}</span>}
+                                                    </h3>
+                                                    <button
+                                                        onClick={(e) => handleStartEditWeekName(week, weekNames[week], e)}
+                                                        className="opacity-0 group-hover:opacity-100 p-1 hover:text-anvil-red text-gray-600 transition-all duration-200"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                                            <span>Semana {week} del año</span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                            {/* Date Range for this specific week */}
+                                            <span>
+                                                {formatDateRange(
+                                                    getDateRangeFromWeek(week).start,
+                                                    getDateRangeFromWeek(week).end
+                                                )}
+                                            </span>
+                                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                            <span>{weekSessions.length} DÍAS PLANIFICADOS</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleCopyWeek(week); }}
+                                        className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                        title="Copiar semana"
+                                    >
+                                        <Copy size={18} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteWeek(week); }}
+                                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        title="Eliminar semana"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Accordion Content */}
+                            <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                                <div className="overflow-hidden">
+                                    <div className="p-4 pt-0">
+                                        {/* Days Grid */}
+                                        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                                            {weekSessions.map((session) => (
+                                                <DayColumn
+                                                    key={session.id}
+                                                    session={session}
+                                                    onUpdateName={updateSessionName}
+                                                    onUpdateDate={updateSessionDate}
+                                                    onAddExercise={addExercise}
+                                                    onUpdateExercise={updateSessionExercise}
+                                                    onRemoveExercise={removeExercise}
+                                                    onAddSet={addSet}
+                                                    onDuplicateSet={duplicateSet}
+                                                    onUpdateSet={updateSetField}
+                                                    onRemoveSet={removeSet}
+                                                    onRemoveSession={removeSession}
+                                                />
+                                            ))}
+
+                                            {/* ADD DAY BUTTON (Specific to Week) */}
+                                            <div
+                                                className="min-w-[100px] w-32 flex items-center justify-center border-2 border-dashed border-white/10 rounded-3xl hover:border-anvil-red/50 hover:bg-anvil-red/5 transition-all cursor-pointer group shrink-0"
+                                                onClick={() => addSession(week)}
+                                            >
+                                                <div className="flex flex-col items-center gap-2 text-gray-600 group-hover:text-anvil-red transition-colors">
+                                                    <Plus className="group-hover:scale-110 transition-transform" />
+                                                    <span className="font-black uppercase text-xs tracking-wider">Añadir día</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+
+                {/* Add Week Button at Bottom */}
+                <button
+                    onClick={handleAddWeek}
+                    className="w-full py-6 border-2 border-dashed border-white/10 rounded-2xl text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all font-bold uppercase tracking-widest flex items-center justify-center gap-3"
+                >
+                    <Plus size={20} />
+                    Añadir Semana
+                </button>
+            </div>
+
 
             {/* Confirmation Modal */}
             <ConfirmationModal
@@ -621,13 +786,13 @@ interface DayColumnProps {
     onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
     onRemoveExercise: (id: string, sessionId: string) => void;
     onAddSet: (sessionExerciseId: string) => void;
+    onDuplicateSet: (setId: string) => void;
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
-    onDuplicateSet: (set: TrainingSet) => void;
     onRemoveSession: (id: string) => void;
 }
 
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onUpdateSet, onRemoveSet, onDuplicateSet, onRemoveSession }: DayColumnProps) {
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession }: DayColumnProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     if (!session) {
@@ -636,63 +801,61 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
     }
 
     return (
-        <div className="w-[400px] flex flex-col bg-[#252525] border border-white/5 rounded-2xl overflow-hidden shadow-xl h-full">
+        <div className="w-full md:w-[400px] flex flex-col bg-[#1a1a1a] border border-white/5 rounded-3xl overflow-hidden shadow-2xl h-auto md:h-full shrink-0 relative group/column">
             {/* Header */}
-            <div className="p-4 bg-[#2a2a2a] border-b border-white/5 space-y-2 group/header relative">
+            <div className="p-4 bg-[#202020] border-b border-white/5 relative flex justify-center items-center">
                 <button
                     onClick={() => onRemoveSession(session.id)}
-                    className="absolute top-1/2 -translate-y-1/2 right-4 text-gray-600 hover:text-red-500 opacity-0 group-hover/header:opacity-100 transition-opacity z-10"
+                    className="absolute right-4 text-gray-600 hover:text-red-500 opacity-100 md:opacity-0 md:group-hover/column:opacity-100 transition-opacity"
                     title="Eliminar día"
                 >
                     <Trash2 size={16} />
                 </button>
 
-                <div className="flex justify-between items-center group">
-                    <input
-                        className="bg-transparent font-black text-lg text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight"
-                        value={session?.name ?? ''}
-                        onChange={(e) => onUpdateName(session.id, e.target.value)}
-                        placeholder={`DÍA ${session?.day_number}`}
-                    />
-                </div>
+                <input
+                    className="bg-transparent font-black text-xl text-center text-gray-200 outline-none w-full placeholder-gray-600 uppercase tracking-tight py-1"
+                    value={session?.name ?? ''}
+                    onChange={(e) => onUpdateName(session.id, e.target.value)}
+                    placeholder={`DÍA ${session?.day_number}`}
+                />
             </div>
 
             {/* Exercises List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+            <div className="flex-1 overflow-visible md:overflow-y-auto p-3 space-y-4 custom-scrollbar min-h-[100px]">
                 {session.exercises.map((ex: ExtendedSessionExercise) => (
                     <ExerciseCard
                         key={ex.id}
                         sessionExercise={ex}
                         onUpdateExercise={onUpdateExercise}
                         onAddSet={onAddSet}
+                        onDuplicateSet={onDuplicateSet}
                         onUpdateSet={onUpdateSet}
                         onRemoveSet={onRemoveSet}
                         onRemoveExercise={() => onRemoveExercise(ex.id, session.id)}
-                        onDuplicateSet={onDuplicateSet}
                     />
                 ))}
 
                 {/* Add Exercise - Simple Input */}
-                <div className="relative">
+                <div className="pt-2 pb-4">
                     {!isAddingEx ? (
                         <button
                             onClick={() => setIsAddingEx(true)}
-                            className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-gray-300 hover:border-white/30 hover:bg-white/5 transition-all text-sm font-bold flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-[#252525] hover:bg-[#2a2a2a] rounded-2xl text-gray-500 hover:text-anvil-red transition-all text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2 border border-transparent hover:border-anvil-red/20"
                         >
-                            <Plus size={16} /> AÑADIR EJERCICIO
+                            <Plus size={14} /> Añadir Ejercicio
                         </button>
                     ) : (
-                        <div className="bg-[#1c1c1c] border border-white/20 rounded-xl p-3 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-[#252525] border border-white/10 rounded-2xl p-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
                             <input
                                 autoFocus
                                 type="text"
                                 placeholder="Escribe el nombre del ejercicio..."
-                                className="w-full bg-black/20 text-white font-bold p-2 rounded-lg border border-white/10 focus:border-anvil-red outline-none placeholder-gray-600 mb-2"
+                                className="w-full bg-black/40 text-white font-bold text-center p-3 rounded-xl border border-white/5 focus:border-anvil-red outline-none placeholder-gray-600 mb-3"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         const val = e.currentTarget.value.trim();
                                         if (val) {
-                                            onAddExercise(session.id, val); // Pass string name instead of object check logic
+                                            onAddExercise(session.id, val);
                                             setIsAddingEx(false);
                                         }
                                     } else if (e.key === 'Escape') {
@@ -701,11 +864,9 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                                 }}
                                 onBlur={(e) => {
                                     if (!e.currentTarget.value.trim()) setIsAddingEx(false);
-                                    // Optional: save on blur if not empty? 
-                                    // Better to require explicit enter for "creating" to avoid accidental creates.
                                 }}
                             />
-                            <div className="flex justify-end gap-2 text-[10px] text-gray-500">
+                            <div className="flex justify-center gap-4 text-[10px] text-gray-500 font-mono">
                                 <span>[Enter] Guardar</span>
                                 <span>[Esc] Cancelar</span>
                             </div>
@@ -724,13 +885,13 @@ interface ExerciseCardProps {
     sessionExercise: ExtendedSessionExercise;
     onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
     onAddSet: (sessionExerciseId: string) => void;
+    onDuplicateSet: (setId: string) => void;
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveExercise: () => void;
-    onDuplicateSet: (set: TrainingSet) => void;
 }
 
-function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet, onRemoveSet, onRemoveExercise, onDuplicateSet }: ExerciseCardProps) {
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise }: ExerciseCardProps) {
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
@@ -764,93 +925,95 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
     };
 
     return (
-        <div className="bg-[#1c1c1c] rounded-xl border border-white/5 p-3 group relative hover:border-white/10 transition-colors">
-            {/* Exercise Header */}
-            <div className="flex justify-between items-start mb-3">
-                <div className="flex flex-col gap-1 w-full mr-2">
-                    <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-gray-200 text-sm leading-tight">{exerciseName}</h4>
-                        {hasVideo && <Video size={14} className="text-blue-500" />}
-                    </div>
+        <div className="bg-[#252525] rounded-2xl border border-white/5 p-4 group relative hover:border-white/10 transition-all shadow-sm">
+            {/* Delete Exercise Button (Absolute Top Right) */}
+            <button
+                onClick={onRemoveExercise}
+                className="absolute top-3 right-3 text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+            >
+                <Trash2 size={14} />
+            </button>
 
-                    {/* Global Fields (RPE, Rest, Notes) & Variant */}
-                    <div className="mt-2 space-y-2">
+            {/* Exercise Header - Centered */}
+            <div className="flex flex-col items-center mb-4 text-center">
+                <div className="flex items-center gap-2 mb-3">
+                    <h4 className="font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
+                    {hasVideo && <Video size={14} className="text-blue-500" />}
+                </div>
 
-                        {/* Variant & RPE/Rest Row */}
-                        <div className="flex gap-2 justify-center">
-                            {/* Variant (if applicable) */}
-                            {isVariant && (
-                                <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        value={sessionExercise.variant_name || ''}
-                                        onChange={(e) => handleVariantChange(e.target.value)}
-                                        onBlur={handleVariantBlur}
-                                        placeholder="Variante..."
-                                        className="w-full bg-black/20 text-xs text-anvil-red border border-white/5 focus:border-anvil-red rounded-lg py-1 px-2 outline-none placeholder-gray-600"
-                                    />
-                                </div>
-                            )}
+                {/* Global Fields Container */}
+                <div className="w-full space-y-3">
+                    {/* Variant (if applicable) */}
+                    {isVariant && (
+                        <div className="w-full px-4">
+                            <input
+                                type="text"
+                                value={sessionExercise.variant_name || ''}
+                                onChange={(e) => handleVariantChange(e.target.value)}
+                                onBlur={handleVariantBlur}
+                                placeholder="Nombre de la variante..."
+                                className="w-full bg-black/20 text-xs text-center text-anvil-red border border-white/5 focus:border-anvil-red rounded-lg py-1.5 px-3 outline-none placeholder-gray-600 transition-colors"
+                            />
+                        </div>
+                    )}
 
-                            {/* Vel AVG */}
-                            <div className="w-20">
-                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">Vel AVG</div>
-                                <input
-                                    type="text"
-                                    value={sessionExercise.velocity_avg || ''}
-                                    onChange={(e) => handleGlobalUpdate('velocity_avg', e.target.value)}
-                                    onBlur={(e) => handleGlobalBlur('velocity_avg', e.target.value)}
-                                    placeholder="0.35"
-                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
-                                />
-                            </div>
-
-                            {/* RPE */}
-                            <div className="w-20">
-                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">RPE</div>
-                                <input
-                                    type="text"
-                                    value={sessionExercise.rpe || ''}
-                                    onChange={(e) => handleGlobalUpdate('rpe', e.target.value)}
-                                    onBlur={(e) => handleGlobalBlur('rpe', e.target.value)}
-                                    placeholder="@8"
-                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
-                                />
-                            </div>
-
-                            {/* Rest */}
-                            <div className="w-20">
-                                <div className="text-[9px] text-gray-500 uppercase font-black mb-0.5 text-center">Rest (s)</div>
-                                <input
-                                    type="number"
-                                    value={sessionExercise.rest_seconds || 0}
-                                    onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
-                                    onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
-                                    placeholder="90"
-                                    className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700"
-                                />
-                            </div>
+                    {/* Stats Grid */}
+                    <div className="flex justify-center gap-2">
+                        {/* Vel AVG */}
+                        <div className="w-20">
+                            <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">Vel AVG</div>
+                            <input
+                                type="text"
+                                value={sessionExercise.velocity_avg || ''}
+                                onChange={(e) => handleGlobalUpdate('velocity_avg', e.target.value)}
+                                onBlur={(e) => handleGlobalBlur('velocity_avg', e.target.value)}
+                                placeholder="-"
+                                className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
+                            />
                         </div>
 
-                        {/* Notes Input */}
-                        <textarea
-                            value={sessionExercise.notes || ''}
-                            onChange={(e) => handleNotesChange(e.target.value)}
-                            onBlur={handleNotesBlur}
-                            placeholder="Notas para el atleta..."
-                            className="w-full bg-black/20 text-xs text-gray-400 border border-white/5 rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 outline-none resize-none h-[50px]"
-                        />
+                        {/* RPE */}
+                        <div className="w-20">
+                            <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">RPE</div>
+                            <input
+                                type="text"
+                                value={sessionExercise.rpe || ''}
+                                onChange={(e) => handleGlobalUpdate('rpe', e.target.value)}
+                                onBlur={(e) => handleGlobalBlur('rpe', e.target.value)}
+                                placeholder="-"
+                                className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
+                            />
+                        </div>
+
+                        {/* Rest */}
+                        <div className="w-20">
+                            <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">Rest (s)</div>
+                            <input
+                                type="number"
+                                value={sessionExercise.rest_seconds || 0}
+                                onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
+                                onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
+                                placeholder="-"
+                                className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
+                            />
+                        </div>
                     </div>
+
+                    {/* Notes Input */}
+                    <textarea
+                        value={sessionExercise.notes || ''}
+                        onChange={(e) => handleNotesChange(e.target.value)}
+                        onBlur={handleNotesBlur}
+                        placeholder="Notas técnicas..."
+                        className="w-full bg-black/20 text-xs text-gray-400 text-center border border-white/5 rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 outline-none resize-none h-[40px] leading-tight transition-colors"
+                    />
                 </div>
-                <button onClick={onRemoveExercise} className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Trash2 size={14} />
-                </button>
             </div>
 
             {/* Sets Table */}
-            <div className="space-y-1">
+            <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-white/5">
                 {/* Header Row */}
-                <div className="grid grid-cols-[20px_1fr_1fr_1fr_24px] gap-2 text-[10px] text-gray-500 font-bold uppercase text-center mb-1">
+                <div className="grid grid-cols-[20px_1fr_1fr_40px] gap-2 text-[9px] text-gray-600 font-black uppercase text-center mb-2 px-1">
                     <span>#</span>
                     <span>Reps</span>
                     <span>Kg</span>
@@ -858,8 +1021,8 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                 </div>
 
                 {sessionExercise.sets.map((set: TrainingSet, idx: number) => (
-                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_1fr_24px] gap-2 items-center group/row">
-                        <span className="text-xs text-gray-600 text-center font-mono">{idx + 1}</span>
+                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_40px] gap-2 items-center group/row">
+                        <span className="text-xs text-gray-600 text-center font-mono font-bold">{idx + 1}</span>
 
                         <CompactInput
                             value={set.target_reps}
@@ -874,20 +1037,20 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onUpdateSet
                         />
 
                         {/* Actions */}
-                        <div className="flex justify-end opacity-0 group-hover/row:opacity-100 transition-opacity">
-                            <button onClick={() => onDuplicateSet(set)} className="text-gray-600 hover:text-blue-500 mr-1"><Copy size={12} /></button>
-                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-600 hover:text-red-500"><Trash2 size={12} /></button>
+                        <div className="flex justify-end gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
+                            <button onClick={() => onDuplicateSet(set.id)} className="text-gray-700 hover:text-blue-400 p-0.5" title="Duplicar serie"><Copy size={11} /></button>
+                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-700 hover:text-red-500 p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
                         </div>
                     </div>
                 ))}
-            </div>
 
-            <button
-                onClick={() => onAddSet(sessionExercise.id)}
-                className="w-full mt-3 py-1 bg-white/5 hover:bg-white/10 rounded text-[10px] font-bold text-gray-400 transition-colors"
-            >
-                + SERIE
-            </button>
+                <button
+                    onClick={() => onAddSet(sessionExercise.id)}
+                    className="w-full mt-2 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                >
+                    <Plus size={10} /> AÑADIR SERIE
+                </button>
+            </div>
         </div>
     );
 }

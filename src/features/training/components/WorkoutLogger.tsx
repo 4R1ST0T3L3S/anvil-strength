@@ -117,10 +117,13 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 
                 // NEW: Filter sessions for Current Week based on Absolute Day Number
                 // Week 1 = Days 1-7, Week 2 = Days 8-14, etc.
-                const currentWeekSessions = formatted.filter(s => Math.ceil(s.day_number / 7) === currentWeek);
+                let currentWeekSessions = formatted.filter(s => Math.ceil(s.day_number / 7) === currentWeek);
 
-                // If no sessions for this week (e.g. week 5 but plan only has 4 weeks), maybe show last week?
-                // For now, let's strictly show current week. If empty, it will show "Descanso" or empty list.
+                // FALLBACK: If no sessions for calculated week, show ALL sessions
+                // This prevents blank screens when start_date is wrong or plan is shorter than current week
+                if (currentWeekSessions.length === 0 && formatted.length > 0) {
+                    currentWeekSessions = formatted;
+                }
 
                 setSessions(currentWeekSessions);
 
@@ -188,7 +191,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                 <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                     <div className="p-4">
                         <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
-                        <h2 className="text-2xl font-black italic">Semana de Descarga</h2>
+                        <h2 className="text-2xl font-black italic">Sin Sesiones</h2>
                     </div>
                 </div>
                 <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8 text-center space-y-6">

@@ -74,7 +74,7 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white uppercase tracking-tight">Mesociclos</h3>
+                <h3 className="text-xl font-bold text-white uppercase tracking-tight">Bloques</h3>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors"
@@ -105,8 +105,9 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                     {blocks.map((block) => (
                         <div
                             key={block.id}
-                            className={`group relative bg-[#1c1c1c] border p-5 rounded-xl transition-all duration-300 hover:border-anvil-red/50 cursor-pointer ${block.is_active ? 'border-l-4 border-l-anvil-red border-y-white/5 border-r-white/5' : 'border-white/5'
+                            className={`group relative bg-[#1c1c1c] border p-5 rounded-xl transition-all duration-300 hover:border-anvil-red/50 cursor-pointer ${block.is_active ? 'border-l-4 border-y-white/5 border-r-white/5' : 'border-white/5'
                                 }`}
+                            style={block.is_active && block.color ? { borderLeftColor: block.color } : undefined}
                             onClick={() => onSelectBlock(block)}
                         >
                             <div className="flex items-center justify-between">

@@ -17,7 +17,17 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
     const [startWeek, setStartWeek] = useState<number>(1);
     const [endWeek, setEndWeek] = useState<number>(4);
     const [isActive, setIsActive] = useState(true);
+    const [color, setColor] = useState('#ef4444');
     const [loading, setLoading] = useState(false);
+
+    const BLOCK_COLORS = [
+        { hex: '#ef4444', label: 'Rojo' },
+        { hex: '#3b82f6', label: 'Azul' },
+        { hex: '#22c55e', label: 'Verde' },
+        { hex: '#f59e0b', label: 'Amber' },
+        { hex: '#a855f7', label: 'Morado' },
+        { hex: '#6b7280', label: 'Gris' },
+    ];
 
     // Sync state when block changes
     useEffect(() => {
@@ -26,6 +36,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
             setStartWeek(block.start_week ?? 1);
             setEndWeek(block.end_week ?? 4);
             setIsActive(block.is_active);
+            setColor(block.color || '#ef4444');
         }
     }, [block]);
 
@@ -51,7 +62,8 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                 name: name.trim(),
                 start_week: startWeek,
                 end_week: endWeek,
-                is_active: isActive
+                is_active: isActive,
+                color: color
             });
 
             toast.success('Bloque actualizado correctamente');
@@ -105,6 +117,28 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-medium"
                                 autoFocus
                             />
+                        </div>
+
+                        {/* Color Picker */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Color del Bloque
+                            </label>
+                            <div className="flex items-center gap-2">
+                                {BLOCK_COLORS.map((c) => (
+                                    <button
+                                        key={c.hex}
+                                        type="button"
+                                        onClick={() => setColor(c.hex)}
+                                        title={c.label}
+                                        className={`w-8 h-8 rounded-full transition-all duration-200 border-2 ${color === c.hex
+                                            ? 'border-white scale-110 shadow-lg'
+                                            : 'border-transparent hover:border-white/30 hover:scale-105'
+                                            }`}
+                                        style={{ backgroundColor: c.hex }}
+                                    />
+                                ))}
+                            </div>
                         </div>
 
                         {/* Weeks Grid */}

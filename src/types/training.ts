@@ -14,6 +14,14 @@ export interface ExerciseLibrary {
     created_at: string;
 }
 
+export interface TrainingWeek {
+    id: string;
+    block_id: string;
+    week_number: number;
+    name: string;
+    created_at: string;
+}
+
 // 2. TRAINING BLOCKS (Mesociclos)
 export interface TrainingBlock {
     id: string;
@@ -25,6 +33,7 @@ export interface TrainingBlock {
     start_week?: number | null;
     end_week?: number | null;
     is_active: boolean;
+    color?: string | null;
     created_at: string;
 }
 

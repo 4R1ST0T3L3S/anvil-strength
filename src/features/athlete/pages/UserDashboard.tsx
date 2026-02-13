@@ -111,6 +111,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
             roleLabel="Athlete"
+            hideMobileHeader
         >
             {renderContent()}
         </DashboardLayout>

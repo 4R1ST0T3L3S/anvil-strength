@@ -52,14 +52,50 @@ export const trainingService = {
         return data;
     },
 
-    /**
-     * Toggle block active status
-     */
     async toggleBlockStatus(blockId: string, isActive: boolean): Promise<void> {
         const { error } = await supabase
             .from('training_blocks')
             .update({ is_active: isActive })
             .eq('id', blockId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * WEEKS METADATA
+     */
+    async getWeeksByBlock(blockId: string): Promise<Record<number, string>> {
+        // First check if the table exists to avoid crashes during development if migration wasn't run
+        // Or just wrap in try-catch.
+        try {
+            const { data, error } = await supabase
+                .from('training_weeks')
+                .select('week_number, name')
+                .eq('block_id', blockId);
+
+            if (error) {
+                // If table doesn't exist (PGRST204 or similar), just return empty
+                // console.warn('Could not fetch weeks - table might not exist yet');
+                return {};
+            }
+
+            return (data || []).reduce((acc, curr) => {
+                acc[curr.week_number] = curr.name;
+                return acc;
+            }, {} as Record<number, string>);
+        } catch (e) {
+            return {};
+        }
+    },
+
+    async saveWeekName(blockId: string, weekNumber: number, name: string): Promise<void> {
+        const { error } = await supabase
+            .from('training_weeks')
+            .upsert({
+                block_id: blockId,
+                week_number: weekNumber,
+                name: name
+            }, { onConflict: 'block_id, week_number' });
 
         if (error) throw error;
     },
@@ -289,9 +325,31 @@ export const trainingService = {
             .eq('id', blockId);
     },
 
+    async addWeek(blockId: string): Promise<number> {
+        // 1. Get current block
+        const { data: block, error: blockError } = await supabase
+            .from('training_blocks')
+            .select('end_week')
+            .eq('id', blockId)
+            .single();
+
+        if (blockError || !block) throw blockError || new Error("Block not found");
+
+        const newEndWeek = (block.end_week || 0) + 1;
+
+        // 2. Update block
+        const { error: updateError } = await supabase
+            .from('training_blocks')
+            .update({ end_week: newEndWeek })
+            .eq('id', blockId);
+
+        if (updateError) throw updateError;
+
+        return newEndWeek;
+    },
+
     async findOrCreateExercise(name: string, coachId?: string): Promise<string> {
-        // 1. Search for existing (public or owned by coach) - Case insensitive search would be ideal but exact match is faster/simpler for now
-        // We can use ilike name
+        // 1. Search for existing (public or owned by coach)
         const { data: existing } = await supabase
             .from('exercise_library')
             .select('id')
@@ -301,14 +359,6 @@ export const trainingService = {
         if (existing) return existing.id;
 
         // 2. Create new if not found
-        // If coachId is provided, assign to coach, else it's questionable (maybe public=false, coach=payload.user.id?)
-        // For now we assume the current user (coach) is creating it.
-        // We need to handle the case where coachId is needed.
-        // Actually, let's just insert. RLS will handle the auth.uid() usually, but we need to pass coach_id explicitly if we want it in the column.
-
-        // We'll trust supabase.auth.getUser() on the client side calls or pass it in. 
-        // Ideally we pass coachId.
-
         const insertPayload: { name: string; coach_id?: string } = { name };
 
         if (coachId) {
@@ -323,5 +373,85 @@ export const trainingService = {
 
         if (error) throw error;
         return newExercise.id;
+    },
+
+    async copyWeek(blockId: string, sourceWeek: number): Promise<number> {
+        // 1. Add a new week to the block
+        const newEndWeek = await this.addWeek(blockId);
+
+        // 2. Get sessions from source week
+        const { data: sourceSessions, error: sessionError } = await supabase
+            .from('training_sessions')
+            .select(`
+                *,
+                session_exercises (
+                    *,
+                    training_sets (*)
+                )
+            `)
+            .eq('block_id', blockId)
+            .eq('week_number', sourceWeek);
+
+        if (sessionError) throw sessionError;
+        if (!sourceSessions || sourceSessions.length === 0) return newEndWeek;
+
+        // 3. Duplicate sessions
+        for (const session of sourceSessions) {
+            // Create new session
+            const { data: newSession, error: createSessionError } = await supabase
+                .from('training_sessions')
+                .insert({
+                    block_id: blockId,
+                    week_number: newEndWeek,
+                    day_number: session.day_number,
+                    name: session.name,
+                    date: null, // Clear date for copied session
+                    notes: session.notes
+                })
+                .select()
+                .single();
+
+            if (createSessionError) throw createSessionError;
+
+            // Copy exercises
+            if (session.session_exercises && session.session_exercises.length > 0) {
+                for (const ex of session.session_exercises) {
+                    const { data: newEx, error: createExError } = await supabase
+                        .from('session_exercises')
+                        .insert({
+                            session_id: newSession.id,
+                            exercise_id: ex.exercise_id,
+                            order_index: ex.order_index,
+                            notes: ex.notes
+                        })
+                        .select()
+                        .single();
+
+                    if (createExError) throw createExError;
+
+                    // Copy sets
+                    if (ex.training_sets && ex.training_sets.length > 0) {
+                        const newSets = ex.training_sets.map((set: any) => ({
+                            session_exercise_id: newEx.id,
+                            order_index: set.order_index,
+                            target_reps: set.target_reps,
+                            target_rpe: set.target_rpe,
+                            target_load: set.target_load,
+                            rest_seconds: set.rest_seconds,
+                            is_video_required: set.is_video_required,
+                            notes: set.notes
+                        }));
+
+                        const { error: createSetsError } = await supabase
+                            .from('training_sets')
+                            .insert(newSets);
+
+                        if (createSetsError) throw createSetsError;
+                    }
+                }
+            }
+        }
+
+        return newEndWeek;
     }
 };
