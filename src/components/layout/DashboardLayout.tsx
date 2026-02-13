@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { LogOut, X, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
 import { UserProfile } from '../../hooks/useUser';
 import { getDisplayName, getUserInitials } from '../../utils/userDisplayName';
@@ -116,13 +115,13 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                     </p>
                 </div>
             </div>
-            <Link
-                to="/"
+            <a
+                href="https://anvil-strength.vercel.app/"
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
             >
                 <Home size={16} />
                 Volver a la Web
-            </Link>
+            </a>
             <button
                 onClick={onLogout}
                 className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
