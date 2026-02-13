@@ -186,7 +186,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     <div className="absolute inset-0 bg-black/40" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent" />
                 </div>
-                <div className="relative z-10 text-center px-4 max-w-5xl mx-auto md:mt-20a<">
+                <div className="relative z-10 text-center px-4 max-w-5xl mx-auto mt-24 md:mt-24<">
                     <h1 className="text-5xl sm:text-6xl md:text-9xl font-black tracking-tighter mb-8 text-white flex flex-col md:block items-center gap-2 md:gap-0">
                         <span>ANVIL</span>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">STRENGTH</span>
@@ -301,11 +301,13 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                 </div>
                                 {/* Coach Logo in Bottom Right */}
                                 {coach.logo && (
-                                    <img
-                                        src={coach.logo}
-                                        alt={`${coach.name} logo`}
-                                        className={`absolute z-10 ${coach.logoClassName || 'w-16 h-16 bottom-4 right-4'} object-contain opacity-80 group-hover:opacity-100 transition-opacity`}
-                                    />
+                                    <div className="absolute bottom-4 right-4 z-10">
+                                        <img
+                                            src={coach.logo}
+                                            alt={`${coach.name} logo`}
+                                            className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                                        />
+                                    </div>
                                 )}
                             </div>
                         ))}

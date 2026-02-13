@@ -88,7 +88,7 @@ export const athletes: Athlete[] = [
     id: 6,
     name: "Carlos Villena",
     category: "-93kg JNR",
-    image: "/athletes/villena.jpg",
+    image: "/athletes/villena.png",
     stats: {
       lastCompetition: "AEP3 Las Torres De Cotilla",
       glPoints: 61.16,
