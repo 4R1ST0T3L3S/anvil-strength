@@ -261,25 +261,32 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     };
 
     const removeExercise = async (sessionExerciseId: string, sessionId: string) => {
-        if (!confirm("¿Eliminar ejercicio?")) return;
-        try {
-            await supabase.from('session_exercises').delete().eq('id', sessionExerciseId);
-            setBlockData(prev => {
-                if (!prev) return null;
-                return {
-                    ...prev,
-                    sessions: prev.sessions.map(s => {
-                        if (s.id !== sessionId) return s;
+        setConfirmModal({
+            isOpen: true,
+            title: 'Eliminar ejercicio',
+            description: '¿Estás seguro de que quieres eliminar este ejercicio? Se perderán todas las series registradas.',
+            onConfirm: async () => {
+                try {
+                    await supabase.from('session_exercises').delete().eq('id', sessionExerciseId);
+                    setBlockData(prev => {
+                        if (!prev) return null;
                         return {
-                            ...s,
-                            exercises: s.exercises.filter(e => e.id !== sessionExerciseId)
+                            ...prev,
+                            sessions: prev.sessions.map(s => {
+                                if (s.id !== sessionId) return s;
+                                return {
+                                    ...s,
+                                    exercises: s.exercises.filter(e => e.id !== sessionExerciseId)
+                                };
+                            })
                         };
-                    })
-                };
-            });
-        } catch {
-            toast.error("Error eliminando");
-        }
+                    });
+                    toast.success("Ejercicio eliminado");
+                } catch {
+                    toast.error("Error eliminando ejercicio");
+                }
+            }
+        });
     };
 
     // --- Sets (All Local until Save) ---
@@ -312,6 +319,41 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                         };
 
                         return { ...ex, sets: [...ex.sets, newSet] };
+                    })
+                }))
+            };
+        });
+    };
+
+    const addBulkSets = (sessionExerciseId: string, count: number, reps: string, load: number | null, rpe: string) => {
+        setBlockData(prev => {
+            if (!prev) return null;
+            setHasUnsavedChanges(true); // Flag change
+            return {
+                ...prev,
+                sessions: prev.sessions.map(s => ({
+                    ...s,
+                    exercises: s.exercises.map(ex => {
+                        if (ex.id !== sessionExerciseId) return ex;
+
+                        const currentSetsCount = ex.sets.length;
+                        const newSets: TrainingSet[] = [];
+
+                        for (let i = 0; i < count; i++) {
+                            newSets.push({
+                                id: crypto.randomUUID(),
+                                session_exercise_id: sessionExerciseId,
+                                order_index: currentSetsCount + i,
+                                target_reps: reps,
+                                target_rpe: rpe,
+                                target_load: load,
+                                rest_seconds: 0, // Default or inherit? Let's default to 0 for now
+                                is_video_required: false,
+                                created_at: new Date().toISOString()
+                            });
+                        }
+
+                        return { ...ex, sets: [...ex.sets, ...newSets] };
                     })
                 }))
             };
@@ -710,9 +752,9 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                             {/* Accordion Content */}
                             <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                                 <div className="overflow-hidden">
-                                    <div className="p-4 pt-0">
+                                    <div className="p-6 md:p-8">
                                         {/* Days Grid */}
-                                        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+                                        <div className="flex gap-6 overflow-x-auto pb-8 custom-scrollbar px-2">
                                             {weekSessions.map((session) => (
                                                 <DayColumn
                                                     key={session.id}
@@ -727,17 +769,20 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                                                     onUpdateSet={updateSetField}
                                                     onRemoveSet={removeSet}
                                                     onRemoveSession={removeSession}
+                                                    onAddBulkSets={addBulkSets}
                                                 />
                                             ))}
 
                                             {/* ADD DAY BUTTON (Specific to Week) */}
                                             <div
-                                                className="min-w-[100px] w-32 flex items-center justify-center border-2 border-dashed border-white/10 rounded-3xl hover:border-anvil-red/50 hover:bg-anvil-red/5 transition-all cursor-pointer group shrink-0"
+                                                className="w-full md:w-[400px] flex items-center justify-center border-2 border-dashed border-white/10 rounded-3xl hover:border-anvil-red/50 hover:bg-anvil-red/5 transition-all cursor-pointer group shrink-0 min-h-[300px] md:h-auto"
                                                 onClick={() => addSession(week)}
                                             >
-                                                <div className="flex flex-col items-center gap-2 text-gray-600 group-hover:text-anvil-red transition-colors">
-                                                    <Plus className="group-hover:scale-110 transition-transform" />
-                                                    <span className="font-black uppercase text-xs tracking-wider">Añadir día</span>
+                                                <div className="flex flex-col items-center gap-4 text-gray-600 group-hover:text-anvil-red transition-colors scale-90 group-hover:scale-100 duration-300">
+                                                    <div className="p-4 rounded-full bg-white/5 group-hover:bg-anvil-red/10 transition-colors">
+                                                        <Plus size={32} className="group-hover:rotate-90 transition-transform duration-300" />
+                                                    </div>
+                                                    <span className="font-black uppercase text-sm tracking-widest">Añadir día</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -790,9 +835,10 @@ interface DayColumnProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveSession: (id: string) => void;
+    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null, rpe: string) => void;
 }
 
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession }: DayColumnProps) {
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession, onAddBulkSets }: DayColumnProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     if (!session) {
@@ -832,6 +878,7 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                         onUpdateSet={onUpdateSet}
                         onRemoveSet={onRemoveSet}
                         onRemoveExercise={() => onRemoveExercise(ex.id, session.id)}
+                        onAddBulkSets={onAddBulkSets}
                     />
                 ))}
 
@@ -889,13 +936,19 @@ interface ExerciseCardProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveExercise: () => void;
+    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null, rpe: string) => void;
 }
 
-function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise }: ExerciseCardProps) {
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onAddBulkSets }: ExerciseCardProps) {
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
     }
+    const [isBulkAdding, setIsBulkAdding] = useState(false);
+    const [bulkSets, setBulkSets] = useState(3);
+    const [bulkReps, setBulkReps] = useState("");
+    const [bulkLoad, setBulkLoad] = useState<number | null>(null);
+
     const exerciseName = sessionExercise?.exercise?.name || "Ejercicio desconocido";
     const isVariant = exerciseName.toLowerCase().includes('variante') || exerciseName === 'Personalizado';
     const hasVideo = !!sessionExercise.exercise?.video_url;
@@ -1044,12 +1097,77 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
                     </div>
                 ))}
 
-                <button
-                    onClick={() => onAddSet(sessionExercise.id)}
-                    className="w-full mt-2 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1 active:scale-95"
-                >
-                    <Plus size={10} /> AÑADIR SERIE
-                </button>
+                {/* Bulk Add UI */}
+                {isBulkAdding ? (
+                    <div className="mt-2 p-3 bg-[#2a2a2a] rounded-xl border border-white/10 animate-in fade-in zoom-in-95">
+                        <div className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wide text-center">Añadir Múltiples Series</div>
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                            <div>
+                                <label className="block text-[9px] text-gray-500 text-center mb-1">Series</label>
+                                <input
+                                    type="number"
+                                    value={bulkSets}
+                                    onChange={(e) => setBulkSets(Number(e.target.value))}
+                                    className="w-full bg-black/40 text-xs text-center text-white border border-white/5 rounded py-1 focus:border-anvil-red outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] text-gray-500 text-center mb-1">Reps</label>
+                                <input
+                                    type="text"
+                                    value={bulkReps}
+                                    onChange={(e) => setBulkReps(e.target.value)}
+                                    placeholder="-"
+                                    className="w-full bg-black/40 text-xs text-center text-white border border-white/5 rounded py-1 focus:border-anvil-red outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[9px] text-gray-500 text-center mb-1">Kg</label>
+                                <input
+                                    type="number"
+                                    value={bulkLoad ?? ''}
+                                    onChange={(e) => setBulkLoad(e.target.value ? Number(e.target.value) : null)}
+                                    placeholder="-"
+                                    className="w-full bg-black/40 text-xs text-center text-white border border-white/5 rounded py-1 focus:border-anvil-red outline-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setIsBulkAdding(false)}
+                                className="flex-1 py-1.5 bg-transparent border border-white/10 hover:bg-white/5 rounded-lg text-[10px] text-gray-400 font-bold uppercase transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => {
+                                    onAddBulkSets(sessionExercise.id, bulkSets, bulkReps, bulkLoad, ""); // Empty RPE as requested
+                                    setIsBulkAdding(false);
+                                    // Reset fields optionally
+                                }}
+                                className="flex-1 py-1.5 bg-anvil-red hover:bg-red-600 rounded-lg text-[10px] text-white font-bold uppercase transition-colors"
+                            >
+                                Generar
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex gap-2 mt-2">
+                        <button
+                            onClick={() => onAddSet(sessionExercise.id)}
+                            className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                        >
+                            <Plus size={10} /> SERIE
+                        </button>
+                        <button
+                            onClick={() => setIsBulkAdding(true)}
+                            className="w-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-lg text-gray-500 hover:text-anvil-red transition-colors active:scale-95"
+                            title="Añadir Múltiples Series"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 12h10" /><path d="M11 18h10" /><path d="M11 6h10" /><path d="M3 18h0" /><path d="M3 12h0" /><path d="M3 6h0" /></svg>
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
