@@ -5,6 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
 
+// --- NUEVO: Importamos la página de Predicciones ---
+// Asegúrate de que la ruta coincida con donde creaste el archivo (features/dashboard/pages...)
+import Predictions from '../features/dashboard/pages/Predictions';
+
 // Lazy Load Pages
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
@@ -19,33 +23,39 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
     const location = useLocation();
     const { session } = useAuth();
 
-    // If we have an active session but user data hasn't loaded yet, don't redirect
     const hasActiveSession = !!session;
 
     return (
         <Routes location={location} key={location.pathname}>
+            
+            {/* --- CAMBIO 1: PORTADA LIBRE (Adiós Gorila) --- 
+                Ahora SIEMPRE muestra la LandingPage, estés logueado o no. 
+                Ya no te expulsa al dashboard. 
+            */}
             <Route path="/" element={
-                user ? (
-                    user.role === 'coach' ? (
-                        <Navigate to="/coach-dashboard" replace />
-                    ) : (
-                        <Navigate to="/dashboard" replace />
-                    )
-                ) : hasActiveSession ? (
-                    // Session exists but user not loaded yet - show loading, don't redirect
+                <LandingPage
+                    onLoginClick={onLoginClick}
+                    user={user}
+                />
+            } />
+
+            {/* --- CAMBIO 2: NUEVA RUTA "LA ARENA" --- */}
+            <Route path="/dashboard/predictions" element={
+                !user && !hasActiveSession ? (
+                    <Navigate to="/" replace />
+                ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
                 ) : (
-                    <LandingPage
-                        onLoginClick={onLoginClick}
-                        user={user}
-                    />
+                    // Aquí mostramos la página de predicciones si el usuario existe
+                    <Predictions user={user} onLogout={onLogout} />
                 )
             } />
+
+            {/* RUTAS EXISTENTES DEL DASHBOARD (Sin cambios) */}
             <Route path="/dashboard" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
-                    // Session exists but user not loaded - show loading instead of redirect
                     <DashboardSkeleton />
                 ) : user?.role === 'coach' ? (
                     <Navigate to="/coach-dashboard" replace />
@@ -58,11 +68,11 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     </Suspense>
                 ) : null
             } />
+
             <Route path="/coach-dashboard" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
-                    // Session exists but user not loaded - show loading instead of redirect
                     <DashboardSkeleton />
                 ) : user?.role !== 'coach' ? (
                     <Navigate to="/dashboard" replace />
@@ -72,6 +82,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     </Suspense>
                 ) : null
             } />
+
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     );
