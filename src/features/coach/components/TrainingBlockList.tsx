@@ -73,15 +73,22 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white uppercase tracking-tight">Bloques</h3>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors"
-                >
-                    <Plus size={16} />
-                    Nuevo Bloque
-                </button>
+            <div className="px-6 py-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div>
+                        <h2 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
+                            Bloques
+                        </h2>
+                        <div className="h-2 w-24 bg-anvil-red mt-4 rounded-full" />
+                    </div>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg text-sm font-black uppercase tracking-wider hover:bg-gray-200 transition-all hover:scale-105"
+                    >
+                        <Plus size={18} />
+                        Nuevo Bloque
+                    </button>
+                </div>
             </div>
 
             {blocks.length === 0 ? (
@@ -101,64 +108,76 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                     </button>
                 </div>
             ) : (
-                <div className="grid gap-3">
-                    {blocks.map((block) => (
-                        <div
-                            key={block.id}
-                            className={`group relative bg-[#1c1c1c] border p-5 rounded-xl transition-all duration-300 hover:border-anvil-red/50 cursor-pointer ${block.is_active ? 'border-l-4 border-y-white/5 border-r-white/5' : 'border-white/5'
-                                }`}
-                            style={block.is_active && block.color ? { borderLeftColor: block.color } : undefined}
-                            onClick={() => onSelectBlock(block)}
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <h4 className="text-lg font-bold text-white group-hover:text-anvil-red transition-colors">
-                                            {block.name}
-                                        </h4>
-                                        {block.is_active && (
-                                            <span className="bg-anvil-red/20 text-anvil-red text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-                                                Activo
-                                            </span>
-                                        )}
+                <div className="grid gap-4">
+                    {blocks.map((block) => {
+                        const isActive = block.is_active;
+
+                        return (
+                            <div
+                                key={block.id}
+                                className={`group relative bg-[#1a1a1a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''
+                                    }`}
+                                onClick={() => onSelectBlock(block)}
+                            >
+                                <div className="px-6 py-5 flex items-center justify-between transition-all duration-300 group-hover:bg-white/5">
+                                    <div className="flex items-center gap-6">
+                                        {/* Status Badge */}
+                                        <div className={`px-3 py-1 rounded-md text-[10px] font-black tracking-wider border ${isActive
+                                            ? "bg-anvil-red/10 text-anvil-red border-anvil-red/20"
+                                            : "bg-gray-500/10 text-gray-500 border-gray-500/20"
+                                            }`}>
+                                            {isActive ? 'ACTIVO' : 'HISTÓRICO'}
+                                        </div>
+
+                                        {/* Title & info */}
+                                        <div className="flex flex-col gap-1">
+                                            <h4 className="text-2xl font-black text-white italic tracking-tighter uppercase group-hover:text-anvil-red transition-colors">
+                                                {block.name}
+                                            </h4>
+
+                                            <div className="flex items-center gap-4 text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                                <span className="flex items-center gap-2">
+                                                    <Calendar size={12} />
+                                                    Semana {block.start_week || '?'} - {block.end_week || '?'}
+                                                </span>
+                                                {block.start_week && block.end_week && (
+                                                    <>
+                                                        <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                                        <span className="text-gray-600 normal-case">
+                                                            {formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)}
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 font-medium uppercase tracking-wider">
-                                        <span className="flex items-center gap-2">
-                                            <Calendar size={12} />
-                                            Semana {block.start_week || '?'} - Semana {block.end_week || '?'}
-                                        </span>
-                                        {block.start_week && block.end_week && (
-                                            <span className="text-gray-600 normal-case">
-                                                ({formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)})
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setBlockToEdit(block);
-                                        }}
-                                        className="p-2 text-gray-600 hover:text-blue-500 hover:bg-blue-500/10 rounded-full transition-all"
-                                        title="Editar bloque"
-                                    >
-                                        <Pencil size={18} />
-                                    </button>
-                                    <button
-                                        onClick={(e) => handleDeleteClick(e, block.id)}
-                                        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-all"
-                                        title="Eliminar bloque"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                    <div className="text-gray-600 group-hover:text-white transition-colors">
-                                        <ChevronRight size={20} />
+
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setBlockToEdit(block);
+                                            }}
+                                            className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                            title="Editar bloque"
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDeleteClick(e, block.id)}
+                                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            title="Eliminar bloque"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                        <div className="text-gray-600 group-hover:text-white transition-colors ml-2">
+                                            <ChevronRight size={20} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

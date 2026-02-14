@@ -140,7 +140,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
 
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
-                    <div className="max-w-6xl mx-auto h-full pb-6">
+                    <div className="max-w-7xl mx-auto w-full pb-6 px-4">
                         {selectedBlockId ? (
                             <div className="h-full flex flex-col">
                                 <button

@@ -32,6 +32,6 @@ export const coaches: Coach[] = [
     logoClassName: "w-20 h-20 bottom-4 right-4",
     instagram: "https://www.instagram.com/boustrength?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
     contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSfACXcjom-FbRi1a-PNyrJdvY_wAO9Hpa3_hktaNY82QDx4tg/viewform",
-    bio: "Apasionado del Powerlifting y el entrenamiento de fuerza. Con años de experiencia en competición y preparación de atletas, mi objetivo es perfeccionar la técnica y la programación para alcanzar números de élite. La disciplina y la constancia son los pilares de mi metodología."
+    bio: "Apasionado del powerlifting y cansado de un mundo donde a todo el mundo le dan una programación de copiar y pegar, donde todo se basa en una escala de RPE del 1 al 10 sin baremos intermedios y sin datos confiables. Por ello, implemento las técnicas más avanzadas con tal de recopilar todos los datos posibles de ti y tus levantamientos, convirtiendo una sensación en números que se pueden tratar para conocerte mejor como atleta. No dejes ningún entrenamiento al azar. En un deporte con normas de competición, entrena con ellas."
   }
 ];

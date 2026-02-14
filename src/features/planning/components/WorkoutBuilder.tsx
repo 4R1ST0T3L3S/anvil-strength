@@ -551,7 +551,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     }
 
     return (
-        <div className="h-full flex flex-col relative overflow-hidden">
+        <div className="relative">
 
             {/* NEW HEADER DESIGN - Integrated & Clean */}
             <div className="relative shrink-0 z-10 px-6 py-8">
@@ -601,8 +601,8 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                 </button>
             )}
 
-            {/* Weeks List (Accordion View) */}
-            <div className="flex-1 overflow-y-auto px-4 pb-20 custom-scrollbar space-y-4">
+            {/* Weeks List */}
+            <div className="px-4 pb-20 space-y-4">
                 {weeks.map((week, index) => {
                     const isExpanded = expandedWeeks.includes(week);
                     const weekSessions = blockData.sessions.filter(s => s.week_number === week);

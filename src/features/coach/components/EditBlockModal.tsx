@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar as CalendarIcon, Save, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CalendarWeekPicker } from './CalendarWeekPicker';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock } from '../../../types/training';
@@ -94,133 +95,115 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#1c1c1c] w-full max-w-lg rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+                    className="relative bg-[#1c1c1c] w-full max-w-4xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
                 >
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#252525]">
-                        <h2 className="text-xl font-black uppercase text-white">Editar Bloque</h2>
+                    <div className="flex items-center justify-between p-8 border-b border-white/5 bg-[#252525]">
+                        <h2 className="text-3xl font-black uppercase text-white italic tracking-tighter">Editar Bloque</h2>
                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
-                            <X size={20} />
+                            <X size={24} />
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                        {/* Name Input */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                Nombre del Bloque <span className="text-anvil-red">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Ej: Bloque Fuerza Enero"
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-medium"
-                                autoFocus
-                            />
-                        </div>
+                    <form onSubmit={handleSubmit} className="p-8">
+                        <div className="flex flex-col md:flex-row gap-8">
+                            {/* LEFT COLUMN */}
+                            <div className="flex-1 space-y-8">
+                                {/* Name Input */}
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                        Nombre del Bloque <span className="text-anvil-red">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        placeholder="Ej: Bloque Fuerza Enero"
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-bold"
+                                        autoFocus
+                                    />
+                                </div>
 
-                        {/* Color Picker */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                Color del Bloque
-                            </label>
-                            <div className="flex items-center gap-2">
-                                {BLOCK_COLORS.map((c) => (
+                                {/* Color Picker */}
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                        Color del Bloque
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        {BLOCK_COLORS.map((c) => (
+                                            <button
+                                                key={c.hex}
+                                                type="button"
+                                                onClick={() => setColor(c.hex)}
+                                                title={c.label}
+                                                className={`w-10 h-10 rounded-full transition-all duration-200 border-2 ${color === c.hex
+                                                    ? 'border-white scale-110 shadow-lg shadow-white/10'
+                                                    : 'border-transparent hover:border-white/30 hover:scale-105'
+                                                    }`}
+                                                style={{ backgroundColor: c.hex }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Active Toggle */}
+                                <div className="flex items-center justify-between p-6 bg-[#0a0a0a] rounded-2xl border border-white/5">
+                                    <div>
+                                        <p className="font-bold text-white text-sm uppercase tracking-wide">Bloque Activo</p>
+                                        <p className="text-xs text-gray-500 mt-1">Visible en el constructor</p>
+                                    </div>
                                     <button
-                                        key={c.hex}
                                         type="button"
-                                        onClick={() => setColor(c.hex)}
-                                        title={c.label}
-                                        className={`w-8 h-8 rounded-full transition-all duration-200 border-2 ${color === c.hex
-                                            ? 'border-white scale-110 shadow-lg'
-                                            : 'border-transparent hover:border-white/30 hover:scale-105'
-                                            }`}
-                                        style={{ backgroundColor: c.hex }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                                        onClick={() => setIsActive(!isActive)}
+                                        className={`w-14 h-8 rounded-full transition-colors relative ${isActive ? 'bg-green-500' : 'bg-gray-700'}`}
+                                    >
+                                        <div className={`absolute w-6 h-6 bg-white rounded-full top-1 transition-transform ${isActive ? 'translate-x-7' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
 
-                        {/* Weeks Grid */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                                    <CalendarIcon size={14} /> Semana Inicio
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={53}
-                                        value={startWeek || ''}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setStartWeek(val === '' ? 0 : parseInt(val));
-                                        }}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all font-bold pl-10"
-                                    />
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-mono">W</span>
+                                <div className="pt-4 flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="flex-1 px-4 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-wider text-sm transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="flex-1 px-4 py-4 rounded-xl bg-white text-black hover:bg-gray-200 font-black uppercase tracking-wider text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {loading ? (
+                                            <Loader className="animate-spin" size={18} />
+                                        ) : (
+                                            <>
+                                                <Save size={18} />
+                                                Guardar Cambios
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                                    <CalendarIcon size={14} /> Semana Fin
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        min={startWeek}
-                                        max={53}
-                                        value={endWeek || ''}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setEndWeek(val === '' ? 0 : parseInt(val));
-                                        }}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red/50 transition-all font-bold pl-10"
-                                    />
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-mono">W</span>
+
+                            {/* RIGHT COLUMN */}
+                            <div className="flex-1">
+                                <div className="space-y-3 h-full flex flex-col">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                        <CalendarIcon size={14} /> Duración del Bloque
+                                    </label>
+                                    <div className="flex-1 min-h-[400px]">
+                                        <CalendarWeekPicker
+                                            startWeek={startWeek}
+                                            endWeek={endWeek}
+                                            selectedColor={color}
+                                            onChange={(start, end) => {
+                                                setStartWeek(start);
+                                                setEndWeek(end);
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Active Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-xl border border-white/5">
-                            <div>
-                                <p className="font-bold text-white text-sm">Bloque Activo</p>
-                                <p className="text-xs text-gray-500">Los bloques activos aparecen en el workout builder</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsActive(!isActive)}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${isActive ? 'bg-green-500' : 'bg-gray-700'}`}
-                            >
-                                <div className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${isActive ? 'translate-x-6' : 'translate-x-0.5'}`} />
-                            </button>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex gap-3 pt-4">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-wider text-sm transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex-1 px-4 py-3 rounded-xl bg-white text-black hover:bg-gray-200 font-black uppercase tracking-wider text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? (
-                                    <Loader className="animate-spin" size={18} />
-                                ) : (
-                                    <>
-                                        <Save size={18} />
-                                        Guardar Cambios
-                                    </>
-                                )}
-                            </button>
                         </div>
                     </form>
                 </motion.div>
