@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
     Calendar,
     Trophy,
-    User
+    User,
+    LogOut,
+    Swords
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
@@ -13,8 +16,6 @@ import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
-
-
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
 interface CoachDashboardProps {
@@ -25,20 +26,14 @@ interface CoachDashboardProps {
 type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile';
 
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
+    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
 
-    // Security Check
+    // Verificación de seguridad básica
     if (user?.role !== 'coach') {
-        return (
-            <div className="flex h-screen items-center justify-center bg-[#1c1c1c] text-white">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold text-anvil-red mb-2">Acceso Denegado</h1>
-                    <p className="text-gray-400">No tienes permisos para ver esta página.</p>
-                </div>
-            </div>
-        );
+        return <div className="p-20 text-center text-white font-bold">Acceso Denegado</div>;
     }
 
     const handleSelectAthlete = (id: string) => {
@@ -46,6 +41,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
         setCurrentView('athlete_details');
     };
 
+    // CONFIGURACIÓN DEL MENÚ LATERAL
     const menuItems = [
         {
             icon: <LayoutDashboard size={20} />,
@@ -72,72 +68,36 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             isActive: currentView === 'calendar'
         },
         {
+            icon: <Swords size={20} className="text-anvil-red" />,
+            label: 'La Arena',
+            onClick: () => navigate('/dashboard/predictions'), // Ajusta la ruta si es necesario
+            isActive: false
+        },
+        {
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
         },
-
+        {
+            icon: <LogOut size={20} className="text-red-500" />,
+            label: 'Cerrar Sesión',
+            onClick: onLogout,
+            isActive: false
+        }
     ];
 
     const renderContent = () => {
         switch (currentView) {
-            case 'home':
-                return <CoachHome user={user} onNavigate={setCurrentView} />;
-            case 'athletes':
-                return <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
-            case 'athlete_details':
-                return selectedAthleteId ? (
-                    <CoachAthleteDetails
-                        athleteId={selectedAthleteId}
-                        onBack={() => setCurrentView('athletes')}
-                    />
-                ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
-            case 'schedule':
-                // Assuming CoachTeamSchedule doesn't have onBack yet, we might need to wrap it or add it
-                return (
-                    <div className="h-full flex flex-col">
-                        <div className="p-4 md:p-8 pb-0">
-                            <button
-                                onClick={() => setCurrentView('home')}
-                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
-                            >
-                                ← Volver al Dashboard
-                            </button>
-                        </div>
-                        <CoachTeamSchedule user={user} />
-                    </div>
-                );
-            case 'calendar':
-                return (
-                    <div className="p-4 md:p-8 h-full flex flex-col">
-                        <div className="mb-4">
-                            <button
-                                onClick={() => setCurrentView('home')}
-                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-                            >
-                                ← Volver al Dashboard
-                            </button>
-                        </div>
-                        <CalendarSection />
-                    </div>
-                );
-            case 'profile':
-                return (
-                    <div className="h-full flex flex-col">
-                        <div className="p-4 md:p-8 pb-0">
-                            <button
-                                onClick={() => setCurrentView('home')}
-                                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
-                            >
-                                ← Volver al Dashboard
-                            </button>
-                        </div>
-                        <ProfileSection user={user} onUpdate={() => refetch()} />
-                    </div>
-                );
-            default:
-                return <CoachHome user={user} onNavigate={setCurrentView} />;
+            case 'home': return <CoachHome user={user} onNavigate={setCurrentView} />;
+            case 'athletes': return <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
+            case 'athlete_details': return selectedAthleteId ? (
+                <CoachAthleteDetails athleteId={selectedAthleteId} onBack={() => setCurrentView('athletes')} />
+            ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
+            case 'schedule': return <CoachTeamSchedule user={user} />;
+            case 'calendar': return <CalendarSection />;
+            case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} />;
+            default: return <CoachHome user={user} onNavigate={setCurrentView} />;
         }
     };
 
@@ -148,10 +108,13 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
             roleLabel="Coach"
-            hideSidebarOnDesktop={true}
-            hideMobileHeader={true}
+            // FORZAMOS QUE SE VEA TODO
+            hideSidebarOnDesktop={false}
+            hideMobileHeader={false}
         >
-            {renderContent()}
+            <div className="p-4 md:p-8 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500">
+                {renderContent()}
+            </div>
         </DashboardLayout>
     );
 }
