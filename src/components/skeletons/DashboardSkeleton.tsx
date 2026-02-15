@@ -1,30 +1,18 @@
 import { Skeleton } from "../ui/Skeleton";
 import { DashboardLayout } from "../layout/DashboardLayout";
 
-// Mock user for layout structure
-const mockUser = {
-    id: "skeleton",
-    email: "loading...",
-    role: "coach" as const,
-    full_name: "Loading...",
-    nickname: "Loading",
-    avatar_url: undefined,
-    created_at: "",
-    updated_at: ""
-};
+
+
 
 export function DashboardSkeleton() {
     return (
         <DashboardLayout
-            user={mockUser}
-            onLogout={() => { }}
             menuItems={[1, 2, 3, 4, 5].map((i) => ({
                 icon: <Skeleton className="h-5 w-5" />,
                 label: "Loading...",
                 onClick: () => { },
                 isActive: i === 1
             }))}
-            roleLabel="Coach"
         >
             <div className="p-8 space-y-8">
                 {/* Header Skeleton */}

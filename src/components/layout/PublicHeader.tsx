@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -101,35 +102,84 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                     </button>
                 </div>
 
-                {/* Mobile Menu Button */}
+                {/* Mobile Menu Button - Only show if menu is CLOSED. When open, the menu has its own close button.*/}
                 <div className="md:hidden">
                     <button
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        onClick={() => setIsMobileMenuOpen(true)}
                         className="text-white p-2"
                     >
-                        {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                        <Menu className="h-6 w-6" />
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Navigation */}
-            {isMobileMenuOpen && (
-                <div className="md:hidden bg-[#1c1c1c] border-t border-white/10 absolute w-full rounded-b-xl shadow-2xl">
-                    <div className="px-4 pt-2 pb-4 space-y-1">
-                        {navLinks.map((link) => (
-                            <a
-                                key={link.name}
-                                href={link.href}
-                                className={`block px-3 py-4 text-base font-bold hover:text-white hover:bg-white/5 border-b border-white/5 ${location.pathname === link.href ? 'text-anvil-red' : 'text-gray-300'
-                                    }`}
-                                onClick={(e) => handleNavClick(e, link.href)}
+            {/* Mobile Navigation Overlay - FULL SCREEN */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-[100] bg-[#1c1c1c]/95 backdrop-blur-xl flex flex-col md:hidden"
+                    >
+                        {/* Internal Header for the Menu */}
+                        <div className="flex items-center justify-between px-6 py-6 border-b border-white/5">
+                            {/* Logo inside menu */}
+                            <div className="flex-shrink-0">
+                                <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); setIsMobileMenuOpen(false); }} className="block">
+                                    <img
+                                        src="/logo-dark-removebg-preview.png"
+                                        alt="Anvil Strength Logo"
+                                        className="h-10 w-auto object-contain grayscale brightness-150"
+                                    />
+                                </a>
+                            </div>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="text-white p-2 hover:bg-white/10 rounded-full transition-colors"
                             >
-                                {link.name}
-                            </a>
-                        ))}
-                    </div>
-                </div>
-            )}
+                                <X className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        {/* Menu Content */}
+                        <div className="flex-1 flex flex-col items-center justify-center relative">
+                            {/* Background Watermark */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+                                <img src="/logo-dark-removebg-preview.png" className="w-[120%] max-w-lg" alt="" />
+                            </div>
+
+                            <nav className="flex flex-col items-center space-y-8 relative z-10 w-full px-6 text-center">
+                                {navLinks.map((link, index) => (
+                                    <motion.a
+                                        key={link.name}
+                                        href={link.href}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        transition={{ delay: 0.1 + index * 0.05 }}
+                                        onClick={(e) => handleNavClick(e, link.href)}
+                                        className={`text-3xl font-black uppercase tracking-tighter transition-all duration-300 ${location.pathname === link.href
+                                                ? 'text-anvil-red scale-110'
+                                                : 'text-white/80 hover:text-white hover:scale-105'
+                                            }`}
+                                    >
+                                        {link.name}
+                                    </motion.a>
+                                ))}
+                            </nav>
+                        </div>
+
+                        {/* Footer / Extra Info in Menu */}
+                        <div className="p-8 text-center text-white/20 text-xs font-bold tracking-widest uppercase">
+                            Anvil Strength System
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </header>
     );
 }

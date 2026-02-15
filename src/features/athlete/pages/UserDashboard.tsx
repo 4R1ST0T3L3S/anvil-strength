@@ -7,7 +7,7 @@ import {
     Calendar,
     Trophy,
     User,
-    Swords,
+    Users,
     ShoppingBag, // <--- Importamos ShoppingBag
     LogOut // <--- Importamos LogOut
 } from 'lucide-react';
@@ -74,10 +74,10 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: currentView === 'competitions'
         },
         {
-            icon: <Swords size={20} />,
-            label: 'La Arena',
+            icon: <Users size={20} />,
+            label: 'Comunidad',
             // 3. CAMBIO CRÍTICO: No usamos setCurrentView, navegamos a la URL
-            onClick: () => navigate('/dashboard/arena'),
+            onClick: () => navigate('/dashboard/community'),
             isActive: false // Siempre false porque nos vamos de esta pantalla
         },
         {
@@ -133,13 +133,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
     return (
         <DashboardLayout
-            user={user}
-            onLogout={onLogout}
-            onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
-            roleLabel="Athlete"
-            hideMobileHeader={false}
-            hideSidebarOnDesktop={false}
         >
             {/* BOTÓN FLOTANTE PARA ORDENADOR */}
             <div className="hidden md:block fixed top-6 right-8 z-[100]">

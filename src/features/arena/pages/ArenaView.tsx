@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Trophy, TrendingUp, Coins,
+    TrendingUp, Coins,
     LayoutDashboard, Plus, Calendar, X,
-    Swords, User,
+    Swords, User, Users,
     Trash2, CheckCircle
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
@@ -186,7 +186,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
             <header className="mb-10 border-b border-gray-800 pb-6 flex justify-between items-start">
                 <div>
                     <div className="flex items-center gap-4 mb-2">
-                        <h1 className="text-4xl font-black text-yellow-500 flex items-center gap-3 italic uppercase"><Trophy size={40} /> LA ARENA</h1>
+                        <h1 className="text-4xl font-black text-yellow-500 flex items-center gap-3 italic uppercase"><Users size={40} /> COMUNIDAD</h1>
                         {isDev && <button onClick={() => setIsModalOpen(true)} className="p-2 bg-yellow-500 text-black rounded-full hover:scale-110 shadow-lg"><Plus size={24} strokeWidth={3} /></button>}
                     </div>
                 </div>

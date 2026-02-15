@@ -47,7 +47,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
 
             {/* --- 2. RUTA DEDICADA: LA ARENA --- */}
             {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}
-            <Route path="/dashboard/arena" element={
+            <Route path="/dashboard/community" element={
                 hasActiveSession && user ? (
                     <ArenaView user={user} />
                 ) : (

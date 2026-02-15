@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE: Hook de navegación
 import {
     LayoutDashboard,
-    Users,
+    Users, // <--- Solo una vez
     Calendar,
     Trophy,
     User,
-    Swords,
     ShoppingBag, // <--- Importamos ShoppingBag
     LogOut
 } from 'lucide-react';
@@ -72,10 +71,10 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             isActive: currentView === 'calendar'
         },
         {
-            icon: <Swords size={20} />,
-            label: 'La Arena',
+            icon: <Users size={20} />,
+            label: 'Comunidad',
             // 3. CAMBIO CLAVE: Navegación real a la ruta dedicada
-            onClick: () => navigate('/dashboard/arena'),
+            onClick: () => navigate('/dashboard/community'),
             isActive: false // Siempre false porque salimos de esta página
         },
         {
@@ -115,13 +114,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
 
     return (
         <DashboardLayout
-            user={user}
-            onLogout={onLogout}
-            onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
-            roleLabel="Coach"
-            hideSidebarOnDesktop={false}
-            hideMobileHeader={false}
         >
             {/* BOTÓN FLOTANTE PARA ORDENADOR */}
             <div className="hidden md:block fixed top-6 right-8 z-[100]">

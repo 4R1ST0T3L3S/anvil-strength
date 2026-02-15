@@ -6,10 +6,9 @@ import { supabase } from '../../../lib/supabase'; // <--- 2. AÑADIDO (Asegúrat
 
 interface PredictionsProps {
   user: any;
-  onLogout: () => void;
 }
 
-export default function Predictions({ user, onLogout }: PredictionsProps) {
+export default function Predictions({ user }: PredictionsProps) {
   const navigate = useNavigate();
   const [balance, setBalance] = useState<number>(0); // Estado para guardar las monedas
   const [loading, setLoading] = useState(true);      // Estado de carga
@@ -62,10 +61,7 @@ export default function Predictions({ user, onLogout }: PredictionsProps) {
 
   return (
     <DashboardLayout
-      user={user}
-      onLogout={onLogout}
       menuItems={menuItems}
-      roleLabel={user.role === 'coach' ? 'Coach' : 'Atleta'}
     >
       <div className="p-4 md:p-8 text-white min-h-screen">
         {/* CABECERA */}
