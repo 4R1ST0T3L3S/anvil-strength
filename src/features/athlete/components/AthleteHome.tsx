@@ -13,7 +13,8 @@ import {
     Calculator,
     Clock,
     FlaskConical,
-    Users
+    Users,
+    Swords
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';
@@ -235,7 +236,7 @@ interface HomeViewProps {
 
 function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
-        <div className="md:hidden space-y-6 pb-20 p-4">
+        <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             {/* Mobile Header */}
             <header>
                 <h1 className="text-3xl font-black uppercase tracking-tighter mb-1">
@@ -368,6 +369,57 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                 )}
             </div>
 
+
+
+            {/* Mobile Community Section (La Arena + Ranking) */}
+            <div className="space-y-3">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <Users size={16} className="text-anvil-red" /> Comunidad
+                </h2>
+
+                {/* La Arena Card */}
+                <div
+                    onClick={() => window.location.href = '/dashboard/predictions'}
+                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3"
+                >
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                                <Swords size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros y gana prestigio</p>
+                            </div>
+                        </div>
+                        <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                    </div>
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                </div>
+
+                {/* Anvil Ranking Card */}
+                <div
+                    onClick={() => setIsRankingOpen(true)}
+                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all"
+                >
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                                <Trophy size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Ranking</h3>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Club Leaderboard</p>
+                            </div>
+                        </div>
+                        <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                    </div>
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                </div>
+            </div>
+
             {/* Mobile Tools Grid - Moved DOWN & Vertical Stack */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
@@ -421,38 +473,14 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                 </div>
             </div>
 
-            {/* Mobile Anvil Ranking Club */}
-            <div className="space-y-3">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <Users size={16} className="text-anvil-red" /> Comunidad
-                </h2>
-                <div
-                    onClick={() => setIsRankingOpen(true)}
-                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all"
-                >
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                                <Trophy size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Ranking</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Club Leaderboard</p>
-                            </div>
-                        </div>
-                        <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
-                    </div>
-                    {/* Background Pattern */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                </div>
-            </div>
+
         </div>
     );
 }
 
 function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
-        <div className="hidden md:block p-8 space-y-8 animate-in fade-in duration-500">
+        <div className="hidden md:block px-12 py-8 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <header>
                 <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-1">
@@ -595,6 +623,31 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                             </div>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* Quick Stats or Promo - LA ARENA (PREDICTIONS) */}
+            <div className="space-y-4 pt-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <Users size={16} className="text-anvil-red" /> Comunidad
+                </h2>
+                <div
+                    onClick={() => window.location.href = '/dashboard/predictions'}
+                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
+                >
+                    <div className="relative z-10 flex items-center gap-4">
+                        <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                            <Swords size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros y gana prestigio</p>
+                        </div>
+                    </div>
+                    <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors relative z-10" />
+
+                    {/* Background Pattern */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
                 </div>
             </div>
 

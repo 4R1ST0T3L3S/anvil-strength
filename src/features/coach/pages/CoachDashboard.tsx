@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Users,
     Calendar,
     Trophy,
-    User,
-    LogOut,
-    Swords
+    User
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
@@ -26,7 +23,6 @@ interface CoachDashboardProps {
 type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile';
 
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
-    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
@@ -68,22 +64,10 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             isActive: currentView === 'calendar'
         },
         {
-            icon: <Swords size={20} className="text-anvil-red" />,
-            label: 'La Arena',
-            onClick: () => navigate('/dashboard/predictions'), // Ajusta la ruta si es necesario
-            isActive: false
-        },
-        {
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
-        },
-        {
-            icon: <LogOut size={20} className="text-red-500" />,
-            label: 'Cerrar Sesión',
-            onClick: onLogout,
-            isActive: false
         }
     ];
 
@@ -109,10 +93,10 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             menuItems={menuItems}
             roleLabel="Coach"
             // FORZAMOS QUE SE VEA TODO
-            hideSidebarOnDesktop={false}
+            hideSidebarOnDesktop={true}
             hideMobileHeader={false}
         >
-            <div className="p-4 md:p-8 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500">
+            <div className="px-4 py-4 md:px-12 md:py-8 w-full animate-in fade-in duration-500">
                 {renderContent()}
             </div>
         </DashboardLayout>

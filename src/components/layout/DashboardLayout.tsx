@@ -162,16 +162,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </aside>
             )}
 
-            {/* Mobile Header (Simplified - Logo & Notification) */}
-            {!hideMobileHeader && (
-                <div className={`md:hidden fixed top-0 w-full bg-[#1c1c1c]/90 backdrop-blur border-b border-white/5 z-40 px-4 py-3 flex items-center justify-between`}>
-                    <img src="/logo.svg" alt="Anvil" className="h-6 w-auto" />
-                    <NotificationBell />
-                </div>
-            )}
-
             {/* Main Content */}
-            <main className={`flex-1 ${!hideSidebarOnDesktop ? 'md:ml-64' : ''} h-full overflow-y-auto ${hideMobileHeader ? 'pt-0' : 'pt-14'} pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c]`}>
+            <main className={`flex-1 ${!hideSidebarOnDesktop ? 'md:ml-64' : ''} h-full overflow-y-auto pt-0 pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c]`}>
                 {children}
             </main>
 

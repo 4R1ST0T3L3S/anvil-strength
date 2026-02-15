@@ -158,7 +158,7 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
     }
 
     return (
-        <div className="p-8">
+        <div className="space-y-6">
             <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     {onBack && (

@@ -27,16 +27,22 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
 
     return (
         <Routes location={location} key={location.pathname}>
-            
+
             {/* --- CAMBIO 1: PORTADA LIBRE (Adiós Gorila) --- 
                 Ahora SIEMPRE muestra la LandingPage, estés logueado o no. 
                 Ya no te expulsa al dashboard. 
             */}
             <Route path="/" element={
-                <LandingPage
-                    onLoginClick={onLoginClick}
-                    user={user}
-                />
+                !user && !hasActiveSession ? (
+                    <LandingPage
+                        onLoginClick={onLoginClick}
+                        user={user}
+                    />
+                ) : user?.role === 'coach' ? (
+                    <Navigate to="/coach-dashboard" replace />
+                ) : (
+                    <Navigate to="/dashboard" replace />
+                )
             } />
 
             {/* --- CAMBIO 2: NUEVA RUTA "LA ARENA" --- */}

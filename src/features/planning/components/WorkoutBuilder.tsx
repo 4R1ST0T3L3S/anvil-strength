@@ -325,7 +325,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    const addBulkSets = (sessionExerciseId: string, count: number, reps: string, load: number | null, rpe: string) => {
+    const addBulkSets = (sessionExerciseId: string, count: number, reps: string, load: number | null) => {
         setBlockData(prev => {
             if (!prev) return null;
             setHasUnsavedChanges(true); // Flag change
@@ -345,7 +345,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                                 session_exercise_id: sessionExerciseId,
                                 order_index: currentSetsCount + i,
                                 target_reps: reps,
-                                target_rpe: rpe,
+                                target_rpe: "",
                                 target_load: load,
                                 rest_seconds: 0, // Default or inherit? Let's default to 0 for now
                                 is_video_required: false,
@@ -835,7 +835,7 @@ interface DayColumnProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveSession: (id: string) => void;
-    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null, rpe: string) => void;
+    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null) => void;
 }
 
 function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession, onAddBulkSets }: DayColumnProps) {
@@ -936,7 +936,7 @@ interface ExerciseCardProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveExercise: () => void;
-    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null, rpe: string) => void;
+    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null) => void;
 }
 
 function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onAddBulkSets }: ExerciseCardProps) {
@@ -1141,7 +1141,7 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
                             </button>
                             <button
                                 onClick={() => {
-                                    onAddBulkSets(sessionExercise.id, bulkSets, bulkReps, bulkLoad, ""); // Empty RPE as requested
+                                    onAddBulkSets(sessionExercise.id, bulkSets, bulkReps, bulkLoad);
                                     setIsBulkAdding(false);
                                     // Reset fields optionally
                                 }}

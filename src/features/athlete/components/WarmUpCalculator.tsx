@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, TrendingUp, Dumbbell, List } from 'lucide-react';
+import { X, TrendingUp, Dumbbell, List, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface WarmUpCalculatorProps {
@@ -19,6 +19,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
     const [oneRM, setOneRM] = useState<string>('');
     const [targetWeight, setTargetWeight] = useState<string>('');
     const [warmUpSets, setWarmUpSets] = useState<WarmUpSet[]>([]);
+    const resultsRef = useRef<HTMLDivElement>(null);
 
     const calculateWarmUp = () => {
         const target = parseFloat(targetWeight);
@@ -51,6 +52,13 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
         sets.push({ weight: target, reps: 'SET DE TRABAJO', percentage: 100, label: 'Objetivo' });
 
         setWarmUpSets(sets);
+
+        // Auto-scroll to results on mobile
+        setTimeout(() => {
+            if (window.innerWidth < 768 && resultsRef.current) {
+                resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
     };
 
     useEffect(() => {
@@ -139,17 +147,28 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                     <span className="md:hidden">Calcular</span>
                                     <span className="hidden md:inline">Calcular Aproximación</span>
                                 </button>
+
+                                {/* Mobile Scroll Hint */}
+                                {warmUpSets.length > 0 && (
+                                    <div
+                                        onClick={() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                        className="md:hidden flex flex-col items-center justify-center animate-bounce cursor-pointer text-blue-500 mt-6 w-full"
+                                    >
+                                        <span className="text-sm font-black uppercase tracking-widest mb-1">Ver Resultados</span>
+                                        <ChevronDown size={32} />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* RIGHT: Results Table */}
-                        <div className="col-span-12 md:col-span-6 mt-8 md:mt-0 h-full overflow-hidden flex flex-col">
+                        <div ref={resultsRef} className="col-span-12 md:col-span-6 mt-8 md:mt-0 h-full overflow-hidden flex flex-col">
                             <div className="flex items-center gap-3 text-gray-500 mb-6 px-2 border-b border-white/5 pb-4">
                                 <List size={20} />
                                 <span className="text-xs font-black uppercase tracking-widest">Escalera de Aproximación</span>
                             </div>
 
-                            <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                            <div className="space-y-3 h-full overflow-y-auto no-scrollbar [&::-webkit-scrollbar]:hidden pr-2">
                                 {warmUpSets.length > 0 ? (
                                     warmUpSets.map((set, i) => (
                                         <motion.div

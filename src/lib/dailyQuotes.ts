@@ -20,7 +20,8 @@ export const ANVIL_QUOTES = [
     "La técnica es importante, pero el peso sube el ego.",
     "Entrenar es el único momento donde sufrir es divertido.",
     "Imagina tener menos DL que Pau... Eso si es motivación para entrenar.",
-    "HOY ES DÍA DE PR ALERT"
+    "HOY ES DÍA DE PR ALERT",
+    "Ser de anvil es como una espada forjada a martillazos"
 ];
 
 export function getAnvilQuote(): string {

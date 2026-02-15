@@ -163,9 +163,28 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                     <input
                                         type="number"
                                         inputMode="decimal"
-                                        step="0.1"
+                                        step="0.5"
+                                        min="20"
+                                        max="510"
                                         value={targetWeight}
-                                        onChange={(e) => setTargetWeight(e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            // Allow empty string or valid float input up to 510
+                                            if (val === '' || (parseFloat(val) <= 510)) {
+                                                setTargetWeight(val);
+                                            } else {
+                                                // Clamp to 510 if user tries to paste or type higher
+                                                setTargetWeight('510');
+                                            }
+                                        }}
+                                        onBlur={() => {
+                                            if (targetWeight) {
+                                                const val = parseFloat(targetWeight);
+                                                // Round to nearest 0.5
+                                                const rounded = Math.round(val * 2) / 2;
+                                                setTargetWeight(rounded.toString());
+                                            }
+                                        }}
                                         placeholder="20"
                                         className="w-full bg-transparent text-center text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic tracking-tighter"
                                     />

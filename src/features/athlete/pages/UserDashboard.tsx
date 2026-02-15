@@ -112,6 +112,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             menuItems={menuItems}
             roleLabel="Athlete"
             hideMobileHeader
+            hideSidebarOnDesktop={true}
         >
             {renderContent()}
         </DashboardLayout>

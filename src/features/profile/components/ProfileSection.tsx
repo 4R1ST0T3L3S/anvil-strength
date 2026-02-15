@@ -137,8 +137,12 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
     const handleLogout = async () => {
         try {
             await supabase.auth.signOut();
+            // Force a hard refresh to clear all application state
+            window.location.href = '/';
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
+            // Even if there's an error, try to redirect
+            window.location.href = '/';
         }
     };
 
