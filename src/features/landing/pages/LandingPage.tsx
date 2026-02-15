@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, FileText, Mail, Instagram, Menu, X, ShoppingBag, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
@@ -11,6 +11,8 @@ import { athletes, Athlete } from '../../../data/athletes';
 import { coaches, Coach } from '../../../data/coaches';
 
 import { UserProfile } from '../../../hooks/useUser';
+import { PublicHeader } from '../../../components/layout/PublicHeader';
+import { PublicFooter } from '../../../components/layout/PublicFooter';
 
 interface LandingPageProps {
     onLoginClick: () => void;
@@ -18,8 +20,6 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onLoginClick, user }: LandingPageProps) {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
     const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
@@ -82,103 +82,24 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
         }
     }, [carouselIndex]);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
-    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+
+
+
+
+
+    const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
         e.preventDefault();
-        const element = document.querySelector(href);
+        const element = document.querySelector(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setIsMobileMenuOpen(false);
         }
     };
 
-    const navLinks = [
-        { name: 'FILOSOFÍA', href: '#filosofia' },
-        { name: 'ENTRENADORES', href: '#entrenadores' },
-        { name: 'ATLETAS', href: '#atletas' },
-        { name: 'OPINIONES', href: '#reviews' },
-        { name: 'LOGROS', href: '#logros' },
-        { name: 'AFILIATE', href: '#afiliacion' },
-        { name: 'CONTACTO', href: '#contacto' },
-    ];
-
     return (
         <div className="font-sans">
-            {/* SBD-style Header */}
-            <header
-                className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1c1c1c] shadow-lg py-2' : 'bg-transparent py-6'
-                    }`}
-            >
-                <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between md:justify-center md:gap-12">
-                    {/* Logo */}
-                    <div className="flex-shrink-0">
-                        <a href="#" className="block hover:opacity-80 transition-opacity">
-                            <img
-                                src="/logo.svg"
-                                alt="Anvil Strength Logo"
-                                className="h-10 md:h-12 w-auto object-contain"
-                            />
-                        </a>
-                    </div>
-
-                    {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-8">
-                        {navLinks.map((link) => (
-                            <a
-                                key={link.name}
-                                href={link.href}
-                                onClick={(e) => handleNavClick(e, link.href)}
-                                className="text-sm font-bold tracking-wider text-gray-300 hover:text-white transition-colors uppercase"
-                            >
-                                {link.name}
-                            </a>
-                        ))}
-                    </nav>
-
-                    <div className="flex items-center space-x-4 md:space-x-6">
-                        <SmartAuthButton variant="ghost" onLoginClick={onLoginClick} />
-                        <button className="hidden md:block text-gray-300 hover:text-white relative">
-                            <ShoppingBag className="h-5 w-5" />
-                            <span className="absolute -top-2 -right-2 bg-anvil-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">0</span>
-                        </button>
-                    </div>
-
-                    {/* Mobile Menu Button */}
-                    <div className="md:hidden">
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="text-white p-2"
-                        >
-                            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Navigation */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden bg-[#1c1c1c] border-t border-white/10 absolute w-full rounded-b-xl shadow-2xl">
-                        <div className="px-4 pt-2 pb-4 space-y-1">
-                            {navLinks.map((link) => (
-                                <a
-                                    key={link.name}
-                                    href={link.href}
-                                    className="block px-3 py-4 text-base font-bold text-gray-300 hover:text-white hover:bg-white/5 border-b border-white/5"
-                                    onClick={(e) => handleNavClick(e, link.href)}
-                                >
-                                    {link.name}
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </header>
+            {/* Shared Public Header */}
+            <PublicHeader onLoginClick={onLoginClick} />
 
             {/* Hero Section */}
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -198,7 +119,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full md:w-auto" />
                         <a
                             href="#afiliacion"
-                            onClick={(e) => handleNavClick(e, '#afiliacion')}
+                            onClick={(e) => scrollToSection(e, '#afiliacion')}
                             className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
                         >
                             Únete al equipo
@@ -512,24 +433,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     </div>
                 </div>
             </section>
-            <footer className="bg-black py-16 border-t border-white/10">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                        <div className="flex items-center gap-2">
-                            {/* Footer Logo */}
-                            <span className="font-black text-2xl tracking-tighter text-white">ANVIL STRENGTH</span>
-                        </div>
-                        <div className="flex gap-8 text-sm font-bold text-gray-500 uppercase tracking-wider">
-                            <a href="https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
-                            <a href="mailto:anvilstrengthclub@gmail.com" className="hover:text-white transition-colors">Email</a>
-                            <a href="#" className="hover:text-white transition-colors">Aviso Legal</a>
-                        </div>
-                    </div>
-                    <div className="mt-8 text-center md:text-left text-xs text-gray-700 font-medium uppercase tracking-widest">
-                        © 2026 Anvil Strength Powerlifting Club. Todos los derechos reservados.
-                    </div>
-                </div>
-            </footer>
+            <PublicFooter />
 
             <TeamModal
                 isOpen={isTeamModalOpen}

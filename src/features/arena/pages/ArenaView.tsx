@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Trophy, TrendingUp, AlertCircle, Coins,
+    Trophy, TrendingUp, Coins,
     LayoutDashboard, Plus, Calendar, X,
-    Swords, History, ArrowRight, User,
+    Swords, User,
     Trash2, CheckCircle
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
@@ -46,7 +46,6 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [creationStep, setCreationStep] = useState<'menu' | 'pelea'>('menu');
     const [betModal, setBetModal] = useState<{ open: boolean, fight: Fight | null }>({ open: false, fight: null });
     const [resolveModal, setResolveModal] = useState<{ open: boolean, fight: Fight | null }>({ open: false, fight: null });
 
@@ -71,10 +70,10 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
             }
 
             const { data: active } = await supabase.from('arena_fights').select(`*, athlete_a:profiles!athlete_a_id(full_name), athlete_b:profiles!athlete_b_id(full_name)`).eq('status', 'open');
-            if (active) setActiveFights(active as any);
+            if (active) setActiveFights(active as Fight[]);
 
             const { data: resolved } = await supabase.from('arena_fights').select(`*, athlete_a:profiles!athlete_a_id(full_name), athlete_b:profiles!athlete_b_id(full_name)`).eq('status', 'resolved').order('created_at', { ascending: false });
-            if (resolved) setResolvedFights(resolved as any);
+            if (resolved) setResolvedFights(resolved as Fight[]);
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
