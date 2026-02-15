@@ -40,7 +40,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
 
                 if (linksError) throw linksError;
 
-                const athleteIds = athleteLinks?.map((link: { athlete_id: any; }) => link.athlete_id) || [];
+                const athleteIds = athleteLinks?.map((link: { athlete_id: string; }) => link.athlete_id) || [];
 
                 if (athleteIds.length === 0) {
                     setStats({

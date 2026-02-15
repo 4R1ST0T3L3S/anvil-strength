@@ -140,8 +140,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     menuItems,
     children,
     roleLabel,
-    hideSidebarOnDesktop,
-    hideMobileHeader
+    hideSidebarOnDesktop
 }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);

@@ -6,6 +6,7 @@ export interface Competition {
     endDateIso?: string; // Add End Date ISO
     campeonato: string;
     sede: string;
+    organizador?: string; // Added field
     inscripciones: string;
     level: 'IPF' | 'EPF' | 'NACIONAL' | 'AEP 1' | 'AEP 2' | 'AEP 3' | 'COMPETICIÓN';
 }
@@ -161,7 +162,8 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                         if (rowStr.includes('fecha') && (
                             rowStr.includes('competiciones') ||
                             rowStr.includes('localidad') ||
-                            rowStr.includes('organizador')
+                            rowStr.includes('organizador') ||
+                            rowStr.includes('club')
                         )) {
                             headerRowIndex = i;
                             break;
@@ -178,6 +180,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                     const dateIdx = headers.findIndex(h => h.includes('fecha'));
                     const nameIdx = headers.findIndex(h => h.includes('campeonato') || h.includes('competiciones') || h.includes('nombre'));
                     const locIdx = headers.findIndex(h => h.includes('sede') || h.includes('localidad') || h.includes('lugar'));
+                    const orgIdx = headers.findIndex(h => h.includes('organizador') || h.includes('club'));
                     const linkIdx = headers.findIndex(h => h.includes('inscrip') || h.includes('link'));
                     // User mentioned Column F (Index 5). We look for "Nivel", "Caracter", "Tipo" or fallback to index 5 if plausible.
                     let levelIdx = headers.findIndex(h => h.includes('nivel') || h.includes('caracter') || h.includes('carácter') || h.includes('tipo'));
@@ -216,6 +219,7 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
                                 endDateIso: parsed.endIso,
                                 campeonato: name,
                                 sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
+                                organizador: orgIdx !== -1 ? row[orgIdx] : '',
                                 inscripciones: linkIdx !== -1 ? row[linkIdx] : '',
                                 level: level
                             };

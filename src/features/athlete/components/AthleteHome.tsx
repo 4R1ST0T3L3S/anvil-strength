@@ -30,7 +30,7 @@ import { getDaysRemaining } from '../../../utils/dateUtils';
 interface AthleteHomeProps {
     user: UserProfile;
     // Ya no restringimos tanto los tipos aquí porque usaremos navigate
-    onNavigate: (view: any) => void;
+    onNavigate: (view: string) => void;
 }
 
 interface ExtendedSession extends TrainingSession {
@@ -187,8 +187,8 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
 
 interface HomeViewProps {
     user: UserProfile;
-    onNavigate: (view: any) => void;
-    navigate: any; // Tipo para navigate
+    onNavigate: (view: string) => void;
+    navigate: ReturnType<typeof useNavigate>; // Tipo para navigate
     activeBlock: TrainingBlock | null;
     todaySession: ExtendedSession | null;
     setIs1RMCalcOpen: (isOpen: boolean) => void;

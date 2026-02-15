@@ -71,7 +71,14 @@ export function CalendarSection() {
 
         const esInvitado = (level.includes('AEP 3') || level === 'AEP3') && !esDeNuestraZona(comp);
 
-        const config: Record<string, any> = {
+        interface CompetitionTheme {
+            color: string;
+            border: string;
+            bg: string;
+            icon?: React.ReactNode;
+        }
+
+        const config: Record<string, CompetitionTheme> = {
             'AEP 3': { color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' },
             'AEP 2': { color: 'text-yellow-400', border: 'border-yellow-500/50', bg: 'bg-yellow-500/10' },
             'AEP 1': { color: 'text-blue-400', border: 'border-blue-500/50', bg: 'bg-blue-500/10' },

@@ -940,14 +940,15 @@ interface ExerciseCardProps {
 }
 
 function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onAddBulkSets }: ExerciseCardProps) {
-    if (!sessionExercise) {
-        console.error("ExerciseCard received null sessionExercise");
-        return null;
-    }
     const [isBulkAdding, setIsBulkAdding] = useState(false);
     const [bulkSets, setBulkSets] = useState(3);
     const [bulkReps, setBulkReps] = useState("");
     const [bulkLoad, setBulkLoad] = useState<number | null>(null);
+
+    if (!sessionExercise) {
+        console.error("ExerciseCard received null sessionExercise");
+        return null;
+    }
 
     const exerciseName = sessionExercise?.exercise?.name || "Ejercicio desconocido";
     const isVariant = exerciseName.toLowerCase().includes('variante') || exerciseName === 'Personalizado';

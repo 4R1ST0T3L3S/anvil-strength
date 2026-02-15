@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // <--- 1. AÑADIDO useEffect y useState
+import { useEffect, useState } from 'react'; // <--- 1. AÑADIDO useEffect y useState
 import { useNavigate } from 'react-router-dom';
 import { Trophy, ArrowLeft, TrendingUp, AlertCircle, Coins } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';

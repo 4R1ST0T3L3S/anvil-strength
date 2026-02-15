@@ -33,7 +33,7 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
 
                 if (linksError) throw linksError;
 
-                const athleteIds = links?.map((l: { athlete_id: any; }) => l.athlete_id) || [];
+                const athleteIds = links?.map((l: { athlete_id: string; }) => l.athlete_id) || [];
 
                 if (athleteIds.length === 0) {
                     setAthletes([]);

@@ -83,7 +83,7 @@ export const trainingService = {
                 acc[curr.week_number] = curr.name;
                 return acc;
             }, {} as Record<number, string>);
-        } catch (e) {
+        } catch {
             return {};
         }
     },

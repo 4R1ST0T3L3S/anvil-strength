@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { 
-    Trophy, TrendingUp, AlertCircle, Coins, 
-    LayoutDashboard, Plus, Calendar, X, 
+import {
+    Trophy, TrendingUp, AlertCircle, Coins,
+    LayoutDashboard, Plus, Calendar, X,
     Swords, History, ArrowRight, User,
     Trash2, CheckCircle
 } from 'lucide-react';
@@ -49,7 +49,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     const [creationStep, setCreationStep] = useState<'menu' | 'pelea'>('menu');
     const [betModal, setBetModal] = useState<{ open: boolean, fight: Fight | null }>({ open: false, fight: null });
     const [resolveModal, setResolveModal] = useState<{ open: boolean, fight: Fight | null }>({ open: false, fight: null });
-    
+
     const [fightForm, setFightForm] = useState({ title: '', athlete_a: '', athlete_b: '' });
     const [betAmount, setBetAmount] = useState<number>(10);
     const [selectedSide, setSelectedSide] = useState<'a' | 'b' | null>(null);
@@ -105,17 +105,17 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         try {
             const sidePool = selectedSide === 'a' ? 'pool_a' : 'pool_b';
             const currentPool = selectedSide === 'a' ? betModal.fight.pool_a : betModal.fight.pool_b;
-            
+
             await supabase.from('profiles').update({ anvil_coins: balance - betAmount }).eq('id', user.id);
             await supabase.from('arena_fights').update({ [sidePool]: currentPool + betAmount }).eq('id', betModal.fight.id);
             // Guardamos en 'selected_side' para que la resolución manual funcione
-            await supabase.from('arena_fight_bets').insert([{ 
-                fight_id: betModal.fight.id, 
-                user_id: user.id, 
-                amount: betAmount, 
-                selected_side: selectedSide 
+            await supabase.from('arena_fight_bets').insert([{
+                fight_id: betModal.fight.id,
+                user_id: user.id,
+                amount: betAmount,
+                selected_side: selectedSide
             }]);
-            
+
             setBetModal({ open: false, fight: null });
             fetchData();
         } catch (err) { console.error(err); } finally { setIsActionLoading(false); }
@@ -128,10 +128,10 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         try {
             const totalPool = fight.pool_a + fight.pool_b;
             const winnerPool = side === 'a' ? fight.pool_a : fight.pool_b;
-            
+
             // Buscamos apuestas por LADO (a o b)
             const { data: winners } = await supabase.from('arena_fight_bets').select('*').eq('fight_id', fight.id).eq('selected_side', side);
-            
+
             if (winners && winnerPool > 0) {
                 const payouts: Record<string, number> = {};
                 winners.forEach(bet => {
@@ -173,11 +173,11 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
 
     const handleCreateFight = async (e: React.FormEvent) => {
         e.preventDefault();
-        const { error } = await supabase.from('arena_fights').insert([{ 
-            title: fightForm.title.toUpperCase(), 
-            athlete_a_name_manual: fightForm.athlete_a, 
-            athlete_b_name_manual: fightForm.athlete_b, 
-            pool_a: 0, pool_b: 0, status: 'open' 
+        const { error } = await supabase.from('arena_fights').insert([{
+            title: fightForm.title.toUpperCase(),
+            athlete_a_name_manual: fightForm.athlete_a,
+            athlete_b_name_manual: fightForm.athlete_b,
+            pool_a: 0, pool_b: 0, status: 'open'
         }]);
         if (!error) { setIsModalOpen(false); fetchData(); }
     };
@@ -329,9 +329,9 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"><X /></button>
                         <form onSubmit={handleCreateFight} className="space-y-4">
                             <h2 className="text-2xl font-black uppercase italic text-red-500 mb-6 text-center">Configurar 1VS1</h2>
-                            <input required placeholder="TÍTULO (EJ: DUELO MUNDIAL)" className="w-full bg-black border border-white/10 p-4 rounded-xl outline-none font-bold uppercase text-xs" onChange={e => setFightForm({...fightForm, title: e.target.value})} />
-                            <input required placeholder="NOMBRE ATLETA A" className="w-full bg-black border border-white/10 p-4 rounded-xl outline-none font-bold uppercase text-xs" onChange={e => setFightForm({...fightForm, athlete_a: e.target.value})} />
-                            <input required placeholder="NOMBRE ATLETA B" className="w-full bg-black border border-white/10 p-4 rounded-xl outline-none font-bold uppercase text-xs" onChange={e => setFightForm({...fightForm, athlete_b: e.target.value})} />
+                            <input required placeholder="TÍTULO (EJ: DUELO MUNDIAL)" className="w-full bg-black border border-white/10 p-4 rounded-xl outline-none font-bold uppercase text-xs" onChange={e => setFightForm({ ...fightForm, title: e.target.value })} />
+                            <input required placeholder="NOMBRE ATLETA A" className="w-full bg-black border border-white/10 p-4 rounded-xl outline-none font-bold uppercase text-xs" onChange={e => setFightForm({ ...fightForm, athlete_a: e.target.value })} />
+                            <input required placeholder="NOMBRE ATLETA B" className="w-full bg-black border border-white/10 p-4 rounded-xl outline-none font-bold uppercase text-xs" onChange={e => setFightForm({ ...fightForm, athlete_b: e.target.value })} />
                             <button type="submit" className="w-full py-5 bg-red-600 text-white font-black uppercase italic rounded-2xl hover:bg-red-500 mt-4 shadow-lg shadow-red-900/20">Publicar Combate</button>
                         </form>
                     </div>
