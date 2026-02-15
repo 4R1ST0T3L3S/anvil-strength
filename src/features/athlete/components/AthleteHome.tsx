@@ -28,7 +28,7 @@ import { getDaysRemaining } from '../../../utils/dateUtils';
 
 interface AthleteHomeProps {
     user: UserProfile;
-    onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar') => void;
+    onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'arena') => void;
 }
 
 interface ExtendedSession extends TrainingSession {
@@ -224,7 +224,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
 
 interface HomeViewProps {
     user: UserProfile;
-    onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar') => void;
+    onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'arena') => void;
     activeBlock: TrainingBlock | null;
     todaySession: ExtendedSession | null;
     setIs1RMCalcOpen: (isOpen: boolean) => void;
@@ -379,8 +379,8 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
 
                 {/* La Arena Card */}
                 <div
-                    onClick={() => window.location.href = '/dashboard/predictions'}
-                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3"
+                    onClick={() => onNavigate('arena')}
+                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer"
                 >
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -632,7 +632,7 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                     <Users size={16} className="text-anvil-red" /> Comunidad
                 </h2>
                 <div
-                    onClick={() => window.location.href = '/dashboard/predictions'}
+                    onClick={() => onNavigate('arena')}
                     className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
                 >
                     <div className="relative z-10 flex items-center gap-4">

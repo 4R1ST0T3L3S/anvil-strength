@@ -5,7 +5,8 @@ import {
     Utensils,
     Calendar,
     Trophy,
-    User
+    User,
+    Swords // Import Swords icon
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
@@ -15,6 +16,7 @@ import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
+import { ArenaView } from '../components/ArenaView'; // Import ArenaView
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
@@ -23,7 +25,7 @@ interface UserDashboardProps {
     onLogout: () => void;
 }
 
-type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
+type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile' | 'arena'; // Add 'arena'
 
 export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const [currentView, setCurrentView] = useState<AthleteView>('home');
@@ -53,6 +55,12 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             label: 'Mi Planificación',
             onClick: () => setCurrentView('planning'),
             isActive: currentView === 'planning'
+        },
+        {
+            icon: <Swords size={20} />, // New Menu Item
+            label: 'La Arena',
+            onClick: () => setCurrentView('arena'),
+            isActive: currentView === 'arena'
         },
         {
             icon: <Utensils size={20} />,
@@ -97,6 +105,8 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                         <CalendarSection />
                     </div>
                 );
+            case 'arena': // New Case
+                return <ArenaView user={user} />;
             case 'profile':
                 return <ProfileSection user={user} onUpdate={() => refetch()} />;
             default:

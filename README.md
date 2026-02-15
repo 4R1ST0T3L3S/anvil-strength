@@ -28,9 +28,12 @@ La aplicación se divide en dos experiencias optimizadas:
     *   Interfaz "Mobile-First" diseñada para usarse en el gimnasio.
     *   Visualización clara de objetivos vs. realidad.
 *   **Anvil Lab Tools** (Herramientas avanzadas integradas):
-    *   🧮 **Calculadora 1RM**: Estima tus máximos basados en RPE y velocidad.
-    *   🧱 **Calculadora de Discos**: Visualización gráfica de cómo cargar la barra.
+    *   🧮 **Calculadora 1RM Pro**: Estima tus máximos usando **RPE** o **Velocidad (VBT)** con coeficientes ajustados por ejercicio.
+    *   🧱 **Calculadora de Discos**: Visualización gráfica automática con restricción de carga máxima (510kg).
     *   🔥 **Generador de Calentamiento**: Protocolos de aproximación automáticos basados en tu peso objetivo.
+*   **Comunidad**:
+    *   ⚔️ **La Arena**: Sistema de apuestas y predicciones con *Anvil Coins*.
+    *   🏆 **Anvil Ranking**: Leaderboard del club en tiempo real.
 *   **Sección de Nutrición**: Acceso rápido a planes nutricionales y macros.
 
 ---

@@ -5,10 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
 
-// --- NUEVO: Importamos la página de Predicciones ---
-// Asegúrate de que la ruta coincida con donde creaste el archivo (features/dashboard/pages...)
-import Predictions from '../features/dashboard/pages/Predictions';
-
 // Lazy Load Pages
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
@@ -44,20 +40,6 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/dashboard" replace />
                 )
             } />
-
-            {/* --- CAMBIO 2: NUEVA RUTA "LA ARENA" --- */}
-            <Route path="/dashboard/predictions" element={
-                !user && !hasActiveSession ? (
-                    <Navigate to="/" replace />
-                ) : !user && hasActiveSession ? (
-                    <DashboardSkeleton />
-                ) : (
-                    // Aquí mostramos la página de predicciones si el usuario existe
-                    <Predictions user={user} onLogout={onLogout} />
-                )
-            } />
-
-            {/* RUTAS EXISTENTES DEL DASHBOARD (Sin cambios) */}
             <Route path="/dashboard" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
@@ -90,6 +72,6 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
             } />
 
             <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        </Routes >
     );
 }
