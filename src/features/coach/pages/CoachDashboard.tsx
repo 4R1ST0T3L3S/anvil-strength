@@ -7,6 +7,7 @@ import {
     Trophy,
     User,
     Swords,
+    ShoppingBag, // <--- Importamos ShoppingBag
     LogOut
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
@@ -82,6 +83,12 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <ShoppingBag size={20} />,
+            label: 'Ropa',
+            onClick: () => navigate('/ropa'),
+            isActive: false
         },
         // Botón para Móvil
         {

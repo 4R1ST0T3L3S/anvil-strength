@@ -8,6 +8,7 @@ import {
     Trophy,
     User,
     Swords,
+    ShoppingBag, // <--- Importamos ShoppingBag
     LogOut // <--- Importamos LogOut
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -90,6 +91,12 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <ShoppingBag size={20} />,
+            label: 'Ropa',
+            onClick: () => navigate('/ropa'),
+            isActive: false
         },
         // Botón Salir para Móvil
         {
