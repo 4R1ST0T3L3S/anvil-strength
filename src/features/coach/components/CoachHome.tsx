@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTAR ESTO
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { Users, Trophy, Calendar, User, MapPin, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords } from 'lucide-react';
@@ -8,6 +9,8 @@ import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
 import { PlateCalculator } from '../../athlete/components/PlateCalculator';
 
 export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate: (view: any) => void }) {
+    const navigate = useNavigate(); // <--- 2. INICIALIZAR EL HOOK
+
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour >= 6 && hour < 14) return 'Buenos días';
@@ -49,8 +52,6 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                     setLoading(false);
                     return;
                 }
-
-
 
                 // 3. Get Next Competition for these athletes
                 const today = new Date().toISOString().split('T')[0];
@@ -243,7 +244,8 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                             <Users size={16} className="text-anvil-red" /> Comunidad
                         </h2>
                         <div
-                            onClick={() => window.location.href = '/dashboard/predictions'}
+                            // 3. CAMBIO CLAVE: Usar el hook navigate a la URL dedicada
+                            onClick={() => navigate('/dashboard/arena')}
                             className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
                         >
                             <div className="relative z-10 flex items-center gap-4">

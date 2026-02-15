@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE
 import {
     LayoutDashboard,
     FileText,
@@ -6,7 +7,8 @@ import {
     Calendar,
     Trophy,
     User,
-    Swords // Import Swords icon
+    Swords,
+    LogOut // <--- Importamos LogOut
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
@@ -16,7 +18,7 @@ import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
-import { ArenaView } from '../components/ArenaView'; // Import ArenaView
+// NOTA: Ya no importamos ArenaView aquí, porque es una página externa
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
@@ -25,9 +27,11 @@ interface UserDashboardProps {
     onLogout: () => void;
 }
 
-type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile' | 'arena'; // Add 'arena'
+// Eliminamos 'arena' de los tipos de vista interna
+type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
 
 export function UserDashboard({ user, onLogout }: UserDashboardProps) {
+    const navigate = useNavigate(); // <--- 2. Inicializamos el hook
     const [currentView, setCurrentView] = useState<AthleteView>('home');
     const { refetch } = useUser();
 
@@ -57,12 +61,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: currentView === 'planning'
         },
         {
-            icon: <Swords size={20} />, // New Menu Item
-            label: 'La Arena',
-            onClick: () => setCurrentView('arena'),
-            isActive: currentView === 'arena'
-        },
-        {
             icon: <Utensils size={20} />,
             label: 'Mi Nutrición',
             onClick: () => setCurrentView('nutrition'),
@@ -75,6 +73,13 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: currentView === 'competitions'
         },
         {
+            icon: <Swords size={20} />,
+            label: 'La Arena',
+            // 3. CAMBIO CRÍTICO: No usamos setCurrentView, navegamos a la URL
+            onClick: () => navigate('/dashboard/arena'),
+            isActive: false // Siempre false porque nos vamos de esta pantalla
+        },
+        {
             icon: <Calendar size={20} />,
             label: 'Calendario AEP',
             onClick: () => setCurrentView('calendar'),
@@ -85,15 +90,22 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        // Botón Salir para Móvil
+        {
+            icon: <LogOut size={20} className="text-red-500" />,
+            label: 'Salir',
+            onClick: onLogout,
+            isActive: false
         }
     ];
 
     const renderContent = () => {
         switch (currentView) {
             case 'home':
-                return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view)} />;
+                // Nota: Asegúrate de que AthleteHome también use navigate() si tiene un botón para la arena
+                return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view as AthleteView)} />;
             case 'planning':
-
                 return <WorkoutLogger athleteId={user.id} />;
             case 'nutrition':
                 return <AthleteNutritionView user={user} />;
@@ -105,8 +117,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                         <CalendarSection />
                     </div>
                 );
-            case 'arena': // New Case
-                return <ArenaView user={user} />;
             case 'profile':
                 return <ProfileSection user={user} onUpdate={() => refetch()} />;
             default:
@@ -121,9 +131,20 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             onOpenSettings={() => setCurrentView('profile')}
             menuItems={menuItems}
             roleLabel="Athlete"
-            hideMobileHeader
-            hideSidebarOnDesktop={true}
+            hideMobileHeader={false}
+            hideSidebarOnDesktop={false}
         >
+            {/* BOTÓN FLOTANTE PARA ORDENADOR */}
+            <div className="hidden md:block fixed top-6 right-8 z-[100]">
+                <button
+                    onClick={onLogout}
+                    className="flex items-center gap-2 bg-[#1c1c1c] border border-white/10 hover:border-red-500/50 hover:text-red-500 text-gray-400 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-xl"
+                >
+                    <LogOut size={16} />
+                    Cerrar Sesión
+                </button>
+            </div>
+
             {renderContent()}
         </DashboardLayout>
     );

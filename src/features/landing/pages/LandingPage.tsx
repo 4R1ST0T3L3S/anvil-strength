@@ -423,7 +423,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     </p>
 
                     <div className="flex flex-col md:flex-row gap-6 justify-center">
-                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSckZ2BU0Plvxk0ceGvYsRgg3ELS2jap8Rnqjzicbpy_zjwR2g/viewform" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
+                        <a href="https://typebot.co/lead-generation-hhwa24t" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
                             <FileText size={20} />
                             Formulario de Inscripción
                         </a>

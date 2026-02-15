@@ -5,6 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
 
+// 1. Importamos la VISTA CORRECTA según tu estructura de carpetas
+import { ArenaView } from '../features/arena/pages/ArenaView';
+
 // Lazy Load Pages
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
@@ -24,10 +27,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
     return (
         <Routes location={location} key={location.pathname}>
 
-            {/* --- CAMBIO 1: PORTADA LIBRE (Adiós Gorila) --- 
-                Ahora SIEMPRE muestra la LandingPage, estés logueado o no. 
-                Ya no te expulsa al dashboard. 
-            */}
+            {/* --- PORTADA (Siempre accesible) --- */}
             <Route path="/" element={
                 !user && !hasActiveSession ? (
                     <LandingPage
@@ -40,6 +40,18 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/dashboard" replace />
                 )
             } />
+
+            {/* --- 2. RUTA DEDICADA: LA ARENA --- */}
+            {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}
+            <Route path="/dashboard/arena" element={
+                hasActiveSession && user ? (
+                    <ArenaView user={user} />
+                ) : (
+                    <Navigate to="/" replace />
+                )
+            } />
+
+            {/* --- DASHBOARD ATLETA --- */}
             <Route path="/dashboard" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
@@ -57,6 +69,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : null
             } />
 
+            {/* --- DASHBOARD COACH --- */}
             <Route path="/coach-dashboard" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
@@ -71,6 +84,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : null
             } />
 
+            {/* --- FALLBACK --- */}
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes >
     );

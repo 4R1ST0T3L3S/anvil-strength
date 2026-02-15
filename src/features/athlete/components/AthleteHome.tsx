@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE
 import { supabase } from '../../../lib/supabase';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, TrainingSession, SessionExercise } from '../../../types/training';
@@ -28,7 +29,8 @@ import { getDaysRemaining } from '../../../utils/dateUtils';
 
 interface AthleteHomeProps {
     user: UserProfile;
-    onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'arena') => void;
+    // Ya no restringimos tanto los tipos aquí porque usaremos navigate
+    onNavigate: (view: any) => void;
 }
 
 interface ExtendedSession extends TrainingSession {
@@ -37,46 +39,29 @@ interface ExtendedSession extends TrainingSession {
 
 const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour >= 6 && hour < 14) return 'Buenos días'; // 6 AM - 2 PM
-    if (hour >= 14 && hour < 21) return 'Buenas tardes'; // 2 PM - 9 PM
-    return 'Buenas noches'; // 9 PM - 6 AM
+    if (hour >= 6 && hour < 14) return 'Buenos días';
+    if (hour >= 14 && hour < 21) return 'Buenas tardes';
+    return 'Buenas noches';
 };
 
-
-
 const formatCompetitionName = (name: string, location?: string, level?: string) => {
-    // 1. Clean inputs
-    const cleanName = name.replace(/Campeonato\s+/i, '').trim(); // Remove redundant "Campeonato" if desired, or keep it? 
-    // User said: "AEP1 Campeonato de España Junior". So they might want "Campeonato" kept if it's in the name. 
-    // But usually names are long. Let's return the full name if it's AEP1.
-
+    const cleanName = name.replace(/Campeonato\s+/i, '').trim();
     let lvl = level ? level.toUpperCase() : '';
 
-    // 2. Specific Logic for AEP 1 (National)
     if (lvl.includes('AEP 1') || lvl.includes('AEP1')) {
-        return `AEP 1 ${name}`; // Return explicitly "AEP 1" + Full Name
+        return `AEP 1 ${name}`;
     }
 
-    // 3. Logic for others (AEP 2, AEP 3, etc.) - Keep "LEVEL PLACE" or similar if preferred, 
-    // or switch to standard "LEVEL NAME". 
-    // The previous logic "LEVEL CITY" is good for minor comps where "Open de Valencia" (Name) + "Valencia" (City) is redundant 
-    // OR where "Regional" (Name) needs context.
-
-    // Let's preserve the existing "LEVEL CITY" logic for non-AEP1 to be safe, 
-    // as the user only complained about AEP1.
-
-    // Extract Place (City)
     let city = '';
     if (location) {
         city = location.split(',')[0].trim().toUpperCase();
     }
 
     if (lvl && city) {
-        lvl = lvl.replace(/\s+/g, ''); // "AEP 2" -> "AEP2"
+        lvl = lvl.replace(/\s+/g, '');
         return `${lvl} ${city}`;
     }
 
-    // Fallback
     if (city) {
         return `${cleanName} ${city}`;
     }
@@ -87,7 +72,7 @@ const formatCompetitionName = (name: string, location?: string, level?: string) 
 const getCompetitionColorClass = (level?: string) => {
     const l = level?.toUpperCase() || '';
     if (l.includes('AEP 3')) return 'bg-orange-500';
-    if (l.includes('AEP 2')) return 'bg-yellow-500'; // Consider changing text color for contrast if needed
+    if (l.includes('AEP 2')) return 'bg-yellow-500';
     if (l.includes('AEP 1')) return 'bg-blue-600';
     if (l.includes('NACIONAL')) return 'bg-purple-600';
     if (l.includes('EPF')) return 'bg-green-600';
@@ -95,9 +80,8 @@ const getCompetitionColorClass = (level?: string) => {
     return 'bg-anvil-red';
 };
 
-
-
 export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
+    const navigate = useNavigate(); // <--- 2. INICIALIZAR NAVIGATE
     const [loading, setLoading] = useState(true);
     const [activeBlock, setActiveBlock] = useState<TrainingBlock | null>(null);
     const [todaySession, setTodaySession] = useState<ExtendedSession | null>(null);
@@ -111,8 +95,6 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         const fetchHomeData = async () => {
             try {
                 setLoading(true);
-
-                // Parallel fetch: blocks and competition at the same time
                 const [blocks, nextComp] = await Promise.all([
                     trainingService.getBlocksByAthlete(user.id),
                     competitionsService.getNextCompetition(user.id)
@@ -124,8 +106,6 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
 
                 if (active) {
                     setActiveBlock(active);
-
-                    // Get Sessions for this block
                     const { data: sessData } = await supabase
                         .from('training_sessions')
                         .select(`
@@ -139,25 +119,18 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                         .order('day_number', { ascending: true });
 
                     if (sessData && sessData.length > 0) {
-                        // Calculate today's workout
                         const today = new Date();
                         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
                         const currentDayKey = days[today.getDay()];
-
-                        // Priority 1: Match by explicit day_of_week
                         let sessionForToday = sessData.find(s => s.day_of_week === currentDayKey);
 
-                        // Priority 2: Fallback to Date diff if no explicit day set
                         if (!sessionForToday && active.start_date) {
                             const startDate = new Date(active.start_date);
                             startDate.setHours(0, 0, 0, 0);
                             today.setHours(0, 0, 0, 0);
-
                             const diffTime = today.getTime() - startDate.getTime();
                             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-
                             const todayStr = today.toISOString().split('T')[0];
-
                             sessionForToday = sessData.find(s =>
                                 (s as { date?: string }).date === todayStr || s.day_number === diffDays
                             );
@@ -189,6 +162,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const commonProps = {
         user,
         onNavigate,
+        navigate, // Pasamos navigate a los hijos
         activeBlock,
         todaySession,
         setIs1RMCalcOpen,
@@ -198,33 +172,23 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         nextCompetition
     };
 
-
     return (
         <>
             <MobileHome {...commonProps} />
             <DesktopHome {...commonProps} />
 
-            {/* Modal Components */}
             <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
-            <OneRMCalculator
-                isOpen={is1RMCalcOpen}
-                onClose={() => setIs1RMCalcOpen(false)}
-            />
-            <WarmUpCalculator
-                isOpen={isWarmUpCalcOpen}
-                onClose={() => setIsWarmUpCalcOpen(false)}
-            />
-            <PlateCalculator
-                isOpen={isPlateCalcOpen}
-                onClose={() => setIsPlateCalcOpen(false)}
-            />
+            <OneRMCalculator isOpen={is1RMCalcOpen} onClose={() => setIs1RMCalcOpen(false)} />
+            <WarmUpCalculator isOpen={isWarmUpCalcOpen} onClose={() => setIsWarmUpCalcOpen(false)} />
+            <PlateCalculator isOpen={isPlateCalcOpen} onClose={() => setIsPlateCalcOpen(false)} />
         </>
     );
 }
 
 interface HomeViewProps {
     user: UserProfile;
-    onNavigate: (view: 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'arena') => void;
+    onNavigate: (view: any) => void;
+    navigate: any; // Tipo para navigate
     activeBlock: TrainingBlock | null;
     todaySession: ExtendedSession | null;
     setIs1RMCalcOpen: (isOpen: boolean) => void;
@@ -234,10 +198,9 @@ interface HomeViewProps {
     nextCompetition: CompetitionAssignment | null;
 }
 
-function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
-            {/* Mobile Header */}
             <header>
                 <h1 className="text-3xl font-black uppercase tracking-tighter mb-1">
                     {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
@@ -303,24 +266,20 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                 )}
             </div>
 
-            {/* Mobile Anvil Legend (Replaces Coach Note) */}
+            {/* Mobile Anvil Legend */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
                 </h2>
                 <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
-                    {/* Background Effects */}
                     <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50"></div>
                     <div className="absolute top-0 right-0 p-4 opacity-10">
                         <BookOpen size={64} className="text-yellow-500 rotate-12" />
                     </div>
-
                     <div className="relative z-10">
-
                         <p className="text-xl font-black uppercase italic text-white leading-tight tracking-tight mb-2">
                             "{getAnvilQuote()}"
                         </p>
-
                         <div className="w-12 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full mt-4"></div>
                     </div>
                 </div>
@@ -355,7 +314,7 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                 ) : (
                     <div className="bg-[#252525] border border-white/5 rounded-2xl p-5 flex items-center justify-between relative overflow-hidden">
                         <div className="relative z-10">
-                            <h3 className="text-sm font-bold text-gray-400 italic leading-tight">
+                            <h3 className="text-sm font-bold text-gray-400 italic leading-tight mb-1">
                                 No hay competiciones a la vista.
                             </h3>
                             <p className="text-xs text-anvil-red font-bold mt-1 uppercase tracking-wider">
@@ -369,8 +328,6 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                 )}
             </div>
 
-
-
             {/* Mobile Community Section (La Arena + Ranking) */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
@@ -379,7 +336,8 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
 
                 {/* La Arena Card */}
                 <div
-                    onClick={() => onNavigate('arena')}
+                    // 3. CAMBIO CLAVE: USAR NAVIGATE
+                    onClick={() => navigate('/dashboard/arena')}
                     className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer"
                 >
                     <div className="relative z-10 flex items-center justify-between">
@@ -394,7 +352,6 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                         </div>
                         <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                     </div>
-                    {/* Background Pattern */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                 </div>
 
@@ -415,18 +372,16 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                         </div>
                         <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                     </div>
-                    {/* Background Pattern */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                 </div>
             </div>
 
-            {/* Mobile Tools Grid - Moved DOWN & Vertical Stack */}
+            {/* Mobile Tools Grid */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
                 <div className="space-y-4">
-                    {/* 1. Plate Calculator */}
                     <div
                         onClick={() => setIsPlateCalcOpen(true)}
                         className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
@@ -441,7 +396,6 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                         <ChevronRight size={18} className="ml-auto text-gray-600" />
                     </div>
 
-                    {/* 2. Warm Up Calculator */}
                     <div
                         onClick={() => setIsWarmUpCalcOpen(true)}
                         className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
@@ -456,7 +410,6 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                         <ChevronRight size={18} className="ml-auto text-gray-600" />
                     </div>
 
-                    {/* 3. 1RM Calculator */}
                     <div
                         onClick={() => setIs1RMCalcOpen(true)}
                         className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
@@ -472,13 +425,11 @@ function MobileHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcO
                     </div>
                 </div>
             </div>
-
-
         </div>
     );
 }
 
-function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="hidden md:block px-12 py-8 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
@@ -492,9 +443,8 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                 </p>
             </header>
 
-            {/* Main Grid: Today's Task & Coach Message */}
+            {/* Main Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
                 {/* Today's Training Card */}
                 <div className="lg:col-span-2 flex flex-col gap-4">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
@@ -552,14 +502,13 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                     )}
                 </div>
 
-                {/* Desktop Anvil Legend (Replaces Coach Message) */}
+                {/* Desktop Anvil Legend */}
                 <div className="space-y-4">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
                     </h2>
 
                     <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 h-fit relative overflow-hidden group hover:border-yellow-500/30 transition-all">
-                        {/* Background Effects */}
                         <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
                         <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12">
                             <BookOpen size={120} />
@@ -581,7 +530,7 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                         </div>
                     </div>
 
-                    {/* Quick Stats or Promo - NEXT COMPETITION */}
+                    {/* Quick Stats - NEXT COMPETITION */}
                     <div className="space-y-4">
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                             <Trophy size={16} className="text-anvil-red" /> Próxima Competición
@@ -626,13 +575,14 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                 </div>
             </div>
 
-            {/* Quick Stats or Promo - LA ARENA (PREDICTIONS) */}
+            {/* Quick Stats or Promo - LA ARENA */}
             <div className="space-y-4 pt-4">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <Users size={16} className="text-anvil-red" /> Comunidad
                 </h2>
                 <div
-                    onClick={() => onNavigate('arena')}
+                    // 3. CAMBIO CLAVE: USAR NAVIGATE
+                    onClick={() => navigate('/dashboard/arena')}
                     className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
                 >
                     <div className="relative z-10 flex items-center gap-4">
@@ -646,7 +596,6 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                     </div>
                     <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors relative z-10" />
 
-                    {/* Background Pattern */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
                 </div>
             </div>
@@ -657,7 +606,6 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                     <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
                 <div className="grid grid-cols-3 gap-6">
-                    {/* 1RM Calculator Card */}
                     <div
                         onClick={() => setIs1RMCalcOpen(true)}
                         className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]"
@@ -674,7 +622,6 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    {/* Warm-up Calculator Card */}
                     <div
                         onClick={() => setIsWarmUpCalcOpen(true)}
                         className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98]"
@@ -691,7 +638,6 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    {/* Plate Calculator Card */}
                     <div
                         onClick={() => setIsPlateCalcOpen(true)}
                         className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]"
@@ -708,7 +654,6 @@ function DesktopHome({ user, onNavigate, activeBlock, todaySession, setIs1RMCalc
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    {/* Ranking Card - Desktop */}
                     <div
                         onClick={() => setIsRankingOpen(true)}
                         className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98]"
