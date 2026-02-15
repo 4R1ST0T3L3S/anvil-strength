@@ -10,7 +10,7 @@ const products = [
         id: 1,
         name: 'Chándal Anvil x Steezy Lifts',
         price: 'Working On It',
-        image: '/ropa/chandal.jpg', 
+        image: '/ropa/chandal.jpg',
         tag: 'STREETWEAR FIT',
         description: 'Corte boxy y pantalón stacked. La estética de la calle llevada al calentamiento.'
     },
@@ -18,7 +18,7 @@ const products = [
         id: 2,
         name: 'Camiseta Comp. Anvil x Steezy Lifts',
         price: 'Working On It',
-        image: '/ropa/comp-tee.jpg', 
+        image: '/ropa/comp-tee.jpg',
         tag: 'OFFICIAL KIT',
         description: 'Tejido transpirable de alto rendimiento. Diseñada para soportar la presión de la plataforma.'
     },
@@ -26,7 +26,7 @@ const products = [
         id: 3,
         name: 'Camiseta Podio Anvil x Steezy Lifts',
         price: 'Working On It',
-        image: '/ropa/podium-tee.webp', 
+        image: '/ropa/podium-tee.webp',
         tag: 'VICTORY LAP',
         description: 'Para cuando te cuelgan la medalla. Algodón premium y corte relajado.'
     },
@@ -85,41 +85,41 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                 <div className="relative z-20 max-w-[1600px] mx-auto px-6 w-full text-center flex flex-col items-center justify-center h-full">
                     {/* Logos Container - Responsive Fix */}
                     {/* --- LOGOS CONTAINER: POSICIÓN AJUSTADA --- */}
-<motion.div
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 1, ease: "easeOut" }}
-    /* Añadimos pt-12 en móvil y pt-24 en escritorio para empujar TODO el grupo hacia abajo */
-    className="flex items-center justify-center gap-3 sm:gap-6 md:gap-12 mb-8 md:mb-20 pt-12 sm:pt-16 md:pt-24 relative"
->
-    {/* Steezy Logo - Reducimos el margen negativo para que no suba tanto */}
-    <motion.a
-        href="https://steezylifts.com/password"
-        target="_blank"
-        rel="noopener noreferrer"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        /* Cambiado: de -mt-8/-mt-24 a -mt-4/-mt-12 */
-        className="w-32 sm:w-48 md:w-80 opacity-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] -mt-4 sm:-mt-8 md:-mt-12 cursor-pointer"
-    >
-        <img src="/steezy_sin_fonfo.png" alt="Steezy Lifts" className="w-full h-auto object-contain invert" />
-    </motion.a>
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        /* Añadimos pt-12 en móvil y pt-24 en escritorio para empujar TODO el grupo hacia abajo */
+                        className="flex items-center justify-center gap-3 sm:gap-6 md:gap-12 mb-8 md:mb-20 pt-12 sm:pt-16 md:pt-24 relative"
+                    >
+                        {/* Steezy Logo - Reducimos el margen negativo para que no suba tanto */}
+                        <motion.a
+                            href="https://steezylifts.com/password"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            /* Cambiado: de -mt-8/-mt-24 a -mt-4/-mt-12 */
+                            className="w-32 sm:w-48 md:w-80 opacity-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] -mt-4 sm:-mt-8 md:-mt-12 cursor-pointer"
+                        >
+                            <img src="/steezy_sin_fonfo.png" alt="Steezy Lifts" className="w-full h-auto object-contain invert" />
+                        </motion.a>
 
-    {/* X Separator - Ajustamos un poco el tamaño para que encuadre */}
-    <motion.div
-        initial={{ rotate: -25, opacity: 0 }}
-        animate={{ rotate: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}
-        className="text-3xl md:text-8xl text-anvil-red font-black z-10 flex items-center"
-    >
-        <XIcon strokeWidth={3} className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16" />
-    </motion.div>
+                        {/* X Separator - Ajustamos un poco el tamaño para que encuadre */}
+                        <motion.div
+                            initial={{ rotate: -25, opacity: 0 }}
+                            animate={{ rotate: 0, opacity: 1 }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className="text-3xl md:text-8xl text-anvil-red font-black z-10 flex items-center"
+                        >
+                            <XIcon strokeWidth={3} className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16" />
+                        </motion.div>
 
-    {/* Anvil Logo - Mantenemos un margen superior mínimo para equilibrio visual */}
-    <div className="w-24 sm:w-40 md:w-64 opacity-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] mt-2 md:mt-4">
-        <img src="/logo-dark-removebg-preview.png" alt="Anvil Strength" className="w-full h-auto object-contain" />
-    </div>
-</motion.div>
+                        {/* Anvil Logo - Mantenemos un margen superior mínimo para equilibrio visual */}
+                        <div className="w-24 sm:w-40 md:w-64 opacity-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] mt-2 md:mt-4">
+                            <img src="/logo-dark-removebg-preview.png" alt="Anvil Strength" className="w-full h-auto object-contain" />
+                        </div>
+                    </motion.div>
 
                     <motion.h1 variants={staggerContainer} initial="hidden" animate="visible" className="text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] font-black tracking-tighter text-white uppercase italic mb-8 sm:mb-10">
                         <motion.span variants={fadeInUp} className="block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500 mb-2">STREETWEAR</motion.span>
@@ -211,54 +211,79 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                 </div>
             </section>
 
-            {/* --- NEWSLETTER: HYPE STYLE (RESTAURADO) --- */}
-<section className="py-24 sm:py-40 bg-anvil-red relative overflow-hidden flex items-center justify-center text-center">
-    {/* Textura sutil de fondo para profundidad */}
-    <div className="absolute inset-0 bg-black/5 opacity-10"></div>
+            {/* --- STEEZY STORE BANNER --- */}
+            <section className="py-12 bg-white text-black border-y-4 border-anvil-red overflow-hidden relative group cursor-pointer">
+                <a href="https://steezylifts.com/password" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-20"></a>
+                <div className="absolute inset-0 bg-anvil-red/10 transform -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-500 z-10" />
 
-    <div className="max-w-5xl mx-auto px-6 relative z-10">
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-        >
-            {/* Icono de rayo */}
-            <Zap size={48} className="text-black mx-auto mb-6 fill-current animate-pulse sm:w-16 sm:h-16" />
+                <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                    <div className="flex items-center gap-6">
+                        <Crown size={42} className="text-anvil-red animate-pulse" />
+                        <div className="text-left">
+                            <h3 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-none">
+                                TIENDA OFICIAL
+                            </h3>
+                            <p className="text-black/60 font-bold uppercase tracking-widest text-sm">
+                                STEEZY LIFTS // LIMITED STOCK
+                            </p>
+                        </div>
+                    </div>
 
-            {/* Titular Principal */}
-            <h2 className="text-5xl sm:text-7xl md:text-[8.5rem] font-black tracking-tighter mb-8 text-white uppercase italic leading-[0.85]">
-                DON'T MISS THE DROP <br /> 
-            </h2>
-
-            {/* Subtítulo: Texto en negro, muy negrita y tracking ajustado como en la imagen */}
-            <p className="text-black text-lg sm:text-xl md:text-2xl mb-12 font-[900] max-w-3xl mx-auto uppercase tracking-tighter leading-[1.1]">
-                EXCLUSIVO PARA MIEMBROS DE ANVIL STRENGTH. <br className="hidden md:block" />
-                NUNCA NADIE EN TARIMA Y EN EL PODIO ALGUIEN<br className="hidden md:block" />
-                HABÍA TENIDO TANTO ESTILO.
-            </p>
-
-            {/* Contenedor del Formulario: Barra blanca única */}
-            <div className="max-w-2xl mx-auto">
-                <div className="flex bg-white items-center p-1 shadow-2xl">
-                    <input
-                        type="email"
-                        placeholder="TU EMAIL"
-                        className="bg-transparent border-0 text-black placeholder-gray-400 px-6 sm:px-8 py-4 sm:py-5 font-bold uppercase outline-none flex-1 text-sm sm:text-base focus:ring-0"
-                    />
-                    <button className="bg-transparent text-black px-6 sm:px-10 py-4 sm:py-5 font-black uppercase transition-all flex items-center justify-center gap-3 whitespace-nowrap text-sm sm:text-base hover:opacity-60">
-                        UNIRME <ArrowRight size={22} strokeWidth={3} />
-                    </button>
+                    <div className="flex items-center gap-4 group-hover:gap-8 transition-all duration-300">
+                        <span className="text-xl md:text-2xl font-black uppercase tracking-tight">VISITAR WEB</span>
+                        <ArrowRight size={32} className="text-anvil-red" />
+                    </div>
                 </div>
+            </section>
 
-                {/* Texto pequeño inferior */}
-                <p className="mt-6 text-black/60 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
-                    * NO SPAM. SOLO FUEGO.
-                </p>
-            </div>
-        </motion.div>
-    </div>
-</section>
+            {/* --- NEWSLETTER: HYPE STYLE (RESTAURADO) --- */}
+            <section className="py-24 sm:py-40 bg-anvil-red relative overflow-hidden flex items-center justify-center text-center">
+                {/* Textura sutil de fondo para profundidad */}
+                <div className="absolute inset-0 bg-black/5 opacity-10"></div>
+
+                <div className="max-w-5xl mx-auto px-6 relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
+                    >
+                        {/* Icono de rayo */}
+                        <Zap size={48} className="text-black mx-auto mb-6 fill-current animate-pulse sm:w-16 sm:h-16" />
+
+                        {/* Titular Principal */}
+                        <h2 className="text-5xl sm:text-7xl md:text-[8.5rem] font-black tracking-tighter mb-8 text-white uppercase italic leading-[0.85]">
+                            DON'T MISS THE DROP <br />
+                        </h2>
+
+                        {/* Subtítulo: Texto en negro, muy negrita y tracking ajustado como en la imagen */}
+                        <p className="text-black text-lg sm:text-xl md:text-2xl mb-12 font-[900] max-w-3xl mx-auto uppercase tracking-tighter leading-[1.1]">
+                            EXCLUSIVO PARA MIEMBROS DE ANVIL STRENGTH. <br className="hidden md:block" />
+                            NUNCA NADIE EN TARIMA Y EN EL PODIO ALGUIEN<br className="hidden md:block" />
+                            HABÍA TENIDO TANTO ESTILO.
+                        </p>
+
+                        {/* Contenedor del Formulario: Barra blanca única */}
+                        <div className="max-w-2xl mx-auto">
+                            <div className="flex bg-white items-center p-1 shadow-2xl">
+                                <input
+                                    type="email"
+                                    placeholder="TU EMAIL"
+                                    className="bg-transparent border-0 text-black placeholder-gray-400 px-6 sm:px-8 py-4 sm:py-5 font-bold uppercase outline-none flex-1 text-sm sm:text-base focus:ring-0"
+                                />
+                                <button className="bg-transparent text-black px-6 sm:px-10 py-4 sm:py-5 font-black uppercase transition-all flex items-center justify-center gap-3 whitespace-nowrap text-sm sm:text-base hover:opacity-60">
+                                    UNIRME <ArrowRight size={22} strokeWidth={3} />
+                                </button>
+                            </div>
+
+                            {/* Texto pequeño inferior */}
+                            <p className="mt-6 text-black/60 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
+                                * NO SPAM. SOLO FUEGO.
+                            </p>
+                        </div>
+                    </motion.div>
+                </div>
+            </section>
 
             {/* --- WHATSAPP CTA BANNER --- */}
             <section className="py-24 bg-[#0a0a0a] border-t border-white/5 relative overflow-hidden flex items-center justify-center">
