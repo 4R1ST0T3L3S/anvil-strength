@@ -71,7 +71,7 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                 <div className="flex-shrink-0">
                     <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); window.scrollTo(0, 0); }} className="block hover:opacity-80 transition-opacity">
                         <img
-                            src="/logo.svg"
+                            src="/logo-dark-removebg-preview.png"
                             alt="Anvil Strength Logo"
                             className="h-10 md:h-12 w-auto object-contain"
                         />
