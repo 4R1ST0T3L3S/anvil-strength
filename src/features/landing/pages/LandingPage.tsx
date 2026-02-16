@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
@@ -15,6 +15,8 @@ import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 
+import { Bubble } from "@typebot.io/react"; // Añade este import
+
 interface LandingPageProps {
     onLoginClick: () => void;
     user?: UserProfile | null;
@@ -24,13 +26,24 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
     const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
-
+    const [isBotOpen, setIsBotOpen] = useState(false);
     // Carousel State
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
     const [isManualMode, setIsManualMode] = useState(false);
     const [lastInteraction, setLastInteraction] = useState(() => Date.now());
+
+    // Añade esto debajo de tus useState
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const botButton = document.querySelector('.typebot-bubble-button');
+            if (botButton) {
+                (botButton as HTMLElement).style.display = 'none';
+            }
+        }, 100);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         if (isPaused || isManualMode) return;
@@ -83,6 +96,22 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
         }
     }, [carouselIndex]);
 
+
+    const App = () => {
+    return (
+        <Bubble
+        typebot="lead-generation-hhwa24t"
+        apiHost="https://typebot.io"
+        theme={{
+            button: {
+            backgroundColor: "#0000000",
+            customIconSrc:
+                "https://s3.typebot.io/public/workspaces/cmlilhxxl000hjl040qpi83p4/typebots/n3ruta93kyor979yehhwa24t/bubble-icon?v=1771275357581",
+            },
+        }}
+        />
+    );
+    };
 
 
 
@@ -449,17 +478,55 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 athlete={selectedAthlete}
             />
 
+            {/* ... resto de tus secciones y modales anteriores ... */}
+
             <CoachDetailsModal
                 isOpen={!!selectedCoach}
                 onClose={() => setSelectedCoach(null)}
                 coach={selectedCoach}
             />
 
-            {/* --- ANVIL MASCOT (Fixed Bottom Left) --- */}
-            <MascotWithChat />
+            {/* --- TYPEBOT BUBBLE (Configurado para el lado izquierdo vía CSS) --- */}
+            <Bubble
+                typebot="lead-generation-hhwa24t"
+                apiHost="https://typebot.io"
+            />
+
+            {/* --- MASCOTA ANVIL: EL "LOCUTOR" (AHORA A LA DERECHA) --- */}
+            <motion.div
+                initial={{ opacity: 0, x: 50 }} // Entra desde la derecha
+                animate={{ 
+                    opacity: 1, 
+                    x: 0,
+                    y: [0, -10, 0] 
+                }}
+                whileHover={{ 
+                    scale: 1.2,
+                    rotate: [0, -5, 5, 0],
+                    transition: { duration: 0.3 } 
+                }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ 
+                    y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                    duration: 0.5 
+                }}
+                onClick={() => (window as any).Typebot.toggle()}
+                // CAMBIO CLAVE: right-6 en lugar de left-6
+                className="fixed bottom-6 right-6 z-[100] cursor-pointer group"
+            >
+                {/* Bocadillo de aviso (Ajustado para alinearse a la derecha) */}
+                <div className="absolute -top-16 right-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-br-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-colors">
+                    ¿HABLAMOS, ANIMAL? 🦍
+                </div>
+
+                {/* TU MASCOTA */}
+                {/* --- ESTO AÑADE LAS PATAS Y OJOS --- */}
+                <AnvilMascot className="w-24 h-24 md:w-32 md:h-32" />
+            </motion.div>
         </div>
     );
 }
+
 
 function MascotWithChat() {
     const [messageIndex, setMessageIndex] = useState(0);
@@ -498,4 +565,3 @@ function MascotWithChat() {
         </div>
     );
 }
-

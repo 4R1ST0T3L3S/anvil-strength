@@ -48,7 +48,7 @@ export const athletes: Athlete[] = [
     category: "-105kg JNR",
     image: "/athletes/marc.png",
     stats: {
-      lastCompetition: "SBD Cup",
+      lastCompetition: "SBD Cup 2025",
       glPoints: 100.06,
       total: 800,
       squat: 295,
@@ -62,7 +62,7 @@ export const athletes: Athlete[] = [
     category: "-105kg SBJ",
     image: "/athletes/Pau.png",
     stats: {
-      lastCompetition: "SBD Cup",
+      lastCompetition: "SBD Cup 2025",
       glPoints: 79.65,
       total: 640,
       squat: 270,
@@ -76,7 +76,7 @@ export const athletes: Athlete[] = [
     category: "-83kg Open",
     image: "/athletes/josep.png",
     stats: {
-      lastCompetition: "SBD Cup",
+      lastCompetition: "SBD Cup 2025",
       glPoints: 94.15,
       total: 675,
       squat: 270,
