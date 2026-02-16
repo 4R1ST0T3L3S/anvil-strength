@@ -8,6 +8,7 @@ import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
 // 1. Importamos la VISTA CORRECTA según tu estructura de carpetas
 import { ArenaView } from '../features/arena/pages/ArenaView';
 import { RopaPage } from '../features/landing/pages/RopaPage';
+import { CompetitionsPage } from '../features/landing/pages/CompetitionsPage';
 
 // Lazy Load Pages
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
@@ -44,6 +45,9 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
 
             {/* --- ROPA PAGE --- */}
             <Route path="/ropa" element={<RopaPage onLoginClick={onLoginClick} user={user} />} />
+
+            {/* --- COMPETICIONES PAGE --- */}
+            <Route path="/competiciones" element={<CompetitionsPage onLoginClick={onLoginClick} user={user} />} />
 
             {/* --- 2. RUTA DEDICADA: LA ARENA --- */}
             {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}

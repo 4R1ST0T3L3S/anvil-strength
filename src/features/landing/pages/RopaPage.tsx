@@ -1,8 +1,9 @@
 import { motion, Variants } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
-import { ShoppingBag, ArrowRight, X as XIcon, Zap, Crown, MessageCircle } from 'lucide-react';
+import { ArrowRight, X as XIcon, Zap, Crown, MessageCircle } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
+
 
 // Placeholder data for clothing items
 const products = [
@@ -67,6 +68,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             }
         }
     };
+
 
     return (
         <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">

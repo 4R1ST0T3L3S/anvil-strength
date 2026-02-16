@@ -37,6 +37,14 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
             return;
         }
 
+        // Logic for "COMPETICIONES" link
+        if (href === '/competiciones') {
+            navigate('/competiciones');
+            setIsMobileMenuOpen(false);
+            window.scrollTo(0, 0);
+            return;
+        }
+
         // Logic for anchor links
         if (isHome) {
             // If on home, scroll to section
@@ -60,7 +68,8 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
         { name: 'LOGROS', href: '#logros' },
         { name: 'AFILIATE', href: '#afiliacion' },
         { name: 'CONTACTO', href: '#contacto' },
-        { name: 'ROPA', href: '/ropa' }, // NEW LINK
+        { name: 'ROPA', href: '/ropa' },
+        { name: 'COMPETICIONES', href: '/competiciones' }, // NEW LINK // NEW LINK
     ];
 
     return (
@@ -163,8 +172,8 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                                         transition={{ delay: 0.1 + index * 0.05 }}
                                         onClick={(e) => handleNavClick(e, link.href)}
                                         className={`text-3xl font-black uppercase tracking-tighter transition-all duration-300 ${location.pathname === link.href
-                                                ? 'text-anvil-red scale-110'
-                                                : 'text-white/80 hover:text-white hover:scale-105'
+                                            ? 'text-anvil-red scale-110'
+                                            : 'text-white/80 hover:text-white hover:scale-105'
                                             }`}
                                     >
                                         {link.name}

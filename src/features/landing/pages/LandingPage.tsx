@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
@@ -453,6 +454,48 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 onClose={() => setSelectedCoach(null)}
                 coach={selectedCoach}
             />
+
+            {/* --- ANVIL MASCOT (Fixed Bottom Left) --- */}
+            <MascotWithChat />
         </div>
     );
 }
+
+function MascotWithChat() {
+    const [messageIndex, setMessageIndex] = useState(0);
+    const messages = [
+        "¿Necesitas ayuda?",
+        "¿Quieres afiliarte?",
+        "¡Forja tu legado!",
+        "¿Listo para competir?"
+    ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setMessageIndex((prev) => (prev + 1) % messages.length);
+        }, 5000); // Cambia mensaje cada 5 segundos
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="fixed bottom-4 left-4 z-50 hidden md:block group/mascot">
+            <AnvilMascot className="w-24 h-24 drop-shadow-2xl hover:scale-110 transition-transform cursor-pointer" />
+
+            {/* Chat Bubble Dinámico */}
+            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-3 rounded-2xl font-bold uppercase text-xs shadow-xl whitespace-nowrap pointer-events-none">
+                <motion.div
+                    key={messageIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    {messages[messageIndex]}
+                </motion.div>
+                {/* Flechita del bocadillo */}
+                <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-3 h-3 bg-white rotate-45"></div>
+            </div>
+        </div>
+    );
+}
+
