@@ -191,7 +191,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                     </div>
                     <div>
                         <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">Anvil Arena</h2>
-                        <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Bet & Win</p>
+                        <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">APUESTA POR LOS NUESTROS Y GANA PRESTIGIO</p>
                     </div>
                 </div>
                 <Link

@@ -26,7 +26,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </main>
 
             {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 w-full bg-[#1c1c1c] border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe">
+            <nav className="fixed bottom-0 w-full bg-[#1c1c1c] border-t border-white/10 z-50 px-6 py-3 flex justify-between items-center pb-safe md:hidden">
                 {menuItems.map((item, index) => {
                     if (item.label === 'QA: Test DB') return null;
 

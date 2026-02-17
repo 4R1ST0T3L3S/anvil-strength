@@ -144,7 +144,26 @@ const determineLevel = (name: string, rawLevel: string = ''): Competition['level
     return 'COMPETICIÓN';
 };
 
+const CACHE_KEY = 'aep_calendar_data';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 export const fetchCompetitions = async (): Promise<Competition[]> => {
+    // 1. Check Cache
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            const now = new Date().getTime();
+            if (now - parsed.timestamp < CACHE_DURATION) {
+                // Return cached data if valid
+                return parsed.data;
+            }
+        }
+    } catch (e) {
+        console.warn('Error reading from cache', e);
+    }
+
+    // 2. Fetch Fresh Data
     try {
         const csvText = await fetchWithFallback(SHEET_URL);
 
@@ -241,6 +260,16 @@ export const fetchCompetitions = async (): Promise<Competition[]> => {
 
                             return true;
                         });
+
+                    // SAVE TO CACHE
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({
+                            timestamp: new Date().getTime(),
+                            data: validData
+                        }));
+                    } catch (e) {
+                        console.warn('Failed to save to cache', e);
+                    }
 
                     resolve(validData);
                 },
