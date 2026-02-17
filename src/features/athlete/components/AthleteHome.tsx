@@ -337,12 +337,12 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                 {/* La Arena Card */}
                 <div
                     // 3. CAMBIO CLAVE: USAR NAVIGATE
-                    onClick={() => navigate('/dashboard/arena')}
+                    onClick={() => navigate('/dashboard/community')}
                     className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer"
                 >
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                                 <Swords size={24} />
                             </div>
                             <div>
@@ -352,7 +352,7 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                         </div>
                         <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                     </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                 </div>
 
                 {/* Anvil Ranking Card */}
@@ -362,7 +362,7 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                 >
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.2)]">
                                 <Trophy size={24} />
                             </div>
                             <div>
@@ -372,7 +372,7 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                         </div>
                         <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                     </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                 </div>
             </div>
 
@@ -582,11 +582,11 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
                 </h2>
                 <div
                     // 3. CAMBIO CLAVE: USAR NAVIGATE
-                    onClick={() => navigate('/dashboard/arena')}
-                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
+                    onClick={() => navigate('/dashboard/community')}
+                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden"
                 >
                     <div className="relative z-10 flex items-center gap-4">
-                        <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                        <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                             <Swords size={24} />
                         </div>
                         <div>
@@ -596,7 +596,7 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
                     </div>
                     <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors relative z-10" />
 
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
                 </div>
             </div>
 
@@ -656,10 +656,10 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
 
                     <div
                         onClick={() => setIsRankingOpen(true)}
-                        className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98]"
+                        className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]"
                     >
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
                                 <Trophy size={24} />
                             </div>
                             <div>
