@@ -24,3 +24,43 @@ body {
   overscroll-behavior: none;
   background-color: #1c1c1c;
 }
+
+/* --- TYPEBOT CUSTOMIZATION --- */
+/* 
+   Posicionamos el botón (oculto) del Typebot justo encima de la mascota 
+   para que la ventana de chat se abra desde ahí hacia arriba sin taparla.
+*/
+.typebot-bubble-button {
+  left: 24px !important;
+  /* Alineado con la mascota (left-6) */
+  right: auto !important;
+  /* Anular el default de derecha */
+  bottom: 0px !important;
+  /* Lo ponemos abajo del todo, pero oculto */
+  display: none !important;
+  /* Totalmente fuera */
+}
+
+/* 
+   VENTANA DEL CHAT
+   Forzamos a que aparezca encima de la mascota.
+   Mascota: bottom-6 (24px) + h-32 (128px) = ~152px altura ocupada.
+   Dejamos margen: bottom: 170px.
+*/
+#typebot-bubble-modal {
+  inset: auto auto 170px 24px !important;
+  /* top right bottom left */
+  max-height: calc(100vh - 190px) !important;
+  width: 90vw !important;
+  max-width: 400px !important;
+  position: fixed !important;
+  z-index: 10000 !important;
+}
+
+/* Si la librería usa clase en vez de ID */
+.typebot-bubble-modal {
+  inset: auto auto 170px 24px !important;
+  max-height: calc(100vh - 190px) !important;
+  width: 90vw !important;
+  max-width: 400px !important;
+}

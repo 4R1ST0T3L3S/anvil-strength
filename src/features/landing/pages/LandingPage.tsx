@@ -15,7 +15,7 @@ import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 
-import { Bubble } from "@typebot.io/react"; // Añade este import
+import { Standard } from "@typebot.io/react"; // Añade este import
 
 interface LandingPageProps {
     onLoginClick: () => void;
@@ -34,15 +34,44 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     const [isManualMode, setIsManualMode] = useState(false);
     const [lastInteraction, setLastInteraction] = useState(() => Date.now());
 
-    // Añade esto debajo de tus useState
+    // Mascot Dynamic Messages State
+    const [mascotMessage, setMascotMessage] = useState("¿HABLAMOS, ANIMAL? 🦍");
+    const [isMascotMessageVisible, setIsMascotMessageVisible] = useState(false);
+
     useEffect(() => {
-        const interval = setInterval(() => {
-            const botButton = document.querySelector('.typebot-bubble-button');
-            if (botButton) {
-                (botButton as HTMLElement).style.display = 'none';
-            }
-        }, 100);
-        return () => clearInterval(interval);
+        let timeoutId: NodeJS.Timeout;
+
+        const cycleMessages = () => {
+            // 1. Wait random 20-25s
+            const waitTime = Math.random() * 5000 + 20000;
+
+            timeoutId = setTimeout(() => {
+                // 2. Select random message and show
+                const messages = [
+                    "¿NECESITAS AYUDA?",
+                    "¡FORJA TU CAMINO!",
+                    "¿LISTO PARA COMPETIR?",
+                    "ÚNETE AL EQUIPO",
+                    "¿HABLAMOS, ANIMAL? 🦍"
+                ];
+                setMascotMessage(messages[Math.floor(Math.random() * messages.length)]);
+                setIsMascotMessageVisible(true);
+
+                // 3. Hide after 2-3s
+                const showDuration = Math.random() * 1000 + 2000;
+                setTimeout(() => {
+                    setIsMascotMessageVisible(false);
+                    // Recruit
+                    cycleMessages();
+                }, showDuration);
+
+            }, waitTime);
+        };
+
+        // Start cycle
+        cycleMessages();
+
+        return () => clearTimeout(timeoutId);
     }, []);
 
     useEffect(() => {
@@ -97,21 +126,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     }, [carouselIndex]);
 
 
-    const App = () => {
-    return (
-        <Bubble
-        typebot="lead-generation-hhwa24t"
-        apiHost="https://typebot.io"
-        theme={{
-            button: {
-            backgroundColor: "#0000000",
-            customIconSrc:
-                "https://s3.typebot.io/public/workspaces/cmlilhxxl000hjl040qpi83p4/typebots/n3ruta93kyor979yehhwa24t/bubble-icon?v=1771275357581",
-            },
-        }}
-        />
-    );
-    };
+    // App component was unused locally for Bubble config, removing.
 
 
 
@@ -218,50 +233,98 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
             <BenefitsSection />
 
             {/* Entrenadores Section */}
+            {/* Entrenadores Section */}
             <section id="entrenadores" className="min-h-[70vh] flex flex-col justify-center py-20 bg-[#252525]">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Entrenadores</h2>
-                        <div className="w-20 h-1 bg-anvil-red mx-auto"></div>
-                    </div>
+                <div className="max-w-[1400px] mx-auto px-6 w-full">
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-                        {coaches.map((coach) => (
-                            <div
-                                key={coach.id}
-                                className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-xl cursor-pointer"
-                                onClick={() => setSelectedCoach(coach)}
-                            >
-                                <img
-                                    src={coach.image}
-                                    alt={coach.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                                    loading="lazy"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
-                                    <p className="text-anvil-red font-bold tracking-wider mb-4">{coach.role}</p>
-                                    <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                                        <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
-                                            <Instagram size={20} />
-                                        </button>
-                                        <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); if (coach.email) window.location.href = `mailto:${coach.email}`; }}>
-                                            <Mail size={20} />
-                                        </button>
+                    <div className="flex flex-col lg:flex-row justify-center gap-12 lg:gap-24 items-start">
+
+                        {/* GRUPO 1: ENTRENADORES (Powerlifting) */}
+                        <div className="flex flex-col items-center w-full lg:w-auto">
+                            <div className="text-center mb-12">
+                                <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Entrenadores</h2>
+                                <div className="w-20 h-1 bg-anvil-red mx-auto"></div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+                                {coaches.slice(0, 2).map((coach) => (
+                                    <div
+                                        key={coach.id}
+                                        className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] w-full max-w-[350px] shadow-2xl rounded-xl cursor-pointer"
+                                        onClick={() => setSelectedCoach(coach)}
+                                    >
+                                        <img
+                                            src={coach.image}
+                                            alt={coach.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                                            loading="lazy"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
+                                            <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
+                                            <p className="text-anvil-red font-bold tracking-wider mb-4">{coach.role}</p>
+                                            <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
+                                                <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
+                                                    <Instagram size={20} />
+                                                </button>
+                                                {coach.contactForm && (
+                                                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coach.contactForm, '_blank'); }}>
+                                                        <FileText size={20} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {/* Coach Logo in Bottom Right */}
+                                        {coach.logo && (
+                                            <img
+                                                src={coach.logo}
+                                                alt={`${coach.name} logo`}
+                                                className={`absolute z-10 object-contain transition-opacity duration-300 opacity-80 group-hover:opacity-100 ${coach.logoClassName || 'bottom-4 right-4 w-16 h-16'}`}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* GRUPO 2: NUTRICIONISTA */}
+                        {coaches[2] && (
+                            <div className="flex flex-col items-center w-full lg:w-auto">
+                                <div className="text-center mb-12">
+                                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nutricion</h2>
+                                    <div className="w-20 h-1 bg-anvil-red mx-auto"></div>
+                                </div>
+
+                                <div className="w-full md:w-[350px]">
+                                    <div
+                                        key={coaches[2].id}
+                                        className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] w-full shadow-2xl rounded-xl cursor-pointer"
+                                        onClick={() => setSelectedCoach(coaches[2])}
+                                    >
+                                        <img
+                                            src={coaches[2].image}
+                                            alt={coaches[2].name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                                            loading="lazy"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
+                                            <h3 className="text-3xl font-bold text-white uppercase mb-1">{coaches[2].name}</h3>
+                                            <p className="text-anvil-red font-bold tracking-wider mb-4">{coaches[2].role}</p>
+                                            <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
+                                                <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coaches[2].instagram, '_blank'); }}>
+                                                    <Instagram size={20} />
+                                                </button>
+                                                {coaches[2].contactForm && (
+                                                    <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coaches[2].contactForm, '_blank'); }}>
+                                                        <FileText size={20} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                {/* Coach Logo in Bottom Right */}
-                                {coach.logo && (
-                                    <div className="absolute bottom-4 right-4 z-10">
-                                        <img
-                                            src={coach.logo}
-                                            alt={`${coach.name} logo`}
-                                            className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                                        />
-                                    </div>
-                                )}
                             </div>
-                        ))}
+                        )}
+
                     </div>
                 </div>
             </section>
@@ -486,82 +549,83 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 coach={selectedCoach}
             />
 
-            {/* --- TYPEBOT BUBBLE (Configurado para el lado izquierdo vía CSS) --- */}
-            <Bubble
-                typebot="lead-generation-hhwa24t"
-                apiHost="https://typebot.io"
-            />
+            {/* --- CUSTOM CHAT WINDOW --- */}
+            <AnimatePresence>
+                {isBotOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed bottom-[180px] left-6 w-[90vw] max-w-[400px] h-[650px] max-h-[85vh] bg-white rounded-2xl shadow-2xl z-[1000] overflow-hidden border border-gray-200 flex flex-col"
+                    >
+                        {/* Header con botón de cerrar */}
+                        <div className="bg-[#1c1c1c] p-3 flex justify-between items-center">
+                            <span className="text-white font-bold text-sm uppercase tracking-wider pl-2">Anvil Assistant</span>
+                            <button
+                                onClick={() => setIsBotOpen(false)}
+                                className="text-gray-400 hover:text-white transition-colors p-1"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="flex-1 w-full h-full relative">
+                            <Standard
+                                typebot="lead-generation-hhwa24t"
+                                apiHost="https://typebot.io"
+                                style={{ width: '100%', height: '100%' }}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* --- MASCOTA ANVIL: EL "LOCUTOR" (AHORA A LA DERECHA) --- */}
             <motion.div
                 initial={{ opacity: 0, x: 50 }} // Entra desde la derecha
-                animate={{ 
-                    opacity: 1, 
+                animate={{
+                    opacity: 1,
                     x: 0,
-                    y: [0, -10, 0] 
+                    y: [0, -10, 0]
                 }}
-                whileHover={{ 
+                whileHover={{
                     scale: 1.2,
                     rotate: [0, -5, 5, 0],
-                    transition: { duration: 0.3 } 
+                    transition: { duration: 0.3 }
                 }}
                 whileTap={{ scale: 0.9 }}
-                transition={{ 
+                transition={{
                     y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                    duration: 0.5 
+                    duration: 0.5
                 }}
-                onClick={() => (window as any).Typebot.toggle()}
-                // CAMBIO CLAVE: right-6 en lugar de left-6
-                className="fixed bottom-6 right-6 z-[100] cursor-pointer group"
+                onClick={() => {
+                    setIsBotOpen(!isBotOpen);
+                }}
+                // CAMBIO CLAVE: move to left-6
+                className="fixed bottom-6 left-6 z-[100] cursor-pointer group"
             >
-                {/* Bocadillo de aviso (Ajustado para alinearse a la derecha) */}
-                <div className="absolute -top-16 right-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-br-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-colors">
-                    ¿HABLAMOS, ANIMAL? 🦍
-                </div>
+
+                {/* Bocadillo de aviso (Dinámico) */}
+                <AnimatePresence>
+                    {(isMascotMessageVisible || isBotOpen) && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                            className="absolute -top-20 left-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-bl-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red z-50 pointer-events-none"
+                        >
+                            {mascotMessage}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* TU MASCOTA */}
                 {/* --- ESTO AÑADE LAS PATAS Y OJOS --- */}
-                <AnvilMascot className="w-24 h-24 md:w-32 md:h-32" />
+                <AnvilMascot className="w-20 h-20 md:w-28 md:h-28" />
             </motion.div>
         </div>
     );
 }
 
 
-function MascotWithChat() {
-    const [messageIndex, setMessageIndex] = useState(0);
-    const messages = [
-        "¿Necesitas ayuda?",
-        "¿Quieres afiliarte?",
-        "¡Forja tu legado!",
-        "¿Listo para competir?"
-    ];
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setMessageIndex((prev) => (prev + 1) % messages.length);
-        }, 5000); // Cambia mensaje cada 5 segundos
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <div className="fixed bottom-4 left-4 z-50 hidden md:block group/mascot">
-            <AnvilMascot className="w-24 h-24 drop-shadow-2xl hover:scale-110 transition-transform cursor-pointer" />
-
-            {/* Chat Bubble Dinámico */}
-            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-3 rounded-2xl font-bold uppercase text-xs shadow-xl whitespace-nowrap pointer-events-none">
-                <motion.div
-                    key={messageIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    {messages[messageIndex]}
-                </motion.div>
-                {/* Flechita del bocadillo */}
-                <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-3 h-3 bg-white rotate-45"></div>
-            </div>
-        </div>
-    );
-}
