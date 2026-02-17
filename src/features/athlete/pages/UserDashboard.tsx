@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE
 import {
     LayoutDashboard,
     FileText,
@@ -7,8 +6,6 @@ import {
     Calendar,
     Trophy,
     User,
-    Users,
-    ShoppingBag, // <--- Importamos ShoppingBag
     LogOut // <--- Importamos LogOut
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -32,7 +29,6 @@ interface UserDashboardProps {
 type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
 
 export function UserDashboard({ user, onLogout }: UserDashboardProps) {
-    const navigate = useNavigate(); // <--- 2. Inicializamos el hook
     const [currentView, setCurrentView] = useState<AthleteView>('home');
     const { refetch } = useUser();
 
@@ -74,13 +70,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: currentView === 'competitions'
         },
         {
-            icon: <Users size={20} />,
-            label: 'Comunidad',
-            // 3. CAMBIO CRÍTICO: No usamos setCurrentView, navegamos a la URL
-            onClick: () => navigate('/dashboard/community'),
-            isActive: false // Siempre false porque nos vamos de esta pantalla
-        },
-        {
             icon: <Calendar size={20} />,
             label: 'Calendario AEP',
             onClick: () => setCurrentView('calendar'),
@@ -91,19 +80,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
-        },
-        {
-            icon: <ShoppingBag size={20} />,
-            label: 'Ropa',
-            onClick: () => navigate('/ropa'),
-            isActive: false
-        },
-        // Botón Salir para Móvil
-        {
-            icon: <LogOut size={20} className="text-red-500" />,
-            label: 'Salir',
-            onClick: onLogout,
-            isActive: false
         }
     ];
 

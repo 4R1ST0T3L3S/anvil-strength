@@ -62,7 +62,7 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
 
     const navLinks = [
         { name: 'FILOSOFÍA', href: '#filosofia' },
-        { name: 'ENTRENADORES', href: '#entrenadores' },
+        { name: 'EQUIPO', href: '#entrenadores' },
         { name: 'ATLETAS', href: '#atletas' },
         { name: 'OPINIONES', href: '#reviews' },
         { name: 'LOGROS', href: '#logros' },

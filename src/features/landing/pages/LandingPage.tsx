@@ -557,7 +557,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed bottom-[180px] left-6 w-[90vw] max-w-[400px] h-[650px] max-h-[85vh] bg-white rounded-2xl shadow-2xl z-[1000] overflow-hidden border border-gray-200 flex flex-col"
+                        className="fixed bottom-4 md:bottom-[180px] left-4 md:left-6 w-[calc(100vw-32px)] md:w-[90vw] md:max-w-[400px] h-[70vh] md:h-[650px] max-h-[85vh] bg-white rounded-2xl shadow-2xl z-[1000] overflow-hidden border border-gray-200 flex flex-col"
                     >
                         {/* Header con botón de cerrar */}
                         <div className="bg-[#1c1c1c] p-3 flex justify-between items-center">

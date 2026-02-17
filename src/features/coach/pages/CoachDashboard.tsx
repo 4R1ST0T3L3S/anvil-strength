@@ -6,7 +6,6 @@ import {
     Calendar,
     Trophy,
     User,
-    ShoppingBag, // <--- Importamos ShoppingBag
     LogOut
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
@@ -71,30 +70,10 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             isActive: currentView === 'calendar'
         },
         {
-            icon: <Users size={20} />,
-            label: 'Comunidad',
-            // 3. CAMBIO CLAVE: Navegación real a la ruta dedicada
-            onClick: () => navigate('/dashboard/community'),
-            isActive: false // Siempre false porque salimos de esta página
-        },
-        {
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
-        },
-        {
-            icon: <ShoppingBag size={20} />,
-            label: 'Ropa',
-            onClick: () => navigate('/ropa'),
-            isActive: false
-        },
-        // Botón para Móvil
-        {
-            icon: <LogOut size={20} className="text-red-500" />,
-            label: 'Salir',
-            onClick: onLogout,
-            isActive: false
         }
     ];
 
