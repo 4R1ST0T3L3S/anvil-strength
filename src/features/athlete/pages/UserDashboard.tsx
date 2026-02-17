@@ -6,7 +6,8 @@ import {
     Calendar,
     Trophy,
     User,
-    LogOut // <--- Importamos LogOut
+    LogOut,
+    ChevronDown // <--- Added ChevronDown
 } from 'lucide-react';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
@@ -30,6 +31,7 @@ type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calenda
 
 export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const [currentView, setCurrentView] = useState<AthleteView>('home');
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
     const { refetch } = useUser();
 
     // Security Check
@@ -111,15 +113,60 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         <DashboardLayout
             menuItems={menuItems}
         >
-            {/* BOTÓN FLOTANTE PARA ORDENADOR */}
+            {/* PERFIL DE USUARIO FLOTANTE PARA ORDENADOR */}
             <div className="hidden md:block fixed top-6 right-8 z-[100]">
-                <button
-                    onClick={onLogout}
-                    className="flex items-center gap-2 bg-[#1c1c1c] border border-white/10 hover:border-red-500/50 hover:text-red-500 text-gray-400 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-xl"
-                >
-                    <LogOut size={16} />
-                    Cerrar Sesión
-                </button>
+                <div className="relative">
+                    <button
+                        onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                        className="flex items-center gap-3 bg-[#1c1c1c] border border-white/10 hover:border-anvil-red/50 hover:bg-white/5 p-2 pr-4 rounded-full transition-all shadow-xl group"
+                    >
+                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-anvil-red/50 group-hover:border-anvil-red transition-colors relative bg-gray-800 flex items-center justify-center">
+                            {user.avatar_url ? (
+                                <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                                <User size={20} className="text-gray-400" />
+                            )}
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <span className="text-sm font-bold text-white leading-none mb-0.5">{user.full_name}</span>
+                            <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">Atleta</span>
+                        </div>
+                        <ChevronDown size={16} className={`text-gray-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isProfileMenuOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-[#1c1c1c] border border-white/10 rounded-xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                            <button
+                                onClick={() => {
+                                    setCurrentView('profile');
+                                    setIsProfileMenuOpen(false);
+                                }}
+                                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-left text-gray-300 hover:text-white transition-colors mb-1"
+                            >
+                                <div className="bg-blue-500/10 p-2 rounded-lg text-blue-500">
+                                    <User size={18} />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold">Mi Perfil</span>
+                                    <span className="text-[10px] text-gray-500">Editar datos personales</span>
+                                </div>
+                            </button>
+
+                            <div className="h-px bg-white/10 my-1 mx-2"></div>
+
+                            <button
+                                onClick={onLogout}
+                                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-500/10 text-left text-gray-300 hover:text-red-500 transition-colors"
+                            >
+                                <div className="bg-red-500/10 p-2 rounded-lg text-red-500">
+                                    <LogOut size={18} />
+                                </div>
+                                <span className="text-sm font-bold">Cerrar Sesión</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {renderContent()}

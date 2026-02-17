@@ -25,6 +25,7 @@ function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    window.location.reload();
   };
 
   const handleLoginClick = () => setIsAuthModalOpen(true);

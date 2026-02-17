@@ -21,7 +21,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return (
         <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
             {/* Main Content */}
-            <main className="flex-1 h-full overflow-y-auto pt-0 pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c]">
+            <main className="flex-1 h-full overflow-y-auto pt-0 pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c] scrollbar-hide">
                 {children}
             </main>
 

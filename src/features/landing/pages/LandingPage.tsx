@@ -613,7 +613,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                             initial={{ opacity: 0, y: 10, scale: 0.8 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.8 }}
-                            className="absolute -top-20 left-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-bl-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red z-50 pointer-events-none"
+                            className="absolute -top-10 left-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-bl-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red z-50 pointer-events-none"
                         >
                             {mascotMessage}
                         </motion.div>
