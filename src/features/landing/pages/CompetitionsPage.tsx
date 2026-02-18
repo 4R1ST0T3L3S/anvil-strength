@@ -1,56 +1,96 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
-import { Calendar, Trophy, MapPin, ArrowRight, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Users } from 'lucide-react'; // Added Users icon
 import { UserProfile } from '../../../hooks/useUser';
+import { competitionsService } from '../../../services/competitionsService'; // Import service
 
 interface CompetitionsPageProps {
     onLoginClick: () => void;
     user?: UserProfile | null;
 }
 
+interface GroupedCompetition {
+    name: string;
+    date: string;
+    location: string;
+    level: string;
+    athletes: { full_name: string; avatar_url: string | null }[];
+}
+
 export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
-    const upcomingEvents = [
-        {
-            id: 1,
-            title: "Campeonato Regional de Madrid",
-            date: "15-16 Marzo 2026",
-            location: "Madrid, España",
-            type: "Regional AEP",
-            status: "Inscripciones Abiertas"
-        },
-        {
-            id: 2,
-            title: "Copa de España 2026",
-            date: "20-22 Mayo 2026",
-            location: "Alhaurín de la Torre, Málaga",
-            type: "Nacional AEP",
-            status: "Próximamente"
-        },
-        {
-            id: 3,
-            title: "Arnold Classic Europe",
-            date: "10-12 Octubre 2026",
-            location: "Madrid, España",
-            type: "Internacional",
-            status: "Próximamente"
-        }
-    ];
+    const [upcomingEvents, setUpcomingEvents] = useState<GroupedCompetition[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCompetitions = async () => {
+            try {
+                const data = await competitionsService.getPublicCompetitions();
+
+                if (!data) return;
+
+                // Group by name + date
+                const groupedMap = new Map<string, GroupedCompetition>();
+
+                data.forEach((assignment: any) => {
+                    const key = `${assignment.name}-${assignment.date}`;
+
+                    if (!groupedMap.has(key)) {
+                        groupedMap.set(key, {
+                            name: assignment.name,
+                            date: assignment.date,
+                            location: assignment.location || 'Ubicación por confirmar',
+                            level: assignment.level || 'Competición',
+                            athletes: []
+                        });
+                    }
+
+                    const group = groupedMap.get(key)!;
+                    // Avoid duplicate athletes if same athlete assigned twice (should not happen but safety)
+                    if (assignment.athlete && !group.athletes.some(a => a.full_name === assignment.athlete.full_name)) {
+                        group.athletes.push(assignment.athlete);
+                    }
+                });
+
+                setUpcomingEvents(Array.from(groupedMap.values()));
+            } catch (error) {
+                console.error("Error fetching competitions:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCompetitions();
+    }, []);
 
     const pastResults = [
         {
             id: 1,
             title: "SBJ 2024",
             result: "3 Oros, 2 Platas",
-            image: "/filosofia-competition.jpg" // Usando imagen existente como placeholder
+            image: "/filosofia-competition.jpg"
         },
         {
             id: 2,
             title: "Copa de España 2025",
             result: "Campeones por Equipos",
-            image: "/portadaanvil2.jpg" // Usando imagen existente como placeholder
+            image: "/portadaanvil2.jpg"
         }
     ];
+
+    const formatDate = (dateStr: string) => {
+        try {
+            const date = new Date(dateStr);
+            return new Intl.DateTimeFormat('es-ES', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(date);
+        } catch (e) {
+            return dateStr;
+        }
+    };
 
     return (
         <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
@@ -88,48 +128,59 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {upcomingEvents.map((event, index) => (
-                            <motion.div
-                                key={event.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="group bg-[#111] border border-white/5 hover:border-anvil-red/50 p-8 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-anvil-red/10"
-                            >
-                                <div className="absolute top-0 right-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity">
-                                    <ExternalLink size={20} />
-                                </div>
+                    {loading ? (
+                        <div className="flex justify-center py-20">
+                            <div className="w-12 h-12 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    ) : upcomingEvents.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {upcomingEvents.map((event, index) => (
+                                <motion.div
+                                    key={`${event.name}-${index}`}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    className="group bg-[#111] border border-white/5 hover:border-anvil-red/50 p-8 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-anvil-red/10 flex flex-col"
+                                >
 
-                                <span className={`inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full mb-6 ${event.status === "Inscripciones Abiertas" ? "bg-green-500/10 text-green-500" : "bg-gray-800 text-gray-500"
-                                    }`}>
-                                    {event.status}
-                                </span>
 
-                                <h3 className="text-2xl font-black uppercase italic mb-2 line-clamp-2 min-h-[4rem]">{event.title}</h3>
+                                    <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full mb-6 bg-anvil-red/10 text-anvil-red w-fit">
+                                        {event.level}
+                                    </span>
 
-                                <div className="space-y-3 text-gray-400 font-medium mt-4">
-                                    <div className="flex items-center gap-3">
-                                        <Calendar size={18} className="text-anvil-red" />
-                                        <span>{event.date}</span>
+                                    <h3 className="text-2xl font-black uppercase italic mb-2 line-clamp-2 min-h-[4rem]">{event.name}</h3>
+
+                                    <div className="space-y-3 text-gray-400 font-medium mt-4 flex-1">
+                                        <div className="flex items-center gap-3">
+                                            <Calendar size={18} className="text-anvil-red" />
+                                            <span className="capitalize">{formatDate(event.date)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <MapPin size={18} className="text-anvil-red" />
+                                            <span>{event.location}</span>
+                                        </div>
+                                        <div className="flex items-start gap-3 mt-4 pt-4 border-t border-white/5">
+                                            <Users size={18} className="text-anvil-red mt-1 shrink-0" />
+                                            <div>
+                                                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Atletas convocados:</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {event.athletes.map((athlete, i) => (
+                                                        <span key={i} className="text-sm text-white bg-white/5 px-2 py-1 rounded">
+                                                            {athlete.full_name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <MapPin size={18} className="text-anvil-red" />
-                                        <span>{event.location}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <Trophy size={18} className="text-anvil-red" />
-                                        <span>{event.type}</span>
-                                    </div>
-                                </div>
-
-                                <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between group-hover:text-anvil-red transition-colors">
-                                    <span className="text-xs font-bold uppercase tracking-widest">Ver Detalles</span>
-                                    <ArrowRight size={16} />
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 text-gray-500">
+                            <p className="text-xl font-bold uppercase tracking-wider">No hay competiciones programadas próximamente.</p>
+                        </div>
+                    )}
                 </div>
             </section>
 

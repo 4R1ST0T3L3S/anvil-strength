@@ -89,5 +89,24 @@ export const competitionsService = {
             .eq('id', assignmentId);
 
         if (error) throw error;
+    },
+
+    async getPublicCompetitions() {
+        const today = new Date().toISOString().split('T')[0];
+
+        // Fetch all future competitions assigned to athletes
+        // We fetch ALL assignments and group them in the frontend (or could use a distinct query if RPC available)
+        // This ensures we only show competitions that HAVE athletes assigned.
+        const { data, error } = await supabase
+            .from('competitions')
+            .select(`
+                *,
+                athlete:profiles!athlete_id (full_name, avatar_url)
+            `)
+            .or(`date.gte.${today},end_date.gte.${today}`) // Future or Ongoing
+            .order('date', { ascending: true });
+
+        if (error) throw error;
+        return data;
     }
 };
