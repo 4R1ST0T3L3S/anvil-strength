@@ -34,6 +34,9 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                 const groupedMap = new Map<string, GroupedCompetition>();
 
                 data.forEach((assignment: any) => {
+                    // STRICT FILTER: If we can't see the athlete (null) or they have no name, SKIP.
+                    if (!assignment.athlete || !assignment.athlete.full_name) return;
+
                     const key = `${assignment.name}-${assignment.date}`;
 
                     if (!groupedMap.has(key)) {
@@ -166,20 +169,21 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                             <Users size={18} className="text-anvil-red mt-1 shrink-0" />
                                             <div>
                                                 <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                                                    {event.athletes.length > 0 ? "Atletas convocados:" : "Atletas asignados (detalles protegidos):"}
+                                                    Atletas convocados:
                                                 </p>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {event.athletes.length > 0 ? (
-                                                        event.athletes.map((athlete, i) => (
-                                                            <span key={i} className="text-sm text-white bg-white/5 px-2 py-1 rounded">
-                                                                {athlete.full_name || 'Atleta'}
-                                                            </span>
-                                                        ))
-                                                    ) : (
-                                                        <span className="text-sm text-gray-500 italic">
-                                                            Consultar con el club
-                                                        </span>
-                                                    )}
+                                                    {event.athletes.map((athlete, i) => (
+                                                        <motion.span
+                                                            key={i}
+                                                            initial={{ opacity: 0, scale: 0.9 }}
+                                                            whileInView={{ opacity: 1, scale: 1 }}
+                                                            className="text-sm text-white bg-white/10 border border-white/5 px-3 py-1 rounded-md flex items-center gap-2"
+                                                        >
+                                                            {/* Optional: Avatar if available, or generic icon */}
+                                                            {/* <div className="w-4 h-4 rounded-full bg-anvil-red/50"></div> */}
+                                                            {athlete.full_name}
+                                                        </motion.span>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
