@@ -4,7 +4,7 @@ import { Instagram, Mail } from 'lucide-react';
 
 export function CountdownPage() {
     const calculateTimeLeft = () => {
-        const launchDate = new Date('2026-02-22T20:00:00').getTime();
+        const launchDate = new Date('2026-02-21T22:35:00').getTime();
         const now = new Date().getTime();
         const difference = launchDate - now;
 
