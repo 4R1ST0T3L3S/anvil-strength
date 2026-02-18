@@ -71,7 +71,7 @@ export function CountdownPage() {
                         SOMOS <span className="text-anvil-red">ANVIL</span>
                     </h1>
                     <p className="text-sm md:text-2xl text-gray-400 font-bold uppercase tracking-[0.2em]">
-                        La forja se abre en:
+                        Opening soon:
                     </p>
                 </motion.div>
 
@@ -107,7 +107,7 @@ export function CountdownPage() {
                     </p>
                     <div className="flex items-center gap-6">
                         <a
-                            href="https://instagram.com/anvilstrength"
+                            href="https://instagram.com/anvilstrength_"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-all duration-300"
