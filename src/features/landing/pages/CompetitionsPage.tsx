@@ -104,7 +104,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
             <PublicHeader onLoginClick={onLoginClick} />
 
             {/* --- HERO SECTION --- */}
-            <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
+            <section className="relative pt-48 pb-24 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-[#0a0a0a]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-[#0a0a0a] to-[#0a0a0a]" />
                     <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
