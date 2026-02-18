@@ -104,7 +104,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
             <PublicHeader onLoginClick={onLoginClick} />
 
             {/* --- HERO SECTION --- */}
-            <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+            <section className="relative h-[50vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-[#0a0a0a]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-[#0a0a0a] to-[#0a0a0a]" />
                     <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
@@ -116,10 +116,10 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter uppercase italic mb-4">
-                            CALENDARIO <span className="text-transparent bg-clip-text bg-gradient-to-r from-anvil-red to-red-600 block sm:inline">COMPETITIVO</span>
+                        <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter uppercase italic mb-2">
+                            PRÓXIMAS <span className="text-transparent bg-clip-text bg-gradient-to-r from-anvil-red to-red-600 block sm:inline">COMPETICIONES</span>
                         </h1>
-                        <p className="text-gray-400 text-lg sm:text-2xl font-bold tracking-widest uppercase max-w-2xl mx-auto">
+                        <p className="text-gray-400 text-lg sm:text-xl font-bold tracking-widest uppercase max-w-2xl mx-auto">
                             Donde la preparación se encuentra con la plataforma.
                         </p>
                     </motion.div>
@@ -127,13 +127,8 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
             </section>
 
             {/* --- PRÓXIMAS COMPETICIONES --- */}
-            <section className="py-20 bg-[#0a0a0a]">
+            <section className="py-10 bg-[#0a0a0a]">
                 <div className="max-w-6xl mx-auto px-6">
-                    <div className="flex items-end justify-between mb-12 border-b border-white/10 pb-6">
-                        <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter">
-                            Próximos <span className="text-white/50">Eventos</span>
-                        </h2>
-                    </div>
 
                     {loading ? (
                         <div className="flex justify-center py-20">
