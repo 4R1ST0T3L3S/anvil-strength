@@ -76,19 +76,19 @@ export function CountdownPage() {
                 </motion.div>
 
                 {/* Counter */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-8 w-full max-w-4xl mb-12 md:mb-16">
+                <div className="grid grid-cols-4 gap-2 md:gap-8 w-full max-w-5xl mb-12 md:mb-16">
                     {timeUnits.map((item, index) => (
                         <motion.div
                             key={item.label}
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + (index * 0.1), duration: 0.6 }}
-                            className="flex flex-col items-center p-3 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-all duration-300"
+                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-all duration-300"
                         >
-                            <span className="text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-300 tabular-nums leading-none">
+                            <span className="text-2xl sm:text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-300 tabular-nums leading-none">
                                 {item.value.toString().padStart(2, '0')}
                             </span>
-                            <span className="text-[10px] md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
+                            <span className="text-[9px] md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
                                 {item.label}
                             </span>
                         </motion.div>
