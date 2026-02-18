@@ -51,12 +51,12 @@ export function CountdownPage() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className="mb-12 md:mb-16"
+                    className="mb-8 md:mb-16 mt-8 md:mt-0"
                 >
                     <img
                         src="/logo-dark-removebg-preview.png"
                         alt="Anvil Strength Logo"
-                        className="h-24 md:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                        className="h-20 md:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
                     />
                 </motion.div>
 
@@ -65,30 +65,30 @@ export function CountdownPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
-                    className="mb-12"
+                    className="mb-8 md:mb-12"
                 >
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase italic tracking-tighter mb-2">
                         SOMOS <span className="text-anvil-red">ANVIL</span>
                     </h1>
-                    <p className="text-lg md:text-2xl text-gray-400 font-bold uppercase tracking-[0.2em]">
+                    <p className="text-sm md:text-2xl text-gray-400 font-bold uppercase tracking-[0.2em]">
                         La forja se abre en:
                     </p>
                 </motion.div>
 
                 {/* Counter */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 w-full max-w-4xl mb-16">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-8 w-full max-w-4xl mb-12 md:mb-16">
                     {timeUnits.map((item, index) => (
                         <motion.div
                             key={item.label}
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + (index * 0.1), duration: 0.6 }}
-                            className="flex flex-col items-center p-4 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-all duration-300"
+                            className="flex flex-col items-center p-3 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-all duration-300"
                         >
-                            <span className="text-4xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-300 tabular-nums leading-none">
+                            <span className="text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-300 tabular-nums leading-none">
                                 {item.value.toString().padStart(2, '0')}
                             </span>
-                            <span className="text-xs md:text-sm font-bold text-gray-500 mt-2 tracking-widest uppercase">
+                            <span className="text-[10px] md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
                                 {item.label}
                             </span>
                         </motion.div>
@@ -100,9 +100,9 @@ export function CountdownPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1, duration: 1 }}
-                    className="flex flex-col items-center gap-6"
+                    className="flex flex-col items-center gap-6 mb-8 md:mb-0"
                 >
-                    <p className="text-white/30 text-xs font-bold uppercase tracking-widest">
+                    <p className="text-white/30 text-[10px] md:text-xs font-bold uppercase tracking-widest text-center px-4">
                         Síguenos para no perderte el lanzamiento
                     </p>
                     <div className="flex items-center gap-6">
