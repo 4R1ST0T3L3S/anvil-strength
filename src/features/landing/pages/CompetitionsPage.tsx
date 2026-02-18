@@ -80,8 +80,8 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
         },
         {
             id: 2,
-            title: "Copa de España 2025",
-            result: "Campeones por Equipos",
+            title: "AEP3 Las Torres de Cotillas",
+            result: "2 Oros (Alejandro -83kg, Gema -63kg)",
             image: "/portadaanvil2.jpg"
         }
     ];
