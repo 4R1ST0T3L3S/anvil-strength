@@ -16,7 +16,7 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
 
     const isHome = location.pathname === '/';
 
-    const isTransparentPage = location.pathname === '/' || location.pathname === '/ropa';
+    const isTransparentPage = location.pathname === '/' || location.pathname === '/ropa' || location.pathname === '/competiciones';
 
     useEffect(() => {
         const handleScroll = () => {
