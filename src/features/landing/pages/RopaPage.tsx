@@ -1,7 +1,7 @@
 import { motion, Variants } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
-import { ArrowRight, X as XIcon, Zap, Crown, MessageCircle } from 'lucide-react';
+import { ArrowRight, X as XIcon, Zap, Crown } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 
 
@@ -287,24 +287,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                 </div>
             </section>
 
-            {/* --- WHATSAPP CTA BANNER --- */}
-            <section className="py-24 bg-[#0a0a0a] border-t border-white/5 relative overflow-hidden flex items-center justify-center">
-                <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-anvil-red/10 blur-[120px] rounded-full"></div>
 
-                <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-                    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-                        <h2 className="text-5xl sm:text-7xl md:text-[9rem] font-black italic uppercase tracking-tighter mb-6 leading-[0.85] text-white">
-                            ¿Juan, <span className="text-anvil-red drop-shadow-[0_0_15px_rgba(220,38,38,0.3)]">te animas?</span>
-                        </h2>
-                        <p className="text-gray-500 text-sm sm:text-lg md:text-xl font-bold uppercase tracking-[0.3em] mb-12 max-w-2xl mx-auto">HAGAMOS HISTORIA JUAN, REVOLUCIONEMOS EL POWERLIFTING.</p>
-                        <a href="https://chat.whatsapp.com/HbeNPSfeFceF7yTndQWUGc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-4 bg-white text-black hover:bg-anvil-red hover:text-white px-8 sm:px-12 py-5 sm:py-6 font-black uppercase italic text-lg sm:text-2xl transition-all duration-500 group shadow-2xl">
-                            <span>HAZ CLICK SI TE GUSTA LA IDEA</span>
-                            <MessageCircle size={28} className="fill-current group-hover:rotate-12 transition-transform" />
-                        </a>
-                    </motion.div>
-                </div>
-            </section>
 
             <PublicFooter />
         </div>

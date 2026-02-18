@@ -1,7 +1,0 @@
-src/components/layout/DashboardLayout.tsx(144,5): error TS6133: 'hideMobileHeader' is declared but its value is never read.
-src/features/arena/pages/ArenaView.tsx(3,25): error TS6133: 'AlertCircle' is declared but its value is never read.
-src/features/arena/pages/ArenaView.tsx(5,13): error TS6133: 'BarChart2' is declared but its value is never read.
-src/features/arena/pages/ArenaView.tsx(5,24): error TS6133: 'Zap' is declared but its value is never read.
-src/features/arena/pages/ArenaView.tsx(5,29): error TS6133: 'ArrowRight' is declared but its value is never read.
-src/features/arena/pages/Predictions.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
-src/features/coach/components/CalendarSection.tsx(25,33): error TS2339: Property 'organizador' does not exist on type 'Competition'.

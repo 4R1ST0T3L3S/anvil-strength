@@ -8,7 +8,7 @@ import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
 import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
 import { PlateCalculator } from '../../athlete/components/PlateCalculator';
 
-export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate: (view: any) => void }) {
+export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate: (view: string) => void }) {
     const navigate = useNavigate(); // <--- 2. INICIALIZAR EL HOOK
 
     const getGreeting = () => {

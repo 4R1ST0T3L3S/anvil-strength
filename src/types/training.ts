@@ -91,4 +91,5 @@ export interface TrainingSet {
 
     order_index: number;
     created_at: string;
+    notes?: string | null;
 }

@@ -87,10 +87,10 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
             const formattedSessions: ExtendedSession[] = (sessions || []).map(s => ({
                 ...s,
                 exercises: (s.session_exercises || [])
-                    .sort((a: any, b: any) => a.order_index - b.order_index)
-                    .map((e: any) => ({
+                    .sort((a: SessionExercise, b: SessionExercise) => a.order_index - b.order_index)
+                    .map((e: SessionExercise & { training_sets: TrainingSet[] }) => ({
                         ...e,
-                        sets: (e.training_sets || []).sort((a: any, b: any) => a.order_index - b.order_index)
+                        sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
                     }))
             }));
 
@@ -690,7 +690,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                                                         placeholder="NOMBRE DE LA SEMANA"
                                                         autoFocus
                                                         onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') handleSaveWeekName(e as any);
+                                                            if (e.key === 'Enter') handleSaveWeekName(e as unknown as React.MouseEvent);
                                                         }}
                                                     />
                                                     <button

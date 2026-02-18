@@ -14,6 +14,7 @@ import { coaches, Coach } from '../../../data/coaches';
 import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
+import { PDFModal } from '../../../components/modals/PDFModal';
 
 import { Standard } from "@typebot.io/react"; // Añade este import
 
@@ -24,6 +25,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+    const [isNormativaOpen, setIsNormativaOpen] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
     const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
     const [isBotOpen, setIsBotOpen] = useState(false);
@@ -441,7 +443,10 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                             <FileText size={20} />
                             Formulario de Inscripción
                         </a>
-                        <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
+                        <button
+                            onClick={() => setIsNormativaOpen(true)}
+                            className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl"
+                        >
                             <FileText size={20} />
                             Normativa del Equipo
                         </button>
@@ -539,6 +544,13 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 isOpen={!!selectedAthlete}
                 onClose={() => setSelectedAthlete(null)}
                 athlete={selectedAthlete}
+            />
+
+            <PDFModal
+                isOpen={isNormativaOpen}
+                onClose={() => setIsNormativaOpen(false)}
+                pdfUrl="/normativa_equipo.pdf"
+                title="NORMATIVA DEL EQUIPO"
             />
 
             {/* ... resto de tus secciones y modales anteriores ... */}

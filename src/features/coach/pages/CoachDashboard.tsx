@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE: Hook de navegación
+// import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE: Hook de navegación
 import {
     LayoutDashboard,
     Users, // <--- Solo una vez
@@ -28,7 +28,7 @@ interface CoachDashboardProps {
 type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile';
 
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
-    const navigate = useNavigate(); // <--- 2. Inicializamos la navegación
+    // const navigate = useNavigate(); // Removed unused navigate
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);

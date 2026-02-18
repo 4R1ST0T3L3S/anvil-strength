@@ -431,7 +431,7 @@ export const trainingService = {
 
                     // Copy sets
                     if (ex.training_sets && ex.training_sets.length > 0) {
-                        const newSets = ex.training_sets.map((set: any) => ({
+                        const newSets = ex.training_sets.map((set: TrainingSet) => ({
                             session_exercise_id: newEx.id,
                             order_index: set.order_index,
                             target_reps: set.target_reps,

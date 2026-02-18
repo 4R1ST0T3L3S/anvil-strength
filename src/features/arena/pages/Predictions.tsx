@@ -4,8 +4,10 @@ import { Trophy, ArrowLeft, TrendingUp, AlertCircle, Coins } from 'lucide-react'
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { supabase } from '../../../lib/supabase'; // <--- 2. AÑADIDO (Asegúrate de que la ruta a lib/supabase es correcta)
 
+import { UserProfile } from '../../../hooks/useUser';
+
 interface PredictionsProps {
-  user: any;
+  user: UserProfile;
 }
 
 export default function Predictions({ user }: PredictionsProps) {

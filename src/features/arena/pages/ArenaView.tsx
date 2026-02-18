@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     TrendingUp, Coins,
-    Plus, Calendar, X,
+    Calendar, X,
     Swords, User,
     Trash2, CheckCircle
 } from 'lucide-react';
@@ -53,7 +53,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     const [betAmount, setBetAmount] = useState<number>(10);
     const [selectedSide, setSelectedSide] = useState<'a' | 'b' | null>(null);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         if (!user?.id) return;
         try {
             const { data: profileData } = await supabase.from('profiles').select('anvil_coins, is_developer').eq('id', user.id).single();
@@ -75,9 +75,9 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
             const { data: resolved } = await supabase.from('arena_fights').select(`*, athlete_a:profiles!athlete_a_id(full_name), athlete_b:profiles!athlete_b_id(full_name)`).eq('status', 'resolved').order('created_at', { ascending: false });
             if (resolved) setResolvedFights(resolved as Fight[]);
         } catch (err) { console.error(err); } finally { setLoading(false); }
-    };
+    }, [user.id]);
 
-    useEffect(() => { fetchData(); }, [user.id]);
+    useEffect(() => { fetchData(); }, [fetchData]);
 
     // JERARQUÍA DE COLORES (AEP 3: Naranja, AEP 2: Amarillo)
     const getEventStyles = (name: string) => {
