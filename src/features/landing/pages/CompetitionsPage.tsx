@@ -53,7 +53,10 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                     }
                 });
 
-                setUpcomingEvents(Array.from(groupedMap.values()));
+
+                // Filter out groups that have no valid athletes
+                const validEvents = Array.from(groupedMap.values()).filter(group => group.athletes.length > 0);
+                setUpcomingEvents(validEvents);
             } catch (error) {
                 console.error("Error fetching competitions:", error);
             } finally {

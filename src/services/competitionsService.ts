@@ -101,7 +101,7 @@ export const competitionsService = {
             .from('competitions')
             .select(`
                 *,
-                athlete:profiles!athlete_id (full_name, avatar_url)
+                athlete:profiles!athlete_id!inner (full_name, avatar_url)
             `)
             .or(`date.gte.${today},end_date.gte.${today}`) // Future or Ongoing
             .order('date', { ascending: true });
