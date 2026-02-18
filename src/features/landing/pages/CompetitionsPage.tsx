@@ -34,8 +34,9 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                 const groupedMap = new Map<string, GroupedCompetition>();
 
                 data.forEach((assignment: any) => {
-                    // STRICT FILTER: If we can't see the athlete (null) or they have no name, SKIP.
-                    if (!assignment.athlete || !assignment.athlete.full_name) return;
+                    // RELAXED FILTER: Allow events even if athlete is hidden by RLS.
+                    // This creates "ghosts" but ensures valid events (like Gema's) appear.
+                    // User must fix RLS for names to appear.
 
                     const key = `${assignment.name}-${assignment.date}`;
 
