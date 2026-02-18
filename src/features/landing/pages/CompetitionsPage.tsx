@@ -54,9 +54,9 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                 });
 
 
-                // Filter out groups that have no valid athletes
-                const validEvents = Array.from(groupedMap.values()).filter(group => group.athletes.length > 0);
-                setUpcomingEvents(validEvents);
+                // Grouping logic handles deduplication.
+                // We show all groups. If athletes are missing (due to RLS), the group still exists.
+                setUpcomingEvents(Array.from(groupedMap.values()));
             } catch (error) {
                 console.error("Error fetching competitions:", error);
             } finally {
@@ -165,13 +165,21 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                         <div className="flex items-start gap-3 mt-4 pt-4 border-t border-white/5">
                                             <Users size={18} className="text-anvil-red mt-1 shrink-0" />
                                             <div>
-                                                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Atletas convocados:</p>
+                                                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                                                    {event.athletes.length > 0 ? "Atletas convocados:" : "Atletas asignados (detalles protegidos):"}
+                                                </p>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {event.athletes.map((athlete, i) => (
-                                                        <span key={i} className="text-sm text-white bg-white/5 px-2 py-1 rounded">
-                                                            {athlete.full_name}
+                                                    {event.athletes.length > 0 ? (
+                                                        event.athletes.map((athlete, i) => (
+                                                            <span key={i} className="text-sm text-white bg-white/5 px-2 py-1 rounded">
+                                                                {athlete.full_name || 'Atleta'}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-sm text-gray-500 italic">
+                                                            Consultar con el club
                                                         </span>
-                                                    ))}
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
