@@ -13,7 +13,7 @@ import { Toaster } from 'sonner';
 import { AppRoutes } from './routes/AppRoutes';
 import { CountdownPage } from './features/landing/pages/CountdownPage';
 
-const LAUNCH_DATE = new Date('2026-02-21T20:00:00');
+const LAUNCH_DATE = new Date('2026-02-22T20:00:00');
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);

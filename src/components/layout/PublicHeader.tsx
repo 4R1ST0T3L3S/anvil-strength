@@ -68,7 +68,7 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
         { name: 'LOGROS', href: '#logros' },
         { name: 'AFILIATE', href: '#afiliacion' },
         { name: 'CONTACTO', href: '#contacto' },
-        { name: 'ROPA', href: '/ropa' },
+        // { name: 'ROPA', href: '/ropa' },
         { name: 'COMPETICIONES', href: '/competiciones' }, // NEW LINK // NEW LINK
     ];
 

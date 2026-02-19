@@ -21,9 +21,9 @@ export function SmartAuthButton({
 
         // No user -> trigger login modal
         if (!user) {
-            if (onLoginClick) {
-                onLoginClick();
-            }
+            // if (onLoginClick) {
+            //     onLoginClick();
+            // }
             return;
         }
 
@@ -33,7 +33,7 @@ export function SmartAuthButton({
     };
 
     // Variant styles
-    const baseStyles = 'inline-flex items-center justify-center gap-2 font-black uppercase tracking-wider transition-all rounded-lg disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseStyles = `inline-flex items-center justify-center gap-2 font-black uppercase tracking-wider transition-all rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${!user ? 'opacity-80 cursor-not-allowed' : ''}`;
 
     const variantStyles = {
         primary: 'bg-anvil-red hover:bg-red-700 text-white px-8 py-4 text-lg shadow-lg shadow-anvil-red/20 hover:shadow-anvil-red/40',
@@ -44,7 +44,7 @@ export function SmartAuthButton({
     const buttonText = isLoading
         ? 'Cargando...'
         : !user
-            ? 'Iniciar Sesión'
+            ? 'Próximamente'
             : 'Ir a mi Panel';
 
     return (
