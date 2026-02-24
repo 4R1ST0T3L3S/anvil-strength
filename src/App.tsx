@@ -22,7 +22,7 @@ function App() {
 
   // COUNTDOWN LOGIC
   const now = new Date();
-  const isPreLaunch = now < LAUNCH_DATE;
+  const isPreLaunch = false; // now < LAUNCH_DATE;
   // Allow bypass with ?admin=true
   const searchParams = new URLSearchParams(window.location.search);
   const isAdmin = searchParams.get('admin') === 'true';

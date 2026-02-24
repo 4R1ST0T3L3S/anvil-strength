@@ -69,7 +69,7 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
         { name: 'AFILIATE', href: '#afiliacion' },
         { name: 'CONTACTO', href: '#contacto' },
         // { name: 'ROPA', href: '/ropa' },
-        { name: 'COMPETICIONES', href: '/competiciones' }, // NEW LINK // NEW LINK
+        { name: 'COMPETICIONES', href: '/competiciones' }, // NEW LINK
     ];
 
     return (

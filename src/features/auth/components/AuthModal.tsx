@@ -11,6 +11,7 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +58,31 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const removePhoto = () => {
     setFormData({ ...formData, profile_image: '' });
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsGoogleLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // We don't onClose immediately because OAuth redirects the entire page.
+
+    } catch (err: any) {
+      console.error('Error con Google Auth:', err);
+      setError(err.message || 'Error al conectar con Google.');
+      setIsGoogleLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -332,14 +358,44 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <button
             data-testid="auth-submit-button"
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
             className="w-full bg-white text-black font-black uppercase py-4 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-6 shadow-xl shadow-black/20"
           >
             {isLoading ? <Loader className="animate-spin" size={20} /> : (isLogin ? 'Entrar' : 'Registrarse')}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="relative mt-8 mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-[#1c1c1c] text-gray-500 font-bold uppercase tracking-wider">O continuar con</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isLoading || isGoogleLoading}
+          className="w-full bg-[#252525] hover:bg-[#303030] text-white border border-white/10 font-black uppercase py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
+        >
+          {isGoogleLoading ? (
+            <Loader className="animate-spin" size={20} />
+          ) : (
+            <>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.79 15.72 17.56V20.32H19.28C21.36 18.4 22.56 15.6 22.56 12.25Z" fill="#4285F4" />
+                <path d="M12 23C14.97 23 17.46 22.02 19.28 20.32L15.72 17.56C14.74 18.22 13.48 18.62 12 18.62C9.13 18.62 6.7 16.68 5.82 14.07H2.15V16.92C3.96 20.53 7.69 23 12 23Z" fill="#34A853" />
+                <path d="M5.82 14.07C5.59 13.39 5.46 12.7 5.46 12C5.46 11.3 5.59 10.61 5.82 9.93V7.08H2.15C1.41 8.56 1 10.23 1 12C1 13.77 1.41 15.44 2.15 16.92L5.82 14.07Z" fill="#FBBC05" />
+                <path d="M12 5.38C13.62 5.38 15.06 5.94 16.21 7.02L19.36 3.87C17.46 2.1 14.97 1 12 1C7.69 1 3.96 3.47 2.15 7.08L5.82 9.93C6.7 7.32 9.13 5.38 12 5.38Z" fill="#EA4335" />
+              </svg>
+              <span>{isLogin ? 'Entrar con Google' : 'Registrarse con Google'}</span>
+            </>
+          )}
+        </button>
+
+        <div className="mt-8 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
             className="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors"

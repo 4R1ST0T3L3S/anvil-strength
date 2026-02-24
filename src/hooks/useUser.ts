@@ -10,6 +10,7 @@ export interface UserProfile {
     nickname?: string;
     avatar_url?: string; // Changed from 'profile_image' to match database schema
     role: Role;
+    has_access: boolean;
     gender?: 'male' | 'female';
     age_category?: string;
     weight_category?: string;
@@ -53,6 +54,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             nickname: meta?.nickname,
             avatar_url: meta?.avatar_url,
             role: sessionRole,
+            has_access: false, // Default to false until profile loads
             gender: meta?.gender,
             user_metadata: meta,
             // Backward compatibility aliases
@@ -81,7 +83,8 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                             id: userId,
                             full_name: optimisticUser.name,
                             nickname: optimisticUser.nickname || 'Atleta',
-                            role: 'athlete'
+                            role: 'athlete',
+                            has_access: false
                         }])
                         .select()
                         .single();
@@ -98,6 +101,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     full_name: profile.full_name || optimisticUser.full_name,
                     nickname: profile.nickname || optimisticUser.nickname,
                     role: profile.role || optimisticUser.role,
+                    has_access: profile.has_access ?? false,
                     avatar_url: profile.avatar_url || optimisticUser.avatar_url,
                     gender: profile.gender || optimisticUser.gender,
                     age_category: profile.age_category,

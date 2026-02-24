@@ -4,6 +4,7 @@ import { UserProfile } from '../hooks/useUser';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
+import { PendingApprovalPage } from '../features/auth/pages/PendingApprovalPage';
 
 // 1. Importamos la VISTA CORRECTA según tu estructura de carpetas
 import { ArenaView } from '../features/arena/pages/ArenaView';
@@ -36,10 +37,23 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                         onLoginClick={onLoginClick}
                         user={user}
                     />
+                ) : user?.has_access === false ? (
+                    <Navigate to="/pending" replace />
                 ) : user?.role === 'coach' ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : (
                     <Navigate to="/dashboard" replace />
+                )
+            } />
+
+            {/* --- PENDING APPROVAL PAGE --- */}
+            <Route path="/pending" element={
+                !user && !hasActiveSession ? (
+                    <Navigate to="/" replace />
+                ) : user?.has_access ? (
+                    <Navigate to="/dashboard" replace />
+                ) : (
+                    <PendingApprovalPage />
                 )
             } />
 
@@ -53,7 +67,11 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
             {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}
             <Route path="/dashboard/community" element={
                 hasActiveSession && user ? (
-                    <ArenaView user={user} />
+                    user.has_access === false ? (
+                        <Navigate to="/pending" replace />
+                    ) : (
+                        <ArenaView user={user} />
+                    )
                 ) : (
                     <Navigate to="/" replace />
                 )
@@ -65,6 +83,8 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
+                ) : user?.has_access === false ? (
+                    <Navigate to="/pending" replace />
                 ) : user?.role === 'coach' ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : user ? (
@@ -83,6 +103,8 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
+                ) : user?.has_access === false ? (
+                    <Navigate to="/pending" replace />
                 ) : user?.role !== 'coach' ? (
                     <Navigate to="/dashboard" replace />
                 ) : user ? (

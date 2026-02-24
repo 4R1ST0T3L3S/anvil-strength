@@ -117,3 +117,10 @@ El servidor arrancará en `http://localhost:5173`.
 <div align="center">
   <p>Desarrollado con 💪 para Anvil Strength</p>
 </div>
+
+---
+
+## 📅 Changelog (24-02-2026)
+* **Autenticación Restaurada**: Se ha vuelto a habilitar el inicio de sesión y registro en toda la plataforma (`App.tsx`, `AppRoutes.tsx`, y vistas públicas).
+* **Google Login**: Integración del botón oficial de "Continuar con Google" en el `AuthModal` utilizando OAuth de Supabase.
+* **Acceso Restringido (Gated Registration)**: Todos los usuarios pueden registrarse, pero el acceso a las funciones internas queda pendiente hasta que el administrador otorgue acceso manual cambiando la propiedad `has_access` a `TRUE` en la tabla `profiles` de Supabase. Añadida nueva interfaz de "Cuenta Pendiente" (`PendingApprovalPage.tsx`).

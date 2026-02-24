@@ -24,6 +24,7 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onLoginClick, user }: LandingPageProps) {
+
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [isNormativaOpen, setIsNormativaOpen] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
