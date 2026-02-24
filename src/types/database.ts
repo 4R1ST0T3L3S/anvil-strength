@@ -4,6 +4,7 @@ export interface Profile {
     id: string;
     email: string;
     role: Role;
+    has_access?: boolean;
     full_name: string;
     nickname?: string;
     gender?: 'male' | 'female';

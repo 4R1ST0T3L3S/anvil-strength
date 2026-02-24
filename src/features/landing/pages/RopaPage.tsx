@@ -72,6 +72,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
     return (
         <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
+            {/* Shared Public Header */}
             <PublicHeader onLoginClick={onLoginClick} />
 
             {/* --- HERO SECTION --- */}

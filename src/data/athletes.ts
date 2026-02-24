@@ -153,5 +153,19 @@ export const athletes: Athlete[] = [
       bench: 85,
       deadlift: 220
     }
+  },
+  {
+    id: 11,
+    name: "Javier Rubio",
+    category: "-83kg Open",
+    image: "/Nutricionistas/Javier Rubio Nutricionista Foto Presentacion.jpeg",
+    stats: {
+      lastCompetition: "Nacional 2024",
+      glPoints: 99.00,
+      total: 715,
+      squat: 262.5,
+      bench: 162.5,
+      deadlift: 290
+    }
   }
 ];

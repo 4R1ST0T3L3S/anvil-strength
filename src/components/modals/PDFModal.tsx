@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { X, ChevronLeft, ChevronRight, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
@@ -29,6 +30,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
             setPageNumber(1);
             setScale(1.0);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, pdfUrl]);
 
     // Update container width on resize
@@ -50,8 +52,8 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
 
     // Close on escape key
     useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose();
         };
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
