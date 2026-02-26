@@ -1,4 +1,4 @@
-export type Role = 'coach' | 'athlete';
+export type Role = 'coach' | 'athlete' | 'nutritionist';
 
 export interface Profile {
     id: string;
@@ -28,6 +28,10 @@ export interface Coach extends Profile {
 export interface Athlete extends Profile {
     role: 'athlete';
     coach_id?: string | null;
+}
+
+export interface Nutritionist extends Profile {
+    role: 'nutritionist';
 }
 
 // AEP Service Types

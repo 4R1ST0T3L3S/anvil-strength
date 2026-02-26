@@ -78,9 +78,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       // We don't onClose immediately because OAuth redirects the entire page.
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error con Google Auth:', err);
-      setError(err.message || 'Error al conectar con Google.');
+      const msg = err instanceof Error ? err.message : 'Error al conectar con Google.';
+      setError(msg);
       setIsGoogleLoading(false);
     }
   };

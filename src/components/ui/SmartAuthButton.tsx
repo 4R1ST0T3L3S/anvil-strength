@@ -27,8 +27,14 @@ export function SmartAuthButton({
             return;
         }
 
-        // User exists -> navigate to their dashboard
-        const destination = user.role === 'coach' ? '/coach-dashboard' : '/dashboard';
+        // User exists -> navigate to their dashboard or profile
+        const destination = user.email === 'anvilstrength@gmail.com'
+            ? '/admin'
+            : !user.has_access
+                ? '/perfil'
+                : user.role === 'coach'
+                    ? '/coach-dashboard'
+                    : '/dashboard';
         navigate(destination);
     };
 
@@ -45,7 +51,11 @@ export function SmartAuthButton({
         ? 'Cargando...'
         : !user
             ? 'Iniciar Sesión'
-            : 'Ir a mi Panel';
+            : user.email === 'anvilstrength@gmail.com'
+                ? 'Panel Admin'
+                : !user.has_access
+                    ? 'Mi perfil'
+                    : 'Ir a mi Panel';
 
     return (
         <button

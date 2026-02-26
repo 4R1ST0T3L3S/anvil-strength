@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { X, ChevronLeft, ChevronRight, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
@@ -27,10 +26,10 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
     // Reset state when modal opens
     useEffect(() => {
         if (isOpen) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setPageNumber(1);
             setScale(1.0);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, pdfUrl]);
 
     // Update container width on resize

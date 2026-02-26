@@ -4,12 +4,13 @@ import { UserProfile } from '../hooks/useUser';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
-import { PendingApprovalPage } from '../features/auth/pages/PendingApprovalPage';
+import { ProfilePage } from '../features/profile/pages/ProfilePage';
 
 // 1. Importamos la VISTA CORRECTA según tu estructura de carpetas
 import { ArenaView } from '../features/arena/pages/ArenaView';
 // import { RopaPage } from '../features/landing/pages/RopaPage';
 import { CompetitionsPage } from '../features/landing/pages/CompetitionsPage';
+import { AdminDashboard } from '../features/admin/pages/AdminDashboard';
 
 // Lazy Load Pages
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
@@ -38,7 +39,10 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                         user={user}
                     />
                 ) : user?.has_access === false ? (
-                    <Navigate to="/pending" replace />
+                    <LandingPage
+                        onLoginClick={onLoginClick}
+                        user={user}
+                    />
                 ) : user?.role === 'coach' ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : (
@@ -46,15 +50,22 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 )
             } />
 
-            {/* --- PENDING APPROVAL PAGE --- */}
-            <Route path="/pending" element={
+            {/* --- PERFIL PAGE (For pending users) --- */}
+            <Route path="/perfil" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
                 ) : user?.has_access ? (
                     <Navigate to="/dashboard" replace />
+                ) : user ? (
+                    <ProfilePage user={user} onLoginClick={onLoginClick} />
                 ) : (
-                    <PendingApprovalPage />
+                    <Navigate to="/" replace />
                 )
+            } />
+
+            {/* --- PENDING APPROVAL PAGE (Legacy/Fallback) --- */}
+            <Route path="/pending" element={
+                <Navigate to="/perfil" replace />
             } />
 
             {/* --- ROPA PAGE --- */}
@@ -84,7 +95,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
                 ) : user?.has_access === false ? (
-                    <Navigate to="/pending" replace />
+                    <Navigate to="/perfil" replace />
                 ) : user?.role === 'coach' ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : user ? (
@@ -104,7 +115,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
                 ) : user?.has_access === false ? (
-                    <Navigate to="/pending" replace />
+                    <Navigate to="/perfil" replace />
                 ) : user?.role !== 'coach' ? (
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
@@ -112,6 +123,17 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                         <CoachDashboard user={user} onLogout={onLogout} />
                     </Suspense>
                 ) : null
+            } />
+
+            {/* --- ADMIN DASHBOARD --- */}
+            <Route path="/admin" element={
+                !user && !hasActiveSession ? (
+                    <Navigate to="/" replace />
+                ) : user?.email !== 'anvilstrength@gmail.com' ? (
+                    <Navigate to="/" replace />
+                ) : (
+                    <AdminDashboard />
+                )
             } />
 
             {/* --- FALLBACK --- */}

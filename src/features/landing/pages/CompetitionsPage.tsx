@@ -33,7 +33,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                 // Group by name + date
                 const groupedMap = new Map<string, GroupedCompetition>();
 
-                data.forEach((assignment: any) => {
+                data.forEach((assignment: { name: string, date: string, location?: string, level?: string, athlete?: { full_name: string, avatar_url: string | null } }) => {
                     // STRICT FILTER: Now that RLS is fixed, we can require visible athlete data.
                     // This will show Gema (valid) and hide ghosts (invalid/null).
                     if (!assignment.athlete || !assignment.athlete.full_name) return;
@@ -52,7 +52,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
 
                     const group = groupedMap.get(key)!;
                     // Avoid duplicate athletes if same athlete assigned twice (should not happen but safety)
-                    if (assignment.athlete && !group.athletes.some(a => a.full_name === assignment.athlete.full_name)) {
+                    if (assignment.athlete && !group.athletes.some(a => a.full_name === assignment.athlete?.full_name)) {
                         group.athletes.push(assignment.athlete);
                     }
                 });
@@ -94,7 +94,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                 month: 'long',
                 year: 'numeric'
             }).format(date);
-        } catch (e) {
+        } catch {
             return dateStr;
         }
     };
