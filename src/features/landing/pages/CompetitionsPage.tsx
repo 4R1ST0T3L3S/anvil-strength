@@ -74,8 +74,8 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
     const pastResults = [
         {
             id: 1,
-            title: "SBJ 2024",
-            result: "3 Oros, 2 Platas",
+            title: "SBD CUP 2025",
+            result: "2 Platas",
             image: "/filosofia-competition.jpg"
         },
         {

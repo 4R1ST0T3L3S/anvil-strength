@@ -167,5 +167,33 @@ export const athletes: Athlete[] = [
       bench: 162.5,
       deadlift: 290
     }
+  },
+  {
+    id: 12,
+    name: "Masoko",
+    category: "+120kg Open",
+    image: "/athletes/Masoko.jpeg",
+    stats: {
+      lastCompetition: " ",
+      glPoints: 0,
+      total: 675,
+      squat: 280,
+      bench: 165,
+      deadlift: 230
+    }
+  },
+  {
+    id: 13,
+    name: "Alejandro",
+    category: "-66Kg Junior",
+    image: "/athletes/Alejandro_malaga.jpeg",
+    stats: {
+      lastCompetition: " ",
+      glPoints: 0,
+      total: 0,
+      squat: 0,
+      bench: 0,
+      deadlift: 0
+    }
   }
 ];
