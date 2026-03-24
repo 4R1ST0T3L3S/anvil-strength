@@ -7,6 +7,7 @@ import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
 import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
 import { PlateCalculator } from '../../athlete/components/PlateCalculator';
+import { AnvilRanking } from '../../athlete/components/AnvilRanking';
 
 export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate: (view: string) => void }) {
     const navigate = useNavigate(); // <--- 2. INICIALIZAR EL HOOK
@@ -28,6 +29,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
     const [isPlateCalcOpen, setIsPlateCalcOpen] = useState(false);
+    const [isRankingOpen, setIsRankingOpen] = useState(false);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -238,29 +240,48 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                         </div>
                     </div>
 
-                    {/* La Arena - Predictions */}
+                    {/* La Arena y Ranking */}
                     <div className="order-4 lg:order-4 lg:col-span-3 space-y-3">
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                             <Users size={16} className="text-anvil-red" /> Comunidad
                         </h2>
-                        <div
-                            // 3. CAMBIO CLAVE: Usar el hook navigate a la URL dedicada
-                            onClick={() => navigate('/dashboard/arena')}
-                            className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
-                        >
-                            <div className="relative z-10 flex items-center gap-4">
-                                <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
-                                    <Swords size={24} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div
+                                // 3. CAMBIO CLAVE: Usar el hook navigate a la URL dedicada
+                                onClick={() => navigate('/dashboard/arena')}
+                                className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden"
+                            >
+                                <div className="relative z-10 flex items-center gap-4">
+                                    <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                                        <Swords size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros y gana prestigio</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros y gana prestigio</p>
-                                </div>
-                            </div>
-                            <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors relative z-10" />
+                                <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors relative z-10" />
 
-                            {/* Background Pattern */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
+                                {/* Background Pattern */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
+                            </div>
+
+                            <div
+                                onClick={() => setIsRankingOpen(true)}
+                                className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
+                            >
+                                <div className="relative z-10 flex items-center gap-4">
+                                    <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                                        <Trophy size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Ranking</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Club Leaderboard</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors relative z-10" />
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -324,6 +345,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
             </div>
 
             {/* Modal Components */}
+            <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
             <OneRMCalculator isOpen={is1RMCalcOpen} onClose={() => setIs1RMCalcOpen(false)} />
             <WarmUpCalculator isOpen={isWarmUpCalcOpen} onClose={() => setIsWarmUpCalcOpen(false)} />
             <PlateCalculator isOpen={isPlateCalcOpen} onClose={() => setIsPlateCalcOpen(false)} />

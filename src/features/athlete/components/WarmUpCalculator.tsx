@@ -23,37 +23,93 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
 
     const calculateWarmUp = () => {
         const target = parseFloat(targetWeight);
+        const maxRM = parseFloat(oneRM) || target;
+
         if (isNaN(target) || target <= 20) {
             setWarmUpSets([]);
             return;
         }
 
+        const intensity = (target / maxRM) * 100;
+        const isMutant = target > 200;
+        const maxJump = isMutant ? 30 : target; 
+
+        const getReps = (weight: number) => {
+            if (weight === 20) return '10-15'; // Barra Vacía (Paso 1)
+            const pct = (weight / maxRM) * 100;
+            if (pct >= 80) return '1';         // A partir del 80%: todo singles o dobles
+            if (pct >= 60) return '3';         // Aprox. 60-70%: bajar a 3 reps (Paso 3)
+            return '5';                        // Aprox. 40-50% y resto: bajar a 5 reps (Paso 2)
+        };
+
         const sets: WarmUpSet[] = [
-            { weight: 20, reps: '10-15', percentage: 0, label: 'Barra Vacía' }
+            { weight: 20, reps: '10-15', percentage: Math.round((20 / maxRM) * 100), label: 'Barra Vacía' }
         ];
 
-        // Standard Warm-up Protocol
-        const protocols = [
-            { pct: 0.40, reps: '8', label: 'Aproximación 1' },
-            { pct: 0.60, reps: '5', label: 'Aproximación 2' },
-            { pct: 0.75, reps: '3', label: 'Aproximación 3' },
-            { pct: 0.85, reps: '1', label: 'Aproximación 4' },
-            { pct: 0.92, reps: '1', label: 'Singular de contacto' },
-        ];
+        const milestones = intensity < 70 
+            ? [0.50, 0.70, 0.85] 
+            : [0.40, 0.60, 0.75, 0.85, 0.92];
 
-        protocols.forEach(p => {
-            const w = Math.round((target * p.pct) / 2.5) * 2.5;
-            if (w > 20 && w < target) {
-                sets.push({ weight: w, reps: p.reps, percentage: Math.round(p.pct * 100), label: p.label });
+        for (let i = 0; i < milestones.length; i++) {
+            const targetMilestoneWeight = target * milestones[i];
+            
+            while ((targetMilestoneWeight - sets[sets.length - 1].weight) > (maxJump + 2.5)) {
+                const intermediateWeight = sets[sets.length - 1].weight + maxJump;
+                const rounded = Math.round(intermediateWeight / 2.5) * 2.5;
+                if (rounded < target && rounded > sets[sets.length - 1].weight) {
+                    sets.push({
+                        weight: rounded,
+                        reps: getReps(rounded),
+                        percentage: Math.round((rounded / maxRM) * 100),
+                        label: `Aproximación ${sets.length}`
+                    });
+                } else {
+                    break;
+                }
             }
+
+            const roundedMilestone = Math.round(targetMilestoneWeight / 2.5) * 2.5;
+            if (roundedMilestone > 20 && roundedMilestone < target && roundedMilestone > sets[sets.length - 1].weight) {
+                sets.push({
+                    weight: roundedMilestone,
+                    reps: getReps(roundedMilestone),
+                    percentage: Math.round((roundedMilestone / maxRM) * 100),
+                    label: `Aproximación ${sets.length}`
+                });
+            }
+        }
+
+        while ((target - sets[sets.length - 1].weight) > (maxJump + 2.5)) {
+            const intermediateWeight = sets[sets.length - 1].weight + maxJump;
+            const rounded = Math.round(intermediateWeight / 2.5) * 2.5;
+            if (rounded < target && rounded > sets[sets.length - 1].weight) {
+                sets.push({
+                    weight: rounded,
+                    reps: getReps(rounded),
+                    percentage: Math.round((rounded / maxRM) * 100),
+                    label: `Aproximación ${sets.length}`
+                });
+            } else {
+                break;
+            }
+        }
+
+        sets.push({
+            weight: target,
+            reps: 'SET DE TRABAJO',
+            percentage: Math.round((target / maxRM) * 100),
+            label: 'Objetivo'
         });
 
-        // Add Target Set
-        sets.push({ weight: target, reps: 'SET DE TRABAJO', percentage: 100, label: 'Objetivo' });
+        let approxCount = 1;
+        const finalSets = sets.filter(s => s.weight >= 20).map((s, index) => {
+            if (index === 0) return { ...s, label: 'Barra Vacía' };
+            if (index === sets.length - 1) return { ...s, label: 'Objetivo' };
+            return { ...s, label: `Aproximación ${approxCount++}` };
+        });
 
-        setWarmUpSets(sets);
+        setWarmUpSets(finalSets);
 
-        // Auto-scroll to results on mobile
         setTimeout(() => {
             if (window.innerWidth < 768 && resultsRef.current) {
                 resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -108,7 +164,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                         <div className="col-span-12 md:col-span-6 flex flex-col justify-center h-full pt-4 md:pt-0 shrink-0">
                             <div className="flex flex-col md:grid md:grid-rows-3 gap-6 h-auto md:h-[75%] w-full">
                                 <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
-                                    <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Tu 1RM Actual</label>
+                                    <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Tu 1RM Actual (Opcional)</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
@@ -191,7 +247,8 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                                         {set.label} {set.percentage > 0 && `(${set.percentage}%)`}
                                                     </p>
                                                     <p className="text-xl md:text-3xl font-black text-white italic">
-                                                        {set.weight}<span className="text-xs ml-1 text-gray-500">kg</span>
+                                                        {set.weight}
+                                                        <span className="text-xs ml-1 text-gray-500">kg</span>
                                                     </p>
                                                 </div>
                                             </div>

@@ -19,6 +19,8 @@ export interface UserProfile {
     bench_pr?: number;
     deadlift_pr?: number;
     user_metadata?: Record<string, unknown>;
+    coach_id?: string | null;
+    coach_name?: string | null;
     // Backward compatibility aliases (deprecated)
     name?: string; // Alias for full_name
     profile_image?: string; // Alias for avatar_url
@@ -96,6 +98,17 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             const profile = await Promise.race([dbFetch(), dbTimeout]);
 
             if (profile) {
+                // Fetch coach name if athlete has a coach assigned
+                let coachName: string | null = null;
+                if (profile.coach_id) {
+                    const { data: coachData } = await supabase
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', profile.coach_id)
+                        .single();
+                    coachName = coachData?.full_name ?? null;
+                }
+
                 return {
                     ...optimisticUser,
                     full_name: profile.full_name || optimisticUser.full_name,
@@ -110,6 +123,8 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     squat_pr: profile.squat_pr,
                     bench_pr: profile.bench_pr,
                     deadlift_pr: profile.deadlift_pr,
+                    coach_id: profile.coach_id ?? null,
+                    coach_name: coachName,
                     // Backward compatibility
                     name: profile.full_name || optimisticUser.full_name,
                     profile_image: profile.avatar_url || optimisticUser.avatar_url

@@ -44,6 +44,14 @@ const getGreeting = () => {
     return 'Buenas noches';
 };
 
+const getTeamName = (coachName?: string | null): string | null => {
+    if (!coachName) return null;
+    const parts = coachName.trim().split(' ');
+    // Spanish naming: "Nombre PrimerApellido SegundoApellido" → take parts[1]
+    const surname = parts.length >= 2 ? parts[1] : parts[0];
+    return `Team ${surname}`;
+};
+
 const formatCompetitionName = (name: string, location?: string, level?: string) => {
     const cleanName = name.replace(/Campeonato\s+/i, '').trim();
     let lvl = level ? level.toUpperCase() : '';
@@ -202,10 +210,15 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             <header>
-                <h1 className="text-3xl font-black uppercase tracking-tighter mb-1">
+                {user.role === 'athlete' && getTeamName(user.coach_name) && (
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-anvil-red/60 mb-1">
+                        {getTeamName(user.coach_name)}
+                    </p>
+                )}
+                <h1 className="text-3xl font-black uppercase tracking-tighter mb-2">
                     {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
                 </h1>
-                <p className="text-gray-400 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
+                <p className="text-gray-500 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
                     <Calendar size={14} className="text-anvil-red" />
                     {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </p>
@@ -434,10 +447,15 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
         <div className="hidden md:block px-12 py-8 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <header>
-                <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-1">
+                {user.role === 'athlete' && getTeamName(user.coach_name) && (
+                    <p className="text-[11px] font-black uppercase tracking-[0.4em] text-anvil-red/60 mb-1">
+                        {getTeamName(user.coach_name)}
+                    </p>
+                )}
+                <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
                     {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
                 </h1>
-                <p className="text-gray-400 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
+                <p className="text-gray-500 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
                     <Calendar size={14} className="text-anvil-red" />
                     {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </p>
