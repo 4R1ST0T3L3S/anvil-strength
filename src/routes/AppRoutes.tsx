@@ -129,7 +129,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
             <Route path="/admin" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : user?.email !== 'anvilstrength@gmail.com' ? (
+                ) : !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email || '') ? (
                     <Navigate to="/" replace />
                 ) : (
                     <AdminDashboard />

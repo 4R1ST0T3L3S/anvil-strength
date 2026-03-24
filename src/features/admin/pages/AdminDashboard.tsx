@@ -33,7 +33,7 @@ export function AdminDashboard() {
     };
 
     useEffect(() => {
-        if (currentUser?.email === 'anvilstrength@gmail.com') {
+        if (['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser?.email || '')) {
             loadUsers();
         }
     }, [currentUser]);
@@ -107,7 +107,7 @@ export function AdminDashboard() {
         );
     }
 
-    if (!currentUser || currentUser.email !== 'anvilstrength@gmail.com') {
+    if (!currentUser || !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser.email || '')) {
         return <Navigate to="/" replace />;
     }
 
@@ -124,7 +124,7 @@ export function AdminDashboard() {
                                 Panel de <span className="text-anvil-red">Administración</span>
                             </h1>
                             <p className="text-gray-400 mt-2">
-                                Gestión oficial exclusiva para la cuenta anvilstrength@gmail.com
+                                Gestión oficial exclusiva para administradores
                             </p>
                         </div>
 

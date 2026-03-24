@@ -28,7 +28,7 @@ export function SmartAuthButton({
         }
 
         // User exists -> navigate to their dashboard or profile
-        const destination = user.email === 'anvilstrength@gmail.com'
+        const destination = ['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user.email || '')
             ? '/admin'
             : !user.has_access
                 ? '/perfil'
@@ -51,7 +51,7 @@ export function SmartAuthButton({
         ? 'Cargando...'
         : !user
             ? 'Iniciar Sesión'
-            : user.email === 'anvilstrength@gmail.com'
+            : ['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user.email || '')
                 ? 'Panel Admin'
                 : !user.has_access
                     ? 'Mi perfil'
