@@ -164,7 +164,7 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="hidden md:flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
                         >
                             ← Volver al Dashboard
                         </button>

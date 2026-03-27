@@ -21,6 +21,8 @@ export interface UserProfile {
     user_metadata?: Record<string, unknown>;
     coach_id?: string | null;
     coach_name?: string | null;
+    nutritionist_id?: string | null;
+    nutritionist_name?: string | null;
     // Backward compatibility aliases (deprecated)
     name?: string; // Alias for full_name
     profile_image?: string; // Alias for avatar_url
@@ -99,6 +101,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
 
             if (profile) {
                 // Fetch coach name if athlete has a coach assigned
+                // Fetch coach name if athlete has a coach assigned
                 let coachName: string | null = null;
                 if (profile.coach_id) {
                     const { data: coachData } = await supabase
@@ -107,6 +110,17 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                         .eq('id', profile.coach_id)
                         .single();
                     coachName = coachData?.full_name ?? null;
+                }
+
+                // Fetch nutritionist name if athlete has a nutritionist assigned
+                let nutritionistName: string | null = null;
+                if (profile.nutritionist_id) {
+                    const { data: nutData } = await supabase
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', profile.nutritionist_id)
+                        .single();
+                    nutritionistName = nutData?.full_name ?? null;
                 }
 
                 return {
@@ -125,6 +139,8 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     deadlift_pr: profile.deadlift_pr,
                     coach_id: profile.coach_id ?? null,
                     coach_name: coachName,
+                    nutritionist_id: profile.nutritionist_id ?? null,
+                    nutritionist_name: nutritionistName,
                     // Backward compatibility
                     name: profile.full_name || optimisticUser.full_name,
                     profile_image: profile.avatar_url || optimisticUser.avatar_url

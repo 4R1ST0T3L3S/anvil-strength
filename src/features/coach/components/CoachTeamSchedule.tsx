@@ -24,7 +24,7 @@ interface CompetitionGroup {
     entries: CompetitionEntry[];
 }
 
-export function CoachTeamSchedule({ user }: { user: UserProfile }) {
+export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?: () => void }) {
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -123,6 +123,14 @@ export function CoachTeamSchedule({ user }: { user: UserProfile }) {
     return (
         <div className="p-8">
             <header className="mb-8">
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                    >
+                        ← Volver al Dashboard
+                    </button>
+                )}
                 <h1 className="text-3xl font-black uppercase tracking-tighter">Agenda del Equipo</h1>
                 <p className="text-gray-400">Próximas competiciones y asistencia</p>
             </header>

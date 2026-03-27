@@ -19,6 +19,7 @@ export interface Profile {
     deadlift_pr?: number;
     created_at: string;
     coach_id?: string | null; // For athletes linked to a coach
+    nutritionist_id?: string | null; // For athletes linked to a nutritionist
 }
 
 export interface Coach extends Profile {
@@ -28,6 +29,7 @@ export interface Coach extends Profile {
 export interface Athlete extends Profile {
     role: 'athlete';
     coach_id?: string | null;
+    nutritionist_id?: string | null;
 }
 
 export interface Nutritionist extends Profile {

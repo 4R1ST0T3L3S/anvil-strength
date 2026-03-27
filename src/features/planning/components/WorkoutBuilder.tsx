@@ -3,10 +3,32 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, Target } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, Target, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { getWeekNumber, getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
+import { VbtChartModal } from '../../coach/components/VbtChartModal';
+
+// Helpers to parse and format target_reps field specifically for grouped sets
+const getSeriesCount = (target_reps: string | null | undefined) => {
+    if (!target_reps) return '';
+    const parts = target_reps.toLowerCase().split('x');
+    if (parts.length >= 2) return parts[0].trim();
+    return '1';
+};
+
+const getRepsCount = (target_reps: string | null | undefined) => {
+    if (!target_reps) return '';
+    const parts = target_reps.toLowerCase().split('x');
+    if (parts.length >= 2) return parts.slice(1).join('x').trim();
+    return target_reps.trim();
+};
+
+const formatTargetReps = (series: string, reps: string) => {
+    if (!series || series === '1') return reps;
+    if (!reps) return `${series}x`;
+    return `${series}x${reps}`;
+};
 
 interface WorkoutBuilderProps {
     athleteId: string;
@@ -56,6 +78,8 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         description: string;
         onConfirm: () => void;
     }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
+
+    const [vbtModalConfig, setVbtModalConfig] = useState<{ isOpen: boolean; url: string; exerciseName: string }>({ isOpen: false, url: '', exerciseName: '' });
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -325,40 +349,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         });
     };
 
-    const addBulkSets = (sessionExerciseId: string, count: number, reps: string, load: number | null) => {
-        setBlockData(prev => {
-            if (!prev) return null;
-            setHasUnsavedChanges(true); // Flag change
-            return {
-                ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => {
-                        if (ex.id !== sessionExerciseId) return ex;
 
-                        const currentSetsCount = ex.sets.length;
-                        const newSets: TrainingSet[] = [];
-
-                        for (let i = 0; i < count; i++) {
-                            newSets.push({
-                                id: crypto.randomUUID(),
-                                session_exercise_id: sessionExerciseId,
-                                order_index: currentSetsCount + i,
-                                target_reps: reps,
-                                target_rpe: "",
-                                target_load: load,
-                                rest_seconds: 0, // Default or inherit? Let's default to 0 for now
-                                is_video_required: false,
-                                created_at: new Date().toISOString()
-                            });
-                        }
-
-                        return { ...ex, sets: [...ex.sets, ...newSets] };
-                    })
-                }))
-            };
-        });
-    };
 
     const duplicateSet = (setId: string) => {
         setBlockData(prev => {
@@ -769,7 +760,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                                                     onUpdateSet={updateSetField}
                                                     onRemoveSet={removeSet}
                                                     onRemoveSession={removeSession}
-                                                    onAddBulkSets={addBulkSets}
+                                                    onOpenVbtChart={(url, name) => setVbtModalConfig({ isOpen: true, url, exerciseName: name })}
                                                 />
                                             ))}
 
@@ -815,6 +806,14 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                 cancelText="Cancelar"
                 variant="danger"
             />
+
+            {/* VBT Chart Modal */}
+            <VbtChartModal
+                isOpen={vbtModalConfig.isOpen}
+                onClose={() => setVbtModalConfig(prev => ({ ...prev, isOpen: false }))}
+                vbtFileUrl={vbtModalConfig.url}
+                exerciseName={vbtModalConfig.exerciseName}
+            />
         </div>
     );
 }
@@ -835,10 +834,10 @@ interface DayColumnProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveSession: (id: string) => void;
-    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null) => void;
+    onOpenVbtChart: (url: string, name: string) => void;
 }
 
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession, onAddBulkSets }: DayColumnProps) {
+function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession, onOpenVbtChart }: DayColumnProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
 
     if (!session) {
@@ -878,7 +877,7 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                         onUpdateSet={onUpdateSet}
                         onRemoveSet={onRemoveSet}
                         onRemoveExercise={() => onRemoveExercise(ex.id, session.id)}
-                        onAddBulkSets={onAddBulkSets}
+                        onOpenVbtChart={onOpenVbtChart}
                     />
                 ))}
 
@@ -936,15 +935,10 @@ interface ExerciseCardProps {
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
     onRemoveSet: (setId: string) => void;
     onRemoveExercise: () => void;
-    onAddBulkSets: (sessionExerciseId: string, count: number, reps: string, load: number | null) => void;
+    onOpenVbtChart: (url: string, name: string) => void;
 }
 
-function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onAddBulkSets }: ExerciseCardProps) {
-    const [isBulkAdding, setIsBulkAdding] = useState(false);
-    const [bulkSets, setBulkSets] = useState(3);
-    const [bulkReps, setBulkReps] = useState("");
-    const [bulkLoad, setBulkLoad] = useState<number | null>(null);
-
+function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onOpenVbtChart }: ExerciseCardProps) {
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
@@ -993,6 +987,16 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
                 <div className="flex items-center gap-2 mb-3">
                     <h4 className="font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
                     {hasVideo && <Video size={14} className="text-blue-500" />}
+                    {sessionExercise.vbt_file_url && (
+                        <button 
+                            onClick={() => onOpenVbtChart(sessionExercise.vbt_file_url!, exerciseName)}
+                            className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
+                            title="Ver Gráfica VBT"
+                        >
+                            <Activity size={12} />
+                            VBT
+                        </button>
+                    )}
                 </div>
 
                 {/* Global Fields Container */}
@@ -1043,8 +1047,10 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
                         <div className="w-20">
                             <div className="text-[9px] text-gray-500 uppercase font-black mb-1 text-center tracking-wider">Rest (s)</div>
                             <input
-                                type="number"
-                                value={sessionExercise.rest_seconds || 0}
+                                type="text"
+                                inputMode="numeric"
+                                defaultValue={sessionExercise.rest_seconds || ''}
+                                key={sessionExercise.id + '_rest'}
                                 onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
                                 onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
                                 placeholder="-"
@@ -1067,108 +1073,53 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
             {/* Sets Table */}
             <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-white/5">
                 {/* Header Row */}
-                <div className="grid grid-cols-[20px_1fr_1fr_40px] gap-2 text-[9px] text-gray-600 font-black uppercase text-center mb-2 px-1">
-                    <span>#</span>
+                <div className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 text-[9px] text-gray-600 font-black uppercase text-center mb-2 px-1">
+                    <span>Series</span>
                     <span>Reps</span>
                     <span>Kg</span>
                     <span></span>
                 </div>
 
-                {sessionExercise.sets.map((set: TrainingSet, idx: number) => (
-                    <div key={set.id} className="grid grid-cols-[20px_1fr_1fr_40px] gap-2 items-center group/row">
-                        <span className="text-xs text-gray-600 text-center font-mono font-bold">{idx + 1}</span>
+                {sessionExercise.sets.map((set: TrainingSet) => {
+                    const seriesVal = getSeriesCount(set.target_reps);
+                    const repsVal = getRepsCount(set.target_reps);
 
-                        <CompactInput
-                            value={set.target_reps}
-                            onChange={(v) => onUpdateSet(set.id, 'target_reps', v as string)}
-                            placeholder="-"
-                        />
-                        <CompactInput
-                            value={set.target_load}
-                            onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
-                            placeholder="-"
-                            type="number"
-                        />
+                    return (
+                        <div key={set.id} className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 items-center group/row">
+                            <CompactInput
+                                value={seriesVal}
+                                onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(v as string, repsVal))}
+                                placeholder="-"
+                            />
+                            <CompactInput
+                                value={repsVal}
+                                onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(seriesVal, v as string))}
+                                placeholder="-"
+                            />
+                            <CompactInput
+                                value={set.target_load}
+                                onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
+                                placeholder="-"
+                                type="number"
+                            />
 
-                        {/* Actions */}
-                        <div className="flex justify-end gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
-                            <button onClick={() => onDuplicateSet(set.id)} className="text-gray-700 hover:text-blue-400 p-0.5" title="Duplicar serie"><Copy size={11} /></button>
-                            <button onClick={() => onRemoveSet(set.id)} className="text-gray-700 hover:text-red-500 p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
-                        </div>
-                    </div>
-                ))}
-
-                {/* Bulk Add UI */}
-                {isBulkAdding ? (
-                    <div className="mt-2 p-3 bg-[#2a2a2a] rounded-xl border border-white/10 animate-in fade-in zoom-in-95">
-                        <div className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wide text-center">Añadir Múltiples Series</div>
-                        <div className="grid grid-cols-3 gap-2 mb-3">
-                            <div>
-                                <label className="block text-[9px] text-gray-500 text-center mb-1">Series</label>
-                                <input
-                                    type="number"
-                                    value={bulkSets}
-                                    onChange={(e) => setBulkSets(Number(e.target.value))}
-                                    className="w-full bg-black/40 text-xs text-center text-white border border-white/5 rounded py-1 focus:border-anvil-red outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[9px] text-gray-500 text-center mb-1">Reps</label>
-                                <input
-                                    type="text"
-                                    value={bulkReps}
-                                    onChange={(e) => setBulkReps(e.target.value)}
-                                    placeholder="-"
-                                    className="w-full bg-black/40 text-xs text-center text-white border border-white/5 rounded py-1 focus:border-anvil-red outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[9px] text-gray-500 text-center mb-1">Kg</label>
-                                <input
-                                    type="number"
-                                    value={bulkLoad ?? ''}
-                                    onChange={(e) => setBulkLoad(e.target.value ? Number(e.target.value) : null)}
-                                    placeholder="-"
-                                    className="w-full bg-black/40 text-xs text-center text-white border border-white/5 rounded py-1 focus:border-anvil-red outline-none"
-                                />
+                            {/* Actions */}
+                            <div className="flex justify-end gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                <button onClick={() => onDuplicateSet(set.id)} className="text-gray-700 hover:text-blue-400 p-0.5" title="Duplicar serie"><Copy size={11} /></button>
+                                <button onClick={() => onRemoveSet(set.id)} className="text-gray-700 hover:text-red-500 p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
                             </div>
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setIsBulkAdding(false)}
-                                className="flex-1 py-1.5 bg-transparent border border-white/10 hover:bg-white/5 rounded-lg text-[10px] text-gray-400 font-bold uppercase transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={() => {
-                                    onAddBulkSets(sessionExercise.id, bulkSets, bulkReps, bulkLoad);
-                                    setIsBulkAdding(false);
-                                    // Reset fields optionally
-                                }}
-                                className="flex-1 py-1.5 bg-anvil-red hover:bg-red-600 rounded-lg text-[10px] text-white font-bold uppercase transition-colors"
-                            >
-                                Generar
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex gap-2 mt-2">
-                        <button
-                            onClick={() => onAddSet(sessionExercise.id)}
-                            className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1 active:scale-95"
-                        >
-                            <Plus size={10} /> SERIE
-                        </button>
-                        <button
-                            onClick={() => setIsBulkAdding(true)}
-                            className="w-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-lg text-gray-500 hover:text-anvil-red transition-colors active:scale-95"
-                            title="Añadir Múltiples Series"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 12h10" /><path d="M11 18h10" /><path d="M11 6h10" /><path d="M3 18h0" /><path d="M3 12h0" /><path d="M3 6h0" /></svg>
-                        </button>
-                    </div>
-                )}
+                    );
+                })}
+
+                <div className="flex gap-2 mt-2">
+                    <button
+                        onClick={() => onAddSet(sessionExercise.id)}
+                        className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1 active:scale-95"
+                    >
+                        <Plus size={10} /> PRESCRIBIR SERIES
+                    </button>
+                </div>
             </div>
         </div>
     );

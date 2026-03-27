@@ -40,5 +40,31 @@ export const adminService = {
             console.error('Error updating user access:', error);
             throw new Error('No se pudo actualizar el acceso del usuario');
         }
+    },
+
+    // Assign a coach to an athlete
+    updateUserCoach: async (athleteId: string, coachId: string | null): Promise<void> => {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ coach_id: coachId })
+            .eq('id', athleteId);
+
+        if (error) {
+            console.error('Error updating user coach:', error);
+            throw new Error('No se pudo asignar el entrenador');
+        }
+    },
+
+    // Assign a nutritionist to an athlete
+    updateUserNutritionist: async (athleteId: string, nutritionistId: string | null): Promise<void> => {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ nutritionist_id: nutritionistId })
+            .eq('id', athleteId);
+
+        if (error) {
+            console.error('Error updating user nutritionist:', error);
+            throw new Error('No se pudo asignar el nutricionista');
+        }
     }
 };

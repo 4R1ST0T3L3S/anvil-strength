@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../../types/training';
-import { Loader, Check, AlertCircle } from 'lucide-react';
+import { Loader, Check, AlertCircle, UploadCloud, FileCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -278,6 +278,53 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 // ==========================================
 function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise: ExtendedSessionExercise, onStartTimer: (s: number) => void }) {
     const [noteOpen, setNoteOpen] = useState(false);
+    
+    // VBT Logic
+    const [uploading, setUploading] = useState(false);
+    const [vbtUrl, setVbtUrl] = useState<string | null>(sessionExercise.vbt_file_url || null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Reset input immediately so same file can be selected again if it failed
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+
+        const validExts = ['.vbt', '.csv', '.xlsx', '.txt'];
+        const isValid = validExts.some(ext => file.name.toLowerCase().endsWith(ext));
+        if (!isValid) {
+            toast.error("Formato no válido. Usa .csv, .vbt, .xlsx o .txt");
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${sessionExercise.id}_${Date.now()}.${fileExt}`;
+            
+            const { error: uploadError } = await supabase.storage
+                .from('vbt_files')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('vbt_files').getPublicUrl(fileName);
+            const publicUrl = data.publicUrl;
+
+            await trainingService.updateSessionExercise(sessionExercise.id, { vbt_file_url: publicUrl });
+            setVbtUrl(publicUrl);
+            toast.success("Archivo VBT adjuntado");
+        } catch (error: any) {
+            console.error("Upload error full detail:", error);
+            const errMsg = error?.message || "Error desconocido";
+            toast.error(`Error al subir VBT: ${errMsg}`);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     return (
         <div className="bg-[#1c1c1c] rounded-2xl overflow-hidden border border-white/5 shadow-sm">
@@ -294,6 +341,31 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
                         </button>
                     )}
                 </div>
+                
+                {/* VBT File Actions */}
+                <div className="flex flex-col items-end">
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileUpload} 
+                        className="hidden" 
+                        accept=".csv,.xlsx,.txt,.vbt"
+                    />
+                    {vbtUrl ? (
+                         <div className="flex items-center gap-1 text-[10px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
+                            <FileCheck size={12} /> VBT SUBIDO
+                         </div>
+                    ) : (
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-white/10 transition-colors"
+                        >
+                            {uploading ? <Loader size={12} className="animate-spin" /> : <UploadCloud size={12} />}
+                            {uploading ? "SUBIENDO..." : "+ VBT"}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {noteOpen && sessionExercise.notes && (
@@ -302,38 +374,89 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
                 </div>
             )}
 
+            {/* Prescription Summary Bar: vel_avg, rpe, rest */}
+            {(sessionExercise.velocity_avg || sessionExercise.rpe || sessionExercise.rest_seconds) && (
+                <div className="flex items-center gap-4 px-4 py-2 bg-black/30 border-b border-white/5 text-[11px] text-gray-500">
+                    {sessionExercise.velocity_avg && (
+                        <span>
+                            <span className="font-bold text-gray-300">{sessionExercise.velocity_avg}</span>
+                            <span className="ml-1">m/s</span>
+                        </span>
+                    )}
+                    {sessionExercise.rpe && (
+                        <span>
+                            <span className="text-gray-600">RPE </span>
+                            <span className="font-bold text-gray-300">{sessionExercise.rpe}</span>
+                        </span>
+                    )}
+                    {sessionExercise.rest_seconds && (
+                        <span>
+                            <span className="text-gray-600">Descanso </span>
+                            <span className="font-bold text-gray-300">{Math.floor(sessionExercise.rest_seconds / 60)}′{(sessionExercise.rest_seconds % 60).toString().padStart(2, '0')}″</span>
+                        </span>
+                    )}
+                </div>
+            )}
+
             {/* Sets Header */}
-            <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_3rem] gap-2 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
-                <span className="text-left pl-1">Obj</span>
-                <span>Kg</span>
+            <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
+                <span className="text-left">Serie</span>
                 <span>Reps</span>
+                <span>Kg</span>
                 <span>RPE</span>
-                <span className="text-right pr-2">OK</span>
+                <span className="text-right">OK</span>
             </div>
 
-            {/* Sets List */}
+            {/* Sets List — expand grouped "NxM" into N individual rows */}
             <div className="divide-y divide-white/5">
-                {sessionExercise.sets.map((set, idx) => (
-                    <LoggerSetRow
-                        key={set.id}
-                        set={set}
-                        index={idx}
-                        onStartTimer={onStartTimer}
-                        defaultRestSeconds={sessionExercise.rest_seconds}
-                    />
-                ))}
+                {sessionExercise.sets.flatMap((set) => {
+                    const { series, reps } = parseTargetReps(set.target_reps);
+                    const count = series && series > 1 ? series : 1;
+                    return Array.from({ length: count }, (_, i) => (
+                        <LoggerSetRow
+                            key={`${set.id}_${i}`}
+                            set={set}
+                            serieIndex={i}
+                            parsedReps={reps}
+                            onStartTimer={onStartTimer}
+                            defaultRestSeconds={sessionExercise.rest_seconds}
+                        />
+                    ));
+                })}
             </div>
         </div>
     );
 }
 
+
+// ==========================================
+// HELPERS: Parse target_reps format (e.g. "10x1" -> series=10, reps=1)
+// ==========================================
+const parseTargetReps = (target_reps: string | null | undefined) => {
+    if (!target_reps) return { series: null, reps: null };
+    const parts = target_reps.toLowerCase().split('x');
+    if (parts.length >= 2) {
+        const series = parseInt(parts[0].trim()) || null;
+        const reps = parts.slice(1).join('x').trim() || null;
+        return { series, reps };
+    }
+    // No 'x' found -> it's just reps
+    return { series: null, reps: target_reps.trim() };
+};
+
 // ==========================================
 // SUB-COMPONENT: SET ROW (The Core Logic)
 // ==========================================
-function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: TrainingSet; index: number, onStartTimer: (s: number) => void, defaultRestSeconds?: number | null }) {
+function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSeconds }: { 
+    set: TrainingSet; 
+    serieIndex: number;
+    parsedReps: string | null;
+    onStartTimer: (s: number) => void; 
+    defaultRestSeconds?: number | null; 
+}) {
     // Local state for optimistic UI
-    const [actualLoad, setActualLoad] = useState<string>(set.actual_load?.toString() ?? '');
-    const [actualReps, setActualReps] = useState<string>(set.actual_reps?.toString() ?? '');
+    const actualLoad = set.actual_load?.toString() ?? '';
+    const actualReps = set.actual_reps?.toString() ?? '';
     const [actualRpe, setActualRpe] = useState<string>(set.actual_rpe?.toString() ?? '');
     const [isCompleted, setIsCompleted] = useState(!!(set.actual_reps && set.actual_load)); // Pseudo-logic for completion
     const [saving, setSaving] = useState(false);
@@ -363,110 +486,93 @@ function LoggerSetRow({ set, index, onStartTimer, defaultRestSeconds }: { set: T
         }
     }, [set.id, actualReps, actualLoad]);
 
-    // Handle Input Change with Debounce
-    const handleChange = (field: 'actual_load' | 'actual_reps' | 'actual_rpe', value: string) => {
-        // Update local immediately
-        if (field === 'actual_load') setActualLoad(value);
-        if (field === 'actual_reps') setActualReps(value);
-        if (field === 'actual_rpe') setActualRpe(value);
-
-        // Debounce Save
-        if (debounceTimer.current) clearTimeout(debounceTimer.current);
-        debounceTimer.current = setTimeout(() => {
-            const numValue = value === '' ? null : Number(value);
-            persistChange({ [field]: numValue });
-        }, 1000); // 1 second debounce
-    };
 
     const toggleComplete = () => {
-        // Instant visual feedback wrapper
         const newState = !isCompleted;
         setIsCompleted(newState);
 
         if (newState) {
-            toast.success("Serie completada");
-            // Trigger Timer if enabled
+            // Auto-save the prescribed values as actuals when marking done
+            const targetLoad = set.target_load ? Number(set.target_load) : null;
+            const targetReps = parsedReps ? Number(parsedReps) : null;
+            const rpeValue = actualRpe ? Number(actualRpe) : null;
+            persistChange({
+                actual_load: targetLoad,
+                actual_reps: targetReps,
+                actual_rpe: rpeValue,
+            });
+            toast.success("Serie completada ✓");
             if (effectiveRest && effectiveRest > 0) {
                 onStartTimer(effectiveRest);
             }
+        } else {
+            // Un-complete: clear actuals
+            persistChange({ actual_load: null, actual_reps: null, actual_rpe: null });
         }
     };
 
     return (
         <div className={cn(
-            "grid grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_3rem] gap-2 px-4 py-3 items-center transition-colors relative",
+            "grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-3 items-center transition-all relative",
             isCompleted ? "bg-green-500/10" : "hover:bg-white/5"
         )}>
-            {/* Series Info (Merged Index + Target) - ALIGN LEFT */}
-            <div className="flex items-center justify-start gap-3 min-w-0">
-                <div className="text-center font-mono text-xs text-gray-500 font-bold min-w-[1.2rem]">{index + 1}</div>
-                <div className="flex flex-col text-xs text-gray-400 space-y-0.5 overflow-hidden">
-                    <div className="flex items-center gap-1 whitespace-nowrap">
-                        <span className="font-bold text-gray-300">{set.target_load ? `${set.target_load}` : '-'}</span>
-                        <span className="text-[10px]">kg</span>
-                        <span>x</span>
-                        <span className="font-bold text-gray-300">{set.target_reps || '-'}</span>
-                    </div>
-                </div>
+            {/* Serie number */}
+            <div 
+                className="text-left font-mono text-sm font-black tabular-nums"
+                style={{ color: isCompleted ? '#22c55e' : '#6b7280' }}
+            >
+                {serieIndex + 1}
             </div>
 
-            {/* Load Input */}
-            <div className="flex justify-center">
-                <input
-                    type="number"
-                    value={actualLoad}
-                    onChange={(e) => handleChange('actual_load', e.target.value)}
-                    placeholder={set.target_load?.toString() || "-"}
-                    className={cn(
-                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-xs font-bold focus:border-anvil-red outline-none placeholder-gray-800",
-                        actualLoad ? "text-white border-white/20" : "text-gray-500 border-white/5"
-                    )}
-                />
+            {/* Reps (prescribed, locked) */}
+            <div className="text-center">
+                <span className={cn("font-black text-sm tabular-nums", isCompleted ? "text-green-400" : "text-white")}>
+                    {parsedReps ?? '-'}
+                </span>
             </div>
 
-            {/* Reps Input */}
-            <div className="flex justify-center">
-                <input
-                    type="number"
-                    value={actualReps}
-                    onChange={(e) => handleChange('actual_reps', e.target.value)}
-                    placeholder={set.target_reps?.toString().split('-')[0] || "-"}
-                    className={cn(
-                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-xs font-bold focus:border-anvil-red outline-none placeholder-gray-800",
-                        actualReps ? "text-white border-white/20" : "text-gray-500 border-white/5"
-                    )}
-                />
+            {/* Kg (prescribed, locked) */}
+            <div className="text-center">
+                <span className={cn("font-black text-sm tabular-nums", isCompleted ? "text-green-400" : "text-white")}>
+                    {set.target_load ?? '-'}
+                </span>
             </div>
 
-            {/* RPE Input */}
-            <div className="flex justify-center">
-                <input
-                    type="number"
-                    value={actualRpe}
-                    onChange={(e) => handleChange('actual_rpe', e.target.value)}
-                    placeholder={set.target_rpe ? set.target_rpe.replace('@', '') : "-"}
-                    className={cn(
-                        "w-full bg-[#111] border rounded-lg px-0 py-2 text-center text-xs font-bold focus:border-anvil-red outline-none placeholder-gray-800",
-                        actualRpe ? "text-anvil-red border-anvil-red/50" : "text-white/50 border-white/5"
-                    )}
-                />
-            </div>
+            {/* RPE real (editable) */}
+            <input
+                type="number"
+                value={actualRpe}
+                onChange={(e) => {
+                    setActualRpe(e.target.value);
+                    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+                    debounceTimer.current = setTimeout(() => {
+                        persistChange({ actual_rpe: e.target.value ? Number(e.target.value) : null });
+                    }, 800);
+                }}
+                placeholder="-"
+                className={cn(
+                    "w-full bg-[#111] border rounded-lg px-0 py-1.5 text-center text-xs font-bold focus:border-anvil-red outline-none transition-colors",
+                    actualRpe ? "text-anvil-red border-anvil-red/40" : "text-gray-600 border-white/5 placeholder-gray-700"
+                )}
+            />
 
-            {/* Actions - ALIGN RIGHT */}
-            <div className="flex flex-col gap-2 items-end justify-center h-full">
+            {/* Done button */}
+            <div className="flex justify-end">
                 <button
                     onClick={toggleComplete}
                     className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-lg",
+                        "w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm",
                         isCompleted
                             ? "bg-green-500 text-black hover:bg-green-400"
-                            : "bg-[#333] text-gray-500 hover:bg-[#444] hover:text-white"
+                            : "bg-[#2a2a2a] border border-white/10 text-gray-600 hover:bg-[#333] hover:text-white"
                     )}
                 >
                     <Check size={14} strokeWidth={3} />
                 </button>
             </div>
+
             {saving && <div className="absolute right-1 top-1"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}
         </div>
     );
 }
+
