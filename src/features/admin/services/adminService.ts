@@ -18,27 +18,37 @@ export const adminService = {
 
     // Update a user's role (coach/athlete/nutritionist)
     updateUserRole: async (userId: string, newRole: 'coach' | 'athlete' | 'nutritionist'): Promise<void> => {
-        const { error } = await supabase
+        const { error, data } = await supabase
             .from('profiles')
             .update({ role: newRole })
-            .eq('id', userId);
+            .eq('id', userId)
+            .select();
 
         if (error) {
             console.error('Error updating user role:', error);
             throw new Error('No se pudo actualizar el rol del usuario');
         }
+
+        if (!data || data.length === 0) {
+            throw new Error('Permiso denegado por base de datos (RLS)');
+        }
     },
 
     // Update a user's access flag
     updateUserAccess: async (userId: string, hasAccess: boolean): Promise<void> => {
-        const { error } = await supabase
+        const { error, data } = await supabase
             .from('profiles')
             .update({ has_access: hasAccess })
-            .eq('id', userId);
+            .eq('id', userId)
+            .select();
 
         if (error) {
             console.error('Error updating user access:', error);
             throw new Error('No se pudo actualizar el acceso del usuario');
+        }
+
+        if (!data || data.length === 0) {
+            throw new Error('Permiso denegado por base de datos (RLS)');
         }
     },
 
@@ -49,11 +59,18 @@ export const adminService = {
             if (u.role !== undefined) updates.role = u.role;
             if (u.has_access !== undefined) updates.has_access = u.has_access;
             if (Object.keys(updates).length > 0) {
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('profiles')
                     .update(updates)
-                    .eq('id', u.id);
-                if (error) throw new Error(`Error actualizando al usuario ${u.id}`);
+                    .eq('id', u.id)
+                    .select(); // Hacemos un select() para comprobar que realmente se devolvieron (y actualizaron) filas
+
+                if (error) throw new Error(`Error actualizando al usuario ${u.id}: ${error.message}`);
+                
+                // Si data está vacío, significa que RLS (Row Level Security) silenciosamente bloqueó la actualización
+                if (!data || data.length === 0) {
+                    throw new Error(`Permiso denegado por base de datos (RLS) para el usuario ${u.id}`);
+                }
             }
         });
         
@@ -62,27 +79,37 @@ export const adminService = {
 
     // Assign a coach to an athlete
     updateUserCoach: async (athleteId: string, coachId: string | null): Promise<void> => {
-        const { error } = await supabase
+        const { error, data } = await supabase
             .from('profiles')
             .update({ coach_id: coachId })
-            .eq('id', athleteId);
+            .eq('id', athleteId)
+            .select();
 
         if (error) {
             console.error('Error updating user coach:', error);
             throw new Error('No se pudo asignar el entrenador');
         }
+
+        if (!data || data.length === 0) {
+            throw new Error('Permiso denegado por base de datos (RLS)');
+        }
     },
 
     // Assign a nutritionist to an athlete
     updateUserNutritionist: async (athleteId: string, nutritionistId: string | null): Promise<void> => {
-        const { error } = await supabase
+        const { error, data } = await supabase
             .from('profiles')
             .update({ nutritionist_id: nutritionistId })
-            .eq('id', athleteId);
+            .eq('id', athleteId)
+            .select();
 
         if (error) {
             console.error('Error updating user nutritionist:', error);
             throw new Error('No se pudo asignar el nutricionista');
+        }
+
+        if (!data || data.length === 0) {
+            throw new Error('Permiso denegado por base de datos (RLS)');
         }
     }
 };
