@@ -84,9 +84,9 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             case 'athlete_details': return selectedAthleteId ? (
                 <CoachAthleteDetails athleteId={selectedAthleteId} onBack={() => setCurrentView('athletes')} />
             ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
-            case 'schedule': return <CoachTeamSchedule user={user} />;
-            case 'calendar': return <CalendarSection />;
-            case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} />;
+            case 'schedule': return <CoachTeamSchedule user={user} onBack={() => setCurrentView('home')} />;
+            case 'calendar': return <CalendarSection onBack={() => setCurrentView('home')} />;
+            case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => setCurrentView('home')} />;
             default: return <CoachHome user={user} onNavigate={(view) => setCurrentView(view as ViewState)} />;
         }
     };
@@ -106,7 +106,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 </button>
             </div>
 
-            <div className="px-4 py-4 md:px-12 md:py-8 w-full animate-in fade-in duration-500">
+            <div className="px-4 py-4 md:px-12 md:pt-20 md:pb-8 w-full animate-in fade-in duration-500">
                 {renderContent()}
             </div>
         </DashboardLayout>

@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ArrowLeft, Plus, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Plus, MoreVertical, Activity } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingSession, SessionExercise } from '../../../types/training';
 import { AddExerciseModal } from './AddExerciseModal';
 import { ExerciseSetsManager } from './ExerciseSetsManager';
 import { Loader } from 'lucide-react';
+import { VbtChartModal } from './VbtChartModal';
 
 interface SessionDetailViewProps {
     session: TrainingSession;
@@ -15,6 +16,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
     const [exercises, setExercises] = useState<SessionExercise[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [vbtModalConfig, setVbtModalConfig] = useState<{ isOpen: boolean; url: string; exerciseName: string }>({ isOpen: false, url: '', exerciseName: '' });
 
     const fetchExercises = useCallback(async () => {
         try {
@@ -108,9 +110,22 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                             )}
                                         </div>
                                     </div>
-                                    <button className="text-gray-600 hover:text-white transition-colors p-2">
-                                        <MoreVertical size={18} />
-                                    </button>
+                                    
+                                    <div className="flex items-center gap-2">
+                                        {item.vbt_file_url && (
+                                            <button 
+                                                onClick={() => setVbtModalConfig({ isOpen: true, url: item.vbt_file_url!, exerciseName: item.exercise?.name || 'VBT' })}
+                                                className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors uppercase tracking-wider"
+                                                title="Ver Gráfica VBT"
+                                            >
+                                                <Activity size={14} />
+                                                VBT
+                                            </button>
+                                        )}
+                                        <button className="text-gray-600 hover:text-white transition-colors p-2">
+                                            <MoreVertical size={18} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Sets Manager */}
@@ -129,6 +144,13 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                 sessionId={session.id}
                 currentExerciseCount={exercises.length}
                 onExerciseAdded={fetchExercises}
+            />
+            
+            <VbtChartModal
+                isOpen={vbtModalConfig.isOpen}
+                onClose={() => setVbtModalConfig(prev => ({ ...prev, isOpen: false }))}
+                vbtFileUrl={vbtModalConfig.url}
+                exerciseName={vbtModalConfig.exerciseName}
             />
         </div>
     );

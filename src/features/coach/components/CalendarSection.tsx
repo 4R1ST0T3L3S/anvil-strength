@@ -35,7 +35,7 @@ const esDeNuestraZona = (comp: Competition) => {
     return matchClub || matchSede;
 };
 
-export function CalendarSection() {
+export function CalendarSection({ onBack }: { onBack?: () => void }) {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
@@ -94,11 +94,21 @@ export function CalendarSection() {
 
     return (
         <div className="block space-y-6">
-            <div className="flex items-center gap-3">
-                <CalendarIcon className="h-6 w-6 text-anvil-red" />
-                <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
-                    Calendario AEP 2026
-                </h2>
+            <div className="flex flex-col gap-2">
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        className="self-start flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                    >
+                        ← Volver al Dashboard
+                    </button>
+                )}
+                <div className="flex items-center gap-3">
+                    <CalendarIcon className="h-6 w-6 text-anvil-red" />
+                    <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
+                        Calendario AEP 2026
+                    </h2>
+                </div>
             </div>
 
             {loading ? (

@@ -208,19 +208,43 @@ export const trainingService = {
         return data;
     },
 
-    async updateSessionExercise(id: string, updates: Partial<SessionExercise>): Promise<SessionExercise> {
-        const { data, error } = await supabase
+    async updateSessionExercise(id: string, updates: Partial<SessionExercise>): Promise<void> {
+        const { error } = await supabase
             .from('session_exercises')
             .update(updates)
-            .eq('id', id)
-            .select(`
-                *,
-                exercise:exercise_library(*)
-            `)
-            .single();
+            .eq('id', id);
 
         if (error) throw error;
-        return data;
+    },
+
+    async getVbtExercisesByAthlete(athleteId: string): Promise<(SessionExercise & { session: TrainingSession; block: TrainingBlock })[]> {
+        // We need session_exercises joined with exercise_library, training_sessions, and training_blocks
+        // to filter by athlete_id and only where vbt_file_url is not null.
+        const { data, error } = await supabase
+            .from('session_exercises')
+            .select(`
+                *,
+                exercise:exercise_library(*),
+                session:training_sessions!inner(
+                    *,
+                    block:training_blocks!inner(*)
+                )
+            `)
+            .not('vbt_file_url', 'is', null)
+            .eq('session.block.athlete_id', athleteId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        // Transform Supabase nested object structure to match the expected return type
+        return (data || []).map((row: any) => ({
+            ...row,
+            session: {
+                ...row.session,
+                block: row.session.block
+            },
+            block: row.session.block
+        }));
     },
 
     /**
@@ -248,6 +272,16 @@ export const trainingService = {
         return data;
     },
 
+    async addSets(sets: Partial<TrainingSet>[]): Promise<TrainingSet[]> {
+        const { data, error } = await supabase
+            .from('training_sets')
+            .insert(sets)
+            .select();
+
+        if (error) throw error;
+        return data || [];
+    },
+
     async updateSet(setId: string, updates: Partial<TrainingSet>): Promise<TrainingSet> {
         const { data, error } = await supabase
             .from('training_sets')
@@ -260,9 +294,14 @@ export const trainingService = {
         return data;
     },
 
-    async updateSetActuals(setId: string, actuals: Partial<TrainingSet>): Promise<TrainingSet> {
+    async updateSetActuals(setId: string, actuals: Partial<TrainingSet>): Promise<void> {
         // This is wrapper around updateSet but semantically for athletes
-        return this.updateSet(setId, actuals);
+        const { error } = await supabase
+            .from('training_sets')
+            .update(actuals)
+            .eq('id', setId);
+
+        if (error) throw error;
     },
 
     async deleteSet(setId: string): Promise<void> {

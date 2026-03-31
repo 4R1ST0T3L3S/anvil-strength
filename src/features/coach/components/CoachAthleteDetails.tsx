@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin } from 'lucide-react';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity } from 'lucide-react';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
+import CoachVbtTab from './CoachVbtTab';
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -13,7 +14,7 @@ interface CoachAthleteDetailsProps {
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'competitions';
+type Tab = 'planning' | 'competitions' | 'vbt';
 
 export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsProps) {
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
@@ -118,16 +119,28 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
 
                 {/* Tabs Navigation */}
                 <div className="w-full md:w-auto pb-1 md:pb-0">
-                    <div className="grid grid-cols-2 gap-1 md:flex bg-black/20 p-1 rounded-lg">
+                    <div className="grid grid-cols-3 gap-1 md:flex bg-black/20 p-1 rounded-lg">
                         <button
                             onClick={() => setActiveTab('planning')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'planning' ? 'bg-[#333] text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                activeTab === 'planning' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-gray-400 hover:text-white'
+                            }`}
                         >
                             <FileText size={14} className="md:w-4 md:h-4" /> <span className="truncate">Planning</span>
                         </button>
                         <button
+                            onClick={() => setActiveTab('vbt')}
+                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                activeTab === 'vbt' ? 'bg-[#0ea5e9] text-black shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'text-gray-400 hover:text-white'
+                            }`}
+                        >
+                            <Activity size={14} className="md:w-4 md:h-4" /> <span className="truncate">VBT</span>
+                        </button>
+                        <button
                             onClick={() => setActiveTab('competitions')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'competitions' ? 'bg-[#333] text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
+                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-gray-400 hover:text-white'
+                            }`}
                         >
                             <Trophy size={14} className="md:w-4 md:h-4" /> <span className="truncate">Competición</span>
                         </button>
@@ -238,6 +251,13 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                                 })}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* 4. VBT (Velocity Based Training) */}
+                {activeTab === 'vbt' && (
+                    <div className="max-w-7xl mx-auto w-full pb-6 px-4">
+                        <CoachVbtTab athleteId={athleteId} />
                     </div>
                 )}
 

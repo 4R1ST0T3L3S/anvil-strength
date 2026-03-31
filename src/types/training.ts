@@ -62,6 +62,7 @@ export interface SessionExercise {
     rpe?: string | null; // Moved from Set level
     velocity_avg?: string | null;
     rest_seconds?: number | null; // Moved from Set level
+    vbt_file_url?: string | null; // New field for VBT files
     created_at: string;
 
     // Joint Relation

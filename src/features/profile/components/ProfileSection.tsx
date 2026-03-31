@@ -7,9 +7,10 @@ import { ConfirmationModal } from '../../../components/modals/ConfirmationModal'
 interface ProfileSectionProps {
     user: UserProfile;
     onUpdate: () => void;
+    onBack?: () => void;
 }
 
-export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
+export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) {
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -149,6 +150,14 @@ export function ProfileSection({ user, onUpdate }: ProfileSectionProps) {
     return (
         <div className="max-w-4xl mx-auto p-4 md:p-8">
             <header className="mb-8">
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                    >
+                        ← Volver al Dashboard
+                    </button>
+                )}
                 <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-white">Mi Perfil</h1>
                 <p className="text-gray-400 text-lg">Gestiona tu información personal y marcas.</p>
             </header>
