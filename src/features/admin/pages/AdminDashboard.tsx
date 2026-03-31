@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser, UserProfile } from '../../../hooks/useUser';
 import { adminService } from '../services/adminService';
-import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search } from 'lucide-react';
+import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save } from 'lucide-react';
 
 export function AdminDashboard() {
     const { data: currentUser, isLoading: isUserLoading } = useUser();
     const [users, setUsers] = useState<UserProfile[]>([]);
+    const [initialUsers, setInitialUsers] = useState<UserProfile[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -24,6 +26,7 @@ export function AdminDashboard() {
             const filteredData = data.filter(u => u.id !== currentUser?.id);
 
             setUsers(filteredData);
+            setInitialUsers(filteredData);
             setFilteredUsers(filteredData);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Error al cargar usuarios');
@@ -64,37 +67,43 @@ export function AdminDashboard() {
         setTimeout(() => setError(null), 5000);
     };
 
-    const toggleAccess = async (userId: string, currentAccess: boolean) => {
-        try {
-            // Optimistic update
-            setUsers(users.map(u => u.id === userId ? { ...u, has_access: !currentAccess } : u));
-            await adminService.updateUserAccess(userId, !currentAccess);
-            showSuccess(`Acceso ${!currentAccess ? 'concedido' : 'revocado'}`);
-        } catch (err) {
-            // Revert on error
-            setUsers(users.map(u => u.id === userId ? { ...u, has_access: currentAccess } : u));
-            showError('Error al actualizar acceso');
-        }
+    const toggleAccess = (userId: string, currentAccess: boolean) => {
+        setUsers(users.map(u => u.id === userId ? { ...u, has_access: !currentAccess } : u));
     };
 
-    const changeRole = async (userId: string, newRole: 'coach' | 'athlete' | 'nutritionist') => {
-        try {
-            const uIndex = users.findIndex(u => u.id === userId);
-            if (uIndex === -1) return;
+    const changeRole = (userId: string, newRole: 'coach' | 'athlete' | 'nutritionist') => {
+        setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    };
 
-            // Optimistic update
-            setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-            await adminService.updateUserRole(userId, newRole);
-            const roleName = newRole === 'coach' ? 'Entrenador' : newRole === 'nutritionist' ? 'Nutricionista' : 'Atleta';
-            showSuccess(`Rol actualizado a ${roleName}`);
-        } catch (err) {
-            // Revert
-            const restoredUser = users.find(u => u.id === userId);
-            if (restoredUser) {
-                // Simplified revert for optimistic UI update failure
-                setUsers(users.map(u => u.id === userId ? { ...u, role: restoredUser.role } : u));
-            }
-            showError('Error al actualizar rol');
+    const pendingChanges = users.filter(u => {
+        const initial = initialUsers.find(init => init.id === u.id);
+        if (!initial) return false;
+        return u.role !== initial.role || u.has_access !== initial.has_access;
+    });
+
+    const hasChanges = pendingChanges.length > 0;
+
+    const handleSaveChanges = async () => {
+        if (!hasChanges) return;
+        setIsSaving(true);
+        setError(null);
+        
+        try {
+            const updates = pendingChanges.map(u => ({
+                id: u.id,
+                role: u.role,
+                has_access: u.has_access
+            }));
+            
+            await adminService.updateUsersBulk(updates);
+            
+            // Sync initialUsers so the save button disappears
+            setInitialUsers(users);
+            showSuccess('Cambios guardados correctamente');
+        } catch (err: unknown) {
+            showError(err instanceof Error ? err.message : 'Error al guardar los cambios en la base de datos');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -128,15 +137,27 @@ export function AdminDashboard() {
                             </p>
                         </div>
 
-                        <div className="relative max-w-sm w-full">
-                            <input
-                                type="text"
-                                placeholder="Buscar por nombre o email..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-[#1c1c1c] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
-                            />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+                            {hasChanges && (
+                                <button
+                                    onClick={handleSaveChanges}
+                                    disabled={isSaving}
+                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50"
+                                >
+                                    {isSaving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
+                                    Guardar Cambios ({pendingChanges.length})
+                                </button>
+                            )}
+                            <div className="relative w-full max-w-sm">
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre o email..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-[#1c1c1c] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+                                />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -40,5 +40,23 @@ export const adminService = {
             console.error('Error updating user access:', error);
             throw new Error('No se pudo actualizar el acceso del usuario');
         }
+    },
+
+    // Bulk update users
+    updateUsersBulk: async (changedUsers: { id: string, role?: string, has_access?: boolean }[]): Promise<void> => {
+        const promises = changedUsers.map(async (u) => {
+            const updates: any = {};
+            if (u.role !== undefined) updates.role = u.role;
+            if (u.has_access !== undefined) updates.has_access = u.has_access;
+            if (Object.keys(updates).length > 0) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update(updates)
+                    .eq('id', u.id);
+                if (error) throw new Error(`Error actualizando al usuario ${u.id}`);
+            }
+        });
+        
+        await Promise.all(promises);
     }
 };
