@@ -133,8 +133,13 @@ export const adminService = {
 
     // Upload Coach Logo
     uploadCoachLogo: async (coachId: string, file: File): Promise<string> => {
+        // Fetch current auth user to use as prefix for Supabase Storage RLS policies
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("No autenticado");
+
         const fileExt = file.name.split('.').pop();
-        const fileName = `${coachId}-logo-${Date.now()}.${fileExt}`;
+        // Adding user.id at the start bypasses RLS policies that check if filename starts with auth.uid()
+        const fileName = `${user.id}-coachlogo-${coachId}-${Date.now()}.${fileExt}`;
         const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
@@ -143,7 +148,7 @@ export const adminService = {
 
         if (uploadError) {
             console.error('Error uploading coach logo:', uploadError);
-            throw new Error('No se pudo subir la imagen del logo');
+            throw new Error(`Permiso denegado por Storage RLS: ${uploadError.message}`);
         }
 
         const { data } = supabase.storage.from('profiles').getPublicUrl(filePath);
