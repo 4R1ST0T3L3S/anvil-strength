@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, Star, Award } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, Star, Award, Plus } from 'lucide-react';
 import { fetchCompetitions, Competition } from '../../../services/aepService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
 import { useUser } from '../../../hooks/useUser';
+import { toast } from 'sonner';
+import { competitionsService } from '../../../services/competitionsService';
+import { Loader } from 'lucide-react';
 
 // 1. LISTA BLANCA DE CLUBES (Valencia, Murcia, Baleares)
 const CLUBES_ZONA_ANVIL = [
@@ -39,6 +42,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+    const [addingCompId, setAddingCompId] = useState<number | string | null>(null);
     const { data: user } = useUser();
 
     useEffect(() => {
@@ -61,6 +65,34 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
         };
         loadAEPData();
     }, []);
+
+    const handleAddSelfCompetition = async (comp: Competition, indexKey: number) => {
+        if (!user) return;
+        try {
+            setAddingCompId(indexKey);
+            
+            let finalDate = comp.dateIso;
+            if (!finalDate) {
+                finalDate = new Date().toISOString().split('T')[0];
+            }
+
+            await competitionsService.addSelfCompetition(user.id, {
+                name: comp.campeonato,
+                date: finalDate,
+                end_date: comp.endDateIso,
+                location: comp.sede,
+                level: comp.level
+            });
+
+            toast.success("Competición añadida a tu calendario");
+        } catch (error) {
+            console.error('Error adding self competition', error);
+            const msg = (error as Error).message || 'Error desconocido';
+            toast.error(`No se pudo añadir: ${msg}`);
+        } finally {
+            setAddingCompId(null);
+        }
+    };
 
     const getCompetitionMeta = (comp: Competition) => {
         let level = (comp.level || 'COMPETICIÓN').toUpperCase().trim();
@@ -168,6 +200,16 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                                     className="px-8 py-2.5 bg-anvil-red text-white text-xs font-black uppercase rounded hover:bg-red-600 transition-all shadow-lg active:scale-95"
                                                 >
                                                     Asignar
+                                                </button>
+                                            )}
+                                            {user?.role === 'athlete' && (
+                                                <button
+                                                    onClick={() => handleAddSelfCompetition(comp, index)}
+                                                    disabled={addingCompId === index}
+                                                    className="px-6 py-2.5 bg-transparent border border-white/20 text-white text-xs font-black uppercase rounded hover:bg-white hover:text-black transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {addingCompId === index ? <Loader size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                    Añadir
                                                 </button>
                                             )}
                                         </div>

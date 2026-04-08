@@ -17,7 +17,7 @@ import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
-// NOTA: Ya no importamos ArenaView aquí, porque es una página externa
+import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
@@ -35,7 +35,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const { refetch } = useUser();
 
     // Security Check
-    if (user?.role === 'coach') {
+    if (user?.role === 'coach' && user?.has_access) {
         return (
             <div className="flex h-screen items-center justify-center bg-[#1c1c1c] text-white">
                 <div className="text-center">
@@ -91,8 +91,10 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 // Nota: Asegúrate de que AthleteHome también use navigate() si tiene un botón para la arena
                 return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view as AthleteView)} />;
             case 'planning':
+                if (user.has_access === false) return <RestrictedFeature title="Planificación Premium" />;
                 return <WorkoutLogger athleteId={user.id} />;
             case 'nutrition':
+                if (user.has_access === false) return <RestrictedFeature title="Nutrición Premium" />;
                 return <AthleteNutritionView user={user} />;
             case 'competitions':
                 return <AthleteCompetitionsView user={user} />;

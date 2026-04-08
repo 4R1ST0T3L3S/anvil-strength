@@ -37,6 +37,29 @@ export const competitionsService = {
         return data;
     },
 
+    async addSelfCompetition(
+        athleteId: string,
+        competition: { name: string; date: string; end_date?: string; location?: string; level?: string }
+    ) {
+        const payload = {
+            athlete_id: athleteId,
+            coach_id: null, // Self-assigned
+            name: competition.name,
+            date: competition.date,
+            end_date: competition.end_date,
+            location: competition.location,
+            level: competition.level
+        };
+
+        const { data, error } = await supabase
+            .from('competitions')
+            .insert(payload)
+            .select();
+
+        if (error) throw error;
+        return data;
+    },
+
     async getNextCompetition(athleteId: string) {
         const today = new Date().toISOString().split('T')[0];
 

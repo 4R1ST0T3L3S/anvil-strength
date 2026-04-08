@@ -54,10 +54,15 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-utils': ['lucide-react', 'framer-motion', '@supabase/supabase-js'],
-        },
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@typebot.io')) return 'vendor-typebot';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('react')) return 'vendor-react';
+            return 'vendor-utils';
+          }
+        }
       },
     },
   },

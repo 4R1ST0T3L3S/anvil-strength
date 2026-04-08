@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { competitionsService } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -122,78 +123,97 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
 
     return (
         <div className="p-8">
-            <header className="mb-8">
+            <header className="mb-6">
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-3 text-xs font-bold uppercase tracking-wider"
                     >
                         ← Volver al Dashboard
                     </button>
                 )}
-                <h1 className="text-3xl font-black uppercase tracking-tighter">Agenda del Equipo</h1>
-                <p className="text-gray-400">Próximas competiciones y asistencia</p>
+                <div className="flex items-center gap-3">
+                    <Calendar size={28} className="text-anvil-red" />
+                    <div>
+                        <h1 className="text-2xl font-black uppercase tracking-tight text-white">Agenda del Equipo</h1>
+                        <p className="text-sm text-gray-400">Próximas competiciones y asistencia</p>
+                    </div>
+                </div>
             </header>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
+                <AnimatePresence>
                 {competitions.length === 0 ? (
-                    <div className="bg-[#252525] border border-white/5 rounded-xl p-8 text-center text-gray-500">
-                        No hay competiciones programadas.
-                    </div>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#1c1c1c] border border-white/5 rounded-xl p-8 text-center flex flex-col items-center justify-center">
+                        <Calendar size={24} className="text-gray-600 mb-3" />
+                        <p className="text-sm font-medium text-gray-400">No hay competiciones programadas.</p>
+                    </motion.div>
                 ) : (
-                    competitions.map((comp: CompetitionGroup) => (
-                        <div key={`${comp.name}-${comp.date}`} className="bg-[#252525] border border-white/5 rounded-xl overflow-hidden">
-                            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/20">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-anvil-red/20 text-anvil-red p-3 rounded-lg">
-                                        <Calendar size={24} />
+                    competitions.map((comp: CompetitionGroup, index: number) => (
+                        <motion.div 
+                            key={`${comp.name}-${comp.date}`} 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="bg-[#1c1c1c] rounded-xl overflow-hidden border border-white/5 shadow-md flex flex-col md:flex-row relative"
+                        >
+                            <div className="p-4 md:pr-16 flex-1 flex flex-col xl:flex-row gap-6">
+                                {/* Competition Info */}
+                                <div className="xl:w-1/3 flex items-start gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-[#252525] border border-white/10 flex items-center justify-center shrink-0">
+                                        <Calendar size={20} className="text-anvil-red" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold uppercase">{comp.name}</h3>
-                                        <p className="text-gray-400 text-sm">Fecha: <span className="text-white font-bold">
+                                        <h3 className="text-lg font-bold text-white uppercase leading-tight mb-1">{comp.name}</h3>
+                                        <p className="text-xs text-gray-400 font-medium tracking-wide">
                                             {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
                                                 year: 'numeric',
-                                                month: 'long',
+                                                month: 'short',
                                                 day: 'numeric'
                                             })}
-                                        </span></p>
+                                        </p>
                                     </div>
                                 </div>
-                                <span className="bg-white/10 px-3 py-1 rounded text-sm font-bold">
-                                    {comp.entries.length} Atletas
-                                </span>
-                            </div>
 
-                            <div className="p-6">
-                                <h4 className="text-xs uppercase font-bold text-gray-500 mb-4">Equipo Asistente</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {/* Athletes List */}
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 border-t xl:border-t-0 border-white/5 pt-4 xl:pt-0">
                                     {comp.entries.map((entry: CompetitionEntry) => (
-                                        <div key={entry.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5 hover:border-white/20 transition-colors">
+                                        <div 
+                                            key={entry.id} 
+                                            className="flex items-center gap-2 p-2 bg-[#252525] hover:bg-[#333] transition-colors rounded-lg border border-transparent hover:border-white/10"
+                                        >
                                             {entry.profiles?.avatar_url ? (
-                                                <img src={entry.profiles.avatar_url} alt="" className="w-10 h-10 rounded-full" />
+                                                <img src={entry.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center font-bold text-xs">
-                                                    {entry.profiles?.full_name?.[0]}
+                                                <div className="w-8 h-8 rounded-full bg-[#111] border border-white/10 flex items-center justify-center font-bold text-xs text-gray-300">
+                                                    {entry.profiles?.full_name?.[0]?.toUpperCase()}
                                                 </div>
                                             )}
-                                            <div>
-                                                <p className="font-bold text-sm">{entry.profiles?.full_name}</p>
-                                                <p className="text-xs text-gray-400">Nivel: {entry.category || 'N/A'}</p>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-xs text-white truncate">{entry.profiles?.full_name}</p>
+                                                <p className="text-[10px] text-gray-500 uppercase truncate">{entry.category || 'N/A'}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
-                                                className="ml-auto p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors group/delete"
-                                                title="Desasignar competición"
+                                                className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
+                                                title="Desasignar atleta"
                                             >
-                                                <Trash2 size={16} />
+                                                <Trash2 size={14} />
                                             </button>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        </div>
+                            
+                            {/* Side tag */}
+                            <div className="absolute right-0 top-0 h-full w-14 bg-black/40 hidden md:flex flex-col items-center justify-center border-l border-white/5">
+                                <span className="text-xl font-black text-anvil-red">{comp.entries.length}</span>
+                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mt-1">Convoc.</span>
+                            </div>
+                        </motion.div>
                     ))
                 )}
+                </AnimatePresence>
             </div>
 
             <ConfirmationModal

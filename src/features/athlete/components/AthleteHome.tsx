@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE
-import { supabase } from '../../../lib/supabase';
-import { trainingService } from '../../../services/trainingService';
-import { TrainingBlock, TrainingSession, SessionExercise } from '../../../types/training';
+import { useNavigate } from 'react-router-dom';
 import {
     Calendar,
     BookOpen,
     ChevronRight,
-    Dumbbell,
     Trophy,
     Weight,
     List,
     Calculator,
-    Clock,
     FlaskConical,
     Users,
-    Swords
+    Swords,
+    Lock,
+    MapPin
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';
@@ -25,16 +22,10 @@ import { PlateCalculator } from './PlateCalculator';
 import { AnvilRanking } from './AnvilRanking';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
-import { getDaysRemaining } from '../../../utils/dateUtils';
 
 interface AthleteHomeProps {
     user: UserProfile;
-    // Ya no restringimos tanto los tipos aquí porque usaremos navigate
     onNavigate: (view: string) => void;
-}
-
-interface ExtendedSession extends TrainingSession {
-    exercises: (SessionExercise & { exercise: { name: string } })[];
 }
 
 const getGreeting = () => {
@@ -47,7 +38,6 @@ const getGreeting = () => {
 const getTeamName = (coachName?: string | null): string | null => {
     if (!coachName) return null;
     const parts = coachName.trim().split(' ');
-    // Spanish naming: "Nombre PrimerApellido SegundoApellido" → take parts[1]
     const surname = parts.length >= 2 ? parts[1] : parts[0];
     return `Team ${surname}`;
 };
@@ -88,11 +78,60 @@ const getCompetitionColorClass = (level?: string) => {
     return 'bg-anvil-red';
 };
 
+function LiveCountdown({ targetDate }: { targetDate: string }) {
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const difference = +new Date(targetDate + 'T00:00:00') - +new Date();
+        return difference > 0 ? difference : 0;
+    });
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            const difference = +new Date(targetDate + 'T00:00:00') - +new Date();
+            if (difference > 0) {
+                setTimeLeft(difference);
+            } else {
+                setTimeLeft(0);
+                clearInterval(timer);
+            }
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [targetDate]);
+
+    if (timeLeft === 0) {
+        return (
+            <div className="bg-white/10 backdrop-blur text-white px-6 py-4 rounded-xl font-black uppercase tracking-widest animate-pulse border border-white/20 mt-6 inline-flex items-center">
+                ¡DÍA DE COMPETICIÓN!
+            </div>
+        );
+    }
+
+    const d = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((timeLeft / 1000 / 60) % 60);
+    const s = Math.floor((timeLeft / 1000) % 60);
+
+    const TimeBlock = ({ value, label }: { value: number, label: string }) => (
+        <div className="flex flex-col items-center bg-black/20 backdrop-blur-sm rounded-lg p-2 md:p-3 min-w-[60px] md:min-w-[80px] border border-white/10">
+            <span className="text-2xl md:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {value.toString().padStart(2, '0')}
+            </span>
+            <span className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-white/70 mt-1">{label}</span>
+        </div>
+    );
+
+    return (
+        <div className="flex justify-center items-center gap-2 md:gap-4 mt-4 w-full">
+            <TimeBlock value={d} label="Días" />
+            <TimeBlock value={h} label="Horas" />
+            <TimeBlock value={m} label="Mins" />
+            <TimeBlock value={s} label="Segs" />
+        </div>
+    );
+}
+
 export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
-    const navigate = useNavigate(); // <--- 2. INICIALIZAR NAVIGATE
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [activeBlock, setActiveBlock] = useState<TrainingBlock | null>(null);
-    const [todaySession, setTodaySession] = useState<ExtendedSession | null>(null);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
     const [isPlateCalcOpen, setIsPlateCalcOpen] = useState(false);
@@ -103,52 +142,8 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         const fetchHomeData = async () => {
             try {
                 setLoading(true);
-                const [blocks, nextComp] = await Promise.all([
-                    trainingService.getBlocksByAthlete(user.id),
-                    competitionsService.getNextCompetition(user.id)
-                ]);
-
+                const nextComp = await competitionsService.getNextCompetition(user.id);
                 setNextCompetition(nextComp);
-
-                const active = blocks.find(b => b.is_active);
-
-                if (active) {
-                    setActiveBlock(active);
-                    const { data: sessData } = await supabase
-                        .from('training_sessions')
-                        .select(`
-                            *,
-                            session_exercises (
-                                *,
-                                exercise:exercise_library (name)
-                            )
-                        `)
-                        .eq('block_id', active.id)
-                        .order('day_number', { ascending: true });
-
-                    if (sessData && sessData.length > 0) {
-                        const today = new Date();
-                        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-                        const currentDayKey = days[today.getDay()];
-                        let sessionForToday = sessData.find(s => s.day_of_week === currentDayKey);
-
-                        if (!sessionForToday && active.start_date) {
-                            const startDate = new Date(active.start_date);
-                            startDate.setHours(0, 0, 0, 0);
-                            today.setHours(0, 0, 0, 0);
-                            const diffTime = today.getTime() - startDate.getTime();
-                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                            const todayStr = today.toISOString().split('T')[0];
-                            sessionForToday = sessData.find(s =>
-                                (s as { date?: string }).date === todayStr || s.day_number === diffDays
-                            );
-                        }
-
-                        if (sessionForToday) {
-                            setTodaySession(sessionForToday as ExtendedSession);
-                        }
-                    }
-                }
             } catch (error) {
                 console.error('Error fetching home data:', error);
             } finally {
@@ -170,9 +165,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const commonProps = {
         user,
         onNavigate,
-        navigate, // Pasamos navigate a los hijos
-        activeBlock,
-        todaySession,
+        navigate,
         setIs1RMCalcOpen,
         setIsWarmUpCalcOpen,
         setIsPlateCalcOpen,
@@ -196,9 +189,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
 interface HomeViewProps {
     user: UserProfile;
     onNavigate: (view: string) => void;
-    navigate: ReturnType<typeof useNavigate>; // Tipo para navigate
-    activeBlock: TrainingBlock | null;
-    todaySession: ExtendedSession | null;
+    navigate: ReturnType<typeof useNavigate>;
     setIs1RMCalcOpen: (isOpen: boolean) => void;
     setIsWarmUpCalcOpen: (isOpen: boolean) => void;
     setIsPlateCalcOpen: (isOpen: boolean) => void;
@@ -206,7 +197,7 @@ interface HomeViewProps {
     nextCompetition: CompetitionAssignment | null;
 }
 
-function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function MobileHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             <header>
@@ -224,184 +215,126 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                 </p>
             </header>
 
-            {/* Mobile Today's Training */}
-            <div className="space-y-3">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <Dumbbell size={16} /> Entrenamiento de hoy
-                </h2>
-                {todaySession ? (
-                    <div
-                        onClick={() => onNavigate('planning')}
-                        className="bg-[#252525] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-5 flex justify-between items-center bg-gradient-to-r from-anvil-red/10 to-transparent">
-                            <div>
-                                <h3 className="text-xl font-black uppercase italic mb-1 text-white">
-                                    {todaySession.name || `Día ${todaySession.day_number}`}
-                                </h3>
-                                <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{activeBlock?.name}</p>
-                            </div>
-                            <div className="bg-white/10 p-2 rounded-full text-white">
-                                <ChevronRight size={20} />
-                            </div>
-                        </div>
-                        <div className="p-5 border-t border-white/5">
-                            <ul className="space-y-3">
-                                {todaySession.exercises?.slice(0, 3).map((ex, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-sm">
-                                        <span className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-500 shrink-0">
-                                            {i + 1}
-                                        </span>
-                                        <span className="font-bold text-gray-200 truncate">{ex.exercise.name}</span>
-                                    </li>
-                                ))}
-                                {todaySession.exercises && todaySession.exercises.length > 3 && (
-                                    <li className="text-gray-500 text-[10px] font-bold uppercase tracking-widest pl-8">
-                                        + {todaySession.exercises.length - 3} ejercicios más
-                                    </li>
-                                )}
-                            </ul>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 text-center space-y-3">
-                        <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto text-gray-600">
-                            <Clock size={24} />
-                        </div>
-                        <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Hoy toca descanso</p>
-                        <button
-                            onClick={() => onNavigate('calendar')}
-                            className="text-anvil-red text-[10px] font-black uppercase tracking-widest"
-                        >
-                            Ver calendario
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* Mobile Anvil Legend */}
+            {/* 1. Mobile Anvil Legend */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
                 </h2>
                 <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50"></div>
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <BookOpen size={64} className="text-yellow-500 rotate-12" />
-                    </div>
+                    <div className="absolute top-0 right-0 p-4 opacity-10"><BookOpen size={64} className="text-yellow-500 rotate-12" /></div>
                     <div className="relative z-10">
-                        <p className="text-xl font-black uppercase italic text-white leading-tight tracking-tight mb-2">
-                            "{getAnvilQuote()}"
-                        </p>
+                        <p className="text-xl font-black uppercase italic text-white leading-tight tracking-tight mb-2">"{getAnvilQuote()}"</p>
                         <div className="w-12 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full mt-4"></div>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Next Competition */}
+            {/* 2. Mobile Next Competition Banner */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <Trophy size={16} className="text-anvil-red" /> Próxima Competición
+                    <Trophy size={16} className="text-anvil-red" /> Competición
                 </h2>
                 {nextCompetition ? (
-                    <div className={`${getCompetitionColorClass(nextCompetition.level)} rounded-2xl p-5 text-white flex items-center justify-between relative overflow-hidden active:scale-[0.98] transition-transform shadow-lg`}>
-                        <div className="relative z-10">
-                            <h3 className="text-lg font-black uppercase italic leading-tight mb-0.5">
+                    <div className={`${getCompetitionColorClass(nextCompetition.level)} rounded-3xl p-6 text-white flex flex-col items-center text-center relative overflow-hidden shadow-xl`}>
+                        <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 rounded-full -mr-24 -mt-24 pointer-events-none"></div>
+                        <div className="relative z-10 flex flex-col items-center w-full">
+                            <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-[10px] uppercase tracking-widest mb-2">
+                                <Trophy size={14} /> PRÓXIMA COMPETICIÓN
+                            </div>
+                            <h3 className="text-3xl font-black uppercase italic leading-tight mb-2">
                                 {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
                             </h3>
-                            <div className="flex items-center gap-2 text-xs font-bold opacity-90">
-                                <Calendar size={12} />
-                                <span>
-                                    {getDaysRemaining(nextCompetition.date) <= 0 && nextCompetition.end_date && getDaysRemaining(nextCompetition.end_date) >= 0
-                                        ? "En curso"
-                                        : `${getDaysRemaining(nextCompetition.date)} días`
-                                    }
-                                </span>
+                            {nextCompetition.location && (
+                                <div className="mt-1 flex items-center justify-center gap-2 text-white/90 font-bold text-xs">
+                                    <MapPin size={12} /> {nextCompetition.location}
+                                </div>
+                            )}
+                            <div className="mt-4 w-full bg-black/10 rounded-2xl pb-2 px-2 border border-white/5 flex justify-center">
+                                <LiveCountdown targetDate={nextCompetition.date} />
                             </div>
                         </div>
-                        <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                            <Trophy size={20} />
-                        </div>
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12"></div>
                     </div>
                 ) : (
-                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-5 flex items-center justify-between relative overflow-hidden">
-                        <div className="relative z-10">
-                            <h3 className="text-sm font-bold text-gray-400 italic leading-tight mb-1">
-                                No hay competiciones a la vista.
-                            </h3>
-                            <p className="text-xs text-anvil-red font-bold mt-1 uppercase tracking-wider">
-                                ¡Toca seguir sumando kilos! 🚀
-                            </p>
-                        </div>
-                        <div className="relative z-10 bg-white/5 p-2 rounded-lg grayscale opacity-50">
-                            <Trophy size={20} className="text-gray-500" />
-                        </div>
+                    <div className="bg-[#252525] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center relative overflow-hidden">
+                        <Trophy size={32} className="text-gray-600 mb-3" />
+                        <h3 className="text-sm font-bold text-gray-400 italic leading-tight mb-1">
+                            No hay competiciones a la vista.
+                        </h3>
+                        <p className="text-xs text-anvil-red font-bold mt-1 uppercase tracking-wider">
+                            ¡Toca seguir sumando kilos! 🚀
+                        </p>
                     </div>
                 )}
             </div>
 
-            {/* Mobile Community Section (La Arena + Ranking) */}
+            {/* 3. Mobile Community Section */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <Users size={16} className="text-anvil-red" /> Comunidad
                 </h2>
-
-                {/* La Arena Card */}
-                <div
-                    // 3. CAMBIO CLAVE: USAR NAVIGATE
-                    onClick={() => navigate('/dashboard/community')}
-                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer"
-                >
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                                <Swords size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros y gana prestigio</p>
+                {user.has_access === false ? (
+                    <>
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden mb-3 opacity-50 cursor-not-allowed">
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="p-3 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={24} /></div>
+                                <div>
+                                    <h3 className="text-lg font-black uppercase italic text-gray-400 leading-none mb-1">La Arena</h3>
+                                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Premium</p>
+                                </div>
                             </div>
                         </div>
-                        <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
-                    </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                </div>
-
-                {/* Anvil Ranking Card */}
-                <div
-                    onClick={() => setIsRankingOpen(true)}
-                    className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all"
-                >
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.2)]">
-                                <Trophy size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Ranking</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Club Leaderboard</p>
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden opacity-50 cursor-not-allowed">
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="p-3 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={24} /></div>
+                                <div>
+                                    <h3 className="text-lg font-black uppercase italic text-gray-400 leading-none mb-1">Ranking</h3>
+                                    <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Premium</p>
+                                </div>
                             </div>
                         </div>
-                        <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
-                    </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                </div>
+                    </>
+                ) : (
+                    <>
+                        <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer">
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={24} /></div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                            </div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                        </div>
+
+                        <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all">
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.2)]"><Trophy size={24} /></div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Ranking</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Leaderboard</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                            </div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                        </div>
+                    </>
+                )}
             </div>
 
-            {/* Mobile Tools Grid */}
+            {/* 4. Mobile Tools Grid */}
             <div className="space-y-3">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
                 <div className="space-y-4">
-                    <div
-                        onClick={() => setIsPlateCalcOpen(true)}
-                        className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-3 bg-green-500/10 rounded-xl text-green-500">
-                            <Weight size={24} />
-                        </div>
+                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
+                        <div className="p-3 bg-green-500/10 rounded-xl text-green-500"><Weight size={24} /></div>
                         <div>
                             <h3 className="font-bold text-white uppercase text-sm">Carga de Barra</h3>
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Calculadora de Discos</p>
@@ -409,13 +342,8 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                         <ChevronRight size={18} className="ml-auto text-gray-600" />
                     </div>
 
-                    <div
-                        onClick={() => setIsWarmUpCalcOpen(true)}
-                        className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500">
-                            <List size={24} />
-                        </div>
+                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
+                        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500"><List size={24} /></div>
                         <div>
                             <h3 className="font-bold text-white uppercase text-sm">Aproximaciones</h3>
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Escalera de Calentamiento</p>
@@ -423,13 +351,8 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                         <ChevronRight size={18} className="ml-auto text-gray-600" />
                     </div>
 
-                    <div
-                        onClick={() => setIs1RMCalcOpen(true)}
-                        className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform"
-                    >
-                        <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red">
-                            <Calculator size={24} />
-                        </div>
+                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
+                        <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red"><Calculator size={24} /></div>
                         <div>
                             <h3 className="font-bold text-white uppercase text-sm">Calculadora 1RM</h3>
                             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">RPE & Velocidad</p>
@@ -438,13 +361,14 @@ function MobileHome({ user, onNavigate, navigate, activeBlock, todaySession, set
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }
 
-function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
-        <div className="hidden md:block px-12 py-8 space-y-8 animate-in fade-in duration-500">
+        <div className="hidden md:block px-12 py-8 space-y-12 animate-in fade-in duration-500">
             {/* Header */}
             <header>
                 {user.role === 'athlete' && getTeamName(user.coach_name) && (
@@ -461,196 +385,127 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
                 </p>
             </header>
 
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Today's Training Card */}
-                <div className="lg:col-span-2 flex flex-col gap-4">
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                        <Dumbbell size={16} /> Entrenamiento de hoy
-                    </h2>
-
-                    {todaySession ? (
-                        <div
-                            onClick={() => onNavigate('planning')}
-                            className="bg-[#252525] border border-white/5 rounded-2xl overflow-hidden hover:border-anvil-red/30 transition-all group cursor-pointer active:scale-[0.99] flex-1 flex flex-col h-full"
-                        >
-                            <div className="p-6 md:p-8 flex justify-between items-center bg-gradient-to-r from-anvil-red/10 to-transparent">
-                                <div>
-                                    <h3 className="text-2xl md:text-3xl font-black uppercase italic mb-1 group-hover:text-anvil-red transition-colors">
-                                        {todaySession.name || `Día ${todaySession.day_number}`}
-                                    </h3>
-                                    <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">{activeBlock?.name}</p>
-                                </div>
-                                <div className="bg-white/10 p-3 rounded-full group-hover:bg-anvil-red group-hover:text-white transition-all">
-                                    <ChevronRight size={24} />
-                                </div>
-                            </div>
-
-                            <div className="p-6 md:p-8 border-t border-white/5">
-                                <ul className="space-y-4">
-                                    {todaySession.exercises?.slice(0, 4).map((ex, i) => (
-                                        <li key={i} className="flex items-center gap-4 text-sm md:text-base">
-                                            <span className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-bold text-gray-500">
-                                                {i + 1}
-                                            </span>
-                                            <span className="font-bold text-gray-200">{ex.exercise.name}</span>
-                                        </li>
-                                    ))}
-                                    {todaySession.exercises && todaySession.exercises.length > 4 && (
-                                        <li className="text-gray-500 text-xs font-bold uppercase tracking-widest pl-10">
-                                            + {todaySession.exercises.length - 4} ejercicios más
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
+            {/* 1. Desktop Anvil Legend */}
+            <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
+                </h2>
+                <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 h-fit relative overflow-hidden group hover:border-yellow-500/30 transition-all">
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
+                    <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12"><BookOpen size={120} /></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-end mb-8">
+                            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{new Date().toLocaleDateString('es-ES', { weekday: 'long' })}</span>
                         </div>
-                    ) : (
-                        <div className="bg-[#252525] border border-white/5 rounded-2xl p-12 text-center space-y-4 flex-1 flex flex-col items-center justify-center h-full">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto text-gray-600">
-                                <Clock size={32} />
-                            </div>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">Hoy toca descanso</p>
-                            <button
-                                onClick={() => onNavigate('calendar')}
-                                className="text-anvil-red text-xs font-black uppercase tracking-widest hover:underline"
-                            >
-                                Ver calendario completo
-                            </button>
+                        <p className="text-3xl font-black uppercase italic text-white leading-tight tracking-tighter mb-8 drop-shadow-lg">"{getAnvilQuote()}"</p>
+                        <div className="flex items-center justify-between border-t border-white/5 pt-6">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Anvil Strength Club</span>
+                            <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full"></div>
                         </div>
-                    )}
-                </div>
-
-                {/* Desktop Anvil Legend */}
-                <div className="space-y-4">
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                        <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
-                    </h2>
-
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 h-fit relative overflow-hidden group hover:border-yellow-500/30 transition-all">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
-                        <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12">
-                            <BookOpen size={120} />
-                        </div>
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-end mb-8">
-                                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{new Date().toLocaleDateString('es-ES', { weekday: 'long' })}</span>
-                            </div>
-
-                            <p className="text-3xl md:text-4xl font-black uppercase italic text-white leading-none tracking-tighter mb-8 drop-shadow-lg">
-                                "{getAnvilQuote()}"
-                            </p>
-
-                            <div className="flex items-center justify-between border-t border-white/5 pt-6">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Anvil Strength Club</span>
-                                <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Quick Stats - NEXT COMPETITION */}
-                    <div className="space-y-4">
-                        <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                            <Trophy size={16} className="text-anvil-red" /> Próxima Competición
-                        </h2>
-                        {nextCompetition ? (
-                            <div className={`${getCompetitionColorClass(nextCompetition.level)} rounded-2xl p-6 text-white flex items-center justify-between group cursor-pointer overflow-hidden relative shadow-lg`}>
-                                <div className="relative z-10">
-                                    <h3 className="text-xl font-black uppercase italic mb-1">
-                                        {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-xs font-bold opacity-90">
-                                        <Calendar size={14} />
-                                        <span>
-                                            {getDaysRemaining(nextCompetition.date) <= 0 && nextCompetition.end_date && getDaysRemaining(nextCompetition.end_date) >= 0
-                                                ? "En curso"
-                                                : `${getDaysRemaining(nextCompetition.date)} días`
-                                            }
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="relative z-10 bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                                    <Trophy size={24} />
-                                </div>
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-                            </div>
-                        ) : (
-                            <div className="bg-[#252525] border border-white/5 rounded-2xl p-6 flex items-center justify-between relative overflow-hidden group">
-                                <div className="relative z-10">
-                                    <h3 className="text-base font-bold text-gray-400 italic leading-tight mb-1">
-                                        Sin competiciones asignadas
-                                    </h3>
-                                    <p className="text-sm text-anvil-red font-bold uppercase tracking-wider">
-                                        ¡Toca seguir sumando kilos! 🚀
-                                    </p>
-                                </div>
-                                <div className="relative z-10 bg-white/5 p-2 rounded-lg grayscale opacity-30 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500">
-                                    <Trophy size={24} className="text-gray-500 group-hover:text-anvil-red" />
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Quick Stats or Promo - LA ARENA */}
-            <div className="space-y-4 pt-4">
+            {/* 2. Desktop Next Competition Banner */}
+            <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <Trophy size={16} className="text-anvil-red" /> Competición
+                </h2>
+                {nextCompetition ? (
+                    <div className={`${getCompetitionColorClass(nextCompetition.level)} rounded-[2rem] p-8 md:p-12 text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-xl`}>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[35rem] h-[35rem] bg-white/5 rounded-full pointer-events-none"></div>
+                        
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-xs uppercase tracking-widest mb-3">
+                                <Trophy size={16} /> TU PRÓXIMO RETO
+                            </div>
+                            <h3 className="text-4xl md:text-6xl font-black uppercase italic leading-none max-w-4xl drop-shadow-lg mb-3">
+                                {formatCompetitionName(nextCompetition.name, nextCompetition.location, nextCompetition.level)}
+                            </h3>
+                            {nextCompetition.location && (
+                                <div className="mt-1 flex items-center justify-center gap-2 text-white/90 font-bold text-base">
+                                    <MapPin size={18} /> {nextCompetition.location}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative z-10 mt-8 w-full max-w-xl shrink-0 bg-black/20 backdrop-blur pb-4 pt-0 px-8 rounded-3xl border border-white/10 flex justify-center">
+                            <LiveCountdown targetDate={nextCompetition.date} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="bg-[#252525] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden h-64">
+                        <div className="w-20 h-20 bg-white/5 rounded-full flex flex-col items-center justify-center text-gray-500 mb-4">
+                            <Trophy size={40} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-400 italic leading-tight mb-2">
+                            Sin competiciones asignadas
+                        </h3>
+                        <p className="text-sm text-anvil-red font-bold uppercase tracking-widest">
+                            ¡Toca seguir sumando kilos en la cueva! 🚀
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* 3. Desktop Community */}
+            <div className="space-y-4">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <Users size={16} className="text-anvil-red" /> Comunidad
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div
-                        // 3. CAMBIO CLAVE: USAR NAVIGATE
-                        onClick={() => navigate('/dashboard/community')}
-                        className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden"
-                    >
-                        <div className="relative z-10 flex items-center gap-4">
-                            <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                                <Swords size={24} />
-                            </div>
+                {user.has_access === false ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center gap-4 opacity-50 cursor-not-allowed">
+                            <div className="p-3 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={24} /></div>
                             <div>
-                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros y gana prestigio</p>
+                                <h3 className="text-lg font-black uppercase italic text-gray-400 leading-none mb-1">La Arena</h3>
+                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Premium</p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors relative z-10" />
-
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
-                    </div>
-
-                    <div
-                        onClick={() => setIsRankingOpen(true)}
-                        className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden"
-                    >
-                        <div className="relative z-10 flex items-center gap-4">
-                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]">
-                                <Trophy size={24} />
-                            </div>
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center gap-4 opacity-50 cursor-not-allowed">
+                            <div className="p-3 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={24} /></div>
                             <div>
-                                <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Ranking</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Club Leaderboard</p>
+                                <h3 className="text-lg font-black uppercase italic text-gray-400 leading-none mb-1">Ranking</h3>
+                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Premium</p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors relative z-10" />
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden">
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={24} /></div>
+                                <div>
+                                    <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta</p>
+                                </div>
+                            </div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
+                        </div>
+
+                        <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden">
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]"><Trophy size={24} /></div>
+                                <div>
+                                    <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Ranking</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Leaderboard</p>
+                                </div>
+                            </div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Quick Tools Section */}
-            <div className="space-y-4 pt-4">
+            {/* 4. Desktop Tools */}
+            <div className="space-y-4">
                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
-                <div className="grid grid-cols-3 gap-6">
-                    <div
-                        onClick={() => setIs1RMCalcOpen(true)}
-                        className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]"
-                    >
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all">
-                                <Calculator size={24} />
-                            </div>
+                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all"><Calculator size={24} /></div>
                             <div>
                                 <h3 className="font-bold text-white uppercase tracking-tight text-sm">Calculadora 1RM</h3>
                                 <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">RPE & Velocidad</p>
@@ -659,14 +514,9 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div
-                        onClick={() => setIsWarmUpCalcOpen(true)}
-                        className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98]"
-                    >
+                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                <List size={24} />
-                            </div>
+                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all"><List size={24} /></div>
                             <div>
                                 <h3 className="font-bold text-white uppercase tracking-tight text-sm">Aproximaciones</h3>
                                 <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Escalera de Calentamiento</p>
@@ -675,14 +525,9 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div
-                        onClick={() => setIsPlateCalcOpen(true)}
-                        className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]"
-                    >
+                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-green-500/10 rounded-xl text-green-500 group-hover:bg-green-600 group-hover:text-white transition-all">
-                                <Weight size={24} />
-                            </div>
+                            <div className="p-3 bg-green-500/10 rounded-xl text-green-500 group-hover:bg-green-600 group-hover:text-white transition-all"><Weight size={24} /></div>
                             <div>
                                 <h3 className="font-bold text-white uppercase tracking-tight text-sm">Carga de Barra</h3>
                                 <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Calculadora de Discos</p>
@@ -690,8 +535,6 @@ function DesktopHome({ user, onNavigate, navigate, activeBlock, todaySession, se
                         </div>
                         <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
-
-
                 </div>
             </div>
 

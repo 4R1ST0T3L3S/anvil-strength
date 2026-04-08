@@ -4,15 +4,10 @@ import { UserProfile } from '../hooks/useUser';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
-import { ProfilePage } from '../features/profile/pages/ProfilePage';
-
-// 1. Importamos la VISTA CORRECTA según tu estructura de carpetas
-import { ArenaView } from '../features/arena/pages/ArenaView';
-// import { RopaPage } from '../features/landing/pages/RopaPage';
-import { CompetitionsPage } from '../features/landing/pages/CompetitionsPage';
-import { AdminDashboard } from '../features/admin/pages/AdminDashboard';
-
 // Lazy Load Pages
+const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
+const CompetitionsPage = lazy(() => import('../features/landing/pages/CompetitionsPage').then(module => ({ default: module.CompetitionsPage })));
+const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
 
@@ -43,7 +38,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                         onLoginClick={onLoginClick}
                         user={user}
                     />
-                ) : user?.role === 'coach' ? (
+                ) : user?.role === 'coach' && user?.has_access ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : (
                     <Navigate to="/dashboard" replace />
@@ -52,15 +47,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
 
             {/* --- PERFIL PAGE (For pending users) --- */}
             <Route path="/perfil" element={
-                !user && !hasActiveSession ? (
-                    <Navigate to="/" replace />
-                ) : user?.has_access ? (
-                    <Navigate to="/dashboard" replace />
-                ) : user ? (
-                    <ProfilePage user={user} onLoginClick={onLoginClick} />
-                ) : (
-                    <Navigate to="/" replace />
-                )
+                <Navigate to="/dashboard" replace />
             } />
 
             {/* --- PENDING APPROVAL PAGE (Legacy/Fallback) --- */}
@@ -72,7 +59,15 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
             {/* <Route path="/ropa" element={<RopaPage onLoginClick={onLoginClick} user={user} />} /> */}
 
             {/* --- COMPETICIONES PAGE --- */}
-            <Route path="/competiciones" element={<CompetitionsPage onLoginClick={onLoginClick} user={user} />} />
+            <Route path="/competiciones" element={
+                <Suspense fallback={
+                    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                }>
+                    <CompetitionsPage onLoginClick={onLoginClick} user={user} />
+                </Suspense>
+            } />
 
             {/* --- 2. RUTA DEDICADA: LA ARENA --- */}
             {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}
@@ -81,7 +76,9 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     user.has_access === false ? (
                         <Navigate to="/pending" replace />
                     ) : (
-                        <ArenaView user={user} />
+                        <Suspense fallback={<DashboardSkeleton />}>
+                            <ArenaView user={user} />
+                        </Suspense>
                     )
                 ) : (
                     <Navigate to="/" replace />
@@ -94,9 +91,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
-                ) : user?.has_access === false ? (
-                    <Navigate to="/perfil" replace />
-                ) : user?.role === 'coach' ? (
+                ) : user?.role === 'coach' && user?.has_access ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
@@ -115,7 +110,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
                 ) : user?.has_access === false ? (
-                    <Navigate to="/perfil" replace />
+                    <Navigate to="/dashboard" replace />
                 ) : user?.role !== 'coach' ? (
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
@@ -132,7 +127,9 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email || '') ? (
                     <Navigate to="/" replace />
                 ) : (
-                    <AdminDashboard />
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        <AdminDashboard />
+                    </Suspense>
                 )
             } />
 

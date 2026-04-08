@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
@@ -16,7 +16,8 @@ import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { PDFModal } from '../../../components/modals/PDFModal';
 
-import { Standard } from "@typebot.io/react"; // Añade este import
+// Lazy load Typebot so it doesn't block initial render
+const Standard = React.lazy(() => import('@typebot.io/react').then(module => ({ default: module.Standard })));
 
 interface LandingPageProps {
     onLoginClick: () => void;
@@ -584,11 +585,17 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         </div>
 
                         <div className="flex-1 w-full h-full relative">
-                            <Standard
-                                typebot="lead-generation-hhwa24t"
-                                apiHost="https://typebot.io"
-                                style={{ width: '100%', height: '100%' }}
-                            />
+                            <Suspense fallback={
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold uppercase text-xs tracking-widest">
+                                    Cargando asistente...
+                                </div>
+                            }>
+                                <Standard
+                                    typebot="lead-generation-hhwa24t"
+                                    apiHost="https://typebot.io"
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            </Suspense>
                         </div>
                     </motion.div>
                 )}
