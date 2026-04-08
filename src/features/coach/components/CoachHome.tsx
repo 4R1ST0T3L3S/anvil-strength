@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTAR ESTO
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Users, Trophy, Calendar, User, MapPin, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords } from 'lucide-react';
+import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
 import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
 import { PlateCalculator } from '../../athlete/components/PlateCalculator';
 import { AnvilRanking } from '../../athlete/components/AnvilRanking';
+import { CompetitionBanner } from '../../../components/ui/CompetitionCountdown';
 
 export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate: (view: string) => void }) {
     const navigate = useNavigate(); // <--- 2. INICIALIZAR EL HOOK
@@ -20,6 +21,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
     };
 
     const [stats, setStats] = useState({
+        nextCompDate: null as string | null,
         nextCompDays: null as number | null,
         nextCompName: '',
         nextCompLevel: '',
@@ -46,6 +48,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
 
                 if (athleteIds.length === 0) {
                     setStats({
+                        nextCompDate: null,
                         nextCompDays: null,
                         nextCompName: '',
                         nextCompLevel: '',
@@ -66,6 +69,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                     .limit(1)
                     .maybeSingle();
 
+                let compDate = null;
                 let daysUntil = null;
                 let compName = '';
                 let compLevel = '';
@@ -76,12 +80,14 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                     const now = new Date();
                     const diffTime = Math.abs(target.getTime() - now.getTime());
                     daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    compDate = nextComp.date;
                     compName = nextComp.name;
                     compLevel = nextComp.level || '';
                     compLocation = nextComp.location || '';
                 }
 
                 setStats({
+                    nextCompDate: compDate,
                     nextCompDays: daysUntil,
                     nextCompName: compName,
                     nextCompLevel: compLevel,
@@ -149,37 +155,14 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                             <Trophy size={16} className="text-anvil-red" /> Próxima Competición
                         </h2>
-                        {stats.nextCompDays !== null ? (
-                            <div className="bg-gradient-to-br from-[#252525] to-[#1c1c1c] p-6 rounded-xl border border-white/5 relative overflow-hidden group flex flex-col justify-between flex-1">
-                                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                                    <Trophy size={80} />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-5">
-                                        <div className="bg-anvil-red/10 p-2.5 rounded-lg">
-                                            <Trophy size={20} className="text-anvil-red" />
-                                        </div>
-                                        <p className="text-gray-400 text-sm font-bold uppercase tracking-wider">Próximo Evento</p>
-                                    </div>
-                                    {stats.nextCompLevel && (
-                                        <span className="inline-block bg-white/5 text-gray-400 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 border border-white/10">
-                                            {stats.nextCompLevel}
-                                        </span>
-                                    )}
-                                    <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">
-                                        {stats.nextCompName}
-                                    </h3>
-                                    {stats.nextCompLocation && (
-                                        <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
-                                            <MapPin size={14} />
-                                            <span>{stats.nextCompLocation}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="bg-anvil-red text-white text-sm font-black px-4 py-2 rounded-lg text-center">
-                                    {stats.nextCompDays === 0 ? '¡HOY!' : stats.nextCompDays === 1 ? 'MAÑANA' : `Faltan ${stats.nextCompDays} días`}
-                                </div>
-                            </div>
+                        {stats.nextCompDate ? (
+                            <CompetitionBanner 
+                                name={stats.nextCompName}
+                                date={stats.nextCompDate}
+                                location={stats.nextCompLocation}
+                                level={stats.nextCompLevel}
+                                mobile={false}
+                            />
                         ) : (
                             <div className="bg-[#252525] p-6 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center flex-1">
                                 <Trophy size={32} className="text-gray-600 mb-3" />

@@ -4,7 +4,8 @@ import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { Calendar, MapPin, Users } from 'lucide-react'; // Added Users icon
 import { UserProfile } from '../../../hooks/useUser';
-import { competitionsService } from '../../../services/competitionsService'; // Import service
+import { competitionsService } from '../../../services/competitionsService';
+import { getCompetitionColorClass, LiveCountdown } from '../../../components/ui/CompetitionCountdown';
 
 interface CompetitionsPageProps {
     onLoginClick: () => void;
@@ -142,44 +143,49 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.1 }}
-                                    className="group bg-[#111] border border-white/5 hover:border-anvil-red/50 p-8 rounded-2xl relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-anvil-red/10 flex flex-col"
+                                    className={`group ${getCompetitionColorClass(event.level)} p-6 md:p-8 rounded-[2rem] relative overflow-hidden transition-all duration-300 hover:-translate-y-2 shadow-2xl flex flex-col`}
                                 >
+                                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-20 -mt-20 pointer-events-none transition-transform group-hover:scale-110"></div>
+                                    
+                                    <div className="relative z-10 flex flex-col h-full text-white">
+                                        <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full mb-6 bg-black/20 text-white w-fit border border-white/10">
+                                            {event.level}
+                                        </span>
 
+                                        <h3 className="text-3xl font-black uppercase italic mb-2 leading-tight min-h-[4rem] drop-shadow-md">{event.name}</h3>
 
-                                    <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full mb-6 bg-anvil-red/10 text-anvil-red w-fit">
-                                        {event.level}
-                                    </span>
+                                        <div className="space-y-3 text-white/90 font-medium mt-2 flex-1">
+                                            <div className="flex items-center gap-3 font-bold">
+                                                <Calendar size={18} />
+                                                <span className="capitalize">{formatDate(event.date)}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3 font-bold text-sm">
+                                                <MapPin size={18} />
+                                                <span>{event.location}</span>
+                                            </div>
+                                            
+                                            <div className="mt-6 mb-4 w-full bg-black/10 backdrop-blur rounded-2xl pb-2 px-1 border border-white/5 flex justify-center">
+                                                <LiveCountdown targetDate={event.date} />
+                                            </div>
 
-                                    <h3 className="text-2xl font-black uppercase italic mb-2 line-clamp-2 min-h-[4rem]">{event.name}</h3>
-
-                                    <div className="space-y-3 text-gray-400 font-medium mt-4 flex-1">
-                                        <div className="flex items-center gap-3">
-                                            <Calendar size={18} className="text-anvil-red" />
-                                            <span className="capitalize">{formatDate(event.date)}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <MapPin size={18} className="text-anvil-red" />
-                                            <span>{event.location}</span>
-                                        </div>
-                                        <div className="flex items-start gap-3 mt-4 pt-4 border-t border-white/5">
-                                            <Users size={18} className="text-anvil-red mt-1 shrink-0" />
-                                            <div>
-                                                <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                                                    Atletas convocados:
-                                                </p>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {event.athletes.map((athlete, i) => (
-                                                        <motion.span
-                                                            key={i}
-                                                            initial={{ opacity: 0, scale: 0.9 }}
-                                                            whileInView={{ opacity: 1, scale: 1 }}
-                                                            className="text-sm text-white bg-white/10 border border-white/5 px-3 py-1 rounded-md flex items-center gap-2"
-                                                        >
-                                                            {/* Optional: Avatar if available, or generic icon */}
-                                                            {/* <div className="w-4 h-4 rounded-full bg-anvil-red/50"></div> */}
-                                                            {athlete.full_name}
-                                                        </motion.span>
-                                                    ))}
+                                            <div className="flex items-start gap-3 mt-6 pt-4 border-t border-white/20">
+                                                <Users size={18} className="mt-1 shrink-0" />
+                                                <div>
+                                                    <p className="text-xs font-bold uppercase tracking-wider text-white/80 mb-2">
+                                                        Atletas convocados:
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {event.athletes.map((athlete, i) => (
+                                                            <motion.span
+                                                                key={i}
+                                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                                whileInView={{ opacity: 1, scale: 1 }}
+                                                                className="text-xs md:text-sm text-black font-bold bg-white px-2 py-1 rounded-md flex items-center shadow-sm max-w-full"
+                                                            >
+                                                                <span className="truncate w-full">{athlete.full_name}</span>
+                                                            </motion.span>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

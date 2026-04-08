@@ -51,19 +51,6 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@typebot.io')) return 'vendor-typebot';
-            if (id.includes('framer-motion')) return 'vendor-motion';
-            if (id.includes('@supabase')) return 'vendor-supabase';
-            if (id.includes('react')) return 'vendor-react';
-            return 'vendor-utils';
-          }
-        }
-      },
-    },
+    chunkSizeWarningLimit: 1000
   },
 })

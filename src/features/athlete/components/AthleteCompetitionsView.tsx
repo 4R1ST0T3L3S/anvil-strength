@@ -4,6 +4,7 @@ import { competitionsService } from '../../../services/competitionsService';
 import { Trophy, Calendar, MapPin, Medal, Clock, AlertCircle } from 'lucide-react';
 import { getDaysRemaining, formatDateRange } from '../../../utils/dateUtils';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
+import { LiveCountdown, getCompetitionColorClass } from '../../../components/ui/CompetitionCountdown';
 
 interface AthleteCompetitionsViewProps {
     user: UserProfile;
@@ -81,15 +82,15 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                             const daysRemaining = getDaysRemaining(comp.date);
                             return (
                                 <div key={comp.id} className="relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-anvil-red/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10 blur-xl"></div>
-                                    <div className="bg-[#252525] border border-white/5 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center justify-between transition-all hover:border-anvil-red/30 hover:shadow-2xl hover:shadow-anvil-red/5">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-anvil-red/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] -z-10 blur-xl"></div>
+                                    <div className={`${getCompetitionColorClass(comp.level)} rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center justify-between transition-all hover:scale-[1.01] hover:shadow-2xl`}>
                                         <div className="space-y-4">
                                             <div className="flex flex-wrap items-center gap-3">
-                                                <span className="bg-anvil-red text-white text-xs font-black px-3 py-1 rounded uppercase tracking-wider">
+                                                <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-black px-3 py-1 rounded uppercase tracking-wider">
                                                     Próximamente
                                                 </span>
                                                 {comp.level && (
-                                                    <span className="bg-white/5 text-gray-300 text-xs font-bold px-3 py-1 rounded uppercase tracking-wider border border-white/10">
+                                                    <span className="bg-black/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider border border-white/10">
                                                         {comp.level}
                                                     </span>
                                                 )}
@@ -98,9 +99,9 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                                 <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-2">
                                                     {comp.name}
                                                 </h3>
-                                                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 text-gray-400">
+                                                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 text-white/80">
                                                     <div className="flex items-center gap-2">
-                                                        <Calendar size={18} className="text-anvil-red" />
+                                                        <Calendar size={18} className="text-white" />
                                                         <span className="font-semibold">
                                                             {comp.end_date ? (
                                                                 formatDateRange(new Date(comp.date + 'T00:00:00'), new Date(comp.end_date + 'T00:00:00'))
@@ -116,7 +117,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                                     </div>
                                                     {comp.location && (
                                                         <div className="flex items-center gap-2">
-                                                            <MapPin size={18} className="text-anvil-red" />
+                                                            <MapPin size={18} className="text-white" />
                                                             <span className="font-semibold">{comp.location}</span>
                                                         </div>
                                                     )}
@@ -124,16 +125,14 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                             </div>
                                         </div>
 
-                                        <div className="bg-[#1c1c1c] p-6 rounded-2xl border border-white/5 flex items-center justify-center min-w-[180px]">
-                                            <div className="text-center space-y-1">
-                                                <div className="text-4xl md:text-5xl font-black text-white tabular-nums tracking-tighter">
-                                                    {daysRemaining}
-                                                </div>
-                                                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center justify-center gap-2">
+                                        <div className="bg-black/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center min-w-[220px]">
+                                            <LiveCountdown targetDate={comp.date} />
+                                            {daysRemaining <= 0 && comp.end_date && getDaysRemaining(comp.end_date) >= 0 && (
+                                                <div className="text-xs font-bold text-green-400 uppercase tracking-widest mt-3 flex items-center justify-center gap-1.5 bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
                                                     <Clock size={12} />
-                                                    {daysRemaining <= 0 && comp.end_date && getDaysRemaining(comp.end_date) >= 0 ? "En curso" : "Días Restantes"}
+                                                    En Curso
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
