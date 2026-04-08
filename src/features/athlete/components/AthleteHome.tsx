@@ -117,15 +117,20 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             <header>
                 {user.role === 'athlete' && getTeamName(user.coach_name) && (
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-anvil-red/60 mb-1">
-                        {getTeamName(user.coach_name)}
-                    </p>
+                    <div className="flex items-center gap-3 mb-2">
+                        {user.coach_logo_url && (
+                            <img src={user.coach_logo_url} alt="Team Logo" className="h-6 w-auto object-contain rounded" />
+                        )}
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60" style={{ color: user.coach_brand_color || '#dc2626' }}>
+                            {getTeamName(user.coach_name)}
+                        </p>
+                    </div>
                 )}
                 <h1 className="text-3xl font-black uppercase tracking-tighter mb-2">
-                    {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
+                    {getGreeting()}, <span style={{ color: user.coach_brand_color || '#dc2626' }}>{user.full_name?.split(' ')[0] || 'Atleta'}</span>
                 </h1>
                 <p className="text-gray-500 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
-                    <Calendar size={14} className="text-anvil-red" />
+                    <Calendar size={14} style={{ color: user.coach_brand_color || '#dc2626' }} />
                     {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </p>
             </header>
@@ -271,59 +276,72 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
 
 function DesktopHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
-        <div className="hidden md:block px-12 py-8 space-y-12 animate-in fade-in duration-500">
+        <div className="hidden md:flex flex-col px-12 py-8 h-full animate-in fade-in duration-500 gap-6">
             {/* Header */}
-            <header>
+            <header className="flex-none">
                 {user.role === 'athlete' && getTeamName(user.coach_name) && (
-                    <p className="text-[11px] font-black uppercase tracking-[0.4em] text-anvil-red/60 mb-1">
-                        {getTeamName(user.coach_name)}
-                    </p>
+                    <div className="flex items-center gap-3 mb-3">
+                        {user.coach_logo_url && (
+                            <img src={user.coach_logo_url} alt="Team Logo" className="h-8 w-auto object-contain rounded" />
+                        )}
+                        <p className="text-[11px] font-black uppercase tracking-[0.4em] opacity-60" style={{ color: user.coach_brand_color || '#dc2626' }}>
+                            {getTeamName(user.coach_name)}
+                        </p>
+                    </div>
                 )}
                 <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
-                    {getGreeting()}, <span className="text-anvil-red">{user.full_name?.split(' ')[0] || 'Atleta'}</span>
+                    {getGreeting()}, <span style={{ color: user.coach_brand_color || '#dc2626' }}>{user.full_name?.split(' ')[0] || 'Atleta'}</span>
                 </h1>
                 <p className="text-gray-500 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
-                    <Calendar size={14} className="text-anvil-red" />
+                    <Calendar size={14} style={{ color: user.coach_brand_color || '#dc2626' }} />
                     {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </p>
             </header>
 
-            {/* 1. Desktop Anvil Legend */}
-            <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
-                </h2>
-                <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 h-fit relative overflow-hidden group hover:border-yellow-500/30 transition-all">
+            {/* Split Top Row for Desktop */}
+            <div className="grid lg:grid-cols-3 gap-6 flex-[2] min-h-0">
+                {/* 1. Desktop Anvil Legend */}
+                <div className="lg:col-span-2 flex flex-col gap-3 h-full">
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                        <BookOpen size={20} className="text-yellow-500" /> Anvil Lessons
+                    </h2>
+                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 flex flex-col justify-center flex-1 relative overflow-hidden group hover:border-yellow-500/30 transition-all">
                     <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
                     <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12"><BookOpen size={120} /></div>
                     <div className="relative z-10">
-                        <div className="flex items-center justify-end mb-8">
-                            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{new Date().toLocaleDateString('es-ES', { weekday: 'long' })}</span>
-                        </div>
-                        <p className="text-3xl font-black uppercase italic text-white leading-tight tracking-tighter mb-8 drop-shadow-lg">"{getAnvilQuote()}"</p>
-                        <div className="flex items-center justify-between border-t border-white/5 pt-6">
+                        <div className="flex flex-col h-full justify-between">
+                            <div className="flex items-center justify-end mb-4">
+                                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{new Date().toLocaleDateString('es-ES', { weekday: 'long' })}</span>
+                            </div>
+                            <div className="flex-1 flex items-center">
+                                <p className="text-3xl lg:text-4xl font-black uppercase italic text-white leading-tight tracking-tighter mb-4 drop-shadow-lg">"{getAnvilQuote()}"</p>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-white/5 pt-4">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Anvil Strength Club</span>
                             <div className="w-20 h-1 bg-gradient-to-r from-yellow-500 to-transparent rounded-full"></div>
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
+                </div>
 
-            {/* 2. Desktop Next Competition Banner */}
-            <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <Trophy size={16} className="text-anvil-red" /> Competición
-                </h2>
+                {/* 2. Desktop Next Competition Banner */}
+                <div className="flex flex-col gap-3 h-full">
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                        <Trophy size={20} className="text-anvil-red" /> Competición
+                    </h2>
                 {nextCompetition ? (
-                    <CompetitionBanner 
-                        name={nextCompetition.name} 
-                        date={nextCompetition.date} 
-                        location={nextCompetition.location} 
-                        level={nextCompetition.level} 
-                        mobile={false} 
-                    />
+                    <div className="flex-1 min-h-0">
+                        <CompetitionBanner 
+                            name={nextCompetition.name} 
+                            date={nextCompetition.date} 
+                            location={nextCompetition.location} 
+                            level={nextCompetition.level} 
+                            mobile={false} 
+                        />
+                    </div>
                 ) : (
-                    <div className="bg-[#252525] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden h-64">
+                        <div className="bg-[#252525] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden flex-1 min-h-0">
                         <div className="w-20 h-20 bg-white/5 rounded-full flex flex-col items-center justify-center text-gray-500 mb-4">
                             <Trophy size={40} />
                         </div>
@@ -335,94 +353,95 @@ function DesktopHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, se
                         </p>
                     </div>
                 )}
+                </div>
             </div>
 
             {/* 3. Desktop Community */}
-            <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <Users size={16} className="text-anvil-red" /> Comunidad
+            <div className="flex flex-col gap-3 flex-1 min-h-0">
+                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <Users size={20} className="text-anvil-red" /> Comunidad
                 </h2>
                 {user.has_access === false ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center gap-4 opacity-50 cursor-not-allowed">
-                            <div className="p-3 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={24} /></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center gap-6 opacity-50 cursor-not-allowed h-full">
+                            <div className="p-4 lg:p-5 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={32} /></div>
                             <div>
-                                <h3 className="text-lg font-black uppercase italic text-gray-400 leading-none mb-1">La Arena</h3>
-                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Premium</p>
+                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-gray-400 leading-none mb-2">La Arena</h3>
+                                <p className="text-xs lg:text-sm font-bold text-gray-600 uppercase tracking-widest">Premium</p>
                             </div>
                         </div>
-                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center gap-4 opacity-50 cursor-not-allowed">
-                            <div className="p-3 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={24} /></div>
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center gap-6 opacity-50 cursor-not-allowed h-full">
+                            <div className="p-4 lg:p-5 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={32} /></div>
                             <div>
-                                <h3 className="text-lg font-black uppercase italic text-gray-400 leading-none mb-1">Ranking</h3>
-                                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Premium</p>
+                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-gray-400 leading-none mb-2">Ranking</h3>
+                                <p className="text-xs lg:text-sm font-bold text-gray-600 uppercase tracking-widest">Premium</p>
                             </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden">
-                            <div className="relative z-10 flex items-center gap-4">
-                                <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={24} /></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+                        <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                            <div className="relative z-10 flex items-center gap-6">
+                                <div className="p-4 lg:p-5 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={32} /></div>
                                 <div>
-                                    <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta</p>
+                                    <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">La Arena</h3>
+                                    <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Apuesta</p>
                                 </div>
                             </div>
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
                         </div>
 
-                        <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden">
-                            <div className="relative z-10 flex items-center gap-4">
-                                <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]"><Trophy size={24} /></div>
+                        <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                            <div className="relative z-10 flex items-center gap-6">
+                                <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]"><Trophy size={32} /></div>
                                 <div>
-                                    <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Ranking</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Leaderboard</p>
+                                    <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Ranking</h3>
+                                    <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Leaderboard</p>
                                 </div>
                             </div>
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
                         </div>
                     </div>
                 )}
             </div>
 
             {/* 4. Desktop Tools */}
-            <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
+            <div className="flex flex-col gap-3 flex-1 min-h-0">
+                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <FlaskConical size={20} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all"><Calculator size={24} /></div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
+                        <div className="flex items-center gap-5">
+                            <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all"><Calculator size={32} /></div>
                             <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-sm">Calculadora 1RM</h3>
-                                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">RPE & Velocidad</p>
+                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Calculadora 1RM</h3>
+                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">RPE & Velocidad</p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98]">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all"><List size={24} /></div>
+                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] h-full">
+                        <div className="flex items-center gap-5">
+                            <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all"><List size={32} /></div>
                             <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-sm">Aproximaciones</h3>
-                                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Escalera de Calentamiento</p>
+                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Aproximaciones</h3>
+                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Escalera de Calentamiento</p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-green-500/10 rounded-xl text-green-500 group-hover:bg-green-600 group-hover:text-white transition-all"><Weight size={24} /></div>
+                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
+                        <div className="flex items-center gap-5">
+                            <div className="p-4 lg:p-5 bg-green-500/10 rounded-xl text-green-500 group-hover:bg-green-600 group-hover:text-white transition-all"><Weight size={32} /></div>
                             <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-sm">Carga de Barra</h3>
-                                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Calculadora de Discos</p>
+                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Carga de Barra</h3>
+                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Calculadora de Discos</p>
                             </div>
                         </div>
-                        <ChevronRight size={18} className="text-gray-600 group-hover:text-white transition-colors" />
+                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
                 </div>
             </div>

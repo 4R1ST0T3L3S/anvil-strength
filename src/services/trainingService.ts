@@ -237,7 +237,7 @@ export const trainingService = {
         if (error) throw error;
         
         // Transform Supabase nested object structure to match the expected return type
-        return (data || []).map((row: any) => ({
+        return (data || []).map((row: SessionExercise & { session: TrainingSession & { block: TrainingBlock } }) => ({
             ...row,
             session: {
                 ...row.session,

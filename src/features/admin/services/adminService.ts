@@ -55,7 +55,7 @@ export const adminService = {
     // Bulk update users
     updateUsersBulk: async (changedUsers: { id: string, role?: string, has_access?: boolean }[]): Promise<void> => {
         const promises = changedUsers.map(async (u) => {
-            const updates: any = {};
+            const updates: Record<string, unknown> = {};
             if (u.role !== undefined) updates.role = u.role;
             if (u.has_access !== undefined) updates.has_access = u.has_access;
             if (Object.keys(updates).length > 0) {
@@ -111,5 +111,46 @@ export const adminService = {
         if (!data || data.length === 0) {
             throw new Error('Permiso denegado por base de datos (RLS)');
         }
+    },
+
+    // Update Coach Branding
+    updateCoachBranding: async (coachId: string, updates: { brand_color?: string; logo_url?: string }): Promise<void> => {
+        const { error, data } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', coachId)
+            .select();
+
+        if (error) {
+            console.error('Error updating coach branding:', error);
+            throw new Error('No se pudo actualizar la marca del entrenador');
+        }
+
+        if (!data || data.length === 0) {
+            throw new Error('Permiso denegado por base de datos (RLS)');
+        }
+    },
+
+    // Upload Coach Logo
+    uploadCoachLogo: async (coachId: string, file: File): Promise<string> => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${coachId}-logo-${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('profiles')
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error('Error uploading coach logo:', uploadError);
+            throw new Error('No se pudo subir la imagen del logo');
+        }
+
+        const { data } = supabase.storage.from('profiles').getPublicUrl(filePath);
+        
+        // Update the user profile with the new logo URL
+        await adminService.updateCoachBranding(coachId, { logo_url: data.publicUrl });
+        
+        return data.publicUrl;
     }
 };

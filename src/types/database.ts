@@ -20,6 +20,8 @@ export interface Profile {
     created_at: string;
     coach_id?: string | null; // For athletes linked to a coach
     nutritionist_id?: string | null; // For athletes linked to a nutritionist
+    brand_color?: string | null;
+    logo_url?: string | null;
 }
 
 export interface Coach extends Profile {

@@ -151,7 +151,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                     </div>
 
                     {/* Próxima Competición - 2nd on mobile, right column on desktop */}
-                    <div className="order-2 lg:order-2 flex flex-col gap-3">
+                    <div className="order-2 lg:order-2 flex flex-col gap-3 h-full">
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                             <Trophy size={16} className="text-anvil-red" /> Próxima Competición
                         </h2>
@@ -172,53 +172,61 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
                     </div>
 
                     {/* Panel de Control - 3rd on mobile, left 2 columns on desktop */}
-                    <div className="order-3 lg:order-1 lg:col-span-2 space-y-3">
+                    <div className="order-3 lg:order-1 lg:col-span-2 flex flex-col gap-3 h-full">
                         <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                             <LayoutDashboard size={16} className="text-anvil-red" /> Panel de Control
                         </h2>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4 flex-1">
                             <button
                                 onClick={() => onNavigate('athletes')}
-                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left"
+                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left flex flex-col h-full justify-center"
                             >
                                 <div className="bg-anvil-red/10 w-10 h-10 rounded-lg flex items-center justify-center text-anvil-red mb-3 group-hover:scale-110 transition-transform">
                                     <Users size={20} />
                                 </div>
-                                <span className="font-bold text-white block">Mis Atletas</span>
-                                <span className="text-xs text-gray-500">Gestión de deportistas</span>
+                                <div>
+                                    <span className="font-bold text-white block">Mis Atletas</span>
+                                    <span className="text-xs text-gray-500">Gestión de deportistas</span>
+                                </div>
                             </button>
 
                             <button
                                 onClick={() => onNavigate('schedule')}
-                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left"
+                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left flex flex-col h-full justify-center"
                             >
                                 <div className="bg-blue-500/10 w-10 h-10 rounded-lg flex items-center justify-center text-blue-500 mb-3 group-hover:scale-110 transition-transform">
                                     <Trophy size={20} />
                                 </div>
-                                <span className="font-bold text-white block">Agenda Equipo</span>
-                                <span className="text-xs text-gray-500">Competiciones y eventos</span>
+                                <div>
+                                    <span className="font-bold text-white block">Agenda Equipo</span>
+                                    <span className="text-xs text-gray-500">Competiciones y eventos</span>
+                                </div>
                             </button>
 
                             <button
                                 onClick={() => onNavigate('calendar')}
-                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left"
+                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left flex flex-col h-full justify-center"
                             >
                                 <div className="bg-green-500/10 w-10 h-10 rounded-lg flex items-center justify-center text-green-500 mb-3 group-hover:scale-110 transition-transform">
                                     <Calendar size={20} />
                                 </div>
-                                <span className="font-bold text-white block">Calendario AEP</span>
-                                <span className="text-xs text-gray-500">Eventos oficiales</span>
+                                <div>
+                                    <span className="font-bold text-white block">Calendario AEP</span>
+                                    <span className="text-xs text-gray-500">Eventos oficiales</span>
+                                </div>
                             </button>
 
                             <button
                                 onClick={() => onNavigate('profile')}
-                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left"
+                                className="bg-[#252525] p-5 rounded-xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all group text-left flex flex-col h-full justify-center"
                             >
                                 <div className="bg-purple-500/10 w-10 h-10 rounded-lg flex items-center justify-center text-purple-500 mb-3 group-hover:scale-110 transition-transform">
                                     <User size={20} />
                                 </div>
-                                <span className="font-bold text-white block">Mi Perfil</span>
-                                <span className="text-xs text-gray-500">Ajustes de cuenta</span>
+                                <div>
+                                    <span className="font-bold text-white block">Mi Perfil</span>
+                                    <span className="text-xs text-gray-500">Ajustes de cuenta</span>
+                                </div>
                             </button>
                         </div>
                     </div>

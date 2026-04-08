@@ -32,11 +32,11 @@ const getSessionLabel = (ex: VbtExerciseData) => {
 };
 
 export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompareModalProps) {
-    const [data, setData] = useState<any[]>([]);
+    const [data, setData] = useState<Record<string, unknown>[]>([]);
     const [loading, setLoading] = useState(true);
     // En comparativa, es mejor ver una métrica a la vez para no saturar 
     const [activeMetric, setActiveMetric] = useState<'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM'>('Vm');
-    const [summaryData, setSummaryData] = useState<any[]>([]);
+    const [summaryData, setSummaryData] = useState<Record<string, unknown>[]>([]);
 
     useEffect(() => {
         if (!isOpen || sessionsToCompare.length === 0) return;
@@ -48,7 +48,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
             try {
                 const allParsedSessions = await Promise.all(
                     sessionsToCompare.map(ex => {
-                        return new Promise<{ session: VbtExerciseData, parsedRows: any[] }>((resolve, reject) => {
+                        return new Promise<{ session: VbtExerciseData, parsedRows: Record<string, unknown>[] }>((resolve, reject) => {
                             if (!ex.vbt_file_url) {
                                 resolve({ session: ex, parsedRows: [] });
                                 return;
@@ -63,7 +63,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                                         return parseFloat(val.toString().replace(',', '.'));
                                     };
 
-                                    const rows = results.data.map((row: any) => {
+                                    const rows = results.data.map((row: Record<string, unknown>) => {
                                         const serieRaw = String(row['Serie'] || '?');
                                         const repRaw = String(row['Rep'] || '?');
                                         const serieMatch = serieRaw.match(/\d+/);
@@ -94,7 +94,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                 if (!isMounted) return;
 
                 // Unify data by 'name' (S/R)
-                const pointMap = new Map<string, any>();
+                const pointMap = new Map<string, Record<string, unknown>>();
                 
                 // Calculate summaries
                 const newSummaryData = allParsedSessions.map(({ session, parsedRows }, i) => {
@@ -168,7 +168,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
         const isActive = activeMetric === value;
         return (
             <button
-                onClick={() => setActiveMetric(value as any)}
+                onClick={() => setActiveMetric(value as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest ${
                     isActive 
                         ? 'bg-anvil-red text-black border-anvil-red shadow-lg' 

@@ -40,6 +40,7 @@ export function AdminDashboard() {
         if (['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser?.email || '')) {
             loadUsers();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser]);
 
     // Show message briefly
@@ -99,7 +100,7 @@ export function AdminDashboard() {
             setUsers(users.map(u => u.id === athleteId ? { ...u, coach_id: newCoachId } : u));
             await adminService.updateUserCoach(athleteId, newCoachId);
             showSuccess(`Entrenador actualizado`);
-        } catch (err) {
+        } catch {
             const restoredUser = users.find(u => u.id === athleteId);
             if (restoredUser) setUsers(users.map(u => u.id === athleteId ? { ...u, coach_id: restoredUser.coach_id } : u));
             showError('Error al actualizar entrenador');
@@ -112,10 +113,32 @@ export function AdminDashboard() {
             setUsers(users.map(u => u.id === athleteId ? { ...u, nutritionist_id: newNutId } : u));
             await adminService.updateUserNutritionist(athleteId, newNutId);
             showSuccess(`Nutricionista actualizado`);
-        } catch (err) {
+        } catch {
             const restoredUser = users.find(u => u.id === athleteId);
             if (restoredUser) setUsers(users.map(u => u.id === athleteId ? { ...u, nutritionist_id: restoredUser.nutritionist_id } : u));
             showError('Error al actualizar nutricionista');
+        }
+    };
+
+    const updateBrandColor = async (coachId: string, color: string) => {
+        try {
+            setUsers(users.map(u => u.id === coachId ? { ...u, brand_color: color } : u));
+            await adminService.updateCoachBranding(coachId, { brand_color: color });
+            showSuccess('Color de marca actualizado');
+        } catch {
+            showError('Error al actualizar color');
+        }
+    };
+
+    const handleLogoUpload = async (coachId: string, file: File) => {
+        try {
+            if (file.size > 2 * 1024 * 1024) throw new Error("La imagen pesa más de 2MB");
+            showSuccess('Subiendo logo...');
+            const newUrl = await adminService.uploadCoachLogo(coachId, file);
+            setUsers(users.map(u => u.id === coachId ? { ...u, logo_url: newUrl } : u));
+            showSuccess('Logo de marca actualizado');
+        } catch (err: unknown) {
+            showError(err instanceof Error ? err.message : 'Error al subir el logo');
         }
     };
 
@@ -292,6 +315,8 @@ export function AdminDashboard() {
 
                                         {activeTab === 'entrenadores' && (
                                             <>
+                                                <th className="p-4 w-24 text-center">Color</th>
+                                                <th className="p-4 w-32">Logo</th>
                                                 <th className="p-4">Atletas Asignados</th>
                                             </>
                                         )}
@@ -408,19 +433,41 @@ export function AdminDashboard() {
 
                                                 {/* Columnas para Entrenadores */}
                                                 {activeTab === 'entrenadores' && (
-                                                    <td className="p-4">
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {users.filter(u => u.coach_id === user.id).length > 0 ? (
-                                                                users.filter(u => u.coach_id === user.id).map(athlete => (
-                                                                    <span key={athlete.id} className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded text-xs font-bold">
-                                                                        {athlete.full_name}
-                                                                    </span>
-                                                                ))
-                                                            ) : (
-                                                                <span className="text-gray-500 text-sm italic">Ningún atleta asignado</span>
-                                                            )}
-                                                        </div>
-                                                    </td>
+                                                    <>
+                                                        <td className="p-4 text-center">
+                                                            <input 
+                                                                type="color" 
+                                                                value={user.brand_color || '#dc2626'} 
+                                                                onChange={(e) => setUsers(users.map(u => u.id === user.id ? { ...u, brand_color: e.target.value } : u))}
+                                                                onBlur={(e) => updateBrandColor(user.id, e.target.value)}
+                                                                className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent flex-shrink-0"
+                                                            />
+                                                        </td>
+                                                        <td className="p-4">
+                                                            <div className="flex items-center gap-2">
+                                                                {user.logo_url && (
+                                                                    <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-white/5 rounded flex-shrink-0" />
+                                                                )}
+                                                                <label className="text-[10px] font-bold uppercase bg-[#111] hover:bg-white/10 px-2 py-1.5 border border-white/20 rounded cursor-pointer transition-colors whitespace-nowrap text-gray-300">
+                                                                    Subir
+                                                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
+                                                                </label>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-4">
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {users.filter(u => u.coach_id === user.id).length > 0 ? (
+                                                                    users.filter(u => u.coach_id === user.id).map(athlete => (
+                                                                        <span key={athlete.id} className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">
+                                                                            {athlete.full_name}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-gray-500 text-sm italic">Ningún atleta asignado</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </>
                                                 )}
 
                                                 {/* Columnas para Nutricionistas */}

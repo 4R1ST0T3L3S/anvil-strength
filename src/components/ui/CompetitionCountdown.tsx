@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
 import { Trophy, MapPin } from 'lucide-react';
 
 export const formatCompetitionName = (name: string, location?: string, level?: string) => {
@@ -27,15 +28,21 @@ export const formatCompetitionName = (name: string, location?: string, level?: s
 };
 
 export const getCompetitionColorClass = (level?: string) => {
-    const l = level?.toUpperCase() || '';
-    if (l.includes('AEP 3')) return 'bg-orange-500';
-    if (l.includes('AEP 2')) return 'bg-yellow-500';
-    if (l.includes('AEP 1')) return 'bg-blue-600';
-    if (l.includes('NACIONAL')) return 'bg-purple-600';
-    if (l.includes('EPF')) return 'bg-green-600';
-    if (l.includes('IPF')) return 'bg-[#D4AF37]';
-    return 'bg-anvil-red';
+    if (!level) return 'bg-gradient-to-br from-blue-700 to-blue-900';
+    if (level.includes('AEP 1')) return 'bg-gradient-to-br from-blue-500 to-blue-700';
+    if (level.includes('AEP 2')) return 'bg-gradient-to-br from-[#D4AF37] to-[#B3902A]'; // Golden yellow
+    if (level.includes('AEP 3')) return 'bg-gradient-to-br from-[#FF6B35] to-[#CC552A]'; // Energetic orange
+    return 'bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10';
 };
+
+const TimeBlock = ({ value, label }: { value: number, label: string }) => (
+    <div className="flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm rounded-lg py-2 px-1 w-full border border-white/10 aspect-square max-h-[80px]">
+        <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {value.toString().padStart(2, '0')}
+        </span>
+        <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
+    </div>
+);
 
 export function LiveCountdown({ targetDate }: { targetDate: string }) {
     const [timeLeft, setTimeLeft] = useState(() => {
@@ -68,15 +75,6 @@ export function LiveCountdown({ targetDate }: { targetDate: string }) {
     const h = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
     const m = Math.floor((timeLeft / 1000 / 60) % 60);
     const s = Math.floor((timeLeft / 1000) % 60);
-
-    const TimeBlock = ({ value, label }: { value: number, label: string }) => (
-        <div className="flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm rounded-lg py-2 px-1 w-full border border-white/10 aspect-square max-h-[80px]">
-            <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {value.toString().padStart(2, '0')}
-            </span>
-            <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
-        </div>
-    );
 
     return (
         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">

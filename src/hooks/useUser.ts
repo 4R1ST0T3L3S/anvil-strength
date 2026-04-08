@@ -19,8 +19,12 @@ export interface UserProfile {
     bench_pr?: number;
     deadlift_pr?: number;
     user_metadata?: Record<string, unknown>;
+    brand_color?: string | null;
+    logo_url?: string | null;
     coach_id?: string | null;
     coach_name?: string | null;
+    coach_brand_color?: string | null;
+    coach_logo_url?: string | null;
     nutritionist_id?: string | null;
     nutritionist_name?: string | null;
     // Backward compatibility aliases (deprecated)
@@ -101,15 +105,19 @@ const fetchUser = async (): Promise<UserProfile | null> => {
 
             if (profile) {
                 // Fetch coach name if athlete has a coach assigned
-                // Fetch coach name if athlete has a coach assigned
+                // Fetch coach name and branding if athlete has a coach assigned
                 let coachName: string | null = null;
+                let coachBrandColor: string | null = null;
+                let coachLogoUrl: string | null = null;
                 if (profile.coach_id) {
                     const { data: coachData } = await supabase
                         .from('profiles')
-                        .select('full_name')
+                        .select('full_name, brand_color, logo_url')
                         .eq('id', profile.coach_id)
                         .single();
                     coachName = coachData?.full_name ?? null;
+                    coachBrandColor = coachData?.brand_color ?? null;
+                    coachLogoUrl = coachData?.logo_url ?? null;
                 }
 
                 // Fetch nutritionist name if athlete has a nutritionist assigned
@@ -137,8 +145,12 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     squat_pr: profile.squat_pr,
                     bench_pr: profile.bench_pr,
                     deadlift_pr: profile.deadlift_pr,
+                    brand_color: profile.brand_color,
+                    logo_url: profile.logo_url,
                     coach_id: profile.coach_id ?? null,
                     coach_name: coachName,
+                    coach_brand_color: coachBrandColor,
+                    coach_logo_url: coachLogoUrl,
                     nutritionist_id: profile.nutritionist_id ?? null,
                     nutritionist_name: nutritionistName,
                     // Backward compatibility

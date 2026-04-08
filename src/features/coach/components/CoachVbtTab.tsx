@@ -11,7 +11,7 @@ interface CoachVbtTabProps {
     athleteId: string;
 }
 
-type VbtExerciseData = SessionExercise & { session: TrainingSession; block: TrainingBlock };
+type VbtExerciseData = SessionExercise & { session: TrainingSession; block: TrainingBlock; exercise?: { name: string } };
 
 export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
     const [exercises, setExercises] = useState<VbtExerciseData[]>([]);
@@ -22,6 +22,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
 
     useEffect(() => {
         loadVbtExercises();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [athleteId]);
 
     const loadVbtExercises = async () => {
@@ -107,7 +108,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
                                 
                                 <div>
                                     <span className="text-sm font-bold text-white">
-                                        {(ex as any).exercise?.name || 'Ejercicio desconocido'}
+                                        {ex.exercise?.name || 'Ejercicio desconocido'}
                                     </span>
                                 </div>
 
@@ -156,7 +157,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
                 <VbtChartModal 
                     isOpen={!!selectedVbt}
                     vbtFileUrl={selectedVbt.vbt_file_url} 
-                    exerciseName={(selectedVbt as any).exercise?.name || 'Ejercicio'}
+                    exerciseName={selectedVbt.exercise?.name || 'Ejercicio'}
                     onClose={() => setSelectedVbt(null)} 
                 />
             )}

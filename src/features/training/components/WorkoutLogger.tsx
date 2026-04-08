@@ -317,9 +317,9 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
             await trainingService.updateSessionExercise(sessionExercise.id, { vbt_file_url: publicUrl });
             setVbtUrl(publicUrl);
             toast.success("Archivo VBT adjuntado");
-        } catch (error: any) {
+        } catch (error) {
             console.error("Upload error full detail:", error);
-            const errMsg = error?.message || "Error desconocido";
+            const errMsg = error instanceof Error ? error.message : "Error desconocido";
             toast.error(`Error al subir VBT: ${errMsg}`);
         } finally {
             setUploading(false);
