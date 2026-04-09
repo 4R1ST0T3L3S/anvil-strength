@@ -125,24 +125,24 @@ export function CompetitionBanner({
     }
 
     return (
-        <div className={`${getCompetitionColorClass(level)} rounded-[2rem] p-8 md:p-12 text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-xl h-full`}>
+        <div className={`${getCompetitionColorClass(level)} rounded-[2rem] p-6 text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-xl h-full`}>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[35rem] h-[35rem] bg-white/5 rounded-full pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center">
                 <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-xs uppercase tracking-widest mb-3">
                     <Trophy size={16} /> TU PRÓXIMO RETO
                 </div>
-                <h3 className="text-3xl md:text-5xl font-black uppercase italic leading-none max-w-4xl drop-shadow-lg mb-3">
+                <h3 className="text-2xl md:text-3xl font-black uppercase italic leading-none max-w-4xl drop-shadow-lg mb-3">
                     {formatCompetitionName(name, location, level)}
                 </h3>
                 {location && (
-                    <div className="mt-1 flex items-center justify-center gap-2 text-white/90 font-bold text-base">
-                        <MapPin size={18} /> {location}
+                    <div className="mt-1 flex items-center justify-center gap-2 text-white/90 font-bold text-sm">
+                        <MapPin size={16} /> {location}
                     </div>
                 )}
             </div>
 
-            <div className="relative z-10 mt-8 w-full max-w-xl shrink-0 bg-black/20 backdrop-blur pb-4 pt-0 px-4 md:px-8 rounded-3xl border border-white/10 flex justify-center">
+            <div className="relative z-10 mt-4 w-full max-w-xl shrink-0 bg-black/20 backdrop-blur pb-4 pt-0 px-4 md:px-6 rounded-3xl border border-white/10 flex justify-center">
                 <LiveCountdown targetDate={date} />
             </div>
         </div>

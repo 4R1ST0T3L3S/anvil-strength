@@ -9,6 +9,16 @@ import { es } from 'date-fns/locale';
 
 type VbtExerciseData = SessionExercise & { session: TrainingSession; block: TrainingBlock };
 
+interface SummaryRow {
+    id: string;
+    label: string;
+    color: string;
+    avgVm: string;
+    avgVmax: string;
+    maxPotencia: string;
+    maxFatiga: string;
+}
+
 interface VbtCompareModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -36,7 +46,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
     const [loading, setLoading] = useState(true);
     // En comparativa, es mejor ver una métrica a la vez para no saturar 
     const [activeMetric, setActiveMetric] = useState<'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM'>('Vm');
-    const [summaryData, setSummaryData] = useState<Record<string, unknown>[]>([]);
+    const [summaryData, setSummaryData] = useState<SummaryRow[]>();
 
     useEffect(() => {
         if (!isOpen || sessionsToCompare.length === 0) return;
@@ -58,12 +68,12 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                                 header: true,
                                 skipEmptyLines: true,
                                 complete: (results) => {
-                                    const parseNum = (val: string | undefined) => {
+                                    const parseNum = (val: unknown) => {
                                         if (!val) return 0;
-                                        return parseFloat(val.toString().replace(',', '.'));
+                                        return parseFloat(String(val).replace(',', '.'));
                                     };
 
-                                    const rows = results.data.map((row: Record<string, unknown>) => {
+                                    const rows = (results.data as Record<string, unknown>[]).map((row) => {
                                         const serieRaw = String(row['Serie'] || '?');
                                         const repRaw = String(row['Rep'] || '?');
                                         const serieMatch = serieRaw.match(/\d+/);
@@ -103,20 +113,21 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
 
                     parsedRows.forEach(row => {
                         // Merge into unified point map
-                        const point = pointMap.get(row.name) || { name: row.name };
+                        const rowName = String(row.name);
+                        const point = pointMap.get(rowName) || { name: rowName };
                         point[`${session.id}_Vm`] = row.Vm;
                         point[`${session.id}_Vmp`] = row.Vmp;
                         point[`${session.id}_Vmax`] = row.Vmax;
                         point[`${session.id}_Potencia`] = row.Potencia;
                         point[`${session.id}_Fatiga`] = row.Fatiga;
                         point[`${session.id}_ROM`] = row.ROM;
-                        pointMap.set(row.name, point);
+                        pointMap.set(rowName, point);
 
                         // Accumulate for summary
-                        sumVm += row.Vm;
-                        sumVmax += row.Vmax;
-                        if (row.Potencia > maxPotencia) maxPotencia = row.Potencia;
-                        if (row.Fatiga > maxFatiga) maxFatiga = row.Fatiga;
+                        sumVm += (row.Vm as number);
+                        sumVmax += (row.Vmax as number);
+                        if ((row.Potencia as number) > maxPotencia) maxPotencia = (row.Potencia as number);
+                        if ((row.Fatiga as number) > maxFatiga) maxFatiga = (row.Fatiga as number);
                     });
 
                     return {
@@ -133,15 +144,17 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                 // Convert map to array and sort by logical rep 
                 // Simple sort by assuming format S{x} R{y}
                 const unifiedData = Array.from(pointMap.values()).sort((a, b) => {
-                    const matchA = a.name.match(/S(\d+) R(\d+)/);
-                    const matchB = b.name.match(/S(\d+) R(\d+)/);
+                    const aName = String(a.name);
+                    const bName = String(b.name);
+                    const matchA = aName.match(/S(\d+) R(\d+)/);
+                    const matchB = bName.match(/S(\d+) R(\d+)/);
                     if (matchA && matchB) {
                         const sA = parseInt(matchA[1], 10);
                         const sB = parseInt(matchB[1], 10);
                         if (sA !== sB) return sA - sB;
                         return parseInt(matchA[2], 10) - parseInt(matchB[2], 10);
                     }
-                    return a.name.localeCompare(b.name);
+                    return aName.localeCompare(bName);
                 });
 
                 setData(unifiedData);
@@ -309,7 +322,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {summaryData.map((row) => (
+                                            {(summaryData ?? []).map((row) => (
                                                 <tr key={row.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                                     <td className="px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-white whitespace-nowrap flex items-center gap-2">
                                                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: row.color }} />

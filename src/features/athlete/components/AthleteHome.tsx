@@ -11,7 +11,11 @@ import {
     FlaskConical,
     Users,
     Swords,
-    Lock
+    Lock,
+    LayoutDashboard,
+    FileText,
+    Utensils,
+    User
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';
@@ -274,7 +278,7 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
     );
 }
 
-function DesktopHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="hidden md:flex flex-col px-12 py-8 h-full animate-in fade-in duration-500 gap-6">
             {/* Header */}
@@ -353,6 +357,79 @@ function DesktopHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, se
                         </p>
                     </div>
                 )}
+                </div>
+            </div>
+
+            {/* Panel de Control */}
+            <div className="flex flex-col gap-3 flex-1 min-h-0">
+                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
+                    <LayoutDashboard size={20} className="text-anvil-red" /> Panel de Control
+                </h2>
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 h-full">
+                    <button
+                        onClick={() => onNavigate('planning')}
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-blue-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                    >
+                        <div className="bg-blue-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-blue-500 mb-4 group-hover:scale-110 transition-transform">
+                            <FileText size={24} />
+                        </div>
+                        <div>
+                            <span className="font-bold text-white block text-lg">Mi Planificación</span>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Entrenamientos</span>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => onNavigate('nutrition')}
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-green-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                    >
+                        <div className="bg-green-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-green-500 mb-4 group-hover:scale-110 transition-transform">
+                            <Utensils size={24} />
+                        </div>
+                        <div>
+                            <span className="font-bold text-white block text-lg">Mi Nutrición</span>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Dieta y macros</span>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => onNavigate('competitions')}
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-yellow-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                    >
+                        <div className="bg-yellow-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-yellow-500 mb-4 group-hover:scale-110 transition-transform">
+                            <Trophy size={24} />
+                        </div>
+                        <div>
+                            <span className="font-bold text-white block text-lg">Competiciones</span>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Récords y Eventos</span>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => onNavigate('calendar')}
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-purple-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                    >
+                        <div className="bg-purple-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-purple-500 mb-4 group-hover:scale-110 transition-transform">
+                            <Calendar size={24} />
+                        </div>
+                        <div>
+                            <span className="font-bold text-white block text-lg">Calendario AEP</span>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos oficiales</span>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => onNavigate('profile')}
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-gray-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                    >
+                        <div className="bg-gray-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-gray-400 mb-4 group-hover:scale-110 transition-transform">
+                            <User size={24} />
+                        </div>
+                        <div>
+                            <span className="font-bold text-white block text-lg">Mi Perfil</span>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Ajustes personales</span>
+                        </div>
+                    </button>
                 </div>
             </div>
 

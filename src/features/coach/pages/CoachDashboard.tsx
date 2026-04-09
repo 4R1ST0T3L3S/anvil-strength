@@ -2,11 +2,10 @@ import { useState } from 'react';
 // import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE: Hook de navegación
 import {
     LayoutDashboard,
-    Users, // <--- Solo una vez
+    Users,
     Calendar,
     Trophy,
-    User,
-    LogOut
+    User
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
@@ -27,7 +26,7 @@ interface CoachDashboardProps {
 // Ya no necesitamos 'arena' en el estado de la vista
 type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile';
 
-export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
+export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProps) {
     // const navigate = useNavigate(); // Removed unused navigate
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
@@ -95,20 +94,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
         <DashboardLayout
             menuItems={menuItems}
         >
-            {/* BOTÓN FLOTANTE PARA ORDENADOR */}
-            <div className="hidden md:block fixed top-6 right-8 z-[100]">
-                <button
-                    onClick={onLogout}
-                    className="flex items-center gap-2 bg-[#1c1c1c] border border-white/10 hover:border-red-500/50 hover:text-red-500 text-gray-400 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-xl"
-                >
-                    <LogOut size={16} />
-                    Cerrar Sesión
-                </button>
-            </div>
-
-            <div className="px-4 py-4 md:px-12 md:pt-20 md:pb-8 w-full animate-in fade-in duration-500">
-                {renderContent()}
-            </div>
+            {renderContent()}
         </DashboardLayout>
     );
 }

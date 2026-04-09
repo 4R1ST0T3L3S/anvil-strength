@@ -52,7 +52,7 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
                     // Extracting the columns as provided by the user:
                     // Rep, Serie, Vm, Vmp, Vmax, ROM, 1RM, Potencia, Carga, Ejercicio, Fatiga
                     
-                    const parsedData: VbtDataPoint[] = results.data.map((row: Record<string, unknown>) => {
+                    const parsedData: VbtDataPoint[] = (results.data as Record<string, unknown>[]).map((row) => {
                         // Safely parse numbers from the strings, replacing commas with dots if necessary (EU formats)
                         const parseNum = (val: unknown) => {
                             if (!val) return 0;
