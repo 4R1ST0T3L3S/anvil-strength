@@ -53,4 +53,7 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 1000
   },
+  optimizeDeps: {
+    exclude: ['@techstark/opencv-js']
+  }
 })

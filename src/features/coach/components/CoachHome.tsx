@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTAR ESTO
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords } from 'lucide-react';
+import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords, Activity } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
 import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
@@ -255,6 +255,19 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                                 <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Ajustes</span>
                             </div>
                         </button>
+
+                        <button
+                            onClick={() => onNavigate('pwr_analysis')}
+                            className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-orange-500 transition-all text-left flex flex-col justify-center active:scale-[0.98]"
+                        >
+                            <div className="bg-orange-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-orange-500 mb-3">
+                                <Activity size={20} />
+                            </div>
+                            <div>
+                                <span className="font-bold text-white block text-sm">PWR Análisis</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
@@ -469,6 +482,19 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                         <div>
                             <span className="font-bold text-white block text-lg">Mi Perfil</span>
                             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Ajustes de cuenta</span>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => onNavigate('pwr_analysis')}
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-orange-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                    >
+                        <div className="bg-orange-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-orange-500 mb-4 group-hover:scale-110 transition-transform">
+                            <Activity size={24} />
+                        </div>
+                        <div>
+                            <span className="font-bold text-white block text-lg">PWR Análisis</span>
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
                         </div>
                     </button>
                 </div>

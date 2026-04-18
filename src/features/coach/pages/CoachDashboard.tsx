@@ -5,7 +5,8 @@ import {
     Users,
     Calendar,
     Trophy,
-    User
+    User,
+    Activity
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
@@ -15,6 +16,7 @@ import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { UserProfile, useUser } from '../../../hooks/useUser';
+import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 
 // Nota: Ya no importamos ArenaView aquí porque es una página externa
 
@@ -24,7 +26,7 @@ interface CoachDashboardProps {
 }
 
 // Ya no necesitamos 'arena' en el estado de la vista
-type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile';
+type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile' | 'pwr_analysis';
 
 export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProps) {
     // const navigate = useNavigate(); // Removed unused navigate
@@ -73,6 +75,12 @@ export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProp
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <Activity size={20} />,
+            label: 'PWR Análisis',
+            onClick: () => setCurrentView('pwr_analysis'),
+            isActive: currentView === 'pwr_analysis'
         }
     ];
 
@@ -86,6 +94,7 @@ export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProp
             case 'schedule': return <CoachTeamSchedule user={user} onBack={() => setCurrentView('home')} />;
             case 'calendar': return <CalendarSection onBack={() => setCurrentView('home')} />;
             case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => setCurrentView('home')} />;
+            case 'pwr_analysis': return <PwrAnalysisTab />;
             default: return <CoachHome user={user} onNavigate={(view) => setCurrentView(view as ViewState)} />;
         }
     };
