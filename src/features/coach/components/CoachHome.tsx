@@ -202,10 +202,10 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     )}
                 </div>
 
-                {/* Panel de Control */}
+                {/* Coaching Tools */}
                 <div className="flex flex-col gap-3">
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                        <LayoutDashboard size={16} className="text-anvil-red" /> Panel de Control
+                        <LayoutDashboard size={16} className="text-anvil-red" /> Coaching Tools
                     </h2>
                     <div className="grid grid-cols-2 gap-4">
                         <button
@@ -401,10 +401,10 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                 </div>
             </div>
 
-            {/* Panel de Control */}
+            {/* Coaching Tools */}
             <div className="flex flex-col gap-3 flex-1 min-h-0">
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
-                    <LayoutDashboard size={20} className="text-anvil-red" /> Panel de Control
+                    <LayoutDashboard size={20} className="text-anvil-red" /> Coaching Tools
                 </h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 h-full">
                     <button
