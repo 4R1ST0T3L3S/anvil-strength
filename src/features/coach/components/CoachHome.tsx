@@ -209,19 +209,6 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     </h2>
                     <div className="grid grid-cols-2 gap-4">
                         <button
-                            onClick={() => onNavigate('athletes')}
-                            className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red transition-all text-left flex flex-col justify-center active:scale-[0.98]"
-                        >
-                            <div className="bg-anvil-red/10 w-10 h-10 rounded-xl flex items-center justify-center text-anvil-red mb-3">
-                                <Users size={20} />
-                            </div>
-                            <div>
-                                <span className="font-bold text-white block text-sm">Mis Atletas</span>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Gestión</span>
-                            </div>
-                        </button>
-
-                        <button
                             onClick={() => onNavigate('schedule')}
                             className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-blue-500 transition-all text-left flex flex-col justify-center active:scale-[0.98]"
                         >
@@ -231,32 +218,6 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                             <div>
                                 <span className="font-bold text-white block text-sm">Agenda Equipo</span>
                                 <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos</span>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => onNavigate('calendar')}
-                            className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-purple-500 transition-all text-left flex flex-col justify-center active:scale-[0.98]"
-                        >
-                            <div className="bg-purple-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-purple-500 mb-3">
-                                <Calendar size={20} />
-                            </div>
-                            <div>
-                                <span className="font-bold text-white block text-sm">Calendario AEP</span>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Oficial</span>
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => onNavigate('profile')}
-                            className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-gray-500 transition-all text-left flex flex-col justify-center active:scale-[0.98]"
-                        >
-                            <div className="bg-gray-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 mb-3">
-                                <User size={20} />
-                            </div>
-                            <div>
-                                <span className="font-bold text-white block text-sm">Mi Perfil</span>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Ajustes</span>
                             </div>
                         </button>
 
