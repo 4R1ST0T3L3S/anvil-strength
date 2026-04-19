@@ -141,39 +141,13 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
              const ctx = canvas.getContext('2d');
              if (ctx) {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                if (cvReady && worker) {
-                    setState('auto_detecting');
-                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    sendAutoCalibrate(worker, imgData.data.buffer, canvas.width, canvas.height, (circle) => {
-                        if (circle) { setAutoCircle(circle); setState('confirm_plate'); }
-                        else setState('assist_detect');
-                    });
-                } else {
-                    setState('auto_detecting');
-                }
              }
+             // Go directly to tap mode - no auto-detection
+             setState('assist_detect');
          };
      }
   };
-  
-  // Race condition handler: CV loads after video
-  useEffect(() => {
-      if (cvReady && worker && state === 'auto_detecting' && !autoCircle) {
-          const video = videoRef.current;
-          const canvas = canvasRef.current;
-          if (video && canvas) {
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                  sendAutoCalibrate(worker, imgData.data.buffer, canvas.width, canvas.height, (circle) => {
-                      if (circle) { setAutoCircle(circle); setState('confirm_plate'); }
-                      else setState('assist_detect');
-                  });
-              }
-          }
-      }
-  }, [cvReady, worker, state, autoCircle]);
+
 
   // Repaint canvas
   useEffect(() => {
@@ -255,30 +229,18 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
   }, [seekTime]);
 
   const triggerReset = () => {
-      setState('loading_video');
       setCalibrationPoints([]);
       setAnchorPoint(null);
       setPath([]);
       setAutoCircle(null);
-      detectionDone.current = false;
-      setTimeout(() => {
-          const video = videoRef.current;
-          const canvas = canvasRef.current;
-          if (video && canvas) {
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                  if (cvReady && worker) {
-                      setState('auto_detecting');
-                      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                      sendAutoCalibrate(worker, imgData.data.buffer, canvas.width, canvas.height, (circle) => {
-                          if (circle) { setAutoCircle(circle); setState('confirm_plate'); }
-                          else setState('assist_detect');
-                      });
-                  }
-              }
-          }
-      }, 50);
+      // Redraw video frame and go straight to tap mode
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (video && canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
+      setState('assist_detect');
   };
 
   return (
