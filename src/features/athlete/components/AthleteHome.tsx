@@ -14,14 +14,17 @@ import {
     Lock,
     LayoutDashboard,
     FileText,
+    FileText,
     Utensils,
-    User
+    User,
+    Fish
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';
 import { OneRMCalculator } from './OneRMCalculator';
 import { WarmUpCalculator } from './WarmUpCalculator';
 import { PlateCalculator } from './PlateCalculator';
+import { SushiCounter } from './SushiCounter';
 import { AnvilRanking } from './AnvilRanking';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
@@ -54,6 +57,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
     const [isPlateCalcOpen, setIsPlateCalcOpen] = useState(false);
+    const [isSushiCounterOpen, setIsSushiCounterOpen] = useState(false);
     const [isRankingOpen, setIsRankingOpen] = useState(false);
     const [nextCompetition, setNextCompetition] = useState<CompetitionAssignment | null>(null);
 
@@ -88,6 +92,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         setIs1RMCalcOpen,
         setIsWarmUpCalcOpen,
         setIsPlateCalcOpen,
+        setIsSushiCounterOpen,
         setIsRankingOpen,
         nextCompetition
     };
@@ -101,6 +106,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
             <OneRMCalculator isOpen={is1RMCalcOpen} onClose={() => setIs1RMCalcOpen(false)} />
             <WarmUpCalculator isOpen={isWarmUpCalcOpen} onClose={() => setIsWarmUpCalcOpen(false)} />
             <PlateCalculator isOpen={isPlateCalcOpen} onClose={() => setIsPlateCalcOpen(false)} />
+            <SushiCounter isOpen={isSushiCounterOpen} onClose={() => setIsSushiCounterOpen(false)} />
         </>
     );
 }
@@ -112,11 +118,12 @@ interface HomeViewProps {
     setIs1RMCalcOpen: (isOpen: boolean) => void;
     setIsWarmUpCalcOpen: (isOpen: boolean) => void;
     setIsPlateCalcOpen: (isOpen: boolean) => void;
+    setIsSushiCounterOpen: (isOpen: boolean) => void;
     setIsRankingOpen: (isOpen: boolean) => void;
     nextCompetition: CompetitionAssignment | null;
 }
 
-function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             <header>
@@ -271,6 +278,15 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
                         </div>
                         <ChevronRight size={18} className="ml-auto text-gray-600" />
                     </div>
+
+                    <div onClick={() => setIsSushiCounterOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
+                        <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-500"><Fish size={24} /></div>
+                        <div>
+                            <h3 className="font-bold text-white uppercase text-sm">Contador Sushi</h3>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Calculadora Post-Competición</p>
+                        </div>
+                        <ChevronRight size={18} className="ml-auto text-gray-600" />
+                    </div>
                 </div>
             </div>
 
@@ -278,7 +294,7 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
     );
 }
 
-function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="hidden md:flex flex-col px-12 py-8 h-full animate-in fade-in duration-500 gap-6">
             {/* Header */}
@@ -487,7 +503,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <FlaskConical size={20} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full">
                     <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
                         <div className="flex items-center gap-5">
                             <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all"><Calculator size={32} /></div>
@@ -516,6 +532,17 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                             <div>
                                 <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Carga de Barra</h3>
                                 <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Calculadora de Discos</p>
+                            </div>
+                        </div>
+                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
+                    </div>
+
+                    <div onClick={() => setIsSushiCounterOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-cyan-500/30 transition-all active:scale-[0.98] h-full">
+                        <div className="flex items-center gap-5">
+                            <div className="p-4 lg:p-5 bg-cyan-500/10 rounded-xl text-cyan-500 group-hover:bg-cyan-600 group-hover:text-white transition-all"><Fish size={32} /></div>
+                            <div>
+                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Sushi Counter</h3>
+                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Calculadora de Macros</p>
                             </div>
                         </div>
                         <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />

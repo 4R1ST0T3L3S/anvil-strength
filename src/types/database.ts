@@ -22,6 +22,7 @@ export interface Profile {
     nutritionist_id?: string | null; // For athletes linked to a nutritionist
     brand_color?: string | null;
     logo_url?: string | null;
+    max_sushi_pieces?: number;
 }
 
 export interface Coach extends Profile {

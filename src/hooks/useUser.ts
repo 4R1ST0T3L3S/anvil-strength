@@ -27,6 +27,7 @@ export interface UserProfile {
     coach_logo_url?: string | null;
     nutritionist_id?: string | null;
     nutritionist_name?: string | null;
+    max_sushi_pieces?: number;
     // Backward compatibility aliases (deprecated)
     name?: string; // Alias for full_name
     profile_image?: string; // Alias for avatar_url
@@ -153,6 +154,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     coach_logo_url: coachLogoUrl,
                     nutritionist_id: profile.nutritionist_id ?? null,
                     nutritionist_name: nutritionistName,
+                    max_sushi_pieces: profile.max_sushi_pieces || 0,
                     // Backward compatibility
                     name: profile.full_name || optimisticUser.full_name,
                     profile_image: profile.avatar_url || optimisticUser.avatar_url
