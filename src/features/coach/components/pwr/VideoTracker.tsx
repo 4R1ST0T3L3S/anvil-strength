@@ -55,17 +55,11 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
     const y = (e.clientY - rect.top) * scaleY;
 
     if (state === 'assist_detect') {
-       if (cvReady && videoRef.current && worker) {
-          setState('auto_detecting');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-          ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          sendAssistCalibrate(worker, imgData.data.buffer, canvas.width, canvas.height, x, y, (circle) => {
-              if (circle) { setAutoCircle(circle); setState('confirm_plate'); }
-              else setState('calibrate');
-          });
-       }
+       // INSTANT: Place circle at tap point with default radius (no processing)
+       // Default radius = ~10% of video height (typical plate-to-frame ratio)
+       const defaultRadius = Math.round(canvas.height * 0.10);
+       setAutoCircle({ x, y, r: defaultRadius });
+       setState('confirm_plate');
        return;
     } else if (state === 'calibrate') {
       const newPoints = [...calibrationPoints, { x, y }];
