@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronDown, Activity, Zap, Calculator, TrendingUp, Check } from 'lucide-react';
+import { X, ChevronDown, Activity, Zap, Calculator, TrendingUp, Check, Trophy, Save, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser } from '../../../hooks/useUser';
+import { supabase } from '../../../lib/supabase';
 import { calcular1RMporVelocidad, Movimiento } from '../../../utils/vbtCalculator';
 
 interface OneRMCalculatorProps {
@@ -241,6 +243,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
     const [estimated1RM, setEstimated1RM] = useState<number>(0);
     const [currentPct, setCurrentPct] = useState<number | null>(null);
 
+    const { data: user, refetch } = useUser();
+    const [isSaving, setIsSaving] = useState(false);
+    const [celebration, setCelebration] = useState(false);
+
     const calculate1RM = () => {
         const w = parseFloat(weight);
         const r = parseInt(reps);
@@ -285,6 +291,44 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
             setCurrentPct(percentage);
         }
     };
+
+    const handleSavePR = async () => {
+        if (!user || estimated1RM <= 0) return;
+        setIsSaving(true);
+        try {
+            let column = '';
+            if (exercise === 'Sentadilla') column = 'squat_pr';
+            else if (exercise === 'Press de Banca') column = 'bench_pr';
+            else if (exercise === 'Peso Muerto') column = 'deadlift_pr';
+            
+            if (column) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ [column]: estimated1RM })
+                    .eq('id', user.id);
+                
+                if (!error) {
+                    setCelebration(true);
+                    await refetch();
+                    setTimeout(() => setCelebration(false), 3000);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const getCurrentPR = () => {
+        if (!user) return 0;
+        if (exercise === 'Sentadilla') return user.squat_pr || 0;
+        if (exercise === 'Press de Banca') return user.bench_pr || 0;
+        if (exercise === 'Peso Muerto') return user.deadlift_pr || 0;
+        return 0;
+    };
+
+    const currentPR = getCurrentPR();
 
     useEffect(() => {
         if (isOpen) {
@@ -441,6 +485,35 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                         </p>
                                     )}
                                 </div>
+
+                                {user && estimated1RM > 0 && (
+                                    <div className="mt-6 flex flex-col items-center gap-3 w-full h-[60px]">
+                                        <div className="flex items-center gap-2 text-yellow-500 bg-yellow-500/10 px-4 py-1.5 rounded-full border border-yellow-500/20">
+                                            <Trophy size={14} />
+                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">PR Actual: {currentPR} kg</span>
+                                        </div>
+                                        
+                                        <AnimatePresence>
+                                            {estimated1RM > currentPR && (
+                                                <motion.button
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.9 }}
+                                                    onClick={handleSavePR}
+                                                    disabled={isSaving}
+                                                    className={`absolute bottom-0 translate-y-16 flex items-center gap-2 px-6 py-2 rounded-xl font-black uppercase text-xs tracking-widest transition-all ${
+                                                        celebration 
+                                                            ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
+                                                            : 'bg-white text-black hover:bg-gray-200 shadow-xl'
+                                                    }`}
+                                                >
+                                                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : celebration ? <Trophy size={16} /> : <Save size={16} />}
+                                                    {celebration ? '¡PR Guardado!' : 'Guardar Nuevo PR'}
+                                                </motion.button>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
