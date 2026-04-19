@@ -32,6 +32,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
   
   // OpenCV objects
   const cvContext = useRef<any>({});
+  const detectionTriggered = useRef(false); // Guard against double-fire
 
   // Unmount cleanup
   useEffect(() => {
@@ -207,31 +208,28 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
      const video = videoRef.current;
      const canvas = canvasRef.current;
      if (video && canvas && worker) {
-        // Avanzamos ligeramente el video (0.1s) porque el frame 0.0 en muchos móviles/Edge está en negro
-        // o es un keyframe vacío, lo que causa Canvas negro -> IA ciega -> 0 discos encontrados -> Modo manual.
-        video.currentTime = 0.1;
+        video.currentTime = 0.5; // Saltar algo más para evitar frames negros o vacíos
+        detectionTriggered.current = false;
         video.onseeked = () => {
-             // Match canvas logical size to video intrinsic resolution
+             if (detectionTriggered.current) return; // Evitar dobles ejecuciones
+             detectionTriggered.current = true;
+
              canvas.width = video.videoWidth;
              canvas.height = video.videoHeight;
              
              const ctx = canvas.getContext('2d');
              if (ctx) {
-                // Dibujar forzadamente el fotograma en pantalla
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                
-                if (state === 'auto_detecting') {
-                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    sendAutoCalibrate(worker, imgData.data.buffer, canvas.width, canvas.height, (circle) => {
-                        if (circle) {
-                            setAutoCircle(circle);
-                            setState('confirm_plate');
-                        } else {
-                            // IA no encontró disco en automático global, pedimos Ayuda Inteligente
-                            setState('assist_detect');
-                        }
-                    });
-                }
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                // Mandamos siempre la detección automática aquí, sin depender del state
+                sendAutoCalibrate(worker, imgData.data.buffer, canvas.width, canvas.height, (circle) => {
+                    if (circle) {
+                        setAutoCircle(circle);
+                        setState('confirm_plate');
+                    } else {
+                        setState('assist_detect');
+                    }
+                });
              }
          };
      }

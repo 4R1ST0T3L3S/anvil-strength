@@ -149,69 +149,55 @@ self.onmessage = function(e) {
             const frame = self.cv.matFromImageData(imgData);
             const gray = new self.cv.Mat();
             self.cv.cvtColor(frame, gray, self.cv.COLOR_RGBA2GRAY);
+            frame.delete();
             
-            // Redimensionar la imagen para un procesamiento ultra-rápido (Máx 640px ancho)
-            const MAX_WIDTH = 640;
+            // Redimensionar a 480px máx para speed (suficiente para detectar un disco de 45cm)
+            const MAX_WIDTH = 480;
             let scale = 1.0;
             if (gray.cols > MAX_WIDTH) {
                 scale = MAX_WIDTH / gray.cols;
-                const newWidth = MAX_WIDTH;
-                const newHeight = Math.round(gray.rows * scale);
-                const dsize = new self.cv.Size(newWidth, newHeight);
+                const dsize = new self.cv.Size(MAX_WIDTH, Math.round(gray.rows * scale));
                 self.cv.resize(gray, gray, dsize, 0, 0, self.cv.INTER_AREA);
             }
 
-            // Aplicar CLAHE (Ecualización de Histograma Adaptativa) para revelar bordes ocultos en la oscuridad
-            const clahe = new self.cv.CLAHE(2.0, new self.cv.Size(8, 8));
-            clahe.apply(gray, gray);
-            clahe.delete();
-            
-            // Suavizado amplio para minimizar el ruido
-            self.cv.medianBlur(gray, gray, 5);
-            
+            // Gaussian blur: el mejor preprocesado para Hough
+            self.cv.GaussianBlur(gray, gray, new self.cv.Size(9, 9), 2, 2);
+
             const circles = new self.cv.Mat();
-            const minRad = Math.max(10, Math.round(40 * scale));
-            const maxRad = Math.round(400 * scale);
-            const minDist = Math.max(10, Math.round(10 * scale));
-            
-            // Bajamos param1 (Canny) a 70 y param2 (Accumulator) a 35 para permitir encontrar 
-            // círculos muy tapados o muy oscuros ignorados antes.
-            self.cv.HoughCircles(gray, circles, self.cv.HOUGH_GRADIENT, 1, minDist, 70, 35, minRad, maxRad);
-            
+            // Rango de radio proporcional: el disco de 25kg ocupa ~15-45% del ancho del frame
+            const minRad = Math.round(gray.cols * 0.06);  // 6% del ancho
+            const maxRad = Math.round(gray.cols * 0.48);  // 48% del ancho
+            const minDist = Math.round(gray.cols * 0.15); // Mínima distancia entre centros
+
+            // Intento 1: Detección estricta (param2 alto = pocos falsos positivos)
+            self.cv.HoughCircles(gray, circles, self.cv.HOUGH_GRADIENT, 1, minDist, 80, 45, minRad, maxRad);
+
             let bestCircle = null;
+
+            if (circles.cols === 0) {
+                // Intento 2: Si no encontró nada, relajar sensibilidad
+                self.cv.HoughCircles(gray, circles, self.cv.HOUGH_GRADIENT, 1.2, minDist, 60, 30, minRad, maxRad);
+            }
+
             if (circles.cols > 0) {
-                // HoughCircles devuelve los círculos ordenados por "fuerza" (acumulador).
-                // El índice 0 es el más definido.
-                const strongestX = circles.data32F[0];
-                const strongestY = circles.data32F[1];
-                let bestR = circles.data32F[2];
-                let bestIdx = 0;
-                
-                // Buscamos si hay un disco más grande que comparta el mismísimo centro (Concéntrico)
-                const limit = Math.min(10, circles.cols);
-                for (let i = 1; i < limit; i++) {
-                    const cx = circles.data32F[i * 3];
-                    const cy = circles.data32F[i * 3 + 1];
+                // Buscar el círculo más grande (disco principal, no buje central)
+                let bestR = 0;
+                const limit = Math.min(15, circles.cols);
+                for (let i = 0; i < limit; i++) {
                     const r = circles.data32F[i * 3 + 2];
-                    
-                    const dist = Math.sqrt(Math.pow(cx - strongestX, 2) + Math.pow(cy - strongestY, 2));
-                    // Si comparten el centro (margen de 20px) pero es un aro exterior más grande:
-                    if (dist < 20 * scale && r > bestR) {
+                    if (r > bestR) {
                         bestR = r;
-                        bestIdx = i;
+                        bestCircle = {
+                            x: circles.data32F[i * 3] / scale,
+                            y: circles.data32F[i * 3 + 1] / scale,
+                            r: r / scale
+                        };
                     }
                 }
-
-                bestCircle = {
-                   x: circles.data32F[bestIdx * 3] / scale,
-                   y: circles.data32F[bestIdx * 3 + 1] / scale,
-                   r: circles.data32F[bestIdx * 3 + 2] / scale
-                };
             }
             
             gray.delete();
             circles.delete();
-            frame.delete();
             
             self.postMessage({
                 type: 'AUTO_CALIBRATE_DONE',
@@ -221,6 +207,7 @@ self.onmessage = function(e) {
             self.postMessage({ type: 'ERROR', message: "Error auto-detectando disco: " + error.message });
         }
     }
+
     else if (data.type === 'ASSIST_CALIBRATE') {
         try {
             const imgData = new ImageData(new Uint8ClampedArray(data.buffer), data.width, data.height);
