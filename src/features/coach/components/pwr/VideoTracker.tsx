@@ -134,7 +134,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
      if (video && canvas) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        video.currentTime = 0.5;
+        video.currentTime = Math.min(0.5, video.duration / 2);
         video.onseeked = () => {
              if (detectionDone.current) return;
              detectionDone.current = true;

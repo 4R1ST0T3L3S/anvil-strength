@@ -5,7 +5,8 @@ import {
     Users,
     Calendar,
     Trophy,
-    User
+    User,
+    Activity
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
@@ -74,6 +75,12 @@ export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProp
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <Activity size={20} />,
+            label: 'PWR Análisis',
+            onClick: () => setCurrentView('pwr_analysis'),
+            isActive: currentView === 'pwr_analysis'
         }
     ];
 

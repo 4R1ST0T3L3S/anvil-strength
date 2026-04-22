@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { X, Loader, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { SessionExercise, TrainingSession, TrainingBlock } from '../../../types/training';
+import { mapRowToVbt, isValidVbtRow, VbtRow } from '../utils/vbtParser';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -58,7 +59,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
             try {
                 const allParsedSessions = await Promise.all(
                     sessionsToCompare.map(ex => {
-                        return new Promise<{ session: VbtExerciseData, parsedRows: Record<string, unknown>[] }>((resolve, reject) => {
+                        return new Promise<{ session: VbtExerciseData, parsedRows: VbtRow[] }>((resolve, reject) => {
                             if (!ex.vbt_file_url) {
                                 resolve({ session: ex, parsedRows: [] });
                                 return;
@@ -68,30 +69,9 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                                 header: true,
                                 skipEmptyLines: true,
                                 complete: (results) => {
-                                    const parseNum = (val: unknown) => {
-                                        if (!val) return 0;
-                                        return parseFloat(String(val).replace(',', '.'));
-                                    };
-
-                                    const rows = (results.data as Record<string, unknown>[]).map((row) => {
-                                        const serieRaw = String(row['Serie'] || '?');
-                                        const repRaw = String(row['Rep'] || '?');
-                                        const serieMatch = serieRaw.match(/\d+/);
-                                        const repMatch = repRaw.match(/\d+/);
-                                        const serie = serieMatch ? serieMatch[0] : serieRaw;
-                                        const rep = repMatch ? repMatch[0] : repRaw;
-
-                                        return {
-                                            name: `S${serie} R${rep}`,
-                                            Vm: parseNum(row['Vm']),
-                                            Vmp: parseNum(row['Vmp']),
-                                            Vmax: parseNum(row['Vmax']),
-                                            Potencia: parseNum(row['Potencia']),
-                                            Carga: parseNum(row['Carga']),
-                                            Fatiga: parseNum(row['Fatiga']),
-                                            ROM: parseNum(row['ROM'])
-                                        };
-                                    }).filter(d => d.Vm > 0 || d.Vmax > 0 || d.Potencia > 0);
+                                    const rows = (results.data as Record<string, unknown>[])
+                                        .map(mapRowToVbt)
+                                        .filter(isValidVbtRow);
 
                                     resolve({ session: ex, parsedRows: rows });
                                 },
@@ -124,10 +104,10 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                         pointMap.set(rowName, point);
 
                         // Accumulate for summary
-                        sumVm += (row.Vm as number);
-                        sumVmax += (row.Vmax as number);
-                        if ((row.Potencia as number) > maxPotencia) maxPotencia = (row.Potencia as number);
-                        if ((row.Fatiga as number) > maxFatiga) maxFatiga = (row.Fatiga as number);
+                        sumVm += row.Vm;
+                        sumVmax += row.Vmax;
+                        if (row.Potencia > maxPotencia) maxPotencia = row.Potencia;
+                        if (row.Fatiga > maxFatiga) maxFatiga = row.Fatiga;
                     });
 
                     return {
