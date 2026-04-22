@@ -5,8 +5,7 @@ import {
     Users,
     Calendar,
     Trophy,
-    User,
-    Activity
+    User
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';

@@ -62,7 +62,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
   const chartData = useMemo(() => {
       // Normalize time to start at 0
       const startTime = metricsData.length > 0 ? metricsData[0].time : 0;
-      return metricsData.map((d: any) => ({
+      return metricsData.map((d) => ({
           time: Number(((d.time - startTime) / 1000).toFixed(2)),
           videoTime: d.time / 1000,
           velocity: Number(d.velocity.toFixed(3))
@@ -137,7 +137,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
 
               <select 
                   value={exerciseType}
-                  onChange={(e) => setExerciseType(e.target.value as any)}
+                  onChange={(e) => setExerciseType(e.target.value as 'squat'|'bench'|'deadlift')}
                   className="bg-white/5 text-white font-bold text-xs px-2 py-1 rounded-md focus:outline-none focus:ring-1 ring-white/20 border-none appearance-none cursor-pointer"
               >
                   <option value="squat">Sentadilla (0.3m/s)</option>
@@ -198,8 +198,9 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
                         data={chartData} 
                         onMouseEnter={() => setIsHovering(true)}
                         onMouseMove={(e) => {
-                            if (e && e.activePayload && e.activePayload.length > 0) {
-                                onTimeHover?.(e.activePayload[0].payload.videoTime);
+                            const payload = (e as Record<string, unknown>)?.activePayload as Array<{payload: {videoTime: number}}> | undefined;
+                            if (payload && payload.length > 0) {
+                                onTimeHover?.(payload[0].payload.videoTime);
                             }
                         }}
                         onMouseLeave={() => {
@@ -255,7 +256,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
                         <Tooltip 
                             cursor={{ strokeDasharray: '3 3' }} 
                             contentStyle={{ backgroundColor: '#1c1c1c', border: '1px solid #333', borderRadius: '6px', fontSize: '10px' }}
-                            formatter={(value: number, name: string) => [value.toFixed(1), name]}
+                            formatter={(value, name) => [Number(value).toFixed(1), String(name)]}
                         />
                         <Scatter name="Bar Path" data={barPathData} fill="#22c55e" line={{ stroke: '#22c55e', strokeWidth: 2 }} shape="circle" />
                     </ScatterChart>

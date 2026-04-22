@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 // Augmented Window interface for OpenCV
 declare global {
   interface Window {
-    cv: any;
+    cv: Record<string, unknown>;
     onOpenCvReady: () => void;
   }
 }
@@ -14,7 +14,7 @@ let trackDoneCallback: ((status: number, x: number, y: number) => void) | null =
 let autoCalibrateDoneCallback: ((circle: {x: number, y: number, r: number} | null) => void) | null = null;
 
 export const useOpenCV = () => {
-  const [cvReady, setCvReady] = useState<boolean>(false);
+  const [cvReady, setCvReady] = useState<boolean>(() => !!cvWorker);
   const [cvError, setCvError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,11 +51,10 @@ export const useOpenCV = () => {
         // Pedir status inicial
         cvWorker.postMessage({ type: 'PING' });
         
-      } catch (err: any) {
-        setCvError("Fallo al inicializar Worker: " + err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        queueMicrotask(() => setCvError("Fallo al inicializar Worker: " + message));
       }
-    } else {
-       setCvReady(true);
     }
   }, []);
 

@@ -142,7 +142,26 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile, onNavigate:
     );
 }
 
-function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen }: any) {
+interface CoachHomeViewProps {
+    user: UserProfile;
+    stats: {
+        nextCompDate: string | null;
+        nextCompDays: number | null;
+        nextCompName: string;
+        nextCompLevel: string;
+        nextCompLocation: string;
+    };
+    getGreeting: () => string;
+    onNavigate: (view: string) => void;
+    navigate: ReturnType<typeof useNavigate>;
+    setIs1RMCalcOpen: (v: boolean) => void;
+    setIsWarmUpCalcOpen: (v: boolean) => void;
+    setIsPlateCalcOpen: (v: boolean) => void;
+    setIsSushiCounterOpen: (v: boolean) => void;
+    setIsRankingOpen: (v: boolean) => void;
+}
+
+function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen }: CoachHomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             <header className="mb-8">
@@ -331,7 +350,7 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
     );
 }
 
-function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen }: any) {
+function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen }: CoachHomeViewProps) {
     return (
         <div className="hidden md:flex flex-col px-12 py-8 min-h-full animate-in fade-in duration-500 gap-6">
             {/* Header */}

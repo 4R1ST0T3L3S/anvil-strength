@@ -14,7 +14,6 @@ import {
     Lock,
     LayoutDashboard,
     FileText,
-    FileText,
     Utensils,
     User,
     Fish

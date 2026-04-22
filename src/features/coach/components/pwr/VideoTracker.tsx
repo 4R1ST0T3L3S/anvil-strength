@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { useOpenCV, TrackingPoint, sendInitTracker, sendProcessFrame, sendAutoCalibrate, sendAssistCalibrate } from '../../../../lib/cv/tracker';
+import { useOpenCV, TrackingPoint, sendInitTracker, sendProcessFrame } from '../../../../lib/cv/tracker';
 import { Play, Ruler, Target, RefreshCw, Upload, Loader } from 'lucide-react';
 
 interface VideoTrackerProps {
@@ -28,7 +28,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
   const [anchorPoint, setAnchorPoint] = useState<{x: number, y: number} | null>(null);
   const [path, setPath] = useState<TrackingPoint[]>([]);
   
-  const cvContext = useRef<any>({});
+  const cvContext = useRef<Record<string, number>>({});
   const detectionDone = useRef(false);
 
   useEffect(() => {

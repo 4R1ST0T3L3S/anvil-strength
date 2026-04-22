@@ -1,4 +1,9 @@
-import { TrackingPoint } from './tracker';
+interface VelocityDataPoint {
+  time: number;
+  velocity: number;
+  x: number;
+  y: number;
+}
 
 export interface PhaseMetrics {
   type: 'eccentric' | 'concentric';
@@ -13,14 +18,14 @@ export interface PhaseMetrics {
   stickingHeight: number; 
   duration: number; // seconds
   horizontalDeviationCm: number;
-  dataPoints: any[];
+  dataPoints: VelocityDataPoint[];
 }
 
 /**
  * Filtra y segmenta un array curvo de velocidades en repeticiones limpias (fases excéntricas y concéntricas)
  */
 export const extractLiftingPhases = (
-   smoothedVelocities: any[], 
+   smoothedVelocities: VelocityDataPoint[], 
    pixelToMeterRatio: number,
    minRomThreshold = 0.15 // Min 15cm ROM para considerarse una repetición
 ): { eccentrics: PhaseMetrics[], concentrics: PhaseMetrics[] } => {
@@ -28,7 +33,7 @@ export const extractLiftingPhases = (
     let currentState = 0; // 0 rest, 1 up, -1 down
     const concentrics: PhaseMetrics[] = [];
     const eccentrics: PhaseMetrics[] = [];
-    let currentPhase: any[] = [];
+    let currentPhase: VelocityDataPoint[] = [];
     
     const finalizePhase = () => {
         if (currentPhase.length === 0) return;
@@ -108,7 +113,7 @@ export const extractLiftingPhases = (
  * Física Dinámica (Aislador de aceleración y RFD)
  */
 export const calculateDynamics = (
-    velocitiesArray: any[],
+    velocitiesArray: VelocityDataPoint[],
     massKg: number
 ) => {
     const g = 9.81; 
