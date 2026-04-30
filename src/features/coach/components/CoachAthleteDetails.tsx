@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity } from 'lucide-react';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple } from 'lucide-react';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import CoachVbtTab from './CoachVbtTab';
+import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEditor';
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -14,7 +15,7 @@ interface CoachAthleteDetailsProps {
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'competitions' | 'vbt';
+type Tab = 'planning' | 'competitions' | 'vbt' | 'nutrition';
 
 export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsProps) {
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
@@ -118,15 +119,15 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                 </div>
 
                 {/* Tabs Navigation */}
-                <div className="w-full md:w-auto pb-1 md:pb-0">
-                    <div className="grid grid-cols-3 gap-1 md:flex bg-black/20 p-1 rounded-lg">
+                <div className="w-full md:w-auto pb-1 md:pb-0 overflow-x-auto">
+                    <div className="flex bg-black/20 p-1 rounded-lg min-w-max gap-1">
                         <button
                             onClick={() => setActiveTab('planning')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                                 activeTab === 'planning' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-gray-400 hover:text-white'
                             }`}
                         >
-                            <FileText size={14} className="md:w-4 md:h-4" /> <span className="truncate">Planning</span>
+                            <FileText size={14} className="md:w-4 md:h-4" /> <span>Planning</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('vbt')}
@@ -134,7 +135,15 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                                 activeTab === 'vbt' ? 'bg-[#0ea5e9] text-black shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'text-gray-400 hover:text-white'
                             }`}
                         >
-                            <Activity size={14} className="md:w-4 md:h-4" /> <span className="truncate">VBT</span>
+                            <Activity size={14} className="md:w-4 md:h-4" /> <span>VBT</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('nutrition')}
+                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                activeTab === 'nutrition' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-gray-400 hover:text-white'
+                            }`}
+                        >
+                            <Apple size={14} className="md:w-4 md:h-4" /> <span>Nutrición</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('competitions')}
@@ -142,7 +151,7 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                                 activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-gray-400 hover:text-white'
                             }`}
                         >
-                            <Trophy size={14} className="md:w-4 md:h-4" /> <span className="truncate">Competición</span>
+                            <Trophy size={14} className="md:w-4 md:h-4" /> <span>Competición</span>
                         </button>
                     </div>
                 </div>
@@ -258,6 +267,13 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                 {activeTab === 'vbt' && (
                     <div className="max-w-7xl mx-auto w-full pb-6 px-4">
                         <CoachVbtTab athleteId={athleteId} />
+                    </div>
+                )}
+
+                {/* 5. NUTRICIÓN */}
+                {activeTab === 'nutrition' && (
+                    <div className="max-w-7xl mx-auto w-full pb-6 px-4">
+                        <NutritionPlanEditor athleteId={athleteId} />
                     </div>
                 )}
 

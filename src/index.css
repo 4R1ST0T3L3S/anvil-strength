@@ -77,3 +77,38 @@ body {
   width: 90vw !important;
   max-width: 400px !important;
 }
+
+/* --- PRINT / PDF EXPORT --- */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide everything except the print component */
+  body > *:not(.print-plan-wrapper) {
+    display: none !important;
+  }
+  
+  .print-plan-wrapper {
+    display: block !important;
+    position: static !important;
+  }
+
+  .print-plan {
+    display: block !important;
+    background: white !important;
+  }
+
+  /* Page breaks */
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}

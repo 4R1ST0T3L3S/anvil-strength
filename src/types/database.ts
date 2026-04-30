@@ -23,6 +23,7 @@ export interface Profile {
     brand_color?: string | null;
     logo_url?: string | null;
     max_sushi_pieces?: number;
+    is_developer?: boolean;
 }
 
 export interface Coach extends Profile {

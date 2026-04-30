@@ -172,6 +172,17 @@ export const trainingService = {
         return data || [];
     },
 
+    async createExercise(exercise: Omit<ExerciseLibrary, 'id' | 'created_at'>): Promise<ExerciseLibrary> {
+        const { data, error } = await supabase
+            .from('exercise_library')
+            .insert(exercise)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
     async getSessionExercises(sessionId: string): Promise<SessionExercise[]> {
         const { data, error } = await supabase
             .from('session_exercises')

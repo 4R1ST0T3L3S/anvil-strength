@@ -6,7 +6,8 @@ import {
     Calendar,
     Trophy,
     User,
-    Activity
+    Activity,
+    LogOut
 } from 'lucide-react';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
@@ -81,6 +82,12 @@ export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProp
             label: 'PWR Análisis',
             onClick: () => setCurrentView('pwr_analysis'),
             isActive: currentView === 'pwr_analysis'
+        },
+        {
+            icon: <LogOut size={20} className="text-red-500" />,
+            label: 'Salir',
+            onClick: () => _onLogout(),
+            isActive: false
         }
     ];
 

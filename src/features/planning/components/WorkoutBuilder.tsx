@@ -1,13 +1,15 @@
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, Target, Activity } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, Target, Activity, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { getWeekNumber, getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 import { VbtChartModal } from '../../coach/components/VbtChartModal';
+import { TrainingPDFEditorModal } from '../../training/components/TrainingPDFEditorModal';
+import { ExerciseSearchModal } from '../../training/components/ExerciseSearchModal';
 
 // Helpers to parse and format target_reps field specifically for grouped sets
 const getSeriesCount = (target_reps: string | null | undefined) => {
@@ -71,7 +73,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     // Calculate current week number for status badges
     const currentRealWeek = getWeekNumber();
 
-    // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -80,6 +81,13 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
     const [vbtModalConfig, setVbtModalConfig] = useState<{ isOpen: boolean; url: string; exerciseName: string }>({ isOpen: false, url: '', exerciseName: '' });
+    
+    // PDF State
+    const [pdfModalState, setPdfModalState] = useState<{ isOpen: boolean, week: number | null }>({ isOpen: false, week: null });
+    const [athleteName, setAthleteName] = useState<string>('Atleta');
+
+    // Exercise Search Modal State
+    const [exerciseSearchState, setExerciseSearchState] = useState<{ isOpen: boolean, sessionId: string | null }>({ isOpen: false, sessionId: null });
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -90,6 +98,12 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
         }
         try {
             const block = await trainingService.getBlock(blockId);
+
+            // Fetch Athlete Name
+            const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', athleteId).single();
+            if (profile?.full_name) {
+                setAthleteName(profile.full_name);
+            }
 
             // 2. Fetch Sessions
             const { data: sessions, error: sessError } = await supabase
@@ -237,32 +251,21 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
     };
 
     // --- Exercises ---
-    const addExercise = async (sessionId: string, exerciseName: string) => {
+    const handleSelectExercise = async (exerciseId: string) => {
+        const sessionId = exerciseSearchState.sessionId;
+        if (!sessionId) return;
+        
         const session = blockData?.sessions.find(s => s.id === sessionId);
         if (!session) return;
 
         try {
-            // 1. Find or Create Exercise ID
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("No user found");
-
-            const exerciseId = await trainingService.findOrCreateExercise(exerciseName, user.id);
-
             // 2. Add to Session
             const nextOrder = session.exercises.length;
             const newSessionExercise = await trainingService.addSessionExercise(sessionId, exerciseId, nextOrder);
 
-            // Fetch the exercise details again (or construct them) for local state
-            const exerciseDisplay: ExerciseLibrary = {
-                id: exerciseId,
-                name: exerciseName,
-                is_public: false, // assumption
-                created_at: new Date().toISOString()
-            };
-
             const extendedEx: ExtendedSessionExercise = {
                 ...newSessionExercise,
-                exercise: exerciseDisplay, // Attach details
+                exercise: newSessionExercise.exercise ?? { id: exerciseId, name: 'Ejercicio', is_public: false, created_at: new Date().toISOString() },
                 sets: []
             };
 
@@ -279,6 +282,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     })
                 };
             });
+            setExerciseSearchState({ isOpen: false, sessionId: null });
         } catch (err) {
             toast.error(`Error añadiendo ejercicio: ${(err as Error).message || 'Desconocido'}`);
         }
@@ -724,6 +728,13 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
 
                                 <div className="flex items-center gap-3">
                                     <button
+                                        onClick={(e) => { e.stopPropagation(); setPdfModalState({ isOpen: true, week }); }}
+                                        className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                        title="Generar PDF Semanal"
+                                    >
+                                        <FileText size={18} />
+                                    </button>
+                                    <button
                                         onClick={(e) => { e.stopPropagation(); handleCopyWeek(week); }}
                                         className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                                         title="Copiar semana"
@@ -752,7 +763,6 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                                                     session={session}
                                                     onUpdateName={updateSessionName}
                                                     onUpdateDate={updateSessionDate}
-                                                    onAddExercise={addExercise}
                                                     onUpdateExercise={updateSessionExercise}
                                                     onRemoveExercise={removeExercise}
                                                     onAddSet={addSet}
@@ -761,6 +771,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                                                     onRemoveSet={removeSet}
                                                     onRemoveSession={removeSession}
                                                     onOpenVbtChart={(url, name) => setVbtModalConfig({ isOpen: true, url, exerciseName: name })}
+                                                    onOpenSearchModal={(sessionId) => setExerciseSearchState({ isOpen: true, sessionId })}
                                                 />
                                             ))}
 
@@ -807,13 +818,30 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                 variant="danger"
             />
 
-            {/* VBT Chart Modal */}
+            {/* Exercise Search Modal */}
+            {exerciseSearchState.isOpen && (
+                <ExerciseSearchModal
+                    onClose={() => setExerciseSearchState({ isOpen: false, sessionId: null })}
+                    onSelect={handleSelectExercise}
+                />
+            )}
             <VbtChartModal
                 isOpen={vbtModalConfig.isOpen}
                 onClose={() => setVbtModalConfig(prev => ({ ...prev, isOpen: false }))}
                 vbtFileUrl={vbtModalConfig.url}
                 exerciseName={vbtModalConfig.exerciseName}
             />
+
+            {/* PDF Generation Modal */}
+            {pdfModalState.isOpen && pdfModalState.week !== null && blockData && (
+                <TrainingPDFEditorModal
+                    block={blockData}
+                    weekNumber={pdfModalState.week}
+                    weekName={weekNames[pdfModalState.week]}
+                    athleteName={athleteName}
+                    onClose={() => setPdfModalState({ isOpen: false, week: null })}
+                />
+            )}
         </div>
     );
 }
@@ -826,7 +854,6 @@ interface DayColumnProps {
     session: ExtendedSession;
     onUpdateName: (id: string, name: string) => void;
     onUpdateDate: (id: string, date: string) => void;
-    onAddExercise: (sessionId: string, name: string) => void;
     onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
     onRemoveExercise: (id: string, sessionId: string) => void;
     onAddSet: (sessionExerciseId: string) => void;
@@ -835,10 +862,10 @@ interface DayColumnProps {
     onRemoveSet: (setId: string) => void;
     onRemoveSession: (id: string) => void;
     onOpenVbtChart: (url: string, name: string) => void;
+    onOpenSearchModal: (sessionId: string) => void;
 }
 
-function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession, onOpenVbtChart }: DayColumnProps) {
-    const [isAddingEx, setIsAddingEx] = useState(false);
+function DayColumn({ session, onUpdateName, onUpdateExercise, onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveSession, onOpenVbtChart, onOpenSearchModal }: DayColumnProps) {
 
     if (!session) {
         console.error("DayColumn received null session!");
@@ -881,43 +908,14 @@ function DayColumn({ session, onUpdateName, onAddExercise, onUpdateExercise, onR
                     />
                 ))}
 
-                {/* Add Exercise - Simple Input */}
+                {/* Add Exercise - Button replaces input */}
                 <div className="pt-2 pb-4">
-                    {!isAddingEx ? (
-                        <button
-                            onClick={() => setIsAddingEx(true)}
-                            className="w-full py-3 bg-[#252525] hover:bg-[#2a2a2a] rounded-2xl text-gray-500 hover:text-anvil-red transition-all text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2 border border-transparent hover:border-anvil-red/20"
-                        >
-                            <Plus size={14} /> Añadir Ejercicio
-                        </button>
-                    ) : (
-                        <div className="bg-[#252525] border border-white/10 rounded-2xl p-4 shadow-xl animate-in fade-in zoom-in-95 duration-200">
-                            <input
-                                autoFocus
-                                type="text"
-                                placeholder="Escribe el nombre del ejercicio..."
-                                className="w-full bg-black/40 text-white font-bold text-center p-3 rounded-xl border border-white/5 focus:border-anvil-red outline-none placeholder-gray-600 mb-3"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        const val = e.currentTarget.value.trim();
-                                        if (val) {
-                                            onAddExercise(session.id, val);
-                                            setIsAddingEx(false);
-                                        }
-                                    } else if (e.key === 'Escape') {
-                                        setIsAddingEx(false);
-                                    }
-                                }}
-                                onBlur={(e) => {
-                                    if (!e.currentTarget.value.trim()) setIsAddingEx(false);
-                                }}
-                            />
-                            <div className="flex justify-center gap-4 text-[10px] text-gray-500 font-mono">
-                                <span>[Enter] Guardar</span>
-                                <span>[Esc] Cancelar</span>
-                            </div>
-                        </div>
-                    )}
+                    <button
+                        onClick={() => onOpenSearchModal(session.id)}
+                        className="w-full py-3 bg-[#252525] hover:bg-[#2a2a2a] rounded-2xl text-gray-500 hover:text-anvil-red transition-all text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2 border border-transparent hover:border-anvil-red/20"
+                    >
+                        <Plus size={14} /> Añadir Ejercicio
+                    </button>
                 </div>
             </div>
         </div>
@@ -947,6 +945,26 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
     const exerciseName = sessionExercise?.exercise?.name || "Ejercicio desconocido";
     const isVariant = exerciseName.toLowerCase().includes('variante') || exerciseName === 'Personalizado';
     const hasVideo = !!sessionExercise.exercise?.video_url;
+
+    const [modifierInput, setModifierInput] = useState('');
+
+    const handleAddModifier = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && modifierInput.trim()) {
+            e.preventDefault();
+            const currentModifiers = sessionExercise.modifiers || [];
+            const newModifiers = [...currentModifiers, modifierInput.trim().toUpperCase()];
+            onUpdateExercise(sessionExercise.id, { modifiers: newModifiers });
+            await trainingService.updateSessionExercise(sessionExercise.id, { modifiers: newModifiers });
+            setModifierInput('');
+        }
+    };
+
+    const handleRemoveModifier = async (indexToRemove: number) => {
+        const currentModifiers = sessionExercise.modifiers || [];
+        const newModifiers = currentModifiers.filter((_, i) => i !== indexToRemove);
+        onUpdateExercise(sessionExercise.id, { modifiers: newModifiers });
+        await trainingService.updateSessionExercise(sessionExercise.id, { modifiers: newModifiers });
+    };
 
     const handleVariantChange = (val: string) => {
         onUpdateExercise(sessionExercise.id, { variant_name: val });
@@ -1057,6 +1075,26 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
                                 className="w-full bg-black/20 text-xs text-center text-gray-300 border border-white/5 focus:border-anvil-red rounded-lg py-1.5 outline-none placeholder-gray-700 font-mono"
                             />
                         </div>
+                    </div>
+
+                    {/* Modifiers / Tags */}
+                    <div className="w-full">
+                        <div className="flex flex-wrap gap-1 mb-2 justify-center">
+                            {(sessionExercise.modifiers || []).map((mod, idx) => (
+                                <span key={idx} className="bg-anvil-red/20 text-anvil-red border border-anvil-red/30 px-2 py-0.5 rounded text-[10px] font-black tracking-wider flex items-center gap-1 group/mod cursor-pointer" onClick={() => handleRemoveModifier(idx)}>
+                                    {mod}
+                                    <X size={10} className="opacity-0 group-hover/mod:opacity-100 transition-opacity text-red-500" />
+                                </span>
+                            ))}
+                        </div>
+                        <input
+                            type="text"
+                            value={modifierInput}
+                            onChange={(e) => setModifierInput(e.target.value)}
+                            onKeyDown={handleAddModifier}
+                            placeholder="Añadir extra (Enter)..."
+                            className="w-full bg-black/20 text-xs text-center text-gray-400 border border-white/5 focus:border-anvil-red rounded-lg py-1 outline-none placeholder-gray-700 transition-colors"
+                        />
                     </div>
 
                     {/* Notes Input */}

@@ -10,6 +10,7 @@ const CompetitionsPage = lazy(() => import('../features/landing/pages/Competitio
 const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
+const NutritionDashboard = lazy(() => import('../features/nutrition/pages/NutritionDashboard').then(module => ({ default: module.NutritionDashboard })));
 
 interface AppRoutesProps {
     user: UserProfile | null | undefined;
@@ -120,11 +121,26 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                 ) : null
             } />
 
+            {/* --- NUTRITION DASHBOARD --- */}
+            <Route path="/nutrition" element={
+                !user && !hasActiveSession ? (
+                    <Navigate to="/" replace />
+                ) : !user && hasActiveSession ? (
+                    <DashboardSkeleton />
+                ) : !['coach', 'nutritionist'].includes(user?.role || '') && !user?.is_developer ? (
+                    <Navigate to="/dashboard" replace />
+                ) : user ? (
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        <NutritionDashboard user={user} onLogout={onLogout} />
+                    </Suspense>
+                ) : null
+            } />
+
             {/* --- ADMIN DASHBOARD --- */}
             <Route path="/admin" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email || '') ? (
+                ) : !user?.is_developer ? (
                     <Navigate to="/" replace />
                 ) : (
                     <Suspense fallback={<DashboardSkeleton />}>
