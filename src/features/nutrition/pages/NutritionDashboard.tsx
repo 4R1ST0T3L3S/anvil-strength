@@ -54,6 +54,7 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
     const renderContent = () => {
         switch (currentView) {
             case 'home': 
+                return (
                     <div className="p-6 md:p-10 space-y-8 animate-fade-in">
                         <div>
                             <h1 className="text-3xl font-black text-white uppercase italic tracking-wider mb-2 flex items-center gap-3">
@@ -78,6 +79,7 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
                             </button>
                         </div>
                     </div>
+                );
             case 'athletes': 
                 return <NutritionAthletes user={user} />;
             case 'analytics': 
