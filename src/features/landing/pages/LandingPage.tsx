@@ -7,6 +7,7 @@ import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsMo
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
 import { ReviewsSection } from '../../reviews/components/ReviewsSection';
 import { BenefitsSection } from '../components/BenefitsSection';
+import { SoftwareSection } from '../components/SoftwareSection';
 import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../../../data/athletes';
 import { coaches, Coach } from '../../../data/coaches';
@@ -403,6 +404,9 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
 
             {/* Reviews Section */}
             <ReviewsSection isAuthenticated={!!user} />
+
+            {/* Software Section */}
+            <SoftwareSection />
 
             {/* Logros Section */}
             <section id="logros" className="min-h-screen flex flex-col justify-center py-32 bg-[#252525]">

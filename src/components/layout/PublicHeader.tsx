@@ -65,11 +65,12 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
         { name: 'EQUIPO', href: '#entrenadores' },
         { name: 'ATLETAS', href: '#atletas' },
         { name: 'OPINIONES', href: '#reviews' },
+        { name: 'SOFTWARE', href: '#software' },
         { name: 'LOGROS', href: '#logros' },
         { name: 'AFILIATE', href: '#afiliacion' },
         { name: 'CONTACTO', href: '#contacto' },
         // { name: 'ROPA', href: '/ropa' },
-        { name: 'COMPETICIONES', href: '/competiciones' }, // NEW LINK
+        { name: 'COMPETICIONES', href: '/competiciones' },
     ];
 
     return (
