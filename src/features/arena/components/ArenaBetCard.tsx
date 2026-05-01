@@ -85,7 +85,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick }) =
                         )}
                     </button>
                 ) : (
-                    <div className={`grid gap-4 ${bet.type === '1vs1' ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2'}`}>
+                    <div className={`grid gap-4 ${bet.type === '1vs1' ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
                         {bet.options?.map((option, index) => {
                             const pct = totalPool > 0 ? (option.total_pool / totalPool) * 100 : 50;
                             const isWinner = bet.winner_option_id === option.id;

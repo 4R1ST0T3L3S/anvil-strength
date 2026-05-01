@@ -83,7 +83,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                     </button>
                 </div>
 
-                <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <div className="p-4 sm:p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                     {/* General Info */}
                     <div className="space-y-4">
                         <h4 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] flex items-center gap-2">
@@ -99,7 +99,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 transition-all"
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5 ml-1">Fecha</label>
                                 <input
@@ -140,7 +140,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
                                 {[
                                     { id: 'dark', name: 'Noche', class: 'bg-zinc-900 border-zinc-700' },
                                     { id: 'blue', name: 'AEP 1', class: 'bg-blue-600 border-blue-400' },
@@ -178,7 +178,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
 
                         <div>
                             <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-3 ml-1">Forma del Contenedor</label>
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 {[
                                     { id: 'rounded', name: 'Redondo', class: 'rounded-xl' },
                                     { id: 'square', name: 'Recto', class: 'rounded-none' },
@@ -198,7 +198,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                         </div>
 
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5 ml-1 flex items-center gap-1">
                                     <Type size={12} /> Tipografía
@@ -230,17 +230,17 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                     </div>
                 </div>
 
-                <div className="p-6 bg-[#1a1a1a] border-t border-white/5 flex gap-3">
+                <div className="p-4 sm:p-6 bg-[#1a1a1a] border-t border-white/5 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-6 py-4 rounded-xl font-bold uppercase text-xs tracking-widest text-zinc-400 hover:text-white transition-colors"
+                        className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-bold uppercase text-xs tracking-widest text-zinc-400 hover:text-white transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="flex-1 bg-anvil-red text-white px-6 py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500 transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]"
+                        className="flex-1 bg-anvil-red text-white px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500 transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]"
                     >
                         {isSaving ? (
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

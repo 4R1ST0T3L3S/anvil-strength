@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Search, Dumbbell, Calendar, User as UserIcon } from 'lucide-react';
+import { Search, Dumbbell, Calendar, User as UserIcon, MessageSquare } from 'lucide-react';
 import { Skeleton } from '../../../components/ui/Skeleton';
 
 interface CoachAthletesProps {
     user: UserProfile;
     onSelectAthlete: (id: string) => void;
+    onOpenChat: (athlete: { id: string; full_name: string; avatar_url?: string }) => void;
     onBack?: () => void;
 }
 
@@ -17,7 +18,7 @@ interface AthleteWithPlan extends UserProfile {
     current_block_week?: number | string;
 }
 
-export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesProps) {
+export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: CoachAthletesProps) {
     const [athletes, setAthletes] = useState<AthleteWithPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -232,6 +233,16 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
                                     )}
                                 </div>
                             </div>
+                            
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenChat({ id: athlete.id, full_name: athlete.full_name || '', avatar_url: athlete.avatar_url });
+                                }}
+                                className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-lg shadow-blue-500/10 active:scale-90"
+                            >
+                                <MessageSquare size={18} />
+                            </button>
                         </div>
 
                         <div className="mb-3 bg-gradient-to-r from-white/5 to-transparent rounded-xl p-3 border border-white/5 relative group">

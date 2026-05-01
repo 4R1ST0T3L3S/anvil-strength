@@ -139,8 +139,8 @@ export function CompetitionBanner({
     const shapeClasses: Record<string, string> = {
         rounded: mobile ? 'rounded-3xl' : 'rounded-[2rem]',
         square: 'rounded-none',
-        pill: 'rounded-full',
-        extra: 'rounded-[4rem]'
+        pill: 'rounded-[3rem] sm:rounded-full',
+        extra: 'rounded-[2.5rem] sm:rounded-[4rem]'
     };
 
     const activeTheme = settings?.theme || (level ? level.includes('AEP 2') ? 'gold' : level.includes('AEP 1') ? 'blue' : 'dark' : 'dark');
@@ -171,17 +171,29 @@ export function CompetitionBanner({
                 ${themeClasses[activeTheme] || themeClasses.dark} 
                 ${fontClasses[activeFont] || ''}
                 ${shapeClasses[activeShape] || shapeClasses.rounded} 
-                text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-all cursor-pointer group
+                ${mobile ? 'py-10 px-4 min-h-[220px]' : 'py-16 px-8 min-h-[280px]'}
+                text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-all cursor-pointer group w-full
             `}
             style={containerStyles}
         >
-            {/* Hover overlay */}
-            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-50">
+            {/* Hover overlay (Desktop) */}
+            <div className="hidden md:flex absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors items-center justify-center opacity-0 group-hover:opacity-100 z-50">
                 <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
                     <Settings size={14} className="animate-spin-slow" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Personalizar</span>
                 </div>
             </div>
+
+            {/* Mobile Settings Button */}
+            <button 
+                onClick={(e) => {
+                    e.stopPropagation();
+                    userId && setIsSettingsOpen(true);
+                }}
+                className="md:hidden absolute top-4 right-4 z-[60] p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10 text-white/80"
+            >
+                <Settings size={16} />
+            </button>
 
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[35rem] h-[35rem] bg-white/5 rounded-full pointer-events-none"></div>
             

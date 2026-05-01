@@ -161,8 +161,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                 </div>
             </header>
 
-            <main className="pt-28 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
-                <div className="grid lg:grid-cols-3 gap-8">
+            <main className="pt-24 pb-12 px-2 md:px-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Section */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Tab Selector */}

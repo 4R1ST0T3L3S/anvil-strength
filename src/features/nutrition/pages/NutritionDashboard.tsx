@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { LayoutDashboard, Users, Apple, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Apple, User, LogOut, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { NutritionAthletes } from '../components/NutritionAthletes';
@@ -14,6 +15,7 @@ interface NutritionDashboardProps {
 type ViewState = 'home' | 'athletes' | 'analytics' | 'profile';
 
 export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) {
+    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
 
@@ -42,6 +44,12 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <Globe size={20} className="text-blue-400" />,
+            label: 'Ver Web',
+            onClick: () => navigate('/web'),
+            isActive: false
         },
         {
             icon: <LogOut size={20} className="text-red-500" />,

@@ -50,6 +50,13 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/dashboard" replace />
                 )
             } />
+            
+            <Route path="/web" element={
+                <LandingPage
+                    onLoginClick={onLoginClick}
+                    user={user}
+                />
+            } />
 
             {/* --- PERFIL PAGE (For pending users) --- */}
             <Route path="/perfil" element={

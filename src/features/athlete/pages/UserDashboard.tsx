@@ -5,8 +5,11 @@ import {
     Utensils,
     Calendar,
     Trophy,
-    User
+    User,
+    Globe,
+    LogOut
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
 import { WorkoutLogger } from '../../training/components/WorkoutLogger';
@@ -28,6 +31,7 @@ interface UserDashboardProps {
 type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
 
 export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps) {
+    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<AthleteView>('home');
     const { refetch } = useUser();
 
@@ -79,6 +83,18 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <Globe size={20} className="text-blue-400" />,
+            label: 'Ver Web',
+            onClick: () => navigate('/web'),
+            isActive: false
+        },
+        {
+            icon: <LogOut size={20} className="text-red-500" />,
+            label: 'Salir',
+            onClick: () => _onLogout(),
+            isActive: false
         }
     ];
 

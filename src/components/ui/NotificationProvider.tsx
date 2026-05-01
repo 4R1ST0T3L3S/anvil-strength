@@ -37,7 +37,7 @@ export function NotificationProvider({ children, user }: { children: React.React
         if (!user) return;
 
         // 1. Listen for new messages
-        const chatChannel = supabase.channel('global_chat_notifs')
+        const chatChannel = supabase.channel(`global_chat_notifs_${user.id}_${Math.random().toString(36).substring(7)}`)
             .on('postgres_changes', { 
                 event: 'INSERT', 
                 schema: 'public', 
@@ -52,7 +52,7 @@ export function NotificationProvider({ children, user }: { children: React.React
             .subscribe();
 
         // 2. Listen for resolved bets (this requires a specific broadcast or watching user_points)
-        const pointsChannel = supabase.channel('points_notifs')
+        const pointsChannel = supabase.channel(`points_notifs_${user.id}_${Math.random().toString(36).substring(7)}`)
             .on('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',

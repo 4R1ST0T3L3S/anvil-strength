@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser, UserProfile } from '../../../hooks/useUser';
 import { adminService } from '../services/adminService';
-import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple } from 'lucide-react';
+import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type TabType = 'todos' | 'atletas' | 'entrenadores' | 'nutricionistas';
 
 export function AdminDashboard() {
+    const navigate = useNavigate();
     const { data: currentUser, isLoading: isUserLoading } = useUser();
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [initialUsers, setInitialUsers] = useState<UserProfile[]>([]);
@@ -224,6 +226,13 @@ export function AdminDashboard() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+                            <button
+                                onClick={() => navigate('/web')}
+                                className="flex items-center justify-center gap-2 bg-[#1c1c1c] hover:bg-white/5 text-blue-400 border border-white/10 px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg active:scale-95"
+                            >
+                                <Globe size={18} />
+                                Ver Web
+                            </button>
                             {hasChanges && (
                                 <button
                                     onClick={handleSaveChanges}

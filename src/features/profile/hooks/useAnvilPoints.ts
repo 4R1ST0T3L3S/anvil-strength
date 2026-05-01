@@ -41,8 +41,9 @@ export const useAnvilPoints = (userId: string | undefined) => {
     useEffect(() => {
         if (!userId) return;
 
+        const channelId = `user_points_${userId}_${Math.random().toString(36).substring(7)}`;
         const channel = supabase
-            .channel(`user_points_${userId}`)
+            .channel(channelId)
             .on(
                 'postgres_changes',
                 {

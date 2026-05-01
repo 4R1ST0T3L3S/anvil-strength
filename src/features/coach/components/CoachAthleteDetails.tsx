@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple } from 'lucide-react';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare } from 'lucide-react';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import CoachVbtTab from './CoachVbtTab';
@@ -12,12 +12,13 @@ import { ConfirmationModal } from '../../../components/modals/ConfirmationModal'
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
+    onOpenChat: (athlete: { id: string; full_name: string; avatar_url?: string }) => void;
     onBack: () => void;
 }
 
 type Tab = 'planning' | 'competitions' | 'vbt' | 'nutrition';
 
-export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsProps) {
+export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
@@ -116,6 +117,14 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                             </p>
                         </div>
                     </div>
+                    
+                    <button 
+                        onClick={() => athlete && onOpenChat({ id: athlete.id, full_name: athlete.full_name || '', avatar_url: athlete.avatar_url })}
+                        className="p-3 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2 font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-500/5 active:scale-95"
+                    >
+                        <MessageSquare size={16} />
+                        <span className="hidden sm:inline">Mensaje Directo</span>
+                    </button>
                 </div>
 
                 {/* Tabs Navigation */}
