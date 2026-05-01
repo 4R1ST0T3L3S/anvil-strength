@@ -332,9 +332,9 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
 
 function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
-        <div className="hidden md:flex flex-col px-12 py-8 h-full animate-in fade-in duration-500 gap-6">
+        <div className="hidden md:block px-8 lg:px-12 py-8 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
-            <header className="flex-none flex justify-between items-start">
+            <header className="flex justify-between items-start">
                 <div>
                     {user.role === 'athlete' && getTeamName(user.coach_name) && (
                         <div className="flex items-center gap-3 mb-3">
@@ -359,13 +359,13 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
             </header>
 
             {/* Split Top Row for Desktop */}
-            <div className="grid lg:grid-cols-3 gap-6 flex-[2] min-h-0">
+            <div className="grid lg:grid-cols-3 gap-6">
                 {/* 1. Desktop Anvil Legend */}
-                <div className="lg:col-span-2 flex flex-col gap-3 h-full">
+                <div className="lg:col-span-2 flex flex-col gap-3">
                     <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <BookOpen size={20} className="text-yellow-500" /> Anvil Lessons
                     </h2>
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 flex flex-col justify-center flex-1 relative overflow-hidden group hover:border-yellow-500/30 transition-all">
+                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 flex flex-col justify-center relative overflow-hidden group hover:border-yellow-500/30 transition-all min-h-[200px]">
                     <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
                     <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12"><BookOpen size={120} /></div>
                     <div className="relative z-10">
@@ -386,12 +386,12 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                 </div>
 
                 {/* 2. Desktop Next Competition Banner */}
-                <div className="flex flex-col gap-3 h-full">
+                <div className="flex flex-col gap-3">
                     <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <Trophy size={20} className="text-anvil-red" /> Competición
                     </h2>
                 {nextCompetition ? (
-                    <div className="flex-1 min-h-0">
+                    <div>
                         <CompetitionBanner 
                             userId={user.id}
                             name={nextCompetition.name} 
@@ -402,7 +402,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         />
                     </div>
                 ) : (
-                        <div className="bg-[#252525] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden flex-1 min-h-0">
+                        <div className="bg-[#252525] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[200px]">
                         <div className="w-20 h-20 bg-white/5 rounded-full flex flex-col items-center justify-center text-gray-500 mb-4">
                             <Trophy size={40} />
                         </div>
@@ -418,14 +418,14 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
             </div>
 
             {/* Panel de Control */}
-            <div className="flex flex-col gap-3 flex-1 min-h-0">
+            <div className="space-y-3">
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <LayoutDashboard size={20} className="text-anvil-red" /> Panel de Control
                 </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 h-full">
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     <button
                         onClick={() => onNavigate('planning')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-blue-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-blue-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98]"
                     >
                         <div className="bg-blue-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-blue-500 mb-4 group-hover:scale-110 transition-transform">
                             <FileText size={24} />
@@ -438,7 +438,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
 
                     <button
                         onClick={() => onNavigate('nutrition')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-green-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-green-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98]"
                     >
                         <div className="bg-green-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-green-500 mb-4 group-hover:scale-110 transition-transform">
                             <Utensils size={24} />
@@ -451,7 +451,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
 
                     <button
                         onClick={() => onNavigate('competitions')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-yellow-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-yellow-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98]"
                     >
                         <div className="bg-yellow-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-yellow-500 mb-4 group-hover:scale-110 transition-transform">
                             <Trophy size={24} />
@@ -464,7 +464,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
 
                     <button
                         onClick={() => onNavigate('calendar')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-purple-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-purple-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98]"
                     >
                         <div className="bg-purple-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-purple-500 mb-4 group-hover:scale-110 transition-transform">
                             <Calendar size={24} />
@@ -477,7 +477,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
 
                     <button
                         onClick={() => onNavigate('profile')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-gray-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-gray-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98]"
                     >
                         <div className="bg-gray-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-gray-400 mb-4 group-hover:scale-110 transition-transform">
                             <User size={24} />
@@ -491,20 +491,20 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
             </div>
 
             {/* 3. Desktop Community */}
-            <div className="flex flex-col gap-3 flex-1 min-h-0">
+            <div className="space-y-3">
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <Users size={20} className="text-anvil-red" /> Comunidad
                 </h2>
                 {user.has_access === false ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center gap-6 opacity-50 cursor-not-allowed h-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 rounded-2xl flex items-center gap-6 opacity-50 cursor-not-allowed">
                             <div className="p-4 lg:p-5 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={32} /></div>
                             <div>
                                 <h3 className="text-xl lg:text-3xl font-black uppercase italic text-gray-400 leading-none mb-2">La Arena</h3>
                                 <p className="text-xs lg:text-sm font-bold text-gray-600 uppercase tracking-widest">Premium</p>
                             </div>
                         </div>
-                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center gap-6 opacity-50 cursor-not-allowed h-full">
+                        <div className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 rounded-2xl flex items-center gap-6 opacity-50 cursor-not-allowed">
                             <div className="p-4 lg:p-5 bg-gray-500/10 rounded-xl text-gray-500"><Lock size={32} /></div>
                             <div>
                                 <h3 className="text-xl lg:text-3xl font-black uppercase italic text-gray-400 leading-none mb-2">Ranking</h3>
@@ -513,8 +513,8 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-                    <div onClick={() => navigate('/dashboard/chat')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div onClick={() => navigate('/dashboard/chat')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] relative overflow-hidden">
                         <div className="relative z-10 flex items-center gap-6">
                             <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]"><FileText size={32} /></div>
                             <div>
@@ -525,7 +525,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
                     </div>
 
-                    <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                    <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden">
                             <div className="relative z-10 flex items-center gap-6">
                                 <div className="p-4 lg:p-5 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={32} /></div>
                                 <div>
@@ -536,7 +536,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
                         </div>
 
-                        <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                        <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden">
                             <div className="relative z-10 flex items-center gap-6">
                                 <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]"><Trophy size={32} /></div>
                                 <div>
@@ -551,12 +551,12 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
             </div>
 
             {/* 4. Desktop Tools */}
-            <div className="flex flex-col gap-3 flex-1 min-h-0">
+            <div className="space-y-3 pb-4">
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <FlaskConical size={20} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full">
-                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-5">
                             <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all"><Calculator size={32} /></div>
                             <div>
@@ -567,7 +567,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] h-full">
+                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-5">
                             <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all"><List size={32} /></div>
                             <div>
@@ -578,7 +578,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
+                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-green-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-5">
                             <div className="p-4 lg:p-5 bg-green-500/10 rounded-xl text-green-500 group-hover:bg-green-600 group-hover:text-white transition-all"><Weight size={32} /></div>
                             <div>
@@ -589,7 +589,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                     </div>
 
-                    <div onClick={() => setIsSushiCounterOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-cyan-500/30 transition-all active:scale-[0.98] h-full">
+                    <div onClick={() => setIsSushiCounterOpen(true)} className="bg-[#252525] border border-white/5 p-6 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-cyan-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center gap-5">
                             <div className="p-4 lg:p-5 bg-cyan-500/10 rounded-xl text-cyan-500 group-hover:bg-cyan-600 group-hover:text-white transition-all"><Fish size={32} /></div>
                             <div>
