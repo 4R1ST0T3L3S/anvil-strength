@@ -21,59 +21,62 @@ interface RankedAthlete {
     deadlift_pr: number;
     total: number;
     gl_points: number;
+    anvil_points: number;
 }
 
 export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
     const [athletes, setAthletes] = useState<RankedAthlete[]>([]);
     const [loading, setLoading] = useState(true);
+    const [rankingType, setRankingType] = useState<'gl' | 'coins'>('gl');
 
     useEffect(() => {
         if (isOpen) {
             fetchRankings();
         }
-    }, [isOpen]);
+    }, [isOpen, rankingType]);
 
     const fetchRankings = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            // Fetch profiles and their points
+            const { data: profiles, error: profError } = await supabase
                 .from('profiles')
-                .select('*')
+                .select(`
+                    *,
+                    user_points (
+                        balance
+                    )
+                `)
                 .eq('role', 'athlete');
 
-            if (error) throw error;
+            if (profError) throw profError;
 
-            const rankedData = data
-                .filter(profile => profile.weight_category && (profile.squat_pr || profile.bench_pr || profile.deadlift_pr))
+            const rankedData = (profiles || [])
                 .map(profile => {
                     const squat = profile.squat_pr || 0;
                     const bench = profile.bench_pr || 0;
                     const deadlift = profile.deadlift_pr || 0;
                     const total = squat + bench + deadlift;
-
-
                     const catInfo = getGenderAndWeightFromCategory(profile.weight_category);
-
-                    // Use explicit gender if available, otherwise infer from category
                     const gender = (profile.gender as 'male' | 'female') || catInfo?.gender || 'male';
                     const weight = catInfo?.weight || 80;
-
                     const gl = calculateGLPoints(total, weight, gender);
-
+                    
                     return {
                         id: profile.id,
-                        full_name: profile.full_name || profile.name || 'Atleta',
+                        full_name: profile.full_name || 'Atleta',
                         avatar_url: profile.avatar_url,
-                        gender: gender,
-                        weight_category: profile.weight_category,
+                        gender,
+                        weight_category: profile.weight_category || 'N/A',
                         squat_pr: squat,
                         bench_pr: bench,
                         deadlift_pr: deadlift,
                         total,
-                        gl_points: gl
+                        gl_points: gl,
+                        anvil_points: profile.user_points?.[0]?.balance || 0
                     };
                 })
-                .sort((a, b) => b.gl_points - a.gl_points);
+                .sort((a, b) => rankingType === 'gl' ? b.gl_points - a.gl_points : b.anvil_points - a.anvil_points);
 
             setAthletes(rankedData);
         } catch (error) {
@@ -93,22 +96,44 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
             <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:w-full md:max-w-2xl md:h-[85vh] md:rounded-3xl shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Header */}
-                <div className="p-4 md:p-6 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 md:p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
-                            <Trophy size={20} className="md:w-6 md:h-6" />
+                <div className="p-4 md:p-6 border-b border-white/5 bg-gradient-to-r from-anvil-red/10 to-transparent shrink-0">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 md:p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
+                                <Trophy size={20} className="md:w-6 md:h-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white italic">Hall of Fame</h2>
+                                <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Leyendas de Anvil Strength</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">Anvil Ranking</h2>
-                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Top GL Points</p>
-                        </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
+                        >
+                            <X size={24} />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
-                    >
-                        <X size={24} />
-                    </button>
+
+                    {/* Tabs */}
+                    <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+                        <button 
+                            onClick={() => setRankingType('gl')}
+                            className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
+                                rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white'
+                            }`}
+                        >
+                            Powerlifting (GL)
+                        </button>
+                        <button 
+                            onClick={() => setRankingType('coins')}
+                            className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
+                                rankingType === 'coins' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'
+                            }`}
+                        >
+                            Millonarios (Coins)
+                        </button>
+                    </div>
                 </div>
 
                 {/* List - Scrollable Area */}
@@ -155,29 +180,35 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                                         </p>
                                     </div>
 
-                                    {/* GL Score - Mobile inline */}
+                                    {/* Score - Mobile inline */}
                                     <div className="text-right md:hidden">
-                                        <p className="text-xl font-black text-white italic tracking-tighter">
-                                            {athlete.gl_points.toFixed(1)}
+                                        <p className={`text-xl font-black italic tracking-tighter ${rankingType === 'coins' ? 'text-yellow-500' : 'text-white'}`}>
+                                            {rankingType === 'gl' ? athlete.gl_points.toFixed(1) : athlete.anvil_points.toLocaleString()}
                                         </p>
-                                        <p className="text-[8px] font-bold text-anvil-red uppercase">GL</p>
+                                        <p className={`text-[8px] font-bold uppercase ${rankingType === 'coins' ? 'text-yellow-600' : 'text-anvil-red'}`}>
+                                            {rankingType === 'gl' ? 'GL' : 'Coins'}
+                                        </p>
                                     </div>
                                 </div>
 
-                                {/* Mobile: PRs Row */}
-                                <div className="flex md:hidden items-center justify-between gap-2 pl-11 text-[10px] text-gray-500">
-                                    <span>S: <span className="text-white font-bold">{athlete.squat_pr}</span></span>
-                                    <span>B: <span className="text-white font-bold">{athlete.bench_pr}</span></span>
-                                    <span>D: <span className="text-white font-bold">{athlete.deadlift_pr}</span></span>
-                                    <span className="text-gray-600">Total: {athlete.total}kg</span>
-                                </div>
+                                {/* Mobile: PRs Row (Only if GL) */}
+                                {rankingType === 'gl' && (
+                                    <div className="flex md:hidden items-center justify-between gap-2 pl-11 text-[10px] text-gray-500">
+                                        <span>S: <span className="text-white font-bold">{athlete.squat_pr}</span></span>
+                                        <span>B: <span className="text-white font-bold">{athlete.bench_pr}</span></span>
+                                        <span>D: <span className="text-white font-bold">{athlete.deadlift_pr}</span></span>
+                                        <span className="text-gray-600">Total: {athlete.total}kg</span>
+                                    </div>
+                                )}
 
-                                {/* Desktop: GL Score */}
+                                {/* Desktop: Score */}
                                 <div className="hidden md:block text-right shrink-0">
-                                    <p className="text-2xl font-black text-white italic tracking-tighter">
-                                        {athlete.gl_points.toFixed(1)}
+                                    <p className={`text-2xl font-black italic tracking-tighter ${rankingType === 'coins' ? 'text-yellow-500' : 'text-white'}`}>
+                                        {rankingType === 'gl' ? athlete.gl_points.toFixed(1) : athlete.anvil_points.toLocaleString()}
                                     </p>
-                                    <p className="text-[10px] font-bold text-anvil-red uppercase tracking-widest">GL Points</p>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${rankingType === 'coins' ? 'text-yellow-600' : 'text-anvil-red'}`}>
+                                        {rankingType === 'gl' ? 'GL Points' : 'Anvil Coins'}
+                                    </p>
                                 </div>
                                 {/* Hover Detail (Desktop) */}
                                 <div className="hidden md:group-hover:flex absolute inset-0 bg-black/90 z-10 rounded-2xl items-center justify-around px-8 animate-in fade-in duration-200">

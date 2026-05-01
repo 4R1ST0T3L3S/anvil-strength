@@ -5,6 +5,7 @@ import { MealBuilder } from './MealBuilder';
 import { Activity, Apple, Target, Settings, Download, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PDFEditorModal } from './PDFEditorModal';
+import { FloatingMacroTracker } from './FloatingMacroTracker';
 
 interface NutritionPlanEditorProps {
     athleteId: string;
@@ -523,6 +524,20 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                 <PDFEditorModal 
                     plan={plan} 
                     onClose={() => setIsPrinting(false)} 
+                />
+            )}
+
+            {/* Tracker Flotante */}
+            {plan && (
+                <FloatingMacroTracker 
+                    current={currentMacros}
+                    targets={{
+                        kcal: plan.calories_target,
+                        prot: plan.protein_target,
+                        carbs: plan.carbs_target,
+                        fats: plan.fats_target
+                    }}
+                    isVisible={!isPrinting}
                 />
             )}
         </div>

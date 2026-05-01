@@ -1,4 +1,64 @@
-export type Role = 'coach' | 'athlete' | 'nutritionist';
+export type Role = 'coach' | 'athlete' | 'nutritionist' | 'visitor';
+
+export interface UserPoints {
+    user_id: string;
+    balance: number;
+    total_earned: number;
+    last_updated: string;
+}
+
+export interface PointTransaction {
+    id: string;
+    user_id: string;
+    amount: number;
+    type: 'earned' | 'spent';
+    reason: string;
+    created_at: string;
+}
+
+export type BetType = '1vs1' | 'pool' | 'event' | 'prediction';
+export type BetStatus = 'open' | 'locked' | 'resolved' | 'cancelled';
+
+export interface ArenaBet {
+    id: string;
+    title: string;
+    description?: string;
+    type: BetType;
+    status: BetStatus;
+    image_url?: string;
+    created_at: string;
+    resolved_at?: string;
+    winner_option_id?: string;
+    target_value?: number;
+}
+
+export interface ArenaOption {
+    id: string;
+    bet_id: string;
+    name: string;
+    image_url?: string;
+    total_pool: number;
+}
+
+export interface UserArenaBet {
+    id: string;
+    user_id: string;
+    bet_id: string;
+    option_id?: string;
+    prediction_value?: number;
+    amount: number;
+    created_at: string;
+}
+
+export interface ChatMessage {
+    id: string;
+    sender_id: string;
+    receiver_id: string;
+    content: string;
+    type: 'text' | 'image';
+    is_read: boolean;
+    created_at: string;
+}
 
 export interface Profile {
     id: string;

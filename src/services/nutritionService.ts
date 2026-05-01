@@ -180,5 +180,20 @@ export const nutritionService = {
             .eq('id', mealFoodId);
             
         if (error) throw error;
+    },
+
+    async updateBulkMealFoods(updates: { id: string, amount_g: number }[]): Promise<void> {
+        // Individual updates in parallel for better compatibility with RLS and schema constraints
+        const promises = updates.map(update => 
+            supabase
+                .from('meal_foods')
+                .update({ amount_g: update.amount_g })
+                .eq('id', update.id)
+        );
+        
+        const results = await Promise.all(promises);
+        const firstError = results.find(r => r.error)?.error;
+        
+        if (firstError) throw firstError;
     }
 };

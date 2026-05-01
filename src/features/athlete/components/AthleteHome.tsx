@@ -16,7 +16,8 @@ import {
     FileText,
     Utensils,
     User,
-    Fish
+    Fish,
+    Gamepad2
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';
@@ -25,6 +26,7 @@ import { WarmUpCalculator } from './WarmUpCalculator';
 import { PlateCalculator } from './PlateCalculator';
 import { SushiCounter } from './SushiCounter';
 import { AnvilRanking } from './AnvilRanking';
+import { AnvilPointsBadge } from '../../profile/components/AnvilPointsBadge';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { CompetitionBanner } from '../../../components/ui/CompetitionCountdown';
@@ -125,7 +127,10 @@ interface HomeViewProps {
 function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
-            <header>
+            <header className="relative">
+                <div className="absolute top-0 right-0">
+                    <AnvilPointsBadge userId={user.id} />
+                </div>
                 {user.role === 'athlete' && getTeamName(user.coach_name) && (
                     <div className="flex items-center gap-3 mb-2">
                         {user.coach_logo_url && (
@@ -167,11 +172,13 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
                 </h2>
                 {nextCompetition ? (
                     <CompetitionBanner 
+                        userId={user.id}
                         name={nextCompetition.name} 
                         date={nextCompetition.date} 
                         location={nextCompetition.location} 
                         level={nextCompetition.level} 
                         mobile={true} 
+                        fullUserMetadata={user.user_metadata}
                     />
                 ) : (
                     <div className="bg-[#252525] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center relative overflow-hidden">
@@ -214,6 +221,22 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
                     </>
                 ) : (
                     <>
+                        <div onClick={() => navigate('/dashboard/chat')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer">
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                        <FileText size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Coach Chat</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Comunicación Directa</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                            </div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                        </div>
+
                         <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer">
                             <div className="relative z-10 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
@@ -226,6 +249,20 @@ function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, set
                                 <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                             </div>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                        </div>
+
+                        <div onClick={() => navigate('/dashboard/games')} className="bg-gradient-to-r from-purple-900/20 to-[#252525] border border-purple-500/20 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all mb-3 cursor-pointer">
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]"><Gamepad2 size={24} /></div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Games</h3>
+                                        <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Reto Diario</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-500 group-hover:text-white transition-colors" />
+                            </div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                         </div>
 
                         <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden group active:scale-[0.98] transition-all">
@@ -297,24 +334,28 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
     return (
         <div className="hidden md:flex flex-col px-12 py-8 h-full animate-in fade-in duration-500 gap-6">
             {/* Header */}
-            <header className="flex-none">
-                {user.role === 'athlete' && getTeamName(user.coach_name) && (
-                    <div className="flex items-center gap-3 mb-3">
-                        {user.coach_logo_url && (
-                            <img src={user.coach_logo_url} alt="Team Logo" className="h-8 w-auto object-contain rounded" />
-                        )}
-                        <p className="text-[11px] font-black uppercase tracking-[0.4em] opacity-60" style={{ color: user.coach_brand_color || '#dc2626' }}>
-                            {getTeamName(user.coach_name)}
-                        </p>
-                    </div>
-                )}
-                <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
-                    {getGreeting()}, <span style={{ color: user.coach_brand_color || '#dc2626' }}>{user.full_name?.split(' ')[0] || 'Atleta'}</span>
-                </h1>
-                <p className="text-gray-500 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
-                    <Calendar size={14} style={{ color: user.coach_brand_color || '#dc2626' }} />
-                    {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </p>
+            <header className="flex-none flex justify-between items-start">
+                <div>
+                    {user.role === 'athlete' && getTeamName(user.coach_name) && (
+                        <div className="flex items-center gap-3 mb-3">
+                            {user.coach_logo_url && (
+                                <img src={user.coach_logo_url} alt="Team Logo" className="h-8 w-auto object-contain rounded" />
+                            )}
+                            <p className="text-[11px] font-black uppercase tracking-[0.4em] opacity-60" style={{ color: user.coach_brand_color || '#dc2626' }}>
+                                {getTeamName(user.coach_name)}
+                            </p>
+                        </div>
+                    )}
+                    <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2">
+                        {getGreeting()}, <span style={{ color: user.coach_brand_color || '#dc2626' }}>{user.full_name?.split(' ')[0] || 'Atleta'}</span>
+                    </h1>
+                    <p className="text-gray-500 font-bold tracking-widest text-xs uppercase flex items-center gap-2">
+                        <Calendar size={14} style={{ color: user.coach_brand_color || '#dc2626' }} />
+                        {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </p>
+                </div>
+                
+                <AnvilPointsBadge userId={user.id} className="mt-2" />
             </header>
 
             {/* Split Top Row for Desktop */}
@@ -352,11 +393,12 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                 {nextCompetition ? (
                     <div className="flex-1 min-h-0">
                         <CompetitionBanner 
+                            userId={user.id}
                             name={nextCompetition.name} 
                             date={nextCompetition.date} 
                             location={nextCompetition.location} 
                             level={nextCompetition.level} 
-                            mobile={false} 
+                            fullUserMetadata={user.user_metadata}
                         />
                     </div>
                 ) : (
@@ -471,8 +513,19 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-                        <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                    <div onClick={() => navigate('/dashboard/chat')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                        <div className="relative z-10 flex items-center gap-6">
+                            <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]"><FileText size={32} /></div>
+                            <div>
+                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Coach Chat</h3>
+                                <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Canal Directo con el Staff</p>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                    </div>
+
+                    <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
                             <div className="relative z-10 flex items-center gap-6">
                                 <div className="p-4 lg:p-5 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={32} /></div>
                                 <div>

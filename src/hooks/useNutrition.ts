@@ -176,3 +176,16 @@ export function useRemoveFoodFromMeal() {
         },
     });
 }
+
+export function useUpdateBulkMealFoods() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ updates }: { updates: { id: string, amount_g: number }[], athleteId: string }) => 
+            nutritionService.updateBulkMealFoods(updates),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: NUTRITION_KEYS.plan(variables.athleteId) });
+            toast.success('Cantidades ajustadas');
+        },
+        onError: () => toast.error('Error al ajustar cantidades'),
+    });
+}

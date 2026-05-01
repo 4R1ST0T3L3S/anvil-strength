@@ -11,6 +11,11 @@ const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
 const NutritionDashboard = lazy(() => import('../features/nutrition/pages/NutritionDashboard').then(module => ({ default: module.NutritionDashboard })));
+const AthleteChatView = lazy(() => import('../features/chat/pages/AthleteChatView').then(module => ({ default: module.AthleteChatView })));
+const CoachChatManager = lazy(() => import('../features/chat/components/CoachChatManager').then(module => ({ default: module.CoachChatManager })));
+const AnvilGamesHub = lazy(() => import('../features/games/pages/AnvilGamesHub').then(module => ({ default: module.AnvilGamesHub })));
+
+
 
 interface AppRoutesProps {
     user: UserProfile | null | undefined;
@@ -85,6 +90,32 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/" replace />
                 )
             } />
+
+            <Route path="/dashboard/chat" element={
+                hasActiveSession && user ? (
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        {user.role === 'coach' || (user.role as string) === 'admin' || (user as any).is_developer ? (
+                            <CoachChatManager coach={user} />
+                        ) : (
+                            <AthleteChatView user={user} />
+                        )}
+                    </Suspense>
+                ) : (
+                    <Navigate to="/" replace />
+                )
+            } />
+
+            <Route path="/dashboard/games" element={
+                hasActiveSession && user ? (
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        <AnvilGamesHub user={user} />
+                    </Suspense>
+                ) : (
+                    <Navigate to="/" replace />
+                )
+            } />
+
+            <Route path="/dashboard/arena" element={<Navigate to="/dashboard/community" replace />} />
 
             {/* --- DASHBOARD ATLETA --- */}
             <Route path="/dashboard" element={

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTAR ESTO
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords, Activity, Fish } from 'lucide-react';
+import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords, Activity, Fish, MessageSquare, Gamepad2 } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
 import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
@@ -262,7 +262,25 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     </h2>
                     <div className="space-y-3">
                         <div
-                            onClick={() => navigate('/dashboard/arena')}
+                            onClick={() => navigate('/dashboard/chat')}
+                            className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
+                        >
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                        <MessageSquare size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Mensajería</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Chat con Atletas</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-500" />
+                            </div>
+                        </div>
+
+                        <div
+                            onClick={() => navigate('/dashboard/community')}
                             className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
                         >
                             <div className="relative z-10 flex items-center justify-between">
@@ -278,6 +296,25 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                                 <ChevronRight size={20} className="text-gray-500" />
                             </div>
                             <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                        </div>
+
+                        <div
+                            onClick={() => navigate('/dashboard/games')}
+                            className="bg-gradient-to-r from-purple-900/20 to-[#252525] border border-purple-500/20 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer mb-3"
+                        >
+                            <div className="relative z-10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                                        <Gamepad2 size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Games</h3>
+                                        <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Reto Diario</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-500" />
+                            </div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
                         </div>
 
                         <div
@@ -397,11 +434,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     {stats.nextCompDate ? (
                         <div className="flex-1 min-h-0">
                             <CompetitionBanner
+                                userId={user.id}
                                 name={stats.nextCompName}
                                 date={stats.nextCompDate}
                                 location={stats.nextCompLocation}
                                 level={stats.nextCompLevel}
                                 mobile={false}
+                                fullUserMetadata={user.user_metadata}
                             />
                         </div>
                     ) : (
@@ -499,7 +538,18 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     <Users size={20} className="text-anvil-red" /> Comunidad
                 </h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-                    <div onClick={() => navigate('/dashboard/arena')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                    <div onClick={() => navigate('/dashboard/chat')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                        <div className="relative z-10 flex items-center gap-6">
+                            <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]"><MessageSquare size={32} /></div>
+                            <div>
+                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Mensajería</h3>
+                                <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Chat Directo con Atletas</p>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                    </div>
+
+                    <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
                         <div className="relative z-10 flex items-center gap-6">
                             <div className="p-4 lg:p-5 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={32} /></div>
                             <div>
@@ -508,6 +558,17 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                             </div>
                         </div>
                         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
+                    </div>
+
+                    <div onClick={() => navigate('/dashboard/games')} className="bg-gradient-to-r from-purple-900/20 to-[#252525] border border-purple-500/20 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-purple-500/40 transition-all active:scale-[0.98] relative overflow-hidden h-full">
+                        <div className="relative z-10 flex items-center gap-6">
+                            <div className="p-4 lg:p-5 bg-purple-500/10 rounded-xl text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.2)]"><Gamepad2 size={32} /></div>
+                            <div>
+                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Anvil Games</h3>
+                                <p className="text-xs lg:text-sm font-bold text-purple-400/70 uppercase tracking-widest">Minijuegos de Velocidad</p>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-purple-500/10 transition-all"></div>
                     </div>
 
                     <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">

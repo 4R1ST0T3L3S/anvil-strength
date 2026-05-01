@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-/* eslint-disable react-refresh/only-export-components */
-import { Trophy, MapPin } from 'lucide-react';
+import { Trophy, MapPin, Settings } from 'lucide-react';
+import { BannerSettingsModal } from './BannerSettingsModal';
 
 export const formatCompetitionName = (name: string, location?: string, level?: string) => {
     const cleanName = name.replace(/Campeonato\s+/i, '').trim();
@@ -44,15 +44,25 @@ const TimeBlock = ({ value, label }: { value: number, label: string }) => (
     </div>
 );
 
-export function LiveCountdown({ targetDate }: { targetDate: string }) {
+export function LiveCountdown({ targetDate, targetTime = '00:00' }: { targetDate: string, targetTime?: string }) {
     const [timeLeft, setTimeLeft] = useState(() => {
-        const difference = +new Date(targetDate + 'T00:00:00') - +new Date();
+        if (!targetDate) return 0;
+        const target = new Date(`${targetDate}T${targetTime}:00`);
+        if (isNaN(target.getTime())) return 0;
+        const difference = +target - +new Date();
         return difference > 0 ? difference : 0;
     });
 
     useEffect(() => {
+        if (!targetDate) return;
+        
         const timer = setInterval(() => {
-            const difference = +new Date(targetDate + 'T00:00:00') - +new Date();
+            const target = new Date(`${targetDate}T${targetTime}:00`);
+            if (isNaN(target.getTime())) {
+                clearInterval(timer);
+                return;
+            }
+            const difference = +target - +new Date();
             if (difference > 0) {
                 setTimeLeft(difference);
             } else {
@@ -61,7 +71,7 @@ export function LiveCountdown({ targetDate }: { targetDate: string }) {
             }
         }, 1000);
         return () => clearInterval(timer);
-    }, [targetDate]);
+    }, [targetDate, targetTime]);
 
     if (timeLeft === 0) {
         return (
@@ -87,64 +97,126 @@ export function LiveCountdown({ targetDate }: { targetDate: string }) {
 }
 
 export function CompetitionBanner({
+    userId,
     name,
     date,
     location,
     level,
-    mobile = false
+    mobile = false,
+    fullUserMetadata = {}
 }: {
+    userId?: string;
     name: string;
     date: string;
     location?: string;
     level?: string;
     mobile?: boolean;
+    fullUserMetadata?: any;
 }) {
-    // If mobile is true, render a slightly smaller version fit for mobile
-    if (mobile) {
-        return (
-            <div className={`${getCompetitionColorClass(level)} rounded-3xl p-6 text-white flex flex-col items-center text-center relative overflow-hidden shadow-xl`}>
-                <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 rounded-full -mr-24 -mt-24 pointer-events-none"></div>
-                <div className="relative z-10 flex flex-col items-center w-full">
-                    <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-[10px] uppercase tracking-widest mb-2">
-                        <Trophy size={14} /> PRÓXIMA COMPETICIÓN
-                    </div>
-                    <h3 className="text-3xl font-black uppercase italic leading-tight mb-2">
-                        {formatCompetitionName(name, location, level)}
-                    </h3>
-                    {location && (
-                        <div className="mt-1 flex items-center justify-center gap-2 text-white/90 font-bold text-xs">
-                            <MapPin size={12} /> {location}
-                        </div>
-                    )}
-                    <div className="mt-4 w-full bg-black/10 rounded-2xl pb-2 px-2 border border-white/5 flex justify-center">
-                        <LiveCountdown targetDate={date} />
-                    </div>
+    const settings = fullUserMetadata?.competition_banner_settings || {};
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    const themeClasses: Record<string, string> = {
+        blue: 'bg-gradient-to-br from-blue-700 to-blue-900',
+        gold: 'bg-gradient-to-br from-[#D4AF37] to-[#B3902A]',
+        neon: 'bg-gradient-to-br from-purple-700 to-fuchsia-900 shadow-[0_0_50px_rgba(168,85,247,0.3)]',
+        red: 'bg-gradient-to-br from-anvil-red to-red-950',
+        dark: 'bg-zinc-900 border border-white/10',
+        glass: 'bg-white/5 backdrop-blur-xl border border-white/10',
+        brutalist: 'bg-white border-[4px] border-black text-black',
+        crimson: 'bg-gradient-to-br from-red-900 to-black',
+        emerald: 'bg-gradient-to-br from-emerald-600 to-emerald-950',
+        ocean: 'bg-gradient-to-br from-cyan-500 to-blue-600',
+        sunset: 'bg-gradient-to-br from-orange-500 to-rose-600',
+        forest: 'bg-gradient-to-br from-green-600 to-emerald-900',
+        midnight: 'bg-gradient-to-br from-indigo-900 to-black',
+        lava: 'bg-gradient-to-br from-red-600 to-orange-800',
+        minimal: 'bg-zinc-100 border border-zinc-300 text-black',
+        pink: 'bg-gradient-to-br from-pink-500 to-rose-600',
+        skyblue: 'bg-gradient-to-br from-sky-300 to-blue-500'
+    };
+
+    const shapeClasses: Record<string, string> = {
+        rounded: mobile ? 'rounded-3xl' : 'rounded-[2rem]',
+        square: 'rounded-none',
+        pill: 'rounded-full',
+        extra: 'rounded-[4rem]'
+    };
+
+    const activeTheme = settings?.theme || (level ? level.includes('AEP 2') ? 'gold' : level.includes('AEP 1') ? 'blue' : 'dark' : 'dark');
+    const activeShape = settings?.shape || 'rounded';
+    const activeFont = settings?.font || 'inter';
+
+    const fontClasses: Record<string, string> = {
+        inter: 'font-sans',
+        bebas: 'font-["Bebas_Neue",sans-serif] tracking-wider',
+        mono: 'font-mono',
+        black: 'font-black italic'
+    };
+
+    const displayDate = settings?.targetDate || date;
+    const displayTime = settings?.targetTime || '00:00';
+    const displayName = settings?.customName || formatCompetitionName(name, location, level);
+
+    const containerStyles: React.CSSProperties = settings?.backgroundImage ? {
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url(${settings.backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+    } : {};
+
+    const content = (
+        <div 
+            onClick={() => userId && setIsSettingsOpen(true)}
+            className={`
+                ${themeClasses[activeTheme] || themeClasses.dark} 
+                ${fontClasses[activeFont] || ''}
+                ${shapeClasses[activeShape] || shapeClasses.rounded} 
+                text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-all cursor-pointer group
+            `}
+            style={containerStyles}
+        >
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-50">
+                <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
+                    <Settings size={14} className="animate-spin-slow" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Personalizar</span>
                 </div>
             </div>
-        );
-    }
 
-    return (
-        <div className={`${getCompetitionColorClass(level)} rounded-[2rem] p-6 text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-xl h-full`}>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[35rem] h-[35rem] bg-white/5 rounded-full pointer-events-none"></div>
             
-            <div className="relative z-10 flex flex-col items-center">
-                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-xs uppercase tracking-widest mb-3">
-                    <Trophy size={16} /> TU PRÓXIMO RETO
+            <div className="relative z-10 flex flex-col items-center w-full">
+                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-[10px] sm:text-xs uppercase tracking-widest mb-3">
+                    <Trophy size={mobile ? 14 : 16} /> TU PRÓXIMO RETO
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black uppercase italic leading-none max-w-4xl drop-shadow-lg mb-3">
-                    {formatCompetitionName(name, location, level)}
+                <h3 className={`
+                    ${activeFont === 'bebas' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'}
+                    font-black uppercase italic leading-none max-w-4xl drop-shadow-2xl mb-3
+                `}>
+                    {displayName}
                 </h3>
-                {location && (
+                {location && !settings?.customName && (
                     <div className="mt-1 flex items-center justify-center gap-2 text-white/90 font-bold text-sm">
-                        <MapPin size={16} /> {location}
+                        <MapPin size={mobile ? 12 : 16} /> {location}
                     </div>
                 )}
             </div>
 
-            <div className="relative z-10 mt-4 w-full max-w-xl shrink-0 bg-black/20 backdrop-blur pb-4 pt-0 px-4 md:px-6 rounded-3xl border border-white/10 flex justify-center">
-                <LiveCountdown targetDate={date} />
+            <div className="relative z-10 mt-4 w-full max-w-xl shrink-0 bg-black/30 backdrop-blur-md pb-4 pt-0 px-4 md:px-6 rounded-3xl border border-white/10 flex justify-center shadow-inner">
+                <LiveCountdown targetDate={displayDate} targetTime={displayTime} />
             </div>
+
+            {userId && (
+                <BannerSettingsModal 
+                    userId={userId}
+                    isOpen={isSettingsOpen}
+                    onClose={() => setIsSettingsOpen(false)}
+                    fullUserMetadata={fullUserMetadata}
+                />
+            )}
         </div>
     );
+
+    return content;
 }
+

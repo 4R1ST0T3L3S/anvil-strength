@@ -12,6 +12,8 @@ import { Toaster } from 'sonner';
 
 import { AppRoutes } from './routes/AppRoutes';
 import { CountdownPage } from './features/landing/pages/CountdownPage';
+import { NotificationProvider } from './components/ui/NotificationProvider';
+
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -62,11 +64,13 @@ function App() {
       <ReloadPrompt />
       <Toaster position="top-center" theme="dark" richColors />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <AppRoutes
-          user={user}
-          onLoginClick={handleLoginClick}
-          onLogout={handleLogout}
-        />
+        <NotificationProvider user={user || null}>
+          <AppRoutes
+            user={user}
+            onLoginClick={handleLoginClick}
+            onLogout={handleLogout}
+          />
+        </NotificationProvider>
       </ErrorBoundary>
 
       <AuthModal

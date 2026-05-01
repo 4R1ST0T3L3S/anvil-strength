@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Pill } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Pill, Wand2, Calculator, Check, X as XIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Meal, MealFood, FoodItem, FoodCategory } from '../../../types/nutrition';
-import { useCreateMeal, useDeleteMeal, useAddFoodToMeal, useRemoveFoodFromMeal } from '../../../hooks/useNutrition';
+import { useCreateMeal, useDeleteMeal, useAddFoodToMeal, useRemoveFoodFromMeal, useUpdateBulkMealFoods } from '../../../hooks/useNutrition';
 import { FoodSearch } from './FoodSearch';
+import { optimizeMealQuantities } from '../../../lib/nutritionOptimizer';
 
 const FOOD_CATEGORIES: FoodCategory[] = ['Carbohidratos', 'Proteínas', 'Grasas', 'Verduras', 'Frutas', 'Otros'];
 const CATEGORY_COLORS: Record<string, string> = {
@@ -41,6 +42,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
     const deleteMealMutation = useDeleteMeal();
     const addFoodMutation = useAddFoodToMeal();
     const removeFoodMutation = useRemoveFoodFromMeal();
+    const updateBulkMutation = useUpdateBulkMealFoods();
 
     const handleCreateMeal = () => {
         if (!newMealName.trim()) return;
@@ -179,6 +181,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                         }}
                         onFoodSelected={(food, grams) => handleAddFood(meal.id, food, grams)}
                         referenceFood={alternativeRefFood}
+                        onBulkUpdate={(updates) => updateBulkMutation.mutate({ updates, athleteId })}
                     />
                 ))}
                 
@@ -207,11 +210,18 @@ interface MealCardProps {
     onSearchClose: () => void;
     onFoodSelected: (food: FoodItem, grams: number) => void;
     referenceFood?: FoodItem;
+    onBulkUpdate: (updates: { id: string, amount_g: number }[]) => void;
 }
 
-function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativeSearch, isSearching, onSearchClose, onFoodSelected, referenceFood }: MealCardProps) {
+function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativeSearch, isSearching, onSearchClose, onFoodSelected, referenceFood, onBulkUpdate }: MealCardProps) {
     const [isExpanded, setIsExpanded] = useState(true);
     const [showSupps, setShowSupps] = useState(false);
+    const [isAdjusting, setIsAdjusting] = useState(false);
+    const [adjustTargets, setAdjustTargets] = useState({ protein: 0, carbs: 0, fats: 0 });
+    const [optimizedProposals, setOptimizedProposals] = useState<any[] | null>(null);
+    const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
+    const [adjustError, setAdjustError] = useState<string | null>(null);
+
     const foods = meal.foods || [];
 
     const foodGroups: { groupId: string; category: string; items: MealFood[], catIndex: number }[] = [];
@@ -273,18 +283,145 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                         <span className="text-yellow-400">{Math.round(totals.carbs)}g HC</span>
                         <span className="text-orange-400">{Math.round(totals.fats)}g G</span>
                     </div>
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                        className="text-zinc-500 hover:text-red-500 transition-colors p-1"
-                    >
-                        <Trash2 size={18} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); setIsAdjusting(!isAdjusting); }}
+                            className={`p-2 rounded-lg transition-all ${isAdjusting ? 'bg-anvil-red text-black' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            title="Ajuste Inteligente"
+                        >
+                            <Wand2 size={18} />
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                            className="text-zinc-500 hover:text-red-500 transition-colors p-1"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Content */}
             {isExpanded && (
                 <div className="p-4 bg-[#161616]">
+                    {/* Smart Adjuster Panel */}
+                    <AnimatePresence>
+                        {isAdjusting && (
+                            <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="mb-4 overflow-hidden"
+                            >
+                                <div className="bg-[#1a1a1a] border border-anvil-red/30 rounded-xl p-4 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-anvil-red flex items-center gap-2">
+                                            <Calculator size={14} /> Smart Adjuster
+                                        </h5>
+                                        <button onClick={() => { setIsAdjusting(false); setOptimizedProposals(null); setSelectedProposalId(null); }} className="text-zinc-600 hover:text-white"><XIcon size={16} /></button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="block text-[9px] font-bold text-zinc-500 uppercase mb-1">Proteína Obj.</label>
+                                            <input 
+                                                type="number" 
+                                                value={adjustTargets.protein || ''} 
+                                                onChange={e => setAdjustTargets({...adjustTargets, protein: Number(e.target.value)})}
+                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-blue-400 font-bold text-sm outline-none focus:border-blue-500/50"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-bold text-zinc-500 uppercase mb-1">Carbos Obj.</label>
+                                            <input 
+                                                type="number" 
+                                                value={adjustTargets.carbs || ''} 
+                                                onChange={e => setAdjustTargets({...adjustTargets, carbs: Number(e.target.value)})}
+                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-yellow-400 font-bold text-sm outline-none focus:border-yellow-500/50"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[9px] font-bold text-zinc-500 uppercase mb-1">Grasas Obj.</label>
+                                            <input 
+                                                type="number" 
+                                                value={adjustTargets.fats || ''} 
+                                                onChange={e => setAdjustTargets({...adjustTargets, fats: Number(e.target.value)})}
+                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-orange-400 font-bold text-sm outline-none focus:border-orange-500/50"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {adjustError && (
+                                        <p className="text-[10px] font-bold text-anvil-red uppercase animate-pulse">{adjustError}</p>
+                                    )}
+
+                                    {!optimizedProposals ? (
+                                        <button 
+                                            onClick={() => {
+                                                const currentMap = Object.fromEntries(foods.map(mf => [mf.food_id, mf.amount_g]));
+                                                const result = optimizeMealQuantities(foods.map(mf => mf.food!), adjustTargets, currentMap);
+                                                if (result.error) {
+                                                    setAdjustError(result.error);
+                                                    setTimeout(() => setAdjustError(null), 3000);
+                                                } else {
+                                                    setOptimizedProposals(result.options);
+                                                    if (result.options.length > 0) setSelectedProposalId(result.options[0].id);
+                                                }
+                                            }}
+                                            className="w-full bg-white text-black font-black py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                                        >
+                                            Calcular Cantidades
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            <p className="text-[10px] font-bold text-zinc-400 uppercase italic">Revisa las opciones y aplica la que prefieras:</p>
+                                            
+                                            <div className="flex gap-2">
+                                                {optimizedProposals.map(opt => (
+                                                    <button
+                                                        key={opt.id}
+                                                        onClick={() => setSelectedProposalId(opt.id)}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-white' : 'bg-[#111111] border-white/5 text-zinc-500 hover:bg-white/5'}`}
+                                                    >
+                                                        {opt.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex gap-2 pt-2">
+                                                <button 
+                                                    onClick={() => {
+                                                        const selectedOpt = optimizedProposals.find(o => o.id === selectedProposalId);
+                                                        if (!selectedOpt) return;
+                                                        const bulkUpdates = foods.map(mf => ({
+                                                            id: mf.id,
+                                                            amount_g: selectedOpt.amounts[mf.food_id]
+                                                        }));
+                                                        onBulkUpdate(bulkUpdates);
+                                                        setIsAdjusting(false);
+                                                        setOptimizedProposals(null);
+                                                        setSelectedProposalId(null);
+                                                    }}
+                                                    className="flex-1 bg-green-500 text-white font-black py-2 rounded-lg text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-600 transition-colors disabled:opacity-50"
+                                                    disabled={!selectedProposalId}
+                                                >
+                                                    <Check size={14} /> Aplicar Ajuste
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setOptimizedProposals(null); setSelectedProposalId(null); }}
+                                                    className="flex-1 bg-zinc-800 text-white font-black py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+                                                >
+                                                    Descartar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {/* Macro Progress Bar */}
                     {totals.kcal > 0 && (
                         <div className="mb-4 bg-[#111111] p-3 rounded-lg border border-zinc-800/50">
@@ -340,7 +477,21 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                                 {idx > 0 && <span className="text-green-500 text-xs font-bold">ó</span>}
                                                                 <p className="text-white font-medium">{f.product_name}</p>
                                                             </div>
-                                                            <p className="text-xs text-zinc-500">{mf.amount_g}g{f.brands ? ` · ${f.brands}` : ''}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className={`text-xs ${selectedProposalId ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                                                                    {mf.amount_g}g
+                                                                </p>
+                                                                {selectedProposalId && optimizedProposals && optimizedProposals.find(o => o.id === selectedProposalId)?.amounts[f.code] !== mf.amount_g && (
+                                                                    <>
+                                                                        <ChevronUp size={12} className="text-green-500 rotate-90" />
+                                                                        <p className="text-xs font-black text-green-400">
+                                                                            {optimizedProposals.find(o => o.id === selectedProposalId)?.amounts[f.code]}g
+                                                                        </p>
+                                                                    </>
+                                                                )}
+                                                                <span className="text-zinc-700">·</span>
+                                                                <p className="text-xs text-zinc-500">{f.brands || ''}</p>
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             <div className="text-right text-sm flex gap-3">
