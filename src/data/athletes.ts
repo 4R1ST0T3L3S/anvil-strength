@@ -11,6 +11,9 @@ export interface Athlete {
     bench: number;
     deadlift: number;
   };
+  description?: string;
+  instagram?: string;
+  competitionDate?: string;
 }
 
 export const athletes: Athlete[] = [
@@ -26,7 +29,9 @@ export const athletes: Athlete[] = [
       squat: 120,
       bench: 52.5,
       deadlift: 125
-    }
+    },
+    description: "Atleta de élite en la categoría -63kg. Constancia y técnica impecable en cada levantamiento.",
+    instagram: "https://www.instagram.com/gemacruz_"
   },
   {
     id: 2,
@@ -40,13 +45,18 @@ export const athletes: Athlete[] = [
       squat: 250,
       bench: 127.5,
       deadlift: 225
-    }
+    },
+    description: "Especialista en sentadilla pesada y referente de fuerza en la categoría -83kg.",
+    instagram: "https://www.instagram.com/alejandrohermosilla"
   },
   {
     id: 3,
     name: "Marc Alonso",
-    category: "-105kg JNR",
+    category: "-105kg",
     image: "/athletes/marc.png",
+    competitionDate: "Sábado 16 de Mayo, 12:45",
+    description: "Compitiendo al más alto nivel por el club Anvil Strength. Superando límites y forjando una nueva historia de éxito en la plataforma.",
+    instagram: "https://www.instagram.com/mar_alonsoo_",
     stats: {
       lastCompetition: "SBD Cup 2025",
       glPoints: 100.06,

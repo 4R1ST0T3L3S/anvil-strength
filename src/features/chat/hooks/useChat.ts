@@ -13,11 +13,18 @@ export const useChat = (currentUserId: string, otherUserId: string | null) => {
             const { data, error } = await supabase
                 .from('chat_messages')
                 .select('*')
-                .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`)
+                .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
                 .order('created_at', { ascending: true });
 
             if (error) throw error;
-            setMessages(data || []);
+            
+            // Filter locally to ensure we only get messages between these two specific users
+            const filtered = (data || []).filter(msg => 
+                (msg.sender_id === currentUserId && msg.receiver_id === otherUserId) ||
+                (msg.sender_id === otherUserId && msg.receiver_id === currentUserId)
+            );
+            
+            setMessages(filtered);
         } catch (error) {
             console.error('Error fetching chat messages:', error);
         } finally {
@@ -30,7 +37,7 @@ export const useChat = (currentUserId: string, otherUserId: string | null) => {
 
         fetchMessages();
 
-        const channel = supabase.channel(`chat_${currentUserId}_${otherUserId}`)
+        const channel = supabase.channel(`chat_${currentUserId}_${otherUserId}_${Math.random().toString(36).substring(7)}`)
             .on('postgres_changes', { 
                 event: 'INSERT', 
                 schema: 'public', 
@@ -39,7 +46,11 @@ export const useChat = (currentUserId: string, otherUserId: string | null) => {
             }, (payload) => {
                 const newMessage = payload.new as ChatMessage;
                 if (newMessage.sender_id === otherUserId) {
-                    setMessages(prev => [...prev, newMessage]);
+                    setMessages(prev => {
+                        // Evitar duplicados
+                        if (prev.find(m => m.id === newMessage.id)) return prev;
+                        return [...prev, newMessage];
+                    });
                 }
             })
             .subscribe();

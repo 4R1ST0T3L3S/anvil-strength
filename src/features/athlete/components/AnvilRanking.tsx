@@ -4,10 +4,13 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../../../lib/supabase';
 import { X, Trophy, Medal, User as UserIcon } from 'lucide-react';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
+import { motion } from 'framer-motion';
 
 interface AnvilRankingProps {
-    isOpen: boolean;
-    onClose: () => void;
+    isOpen?: boolean;
+    onClose?: () => void;
+    user?: any;
+    onBack?: () => void;
 }
 
 interface RankedAthlete {
@@ -24,16 +27,19 @@ interface RankedAthlete {
     anvil_points: number;
 }
 
-export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
+export function AnvilRanking({ isOpen, onClose, user, onBack }: AnvilRankingProps) {
+    // If used as a view in dashboard, it's always "open"
+    const isModal = isOpen !== undefined;
+    const isVisible = isModal ? isOpen : true;
     const [athletes, setAthletes] = useState<RankedAthlete[]>([]);
     const [loading, setLoading] = useState(true);
     const [rankingType, setRankingType] = useState<'gl' | 'coins'>('gl');
 
     useEffect(() => {
-        if (isOpen) {
+        if (isVisible) {
             fetchRankings();
         }
-    }, [isOpen, rankingType]);
+    }, [isVisible, rankingType]);
 
     const fetchRankings = async () => {
         setLoading(true);
@@ -86,53 +92,61 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
         }
     };
 
-    if (!isOpen) return null;
+    const handleClose = isModal ? onClose : onBack;
 
-    return createPortal(
-        <div
-            className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
-            onClick={(e) => e.target === e.currentTarget && onClose()}
-        >
-            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:w-full md:max-w-2xl md:h-[85vh] md:rounded-3xl shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+    if (isModal && !isOpen) return null;
 
+    const content = (
+        <div className={isModal ? "fixed inset-0 z-[100] flex items-center justify-center p-4" : "w-full"}>
+            {isModal && (
+                <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    exit={{ opacity: 0 }} 
+                    onClick={onClose} 
+                    className="absolute inset-0 bg-black/90 backdrop-blur-sm" 
+                />
+            )}
+            
+            <motion.div 
+                initial={isModal ? { scale: 0.9, opacity: 0, y: 20 } : { opacity: 1 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                className={`${isModal ? 'relative w-full max-w-4xl bg-[#1a1a1a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl flex flex-col' : 'w-full bg-[#1a1a1a] border border-white/5 rounded-[2rem] flex flex-col'} max-h-[90vh] md:max-h-[85vh]`}
+            >
                 {/* Header */}
-                <div className="p-4 md:p-6 border-b border-white/5 bg-gradient-to-r from-anvil-red/10 to-transparent shrink-0">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 md:p-3 bg-anvil-red rounded-xl text-white shadow-lg shadow-anvil-red/20">
-                                <Trophy size={20} className="md:w-6 md:h-6" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white italic">Hall of Fame</h2>
-                                <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Leyendas de Anvil Strength</p>
-                            </div>
+                <div className="p-8 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-anvil-red/10 to-transparent">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-anvil-red rounded-xl text-white shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+                            <Trophy size={24} />
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
-                        >
-                            <X size={24} />
-                        </button>
+                        <div>
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">Ranking <span className="text-anvil-red">Anvil</span></h2>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Donde se forjan las leyendas</p>
+                        </div>
                     </div>
-
-                    {/* Tabs */}
-                    <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
-                        <button 
-                            onClick={() => setRankingType('gl')}
-                            className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
-                                rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white'
-                            }`}
-                        >
-                            Powerlifting (GL)
-                        </button>
-                        <button 
-                            onClick={() => setRankingType('coins')}
-                            className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
-                                rankingType === 'coins' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'
-                            }`}
-                        >
-                            Millonarios (Coins)
-                        </button>
+                    
+                    <div className="flex items-center gap-4">
+                        {/* Selector de Ranking */}
+                        <div className="flex gap-1 p-1 bg-black/40 rounded-xl border border-white/5">
+                            <button 
+                                onClick={() => setRankingType('gl')}
+                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white'}`}
+                            >
+                                GL Points
+                            </button>
+                            <button 
+                                onClick={() => setRankingType('coins')}
+                                className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${rankingType === 'coins' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'}`}
+                            >
+                                Coins
+                            </button>
+                        </div>
+                        
+                        {handleClose && (
+                            <button onClick={handleClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-500 hover:text-white">
+                                <X size={24} />
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -150,87 +164,50 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
                                 key={athlete.id}
                                 className="group relative bg-[#252525] border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 hover:border-anvil-red/30 transition-all"
                             >
-                                {/* Top Row: Rank, Avatar, Name */}
-                                <div className="flex items-center gap-3 w-full md:w-auto md:flex-1">
-                                    {/* Rank */}
-                                    <div className={`w-8 h-8 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded-lg md:rounded-xl font-black text-sm md:text-lg ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                                        index === 1 ? 'bg-gray-400/20 text-gray-400' :
-                                            index === 2 ? 'bg-orange-700/20 text-orange-700' :
-                                                'bg-white/5 text-gray-500'
-                                        }`}>
-                                        {index <= 2 ? <Medal size={16} /> : `#${index + 1}`}
-                                    </div>
-
-                                    {/* Avatar */}
-                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0">
-                                        {athlete.avatar_url ? (
-                                            <img src={athlete.avatar_url} alt={athlete.full_name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-500">
-                                                <UserIcon size={16} />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Name & Category */}
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-white font-bold uppercase truncate text-sm md:text-base">{athlete.full_name}</h3>
-                                        <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">
-                                            {athlete.weight_category}
-                                        </p>
-                                    </div>
-
-                                    {/* Score - Mobile inline */}
-                                    <div className="text-right md:hidden">
-                                        <p className={`text-xl font-black italic tracking-tighter ${rankingType === 'coins' ? 'text-yellow-500' : 'text-white'}`}>
-                                            {rankingType === 'gl' ? athlete.gl_points.toFixed(1) : athlete.anvil_points.toLocaleString()}
-                                        </p>
-                                        <p className={`text-[8px] font-bold uppercase ${rankingType === 'coins' ? 'text-yellow-600' : 'text-anvil-red'}`}>
-                                            {rankingType === 'gl' ? 'GL' : 'Coins'}
-                                        </p>
-                                    </div>
+                                {/* Rank */}
+                                <div className={`w-8 h-8 md:w-10 md:h-10 shrink-0 flex items-center justify-center rounded-lg md:rounded-xl font-black text-sm md:text-lg ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
+                                    index === 1 ? 'bg-gray-400/20 text-gray-400' :
+                                        index === 2 ? 'bg-orange-700/20 text-orange-700' :
+                                            'bg-white/5 text-gray-500'
+                                    }`}>
+                                    {index + 1}
                                 </div>
 
-                                {/* Mobile: PRs Row (Only if GL) */}
-                                {rankingType === 'gl' && (
-                                    <div className="flex md:hidden items-center justify-between gap-2 pl-11 text-[10px] text-gray-500">
-                                        <span>S: <span className="text-white font-bold">{athlete.squat_pr}</span></span>
-                                        <span>B: <span className="text-white font-bold">{athlete.bench_pr}</span></span>
-                                        <span>D: <span className="text-white font-bold">{athlete.deadlift_pr}</span></span>
-                                        <span className="text-gray-600">Total: {athlete.total}kg</span>
-                                    </div>
-                                )}
+                                {/* Avatar */}
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/5 border border-white/10 overflow-hidden shrink-0">
+                                    {athlete.avatar_url ? (
+                                        <img src={athlete.avatar_url} alt={athlete.full_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                            <UserIcon size={16} />
+                                        </div>
+                                    )}
+                                </div>
 
-                                {/* Desktop: Score */}
-                                <div className="hidden md:block text-right shrink-0">
-                                    <p className={`text-2xl font-black italic tracking-tighter ${rankingType === 'coins' ? 'text-yellow-500' : 'text-white'}`}>
+                                {/* Name & Category */}
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-white font-bold uppercase truncate text-sm md:text-base">{athlete.full_name}</h3>
+                                    <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">
+                                        {athlete.weight_category}
+                                    </p>
+                                </div>
+
+                                {/* Score */}
+                                <div className="text-right shrink-0">
+                                    <p className={`text-xl md:text-2xl font-black italic tracking-tighter ${rankingType === 'coins' ? 'text-yellow-500' : 'text-white'}`}>
                                         {rankingType === 'gl' ? athlete.gl_points.toFixed(1) : athlete.anvil_points.toLocaleString()}
                                     </p>
-                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${rankingType === 'coins' ? 'text-yellow-600' : 'text-anvil-red'}`}>
+                                    <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-widest ${rankingType === 'coins' ? 'text-yellow-600' : 'text-anvil-red'}`}>
                                         {rankingType === 'gl' ? 'GL Points' : 'Anvil Coins'}
                                     </p>
-                                </div>
-                                {/* Hover Detail (Desktop) */}
-                                <div className="hidden md:group-hover:flex absolute inset-0 bg-black/90 z-10 rounded-2xl items-center justify-around px-8 animate-in fade-in duration-200">
-                                    <div className="text-center">
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase">Sentadilla</p>
-                                        <p className="text-white font-black">{athlete.squat_pr}kg</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase">Banca</p>
-                                        <p className="text-white font-black">{athlete.bench_pr}kg</p>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase">Muerto</p>
-                                        <p className="text-white font-black">{athlete.deadlift_pr}kg</p>
-                                    </div>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
-            </div>
-        </div>,
-        document.body
+            </motion.div>
+        </div>
     );
+
+    return isModal ? createPortal(content, document.body) : content;
 }

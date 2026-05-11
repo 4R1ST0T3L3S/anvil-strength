@@ -10,6 +10,7 @@ interface ArenaBettingModalProps {
     option: ArenaOption | null;
     balance: number;
     onConfirm: (amount: number, predictionValue?: number) => Promise<void>;
+    onAddToSlip?: (bet: ArenaBet, option: ArenaOption | null) => void;
 }
 
 export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({ 
@@ -18,7 +19,8 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
     bet, 
     option, 
     balance,
-    onConfirm 
+    onConfirm,
+    onAddToSlip
 }) => {
     const [amount, setAmount] = useState<number>(100);
     const [predictionValue, setPredictionValue] = useState<string>('');
@@ -138,7 +140,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                         </div>
 
                         {/* Footer */}
-                        <div className="p-8 pt-0">
+                        <div className="p-8 pt-0 space-y-3">
                             <button
                                 onClick={handleConfirm}
                                 disabled={loading || amount <= 0 || amount > balance}
@@ -146,6 +148,15 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             >
                                 {loading ? 'PROCESANDO...' : 'CONFIRMAR APUESTA'}
                             </button>
+                            
+                            {onAddToSlip && (
+                                <button
+                                    onClick={() => onAddToSlip(bet, option)}
+                                    className="w-full py-4 bg-white/5 text-gray-400 hover:text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all border border-white/5 hover:border-white/10"
+                                >
+                                    O AÑADIR AL BOLETO (COMBINADA)
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 </div>

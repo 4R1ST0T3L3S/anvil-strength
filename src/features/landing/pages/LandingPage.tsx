@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
-import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle, MapPin } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
@@ -11,76 +11,45 @@ import { SoftwareSection } from '../components/SoftwareSection';
 import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../../../data/athletes';
 import { coaches, Coach } from '../../../data/coaches';
-
 import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
-import { PublicFooter } from '../../../components/layout/PublicFooter';
+// @ts-ignore
+import { Bubble } from "@typebot.io/react";
 
-import { Bubble } from "@typebot.io/react"; // Añade este import
+const featuredAchievements = [
+    {
+        id: 1,
+        title: "Campeonato Nacional SBJ 2026",
+        result: "Primer puesto -105Kg",
+        images: ["/Logros/PAU RODRIGUEZ-44.jpg", "/Logros/PODIO_SBJ26.jpg"],
+        desc: "Campeón de España en los 3 movimientos y pase directo para competir en el Europeo Subjunior para Pau Rodríguez."
+    },
+    {
+        id: 2,
+        title: "SBD CUP 2025",
+        result: "2 Segundos puestos",
+        images: ["/Logros/podio_sbd.jpg"],
+        desc: "Plata en la categoría de -83Kg y -105Kg. En esta última, un record de España (no oficial) en press banca con 192.5kg."
+    }
+];
 
 interface LandingPageProps {
     onLoginClick: () => void;
     user?: UserProfile | null;
 }
 
-// Definimos los logros (puedes mover esto a un archivo /data/achievements.ts luego)
-const featuredAchievements = [
-    { 
-        id: 1,
-        title: "Campeonato Nacional SBJ 2026", 
-        result: "Primer puesto -105Kg", 
-        images: ["/Logros/PAU RODRIGUEZ-44.jpg", "/Logros/PODIO_SBJ26.jpg"], // Rutas a tus fotos
-        desc: "Campeón de España en los 3 movimientos y pase directo para competir en el Europeo Subjunior para Pau Rodríguez." 
-    },
-    { 
-        id: 2,
-        title: "SBD CUP 2025", 
-        result: "2 Segundos puestos", 
-        images: ["/Logros/podio_sbd.jpg"],
-        desc: "Plata en la categoría de -83Kg y -105Kg. En esta última, un record de España (no oficial) en press banca con 192.5kg." 
-    },
-    { 
-        id: 3,
-        title: "Campeonato Nacional SBJ 2026", 
-        result: "Tercer puesto -105Kg", 
-        images: ["/Logros/Santiago_sbj26.jpg"], // Rutas a tus fotos
-        desc: "Tercero de España en los 3 movimientos para Santiago Badía." 
-    },
-    { 
-        id: 4,
-        title: "Black Oni VI", 
-        result: "Podio Absoluto", 
-        images: ["/logro3_1.jpg"],
-        desc: "Tercer puesto absoluto de nuestro atleta Pau Camacho, además de hacerse con el oro en la categoría de 83Kg" 
-    },
-    { 
-        id: 5,
-        title: "Campeonato Nacional SBJ 2026", 
-        result: "2do puesto por clubes", 
-        images: ["/logro1_1.jpg", "/logro1_2.jpg"], // Rutas a tus fotos
-        desc: "Segundo mejor club del campeonato de España Subjunior 2026 gracias a las actuaciones de Pau Rodriguez y Santi!" 
-    }
-];
-
-
-
 export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
     const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
-    const [isBotOpen, setIsBotOpen] = useState(false);
-    // Carousel State
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
     const [isManualMode, setIsManualMode] = useState(false);
     const [lastInteraction, setLastInteraction] = useState(() => Date.now());
-        // Dentro de la función LandingPage, junto a los otros useState:
     const [selectedAchievement, setSelectedAchievement] = useState<any | null>(null);
     const [isAllAchievementsModalOpen, setIsAllAchievementsModalOpen] = useState(false);
 
-
-    // Añade esto debajo de tus useState
     useEffect(() => {
         const interval = setInterval(() => {
             const botButton = document.querySelector('.typebot-bubble-button');
@@ -101,15 +70,14 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     }, [isPaused, isManualMode]);
 
     useEffect(() => {
-        if (!isManualMode) return;
-        const checkIdle = setInterval(() => {
-            const now = Date.now();
-            if (now - lastInteraction > 30000 && !selectedAthlete) {
-                setIsManualMode(false);
-            }
-        }, 1000);
-        return () => clearInterval(checkIdle);
-    }, [isManualMode, lastInteraction, selectedAthlete]);
+        if (carouselIndex === athletes.length) {
+            const timer = setTimeout(() => {
+                setIsTransitioning(false);
+                setCarouselIndex(0);
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [carouselIndex]);
 
     const handleManualNav = (direction: 'prev' | 'next') => {
         setIsManualMode(true);
@@ -132,17 +100,6 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
         }
     };
 
-    useEffect(() => {
-        if (carouselIndex === athletes.length) {
-            const timer = setTimeout(() => {
-                setIsTransitioning(false);
-                setCarouselIndex(0);
-            }, 800);
-            return () => clearTimeout(timer);
-        }
-    }, [carouselIndex]);
-
-
     const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
         e.preventDefault();
         const element = document.querySelector(id);
@@ -152,275 +109,255 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     };
 
     return (
-        <div className="font-sans">
-            {/* Shared Public Header */}
+        <div className="font-sans bg-[#050505] text-white">
             <PublicHeader onLoginClick={onLoginClick} />
 
             {/* Hero Section */}
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/portadaanvil2.jpg')] bg-cover bg-center">
-                    <div className="absolute inset-0 bg-black/40" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent" />
+                <div className="absolute inset-0">
+                    <div className="absolute inset-0 bg-[url('/portadaanvil2.jpg')] bg-cover bg-[center_top_20%] md:bg-center" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-[#0a0a0a]" />
+
+                    {/* Efecto Magnesio (Partículas) */}
+                    {[...Array(25)].map((_, i) => (
+                        <motion.div
+                            key={`chalk-${i}`}
+                            className="absolute bg-white rounded-full blur-[2px]"
+                            style={{
+                                width: Math.random() * 6 + 4 + 'px',
+                                height: Math.random() * 6 + 4 + 'px',
+                                left: Math.random() * 100 + '%',
+                                top: Math.random() * 100 + 10 + '%',
+                            }}
+                            initial={{ opacity: 0, y: 0 }}
+                            animate={{
+                                y: - (Math.random() * 200 + 100),
+                                opacity: [0, Math.random() * 0.2 + 0.1, 0],
+                            }}
+                            transition={{
+                                duration: Math.random() * 4 + 4,
+                                repeat: Infinity,
+                                ease: "linear",
+                                delay: Math.random() * 4,
+                            }}
+                        />
+                    ))}
                 </div>
-                <div className="relative z-10 text-center px-4 max-w-5xl mx-auto mt-24 md:mt-24<">
-                    <h1 className="text-5xl sm:text-6xl md:text-9xl font-black tracking-tighter mb-8 text-white flex flex-col md:block items-center gap-2 md:gap-0">
-                        <span>ANVIL</span>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">STRENGTH</span>
-                    </h1>
-                    <p className="text-lg md:text-3xl text-gray-200 mb-12 font-bold tracking-wide uppercase max-w-lg mx-auto md:max-w-none">
+
+                <div className="relative z-10 text-center px-4 max-w-7xl mx-auto flex flex-col items-center">
+                    {/* Animación de "Golpe de Yunque" con capas precisas */}
+                    <motion.div
+                        initial={{ scale: 1.5, filter: 'blur(20px)', opacity: 0 }}
+                        animate={{ scale: 1, filter: 'blur(0px)', opacity: 1 }}
+                        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        className="relative mb-12 w-full flex flex-col items-center justify-center pt-20 md:pt-32"
+                    >
+                        {/* ANVIL: Bajado ligeramente para acercarlo a STRENGTH */}
+                        <h1 className="text-[8rem] md:text-[18rem] font-black tracking-normal font-bebas italic text-gray-200 uppercase leading-none select-none relative z-0 drop-shadow-2xl -translate-y-10 md:-translate-y-14 -translate-x-8 md:-translate-x-20">
+                            ANVIL
+                        </h1>
+
+                        {/* STRENGTH: Subido ligeramente para acercarlo a ANVIL */}
+                        <h2
+                            className="absolute text-5xl md:text-[9rem] font-black font-bebas italic text-anvil-red uppercase leading-none z-10 translate-y-20 md:translate-y-26 translate-x-8 md:translate-x-24"
+                            style={{
+                                textShadow: "0 0 30px rgba(220,38,38,0.8), 0 0 60px rgba(220,38,38,0.4)",
+                                letterSpacing: "-0.05em"
+                            }}
+                        >
+                            STRENGTH
+                        </h2>
+                    </motion.div>
+
+                    {/* Subtítulo Técnico */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8, duration: 0.8 }}
+                        className="text-xs md:text-sm text-gray-400 mb-12 font-mono tracking-[0.4em] uppercase mt-4"
+                    >
                         WHERE CHAMPIONS ARE FORGED
-                    </p>
-                    <div className="flex flex-col md:flex-row gap-4 justify-center mt-16 md:mt-50">
-                        <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full md:w-auto" />
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.0 }}
+                        className="flex flex-col md:flex-row gap-6 justify-center items-center w-full md:w-auto"
+                    >
+                        {/* Primario: Únete al equipo (Minimalista con hover de llenado rojo) */}
                         <a
                             href="#afiliacion"
                             onClick={(e) => scrollToSection(e, '#afiliacion')}
-                            className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
+                            className="relative overflow-hidden border-2 border-anvil-red text-white py-4 px-12 rounded-xl font-black uppercase tracking-widest text-sm transition-all group w-full md:w-auto flex justify-center items-center"
                         >
-                            Únete al equipo
+                            <div className="absolute inset-0 bg-anvil-red translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
+                            <span className="relative z-10 group-hover:animate-pulse">
+                                Únete al equipo
+                            </span>
                         </a>
-                    </div>
-                </div>
 
-                {/* Federation Logos */}
-                <div className="absolute bottom-[10%] md:bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
-                    <a
-                        href="https://www.powerlifting.sport/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/Logo-ipf.png"
-                            alt="IPF Approved"
-                            className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
-                        />
-                    </a>
-                    <a
-                        href="https://powerliftingspain.es/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/logo-aep.png"
-                            alt="AEP Federación"
-                            className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                        />
-                    </a>
+                        {/* Secundario: SmartAuth unificado al estilo oscuro */}
+                        <div className="w-full md:w-auto">
+                            <SmartAuthButton
+                                variant="ghost"
+                                className="w-full py-4 px-12 text-sm rounded-xl font-black uppercase tracking-widest border-2 border-white/20 hover:border-white hover:bg-white/10"
+                            />
+                        </div>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* Filosofía Section */}
-            <section id="filosofia" className="min-h-screen flex flex-col justify-center py-32 bg-[#1c1c1c]">
-                <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-                    <div className="text-center md:text-left">
-                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 uppercase">
-                            WHERE <span className="text-anvil-red">CHAMPIONS</span> <br /> ARE <span className="text-anvil-red">FORGED</span>
+            {/* Filosofía */}
+            <section id="filosofia" className="py-32 relative overflow-hidden">
+                <div className="absolute top-20 -left-10 text-[20rem] font-black text-white/[0.02] font-bebas italic leading-none pointer-events-none">01</div>
+                <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-24 items-center">
+                    <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+                        <h2 className="text-5xl md:text-8xl font-black tracking-[0.05em] mb-12 uppercase font-bebas italic leading-[1.1] py-4">
+                            WHERE <span className="text-anvil-red">CHAMPIONS</span> ARE <span className="text-white">FORGED</span>
                         </h2>
-                        <div className="space-y-6 text-lg text-gray-400 leading-relaxed font-medium">
-                            <p>
-                                No somos un club convencional, buscamos que tu experiencia en tarima sea inmejorable. Como nuestro propio lema dice, <span className="text-white font-bold">FORJAMOS CAMPEONES.</span>
-                            </p>
-                            <p>
-                                En Anvil Strength no solo te unes a un club, <span className="text-anvil-red font-bold">te unes a una familia.</span> Queremos que tu camino vaya más allá de la competición; por eso, contamos con los mejores entrenadores del panorama para garantizarte un proceso claro, directo y sin trabas. <span className="text-white font-bold">Tú pones el esfuerzo, nosotros la estructura.</span>
-                            </p>
-                            <p>
-                                No construimos perdedores, <span className="text-white font-bold">construimos atletas de alto rendimiento</span>, porque para rendir como tal necesitas planificaciones de alto rendimiento. En un deporte con normas de competición, <span className="text-anvil-red font-bold">entrena con normas de competición.</span>
-                            </p>
+                        <div className="space-y-8 text-lg text-gray-400 leading-relaxed font-medium">
+                            <p className="border-l-2 border-anvil-red pl-6">No somos un club convencional, buscamos que tu experiencia en tarima sea inmejorable. Como nuestro propio lema dice, <span className="text-white font-black italic">FORJAMOS CAMPEONES.</span></p>
+                            <p>En Anvil Strength no solo te unes a un club, <span className="text-anvil-red font-black italic">te unes a una familia.</span> Queremos que tu camino vaya más allá de la competición. <span className="text-white font-bold">Tú pones el esfuerzo, nosotros la estructura.</span></p>
                         </div>
-                    </div>
+                    </motion.div>
                     <div className="relative">
-                        <div className="aspect-[4/5] bg-gray-800 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
-                            <img src="/filosofia-competition.jpg" alt="Filosofía" className="w-full h-full object-cover" loading="lazy" />
+                        <div className="aspect-[4/5] bg-gray-900 rounded-3xl overflow-hidden shadow-3xl">
+                            <img src="/filosofia-competition.jpg" alt="Filosofía" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                         </div>
-                        <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block rounded-xl"></div>
                     </div>
                 </div>
             </section>
 
-            {/* Benefits Section */}
             <BenefitsSection />
-
-            {/* Entrenadores Section */}
-            <section id="entrenadores" className="min-h-[70vh] flex flex-col justify-center py-20 bg-[#252525]">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Entrenadores</h2>
-                        <div className="w-20 h-1 bg-anvil-red mx-auto"></div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-                        {coaches.map((coach) => (
-                            <div
-                                key={coach.id}
-                                className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-xl cursor-pointer"
-                                onClick={() => setSelectedCoach(coach)}
-                            >
-                                <img
-                                    src={coach.image}
-                                    alt={coach.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                                    loading="lazy"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
-                                    <p className="text-anvil-red font-bold tracking-wider mb-4">{coach.role}</p>
-                                    <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                                        <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
-                                            <Instagram size={20} />
-                                        </button>
-                                        <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); if (coach.email) window.location.href = `mailto:${coach.email}`; }}>
-                                            <Mail size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-                                {/* Coach Logo in Bottom Right */}
-                                {coach.logo && (
-                                    <div className="absolute bottom-4 right-4 z-10">
-                                        <img
-                                            src={coach.logo}
-                                            alt={`${coach.name} logo`}
-                                            className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Atletas Section */}
-            <section id="atletas" className="py-32 bg-[#1c1c1c] overflow-hidden">
-                <div className="max-w-[1400px] mx-auto px-6 mb-16">
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nuestros Atletas</h2>
-                            <div className="w-20 h-1 bg-anvil-red"></div>
-                        </div>
-                        <button
-                            onClick={() => setIsTeamModalOpen(true)}
-                            className="hidden md:block text-gray-400 hover:text-white font-bold uppercase tracking-wider text-sm transition-colors"
-                        >
-                            Ver todo el equipo &rarr;
-                        </button>
-                    </div>
-                </div>
-
-                {/* Infinite Carousel */}
-                <div className="relative group/carousel">
-                    {/* Gradient Fades */}
-                    <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
-                    <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
-
-                    {/* Navigation Arrows */}
-                    <button
-                        onClick={() => handleManualNav('prev')}
-                        className="absolute left-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
-                    >
-                        <ChevronLeft size={32} />
-                    </button>
-                    <button
-                        onClick={() => handleManualNav('next')}
-                        className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
-                    >
-                        <ChevronRight size={32} />
-                    </button>
-
-                    <div
-                        className="flex overflow-hidden"
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                    >
-                        <motion.div
-                            className="flex gap-4 px-4"
-                            animate={{ x: -(carouselIndex * (280 + 16)) }}
-                            transition={isTransitioning ? {
-                                duration: 0.8,
-                                ease: [0.4, 0, 0.2, 1]
-                            } : { duration: 0 }}
-                        >
-                            {[...athletes, ...athletes, ...athletes, ...athletes].map((athlete, index) => (
-                                <div
-                                    key={`${athlete.id}-${index}`}
-                                    className="relative flex-shrink-0 w-[280px] aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl group"
-                                    onClick={() => setSelectedAthlete(athlete)}
-                                >
-                                    <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" loading="lazy" />
-                                    <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
-                                        <p className="text-white font-bold uppercase">{athlete.name}</p>
-                                        <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </motion.div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Reviews Section */}
-            <ReviewsSection isAuthenticated={!!user} />
-
-            {/* Software Section */}
             <SoftwareSection />
 
-            {/* Logros Section - Versión Épica */}
-            <section id="logros" className="min-h-screen flex flex-col justify-center py-32 bg-[#0a0a0a]">
+            <section id="entrenadores" className="py-32 bg-[#050505]">
                 <div className="max-w-[1400px] mx-auto px-6">
-                    <div className="flex justify-between items-end mb-20">
-                        <div>
-                            <h2 className="text-4xl md:text-7xl font-black tracking-tighter uppercase mb-4 text-white italic">
-                                 <span className="text-anvil-red drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">Logros</span> del club
-                            </h2>
-                            <div className="w-32 h-2 bg-anvil-red"></div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-center mb-24"
+                    >
+                        <h2 className="text-5xl md:text-7xl font-black tracking-[0.1em] uppercase font-bebas italic leading-[1.1] py-4">Nuestro <span className="text-anvil-red">Equipo</span></h2>
+                        <div className="w-24 h-1 bg-anvil-red mx-auto mt-4"></div>
+                    </motion.div>
+
+                    {/* Entrenadores */}
+                    <div className="mb-24">
+                        <h3 className="text-3xl md:text-5xl font-black uppercase font-bebas italic text-gray-500 mb-12 tracking-[0.2em] text-center">Entrenadores</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                            {coaches.filter(c => c.role.includes('ENTRENADOR')).map((coach, index) => (
+                                <motion.div
+                                    key={coach.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: index * 0.1 }}
+                                    whileHover={{ y: -10 }}
+                                    onClick={() => setSelectedCoach(coach)}
+                                    className="group relative aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer border border-white/5 shadow-2xl"
+                                >
+                                    <img src={coach.image} alt={coach.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
+                                        <h3 className="text-4xl font-black uppercase font-bebas italic leading-[1.1]">{coach.name}</h3>
+                                        <p className="text-anvil-red font-black text-sm uppercase tracking-widest">{coach.role}</p>
+                                    </div>
+                                    <div className="absolute top-6 right-6 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                        <Instagram className="w-5 h-5 text-white" />
+                                    </div>
+                                </motion.div>
+                            ))}
                         </div>
-                        <button 
-                            onClick={() => setIsAllAchievementsModalOpen(true)}
-                            className="group flex items-center gap-2 text-gray-500 hover:text-white font-bold uppercase tracking-[0.2em] text-xs transition-all"
-                        >
-                            VER HISTORIAL COMPLETO 
-                            <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
-                        </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {featuredAchievements.slice(0, 3).map((item, index) => (
-                            <motion.div 
-                                key={item.id} 
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1, duration: 0.6 }}
-                                viewport={{ once: true }}
-                                whileHover={{ y: -20 }}
-                                onClick={() => setSelectedAchievement(item)}
-                                className="relative group cursor-pointer"
-                            >
-                                {/* Efecto de resplandor exterior al pasar el ratón */}
-                                <div className="absolute -inset-1 bg-gradient-to-b from-anvil-red/30 to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition duration-700" />
-                                
-                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#080808] p-12 rounded-2xl border border-white/5 group-hover:border-anvil-red/40 transition-all duration-500 flex flex-col items-center text-center h-full shadow-2xl overflow-hidden">
-                                    
-                                    {/* Número decorativo de fondo */}
-                                    <span className="absolute -top-4 -right-2 text-9xl font-black text-white/[0.02] group-hover:text-anvil-red/[0.05] transition-colors select-none italic">
-                                        {index + 1}
-                                    </span>
+                    {/* Nutrición */}
+                    <div>
+                        <h3 className="text-3xl md:text-5xl font-black uppercase font-bebas italic text-gray-500 mb-12 tracking-[0.2em] text-center">Nutrición <span className="text-white">Deportiva</span></h3>
+                        <div className="grid grid-cols-1 gap-10 max-w-md mx-auto">
+                            {coaches.filter(c => c.role.includes('NUTRICIONISTA')).map((coach) => (
+                                <motion.div
+                                    key={coach.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    whileHover={{ y: -10 }}
+                                    onClick={() => setSelectedCoach(coach)}
+                                    className="group relative aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer border border-white/5 shadow-2xl"
+                                >
+                                    <img src={coach.image} alt={coach.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
+                                        <h3 className="text-4xl font-black uppercase font-bebas italic leading-[1.1]">{coach.name}</h3>
+                                        <p className="text-anvil-red font-black text-sm uppercase tracking-widest">{coach.role}</p>
+                                    </div>
+                                    <div className="absolute top-6 right-6 w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                        <Instagram className="w-5 h-5 text-white" />
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                                    <div className="relative mb-10">
-                                        {/* Brillo detrás del trofeo */}
-                                        <div className="absolute -inset-6 bg-anvil-red/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                        <Trophy className="h-20 w-20 text-anvil-red relative drop-shadow-[0_0_20px_rgba(220,38,38,0.6)] group-hover:scale-110 transition-transform duration-500" />
+            {/* Atletas */}
+            <section id="atletas" className="py-32 overflow-hidden relative">
+                <div className="max-w-[1400px] mx-auto px-6 mb-16 flex justify-between items-end">
+                    <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase font-bebas italic leading-[1.1] py-6">Atletas <span className="text-anvil-red">Anvil</span></h2>
+                    <button onClick={() => setIsTeamModalOpen(true)} className="text-gray-500 hover:text-white font-black uppercase tracking-widest text-xs border-b border-white/10 pb-2">Ver equipo completo</button>
+                </div>
+                <div className="relative flex overflow-hidden">
+                    <motion.div className="flex gap-6 px-6" animate={{ x: -(carouselIndex * 344) }} transition={isTransitioning ? { duration: 1, ease: "easeOut" } : { duration: 0 }}>
+                        {[...athletes, ...athletes, ...athletes].map((athlete, i) => (
+                            <div key={i} className="relative w-[320px] aspect-[4/5] bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group" onClick={() => setSelectedAthlete(athlete)}>
+                                <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                <div className="absolute bottom-0 p-8 bg-gradient-to-t from-black to-transparent w-full">
+                                    <p className="text-anvil-red text-[10px] font-black uppercase tracking-widest">{athlete.category}</p>
+                                    <p className="text-2xl font-black uppercase font-bebas italic">{athlete.name}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </motion.div>
+                </div>
+            </section>
+
+            <ReviewsSection isAuthenticated={!!user} />
+
+            {/* Logros */}
+            <section id="logros" className="py-32 relative">
+                <div className="max-w-[1400px] mx-auto px-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-8"
+                    >
+                        <h2 className="text-5xl md:text-9xl font-black tracking-[0.05em] uppercase font-bebas italic leading-[1.1] py-4"><span className="text-anvil-red">Logros</span> del club</h2>
+                        <button onClick={() => setIsAllAchievementsModalOpen(true)} className="bg-white/5 px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-anvil-red transition-all border border-white/10">Ver historial completo</button>
+                    </motion.div>
+                    <div className="space-y-8">
+                        {featuredAchievements.map((item, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: -30 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                whileHover={{ scale: 1.01 }}
+                                className="flex flex-col md:flex-row bg-[#0a0a0a] rounded-3xl overflow-hidden border border-white/5 cursor-pointer group shadow-2xl h-auto md:h-[300px]"
+                                onClick={() => setSelectedAchievement(item)}
+                            >
+                                <div className="w-full md:w-[350px] h-64 md:h-full shrink-0">
+                                    <img src={item.images[0]} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.title} />
+                                </div>
+                                <div className="p-8 md:p-12 flex-1 flex flex-col justify-center">
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <Trophy className="text-anvil-red" size={24} />
+                                        <span className="text-anvil-red font-black uppercase tracking-widest text-xs">{item.result}</span>
                                     </div>
-                                    
-                                    <h3 className="text-2xl md:text-4xl font-black text-white uppercase mb-6 leading-[0.9] tracking-tighter italic">
-                                        {item.title}
-                                    </h3>
-                                    
-                                    <div className="mt-auto w-full pt-8 border-t border-white/5">
-                                        <p className="text-xl md:text-2xl text-anvil-red font-black uppercase tracking-tighter italic group-hover:tracking-normal transition-all">
-                                            {item.result}
-                                        </p>
-                                    </div>
+                                    <h3 className="text-3xl md:text-5xl font-black uppercase font-bebas italic mb-4 leading-[1.1] tracking-wide">{item.title}</h3>
+                                    <p className="text-gray-400 text-base leading-relaxed max-w-3xl line-clamp-3">{item.desc}</p>
                                 </div>
                             </motion.div>
                         ))}
@@ -428,311 +365,159 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 </div>
             </section>
 
-            {/* Afiliación Section */}
-            <section id="afiliacion" className="min-h-screen flex flex-col justify-center py-32 bg-anvil-red relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
-                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 text-white uppercase">
-                        ¿Listo para competir?
-                    </h2>
-                    <p className="text-white/90 text-xl mb-12 font-medium">
-                        Únete a Anvil Strength. Descarga los documentos necesarios y comienza tu camino hacia la tarima.
-                    </p>
-
-                    <div className="flex flex-col md:flex-row gap-6 justify-center">
-                        <a href="https://typebot.co/lead-generation-hhwa24t" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
-                            <FileText size={20} />
-                            Formulario de Inscripción
-                        </a>
-                        <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
-                            <FileText size={20} />
-                            Normativa del Equipo
-                        </button>
-                    </div>
-                </div>
-
-                {/* Federation Logos */}
-                <div className="absolute bottom-[10%] md:bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
-                    <a
-                        href="https://www.powerlifting.sport/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/Logo-ipf.png"
-                            alt="IPF Approved"
-                            className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
-                        />
-                    </a>
-                    <a
-                        href="https://powerliftingspain.es/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/logo-aep.png"
-                            alt="AEP Federación"
-                            className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                        />
-                    </a>
-                </div>
-            </section>
-
-            {/* Contacto Section */}
-            <section id="contacto" className="py-20 bg-[#1c1c1c] border-t border-white/5">
-                <div className="max-w-4xl mx-auto px-6 text-center">
-                    <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-2 text-white">Contacto</h2>
-                    <div className="w-20 h-1 bg-anvil-red mx-auto mb-12"></div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Instagram */}
-                        <a
-                            href="https://www.instagram.com/anvilstrength_"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
+            {/* Afiliación */}
+            <section id="afiliacion" className="py-32 relative overflow-hidden">
+                <div className="max-w-[1400px] mx-auto px-6">
+                    <div className="bg-gradient-to-br from-[#111111] to-black p-12 md:p-24 rounded-[3rem] border border-white/5 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
                         >
-                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
-                                <Instagram size={32} />
+                            <h2 className="text-5xl md:text-8xl font-black tracking-[0.05em] uppercase font-bebas italic leading-[1.1] py-6 mb-8">Únete al <br /><span className="text-anvil-red">Power Club</span></h2>
+                            <p className="text-gray-400 text-lg mb-12">Buscamos atletas comprometidos. Si quieres llevar tu rendimiento al siguiente nivel, este es tu sitio.</p>
+                            <div className="space-y-6">
+                                {['Entrenamientos Personalizados', 'Software propio', 'Comunidad activa'].map(item => (
+                                    <div key={item} className="flex items-center gap-4 text-xs font-black uppercase tracking-widest">
+                                        <div className="w-2 h-2 bg-anvil-red rounded-full" /> {item}
+                                    </div>
+                                ))}
                             </div>
-                            <h3 className="font-bold text-xl uppercase mb-2 text-white">Instagram</h3>
-                            <p className="text-gray-400 text-sm">@anvilstrength_</p>
-                        </a>
-
-                        {/* Email */}
-                        <a
-                            href="mailto:anvilstrengthclub@gmail.com"
-                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="bg-black p-10 rounded-3xl border border-white/5"
                         >
-                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
-                                <Mail size={32} />
-                            </div>
-                            <h3 className="font-bold text-xl uppercase mb-2 text-white">Email</h3>
-                            <p className="text-gray-400 text-sm">anvilstrengthclub@gmail.com</p>
-                        </a>
-
-                        {/* WhatsApp */}
-                        <a
-                            href="https://wa.me/34640761674"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
-                        >
-                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
-                                <MessageCircle size={32} />
-                            </div>
-                            <h3 className="font-bold text-xl uppercase mb-2 text-white">WhatsApp</h3>
-                            <p className="text-gray-400 text-sm">+34 640 76 16 74</p>
-                        </a>
+                            <form className="space-y-6">
+                                <input type="text" placeholder="NOMBRE" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-xs font-black outline-none focus:border-anvil-red" />
+                                <input type="email" placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-xs font-black outline-none focus:border-anvil-red" />
+                                <textarea placeholder="¿POR QUÉ ANVIL?" className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-xs font-black outline-none focus:border-anvil-red h-32 resize-none" />
+                                <button className="w-full bg-anvil-red py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-red-700 transition-all">Enviar Solicitud</button>
+                            </form>
+                        </motion.div>
                     </div>
                 </div>
             </section>
-            <PublicFooter />
 
-            <TeamModal
-                isOpen={isTeamModalOpen}
-                onClose={() => setIsTeamModalOpen(false)}
-                athletes={athletes}
-                onAthleteClick={setSelectedAthlete}
-            />
+            {/* Contacto */}
+            <section id="contacto" className="py-32">
+                <div className="max-w-[1400px] mx-auto px-6 text-center">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-5xl md:text-8xl font-black tracking-[0.1em] uppercase font-bebas italic leading-[1.1] py-6 mb-20"
+                    >
+                        ¿Hablamos?
+                    </motion.h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        {[
+                            { icon: <Mail />, title: 'EMAIL', info: 'anvilstrengthclub@gmail.com', href: 'mailto:anvilstrengthclub@gmail.com' },
+                            { icon: <Instagram />, title: 'INSTAGRAM', info: 'anvilstrength_', href: 'https://www.instagram.com/anvilstrength_' },
+                            { icon: <MessageCircle />, title: 'CONTACTO', info: '+34 640 76 16 74', href: 'https://api.whatsapp.com/send?phone=34640761674&text=Hola!%20Quer%C3%ADa%20solicitar%20informaci%C3%B3n%20para%20afiliarme%20al%20club.' }
+                        ].map((item, i) => (
+                            <motion.a
+                                href={item.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                key={i}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className="bg-[#111111] p-12 rounded-[2.5rem] border border-white/5 hover:border-anvil-red/40 transition-all group block cursor-pointer"
+                            >
+                                <div className="text-anvil-red mb-6 flex justify-center group-hover:scale-110 transition-transform">{item.icon}</div>
+                                <h3 className="font-black uppercase tracking-widest text-xs mb-2 text-white">{item.title}</h3>
+                                <p className="text-gray-400 font-bold group-hover:text-white transition-colors">{item.info}</p>
+                            </motion.a>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-            <AthleteDetailsModal
-                isOpen={!!selectedAthlete}
-                onClose={() => setSelectedAthlete(null)}
-                athlete={selectedAthlete}
-            />
+            {/* Footer */}
+            <footer className="py-24 border-t border-white/5">
+                <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
+                    <img src="/logo-dark-removebg-preview.png" className="h-12 grayscale" alt="Logo" />
+                    <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest">© {new Date().getFullYear()} ANVIL STRENGTH. ALL RIGHTS RESERVED.</p>
+                    <div className="flex gap-8">
+                        <a href="https://www.instagram.com/anvilstrength_" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-white transition-colors">
+                            <Instagram />
+                        </a>
+                        <a href="mailto:anvilstrengthclub@gmail.com" className="text-gray-600 hover:text-white transition-colors">
+                            <Mail />
+                        </a>
+                    </div>
+                </div>
+            </footer>
 
-            {/* ... resto de tus secciones y modales anteriores ... */}
+            <TeamModal isOpen={isTeamModalOpen} onClose={() => setIsTeamModalOpen(false)} athletes={athletes} onAthleteClick={setSelectedAthlete} />
+            <AthleteDetailsModal isOpen={!!selectedAthlete} onClose={() => setSelectedAthlete(null)} athlete={selectedAthlete} />
+            <CoachDetailsModal isOpen={!!selectedCoach} onClose={() => setSelectedCoach(null)} coach={selectedCoach} />
+            <AchievementModal isOpen={!!selectedAchievement} onClose={() => setSelectedAchievement(null)} achievement={selectedAchievement} />
+            <AllAchievementsModal isOpen={isAllAchievementsModalOpen} onClose={() => setIsAllAchievementsModalOpen(false)} achievements={featuredAchievements} onSelect={setSelectedAchievement} />
 
-            <CoachDetailsModal
-                isOpen={!!selectedCoach}
-                onClose={() => setSelectedCoach(null)}
-                coach={selectedCoach}
-            />
+            <Bubble typebot="lead-generation-hhwa24t" apiHost="https://typebot.io" />
 
-                        {/* Añade esto al final de tu return, antes del último </div> */}
-            <AchievementModal 
-                isOpen={!!selectedAchievement} 
-                onClose={() => setSelectedAchievement(null)} 
-                achievement={selectedAchievement} 
-            />
-
-            <AllAchievementsModal 
-                isOpen={isAllAchievementsModalOpen} 
-                onClose={() => setIsAllAchievementsModalOpen(false)} 
-                achievements={featuredAchievements} 
-                onSelect={setSelectedAchievement} 
-            />
-
-            {/* --- TYPEBOT BUBBLE (Configurado para el lado izquierdo vía CSS) --- */}
-            <Bubble
-                typebot="lead-generation-hhwa24t"
-                apiHost="https://typebot.io"
-            />
-
-            {/* --- MASCOTA ANVIL: EL "LOCUTOR" (AHORA A LA DERECHA) --- */}
             <motion.div
-                initial={{ opacity: 0, x: 50 }} // Entra desde la derecha
-                animate={{ 
-                    opacity: 1, 
-                    x: 0,
-                    y: [0, -10, 0] 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                onClick={() => {
+                    if ((window as any).Typebot) {
+                        (window as any).Typebot.toggle();
+                    } else {
+                        console.warn('Typebot is not initialized yet');
+                    }
                 }}
-                whileHover={{ 
-                    scale: 1.2,
-                    rotate: [0, -5, 5, 0],
-                    transition: { duration: 0.3 } 
-                }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ 
-                    y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                    duration: 0.5 
-                }}
-                onClick={() => (window as any).Typebot.toggle()}
-                // CAMBIO CLAVE: right-6 en lugar de left-6
                 className="fixed bottom-6 right-6 z-[100] cursor-pointer group"
             >
-                {/* Bocadillo de aviso (Ajustado para alinearse a la derecha) */}
-                <div className="absolute -top-16 right-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-br-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-colors">
-                    ¿HABLAMOS, ANIMAL? 🦍
-                </div>
-
-                {/* TU MASCOTA */}
-                {/* --- ESTO AÑADE LAS PATAS Y OJOS --- */}
-                <AnvilMascot className="w-24 h-24 md:w-32 md:h-32" />
+                <div className="absolute -top-12 right-0 bg-white text-black text-[8px] font-black px-3 py-1 rounded-full whitespace-nowrap border-2 border-anvil-red">¿HABLAMOS? 🦍</div>
+                <AnvilMascot className="w-24 h-24" />
             </motion.div>
         </div>
     );
 }
 
-
-function MascotWithChat() {
-    const [messageIndex, setMessageIndex] = useState(0);
-    const messages = [
-        "¿Necesitas ayuda?",
-        "¿Quieres afiliarte?",
-        "¡Forja tu legado!",
-        "¿Listo para competir?"
-    ];
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setMessageIndex((prev) => (prev + 1) % messages.length);
-        }, 5000); // Cambia mensaje cada 5 segundos
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <div className="fixed bottom-4 left-4 z-50 hidden md:block group/mascot">
-            <AnvilMascot className="w-24 h-24 drop-shadow-2xl hover:scale-110 transition-transform cursor-pointer" />
-
-            {/* Chat Bubble Dinámico */}
-            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-3 rounded-2xl font-bold uppercase text-xs shadow-xl whitespace-nowrap pointer-events-none">
-                <motion.div
-                    key={messageIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    {messages[messageIndex]}
-                </motion.div>
-                {/* Flechita del bocadillo */}
-                <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-3 h-3 bg-white rotate-45"></div>
-            </div>
-        </div>
-    );
-}
-
 function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean, onClose: () => void, achievement: any }) {
-    const [imgIndex, setImgIndex] = useState(0);
-
-    // Reiniciar índice al abrir nuevo logro
-    useEffect(() => { setImgIndex(0); }, [achievement]);
-
     if (!isOpen || !achievement) return null;
-
-    const nextImg = () => setImgIndex((prev) => (prev + 1) % achievement.images.length);
-    const prevImg = () => setImgIndex((prev) => (prev - 1 + achievement.images.length) % achievement.images.length);
-
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
-                
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#1c1c1c] w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
-                    
-                    {/* Botón Cerrar (X) */}
-                    <button onClick={onClose} className="absolute top-4 right-4 z-[310] text-white/50 hover:text-white p-2 bg-black/20 rounded-full"><ChevronLeft className="rotate-180" /></button>
-
-                    {/* Lado Izquierdo: Carrusel con Swipe */}
-                    <div className="w-full md:w-3/5 bg-black relative aspect-video md:aspect-auto overflow-hidden group/img">
-                        <motion.img 
-                            key={imgIndex}
-                            src={achievement.images[imgIndex]} 
-                            className="w-full h-full object-cover cursor-grab active:cursor-grabbing"
-                            initial={{ x: 100, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -100, opacity: 0 }}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            onDragEnd={(_, info) => {
-                                if (info.offset.x < -50) nextImg();
-                                if (info.offset.x > 50) prevImg();
-                            }}
-                        />
-                        
-                        {/* Botones de navegación (Flechas) */}
-                        {achievement.images.length > 1 && (
-                            <>
-                                <button onClick={prevImg} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"><ChevronLeft size={24} /></button>
-                                <button onClick={nextImg} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"><ChevronRight size={24} /></button>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Lado Derecho: Info */}
-                    <div className="w-full md:w-2/5 p-8 md:p-12 overflow-y-auto">
-                        <Trophy className="text-anvil-red mb-6" size={48} />
-                        <h2 className="text-3xl font-black text-white uppercase italic leading-[0.9] mb-4">{achievement.title}</h2>
-                        <p className="text-xl text-anvil-red font-black italic mb-8 uppercase tracking-tighter">{achievement.result}</p>
-                        <div className="h-px bg-white/10 w-full mb-8" />
-                        <p className="text-gray-400 leading-relaxed text-lg">{achievement.desc}</p>
-                    </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#1c1c1c] w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+                <div className="w-full md:w-1/2 md:h-auto bg-black">
+                    <img src={achievement.images[0]} className="w-full h-full object-cover" alt="" />
+                </div>
+                <div className="p-12 md:w-1/2 overflow-y-auto">
+                    <Trophy className="text-anvil-red mb-6" size={48} />
+                    <h2 className="text-4xl md:text-5xl font-black text-white uppercase font-bebas italic leading-[1.1] mb-4 py-2 tracking-wide">{achievement.title}</h2>
+                    <p className="text-xl text-anvil-red font-black italic mb-8 uppercase tracking-widest">{achievement.result}</p>
+                    <p className="text-gray-400 leading-relaxed text-lg">{achievement.desc}</p>
+                </div>
+            </motion.div>
+        </div>
     );
 }
 
 function AllAchievementsModal({ isOpen, onClose, achievements, onSelect }: { isOpen: boolean, onClose: () => void, achievements: any[], onSelect: (a: any) => void }) {
     if (!isOpen) return null;
     return (
-        <AnimatePresence>
-            <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md flex flex-col p-6 md:p-20 overflow-y-auto"
-            >
-                <div className="flex justify-between items-center mb-12">
-                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic">Historial de <span className="text-anvil-red">Gloria</span></h2>
-                    <button onClick={onClose} className="p-4 bg-white/10 hover:bg-anvil-red rounded-full transition-colors"><ChevronRight className="rotate-180" /></button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {achievements.map((item) => (
-                        <div 
-                            key={item.id} 
-                            onClick={() => { onSelect(item); onClose(); }}
-                            className="bg-[#1a1a1a] p-6 rounded-xl border border-white/5 hover:border-anvil-red/50 cursor-pointer transition-all group"
-                        >
-                            <Trophy className="text-anvil-red mb-4 group-hover:scale-110 transition-transform" />
-                            <h3 className="text-xl font-bold text-white uppercase">{item.title}</h3>
-                            <p className="text-anvil-red text-sm font-black italic">{item.result}</p>
-                        </div>
-                    ))}
-                </div>
-            </motion.div>
-        </AnimatePresence>
+        <div className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md flex flex-col p-20 overflow-y-auto">
+            <div className="flex justify-between items-center mb-12">
+                <h2 className="text-6xl font-black text-white uppercase font-bebas italic">Historial de <span className="text-anvil-red">Gloria</span></h2>
+                <button onClick={onClose} className="p-4 bg-white/10 rounded-full"><ChevronRight className="rotate-180" /></button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {achievements.map((item) => (
+                    <div key={item.id} onClick={() => { onSelect(item); onClose(); }} className="bg-[#1a1a1a] p-8 rounded-2xl border border-white/5 cursor-pointer hover:border-anvil-red/50 transition-all group">
+                        <Trophy className="text-anvil-red mb-4 group-hover:scale-110 transition-transform" />
+                        <h3 className="text-xl font-bold text-white uppercase">{item.title}</h3>
+                        <p className="text-anvil-red text-sm font-black italic">{item.result}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }

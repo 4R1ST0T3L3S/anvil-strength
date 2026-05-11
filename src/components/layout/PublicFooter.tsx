@@ -9,7 +9,7 @@ export function PublicFooter() {
                         <span className="font-black text-2xl tracking-tighter text-white">ANVIL STRENGTH</span>
                     </div>
                     <div className="flex gap-8 text-sm font-bold text-gray-500 uppercase tracking-wider">
-                        <a href="https://www.instagram.com/anvilstrength_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
+                        <a href="https://www.instagram.com/anvilstrength_" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
                         <a href="mailto:anvilstrengthclub@gmail.com" className="hover:text-white transition-colors">Email</a>
                         <a href="#" className="hover:text-white transition-colors">Aviso Legal</a>
                     </div>

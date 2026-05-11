@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     FileText,
@@ -7,18 +7,23 @@ import {
     Trophy,
     User,
     Globe,
-    LogOut
+    LogOut,
+    Sparkles,
+    ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
+import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
 
 import { WorkoutLogger } from '../../training/components/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
+import { AnvilStore } from '../../profile/components/AnvilStore';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
 import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
+import { AnvilRanking } from '../components/AnvilRanking';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
@@ -28,12 +33,21 @@ interface UserDashboardProps {
 }
 
 // Eliminamos 'arena' de los tipos de vista interna
-type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
+type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'ranking' | 'profile' | 'store';
 
 export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps) {
     const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<AthleteView>('home');
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
     const { refetch } = useUser();
+
+    useEffect(() => {
+        const hasSeenTour = localStorage.getItem(`has_seen_tour_${user.id}`);
+        if (!hasSeenTour) {
+            setIsWelcomeModalOpen(true);
+            localStorage.setItem(`has_seen_tour_${user.id}`, 'true');
+        }
+    }, [user.id]);
 
     // Security Check
     if (user?.role === 'coach' && user?.has_access) {
@@ -85,6 +99,12 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
             isActive: currentView === 'profile'
         },
         {
+            icon: <ShoppingBag size={20} />,
+            label: 'Tienda Anvil',
+            onClick: () => setCurrentView('store'),
+            isActive: currentView === 'store'
+        },
+        {
             icon: <Globe size={20} className="text-blue-400" />,
             label: 'Ver Web',
             onClick: () => navigate('/web'),
@@ -114,21 +134,28 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
             case 'calendar':
                 return (
                     <div className="p-4 md:p-8">
-                        <CalendarSection />
+                        <CalendarSection onBack={() => setCurrentView('home')} />
                     </div>
                 );
-            case 'profile':
-                return <ProfileSection user={user} onUpdate={() => refetch()} />;
-            default:
-                return null;
+            case 'ranking': return <AnvilRanking user={user} onBack={() => setCurrentView('home')} />;
+            case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => setCurrentView('home')} />;
+            case 'store': return <AnvilStore userId={user.id} />;
+            default: return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view as AthleteView)} />;
         }
     };
 
     return (
-        <DashboardLayout
-            menuItems={menuItems}
-        >
-            {renderContent()}
-        </DashboardLayout>
+        <>
+            <DashboardLayout
+                menuItems={menuItems}
+            >
+                {renderContent()}
+            </DashboardLayout>
+
+            <WelcomeTourModal 
+                isOpen={isWelcomeModalOpen} 
+                onClose={() => setIsWelcomeModalOpen(false)} 
+            />
+        </>
     );
 }

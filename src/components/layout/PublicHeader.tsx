@@ -62,130 +62,108 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
 
     const navLinks = [
         { name: 'FILOSOFÍA', href: '#filosofia' },
+        { name: 'SOFTWARE', href: '#software' },
         { name: 'EQUIPO', href: '#entrenadores' },
         { name: 'ATLETAS', href: '#atletas' },
         { name: 'OPINIONES', href: '#reviews' },
-        { name: 'SOFTWARE', href: '#software' },
         { name: 'LOGROS', href: '#logros' },
         { name: 'AFILIATE', href: '#afiliacion' },
         { name: 'CONTACTO', href: '#contacto' },
-        // { name: 'ROPA', href: '/ropa' },
         { name: 'COMPETICIONES', href: '/competiciones' },
     ];
 
     return (
         <header
-            className={`fixed w-full z-50 transition-all duration-300 ${isScrolled || !isTransparentPage ? 'bg-[#1c1c1c] shadow-lg py-2' : 'bg-transparent py-6'}`}
+            className={`fixed w-full z-50 transition-all duration-500 ${isScrolled || !isTransparentPage 
+                ? 'bg-[#050505]/90 backdrop-blur-md border-b border-white/5 py-3 shadow-2xl' 
+                : 'bg-transparent py-8'}`}
         >
-            <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between md:justify-center md:gap-12">
+            <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
                 {/* Logo */}
                 <div className="flex-shrink-0">
-                    <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); window.scrollTo(0, 0); }} className="block hover:opacity-80 transition-opacity">
+                    <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); window.scrollTo(0, 0); }} className="block group">
                         <img
                             src="/logo-dark-removebg-preview.png"
                             alt="Anvil Strength Logo"
-                            className="h-10 md:h-12 w-auto object-contain"
+                            className="h-8 md:h-10 w-auto object-contain group-hover:scale-110 transition-transform duration-500"
                         />
                     </a>
                 </div>
 
                 {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center space-x-8">
+                <nav className="hidden lg:flex items-center space-x-10">
                     {navLinks.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className={`text-sm font-bold tracking-wider hover:text-white transition-colors uppercase ${location.pathname === link.href ? 'text-anvil-red' : 'text-gray-300'
-                                }`}
+                            className={`text-xs font-black tracking-[0.2em] hover:text-anvil-red transition-all duration-300 uppercase font-bebas italic ${
+                                location.pathname === link.href ? 'text-anvil-red' : 'text-white/70'
+                            }`}
                         >
                             {link.name}
                         </a>
                     ))}
                 </nav>
 
-                <div className="flex items-center space-x-4 md:space-x-6">
-                    <SmartAuthButton variant="ghost" onLoginClick={onLoginClick} />
-                    <button className="hidden md:block text-gray-300 hover:text-white relative">
-                        <ShoppingBag className="h-5 w-5" />
-                        <span className="absolute -top-2 -right-2 bg-anvil-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">0</span>
+                <div className="flex items-center space-x-4">
+                    <div className="hidden sm:block">
+                        <SmartAuthButton variant="ghost" onLoginClick={onLoginClick} className="text-white hover:text-anvil-red transition-colors" />
+                    </div>
+                    
+                    <button className="text-white hover:text-anvil-red relative group transition-colors">
+                        <ShoppingBag className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        <span className="absolute -top-2 -right-2 bg-anvil-red text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)]">0</span>
                     </button>
-                </div>
 
-                {/* Mobile Menu Button - Only show if menu is CLOSED. When open, the menu has its own close button.*/}
-                <div className="md:hidden">
+                    {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="text-white p-2"
+                        className="lg:hidden text-white p-2 hover:bg-white/5 rounded-xl transition-colors"
                     >
                         <Menu className="h-6 w-6" />
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Navigation Overlay - FULL SCREEN */}
+            {/* Mobile Navigation Overlay */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-[100] bg-[#1c1c1c]/95 backdrop-blur-xl flex flex-col md:hidden"
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col lg:hidden"
                     >
-                        {/* Internal Header for the Menu */}
-                        <div className="flex items-center justify-between px-6 py-6 border-b border-white/5">
-                            {/* Logo inside menu */}
-                            <div className="flex-shrink-0">
-                                <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); setIsMobileMenuOpen(false); }} className="block">
-                                    <img
-                                        src="/logo-dark-removebg-preview.png"
-                                        alt="Anvil Strength Logo"
-                                        className="h-10 w-auto object-contain grayscale brightness-150"
-                                    />
-                                </a>
-                            </div>
-
-                            {/* Close Button */}
+                        <div className="flex items-center justify-between px-6 py-8 border-b border-white/5">
+                            <img src="/logo-dark-removebg-preview.png" className="h-8 w-auto" alt="Logo" />
                             <button
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+                                className="text-white p-3 bg-white/5 rounded-full"
                             >
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
 
-                        {/* Menu Content */}
-                        <div className="flex-1 flex flex-col items-center justify-center relative">
-                            {/* Background Watermark */}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
-                                <img src="/logo-dark-removebg-preview.png" className="w-[120%] max-w-lg" alt="" />
-                            </div>
-
-                            <nav className="flex flex-col items-center space-y-8 relative z-10 w-full px-6 text-center">
-                                {navLinks.map((link, index) => (
-                                    <motion.a
-                                        key={link.name}
-                                        href={link.href}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 10 }}
-                                        transition={{ delay: 0.1 + index * 0.05 }}
-                                        onClick={(e) => handleNavClick(e, link.href)}
-                                        className={`text-3xl font-black uppercase tracking-tighter transition-all duration-300 ${location.pathname === link.href
-                                            ? 'text-anvil-red scale-110'
-                                            : 'text-white/80 hover:text-white hover:scale-105'
-                                            }`}
-                                    >
-                                        {link.name}
-                                    </motion.a>
-                                ))}
-                            </nav>
-                        </div>
-
-                        {/* Footer / Extra Info in Menu */}
-                        <div className="p-8 text-center text-white/20 text-xs font-bold tracking-widest uppercase">
-                            Anvil Strength System
+                        <nav className="flex-1 flex flex-col justify-center px-10 gap-8">
+                            {navLinks.map((link, index) => (
+                                <motion.a
+                                    key={link.name}
+                                    href={link.href}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    onClick={(e) => handleNavClick(e, link.href)}
+                                    className="text-5xl font-black uppercase font-bebas italic tracking-tighter text-white/40 hover:text-anvil-red transition-all"
+                                >
+                                    {link.name}
+                                </motion.a>
+                            ))}
+                        </nav>
+                        
+                        <div className="p-10">
+                            <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full bg-anvil-red py-6" />
                         </div>
                     </motion.div>
                 )}

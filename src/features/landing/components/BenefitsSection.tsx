@@ -35,18 +35,19 @@ export function BenefitsSection() {
     ];
 
     return (
-        <section id="beneficios" className="py-24 bg-[#1c1c1c] relative overflow-hidden">
+        <section id="beneficios" className="py-32 bg-[#050505] relative overflow-hidden">
             {/* Background Accents */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-anvil-red/5 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-anvil-red/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="max-w-[1400px] mx-auto px-6 relative z-10">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4 text-white">
-                        ¿Por qué <span className="text-anvil-red">Anvil?</span>
+                <div className="text-center mb-20">
+                    <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase mb-6 text-white font-bebas italic">
+                        ¿Por qué <span className="text-anvil-red drop-shadow-[0_0_15px_rgba(220,38,38,0.4)]">Anvil?</span>
                     </h2>
-                    <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                        Más que un club, somos una herramienta para tu éxito. Sin costes ocultos, con tecnología punta.
+                    <div className="w-24 h-1 bg-anvil-red mx-auto mb-8 shadow-[0_0_10px_rgba(220,38,38,0.5)]"></div>
+                    <p className="text-gray-400 max-w-2xl mx-auto text-lg md:text-xl font-medium">
+                        Más que un club, somos el entorno donde el talento se convierte en resultado.
                     </p>
                 </div>
 
@@ -54,15 +55,20 @@ export function BenefitsSection() {
                     {features.map((feature, index) => (
                         <div
                             key={index}
-                            className="bg-[#252525] p-8 rounded-2xl border border-white/5 hover:border-anvil-red/50 transition-all duration-300 group hover:-translate-y-2 hover:shadow-2xl hover:shadow-anvil-red/10"
+                            className="bg-[#111111]/50 backdrop-blur-sm p-10 rounded-3xl border border-white/5 hover:border-anvil-red/40 transition-all duration-500 group hover:-translate-y-3 shadow-2xl overflow-hidden relative"
                         >
-                            <div className="bg-[#1c1c1c] w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/5">
+                            {/* Inner Glow on Hover */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-anvil-red/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            
+                            <div className="bg-[#050505] w-16 h-16 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 border border-white/10 group-hover:border-anvil-red/30 shadow-xl relative z-10">
                                 {feature.icon}
                             </div>
-                            <h3 className="text-xl font-bold text-white uppercase mb-3 group-hover:text-anvil-red transition-colors">
+                            
+                            <h3 className="text-2xl font-black text-white uppercase mb-4 group-hover:text-anvil-red transition-colors font-bebas italic tracking-wider relative z-10">
                                 {feature.title}
                             </h3>
-                            <p className="text-gray-400 leading-relaxed text-sm">
+                            
+                            <p className="text-gray-400 leading-relaxed text-sm relative z-10">
                                 {feature.description}
                             </p>
                         </div>

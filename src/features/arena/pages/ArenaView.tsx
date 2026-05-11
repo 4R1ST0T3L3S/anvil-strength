@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Swords, X, TrendingUp, History, Info, Loader } from 'lucide-react';
+import { Swords, X, TrendingUp, History, Info, Loader, Plus, Trash2, Send } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { Link } from 'react-router-dom';
@@ -29,6 +30,12 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         bet: null,
         option: null
     });
+
+    const [betSlip, setBetSlip] = useState<{
+        bet: ArenaBet;
+        option: ArenaOption | null;
+        predictionValue?: number;
+    }[]>([]);
 
     const fetchBets = useCallback(async () => {
         try {
@@ -67,23 +74,69 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     const activeBets = bets.filter(b => b.status === 'open' || b.status === 'locked');
     const historyBets = bets.filter(b => b.status === 'resolved' || b.status === 'cancelled');
 
-    const handlePlaceBet = async (amount: number, predictionValue?: number) => {
+    const handlePlaceSingleBet = async (amount: number, predictionValue?: number) => {
         if (!bettingModal.bet) return;
 
-        const { error } = await supabase.rpc('place_arena_bet', {
-            p_bet_id: bettingModal.bet.id,
-            p_option_id: bettingModal.option?.id || null,
-            p_prediction_value: predictionValue || null,
-            p_amount: amount
-        });
+        try {
+            const { error } = await supabase.rpc('place_arena_bet', {
+                p_bet_id: bettingModal.bet.id,
+                p_option_id: bettingModal.option?.id || null,
+                p_prediction_value: predictionValue || null,
+                p_amount: amount
+            });
 
-        if (error) {
-            alert(error.message);
-            throw error;
+            if (error) throw error;
+            
+            toast.success('¡Apuesta realizada con éxito!');
+            refetchPoints();
+            fetchBets();
+            setBettingModal({ isOpen: false, bet: null, option: null });
+        } catch (err: any) {
+            toast.error(err.message || 'Error al realizar la apuesta');
+        }
+    };
+
+    const handlePlaceParlay = async (amount: number) => {
+        if (betSlip.length < 2) {
+            toast.error('Necesitas al menos 2 apuestas para una combinada');
+            return;
         }
 
-        refetchPoints();
-        fetchBets();
+        try {
+            const legs = betSlip.map(s => ({
+                bet_id: s.bet.id,
+                option_id: s.option?.id,
+                prediction_value: s.predictionValue
+            }));
+
+            const { error } = await supabase.rpc('place_arena_parlay', {
+                p_amount: amount,
+                p_legs: legs
+            });
+
+            if (error) throw error;
+
+            toast.success('¡Combinada realizada! Mucha suerte.');
+            setBetSlip([]);
+            refetchPoints();
+            fetchBets();
+        } catch (err: any) {
+            toast.error(err.message || 'Error al realizar la combinada');
+        }
+    };
+
+    const addToSlip = (bet: ArenaBet & { options: ArenaOption[] }, option: ArenaOption | null) => {
+        // Check if bet already in slip
+        if (betSlip.find(s => s.bet.id === bet.id)) {
+            toast.error('Ya tienes una apuesta de este combate en el boleto');
+            return;
+        }
+        setBetSlip(prev => [...prev, { bet, option }]);
+        toast.success('Añadido al boleto');
+    };
+
+    const removeFromSlip = (betId: string) => {
+        setBetSlip(prev => prev.filter(s => s.bet.id !== betId));
     };
 
     const handleCreateBet = async (betData: Partial<ArenaBet>, options: string[]) => {
@@ -199,7 +252,11 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                         <ArenaBetCard 
                                             key={bet.id} 
                                             bet={bet} 
-                                            onBetClick={(b, o) => setBettingModal({ isOpen: true, bet: b, option: o })}
+                                            onBetClick={(b, o) => {
+                                                // If parlay mode or just general, offer to add to slip
+                                                setBettingModal({ isOpen: true, bet: b, option: o });
+                                            }}
+                                            onAddToSlip={(b, o) => addToSlip(b as any, o)}
                                         />
                                     ))}
                                 </AnimatePresence>
@@ -268,8 +325,73 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                 bet={bettingModal.bet}
                 option={bettingModal.option}
                 balance={pointsData?.balance || 0}
-                onConfirm={handlePlaceBet}
+                onConfirm={handlePlaceSingleBet}
+                onAddToSlip={(b, o) => {
+                    addToSlip(b as any, o);
+                    setBettingModal({ isOpen: false, bet: null, option: null });
+                }}
             />
+
+            {/* Bet Slip (Parlay UI) */}
+            <AnimatePresence>
+                {betSlip.length > 0 && (
+                    <motion.div 
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-full max-w-md px-4"
+                    >
+                        <div className="bg-[#1a1a1a] border border-anvil-red/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                            <div className="bg-anvil-red px-6 py-3 flex justify-between items-center">
+                                <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
+                                    <Swords size={14} /> Boleto de Apuestas ({betSlip.length})
+                                </h3>
+                                <button onClick={() => setBetSlip([])} className="text-white/60 hover:text-white">
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                            
+                            <div className="p-4 max-h-60 overflow-y-auto space-y-2 scrollbar-hide">
+                                {betSlip.map(leg => (
+                                    <div key={leg.bet.id} className="bg-white/5 rounded-xl p-3 flex justify-between items-center border border-white/5">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-black uppercase text-gray-500 truncate">{leg.bet.title}</p>
+                                            <p className="text-xs font-bold text-white uppercase italic">
+                                                Gana: <span className="text-anvil-red">{leg.option?.name || leg.predictionValue}</span>
+                                            </p>
+                                        </div>
+                                        <button onClick={() => removeFromSlip(leg.bet.id)} className="p-2 text-gray-500 hover:text-anvil-red transition-colors">
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="p-4 bg-black/40 border-t border-white/5">
+                                {betSlip.length >= 2 ? (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center px-2">
+                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Multiplicador Estimado</span>
+                                            <span className="text-sm font-black text-yellow-500 italic">x{Math.pow(2, betSlip.length - 1).toFixed(1)}</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => handlePlaceParlay(100)} // Valor por defecto o abrir modal de importe
+                                            className="w-full py-4 bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-3"
+                                        >
+                                            Realizar Combinada (100 AC)
+                                            <Send size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-center text-[10px] font-black text-gray-500 uppercase tracking-widest py-2">
+                                        Añade {2 - betSlip.length} más para una combinada
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

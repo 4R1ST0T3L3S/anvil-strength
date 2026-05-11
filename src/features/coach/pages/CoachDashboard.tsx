@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE: Hook de navegación
 import {
     LayoutDashboard,
@@ -17,6 +17,7 @@ import { CoachAthletes } from '../components/CoachAthletes';
 import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
+import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { UserProfile, useUser } from '../../../hooks/useUser';
@@ -39,6 +40,15 @@ export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProp
     const { refetch } = useUser();
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
     const [chatAthlete, setChatAthlete] = useState<{ id: string; full_name: string; avatar_url?: string } | null>(null);
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+    useEffect(() => {
+        const hasSeenTour = localStorage.getItem(`has_seen_tour_${user.id}`);
+        if (!hasSeenTour) {
+            setIsWelcomeModalOpen(true);
+            localStorage.setItem(`has_seen_tour_${user.id}`, 'true');
+        }
+    }, [user.id]);
 
     // Verificación de seguridad básica
     if (user?.role !== 'coach') {
@@ -146,6 +156,11 @@ export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProp
                 onClose={() => setChatAthlete(null)}
                 athlete={chatAthlete}
                 coach={user}
+            />
+
+            <WelcomeTourModal 
+                isOpen={isWelcomeModalOpen} 
+                onClose={() => setIsWelcomeModalOpen(false)} 
             />
         </DashboardLayout>
     );

@@ -11,8 +11,18 @@ export interface PointTransaction {
     id: string;
     user_id: string;
     amount: number;
-    type: 'earned' | 'spent';
-    reason: string;
+    reason: 'WELCOME_BONUS' | 'REFERRAL' | 'GAME_PLACEMENT' | 'BET_WON' | 'ADMIN_ADJUSTMENT' | string;
+    created_at: string;
+}
+
+export interface AppNotification {
+    id: string;
+    user_id: string;
+    type: 'system' | 'chat' | 'training' | 'nutrition' | 'points' | 'arena';
+    title: string;
+    content: string;
+    is_read: boolean;
+    related_entity_id?: string;
     created_at: string;
 }
 
@@ -84,6 +94,7 @@ export interface Profile {
     logo_url?: string | null;
     max_sushi_pieces?: number;
     is_developer?: boolean;
+    is_club_member?: boolean;
 }
 
 export interface Coach extends Profile {

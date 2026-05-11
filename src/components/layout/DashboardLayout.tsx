@@ -1,5 +1,7 @@
-import { ReactNode } from 'react';
-import { LogOut, Globe } from 'lucide-react';
+import React, { ReactNode } from 'react';
+import { LogOut, Globe, Bell } from 'lucide-react';
+import { useUser } from '../../hooks/useUser';
+import { NotificationsPopover } from '../ui/NotificationsPopover';
 
 interface MenuItem {
     icon: React.ReactNode;
@@ -19,37 +21,83 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     menuItems,
     children,
 }) => {
+    const { data: user } = useUser();
     const logoutItem = menuItems.find(item => item.label === 'Salir');
     const webItem = menuItems.find(item => item.label === 'Ver Web');
 
     return (
-        <div className="flex flex-col h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
-            {/* Desktop Top Bar */}
-            <div className="hidden md:flex items-center justify-end gap-2 px-6 py-2 border-b border-white/5 bg-[#1a1a1a] shrink-0">
-                {webItem && (
-                    <button
-                        onClick={webItem.onClick}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-all"
-                    >
-                        <Globe size={14} />
-                        Ver Web
-                    </button>
-                )}
-                {logoutItem && (
-                    <button
-                        onClick={logoutItem.onClick}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-                    >
-                        <LogOut size={14} />
-                        Cerrar Sesión
-                    </button>
-                )}
-            </div>
+        <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
+            {/* Desktop Sidebar */}
+            <aside className="hidden md:flex flex-col w-64 bg-[#1a1a1a] border-r border-white/5 shrink-0">
+                <div className="p-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-anvil-red rounded-xl flex items-center justify-center font-black text-white text-2xl italic shadow-[0_0_20px_rgba(220,38,38,0.4)]">A</div>
+                        <span className="font-black uppercase tracking-tighter text-xl italic">Anvil <span className="text-anvil-red">Strength</span></span>
+                    </div>
+                </div>
 
-            {/* Main Content */}
-            <main className="flex-1 h-full overflow-y-auto pt-0 pb-20 md:pt-0 md:pb-0 bg-[#1c1c1c] scrollbar-hide">
-                {children}
-            </main>
+                <nav className="flex-1 px-4 space-y-2 py-4">
+                    {menuItems
+                        .filter(item => !['Ver Web', 'Salir'].includes(item.label))
+                        .map((item, index) => (
+                            <button
+                                key={index}
+                                onClick={item.onClick}
+                                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all group ${item.isActive
+                                    ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20'
+                                    : 'text-gray-500 hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                <div className={`${item.isActive ? 'text-white' : 'text-gray-500 group-hover:text-anvil-red transition-colors'}`}>
+                                    {item.icon}
+                                </div>
+                                <span className="uppercase tracking-widest text-[10px]">{item.label}</span>
+                            </button>
+                        ))}
+                </nav>
+
+                <div className="p-4 border-t border-white/5 space-y-2">
+                    {webItem && (
+                        <button
+                            onClick={webItem.onClick}
+                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest text-blue-400 hover:bg-blue-500/10 transition-all"
+                        >
+                            <Globe size={18} />
+                            Ver Web
+                        </button>
+                    )}
+                    {logoutItem && (
+                        <button
+                            onClick={logoutItem.onClick}
+                            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all"
+                        >
+                            <LogOut size={18} />
+                            Cerrar Sesión
+                        </button>
+                    )}
+                </div>
+            </aside>
+
+            <div className="flex-1 flex flex-col min-w-0">
+                {/* Mobile Top Bar */}
+                <div className="flex md:hidden items-center justify-between px-4 py-3 border-b border-white/5 bg-[#1a1a1a] shrink-0 z-[100]">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-anvil-red rounded flex items-center justify-center font-black text-white text-xl italic shadow-[0_0_15px_rgba(220,38,38,0.3)]">A</div>
+                        <span className="font-black uppercase tracking-tighter text-lg italic">Anvil <span className="text-anvil-red">Strength</span></span>
+                    </div>
+                    {user && <NotificationsPopover userId={user.id} />}
+                </div>
+
+                {/* Desktop Top Bar (Reduced) */}
+                <div className="hidden md:flex items-center justify-end gap-4 px-8 py-4 border-b border-white/5 bg-[#1a1a1a]/50 backdrop-blur-md shrink-0 z-[100]">
+                    {user && <NotificationsPopover userId={user.id} />}
+                </div>
+
+                {/* Main Content */}
+                <main className="flex-1 overflow-y-auto bg-[#1c1c1c] scrollbar-hide pb-20 md:pb-0">
+                    {children}
+                </main>
+            </div>
 
             {/* Bottom Navigation (Mobile) */}
             <nav className="fixed bottom-0 w-full bg-[#1c1c1c]/95 backdrop-blur-lg border-t border-white/10 z-50 px-4 py-2 flex justify-around items-center pb-safe md:hidden">
@@ -57,24 +105,24 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     .filter(item => !['Ver Web', 'Salir'].includes(item.label))
                     .slice(0, 6)
                     .map((item, index) => {
-                    const isActive = item.isActive;
+                        const isActive = item.isActive;
 
-                    return (
-                        <button
-                            key={index}
-                            onClick={item.onClick}
-                            className={`flex flex-col items-center justify-center p-1.5 transition-colors ${isActive ? 'text-anvil-red' : 'text-gray-500 hover:text-white'
-                                }`}
-                        >
-                            <div className={isActive ? "scale-110 transition-transform" : ""}>
-                                {item.icon}
-                            </div>
-                            <span className={`text-[9px] font-bold mt-0.5 ${isActive ? 'text-anvil-red' : 'text-gray-600'}`}>
-                                {item.label.length > 10 ? item.label.substring(0, 8) + '…' : item.label}
-                            </span>
-                        </button>
-                    );
-                })}
+                        return (
+                            <button
+                                key={index}
+                                onClick={item.onClick}
+                                className={`flex flex-col items-center justify-center p-1.5 transition-colors ${isActive ? 'text-anvil-red' : 'text-gray-500 hover:text-white'
+                                    }`}
+                            >
+                                <div className={isActive ? "scale-110 transition-transform" : ""}>
+                                    {item.icon}
+                                </div>
+                                <span className={`text-[9px] font-bold mt-0.5 ${isActive ? 'text-anvil-red' : 'text-gray-600'}`}>
+                                    {item.label.length > 10 ? item.label.substring(0, 8) + '…' : item.label}
+                                </span>
+                            </button>
+                        );
+                    })}
             </nav>
         </div>
     );
