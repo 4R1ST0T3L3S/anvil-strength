@@ -51,14 +51,19 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
             const { data: profiles, error: profError } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('role', 'athlete');
+                .in('role', ['athlete', 'coach']);
 
             if (profError) throw profError;
 
             const rankedData = (profiles || [])
                 .filter(profile => {
                     const email = profile.email?.toLowerCase() || '';
-                    return !email.includes('anvilstrength');
+                    if (email.includes('anvilstrength')) return false;
+
+                    const hasWeightCategory = profile.weight_category && profile.weight_category !== 'N/A';
+                    const hasAnyPR = (profile.squat_pr || 0) > 0 || (profile.bench_pr || 0) > 0 || (profile.deadlift_pr || 0) > 0;
+
+                    return hasWeightCategory || hasAnyPR;
                 })
                 .map(profile => {
                     const squat = profile.squat_pr || 0;
