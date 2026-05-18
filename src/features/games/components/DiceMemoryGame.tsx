@@ -63,7 +63,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
     return (
         <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-white/10 relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#1a1a1a]">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0a0a0a]">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                         <Dices size={20} />
@@ -147,7 +147,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                                 <button
                                     key={`btn-${num}`}
                                     onClick={() => handleNumberClick(num)}
-                                    className="aspect-square bg-[#222222] border border-white/5 rounded-2xl flex items-center justify-center active:bg-purple-600 active:scale-95 transition-all"
+                                    className="aspect-square bg-[#0a0a0a] border border-white/5 rounded-2xl flex items-center justify-center active:bg-purple-600 active:scale-95 transition-all"
                                 >
                                     <DieFace number={num} size="small" />
                                 </button>

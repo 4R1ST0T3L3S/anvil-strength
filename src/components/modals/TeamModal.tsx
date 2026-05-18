@@ -19,9 +19,9 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
         onClick={onClose}
       />
 
-      <div className="relative bg-[#1c1c1c] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl">
+      <div className="relative bg-[#0a0a0a] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#1c1c1c]/95 backdrop-blur border-b border-white/10 p-6 flex justify-between items-center">
+        <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 p-6 flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-black uppercase tracking-tighter text-white">
               Nuestro Equipo
@@ -42,7 +42,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
             {athletes.map((athlete) => (
               <div
                 key={athlete.id}
-                className="group relative aspect-[4/5] bg-[#252525] overflow-hidden rounded-xl cursor-pointer shadow-lg"
+                className="group relative aspect-[4/5] bg-[#0a0a0a] overflow-hidden rounded-xl cursor-pointer shadow-lg"
                 onClick={() => onAthleteClick?.(athlete)}
               >
                 <img

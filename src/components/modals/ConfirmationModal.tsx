@@ -39,7 +39,7 @@ export function ConfirmationModal({
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#1c1c1c] w-full max-w-md rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+                    className="relative bg-[#0a0a0a] w-full max-w-md rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
                 >
                     <div className="p-6 text-center space-y-4">
                         <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto text-red-500">

@@ -162,7 +162,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                         transition={{ delay: index * 0.1 }}
                                         whileHover={{ scale: 1.01 }}
                                         onClick={() => setSelectedEvent(event)}
-                                        className="flex flex-col lg:flex-row bg-[#111] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer group shadow-2xl min-h-[350px] transition-all hover:border-anvil-red/30"
+                                        className="flex flex-col lg:flex-row bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer group shadow-2xl min-h-[350px] transition-all hover:border-anvil-red/30"
                                     >
                                         {/* Cover Image */}
                                         <div className="w-full lg:w-[480px] h-64 lg:h-auto shrink-0 relative overflow-hidden">
@@ -214,7 +214,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                                                 {athlete.avatar_url ? (
                                                                     <img src={athlete.avatar_url} alt="" className="w-full h-full object-cover" />
                                                                 ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center text-xs font-black text-gray-400 uppercase bg-[#1a1a1a]">
+                                                                    <div className="w-full h-full flex items-center justify-center text-xs font-black text-gray-400 uppercase bg-[#0a0a0a]">
                                                                         {athlete.full_name.charAt(0)}
                                                                     </div>
                                                                 )}
@@ -268,7 +268,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className="relative aspect-video bg-[#111] rounded-3xl overflow-hidden group cursor-pointer border border-white/5 hover:border-anvil-red/30 transition-colors shadow-2xl"
+                                className="relative aspect-video bg-[#0a0a0a] rounded-3xl overflow-hidden group cursor-pointer border border-white/5 hover:border-anvil-red/30 transition-colors shadow-2xl"
                             >
                                 <img
                                     src={result.image}

@@ -45,7 +45,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                     <p className="text-gray-400 text-lg">Tu plan de alimentación personalizado.</p>
                 </header>
 
-                <div className="bg-[#252525] border border-white/5 rounded-2xl p-12 text-center space-y-6">
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-12 text-center space-y-6">
                     <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-gray-700">
                         <Apple size={40} />
                     </div>
@@ -64,7 +64,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
 
                 {/* Info Cards while waiting */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-[#252525] border border-white/5 p-6 rounded-2xl space-y-3">
+                    <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl space-y-3">
                         <div className="flex items-center gap-2 text-anvil-red">
                             <AlertCircle size={18} />
                             <h4 className="font-bold uppercase tracking-widest text-xs text-white">Importante</h4>
@@ -73,7 +73,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                             Asegúrate de haber completado tu perfil con tu peso y objetivos actuales para que el nutricionista pueda diseñar el plan adecuado.
                         </p>
                     </div>
-                    <div className="bg-[#252525] border border-white/5 p-6 rounded-2xl space-y-3">
+                    <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl space-y-3">
                         <div className="flex items-center gap-2 text-green-500">
                             <CheckCircle2 size={18} />
                             <h4 className="font-bold uppercase tracking-widest text-xs text-white">Sincronización</h4>
@@ -151,7 +151,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="bg-[#252525] border border-white/5 p-5 rounded-2xl space-y-3 hover:border-white/10 transition-all"
+                        className="bg-[#0a0a0a] border border-white/5 p-5 rounded-2xl space-y-3 hover:border-white/10 transition-all"
                     >
                         <div className="flex justify-between items-center">
                             <div className={`p-1.5 rounded-lg bg-white/5 ${macro.textColor}`}>
@@ -179,7 +179,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
 
             {/* General Guidelines */}
             {plan.general_guidelines && plan.general_guidelines.length > 0 && (
-                <div className="bg-[#252525] border border-white/5 rounded-2xl p-5 space-y-3">
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 space-y-3">
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">📋 Pautas Generales</h3>
                     <div className="space-y-1.5">
                         {plan.general_guidelines.map((g, i) => (
@@ -191,7 +191,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
 
             {/* Supplements */}
             {plan.global_supplements && plan.global_supplements.length > 0 && (
-                <div className="bg-[#252525] border border-blue-500/10 rounded-2xl p-5 space-y-3">
+                <div className="bg-[#0a0a0a] border border-blue-500/10 rounded-2xl p-5 space-y-3">
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-blue-400/70 flex items-center gap-2">
                         <Pill size={14} /> Suplementación
                     </h3>
@@ -212,7 +212,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                 </h2>
 
                 {sortedMeals.length === 0 ? (
-                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 text-center">
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 text-center">
                         <p className="text-gray-500 text-sm">Tu nutricionista aún no ha añadido comidas al plan.</p>
                     </div>
                 ) : (
@@ -232,7 +232,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                             }, { kcal: 0, prot: 0, carbs: 0, fats: 0 });
 
                             return (
-                                <div key={meal.id} className="bg-[#252525] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all">
+                                <div key={meal.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all">
                                     {/* Meal Header */}
                                     <button
                                         onClick={() => toggleMeal(meal.id)}

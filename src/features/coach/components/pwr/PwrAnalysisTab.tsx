@@ -40,7 +40,7 @@ export function PwrAnalysisTab() {
       </div>
 
       {!trackingData && (
-          <div className="text-sm font-bold text-gray-400 bg-[#252525] border border-white/5 p-4 rounded-xl mb-6">
+          <div className="text-sm font-bold text-gray-400 bg-[#0a0a0a] border border-white/5 p-4 rounded-xl mb-6">
               PWR Análisis utiliza algoritmos de visión artificial para extraer métricas de VBT (Velocidad Basada en el Entrenamiento) y el Bar Path desde un vídeo normal, directamente en tu navegador. 
           </div>
       )}

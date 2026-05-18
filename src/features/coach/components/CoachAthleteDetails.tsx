@@ -93,7 +93,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4 border-b border-white/5 bg-[#1c1c1c] shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4 border-b border-white/5 bg-[#0a0a0a] shrink-0">
                 <div className="flex items-center gap-4">
                     <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors shrink-0">
                         <ArrowLeft size={20} />
@@ -167,7 +167,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
             </div>
 
             {/* Content Area */}
-            <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-[#1c1c1c]">
+            <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-[#0a0a0a]">
 
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
@@ -205,7 +205,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         </div>
 
                         {competitions.length === 0 ? (
-                            <div className="text-center py-12 bg-[#252525] border border-white/5 rounded-xl">
+                            <div className="text-center py-12 bg-[#0a0a0a] border border-white/5 rounded-xl">
                                 <Trophy size={48} className="mx-auto text-gray-600 mb-4" />
                                 <p className="text-gray-400 font-medium">No hay competiciones asignadas.</p>
                             </div>
@@ -225,7 +225,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     }
 
                                     return (
-                                        <div key={comp.id} className={`bg-[#1c1c1c] border ${meta.border} rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-white/20 transition-colors`}>
+                                        <div key={comp.id} className={`bg-[#0a0a0a] border ${meta.border} rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-white/20 transition-colors`}>
                                             <div className="space-y-2">
                                                 <div className="flex flex-wrap items-center gap-3">
                                                     {comp.level && (

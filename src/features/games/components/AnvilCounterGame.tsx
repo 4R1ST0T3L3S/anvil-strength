@@ -91,7 +91,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
     return (
         <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-white/10 relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#1a1a1a] z-10">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0a0a0a] z-10">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
                         <Eye size={20} />
@@ -168,7 +168,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                 </div>
 
                 {/* Input Area (Keypad) */}
-                <div className={`p-6 bg-[#1a1a1a] border-t border-white/10 transition-all duration-300 ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
+                <div className={`p-6 bg-[#0a0a0a] border-t border-white/10 transition-all duration-300 ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
                     <div className="flex items-center justify-between mb-4 bg-black p-4 rounded-xl border border-white/5">
                         <span className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Respuesta:</span>
                         <span className="text-2xl font-black text-white">{inputValue || '_'}</span>
@@ -179,7 +179,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                             <button
                                 key={`kp-${num}`}
                                 onClick={() => handleNumberClick(num.toString())}
-                                className="bg-[#222222] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-all"
+                                className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-all"
                             >
                                 {num}
                             </button>
@@ -192,7 +192,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                         </button>
                         <button
                             onClick={() => handleNumberClick('0')}
-                            className="bg-[#222222] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-all"
+                            className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-all"
                         >
                             0
                         </button>

@@ -188,7 +188,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
     if (!activeSession && sessions.length === 0) {
         return (
             <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
-                <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
+                <div className="bg-[#0a0a0a] border-b border-white/5 pb-2">
                     <div className="p-4">
                         <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                         <h2 className="text-2xl font-black italic">Sin Sesiones</h2>
@@ -213,7 +213,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
         <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
 
             {/* 1. Header & Navigation */}
-            <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
+            <div className="bg-[#0a0a0a] border-b border-white/5 pb-2">
                 <div className="p-4">
                     <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                 </div>
@@ -228,7 +228,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                                 "flex flex-col items-center justify-center min-w-[4.5rem] py-3 rounded-xl transition-all border",
                                 activeSessionId === s.id
                                     ? "bg-white text-black border-white shadow-lg scale-105 font-bold"
-                                    : "bg-[#2a2a2a] text-gray-400 border-transparent hover:bg-[#333]"
+                                    : "bg-[#0a0a0a] text-gray-400 border-transparent hover:bg-[#111]"
                             )}
                         >
                             {s.name ? (
@@ -327,9 +327,9 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
     };
 
     return (
-        <div className="bg-[#1c1c1c] rounded-2xl overflow-hidden border border-white/5 shadow-sm">
+        <div className="bg-[#0a0a0a] rounded-2xl overflow-hidden border border-white/5 shadow-sm">
             {/* Header */}
-            <div className="p-4 bg-[#252525] flex justify-between items-start">
+            <div className="p-4 bg-[#0a0a0a] flex justify-between items-start">
                 <div>
                     <h3 className="font-bold text-lg leading-tight text-gray-100">{sessionExercise.exercise.name}</h3>
                     {sessionExercise.notes && (
@@ -369,7 +369,7 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
             </div>
 
             {noteOpen && sessionExercise.notes && (
-                <div className="px-4 py-2 bg-[#1a1a1a] text-sm text-gray-400 border-b border-white/5 animate-in slide-in-from-top-2">
+                <div className="px-4 py-2 bg-[#0a0a0a] text-sm text-gray-400 border-b border-white/5 animate-in slide-in-from-top-2">
                     {sessionExercise.notes}
                 </div>
             )}
@@ -399,7 +399,7 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
             )}
 
             {/* Sets Header */}
-            <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
+            <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-2 bg-[#0a0a0a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
                 <span className="text-left">Serie</span>
                 <span>Reps</span>
                 <span>Kg</span>
@@ -551,7 +551,7 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
                 }}
                 placeholder="-"
                 className={cn(
-                    "w-full bg-[#111] border rounded-lg px-0 py-1.5 text-center text-xs font-bold focus:border-anvil-red outline-none transition-colors",
+                    "w-full bg-[#0a0a0a] border rounded-lg px-0 py-1.5 text-center text-xs font-bold focus:border-anvil-red outline-none transition-colors",
                     actualRpe ? "text-anvil-red border-anvil-red/40" : "text-gray-600 border-white/5 placeholder-gray-700"
                 )}
             />
@@ -564,7 +564,7 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
                         "w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm",
                         isCompleted
                             ? "bg-green-500 text-black hover:bg-green-400"
-                            : "bg-[#2a2a2a] border border-white/10 text-gray-600 hover:bg-[#333] hover:text-white"
+                            : "bg-[#0a0a0a] border border-white/10 text-gray-600 hover:bg-[#111] hover:text-white"
                     )}
                 >
                     <Check size={14} strokeWidth={3} />

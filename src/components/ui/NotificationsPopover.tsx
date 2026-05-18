@@ -7,6 +7,7 @@ import { AppNotification } from '../../types/database';
 
 interface NotificationsPopoverProps {
     userId: string;
+    placement?: 'top' | 'bottom';
 }
 
 const getIcon = (type: AppNotification['type']) => {
@@ -20,7 +21,7 @@ const getIcon = (type: AppNotification['type']) => {
     }
 };
 
-export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ userId }) => {
+export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ userId, placement = 'bottom' }) => {
     const [isOpen, setIsOpen] = useState(false);
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(userId);
 
@@ -32,7 +33,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
             >
                 <Bell size={20} className={unreadCount > 0 ? "text-anvil-red animate-pulse" : "text-gray-400 group-hover:text-white"} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#1a1a1a]">
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
                         {unreadCount > 9 ? '+9' : unreadCount}
                     </span>
                 )}
@@ -41,8 +42,8 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[110]" onClick={() => setIsOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-80 max-h-[480px] bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#252525]">
+                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} w-80 max-h-[480px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
+                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
                             <h3 className="font-black uppercase tracking-widest text-xs flex items-center gap-2">
                                 <Bell size={14} className="text-anvil-red" /> Notificaciones
                             </h3>

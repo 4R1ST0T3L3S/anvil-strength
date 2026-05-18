@@ -88,10 +88,10 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[#1c1c1c] max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
+            <div className="bg-[#0a0a0a] max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
                 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-white/5 bg-[#252525] gap-4 sm:gap-0 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-white/5 bg-[#0a0a0a] gap-4 sm:gap-0 flex-shrink-0">
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="p-2 bg-green-500/10 rounded-lg text-green-400">
                             <Activity size={24} />
@@ -314,12 +314,12 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
 
                             {/* Data Summary Table */}
                             <div className="sm:mt-8 bg-black/20 sm:rounded-xl border-y sm:border border-white/5 -mx-4 sm:mx-0 overflow-hidden">
-                                <div className="px-4 py-3 border-b border-white/5 bg-[#252525]">
+                                <div className="px-4 py-3 border-b border-white/5 bg-[#0a0a0a]">
                                     <h4 className="text-sm font-bold uppercase tracking-wider text-gray-300">Resumen de Series</h4>
                                 </div>
                                 <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto overflow-x-auto">
                                     <table className="w-full text-left text-xs sm:text-sm text-gray-400 relative">
-                                        <thead className="sticky top-0 z-10 text-[10px] sm:text-xs uppercase bg-[#1c1c1c] text-gray-500 font-bold border-b border-white/5 shadow-sm">
+                                        <thead className="sticky top-0 z-10 text-[10px] sm:text-xs uppercase bg-[#0a0a0a] text-gray-500 font-bold border-b border-white/5 shadow-sm">
                                             <tr>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">S/R</th>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">Carga</th>

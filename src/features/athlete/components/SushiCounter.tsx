@@ -113,7 +113,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#1c1c1c] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1200px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col scale-in-center mt-0 relative">
+            <div className="bg-[#0a0a0a] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1200px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col scale-in-center mt-0 relative">
 
                 {/* Ambient Background Gradient based on totals */}
                 <div 
@@ -125,7 +125,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 />
 
                 {/* Header */}
-                <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-white/5 flex justify-between items-center bg-[#252525]/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
+                <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
                     <div className="flex items-center gap-3 md:gap-5">
                         <div className="w-10 h-10 md:w-16 md:h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-[0.8rem] md:rounded-[1.4rem] flex items-center justify-center text-white shadow-2xl shadow-blue-500/40 -rotate-3 border-2 border-white/10">
                             <Fish className="w-5 h-5 md:w-8 md:h-8" />
@@ -153,7 +153,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 </div>
 
                 {/* Centered Total Pieces Viewer */}
-                <div className="relative z-10 bg-[#252525]/50 border-b border-white/5 w-full shrink-0 flex items-center justify-center py-4 md:py-10">
+                <div className="relative z-10 bg-[#0a0a0a]/50 border-b border-white/5 w-full shrink-0 flex items-center justify-center py-4 md:py-10">
                     <div className="flex flex-col items-center justify-center text-center">
                         <p className="text-gray-500 text-[10px] md:text-sm font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Piezas Consumidas</p>
                         <motion.div 
@@ -243,7 +243,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 </div>
 
                 {/* Footer Macros Panel */}
-        <div className="relative z-10 p-3 md:p-6 bg-[#252525]/90 backdrop-blur-md border-t border-white/5 shrink-0">
+        <div className="relative z-10 p-3 md:p-6 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 shrink-0">
                     <div className="max-w-4xl mx-auto">
                         <div className="grid grid-cols-4 gap-1.5 md:gap-4">
                             <div className="bg-white/5 border border-white/10 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">

@@ -168,7 +168,7 @@ export function AdminDashboard() {
     // Auth protection check
     if (isUserLoading) {
         return (
-            <div className="min-h-screen bg-[#1c1c1c] text-white flex items-center justify-center p-4">
+            <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
                 <Loader className="animate-spin text-anvil-red h-8 w-8" />
             </div>
         );
@@ -209,7 +209,7 @@ export function AdminDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#111] text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#0a0a0a] text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
 
                 {/* Header Section */}
@@ -228,7 +228,7 @@ export function AdminDashboard() {
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
                             <button
                                 onClick={() => navigate('/web')}
-                                className="flex items-center justify-center gap-2 bg-[#1c1c1c] hover:bg-white/5 text-blue-400 border border-white/10 px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg active:scale-95"
+                                className="flex items-center justify-center gap-2 bg-[#0a0a0a] hover:bg-white/5 text-blue-400 border border-white/10 px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg active:scale-95"
                             >
                                 <Globe size={18} />
                                 Ver Web
@@ -249,7 +249,7 @@ export function AdminDashboard() {
                                     placeholder="Buscar por nombre o email..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-[#1c1c1c] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                             </div>
@@ -269,7 +269,7 @@ export function AdminDashboard() {
                                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-all ${
                                     isActive 
                                     ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' 
-                                    : 'bg-[#1c1c1c] text-gray-400 border border-white/5 hover:border-white/20 hover:text-white'
+                                    : 'bg-[#0a0a0a] text-gray-400 border border-white/5 hover:border-white/20 hover:text-white'
                                 }`}
                             >
                                 <Icon size={18} />
@@ -300,7 +300,7 @@ export function AdminDashboard() {
                         <Loader className="animate-spin text-anvil-red h-12 w-12" />
                     </div>
                 ) : (
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -362,16 +362,16 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.role}
                                                                     onChange={(e) => changeRole(user.id, e.target.value as 'coach' | 'athlete' | 'nutritionist')}
-                                                                    className={`w-full appearance-none bg-[#111] border rounded-lg px-3 py-1.5 text-sm font-bold uppercase cursor-pointer focus:outline-none transition-colors ${user.role === 'coach'
+                                                                    className={`w-full appearance-none bg-[#0a0a0a] border rounded-lg px-3 py-1.5 text-sm font-bold uppercase cursor-pointer focus:outline-none transition-colors ${user.role === 'coach'
                                                                         ? 'border-indigo-500/30 text-indigo-400 hover:border-indigo-500/60'
                                                                         : user.role === 'nutritionist'
                                                                             ? 'border-emerald-500/30 text-emerald-400 hover:border-emerald-500/60'
                                                                             : 'border-white/10 text-gray-300 hover:border-white/30'
                                                                         }`}
                                                                 >
-                                                                    <option value="athlete" className="bg-[#111] text-gray-300">Atleta</option>
-                                                                    <option value="coach" className="bg-[#111] text-indigo-400">Entrenador</option>
-                                                                    <option value="nutritionist" className="bg-[#111] text-emerald-400">Nutricionista</option>
+                                                                    <option value="athlete" className="bg-[#0a0a0a] text-gray-300">Atleta</option>
+                                                                    <option value="coach" className="bg-[#0a0a0a] text-indigo-400">Entrenador</option>
+                                                                    <option value="nutritionist" className="bg-[#0a0a0a] text-emerald-400">Nutricionista</option>
                                                                 </select>
                                                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
                                                                     <Shield size={14} />
@@ -408,11 +408,11 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.coach_id || 'unassigned'}
                                                                     onChange={(e) => changeCoach(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-[#111] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:outline-none focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:outline-none focus:border-anvil-red transition-colors"
                                                                 >
-                                                                    <option value="unassigned" className="bg-[#111] text-gray-500">Sin asignar</option>
+                                                                    <option value="unassigned" className="bg-[#0a0a0a] text-gray-500">Sin asignar</option>
                                                                     {coaches.map(c => (
-                                                                        <option key={c.id} value={c.id} className="bg-[#111] text-indigo-400">{c.full_name}</option>
+                                                                        <option key={c.id} value={c.id} className="bg-[#0a0a0a] text-indigo-400">{c.full_name}</option>
                                                                     ))}
                                                                 </select>
                                                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -425,11 +425,11 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.nutritionist_id || 'unassigned'}
                                                                     onChange={(e) => changeNutritionist(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-[#111] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:outline-none focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:outline-none focus:border-anvil-red transition-colors"
                                                                 >
-                                                                    <option value="unassigned" className="bg-[#111] text-gray-500">Sin asignar</option>
+                                                                    <option value="unassigned" className="bg-[#0a0a0a] text-gray-500">Sin asignar</option>
                                                                     {nutritionists.map(n => (
-                                                                        <option key={n.id} value={n.id} className="bg-[#111] text-emerald-400">{n.full_name}</option>
+                                                                        <option key={n.id} value={n.id} className="bg-[#0a0a0a] text-emerald-400">{n.full_name}</option>
                                                                     ))}
                                                                 </select>
                                                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -457,7 +457,7 @@ export function AdminDashboard() {
                                                                 {user.logo_url && (
                                                                     <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-white/5 rounded flex-shrink-0" />
                                                                 )}
-                                                                <label className="text-[10px] font-bold uppercase bg-[#111] hover:bg-white/10 px-2 py-1.5 border border-white/20 rounded cursor-pointer transition-colors whitespace-nowrap text-gray-300">
+                                                                <label className="text-[10px] font-bold uppercase bg-[#0a0a0a] hover:bg-white/10 px-2 py-1.5 border border-white/20 rounded cursor-pointer transition-colors whitespace-nowrap text-gray-300">
                                                                     Subir
                                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
                                                                 </label>

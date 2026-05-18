@@ -13,7 +13,7 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
     const { refetch, isFetching } = useUser();
 
     return (
-        <div className="min-h-screen bg-[#1c1c1c] font-sans selection:bg-anvil-red flex flex-col">
+        <div className="min-h-screen bg-[#0a0a0a] font-sans selection:bg-anvil-red flex flex-col">
             <PublicHeader onLoginClick={onLoginClick} />
             <div className="flex-1 pt-32 pb-20 px-4">
                 <div className="max-w-4xl mx-auto mb-8 bg-[#151515] border border-amber-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">

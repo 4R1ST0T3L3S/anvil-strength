@@ -51,7 +51,7 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
     // Security Check
     if (user?.role === 'coach' && user?.has_access) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#1c1c1c] text-white">
+            <div className="flex h-screen items-center justify-center bg-black text-white">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-anvil-red mb-2">Acceso Denegado</h1>
                     <p className="text-gray-400">Esta cuenta de entrenador no tiene acceso al panel de atleta.</p>

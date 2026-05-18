@@ -151,7 +151,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
     return (
         <div className="space-y-8 animate-fade-in">
             {/* Cabecera / Resumen de Macros */}
-            <div className="bg-[#1c1c1c] border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <Apple size={120} />
                 </div>
@@ -341,7 +341,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             placeholder="Ej. Hipertrofia Bloque 1, Fuerza Máxima..."
                             value={configForm.training_block_id} 
                             onChange={(e) => setConfigForm({...configForm, training_block_id: e.target.value})}
-                            className="w-full bg-[#1c1c1c] text-white px-4 py-3 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                            className="w-full bg-[#0a0a0a] text-white px-4 py-3 rounded border border-zinc-800 focus:border-anvil-red outline-none"
                         />
                     </div>
 
@@ -359,7 +359,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewTag('');
                                     }
                                 }}
-                                className="flex-1 bg-[#1c1c1c] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
                             />
                             <button 
                                 onClick={() => {
@@ -397,7 +397,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewGuideline('');
                                     }
                                 }}
-                                className="flex-1 bg-[#1c1c1c] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
                             />
                             <button 
                                 onClick={() => {
@@ -435,7 +435,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewSupplement('');
                                     }
                                 }}
-                                className="flex-1 bg-[#1c1c1c] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
                             />
                             <button 
                                 onClick={() => {

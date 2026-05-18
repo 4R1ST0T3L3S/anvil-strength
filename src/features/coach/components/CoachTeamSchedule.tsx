@@ -144,7 +144,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
             <div className="space-y-4">
                 <AnimatePresence>
                 {competitions.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#1c1c1c] border border-white/5 rounded-xl p-8 text-center flex flex-col items-center justify-center">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-8 text-center flex flex-col items-center justify-center">
                         <Calendar size={24} className="text-gray-600 mb-3" />
                         <p className="text-sm font-medium text-gray-400">No hay competiciones programadas.</p>
                     </motion.div>
@@ -155,12 +155,12 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="bg-[#1c1c1c] rounded-xl overflow-hidden border border-white/5 shadow-md flex flex-col md:flex-row relative"
+                            className="bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/5 shadow-md flex flex-col md:flex-row relative"
                         >
                             <div className="p-4 md:pr-16 flex-1 flex flex-col xl:flex-row gap-6">
                                 {/* Competition Info */}
                                 <div className="xl:w-1/3 flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-[#252525] border border-white/10 flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 rounded-lg bg-[#0a0a0a] border border-white/10 flex items-center justify-center shrink-0">
                                         <Calendar size={20} className="text-anvil-red" />
                                     </div>
                                     <div>
@@ -180,12 +180,12 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                     {comp.entries.map((entry: CompetitionEntry) => (
                                         <div 
                                             key={entry.id} 
-                                            className="flex items-center gap-2 p-2 bg-[#252525] hover:bg-[#333] transition-colors rounded-lg border border-transparent hover:border-white/10"
+                                            className="flex items-center gap-2 p-2 bg-[#0a0a0a] hover:bg-[#111] transition-colors rounded-lg border border-transparent hover:border-white/10"
                                         >
                                             {entry.profiles?.avatar_url ? (
                                                 <img src={entry.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-[#111] border border-white/10 flex items-center justify-center font-bold text-xs text-gray-300">
+                                                <div className="w-8 h-8 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center font-bold text-xs text-gray-300">
                                                     {entry.profiles?.full_name?.[0]?.toUpperCase()}
                                                 </div>
                                             )}

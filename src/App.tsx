@@ -44,7 +44,7 @@ function App() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
         <h2 className="text-xl font-bold text-anvil-red mb-2">Error de conexión</h2>
         <p className="text-gray-400 mb-4 text-center max-w-md">
           {error instanceof Error ? error.message : 'No se pudo cargar el perfil.'}
@@ -60,7 +60,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1c1c1c] text-white selection:bg-anvil-red selection:text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white font-sans overflow-x-hidden">
       <ReloadPrompt />
       <Toaster position="top-center" theme="dark" richColors />
       <ErrorBoundary FallbackComponent={ErrorFallback}>

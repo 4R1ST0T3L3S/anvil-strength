@@ -116,7 +116,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
     <div className="flex flex-col h-full gap-3 pb-2 w-full">
       
       {/* Controles Dinámicos Superiores */}
-      <div className="bg-[#1c1c1c] border border-white/5 p-2 px-4 rounded-xl flex items-center justify-between gap-4 shrink-0">
+      <div className="bg-[#0a0a0a] border border-white/5 p-2 px-4 rounded-xl flex items-center justify-between gap-4 shrink-0">
           <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-1">
                   <Dumbbell size={16} className="text-gray-400" />
@@ -187,7 +187,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
 
       <div className="grid grid-cols-2 gap-3 flex-1 min-h-0">
           {/* Velocity Line Chart */}
-          <div className="bg-[#1c1c1c] border border-white/5 p-3 rounded-xl flex flex-col h-full overflow-hidden">
+          <div className="bg-[#0a0a0a] border border-white/5 p-3 rounded-xl flex flex-col h-full overflow-hidden">
               <h3 className="text-white text-xs font-bold mb-2 flex items-center gap-1 shrink-0">
                   <Activity className="text-anvil-red" size={14} />
                   Topología de Velocidad
@@ -241,13 +241,13 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* Bar Path Scatter Chart */}
-          <div className="bg-[#1c1c1c] border border-white/5 p-3 rounded-xl flex flex-col items-center h-full overflow-hidden">
+          <div className="bg-[#0a0a0a] border border-white/5 p-3 rounded-xl flex flex-col items-center h-full overflow-hidden">
               <h3 className="text-white text-xs font-bold mb-2 flex items-center gap-1 w-full shrink-0">
                   <Target className="text-green-500" size={14} />
                   Trayectoria (1:1)
               </h3>
               
-              <div className="flex-1 min-h-[100px] w-full max-w-[200px] xl:max-w-[300px] aspect-square bg-[#1c1c1c] rounded-xl flex items-center justify-center border border-white/5">
+              <div className="flex-1 min-h-[100px] w-full max-w-[200px] xl:max-w-[300px] aspect-square bg-[#0a0a0a] rounded-xl flex items-center justify-center border border-white/5">
                   <ResponsiveContainer width="100%" height="100%">
                     <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -268,7 +268,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
       {/* Grid de Métricas Avanzadas (La "Magia Físico-Matemática") */}
       <div className="grid grid-cols-4 gap-2 shrink-0">
           {/* Potencia */}
-          <div className="bg-[#1c1c1c] border border-yellow-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
+          <div className="bg-[#0a0a0a] border border-yellow-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Zap size={12} className="text-yellow-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Potencia</p>
@@ -280,7 +280,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* Fuerza N */}
-          <div className="bg-[#1c1c1c] border border-orange-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(249,115,22,0.03)]">
+          <div className="bg-[#0a0a0a] border border-orange-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(249,115,22,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Flame size={12} className="text-orange-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Fuerza Suelo</p>
@@ -292,7 +292,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* RFD */}
-          <div className="bg-[#1c1c1c] border border-blue-400/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(96,165,250,0.03)]">
+          <div className="bg-[#0a0a0a] border border-blue-400/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(96,165,250,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <TrendingUp size={12} className="text-blue-400" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">RFD</p>
@@ -304,7 +304,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* Sticking Point */}
-          <div className="bg-[#1c1c1c] border border-red-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(239,68,68,0.03)]">
+          <div className="bg-[#0a0a0a] border border-red-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(239,68,68,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <AlertTriangle size={12} className="text-red-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Sticking Point</p>
@@ -316,7 +316,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* Desviacion X */}
-          <div className="bg-[#1c1c1c] border border-purple-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(168,85,247,0.03)]">
+          <div className="bg-[#0a0a0a] border border-purple-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(168,85,247,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <MoveHorizontal size={12} className="text-purple-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Desviación X</p>
@@ -328,7 +328,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* Tiempos Fase */}
-          <div className="bg-[#1c1c1c] border border-teal-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(20,184,166,0.03)]">
+          <div className="bg-[#0a0a0a] border border-teal-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(20,184,166,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Clock size={12} className="text-teal-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Tiempo Exc / Con</p>
@@ -340,7 +340,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           </div>
 
           {/* Pérdida de Vel */}
-          <div className="bg-[#1c1c1c] border border-pink-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(236,72,153,0.03)]">
+          <div className="bg-[#0a0a0a] border border-pink-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(236,72,153,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Percent size={12} className="text-pink-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Fatiga</p>

@@ -92,7 +92,7 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
             </div>
 
             {blocks.length === 0 ? (
-                <div className="bg-[#252525] border border-white/5 rounded-xl p-12 text-center">
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-12 text-center">
                     <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                         <FolderOpen className="text-gray-500" size={32} />
                     </div>
@@ -115,7 +115,7 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                         return (
                             <div
                                 key={block.id}
-                                className={`group relative bg-[#1a1a1a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''
+                                className={`group relative bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''
                                     }`}
                                 onClick={() => onSelectBlock(block)}
                             >
@@ -198,7 +198,7 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
             {/* DELETE CONFIRMATION MODAL */}
             {blockToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-xl max-w-sm w-full p-6 shadow-2xl">
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-xl max-w-sm w-full p-6 shadow-2xl">
                         <div className="flex flex-col items-center text-center mb-6">
                             <div className="w-12 h-12 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-4">
                                 <AlertTriangle size={24} />

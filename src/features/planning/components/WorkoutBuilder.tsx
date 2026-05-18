@@ -657,7 +657,7 @@ export function WorkoutBuilder({ athleteId, blockId }: WorkoutBuilderProps) {
                     }
 
                     return (
-                        <div key={week} className={`bg-[#1a1a1a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 ${week === currentRealWeek ? 'ring-1 ring-green-500/30' : ''}`}>
+                        <div key={week} className={`bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 ${week === currentRealWeek ? 'ring-1 ring-green-500/30' : ''}`}>
                             {/* Week Header */}
                             <div
                                 className={`
@@ -873,9 +873,9 @@ function DayColumn({ session, onUpdateName, onUpdateExercise, onRemoveExercise, 
     }
 
     return (
-        <div className="w-full md:w-[400px] flex flex-col bg-[#1a1a1a] border border-white/5 rounded-3xl overflow-hidden shadow-2xl h-auto md:h-full shrink-0 relative group/column">
+        <div className="w-full md:w-[400px] flex flex-col bg-[#0a0a0a] border border-white/5 rounded-3xl overflow-hidden shadow-2xl h-auto md:h-full shrink-0 relative group/column">
             {/* Header */}
-            <div className="p-4 bg-[#202020] border-b border-white/5 relative flex justify-center items-center">
+            <div className="p-4 bg-[#0a0a0a] border-b border-white/5 relative flex justify-center items-center">
                 <button
                     onClick={() => onRemoveSession(session.id)}
                     className="absolute right-4 text-gray-600 hover:text-red-500 opacity-100 md:opacity-0 md:group-hover/column:opacity-100 transition-opacity"
@@ -912,7 +912,7 @@ function DayColumn({ session, onUpdateName, onUpdateExercise, onRemoveExercise, 
                 <div className="pt-2 pb-4">
                     <button
                         onClick={() => onOpenSearchModal(session.id)}
-                        className="w-full py-3 bg-[#252525] hover:bg-[#2a2a2a] rounded-2xl text-gray-500 hover:text-anvil-red transition-all text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2 border border-transparent hover:border-anvil-red/20"
+                        className="w-full py-3 bg-[#0a0a0a] hover:bg-[#111] rounded-2xl text-gray-500 hover:text-anvil-red transition-all text-xs font-black tracking-widest uppercase flex items-center justify-center gap-2 border border-transparent hover:border-anvil-red/20"
                     >
                         <Plus size={14} /> Añadir Ejercicio
                     </button>
@@ -991,7 +991,7 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
     };
 
     return (
-        <div className="bg-[#252525] rounded-2xl border border-white/5 p-4 group relative hover:border-white/10 transition-all shadow-sm">
+        <div className="bg-[#0a0a0a] rounded-2xl border border-white/5 p-4 group relative hover:border-white/10 transition-all shadow-sm">
             {/* Delete Exercise Button (Absolute Top Right) */}
             <button
                 onClick={onRemoveExercise}
@@ -1187,7 +1187,7 @@ function CompactInput({ value, onChange, placeholder, type = "text" }: CompactIn
                 }
             }}
             onWheel={(e) => e.currentTarget.blur()} // Prevent accidental scroll changes
-            className="w-full bg-[#2a2a2a] border border-transparent hover:border-white/10 focus:border-blue-500 rounded px-1 py-1 text-xs text-center text-white outline-none transition-colors placeholder-gray-700"
+            className="w-full bg-[#0a0a0a] border border-transparent hover:border-white/10 focus:border-blue-500 rounded px-1 py-1 text-xs text-center text-white outline-none transition-colors placeholder-gray-700"
             placeholder={placeholder}
         />
     )

@@ -464,7 +464,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean, o
     return (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#1c1c1c] w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#0a0a0a] w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
                 <div className="w-full md:w-1/2 md:h-auto bg-black">
                     <img src={achievement.images[0]} className="w-full h-full object-cover" alt="" />
                 </div>
@@ -489,7 +489,7 @@ function AllAchievementsModal({ isOpen, onClose, achievements, onSelect }: { isO
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {achievements.map((item) => (
-                    <div key={item.id} onClick={() => { onSelect(item); onClose(); }} className="bg-[#1a1a1a] p-8 rounded-2xl border border-white/5 cursor-pointer hover:border-anvil-red/50 transition-all group">
+                    <div key={item.id} onClick={() => { onSelect(item); onClose(); }} className="bg-[#0a0a0a] p-8 rounded-2xl border border-white/5 cursor-pointer hover:border-anvil-red/50 transition-all group">
                         <Trophy className="text-anvil-red mb-4 group-hover:scale-110 transition-transform" />
                         <h3 className="text-xl font-bold text-white uppercase">{item.title}</h3>
                         <p className="text-anvil-red text-sm font-black italic">{item.result}</p>

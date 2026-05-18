@@ -144,7 +144,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64 bg-[#1c1c1c] rounded-xl border border-white/5 font-black text-gray-500 italic">CARGANDO...</div>
+                <div className="flex justify-center items-center h-64 bg-[#0a0a0a] rounded-xl border border-white/5 font-black text-gray-500 italic">CARGANDO...</div>
             ) : (
                 <div className="grid grid-cols-1 gap-4">
                     {competitions.map((comp, index) => {
@@ -153,7 +153,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         const { esInvitado, level, color, bg, border, icon } = meta;
 
                         return (
-                            <div key={index} className={`relative bg-[#1c1c1c] border p-5 rounded-xl transition-all ${border} ${esInvitado ? 'opacity-70' : ''}`}>
+                            <div key={index} className={`relative bg-[#0a0a0a] border p-5 rounded-xl transition-all ${border} ${esInvitado ? 'opacity-70' : ''}`}>
                                 <div className="flex flex-col gap-4">
 
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}

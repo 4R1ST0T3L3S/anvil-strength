@@ -159,7 +159,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     {/* --- PIEZA ANGULAR (SINGLET - ID 4) RESTAURADA --- */}
                     {products.filter(p => p.id === 4).map((product) => (
                         <motion.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mb-24 relative group cursor-pointer">
-                            <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#111] border border-white/10">
+                            <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#0a0a0a] border border-white/10">
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
                                     {/* Placeholder Content */}
                                     <div className="text-center group-hover:scale-105 transition-transform duration-700">
@@ -194,11 +194,11 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24">
                         {products.filter(p => p.id !== 4).map((product, index) => (
                             <motion.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
-                                <div className="relative aspect-[3/4] bg-[#111] overflow-hidden mb-6 border border-white/5">
+                                <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-6 border border-white/5">
                                     {product.id === 3 ? (
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                                     ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-[#151515] group-hover:bg-[#1a1a1a] transition-colors">
+                                        <div className="absolute inset-0 flex items-center justify-center bg-[#151515] group-hover:bg-[#0a0a0a] transition-colors">
                                             <span className="text-2xl sm:text-3xl font-black text-white/10 uppercase tracking-tighter -rotate-12">WORKING<br />ON IT</span>
                                         </div>
                                     )}

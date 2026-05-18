@@ -151,7 +151,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
     return (
         <div className="fixed inset-0 z-[9999] flex bg-black/80 backdrop-blur-sm">
             {/* Left: Settings Panel */}
-            <div className="w-80 bg-[#111] border-r border-zinc-800 flex flex-col h-full overflow-hidden shrink-0">
+            <div className="w-80 bg-[#0a0a0a] border-r border-zinc-800 flex flex-col h-full overflow-hidden shrink-0">
                 <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
                     <h2 className="text-white font-black uppercase text-sm tracking-wider">Editor PDF (Entrenamiento)</h2>
                     <button onClick={onClose} className="text-zinc-500 hover:text-white"><X size={20} /></button>

@@ -47,7 +47,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
 
     if (exercises.length === 0) {
         return (
-            <div className="text-center py-16 bg-[#252525] border border-white/5 rounded-xl max-w-4xl mx-auto mt-6">
+            <div className="text-center py-16 bg-[#0a0a0a] border border-white/5 rounded-xl max-w-4xl mx-auto mt-6">
                 <Activity size={48} className="mx-auto text-gray-600 mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">Sin datos VBT</h3>
                 <p className="text-gray-400">Este atleta aún no ha subido ningún archivo de encoder.</p>
@@ -64,8 +64,8 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
                 </h3>
             </div>
 
-            <div className="bg-[#1c1c1c] border border-white/10 rounded-xl overflow-hidden shadow-xl mb-24">
-                <div className="grid grid-cols-[auto_1fr_2fr_1fr_1fr_auto] gap-4 p-4 border-b border-white/10 bg-[#252525] text-xs font-bold text-gray-500 uppercase tracking-wider items-center">
+            <div className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden shadow-xl mb-24">
+                <div className="grid grid-cols-[auto_1fr_2fr_1fr_1fr_auto] gap-4 p-4 border-b border-white/10 bg-[#0a0a0a] text-xs font-bold text-gray-500 uppercase tracking-wider items-center">
                     <div className="w-6"></div> {/* Checkbox spacer */}
                     <div>Fecha</div>
                     <div>Ejercicio</div>
@@ -93,7 +93,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
                                         className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
                                             selectedForCompare.includes(ex.id) 
                                                 ? 'bg-anvil-red text-black border-anvil-red border shadow-[0_0_10px_rgba(255,51,51,0.3)]' 
-                                                : 'bg-[#1c1c1c] border border-white/20 hover:border-white/50'
+                                                : 'bg-[#0a0a0a] border border-white/20 hover:border-white/50'
                                         }`}
                                     >
                                         {selectedForCompare.includes(ex.id) && <Check size={14} strokeWidth={4} />}
@@ -132,7 +132,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
                                                 download
                                                 target="_blank"
                                                 rel="noopener noreferrer" 
-                                                className="p-2 text-gray-400 hover:text-white bg-[#333] hover:bg-[#444] rounded transition-colors"
+                                                className="p-2 text-gray-400 hover:text-white bg-[#111] hover:bg-[#111] rounded transition-colors"
                                                 title="Descargar CSV"
                                             >
                                                 <Download size={16} />
@@ -165,7 +165,7 @@ export default function CoachVbtTab({ athleteId }: CoachVbtTabProps) {
             {/* Float Compare Bar */}
             {selectedForCompare.length > 1 && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-10 fade-in duration-300">
-                    <div className="bg-[#252525] border border-white/10 shadow-2xl rounded-full px-6 py-3 flex items-center gap-6">
+                    <div className="bg-[#0a0a0a] border border-white/10 shadow-2xl rounded-full px-6 py-3 flex items-center gap-6">
                         <span className="text-sm font-bold text-white">
                             <span className="text-anvil-red">{selectedForCompare.length}</span> sesiones seleccionadas
                         </span>

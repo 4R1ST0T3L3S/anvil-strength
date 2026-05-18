@@ -26,9 +26,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const webItem = menuItems.find(item => item.label === 'Ver Web');
 
     return (
-        <div className="flex h-screen bg-[#1c1c1c] text-white overflow-hidden font-sans">
+        <div className="flex h-screen bg-black text-white overflow-hidden font-sans">
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-[#1a1a1a] border-r border-white/5 shrink-0">
+            <aside className="hidden md:flex flex-col w-64 bg-black border-r border-white/5 shrink-0">
                 <div className="p-8">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-anvil-red rounded-xl flex items-center justify-center font-black text-white text-2xl italic shadow-[0_0_20px_rgba(220,38,38,0.4)]">A</div>
@@ -57,6 +57,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </nav>
 
                 <div className="p-4 border-t border-white/5 space-y-2">
+                    {user && (
+                        <div className="flex items-center justify-between px-3 py-2 border border-white/5 bg-white/5 rounded-xl mb-2">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                                <div className="w-8 h-8 rounded-lg bg-anvil-red flex items-center justify-center font-black text-xs text-white shrink-0">
+                                    {user.full_name?.charAt(0).toUpperCase() || '?'}
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-[10px] font-black uppercase truncate text-white leading-tight">{user.nickname || user.full_name}</span>
+                                    <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest leading-none mt-0.5">{user.role}</span>
+                                </div>
+                            </div>
+                            <NotificationsPopover userId={user.id} />
+                        </div>
+                    )}
                     {webItem && (
                         <button
                             onClick={webItem.onClick}
@@ -79,30 +93,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </aside>
 
             <div className="flex-1 flex flex-col min-w-0">
-                {/* Mobile Top Bar */}
-                <div className="flex md:hidden items-center justify-between px-4 py-3 border-b border-white/5 bg-[#1a1a1a] shrink-0 z-[100]">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-anvil-red rounded flex items-center justify-center font-black text-white text-xl italic shadow-[0_0_15px_rgba(220,38,38,0.3)]">A</div>
-                        <span className="font-black uppercase tracking-tighter text-lg italic">Anvil <span className="text-anvil-red">Strength</span></span>
-                    </div>
-                    {user && <NotificationsPopover userId={user.id} />}
-                </div>
-
-                {/* Desktop Top Bar (Reduced) */}
-                <div className="hidden md:flex items-center justify-end gap-4 px-8 py-4 border-b border-white/5 bg-[#1a1a1a]/50 backdrop-blur-md shrink-0 z-[100]">
-                    {user && <NotificationsPopover userId={user.id} />}
-                </div>
-
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto bg-[#1c1c1c] scrollbar-hide pb-20 md:pb-0">
+                <main className="flex-1 overflow-y-auto bg-black scrollbar-hide pb-20 md:pb-0">
                     {children}
                 </main>
             </div>
 
             {/* Bottom Navigation (Mobile) */}
-            <nav className="fixed bottom-0 w-full bg-[#1c1c1c]/95 backdrop-blur-lg border-t border-white/10 z-50 px-4 py-2 flex justify-around items-center pb-safe md:hidden">
+            <nav className="fixed bottom-0 w-full bg-black/95 backdrop-blur-lg border-t border-white/10 z-50 px-4 py-2 flex justify-around items-center pb-safe md:hidden">
                 {menuItems
-                    .filter(item => !['Ver Web', 'Salir'].includes(item.label))
+                    .filter(item => !['Ver Web', 'Salir', 'PWR Análisis'].includes(item.label))
                     .slice(0, 6)
                     .map((item, index) => {
                         const isActive = item.isActive;

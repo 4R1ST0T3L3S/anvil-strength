@@ -78,7 +78,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
             {/* Create Bet Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/98 backdrop-blur-xl">
-                    <div className="bg-[#1a1a1a] border border-white/10 p-10 rounded-[3rem] w-full max-w-lg relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] w-full max-w-lg relative max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <button onClick={() => setIsCreateModalOpen(false)} className="absolute top-10 right-10 text-gray-500 hover:text-white"><X /></button>
                         
                         <form onSubmit={handleSubmit} className="space-y-6">

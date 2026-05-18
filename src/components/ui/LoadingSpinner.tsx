@@ -18,7 +18,7 @@ export function LoadingSpinner({
 
     if (fullscreen) {
         return (
-            <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
+            <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
                 {content}
             </div>
         );

@@ -41,7 +41,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
     return (
         <div className="fixed bottom-24 left-4 right-4 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300">
             <div className={cn(
-                "bg-[#1c1c1c] border border-white/10 rounded-2xl shadow-2xl p-4 flex items-center justify-between",
+                "bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl p-4 flex items-center justify-between",
                 isFinished ? "border-green-500/50 bg-green-900/10" : "border-anvil-red/30"
             )}>
                 {/* Time Display */}
@@ -71,13 +71,13 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                         <>
                             <button
                                 onClick={() => onAddSeconds(-10)}
-                                className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center text-gray-400 hover:text-white border border-white/5 active:scale-95 transition-all"
+                                className="w-8 h-8 rounded-full bg-[#0a0a0a] flex items-center justify-center text-gray-400 hover:text-white border border-white/5 active:scale-95 transition-all"
                             >
                                 <Minus size={14} />
                             </button>
                             <button
                                 onClick={() => onAddSeconds(10)}
-                                className="w-8 h-8 rounded-full bg-[#2a2a2a] flex items-center justify-center text-gray-400 hover:text-white border border-white/5 active:scale-95 transition-all"
+                                className="w-8 h-8 rounded-full bg-[#0a0a0a] flex items-center justify-center text-gray-400 hover:text-white border border-white/5 active:scale-95 transition-all"
                             >
                                 <Plus size={14} />
                             </button>

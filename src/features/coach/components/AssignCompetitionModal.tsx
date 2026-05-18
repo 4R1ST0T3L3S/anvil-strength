@@ -135,10 +135,10 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#1c1c1c] w-full max-w-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                    className="relative bg-[#0a0a0a] w-full max-w-2xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#252525] shrink-0">
+                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#0a0a0a] shrink-0">
                         <div>
                             <h2 className="text-xl font-black uppercase text-white flex items-center gap-2">
                                 <Trophy className="text-anvil-red" size={20} />
@@ -186,7 +186,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                                                 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all active:scale-[0.98]
                                                 ${isSelected
                                                     ? 'bg-anvil-red/10 border-anvil-red text-white'
-                                                    : 'bg-[#252525] border-white/5 text-gray-400 hover:border-white/20 hover:text-white'}
+                                                    : 'bg-[#0a0a0a] border-white/5 text-gray-400 hover:border-white/20 hover:text-white'}
                                             `}
                                         >
                                             <div className={`
@@ -218,7 +218,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                     </div>
 
                     {/* Footer */}
-                    <div className="p-6 border-t border-white/5 bg-[#252525] shrink-0 flex items-center justify-between gap-4">
+                    <div className="p-6 border-t border-white/5 bg-[#0a0a0a] shrink-0 flex items-center justify-between gap-4">
                         <div className="text-sm text-gray-400">
                             <span className="text-white font-bold">{selectedAthletes.size}</span> atletas seleccionados
                         </div>

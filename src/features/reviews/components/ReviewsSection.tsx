@@ -75,7 +75,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                     return (
                                         <div key={star} className="flex items-center gap-2 text-sm">
                                             <span className="text-gray-400 w-12">{star} ★</span>
-                                            <div className="flex-1 bg-[#1c1c1c] rounded-full h-2 overflow-hidden">
+                                            <div className="flex-1 bg-[#0a0a0a] rounded-full h-2 overflow-hidden">
                                                 <div
                                                     className="bg-yellow-400 h-full transition-all duration-500"
                                                     style={{ width: `${percentage}%` }}
@@ -99,7 +99,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
 
                 {/* Info box for non-authenticated users */}
                 {!isAuthenticated && reviews.length > 0 && (
-                    <div className="mb-12 max-w-3xl mx-auto bg-[#1c1c1c] p-6 rounded-xl border border-white/10 text-center">
+                    <div className="mb-12 max-w-3xl mx-auto bg-[#0a0a0a] p-6 rounded-xl border border-white/10 text-center">
                         <MessageCircle className="inline-block mb-3 text-anvil-red" size={32} />
                         <h3 className="text-lg font-bold mb-2">¿Quieres dejar tu opinión?</h3>
                         <p className="text-gray-400 mb-4">
@@ -132,7 +132,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                             </button>
                         </div>
                     ) : reviews.length === 0 ? (
-                        <div className="text-center py-12 bg-[#1c1c1c] rounded-xl border border-white/10">
+                        <div className="text-center py-12 bg-[#0a0a0a] rounded-xl border border-white/10">
                             <MessageCircle className="inline-block mb-4 text-gray-600" size={48} />
                             <p className="text-gray-400 text-lg">
                                 Aún no hay reseñas.
@@ -148,7 +148,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                             {reviews.map((review) => (
                                 <div
                                     key={review.id}
-                                    className="bg-[#1c1c1c] p-6 rounded-xl border border-white/10 hover:border-white/20 transition-colors"
+                                    className="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 hover:border-white/20 transition-colors"
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <div>

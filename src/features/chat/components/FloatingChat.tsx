@@ -66,7 +66,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                 )}
 
                 {/* Header */}
-                <div className="p-4 bg-[#1a1a1a] border-b border-white/5 flex items-center justify-between">
+                <div className="p-4 bg-[#0a0a0a] border-b border-white/5 flex items-center justify-between">
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="relative">
                             {athlete.avatar_url ? (
@@ -76,7 +76,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                                     {athlete.full_name[0]}
                                 </div>
                             )}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1a1a1a]"></div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0a]"></div>
                         </div>
                         {!isMinimized && (
                             <div className="flex flex-col truncate">

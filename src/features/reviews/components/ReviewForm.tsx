@@ -49,7 +49,7 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
     const isValid = reviewText.length >= 10 && reviewText.length <= 1000;
 
     return (
-        <form onSubmit={handleSubmit} className="bg-[#1c1c1c] p-6 md:p-8 rounded-xl border border-white/10">
+        <form onSubmit={handleSubmit} className="bg-[#0a0a0a] p-6 md:p-8 rounded-xl border border-white/10">
             <h3 className="text-xl md:text-2xl font-bold mb-6">
                 Comparte tu <span className="text-anvil-red">Experiencia</span>
             </h3>
@@ -82,7 +82,7 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
                     required
                     minLength={10}
                     maxLength={1000}
-                    className="w-full bg-[#252525] border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-anvil-red transition-colors resize-none"
+                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-anvil-red transition-colors resize-none"
                 />
                 <p className={`text-xs mt-2 ${!isValid && characterCount > 0
                     ? 'text-red-500'

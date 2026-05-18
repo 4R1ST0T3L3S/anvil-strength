@@ -32,7 +32,7 @@ export function PendingApprovalPage() {
                     Tu cuenta ha sido creada con éxito, pero actualmente se encuentra pendiente de aprobación por parte del equipo de Anvil Strength. Serás notificado cuando tu acceso sea autorizado.
                 </p>
 
-                <div className="bg-[#1c1c1c] rounded-xl p-4 border border-white/5 mb-8">
+                <div className="bg-[#0a0a0a] rounded-xl p-4 border border-white/5 mb-8">
                     <p className="text-xs uppercase tracking-widest font-bold text-gray-500 mb-1">
                         Estado Actual
                     </p>

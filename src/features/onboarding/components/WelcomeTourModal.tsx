@@ -41,7 +41,7 @@ export function WelcomeTourModal({ isOpen, onClose }: WelcomeTourModalProps) {
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="relative bg-[#1a1a1a] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.2)]"
+                    className="relative bg-[#0a0a0a] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(220,38,38,0.2)]"
                 >
                     {/* Decorative background */}
                     <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-anvil-red/20 to-transparent pointer-events-none" />
@@ -93,7 +93,7 @@ export function WelcomeTourModal({ isOpen, onClose }: WelcomeTourModalProps) {
                             }}
                             className="relative mb-10 bg-gradient-to-br from-yellow-400 to-yellow-600 p-1 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.4)]"
                         >
-                            <div className="bg-[#1a1a1a] px-8 py-4 rounded-xl flex items-center gap-4">
+                            <div className="bg-[#0a0a0a] px-8 py-4 rounded-xl flex items-center gap-4">
                                 <div className="p-3 bg-yellow-500/10 rounded-full">
                                     <Sparkles className="text-yellow-500" size={24} />
                                 </div>

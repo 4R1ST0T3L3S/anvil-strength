@@ -34,7 +34,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="group relative bg-[#1a1a1a] border border-white/5 rounded-[2rem] overflow-hidden hover:border-anvil-red/30 transition-all duration-500 shadow-2xl"
+            className="group relative bg-[#0a0a0a] border border-white/5 rounded-[2rem] overflow-hidden hover:border-anvil-red/30 transition-all duration-500 shadow-2xl"
         >
             {/* Header / Type Badge */}
             <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 flex items-center gap-2">

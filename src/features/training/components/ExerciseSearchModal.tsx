@@ -83,7 +83,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-[#111] border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-zinc-800">
                     <h2 className="text-white font-black uppercase text-lg tracking-wider flex items-center gap-2">

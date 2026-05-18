@@ -111,7 +111,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
             </div>
 
             {isAddingMeal && (
-                <div className="bg-[#1c1c1c] border border-anvil-red/50 p-4 rounded-xl space-y-4">
+                <div className="bg-[#0a0a0a] border border-anvil-red/50 p-4 rounded-xl space-y-4">
                     <p className="text-sm text-zinc-400">Selecciona el tipo de comida:</p>
                     <div className="flex flex-wrap gap-2">
                         {['Desayuno', 'Comida', 'Cena', 'Almuerzo', 'Merienda', 'Pre-entreno', 'Post-entreno', 'Pre-cama'].map(mealName => (
@@ -262,9 +262,9 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
     const fatsPct = totalMacroKcal > 0 ? ((totals.fats * 9) / totalMacroKcal) * 100 : 0;
 
     return (
-        <div className="bg-[#1c1c1c] border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-[#0a0a0a] border border-zinc-800 rounded-xl overflow-hidden">
             {/* Header */}
-            <div className="bg-[#252525] p-4 flex justify-between items-center cursor-pointer select-none border-b border-zinc-800" onClick={() => setIsExpanded(!isExpanded)}>
+            <div className="bg-[#0a0a0a] p-4 flex justify-between items-center cursor-pointer select-none border-b border-zinc-800" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex items-center gap-4">
                     {isExpanded ? <ChevronUp size={20} className="text-zinc-400" /> : <ChevronDown size={20} className="text-zinc-400" />}
                     <h4 className="text-lg font-black text-white">{meal.name}</h4>
@@ -312,7 +312,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                 exit={{ height: 0, opacity: 0 }}
                                 className="mb-4 overflow-hidden"
                             >
-                                <div className="bg-[#1a1a1a] border border-anvil-red/30 rounded-xl p-4 space-y-4">
+                                <div className="bg-[#0a0a0a] border border-anvil-red/30 rounded-xl p-4 space-y-4">
                                     <div className="flex justify-between items-center">
                                         <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-anvil-red flex items-center gap-2">
                                             <Calculator size={14} /> Smart Adjuster

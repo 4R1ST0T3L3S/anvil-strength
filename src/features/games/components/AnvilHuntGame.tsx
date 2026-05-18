@@ -166,7 +166,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
     return (
         <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-white/10 relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#1a1a1a] z-10">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0a0a0a] z-10">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
                         <Target size={20} />

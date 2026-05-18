@@ -13,7 +13,7 @@ export function RestrictedFeature({
         <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center animate-in fade-in zoom-in-95 duration-500">
             <div className="relative mb-6">
                 <div className="absolute inset-0 bg-anvil-red/20 blur-xl rounded-full scale-150"></div>
-                <div className="relative bg-gradient-to-b from-[#252525] to-[#1c1c1c] border border-white/10 p-6 rounded-full shadow-2xl">
+                <div className="relative bg-gradient-to-b from-[#0a0a0a] to-[#0a0a0a] border border-white/10 p-6 rounded-full shadow-2xl">
                     <Lock size={48} className="text-anvil-red" />
                 </div>
             </div>
