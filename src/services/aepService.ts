@@ -144,8 +144,8 @@ const determineLevel = (name: string, rawLevel: string = ''): Competition['level
     return 'COMPETICIÓN';
 };
 
-const CACHE_KEY = 'aep_calendar_data';
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_KEY = 'aep_calendar_data_v2';
+const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour
 
 export const fetchCompetitions = async (): Promise<Competition[]> => {
     // 1. Check Cache
