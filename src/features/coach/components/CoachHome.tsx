@@ -202,11 +202,13 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     </h2>
                     {stats.nextCompDate ? (
                         <CompetitionBanner 
+                            userId={user.id}
                             name={stats.nextCompName}
                             date={stats.nextCompDate}
                             location={stats.nextCompLocation}
                             level={stats.nextCompLevel}
                             mobile={true}
+                            fullUserMetadata={user.user_metadata}
                         />
                     ) : (
                         <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
