@@ -111,15 +111,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             <button
                                 key={index}
                                 onClick={item.onClick}
-                                className={`flex flex-col items-center justify-center p-1.5 transition-colors ${isActive ? 'text-anvil-red' : 'text-gray-500 hover:text-white'
+                                className={`flex items-center justify-center p-3 transition-colors ${isActive ? 'text-anvil-red' : 'text-gray-500 hover:text-white'
                                     }`}
                             >
-                                <div className={isActive ? "scale-110 transition-transform" : ""}>
+                                <div className={isActive ? "scale-110 transition-transform" : "transition-transform hover:scale-105"}>
                                     {item.icon}
                                 </div>
-                                <span className={`text-[9px] font-bold mt-0.5 ${isActive ? 'text-anvil-red' : 'text-gray-600'}`}>
-                                    {item.label.length > 10 ? item.label.substring(0, 8) + '…' : item.label}
-                                </span>
                             </button>
                         );
                     })}
