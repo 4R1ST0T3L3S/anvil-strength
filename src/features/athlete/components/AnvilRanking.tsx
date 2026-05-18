@@ -122,8 +122,8 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                 {/* Header */}
                 <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
                     <div className="flex items-center gap-3 md:gap-5">
-                        <div className={`w-10 h-10 md:w-16 md:h-16 rounded-[0.8rem] md:rounded-[1.4rem] flex items-center justify-center text-white shadow-2xl -rotate-3 border-2 border-white/10 transition-colors ${rankingType === 'gl' ? 'bg-gradient-to-br from-red-600 to-red-950 shadow-red-500/40' : 'bg-gradient-to-br from-cyan-400 to-blue-600 shadow-blue-500/40'}`}>
-                            {rankingType === 'gl' ? <Trophy className="w-5 h-5 md:w-8 md:h-8" /> : <Fish className="w-5 h-5 md:w-8 md:h-8" />}
+                        <div className={`transition-colors origin-left ${rankingType === 'gl' ? 'text-anvil-red' : 'text-cyan-400'}`}>
+                            {rankingType === 'gl' ? <Trophy size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" /> : <Fish size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />}
                         </div>
                         <div>
                             <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Ranking Anvil</h2>

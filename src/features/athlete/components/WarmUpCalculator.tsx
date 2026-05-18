@@ -140,8 +140,8 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                 {/* Header */}
                 <div className="p-4 md:px-6 md:py-3 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a] shrink-0 h-16 md:h-20">
                     <div className="flex items-center gap-4 md:gap-5">
-                        <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-600 rounded-[1rem] md:rounded-[1.4rem] flex items-center justify-center text-white shadow-2xl shadow-blue-600/40 -rotate-3 border-2 border-white/10">
-                            <Dumbbell className="w-6 h-6 md:w-8 md:h-8" />
+                        <div className="text-blue-500 origin-left">
+                            <Dumbbell size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />
                         </div>
                         <div>
                             <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Aproximaciones</h2>
