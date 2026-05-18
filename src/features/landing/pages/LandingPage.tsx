@@ -18,6 +18,13 @@ import { Popup } from "@typebot.io/react";
 
 const featuredAchievements = [
     {
+        id: 3,
+        title: "Campeonato Nacional JNR 2026",
+        result: "Campeón -105Kg y 2º Absoluto",
+        images: ["/IMG-20260516-WA0020.jpg"],
+        desc: "Marc Alonso se corona Campeón de España Junior en la categoría de -105Kg y Subcampeón Absoluto por GL Points. Logró oro en sentadilla (307.5kg), récord de España en press banca (197.5kg) y plata en peso muerto (320kg) finalizando con un total espectacular de 825kg. Entrenado por Javier Estellés."
+    },
+    {
         id: 1,
         title: "Campeonato Nacional SBJ 2026",
         result: "Primer puesto -105Kg",
