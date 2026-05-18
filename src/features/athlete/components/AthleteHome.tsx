@@ -25,6 +25,7 @@ import { OneRMCalculator } from './OneRMCalculator';
 import { WarmUpCalculator } from './WarmUpCalculator';
 import { PlateCalculator } from './PlateCalculator';
 import { SushiCounter } from './SushiCounter';
+import { AnvilRanking } from './AnvilRanking';
 import { AnvilPointsBadge } from '../../profile/components/AnvilPointsBadge';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
@@ -56,6 +57,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
     const [isPlateCalcOpen, setIsPlateCalcOpen] = useState(false);
     const [isSushiCounterOpen, setIsSushiCounterOpen] = useState(false);
+    const [isRankingOpen, setIsRankingOpen] = useState(false);
     const [nextCompetition, setNextCompetition] = useState<CompetitionAssignment | null>(null);
 
     useEffect(() => {
@@ -90,6 +92,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
         setIsWarmUpCalcOpen,
         setIsPlateCalcOpen,
         setIsSushiCounterOpen,
+        setIsRankingOpen,
         nextCompetition
     };
 
@@ -102,6 +105,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
             <WarmUpCalculator isOpen={isWarmUpCalcOpen} onClose={() => setIsWarmUpCalcOpen(false)} />
             <PlateCalculator isOpen={isPlateCalcOpen} onClose={() => setIsPlateCalcOpen(false)} />
             <SushiCounter isOpen={isSushiCounterOpen} onClose={() => setIsSushiCounterOpen(false)} />
+            <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
         </>
     );
 }
@@ -111,13 +115,14 @@ interface HomeViewProps {
     onNavigate: (view: string) => void;
     navigate: ReturnType<typeof useNavigate>;
     setIs1RMCalcOpen: (isOpen: boolean) => void;
-    setIsWarmUpCalcOpen: (isOpen: boolean) => void;
-    setIsPlateCalcOpen: (isOpen: boolean) => void;
-    setIsSushiCounterOpen: (isOpen: boolean) => void;
+    setIsWarmUpCalcOpen: (v: boolean) => void;
+    setIsPlateCalcOpen: (v: boolean) => void;
+    setIsSushiCounterOpen: (v: boolean) => void;
+    setIsRankingOpen: (v: boolean) => void;
     nextCompetition: CompetitionAssignment | null;
 }
 
-function MobileHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, nextCompetition }: HomeViewProps) {
+function MobileHome({ user, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="md:hidden space-y-6 pb-20 px-4 py-6">
             <header className="relative">
@@ -267,7 +272,7 @@ function MobileHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpC
                         </button>
 
                         <button
-                            onClick={() => onNavigate('ranking')}
+                            onClick={() => setIsRankingOpen(true)}
                             className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
@@ -361,7 +366,7 @@ function MobileHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpC
     );
 }
 
-function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, nextCompetition }: HomeViewProps) {
+function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUpCalcOpen, setIsPlateCalcOpen, setIsSushiCounterOpen, setIsRankingOpen, nextCompetition }: HomeViewProps) {
     return (
         <div className="hidden md:block px-8 lg:px-12 py-8 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
@@ -602,7 +607,7 @@ function DesktopHome({ user, onNavigate, navigate, setIs1RMCalcOpen, setIsWarmUp
                         </button>
 
                         <button
-                            onClick={() => onNavigate('ranking')}
+                            onClick={() => setIsRankingOpen(true)}
                             className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
