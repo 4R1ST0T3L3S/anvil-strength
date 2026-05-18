@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
-import { X, Save, Trophy, Palette, Type, Clock, Image as ImageIcon, Layout } from 'lucide-react';
+import { X, Save, Trophy, Palette, Type, Clock, Layout } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -66,14 +66,21 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+            }}
+        >
             <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 className="bg-[#161616] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
             >
-                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#1a1a1a]">
+                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
                     <div className="flex items-center gap-3">
                         <Palette className="text-anvil-red" size={20} />
                         <h3 className="text-white font-black uppercase italic tracking-widest">Personalizar Contador</h3>
@@ -198,7 +205,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                         </div>
 
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div>
                                 <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5 ml-1 flex items-center gap-1">
                                     <Type size={12} /> Tipografía
@@ -214,23 +221,11 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     <option value="black">Black Italic</option>
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5 ml-1 flex items-center gap-1">
-                                    <ImageIcon size={12} /> Fondo (URL)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.backgroundImage || ''}
-                                    onChange={e => setSettings({ ...settings, backgroundImage: e.target.value })}
-                                    placeholder="https://..."
-                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 transition-all text-xs"
-                                />
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-4 sm:p-6 bg-[#1a1a1a] border-t border-white/5 flex gap-3">
+                <div className="p-4 sm:p-6 bg-[#0a0a0a] border-t border-white/5 flex gap-3">
                     <button
                         onClick={onClose}
                         className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-bold uppercase text-xs tracking-widest text-zinc-400 hover:text-white transition-colors"
