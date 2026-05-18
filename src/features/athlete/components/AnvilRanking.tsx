@@ -56,6 +56,10 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
             if (profError) throw profError;
 
             const rankedData = (profiles || [])
+                .filter(profile => {
+                    const email = profile.email?.toLowerCase() || '';
+                    return !email.includes('anvilstrength');
+                })
                 .map(profile => {
                     const squat = profile.squat_pr || 0;
                     const bench = profile.bench_pr || 0;
