@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTAR ESTO
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, ChevronRight, Swords, Activity, Fish, MessageSquare, Gamepad2 } from 'lucide-react';
+import { Users, Trophy, Calendar, User, LayoutDashboard, BookOpen, FlaskConical, Weight, List, Calculator, Swords, Activity, Fish, MessageSquare, Gamepad2 } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
 import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
@@ -181,7 +181,7 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <BookOpen size={16} className="text-yellow-500" /> Anvil Lessons
                     </h2>
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
                         <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 transition-opacity"></div>
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <BookOpen size={64} className="text-yellow-500 rotate-12" />
@@ -209,7 +209,7 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                             mobile={true}
                         />
                     ) : (
-                        <div className="bg-[#252525] p-6 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                        <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
                             <Trophy size={32} className="text-gray-600 mb-3" />
                             <h3 className="text-sm font-bold text-gray-400 italic leading-tight mb-1">
                                 Sin eventos próximos
@@ -226,30 +226,36 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <LayoutDashboard size={16} className="text-anvil-red" /> Coaching Tools
                     </h2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                         <button
                             onClick={() => onNavigate('schedule')}
-                            className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-blue-500 transition-all text-left flex flex-col justify-center active:scale-[0.98]"
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
-                            <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-3">
-                                <Trophy size={20} />
-                            </div>
-                            <div>
-                                <span className="font-bold text-white block text-sm">Agenda Equipo</span>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos</span>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <Trophy size={20} />
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Agenda Equipo</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos</span>
+                                </div>
                             </div>
                         </button>
 
                         <button
                             onClick={() => onNavigate('pwr_analysis')}
-                            className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-orange-500 transition-all text-left flex flex-col justify-center active:scale-[0.98]"
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-orange-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
-                            <div className="bg-orange-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-orange-500 mb-3">
-                                <Activity size={20} />
-                            </div>
-                            <div>
-                                <span className="font-bold text-white block text-sm">PWR Análisis</span>
-                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-orange-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-orange-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-orange-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <Activity size={20} />
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">PWR Análisis</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
+                                </div>
                             </div>
                         </button>
                     </div>
@@ -260,81 +266,70 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <Users size={16} className="text-anvil-red" /> Comunidad
                     </h2>
-                    <div className="space-y-3">
-                        <div
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
                             onClick={() => navigate('/dashboard/chat')}
-                            className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                                        <MessageSquare size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Mensajería</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Chat con Atletas</p>
-                                    </div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <MessageSquare size={20} />
                                 </div>
-                                <ChevronRight size={20} className="text-gray-500" />
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Mensajería</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Chat Directo</span>
+                                </div>
                             </div>
-                        </div>
+                        </button>
 
-                        <div
+                        <button
                             onClick={() => navigate('/dashboard/community')}
-                            className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-yellow-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                                        <Swords size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">La Arena</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Apuesta</p>
-                                    </div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-yellow-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-yellow-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <Swords size={20} />
                                 </div>
-                                <ChevronRight size={20} className="text-gray-500" />
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">La Arena</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Apuestas</span>
+                                </div>
                             </div>
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                        </div>
+                        </button>
 
-                        <div
+                        <button
                             onClick={() => navigate('/dashboard/games')}
-                            className="bg-gradient-to-r from-purple-900/20 to-[#252525] border border-purple-500/20 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer mb-3"
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-purple-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-purple-500/10 rounded-xl text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-                                        <Gamepad2 size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Anvil Games</h3>
-                                        <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Reto Diario</p>
-                                    </div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-purple-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-purple-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-purple-400 mb-auto group-hover:scale-110 transition-transform">
+                                    <Gamepad2 size={20} />
                                 </div>
-                                <ChevronRight size={20} className="text-gray-500" />
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Anvil Games</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Reto Diario</span>
+                                </div>
                             </div>
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                        </div>
+                        </button>
 
-                        <div
+                        <button
                             onClick={() => setIsRankingOpen(true)}
-                            className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 rounded-2xl p-6 relative overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
                         >
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.2)]">
-                                        <Trophy size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-black uppercase italic text-white leading-none mb-1">Ranking</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Leaderboard</p>
-                                    </div>
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-anvil-red/10 w-10 h-10 rounded-xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
+                                    <Trophy size={20} />
                                 </div>
-                                <ChevronRight size={20} className="text-gray-500" />
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Ranking</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Leaderboard</span>
+                                </div>
                             </div>
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -343,42 +338,70 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                     <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <FlaskConical size={16} className="text-anvil-red" /> Anvil Lab Tools
                     </h2>
-                    <div className="space-y-4">
-                        <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
-                            <div className="p-3 bg-green-500/10 rounded-xl text-green-500"><Weight size={24} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase text-sm">Carga de Barra</h3>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Calculadora de Discos</p>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={() => setIsPlateCalcOpen(true)}
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-green-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-green-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-green-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-green-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <Weight size={20} />
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Carga Barra</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calculadora</span>
+                                </div>
                             </div>
-                            <ChevronRight size={18} className="ml-auto text-gray-600" />
-                        </div>
+                        </button>
 
-                        <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
-                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500"><List size={24} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase text-sm">Aproximaciones</h3>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Escalera de Calentamiento</p>
+                        <button
+                            onClick={() => setIsWarmUpCalcOpen(true)}
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <List size={20} />
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Aproximaciones</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calentamiento</span>
+                                </div>
                             </div>
-                            <ChevronRight size={18} className="ml-auto text-gray-600" />
-                        </div>
+                        </button>
 
-                        <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
-                            <div className="p-3 bg-anvil-red/10 rounded-xl text-anvil-red"><Calculator size={24} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase text-sm">Calculadora 1RM</h3>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">RPE & Velocidad</p>
+                        <button
+                            onClick={() => setIs1RMCalcOpen(true)}
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-anvil-red/10 w-10 h-10 rounded-xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
+                                    <Calculator size={20} />
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Calc 1RM</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">RPE & VBT</span>
+                                </div>
                             </div>
-                            <ChevronRight size={18} className="ml-auto text-gray-600" />
-                        </div>
+                        </button>
 
-                        <div onClick={() => setIsSushiCounterOpen(true)} className="bg-[#252525] border border-white/5 p-4 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-transform">
-                            <div className="p-3 bg-cyan-500/10 rounded-xl text-cyan-500"><Fish size={24} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase text-sm">Contador Sushi</h3>
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Calculadora Post-Competición</p>
+                        <button
+                            onClick={() => setIsSushiCounterOpen(true)}
+                            className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-cyan-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[140px]"
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-cyan-500/10 transition-all"></div>
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="bg-cyan-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-cyan-500 mb-auto group-hover:scale-110 transition-transform">
+                                    <Fish size={20} />
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-bold text-white block text-sm leading-tight">Sushi Counter</span>
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Post-Comp.</span>
+                                </div>
                             </div>
-                            <ChevronRight size={18} className="ml-auto text-gray-600" />
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -408,7 +431,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                         <BookOpen size={20} className="text-yellow-500" /> Anvil Lessons
                     </h2>
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-8 flex flex-col justify-center flex-1 relative overflow-hidden group hover:border-yellow-500/30 transition-all">
+                    <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-8 flex flex-col justify-center flex-1 relative overflow-hidden group hover:border-yellow-500/30 transition-all">
                         <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-50 group-hover:opacity-80 transition-opacity"></div>
                         <div className="absolute -top-6 -right-6 text-yellow-500/5 rotate-12"><BookOpen size={120} /></div>
                         <div className="relative z-10 flex flex-col h-full justify-between">
@@ -444,7 +467,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                             />
                         </div>
                     ) : (
-                        <div className="bg-[#252525] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden flex-1 min-h-0">
+                        <div className="bg-[#0a0a0a] border border-white/5 rounded-[2rem] p-12 flex flex-col items-center justify-center text-center relative overflow-hidden flex-1 min-h-0">
                             <div className="w-20 h-20 bg-white/5 rounded-full flex flex-col items-center justify-center text-gray-500 mb-4">
                                 <Trophy size={40} />
                             </div>
@@ -467,7 +490,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                 <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 h-full">
                     <button
                         onClick={() => onNavigate('athletes')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-anvil-red/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
                         <div className="bg-anvil-red/10 w-12 h-12 rounded-xl flex items-center justify-center text-anvil-red mb-4 group-hover:scale-110 transition-transform">
                             <Users size={24} />
@@ -480,7 +503,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
 
                     <button
                         onClick={() => onNavigate('schedule')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-blue-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
                         <div className="bg-blue-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-blue-500 mb-4 group-hover:scale-110 transition-transform">
                             <Trophy size={24} />
@@ -493,7 +516,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
 
                     <button
                         onClick={() => onNavigate('calendar')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-purple-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-purple-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
                         <div className="bg-purple-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-purple-500 mb-4 group-hover:scale-110 transition-transform">
                             <Calendar size={24} />
@@ -506,7 +529,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
 
                     <button
                         onClick={() => onNavigate('profile')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-gray-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-gray-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
                         <div className="bg-gray-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-gray-400 mb-4 group-hover:scale-110 transition-transform">
                             <User size={24} />
@@ -519,7 +542,7 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
 
                     <button
                         onClick={() => onNavigate('pwr_analysis')}
-                        className="bg-[#252525] p-5 rounded-2xl border border-white/5 hover:bg-[#303030] hover:border-orange-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
+                        className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-orange-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
                         <div className="bg-orange-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-orange-500 mb-4 group-hover:scale-110 transition-transform">
                             <Activity size={24} />
@@ -537,50 +560,70 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <Users size={20} className="text-anvil-red" /> Comunidad
                 </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-                    <div onClick={() => navigate('/dashboard/chat')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
-                        <div className="relative z-10 flex items-center gap-6">
-                            <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-[0_0_15px_rgba(59,130,246,0.2)]"><MessageSquare size={32} /></div>
-                            <div>
-                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Mensajería</h3>
-                                <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Chat Directo con Atletas</p>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+                    <button
+                        onClick={() => navigate('/dashboard/chat')}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-blue-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
+                                <MessageSquare size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Mensajería</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Chat Directo</span>
                             </div>
                         </div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
-                    </div>
+                    </button>
 
-                    <div onClick={() => navigate('/dashboard/community')} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-yellow-500/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
-                        <div className="relative z-10 flex items-center gap-6">
-                            <div className="p-4 lg:p-5 bg-yellow-500/10 rounded-xl text-yellow-500 group-hover:bg-yellow-500 group-hover:text-black transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]"><Swords size={32} /></div>
-                            <div>
-                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">La Arena</h3>
-                                <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Apuesta por los nuestros</p>
+                    <button
+                        onClick={() => navigate('/dashboard/community')}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-yellow-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-yellow-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-yellow-500 mb-auto group-hover:scale-110 transition-transform">
+                                <Swords size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">La Arena</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Apuestas</span>
                             </div>
                         </div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
-                    </div>
+                    </button>
 
-                    <div onClick={() => navigate('/dashboard/games')} className="bg-gradient-to-r from-purple-900/20 to-[#252525] border border-purple-500/20 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-purple-500/40 transition-all active:scale-[0.98] relative overflow-hidden h-full">
-                        <div className="relative z-10 flex items-center gap-6">
-                            <div className="p-4 lg:p-5 bg-purple-500/10 rounded-xl text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all shadow-[0_0_15px_rgba(168,85,247,0.2)]"><Gamepad2 size={32} /></div>
-                            <div>
-                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Anvil Games</h3>
-                                <p className="text-xs lg:text-sm font-bold text-purple-400/70 uppercase tracking-widest">Minijuegos de Velocidad</p>
+                    <button
+                        onClick={() => navigate('/dashboard/games')}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-purple-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-purple-500/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-purple-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-purple-400 mb-auto group-hover:scale-110 transition-transform">
+                                <Gamepad2 size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Anvil Games</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Reto Diario</span>
                             </div>
                         </div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-purple-500/10 transition-all"></div>
-                    </div>
+                    </button>
 
-                    <div onClick={() => setIsRankingOpen(true)} className="bg-gradient-to-r from-[#1c1c1c] to-[#252525] border border-white/5 p-8 lg:p-10 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] relative overflow-hidden h-full">
-                        <div className="relative z-10 flex items-center gap-6">
-                            <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all shadow-[0_0_15px_rgba(220,38,38,0.2)]"><Trophy size={32} /></div>
-                            <div>
-                                <h3 className="text-xl lg:text-3xl font-black uppercase italic text-white leading-none mb-2">Ranking</h3>
-                                <p className="text-xs lg:text-sm font-bold text-gray-400 uppercase tracking-widest">Leaderboard del Club</p>
+                    <button
+                        onClick={() => setIsRankingOpen(true)}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-anvil-red/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
+                                <Trophy size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Ranking</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Leaderboard</span>
                             </div>
                         </div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
-                    </div>
+                    </button>
                 </div>
             </div>
 
@@ -589,53 +632,73 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-gray-500 flex items-center gap-2">
                     <FlaskConical size={20} className="text-anvil-red" /> Anvil Lab Tools
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full">
-                    <div onClick={() => setIs1RMCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
-                        <div className="flex items-center gap-5">
-                            <div className="p-4 lg:p-5 bg-anvil-red/10 rounded-xl text-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-all"><Calculator size={32} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Calculadora 1RM</h3>
-                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">RPE & Velocidad</p>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+                    <button
+                        onClick={() => setIsPlateCalcOpen(true)}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-green-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-green-500/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-green-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-green-500 mb-auto group-hover:scale-110 transition-transform">
+                                <Weight size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Carga Barra</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calculadora</span>
                             </div>
                         </div>
-                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
-                    </div>
+                    </button>
 
-                    <div onClick={() => setIsWarmUpCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-blue-500/30 transition-all active:scale-[0.98] h-full">
-                        <div className="flex items-center gap-5">
-                            <div className="p-4 lg:p-5 bg-blue-500/10 rounded-xl text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all"><List size={32} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Aproximaciones</h3>
-                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Escalera de Calentamiento</p>
+                    <button
+                        onClick={() => setIsWarmUpCalcOpen(true)}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-blue-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
+                                <List size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Aproximaciones</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calentamiento</span>
                             </div>
                         </div>
-                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
-                    </div>
+                    </button>
 
-                    <div onClick={() => setIsPlateCalcOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-anvil-red/30 transition-all active:scale-[0.98] h-full">
-                        <div className="flex items-center gap-5">
-                            <div className="p-4 lg:p-5 bg-green-500/10 rounded-xl text-green-500 group-hover:bg-green-600 group-hover:text-white transition-all"><Weight size={32} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Carga de Barra</h3>
-                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Calculadora de Discos</p>
+                    <button
+                        onClick={() => setIs1RMCalcOpen(true)}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-anvil-red/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
+                                <Calculator size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Calc 1RM</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">RPE & VBT</span>
                             </div>
                         </div>
-                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
-                    </div>
+                    </button>
 
-                    <div onClick={() => setIsSushiCounterOpen(true)} className="bg-[#252525] border border-white/5 p-8 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-cyan-500/30 transition-all active:scale-[0.98] h-full">
-                        <div className="flex items-center gap-5">
-                            <div className="p-4 lg:p-5 bg-cyan-500/10 rounded-xl text-cyan-500 group-hover:bg-cyan-600 group-hover:text-white transition-all"><Fish size={32} /></div>
-                            <div>
-                                <h3 className="font-bold text-white uppercase tracking-tight text-lg lg:text-xl">Sushi Counter</h3>
-                                <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mt-1">Calculadora de Macros</p>
+                    <button
+                        onClick={() => setIsSushiCounterOpen(true)}
+                        className="bg-[#0a0a0a] p-6 lg:p-8 rounded-3xl border border-white/5 hover:bg-[#111] hover:border-cyan-500/50 transition-all group text-left flex flex-col justify-center active:scale-[0.98] relative overflow-hidden h-full min-h-[160px]"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
+                        <div className="relative z-10 flex flex-col h-full">
+                            <div className="bg-cyan-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-cyan-500 mb-auto group-hover:scale-110 transition-transform">
+                                <Fish size={24} className="lg:w-7 lg:h-7" />
+                            </div>
+                            <div className="mt-4">
+                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Sushi Counter</span>
+                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Post-Comp.</span>
                             </div>
                         </div>
-                        <ChevronRight size={24} className="text-gray-600 group-hover:text-white transition-colors" />
-                    </div>
+                    </button>
                 </div>
             </div>
 
         </div>
     );
-}
+}
