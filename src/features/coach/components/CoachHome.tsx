@@ -233,12 +233,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <Trophy size={20} />
+                                <div className="text-blue-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Trophy size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Agenda Equipo</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Agenda Equipo</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos</span>
                                 </div>
                             </div>
                         </button>
@@ -249,12 +249,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-orange-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-orange-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-orange-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <Activity size={20} />
+                                <div className="text-orange-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Activity size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">PWR Análisis</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">PWR Análisis</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
                                 </div>
                             </div>
                         </button>
@@ -273,12 +273,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <MessageSquare size={20} />
+                                <div className="text-blue-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <MessageSquare size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Mensajería</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Chat Directo</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Mensajería</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Chat Directo</span>
                                 </div>
                             </div>
                         </button>
@@ -289,12 +289,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-yellow-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-yellow-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <Swords size={20} />
+                                <div className="text-yellow-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Swords size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">La Arena</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Apuestas</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">La Arena</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Apuestas</span>
                                 </div>
                             </div>
                         </button>
@@ -305,12 +305,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-purple-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-purple-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-purple-400 mb-auto group-hover:scale-110 transition-transform">
-                                    <Gamepad2 size={20} />
+                                <div className="text-purple-400 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Gamepad2 size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Anvil Games</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Reto Diario</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Anvil Games</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Reto Diario</span>
                                 </div>
                             </div>
                         </button>
@@ -321,12 +321,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-anvil-red/10 w-10 h-10 rounded-xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
-                                    <Trophy size={20} />
+                                <div className="text-anvil-red mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Trophy size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Ranking</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Leaderboard</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Ranking</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Leaderboard</span>
                                 </div>
                             </div>
                         </button>
@@ -345,12 +345,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-green-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-green-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-green-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <Weight size={20} />
+                                <div className="text-green-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Weight size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Carga Barra</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calculadora</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Carga Barra</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calculadora</span>
                                 </div>
                             </div>
                         </button>
@@ -361,12 +361,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-blue-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <List size={20} />
+                                <div className="text-blue-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <List size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Aproximaciones</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calentamiento</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Aproximaciones</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calentamiento</span>
                                 </div>
                             </div>
                         </button>
@@ -377,12 +377,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-anvil-red/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-anvil-red/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-anvil-red/10 w-10 h-10 rounded-xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
-                                    <Calculator size={20} />
+                                <div className="text-anvil-red mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Calculator size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Calc 1RM</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">RPE & VBT</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Calc 1RM</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">RPE & VBT</span>
                                 </div>
                             </div>
                         </button>
@@ -393,12 +393,12 @@ function MobileCoachHome({ user, stats, getGreeting, onNavigate, navigate, setIs
                         >
                             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full -mr-8 -mt-8 blur-xl group-hover:bg-cyan-500/10 transition-all"></div>
                             <div className="relative z-10 flex flex-col h-full">
-                                <div className="bg-cyan-500/10 w-10 h-10 rounded-xl flex items-center justify-center text-cyan-500 mb-auto group-hover:scale-110 transition-transform">
-                                    <Fish size={20} />
+                                <div className="text-cyan-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Fish size={28} strokeWidth={1.5} />
                                 </div>
-                                <div className="mt-4">
-                                    <span className="font-bold text-white block text-sm leading-tight">Sushi Counter</span>
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Post-Comp.</span>
+                                <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-lg leading-tight tracking-tight">Sushi Counter</span>
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Post-Comp.</span>
                                 </div>
                             </div>
                         </button>
@@ -492,12 +492,12 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                         onClick={() => onNavigate('athletes')}
                         className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-anvil-red/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
-                        <div className="bg-anvil-red/10 w-12 h-12 rounded-xl flex items-center justify-center text-anvil-red mb-4 group-hover:scale-110 transition-transform">
-                            <Users size={24} />
+                        <div className="text-anvil-red mb-auto group-hover:scale-110 transition-transform origin-left">
+                            <Users size={32} strokeWidth={1.5} />
                         </div>
-                        <div>
-                            <span className="font-bold text-white block text-lg">Mis Atletas</span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Gestión de deportistas</span>
+                        <div className="mt-auto pt-4">
+                            <span className="font-black text-white block text-xl leading-tight tracking-tight">Mis Atletas</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Gestión de deportistas</span>
                         </div>
                     </button>
 
@@ -505,12 +505,12 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                         onClick={() => onNavigate('schedule')}
                         className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-blue-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
-                        <div className="bg-blue-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-blue-500 mb-4 group-hover:scale-110 transition-transform">
-                            <Trophy size={24} />
+                        <div className="text-blue-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                            <Trophy size={32} strokeWidth={1.5} />
                         </div>
-                        <div>
-                            <span className="font-bold text-white block text-lg">Agenda Equipo</span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Competiciones y eventos</span>
+                        <div className="mt-auto pt-4">
+                            <span className="font-black text-white block text-xl leading-tight tracking-tight">Agenda Equipo</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Competiciones y eventos</span>
                         </div>
                     </button>
 
@@ -518,12 +518,12 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                         onClick={() => onNavigate('calendar')}
                         className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-purple-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
-                        <div className="bg-purple-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-purple-500 mb-4 group-hover:scale-110 transition-transform">
-                            <Calendar size={24} />
+                        <div className="text-purple-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                            <Calendar size={32} strokeWidth={1.5} />
                         </div>
-                        <div>
-                            <span className="font-bold text-white block text-lg">Calendario AEP</span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos oficiales</span>
+                        <div className="mt-auto pt-4">
+                            <span className="font-black text-white block text-xl leading-tight tracking-tight">Calendario AEP</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Eventos oficiales</span>
                         </div>
                     </button>
 
@@ -531,12 +531,12 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                         onClick={() => onNavigate('profile')}
                         className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-gray-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
-                        <div className="bg-gray-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-gray-400 mb-4 group-hover:scale-110 transition-transform">
-                            <User size={24} />
+                        <div className="text-gray-400 mb-auto group-hover:scale-110 transition-transform origin-left">
+                            <User size={32} strokeWidth={1.5} />
                         </div>
-                        <div>
-                            <span className="font-bold text-white block text-lg">Mi Perfil</span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Ajustes de cuenta</span>
+                        <div className="mt-auto pt-4">
+                            <span className="font-black text-white block text-xl leading-tight tracking-tight">Mi Perfil</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Ajustes de cuenta</span>
                         </div>
                     </button>
 
@@ -544,12 +544,12 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                         onClick={() => onNavigate('pwr_analysis')}
                         className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 hover:bg-[#111] hover:border-orange-500/50 transition-all group text-left flex flex-col h-full justify-center active:scale-[0.98]"
                     >
-                        <div className="bg-orange-500/10 w-12 h-12 rounded-xl flex items-center justify-center text-orange-500 mb-4 group-hover:scale-110 transition-transform">
-                            <Activity size={24} />
+                        <div className="text-orange-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                            <Activity size={32} strokeWidth={1.5} />
                         </div>
-                        <div>
-                            <span className="font-bold text-white block text-lg">PWR Análisis</span>
-                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
+                        <div className="mt-auto pt-4">
+                            <span className="font-black text-white block text-xl leading-tight tracking-tight">PWR Análisis</span>
+                            <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Análisis VBT</span>
                         </div>
                     </button>
                 </div>
@@ -567,13 +567,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-blue-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
-                                <MessageSquare size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Mensajería</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Chat Directo</span>
-                            </div>
+                            <div className="text-blue-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <MessageSquare size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Mensajería</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Chat Directo</span>
+                                </div>
                         </div>
                     </button>
 
@@ -583,13 +583,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-yellow-500/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-yellow-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-yellow-500 mb-auto group-hover:scale-110 transition-transform">
-                                <Swords size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">La Arena</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Apuestas</span>
-                            </div>
+                            <div className="text-yellow-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Swords size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">La Arena</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Apuestas</span>
+                                </div>
                         </div>
                     </button>
 
@@ -599,13 +599,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-purple-500/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-purple-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-purple-400 mb-auto group-hover:scale-110 transition-transform">
-                                <Gamepad2 size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Anvil Games</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Reto Diario</span>
-                            </div>
+                            <div className="text-purple-400 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Gamepad2 size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Anvil Games</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Reto Diario</span>
+                                </div>
                         </div>
                     </button>
 
@@ -615,13 +615,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-anvil-red/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
-                                <Trophy size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Ranking</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Leaderboard</span>
-                            </div>
+                            <div className="text-anvil-red mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Trophy size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Ranking</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Leaderboard</span>
+                                </div>
                         </div>
                     </button>
                 </div>
@@ -639,13 +639,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-green-500/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-green-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-green-500 mb-auto group-hover:scale-110 transition-transform">
-                                <Weight size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Carga Barra</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calculadora</span>
-                            </div>
+                            <div className="text-green-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Weight size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Carga Barra</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calculadora</span>
+                                </div>
                         </div>
                     </button>
 
@@ -655,13 +655,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-blue-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-blue-500 mb-auto group-hover:scale-110 transition-transform">
-                                <List size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Aproximaciones</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calentamiento</span>
-                            </div>
+                            <div className="text-blue-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <List size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Aproximaciones</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Calentamiento</span>
+                                </div>
                         </div>
                     </button>
 
@@ -671,13 +671,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-anvil-red/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-anvil-red/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-anvil-red/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-anvil-red mb-auto group-hover:scale-110 transition-transform">
-                                <Calculator size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Calc 1RM</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">RPE & VBT</span>
-                            </div>
+                            <div className="text-anvil-red mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Calculator size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Calc 1RM</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">RPE & VBT</span>
+                                </div>
                         </div>
                     </button>
 
@@ -687,13 +687,13 @@ function DesktopCoachHome({ user, stats, getGreeting, onNavigate, navigate, setI
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full -mr-10 -mt-10 blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
                         <div className="relative z-10 flex flex-col h-full">
-                            <div className="bg-cyan-500/10 w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center text-cyan-500 mb-auto group-hover:scale-110 transition-transform">
-                                <Fish size={24} className="lg:w-7 lg:h-7" />
-                            </div>
-                            <div className="mt-4">
-                                <span className="font-bold text-white block text-sm lg:text-lg leading-tight">Sushi Counter</span>
-                                <span className="text-[10px] lg:text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Post-Comp.</span>
-                            </div>
+                            <div className="text-cyan-500 mb-auto group-hover:scale-110 transition-transform origin-left">
+                                    <Fish size={32} strokeWidth={1.5} className="lg:w-10 lg:h-10" />
+                                </div>
+                            <div className="mt-auto pt-4">
+                                    <span className="font-black text-white block text-xl lg:text-2xl leading-tight tracking-tight">Sushi Counter</span>
+                                    <span className="text-[11px] lg:text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">Post-Comp.</span>
+                                </div>
                         </div>
                     </button>
                 </div>
