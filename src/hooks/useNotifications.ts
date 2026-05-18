@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { AppNotification } from '../types/database';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

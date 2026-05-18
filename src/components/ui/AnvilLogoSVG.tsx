@@ -1,4 +1,3 @@
-import React from 'react';
 
 export function AnvilLogoSVG({ className = "", width = 24, height = 24 }: { className?: string, width?: number | string, height?: number | string }) {
     return (

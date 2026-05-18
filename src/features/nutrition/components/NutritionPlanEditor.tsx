@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAthleteNutritionPlan, useCreateNutritionPlan, useUpdateNutritionPlan } from '../../../hooks/useNutrition';
 import { useUser } from '../../../hooks/useUser';
 import { MealBuilder } from './MealBuilder';
-import { Activity, Apple, Target, Settings, Download, Plus, X } from 'lucide-react';
+import { Apple, Target, Settings, Download, Plus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PDFEditorModal } from './PDFEditorModal';
 import { FloatingMacroTracker } from './FloatingMacroTracker';

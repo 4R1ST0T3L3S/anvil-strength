@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, Save, Trophy, Palette, Type, Clock, Image as ImageIcon, Layout } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';

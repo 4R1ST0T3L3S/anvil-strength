@@ -43,7 +43,7 @@ export function NotificationProvider({ children, user }: { children: React.React
                 schema: 'public', 
                 table: 'chat_messages',
                 filter: `receiver_id=eq.${user.id}`
-            }, (payload) => {
+            }, (_payload) => {
                 // If the user is NOT on the chat page, show notification
                 if (window.location.pathname !== '/dashboard/chat') {
                     addNotification('Nuevo Mensaje', 'Has recibido un mensaje del staff.', 'info');

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { RefreshCcw, Eye } from 'lucide-react';
@@ -18,7 +18,7 @@ interface FlashAnvil {
     rotation: number;
 }
 
-export function AnvilCounterGame({ user, onSaveScore, onClose }: AnvilCounterGameProps) {
+export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCounterGameProps) {
     const [status, setStatus] = useState<'idle' | 'flashing' | 'guessing' | 'gameover'>('idle');
     const [score, setScore] = useState(0); // Rondas superadas
     const [anvils, setAnvils] = useState<FlashAnvil[]>([]);
@@ -50,7 +50,7 @@ export function AnvilCounterGame({ user, onSaveScore, onClose }: AnvilCounterGam
 
     const generateAnvils = (count: number) => {
         if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
+        containerRef.current.getBoundingClientRect(); // Used for bounds reference (kept for layout trigger)
         
         const newAnvils: FlashAnvil[] = [];
         for (let i = 0; i < count; i++) {

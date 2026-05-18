@@ -74,31 +74,31 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
 
     return (
         <header
-            className={`fixed w-full z-50 transition-all duration-500 ${isScrolled || !isTransparentPage 
-                ? 'bg-[#050505]/90 backdrop-blur-md border-b border-white/5 py-3 shadow-2xl' 
-                : 'bg-transparent py-8'}`}
+            className={`fixed w-full z-50 transition-all duration-300 ease-in-out border-b ${isScrolled || !isTransparentPage 
+                ? 'bg-[#050505]/90 backdrop-blur-md border-white/5 py-3 shadow-2xl' 
+                : 'bg-transparent border-transparent py-6'}`}
         >
-            <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
-                {/* Logo */}
-                <div className="flex-shrink-0">
+            <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between relative min-h-[80px]">
+                {/* Logo Area */}
+                <div className="flex-shrink-0 flex items-center">
                     <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); window.scrollTo(0, 0); }} className="block group">
                         <img
                             src="/logo-dark-removebg-preview.png"
                             alt="Anvil Strength Logo"
-                            className="h-8 md:h-10 w-auto object-contain group-hover:scale-110 transition-transform duration-500"
+                            className="h-12 md:h-16 w-auto object-contain group-hover:scale-110 transition-transform duration-500"
                         />
                     </a>
                 </div>
 
-                {/* Desktop Navigation */}
-                <nav className="hidden lg:flex items-center space-x-10">
+                {/* Desktop Navigation - Dynamically Centered in Available Space */}
+                <nav className="hidden xl:flex flex-1 items-center justify-center space-x-8 px-8">
                     {navLinks.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className={`text-xs font-black tracking-[0.2em] hover:text-anvil-red transition-all duration-300 uppercase font-bebas italic ${
-                                location.pathname === link.href ? 'text-anvil-red' : 'text-white/70'
+                            className={`text-lg font-black tracking-[0.15em] hover:text-white transition-all duration-300 uppercase font-bebas italic ${
+                                location.pathname === link.href ? 'text-anvil-red' : 'text-gray-400'
                             }`}
                         >
                             {link.name}
@@ -106,20 +106,25 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                     ))}
                 </nav>
 
-                <div className="flex items-center space-x-4">
+                {/* Right Actions */}
+                <div className="flex-shrink-0 flex items-center space-x-6">
                     <div className="hidden sm:block">
-                        <SmartAuthButton variant="ghost" onLoginClick={onLoginClick} className="text-white hover:text-anvil-red transition-colors" />
+                        <SmartAuthButton 
+                            variant="ghost" 
+                            onLoginClick={onLoginClick} 
+                            className="!font-bebas !italic !tracking-[0.1em] !text-base !py-1.5 !px-5 hover:!text-white hover:!border-white hover:!bg-white/5 transition-all duration-300 border border-white/20 rounded-lg" 
+                        />
                     </div>
                     
-                    <button className="text-white hover:text-anvil-red relative group transition-colors">
-                        <ShoppingBag className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                        <span className="absolute -top-2 -right-2 bg-anvil-red text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)]">0</span>
+                    <button className="text-gray-400 hover:text-white relative group transition-colors">
+                        <ShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                        <span className="absolute -top-2 -right-2 bg-anvil-red text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)]">0</span>
                     </button>
 
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="lg:hidden text-white p-2 hover:bg-white/5 rounded-xl transition-colors"
+                        className="xl:hidden text-gray-400 p-2 hover:bg-white/5 rounded-xl transition-colors"
                     >
                         <Menu className="h-6 w-6" />
                     </button>

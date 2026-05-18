@@ -8,7 +8,6 @@ import {
     User,
     Activity,
     LogOut,
-    MessageSquare,
     Globe
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

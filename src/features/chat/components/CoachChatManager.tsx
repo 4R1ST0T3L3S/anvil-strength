@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ChatMessage } from '../../../types/database';
-import { Search, MessageSquare, ChevronRight, Loader, ChevronLeft } from 'lucide-react';
+import { Search, MessageSquare, Loader, ChevronLeft } from 'lucide-react';
 import { AthleteChatView } from '../pages/AthleteChatView';
 import { useNavigate } from 'react-router-dom';
 

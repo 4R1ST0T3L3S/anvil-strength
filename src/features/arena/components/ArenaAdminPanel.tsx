@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X, Trash2, CheckCircle, Swords, Users, HelpCircle, TrendingUp } from 'lucide-react';
+import { Plus, X, Trash2, Swords, Users, HelpCircle, TrendingUp } from 'lucide-react';
 import { ArenaBet, ArenaOption, BetType } from '../../../types/database';
 
 interface ArenaAdminPanelProps {

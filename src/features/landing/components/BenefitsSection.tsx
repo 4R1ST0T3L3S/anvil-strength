@@ -36,9 +36,7 @@ export function BenefitsSection() {
 
     return (
         <section id="beneficios" className="py-32 bg-[#050505] relative overflow-hidden">
-            {/* Background Accents */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-anvil-red/5 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-[100px] pointer-events-none" />
+            {/* Background Accents removed for uniform background */}
 
             <div className="max-w-[1400px] mx-auto px-6 relative z-10">
                 <div className="text-center mb-20">

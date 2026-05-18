@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../../../lib/supabase';
-import { X, Trophy, Medal, User as UserIcon } from 'lucide-react';
+import { X, Trophy, User as UserIcon } from 'lucide-react';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
 import { motion } from 'framer-motion';
 
@@ -27,7 +27,7 @@ interface RankedAthlete {
     anvil_points: number;
 }
 
-export function AnvilRanking({ isOpen, onClose, user, onBack }: AnvilRankingProps) {
+export function AnvilRanking({ isOpen, onClose, user: _user, onBack }: AnvilRankingProps) {
     // If used as a view in dashboard, it's always "open"
     const isModal = isOpen !== undefined;
     const isVisible = isModal ? isOpen : true;

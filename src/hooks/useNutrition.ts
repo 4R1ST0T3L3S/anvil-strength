@@ -48,7 +48,7 @@ export function useCreateNutritionPlan() {
 export function useUpdateNutritionPlan() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ planId, updates, athleteId }: { planId: string, updates: Partial<NutritionPlan>, athleteId: string }) => 
+        mutationFn: ({ planId, updates }: { planId: string, updates: Partial<NutritionPlan>, athleteId: string }) => 
             nutritionService.updateNutritionPlan(planId, updates),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: NUTRITION_KEYS.plan(variables.athleteId) });
@@ -65,7 +65,7 @@ export function useUpdateNutritionPlan() {
 export function useCreateMeal() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ mealData, athleteId }: { mealData: Partial<Meal>, athleteId: string }) => 
+        mutationFn: ({ mealData }: { mealData: Partial<Meal>, athleteId: string }) => 
             nutritionService.createMeal(mealData),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: NUTRITION_KEYS.plan(variables.athleteId) });
@@ -78,7 +78,7 @@ export function useCreateMeal() {
 export function useDeleteMeal() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ mealId, athleteId }: { mealId: string, athleteId: string }) => 
+        mutationFn: ({ mealId }: { mealId: string, athleteId: string }) => 
             nutritionService.deleteMeal(mealId),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: NUTRITION_KEYS.plan(variables.athleteId) });
@@ -126,7 +126,7 @@ export function useAddFoodToMeal() {
             }
             return { previousPlan };
         },
-        onError: (err, variables, context) => {
+        onError: (_err, variables, context) => {
             if (context?.previousPlan) {
                 queryClient.setQueryData(NUTRITION_KEYS.plan(variables.athleteId), context.previousPlan);
             }
@@ -162,7 +162,7 @@ export function useRemoveFoodFromMeal() {
             });
             return { previousPlan };
         },
-        onError: (err, variables, context) => {
+        onError: (_err, variables, context) => {
             if (context?.previousPlan) {
                 queryClient.setQueryData(NUTRITION_KEYS.plan(variables.athleteId), context.previousPlan);
             }

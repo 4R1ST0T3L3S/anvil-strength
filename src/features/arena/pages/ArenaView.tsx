@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Swords, X, TrendingUp, History, Info, Loader, Plus, Trash2, Send } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Swords, X, TrendingUp, History, Info, Loader, Trash2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';

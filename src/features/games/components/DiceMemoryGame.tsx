@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { Trophy, RefreshCcw, Dices } from 'lucide-react';
@@ -9,7 +9,7 @@ interface DiceMemoryGameProps {
     onClose: () => void;
 }
 
-export function DiceMemoryGame({ user, onSaveScore, onClose }: DiceMemoryGameProps) {
+export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemoryGameProps) {
     const [sequence, setSequence] = useState<number[]>([]);
     const [playerSequence, setPlayerSequence] = useState<number[]>([]);
     const [status, setStatus] = useState<'idle' | 'showing' | 'playing' | 'gameover'>('idle');

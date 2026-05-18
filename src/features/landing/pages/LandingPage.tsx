@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
-import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle, MapPin } from 'lucide-react';
+import { Trophy, Mail, Instagram, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
@@ -14,7 +14,7 @@ import { coaches, Coach } from '../../../data/coaches';
 import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 // @ts-ignore
-import { Bubble } from "@typebot.io/react";
+import { Popup } from "@typebot.io/react";
 
 const featuredAchievements = [
     {
@@ -44,21 +44,12 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(true);
-    const [isPaused, setIsPaused] = useState(false);
-    const [isManualMode, setIsManualMode] = useState(false);
-    const [lastInteraction, setLastInteraction] = useState(() => Date.now());
+    const [isPaused] = useState(false);
+    const isManualMode = false;
     const [selectedAchievement, setSelectedAchievement] = useState<any | null>(null);
     const [isAllAchievementsModalOpen, setIsAllAchievementsModalOpen] = useState(false);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const botButton = document.querySelector('.typebot-bubble-button');
-            if (botButton) {
-                (botButton as HTMLElement).style.display = 'none';
-            }
-        }, 100);
-        return () => clearInterval(interval);
-    }, []);
+
 
     useEffect(() => {
         if (isPaused || isManualMode) return;
@@ -79,26 +70,6 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
         }
     }, [carouselIndex]);
 
-    const handleManualNav = (direction: 'prev' | 'next') => {
-        setIsManualMode(true);
-        setLastInteraction(Date.now());
-        if (direction === 'next') {
-            setIsTransitioning(true);
-            setCarouselIndex((prev) => prev + 1);
-        } else {
-            if (carouselIndex === 0) {
-                setIsTransitioning(false);
-                setCarouselIndex(athletes.length);
-                setTimeout(() => {
-                    setIsTransitioning(true);
-                    setCarouselIndex(athletes.length - 1);
-                }, 10);
-            } else {
-                setIsTransitioning(true);
-                setCarouselIndex((prev) => prev - 1);
-            }
-        }
-    };
 
     const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
         e.preventDefault();
@@ -174,7 +145,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.8, duration: 0.8 }}
-                        className="text-xs md:text-sm text-gray-400 mb-12 font-mono tracking-[0.4em] uppercase mt-4"
+                        className="text-base md:text-xl text-gray-300 font-bold mb-12 font-mono tracking-[0.4em] uppercase mt-4"
                     >
                         WHERE CHAMPIONS ARE FORGED
                     </motion.p>
@@ -460,7 +431,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
             <AchievementModal isOpen={!!selectedAchievement} onClose={() => setSelectedAchievement(null)} achievement={selectedAchievement} />
             <AllAchievementsModal isOpen={isAllAchievementsModalOpen} onClose={() => setIsAllAchievementsModalOpen(false)} achievements={featuredAchievements} onSelect={setSelectedAchievement} />
 
-            <Bubble typebot="lead-generation-hhwa24t" apiHost="https://typebot.io" />
+            <Popup typebot="lead-generation-hhwa24t" apiHost="https://typebot.io" />
 
             <motion.div
                 animate={{ y: [0, -10, 0] }}
@@ -472,9 +443,9 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         console.warn('Typebot is not initialized yet');
                     }
                 }}
-                className="fixed bottom-6 right-6 z-[100] cursor-pointer group"
+                className="fixed bottom-6 left-6 z-[100] cursor-pointer group"
             >
-                <div className="absolute -top-12 right-0 bg-white text-black text-[8px] font-black px-3 py-1 rounded-full whitespace-nowrap border-2 border-anvil-red">¿HABLAMOS? 🦍</div>
+                <div className="absolute -top-12 left-0 bg-white text-black text-[8px] font-black px-3 py-1 rounded-full whitespace-nowrap border-2 border-anvil-red">¿HABLAMOS? 🦍</div>
                 <AnvilMascot className="w-24 h-24" />
             </motion.div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Check, MessageSquare, Trophy, Dumbbell, Apple, Info, X } from 'lucide-react';
+import { Bell, MessageSquare, Trophy, Dumbbell, Apple, Info } from 'lucide-react';
 import { useNotifications } from '../../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';

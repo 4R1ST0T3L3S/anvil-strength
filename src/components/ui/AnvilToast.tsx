@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, CheckCircle, XCircle, Info, Coins, X } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, Coins, X } from 'lucide-react';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'reward';
 

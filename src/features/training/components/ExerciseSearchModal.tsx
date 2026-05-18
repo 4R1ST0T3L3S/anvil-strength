@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, X, Plus, Loader2, Dumbbell } from 'lucide-react';
 import { ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';

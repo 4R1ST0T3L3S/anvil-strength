@@ -1,4 +1,4 @@
-import React, { useState, useRef, Fragment } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Download, Palette, Type, Image, LayoutTemplate, Loader2, Sparkles } from 'lucide-react';
 import { NutritionPlan } from '../../../types/nutrition';
 import html2canvas from 'html2canvas';

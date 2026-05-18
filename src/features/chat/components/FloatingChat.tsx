@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageSquare, Maximize2, Minimize2, Send } from 'lucide-react';
+import { X, Maximize2, Minimize2 } from 'lucide-react';
 import { AthleteChatView } from '../pages/AthleteChatView';
 import { UserProfile } from '../../../hooks/useUser';
 

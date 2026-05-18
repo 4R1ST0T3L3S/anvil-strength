@@ -18,7 +18,6 @@ import {
     Gamepad2,
     Utensils,
     User,
-    ChevronLeft
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader } from 'lucide-react';

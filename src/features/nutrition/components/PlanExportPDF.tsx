@@ -6,7 +6,7 @@ interface PlanExportPDFProps {
     currentMacros: { kcal: number; prot: number; carbs: number; fats: number };
 }
 
-export function PlanExportPDF({ plan, user, currentMacros }: PlanExportPDFProps) {
+export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros }: PlanExportPDFProps) {
     const meals = plan.meals || [];
 
     // Group foods by alternative_group_id within each meal
@@ -133,7 +133,7 @@ export function PlanExportPDF({ plan, user, currentMacros }: PlanExportPDFProps)
                                 </tr>
                             </thead>
                             <tbody>
-                                {groups.map((group, gIdx) => (
+                                {groups.map((group) => (
                                     group.map((mf: any, idx: number) => {
                                         if (!mf.food) return null;
                                         const mult = mf.amount_g / 100;

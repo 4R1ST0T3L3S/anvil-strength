@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Pill, Wand2, Calculator, Check, X as XIcon } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Wand2, Calculator, Check, X as XIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Meal, MealFood, FoodItem, FoodCategory } from '../../../types/nutrition';
 import { useCreateMeal, useDeleteMeal, useAddFoodToMeal, useRemoveFoodFromMeal, useUpdateBulkMealFoods } from '../../../hooks/useNutrition';
@@ -215,7 +215,6 @@ interface MealCardProps {
 
 function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativeSearch, isSearching, onSearchClose, onFoodSelected, referenceFood, onBulkUpdate }: MealCardProps) {
     const [isExpanded, setIsExpanded] = useState(true);
-    const [showSupps, setShowSupps] = useState(false);
     const [isAdjusting, setIsAdjusting] = useState(false);
     const [adjustTargets, setAdjustTargets] = useState({ protein: 0, carbs: 0, fats: 0 });
     const [optimizedProposals, setOptimizedProposals] = useState<any[] | null>(null);

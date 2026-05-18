@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Apple, Check, Star, Settings2, X } from 'lucide-react';
+import { Search, Check, Star, X } from 'lucide-react';
 import { useSearchFoodItems } from '../../../hooks/useNutrition';
 import { FoodItem } from '../../../types/nutrition';
 

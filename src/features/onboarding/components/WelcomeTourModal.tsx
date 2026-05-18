@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ArrowRight, Sparkles, X } from 'lucide-react';
-import { pointsService } from '../../../services/pointsService';
 import { useUser } from '../../../hooks/useUser';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 
@@ -10,9 +9,8 @@ interface WelcomeTourModalProps {
     onClose: () => void;
 }
 
-export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onClose }) => {
+export function WelcomeTourModal({ isOpen, onClose }: WelcomeTourModalProps) {
     const { data: user } = useUser();
-    const [step, setStep] = useState(1);
     const [pointsAwarded, setPointsAwarded] = useState(false);
 
     useEffect(() => {
@@ -146,4 +144,4 @@ export const WelcomeTourModal: React.FC<WelcomeTourModalProps> = ({ isOpen, onCl
             </div>
         </AnimatePresence>
     );
-};
+}

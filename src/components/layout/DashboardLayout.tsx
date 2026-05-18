@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { LogOut, Globe, Bell } from 'lucide-react';
+import { LogOut, Globe } from 'lucide-react';
 import { useUser } from '../../hooks/useUser';
 import { NotificationsPopover } from '../ui/NotificationsPopover';
 

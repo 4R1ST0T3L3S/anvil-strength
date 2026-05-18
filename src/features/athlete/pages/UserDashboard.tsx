@@ -8,7 +8,6 @@ import {
     User,
     Globe,
     LogOut,
-    Sparkles,
     ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

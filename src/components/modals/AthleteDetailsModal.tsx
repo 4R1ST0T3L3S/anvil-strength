@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trophy, Dumbbell, Activity } from 'lucide-react';
+import { X, Trophy, Activity } from 'lucide-react';
 import { Athlete } from '../../data/athletes';
 
 interface AthleteDetailsModalProps {

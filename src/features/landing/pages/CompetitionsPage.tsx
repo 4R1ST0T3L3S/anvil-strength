@@ -309,7 +309,7 @@ interface RosterModalProps {
 
 function RosterModal({ event, onClose }: RosterModalProps) {
     const [activeIndex, setActiveIndex] = useState(0);
-    const [direction, setDirection] = useState(0);
+    const [_direction, setDirection] = useState(0);
     const dragX = useMotionValue(0);
 
     const athletes = event.athletes;
@@ -324,7 +324,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
 
     const goTo = useCallback((newIndex: number, dir: number) => {
         setDirection(dir);
-        setActiveIndex((prev) => (newIndex + total) % total);
+        setActiveIndex((_prev) => (newIndex + total) % total);
     }, [total]);
 
     const handleDragEnd = useCallback((_: unknown, info: { offset: { x: number } }) => {
@@ -389,7 +389,6 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                 if (Math.abs(relIndex) > 1) return null;
 
                                 const isCenter = relIndex === 0;
-                                const fullData = athletesData.find(a => a.name === athlete.full_name);
                                 const rosterPhoto = getAthleteRosterPhoto(athlete.full_name);
 
                                 return (

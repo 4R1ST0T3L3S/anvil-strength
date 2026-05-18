@@ -26,7 +26,7 @@ const LEVEL_CONFIG = [
     { anvils: 5, dummies: 20, speedMultiplier: 2 }
 ];
 
-export function AnvilHuntGame({ user, onSaveScore, onClose }: AnvilHuntGameProps) {
+export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGameProps) {
     const [status, setStatus] = useState<'idle' | 'playing' | 'gameover'>('idle');
     const [level, setLevel] = useState(0);
     const [squares, setSquares] = useState<MovingSquare[]>([]);
