@@ -39,7 +39,7 @@ export function AdminDashboard() {
     };
 
     useEffect(() => {
-        if (['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser?.email || '')) {
+        if (['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser?.email?.toLowerCase() || '')) {
             loadUsers();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,7 +174,7 @@ export function AdminDashboard() {
         );
     }
 
-    if (!currentUser || !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser.email || '')) {
+    if (!currentUser || !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser.email?.toLowerCase() || '')) {
         return <Navigate to="/" replace />;
     }
 

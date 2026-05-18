@@ -178,7 +178,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
             <Route path="/admin" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : !user?.is_developer ? (
+                ) : (!['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email?.toLowerCase() || '')) ? (
                     <Navigate to="/" replace />
                 ) : (
                     <Suspense fallback={<DashboardSkeleton />}>
