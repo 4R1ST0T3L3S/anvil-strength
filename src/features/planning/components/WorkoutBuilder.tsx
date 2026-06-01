@@ -937,6 +937,8 @@ interface ExerciseCardProps {
 }
 
 function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onOpenVbtChart }: ExerciseCardProps) {
+    const [modifierInput, setModifierInput] = useState('');
+
     if (!sessionExercise) {
         console.error("ExerciseCard received null sessionExercise");
         return null;
@@ -945,8 +947,6 @@ function ExerciseCard({ sessionExercise, onUpdateExercise, onAddSet, onDuplicate
     const exerciseName = sessionExercise?.exercise?.name || "Ejercicio desconocido";
     const isVariant = exerciseName.toLowerCase().includes('variante') || exerciseName === 'Personalizado';
     const hasVideo = !!sessionExercise.exercise?.video_url;
-
-    const [modifierInput, setModifierInput] = useState('');
 
     const handleAddModifier = async (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && modifierInput.trim()) {

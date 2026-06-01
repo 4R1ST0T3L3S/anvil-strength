@@ -24,10 +24,6 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
     const [customGroup, setCustomGroup] = useState('Otros');
     const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        loadExercises();
-    }, []);
-
     const loadExercises = async () => {
         try {
             setLoading(true);
@@ -40,6 +36,10 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadExercises();
+    }, []);
 
     const filteredExercises = useMemo(() => {
         let filtered = exercises;

@@ -179,6 +179,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         <div className="w-full md:w-auto">
                             <SmartAuthButton
                                 variant="ghost"
+                                onLoginClick={onLoginClick}
                                 className="w-full py-4 px-12 text-sm rounded-xl font-black uppercase tracking-widest border-2 border-white/20 hover:border-white hover:bg-white/10"
                             />
                         </div>
@@ -201,7 +202,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     </motion.div>
                     <div className="relative">
                         <div className="aspect-[4/5] bg-gray-900 rounded-3xl overflow-hidden shadow-3xl">
-                            <img src="/filosofia-competition.jpg" alt="Filosofía" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                            <img src="/filosofia-competition.jpg" alt="Filosofía" loading="lazy" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                         </div>
                     </div>
                 </div>
@@ -237,7 +238,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                     onClick={() => setSelectedCoach(coach)}
                                     className="group relative aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer border border-white/5 shadow-2xl"
                                 >
-                                    <img src={coach.image} alt={coach.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
+                                    <img src={coach.image} alt={coach.name} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
                                         <h3 className="text-4xl font-black uppercase font-bebas italic leading-[1.1]">{coach.name}</h3>
                                         <p className="text-anvil-red font-black text-sm uppercase tracking-widest">{coach.role}</p>
@@ -264,7 +265,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                     onClick={() => setSelectedCoach(coach)}
                                     className="group relative aspect-[3/4] rounded-3xl overflow-hidden cursor-pointer border border-white/5 shadow-2xl"
                                 >
-                                    <img src={coach.image} alt={coach.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
+                                    <img src={coach.image} alt={coach.name} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent p-8 flex flex-col justify-end">
                                         <h3 className="text-4xl font-black uppercase font-bebas italic leading-[1.1]">{coach.name}</h3>
                                         <p className="text-anvil-red font-black text-sm uppercase tracking-widest">{coach.role}</p>
@@ -289,7 +290,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                     <motion.div className="flex gap-6 px-6" animate={{ x: -(carouselIndex * 344) }} transition={isTransitioning ? { duration: 1, ease: "easeOut" } : { duration: 0 }}>
                         {[...athletes, ...athletes, ...athletes].map((athlete, i) => (
                             <div key={i} className="relative w-[320px] aspect-[4/5] bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group" onClick={() => setSelectedAthlete(athlete)}>
-                                <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                <img src={athlete.image} alt={athlete.name} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                                 <div className="absolute bottom-0 p-8 bg-gradient-to-t from-black to-transparent w-full">
                                     <p className="text-anvil-red text-[10px] font-black uppercase tracking-widest">{athlete.category}</p>
                                     <p className="text-2xl font-black uppercase font-bebas italic">{athlete.name}</p>
@@ -327,7 +328,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                                 onClick={() => setSelectedAchievement(item)}
                             >
                                 <div className="w-full md:w-[350px] h-64 md:h-full shrink-0">
-                                    <img src={item.images[0]} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.title} />
+                                    <img src={item.images[0]} loading="lazy" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.title} />
                                 </div>
                                 <div className="p-8 md:p-12 flex-1 flex flex-col justify-center">
                                     <div className="flex items-center gap-4 mb-4">
@@ -419,7 +420,7 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
             {/* Footer */}
             <footer className="py-24 border-t border-white/5">
                 <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
-                    <img src="/logo-dark-removebg-preview.png" className="h-12 grayscale" alt="Logo" />
+                    <img src="/logo-dark-removebg-preview.png" className="h-12 grayscale" loading="lazy" alt="Logo" />
                     <p className="text-gray-600 text-[10px] font-black uppercase tracking-widest">© {new Date().getFullYear()} ANVIL STRENGTH. ALL RIGHTS RESERVED.</p>
                     <div className="flex gap-8">
                         <a href="https://www.instagram.com/anvilstrength_" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-white transition-colors">
@@ -466,7 +467,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean, o
             <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#0a0a0a] w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
                 <div className="w-full md:w-1/2 md:h-auto bg-black">
-                    <img src={achievement.images[0]} className="w-full h-full object-cover" alt="" />
+                    <img src={achievement.images[0]} loading="lazy" className="w-full h-full object-cover" alt="" />
                 </div>
                 <div className="p-12 md:w-1/2 overflow-y-auto">
                     <Trophy className="text-anvil-red mb-6" size={48} />
