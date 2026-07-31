@@ -1,3 +1,4 @@
+@import "./styles/tokens.css";
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
@@ -7,8 +8,12 @@
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #1c1c1c;
+  color: var(--ink);
+  background-color: var(--surface-canvas);
+
+  /* Cifras de igual anchura en toda la app: sin esto, un peso que pasa de
+     97,5 a 100 desplaza la fila entera al re-renderizar. */
+  font-variant-numeric: tabular-nums;
 }
 
 html {
@@ -22,7 +27,30 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overscroll-behavior: none;
-  background-color: #1c1c1c;
+  background-color: var(--surface-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Titulares con líneas equilibradas */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* Prosa larga sin líneas huérfanas (descripciones de bloque, notas). */
+p {
+  text-wrap: pretty;
+}
+
+/* Accesibilidad: sin animaciones para quien las desactiva en su sistema */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* --- SCROLLBAR UTILITIES --- */
@@ -36,6 +64,30 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
   /* Chrome, Safari and Opera */
+}
+
+/* --- GAME PLAN: EXPORTACIÓN A PDF (impresión) --- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #gameplan-print,
+  #gameplan-print * {
+    visibility: visible;
+  }
+
+  #gameplan-print {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    background: white !important;
+    color: black !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
 }
 
 /* --- TYPEBOT CUSTOMIZATION --- */

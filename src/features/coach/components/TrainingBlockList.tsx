@@ -1,21 +1,31 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil, TrendingUp, Layers, Trophy, X, Folder } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
-import { TrainingBlock } from '../../../types/training';
+import { TrainingBlock, Macrocycle } from '../../../types/training';
 import { CreateBlockModal } from './CreateBlockModal';
 import { EditBlockModal } from './EditBlockModal';
+import { AthleteStatsModal } from './AthleteStatsModal';
 import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
+import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
+import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'sonner';
 
 interface TrainingBlockListProps {
     athleteId: string;
+    athleteName?: string;
     onSelectBlock: (block: TrainingBlock) => void;
 }
 
-export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockListProps) {
+export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: TrainingBlockListProps) {
+    const { session } = useAuth();
     const [blocks, setBlocks] = useState<TrainingBlock[]>([]);
+    const [macros, setMacros] = useState<Macrocycle[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isStatsOpen, setIsStatsOpen] = useState(false);
+    const [isCreateMacroOpen, setIsCreateMacroOpen] = useState(false);
+    // Bloque cuyo selector de macro está abierto
+    const [macroPickerBlockId, setMacroPickerBlockId] = useState<string | null>(null);
 
     // Delete Confirmation State
     const [blockToDelete, setBlockToDelete] = useState<string | null>(null);
@@ -27,8 +37,12 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
     const fetchBlocks = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await trainingService.getBlocksByAthlete(athleteId);
-            setBlocks(data);
+            const [blocksData, macrosData] = await Promise.all([
+                trainingService.getBlocksByAthlete(athleteId),
+                trainingService.getMacrosByAthlete(athleteId).catch(() => [] as Macrocycle[])
+            ]);
+            setBlocks(blocksData);
+            setMacros(macrosData);
         } catch (error) {
             console.error(error);
         } finally {
@@ -39,6 +53,30 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
     useEffect(() => {
         fetchBlocks();
     }, [athleteId, fetchBlocks]);
+
+    const handleAssignMacro = async (blockId: string, macroId: string | null) => {
+        setMacroPickerBlockId(null);
+        try {
+            await trainingService.assignBlockToMacro(blockId, macroId);
+            setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, macro_id: macroId } : b));
+            toast.success(macroId ? 'Bloque añadido al macro' : 'Bloque sacado del macro');
+        } catch (e) {
+            console.error(e);
+            toast.error('Error asignando el macro');
+        }
+    };
+
+    const handleDeleteMacro = async (macroId: string) => {
+        try {
+            await trainingService.deleteMacro(macroId);
+            setMacros(prev => prev.filter(m => m.id !== macroId));
+            setBlocks(prev => prev.map(b => b.macro_id === macroId ? { ...b, macro_id: null } : b));
+            toast.success('Macro eliminado (los bloques se conservan)');
+        } catch (e) {
+            console.error(e);
+            toast.error('Error eliminando el macro');
+        }
+    };
 
     const handleDeleteClick = (e: React.MouseEvent, blockId: string) => {
         e.stopPropagation(); // Prevent navigating to the block
@@ -63,6 +101,117 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
 
 
 
+    const renderBlockCard = (block: TrainingBlock) => {
+        const isActive = block.is_active;
+        return (
+            <div
+                key={block.id}
+                className={`group relative bg-[#1a1a1a] border border-white/5 rounded-2xl transition-all duration-300 hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''}`}
+                onClick={() => onSelectBlock(block)}
+            >
+                <div className="px-6 py-5 flex items-center justify-between transition-all duration-300 group-hover:bg-white/5 rounded-2xl">
+                    <div className="flex items-center gap-6 min-w-0">
+                        {/* Status Badge */}
+                        <div className={`px-3 py-1 rounded-md text-[10px] font-black tracking-wider border shrink-0 ${isActive
+                            ? "bg-anvil-red/10 text-anvil-red border-anvil-red/20"
+                            : "bg-gray-500/10 text-gray-500 border-gray-500/20"
+                            }`}>
+                            {isActive ? 'ACTIVO' : 'HISTÓRICO'}
+                        </div>
+
+                        {/* Title & info */}
+                        <div className="flex flex-col gap-1 min-w-0">
+                            <h4 className="text-2xl font-black text-white italic tracking-tighter uppercase group-hover:text-anvil-red transition-colors truncate">
+                                {block.name}
+                            </h4>
+
+                            <div className="flex items-center gap-4 text-xs text-gray-500 font-medium uppercase tracking-wider">
+                                <span className="flex items-center gap-2">
+                                    <Calendar size={12} />
+                                    Semana {block.start_week || '?'} - {block.end_week || '?'}
+                                </span>
+                                {block.start_week && block.end_week && (
+                                    <>
+                                        <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                        <span className="text-gray-600 normal-case">
+                                            {formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 relative shrink-0">
+                        {/* Asignar a macro */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMacroPickerBlockId(macroPickerBlockId === block.id ? null : block.id);
+                            }}
+                            className={`p-2 rounded-lg transition-colors ${macroPickerBlockId === block.id ? 'text-anvil-red bg-anvil-red/10' : 'text-gray-500 hover:text-white hover:bg-white/10'}`}
+                            title="Asignar a un macro"
+                        >
+                            <Folder size={18} />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setBlockToEdit(block);
+                            }}
+                            className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                            title="Editar bloque"
+                        >
+                            <Pencil size={18} />
+                        </button>
+                        <button
+                            onClick={(e) => handleDeleteClick(e, block.id)}
+                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Eliminar bloque"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                        <div className="text-gray-600 group-hover:text-white transition-colors ml-1">
+                            <ChevronRight size={20} />
+                        </div>
+
+                        {/* Popover: elegir macro */}
+                        {macroPickerBlockId === block.id && (
+                            <div
+                                className="absolute right-0 top-full mt-2 z-30 bg-[#252525] border border-white/10 rounded-xl shadow-2xl p-3 w-60"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <p className="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-2">Mover a macro...</p>
+                                <div className="space-y-1 max-h-48 overflow-y-auto">
+                                    {macros.length === 0 && (
+                                        <p className="text-xs text-gray-600 italic px-2 py-1">No hay macros. Crea uno con "Nuevo Macro".</p>
+                                    )}
+                                    {macros.map(m => (
+                                        <button
+                                            key={m.id}
+                                            onClick={() => handleAssignMacro(block.id, m.id)}
+                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${block.macro_id === m.id ? 'bg-anvil-red/20 text-anvil-red' : 'text-gray-300 hover:bg-anvil-red hover:text-white'}`}
+                                        >
+                                            {m.name}
+                                        </button>
+                                    ))}
+                                    {block.macro_id && (
+                                        <button
+                                            onClick={() => handleAssignMacro(block.id, null)}
+                                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-white/5 hover:text-white transition-colors"
+                                        >
+                                            Quitar del macro
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center p-12">
@@ -81,17 +230,38 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                         </h2>
                         <div className="h-2 w-24 bg-anvil-red mt-4 rounded-full" />
                     </div>
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg text-sm font-black uppercase tracking-wider hover:bg-gray-200 transition-all hover:scale-105"
-                    >
-                        <Plus size={18} />
-                        Nuevo Bloque
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={() => setIsStatsOpen(true)}
+                            className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:border-anvil-red/40 rounded-lg text-sm font-black uppercase tracking-wider transition-all"
+                        >
+                            <TrendingUp size={16} className="text-anvil-red" />
+                            Estadísticas
+                        </button>
+                        <button
+                            onClick={() => setIsCreateMacroOpen(true)}
+                            className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:border-anvil-red/40 rounded-lg text-sm font-black uppercase tracking-wider transition-all"
+                        >
+                            <Layers size={16} className="text-anvil-red" />
+                            Nuevo Macro
+                        </button>
+                        <button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg text-sm font-black uppercase tracking-wider hover:bg-gray-200 transition-all hover:scale-105"
+                        >
+                            <Plus size={18} />
+                            Nuevo Bloque
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {blocks.length === 0 ? (
+            {/* El estado vacío exige que NO haya ni bloques ni macros.
+                Antes bastaba con `blocks.length === 0`, así que un macrociclo
+                recién creado desaparecía de la pantalla hasta que se le metía
+                dentro un bloque: existía en la base, pero la rama del estado
+                vacío se comía todo el listado. */}
+            {blocks.length === 0 && macros.length === 0 ? (
                 <div className="bg-[#252525] border border-white/5 rounded-xl p-12 text-center">
                     <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                         <FolderOpen className="text-gray-500" size={32} />
@@ -108,76 +278,66 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                     </button>
                 </div>
             ) : (
-                <div className="grid gap-4">
-                    {blocks.map((block) => {
-                        const isActive = block.is_active;
-
+                <div className="space-y-8">
+                    {/* Macros con sus bloques */}
+                    {macros.map(macro => {
+                        const macroBlocks = blocks.filter(b => b.macro_id === macro.id);
                         return (
-                            <div
-                                key={block.id}
-                                className={`group relative bg-[#1a1a1a] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''
-                                    }`}
-                                onClick={() => onSelectBlock(block)}
-                            >
-                                <div className="px-6 py-5 flex items-center justify-between transition-all duration-300 group-hover:bg-white/5">
-                                    <div className="flex items-center gap-6">
-                                        {/* Status Badge */}
-                                        <div className={`px-3 py-1 rounded-md text-[10px] font-black tracking-wider border ${isActive
-                                            ? "bg-anvil-red/10 text-anvil-red border-anvil-red/20"
-                                            : "bg-gray-500/10 text-gray-500 border-gray-500/20"
-                                            }`}>
-                                            {isActive ? 'ACTIVO' : 'HISTÓRICO'}
+                            <div key={macro.id} className="border border-white/10 rounded-3xl p-4 md:p-5 bg-white/[0.02]">
+                                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-1">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="p-2 bg-anvil-red/10 border border-anvil-red/30 rounded-xl text-anvil-red shrink-0">
+                                            <Layers size={16} />
                                         </div>
-
-                                        {/* Title & info */}
-                                        <div className="flex flex-col gap-1">
-                                            <h4 className="text-2xl font-black text-white italic tracking-tighter uppercase group-hover:text-anvil-red transition-colors">
-                                                {block.name}
-                                            </h4>
-
-                                            <div className="flex items-center gap-4 text-xs text-gray-500 font-medium uppercase tracking-wider">
-                                                <span className="flex items-center gap-2">
-                                                    <Calendar size={12} />
-                                                    Semana {block.start_week || '?'} - {block.end_week || '?'}
-                                                </span>
-                                                {block.start_week && block.end_week && (
-                                                    <>
-                                                        <span className="w-1 h-1 rounded-full bg-gray-700" />
-                                                        <span className="text-gray-600 normal-case">
-                                                            {formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)}
+                                        <div className="min-w-0">
+                                            <h3 className="text-lg font-black text-white uppercase italic tracking-tight truncate">{macro.name}</h3>
+                                            {macro.competition_name && (
+                                                <p className="text-[11px] font-bold text-yellow-500 uppercase tracking-wider flex items-center gap-1.5">
+                                                    <Trophy size={11} />
+                                                    {macro.competition_name}
+                                                    {macro.competition_date && (
+                                                        <span className="text-gray-500">
+                                                            · {new Date(macro.competition_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         </span>
-                                                    </>
-                                                )}
-                                            </div>
+                                                    )}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
-
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setBlockToEdit(block);
-                                            }}
-                                            className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                            title="Editar bloque"
-                                        >
-                                            <Pencil size={18} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => handleDeleteClick(e, block.id)}
-                                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                            title="Eliminar bloque"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                        <div className="text-gray-600 group-hover:text-white transition-colors ml-2">
-                                            <ChevronRight size={20} />
-                                        </div>
-                                    </div>
+                                    <button
+                                        onClick={() => handleDeleteMacro(macro.id)}
+                                        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        title="Eliminar macro (los bloques se conservan)"
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
                                 </div>
+                                {macroBlocks.length === 0 ? (
+                                    <p className="text-xs text-gray-600 italic px-1 pb-2">Sin bloques. Usa el icono de carpeta de un bloque para añadirlo aquí.</p>
+                                ) : (
+                                    <div className="grid gap-3">
+                                        {macroBlocks.map(block => renderBlockCard(block))}
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
+
+                    {/* Bloques sin macro */}
+                    {(() => {
+                        const ungrouped = blocks.filter(b => !b.macro_id || !macros.some(m => m.id === b.macro_id));
+                        if (ungrouped.length === 0) return null;
+                        return (
+                            <div>
+                                {macros.length > 0 && (
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 mb-3 px-1">Sin macro</p>
+                                )}
+                                <div className="grid gap-4">
+                                    {ungrouped.map(block => renderBlockCard(block))}
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
             )}
 
@@ -194,6 +354,25 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                 block={blockToEdit}
                 onBlockUpdated={fetchBlocks}
             />
+
+            <AthleteStatsModal
+                isOpen={isStatsOpen}
+                onClose={() => setIsStatsOpen(false)}
+                athleteId={athleteId}
+                athleteName={athleteName || 'Atleta'}
+            />
+
+            {isCreateMacroOpen && session?.user.id && (
+                <CreateMacroModal
+                    athleteId={athleteId}
+                    coachId={session.user.id}
+                    onClose={() => setIsCreateMacroOpen(false)}
+                    onCreated={(macro) => {
+                        setMacros(prev => [macro, ...prev]);
+                        setIsCreateMacroOpen(false);
+                    }}
+                />
+            )}
 
             {/* DELETE CONFIRMATION MODAL */}
             {blockToDelete && (
@@ -226,6 +405,119 @@ export function TrainingBlockList({ athleteId, onSelectBlock }: TrainingBlockLis
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// ==========================================
+// SUB-COMPONENT: CREATE MACRO MODAL
+// ==========================================
+function CreateMacroModal({
+    athleteId,
+    coachId,
+    onClose,
+    onCreated
+}: {
+    athleteId: string;
+    coachId: string;
+    onClose: () => void;
+    onCreated: (macro: Macrocycle) => void;
+}) {
+    const [name, setName] = useState('');
+    const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
+    const [selectedCompId, setSelectedCompId] = useState<string>('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        competitionsService.getAthleteCompetitions(athleteId)
+            .then(comps => setCompetitions(comps || []))
+            .catch(() => setCompetitions([]));
+    }, [athleteId]);
+
+    const handleCreate = async () => {
+        if (!name.trim() || saving) return;
+        setSaving(true);
+        try {
+            const comp = competitions.find(c => c.id === selectedCompId);
+            const macro = await trainingService.createMacro({
+                coach_id: coachId,
+                athlete_id: athleteId,
+                name: name.trim(),
+                competition_name: comp?.name || null,
+                competition_date: comp?.date || null
+            });
+            toast.success('Macro creado');
+            onCreated(macro);
+        } catch (e) {
+            console.error(e);
+            toast.error('Error creando el macro (¿ejecutaste la migración SQL?)');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[170] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative bg-[#1c1c1c] w-full max-w-md rounded-2xl border border-white/10 shadow-2xl p-6 space-y-5">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-black uppercase text-white flex items-center gap-2">
+                        <Layers className="text-anvil-red" size={20} /> Nuevo Macro
+                    </h2>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 block">Nombre</label>
+                    <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        maxLength={120}
+                        autoFocus
+                        placeholder="Ej: Preparación Nacional 2027"
+                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm font-bold focus:outline-none focus:border-anvil-red/50 transition-colors"
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 block">
+                        Competición objetivo <span className="text-gray-600 normal-case font-medium">(opcional, de las asignadas al atleta)</span>
+                    </label>
+                    <select
+                        value={selectedCompId}
+                        onChange={(e) => setSelectedCompId(e.target.value)}
+                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                    >
+                        <option value="">Sin competición</option>
+                        {competitions.map(c => (
+                            <option key={c.id} value={c.id}>
+                                {c.name} ({new Date(c.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-wider text-xs transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleCreate}
+                        disabled={!name.trim() || saving}
+                        className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
+                    >
+                        {saving ? <Loader className="animate-spin" size={14} /> : <Plus size={14} />}
+                        Crear Macro
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

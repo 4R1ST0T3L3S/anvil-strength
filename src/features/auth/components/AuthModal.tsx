@@ -1,64 +1,48 @@
-import { useState, useRef } from 'react';
-import { X, Mail, Lock, User as UserIcon, Loader, Camera } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Mail, Lock, User as UserIcon, Loader } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import { getAuthCallbackUrl } from '../../../lib/authRedirect';
 
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Con qué pestaña se abre. La portada tiene botones para las dos. */
+  initialMode?: 'login' | 'signup';
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const [isLogin, setIsLogin] = useState(true);
+export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notice, setNotice] = useState('');
 
+  // El modal se monta una vez y se reutiliza: sin esto, pulsar "Registrarse"
+  // después de haber abierto "Entrar" seguía enseñando el formulario de login.
+  useEffect(() => {
+    if (isOpen) {
+      setIsLogin(initialMode === 'login');
+      setError('');
+      setNotice('');
+    }
+  }, [isOpen, initialMode]);
+
+  /**
+   * El alta pide lo mínimo: apodo, email y contraseña.
+   *
+   * Antes exigía categoría de peso y de edad, que dejaban fuera a cualquiera
+   * que no compita en powerlifting, y una foto y una biografía que nadie
+   * rellena con ganas antes de haber visto la aplicación. Todo eso se edita
+   * luego en el perfil, cuando ya hay un motivo para hacerlo.
+   */
   const [formData, setFormData] = useState({
-    name: '',
     nickname: '',
     email: '',
     password: '',
-    age_category: '',
-    weight_category: '',
-    bio: '',
-    profile_image: ''
   });
 
   if (!isOpen) return null;
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setError('');
-
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        setError('El archivo debe ser una imagen válida');
-        return;
-      }
-
-      // 2MB limit for base64 strings to be safe with database/payload limits
-      if (file.size > 2 * 1024 * 1024) {
-        setError('La imagen es demasiado grande (máx 2MB)');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, profile_image: reader.result as string });
-      };
-      reader.onerror = () => {
-        setError('Error al leer el archivo de imagen');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removePhoto = () => {
-    setFormData({ ...formData, profile_image: '' });
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -68,7 +52,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          // Vuelve a /auth/callback de ESTE origen. Ver lib/authRedirect.ts:
+          // si el origen no está en la lista blanca de Supabase, el panel lo
+          // ignora y manda a su "Site URL" — el bug de acabar en vercel.app.
+          redirectTo: getAuthCallbackUrl()
         }
       });
 
@@ -89,6 +76,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     setIsLoading(true);
 
     try {
@@ -112,14 +100,22 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         // Now that we removed the listener from App.tsx, we must close it here.
         onClose();
       } else {
+        const nickname = formData.nickname.trim();
+
         const { data, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
+            // El apodo hace también de nombre visible hasta que el usuario
+            // rellene su perfil. Sin esto la app le llamaría por la parte
+            // izquierda de su email.
             data: {
-              full_name: formData.name,
-              nickname: formData.nickname,
-            }
+              full_name: nickname,
+              nickname,
+            },
+            // Si el proyecto exige confirmar el email, el enlace del correo
+            // tiene que volver AQUÍ y no a la Site URL del panel.
+            emailRedirectTo: getAuthCallbackUrl(),
           }
         });
 
@@ -129,7 +125,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }
 
         if (data.user && !data.session) {
-          setError('Cuenta creada. Por favor revisa tu email para confirmar tu cuenta.');
+          // No es un error: la cuenta existe, solo falta confirmarla. Salía en
+          // rojo y con aspecto de fallo, y la gente lo reintentaba.
+          setNotice('Cuenta creada. Revisa tu email para confirmarla y entrar.');
           setIsLoading(false);
           return;
         }
@@ -177,89 +175,39 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h2>
           <p className="text-gray-400 text-sm">
-            {isLogin ? 'Bienvenido de nuevo, atleta.' : 'Únete al Anvil Strength Club.'}
+            {isLogin ? 'Bienvenido de nuevo, atleta.' : 'Tres datos y estás dentro.'}
           </p>
         </div>
 
         {error && (
-          <div data-testid="auth-error-message" className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold">
+          <div data-testid="auth-error-message" className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold rounded-lg">
             {error}
+          </div>
+        )}
+
+        {notice && (
+          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 mb-6 text-sm text-center font-bold rounded-lg">
+            {notice}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="flex flex-col items-center mb-6">
+            <div className="relative">
+              <label htmlFor="nickname" className="sr-only">Apodo</label>
+              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-anvil-red" size={20} />
               <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleFileChange}
+                id="nickname"
+                name="nickname"
+                type="text"
+                placeholder="Apodo (Ej: El Toro)"
+                autoComplete="nickname"
+                className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
+                value={formData.nickname}
+                onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+                required={!isLogin}
               />
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center overflow-hidden cursor-pointer hover:border-anvil-red transition-colors relative group"
-              >
-                {formData.profile_image ? (
-                  <>
-                    <img src={formData.profile_image} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                      <Camera size={20} />
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center">
-                    <Camera className="h-6 w-6 text-gray-500 mx-auto" />
-                    <span className="text-[8px] font-bold text-gray-500 uppercase">Foto</span>
-                  </div>
-                )}
-              </div>
-              {formData.profile_image && (
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removePhoto(); }}
-                  className="text-[10px] text-anvil-red font-bold uppercase mt-2 hover:text-red-400"
-                >
-                  Eliminar
-                </button>
-              )}
             </div>
-          )}
-
-          {!isLogin && (
-            <>
-              <div className="relative">
-                <label htmlFor="name" className="sr-only">Nombre completo</label>
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Nombre completo"
-                  autoComplete="name"
-                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required={!isLogin}
-                />
-              </div>
-
-              <div className="relative">
-                <label htmlFor="nickname" className="sr-only">Mote / Apodo</label>
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-anvil-red" size={20} />
-                <input
-                  id="nickname"
-                  name="nickname"
-                  type="text"
-                  placeholder="Mote / Apodo (Ej: El Toro)"
-                  className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
-                  value={formData.nickname}
-                  onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-                  required={!isLogin}
-                />
-              </div>
-            </>
           )}
 
           <div className="relative">
@@ -298,62 +246,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
 
           {!isLogin && (
-            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-              <div className="grid grid-cols-2 gap-4">
-                <select
-                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
-                  value={formData.age_category}
-                  onChange={(e) => setFormData({ ...formData, age_category: e.target.value })}
-                  required
-                >
-                  <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Cat. Edad</option>
-                  <option value="Sub-Junior" className="bg-[#1c1c1c] text-white">Sub-Junior</option>
-                  <option value="Junior" className="bg-[#1c1c1c] text-white">Junior</option>
-                  <option value="Senior" className="bg-[#1c1c1c] text-white">Senior (Open)</option>
-                  <option value="Master 1" className="bg-[#1c1c1c] text-white">Master 1</option>
-                  <option value="Master 2" className="bg-[#1c1c1c] text-white">Master 2</option>
-                  <option value="Master 3" className="bg-[#1c1c1c] text-white">Master 3</option>
-                  <option value="Master 4" className="bg-[#1c1c1c] text-white">Master 4</option>
-                </select>
-
-                <select
-                  className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red transition-colors [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>optgroup]:bg-[#1c1c1c] [&>optgroup]:text-white"
-                  value={formData.weight_category}
-                  onChange={(e) => setFormData({ ...formData, weight_category: e.target.value })}
-                  required
-                >
-                  <option value="" disabled className="bg-[#1c1c1c] text-gray-500">Cat. Peso</option>
-                  <optgroup label="Masculino" className="bg-[#1c1c1c] text-anvil-red font-bold">
-                    <option value="-59kg" className="bg-[#1c1c1c] text-white">-59kg</option>
-                    <option value="-66kg" className="bg-[#1c1c1c] text-white">-66kg</option>
-                    <option value="-74kg" className="bg-[#1c1c1c] text-white">-74kg</option>
-                    <option value="-83kg" className="bg-[#1c1c1c] text-white">-83kg</option>
-                    <option value="-93kg" className="bg-[#1c1c1c] text-white">-93kg</option>
-                    <option value="-105kg" className="bg-[#1c1c1c] text-white">-105kg</option>
-                    <option value="-120kg" className="bg-[#1c1c1c] text-white">-120kg</option>
-                    <option value="+120kg" className="bg-[#1c1c1c] text-white">+120kg</option>
-                  </optgroup>
-                  <optgroup label="Femenino" className="bg-[#1c1c1c] text-anvil-red font-bold">
-                    <option value="-47kg" className="bg-[#1c1c1c] text-white">-47kg</option>
-                    <option value="-52kg" className="bg-[#1c1c1c] text-white">-52kg</option>
-                    <option value="-57kg" className="bg-[#1c1c1c] text-white">-57kg</option>
-                    <option value="-63kg" className="bg-[#1c1c1c] text-white">-63kg</option>
-                    <option value="-69kg" className="bg-[#1c1c1c] text-white">-69kg</option>
-                    <option value="-76kg" className="bg-[#1c1c1c] text-white">-76kg</option>
-                    <option value="-84kg" className="bg-[#1c1c1c] text-white">-84kg</option>
-                    <option value="+84kg" className="bg-[#1c1c1c] text-white">+84kg</option>
-                  </optgroup>
-                </select>
-              </div>
-
-              <textarea
-                placeholder="Biografía / Objetivos"
-                rows={4}
-                className="w-full bg-[#252525] border border-white/10 text-white px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-anvil-red resize-none"
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              />
-            </div>
+            <p className="text-center text-xs leading-relaxed text-gray-500">
+              Tus marcas, categoría y foto se añaden luego desde tu perfil, y solo si quieres.
+            </p>
           )}
 
           <button

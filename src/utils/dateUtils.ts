@@ -54,6 +54,76 @@ export function formatDateRange(start: Date, end: Date): string {
     return `${format(start)} - ${format(end)}`;
 }
 
+// =====================================================================
+// SEMANAS DEL BLOQUE — publicación y agenda
+// =====================================================================
+// `training_sessions.week_number` es la semana ISO DEL AÑO, no el ordinal
+// dentro del bloque. Todo lo de aquí abajo traduce ese número a fechas
+// reales para poder decidir qué ve el atleta y cuándo.
+//
+// Estas funciones trabajan en hora LOCAL a propósito. `getDateRangeFromWeek`
+// devuelve fechas en UTC y sirve para pintar rangos, pero comparar "hoy"
+// contra un instante UTC se equivoca de día entero en cuanto el navegador
+// está en otro huso.
+
+/** Hoy a las 00:00 en hora local. */
+export function startOfToday(): Date {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+/**
+ * Lunes (00:00 local) de una semana ISO.
+ *
+ * Se ancla en el 4 de enero porque, por definición de la norma, siempre cae
+ * dentro de la semana 1. Contar desde el 1 de enero falla en los años que
+ * empiezan en viernes, sábado o domingo.
+ */
+export function getISOWeekStart(week: number, year: number): Date {
+    const jan4 = new Date(year, 0, 4);
+    const isoDow = jan4.getDay() || 7; // lunes = 1 … domingo = 7
+    // new Date(year, 0, n) admite n fuera de rango y ajusta el mes solo.
+    return new Date(year, 0, 4 - isoDow + 1 + (week - 1) * 7);
+}
+
+/** Fecha del día `weekdayIndex` (1 = lunes … 7 = domingo) de una semana ISO. */
+export function getDateForWeekday(week: number, year: number, weekdayIndex: number): Date {
+    const monday = getISOWeekStart(week, year);
+    return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + weekdayIndex - 1);
+}
+
+/**
+ * Fecha en la que una semana se le abre al atleta: su lunes menos
+ * `offsetDays`. Con el valor por defecto (1) eso es el domingo anterior.
+ */
+export function getWeekReleaseDate(week: number, year: number, offsetDays: number): Date {
+    const monday = getISOWeekStart(week, year);
+    return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() - offsetDays);
+}
+
+/**
+ * ¿Ha llegado ya la fecha de publicación de esta semana?
+ *
+ * Es el mismo cálculo que hace `week_is_released()` en la base de datos
+ * (ver database/week_visibility_and_scheduling.sql). Aquí sirve para no
+ * pintar lo que el servidor no va a devolver; la decisión real la toma la
+ * RLS, así que un desajuste no filtra nada.
+ */
+export function isWeekReleased(
+    week: number,
+    year: number,
+    offsetDays: number,
+    now: Date = startOfToday()
+): boolean {
+    return now.getTime() >= getWeekReleaseDate(week, year, offsetDays).getTime();
+}
+
+/** Formatea una fecha como "lun, 4 ago". */
+export function formatShortDate(d: Date): string {
+    return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 /**
  * Returns the number of days remaining until a given date.
  */

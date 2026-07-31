@@ -9,12 +9,13 @@ export interface CompetitionAssignment {
     end_date?: string; // Add end_date
     location?: string;
     level?: string; // Add level optional for backward compatibility
+    description?: string;
     created_at: string;
 }
 
 export const competitionsService = {
     async assignCompetition(
-        competition: { name: string; date: string; end_date?: string; location?: string; level?: string },
+        competition: { name: string; date: string; end_date?: string; location?: string; level?: string; description?: string },
         athleteIds: string[],
         coachId: string
     ) {
@@ -25,7 +26,8 @@ export const competitionsService = {
             date: competition.date, // Ensure format YYYY-MM-DD
             end_date: competition.end_date, // Pass end_date (can be null)
             location: competition.location,
-            level: competition.level
+            level: competition.level,
+            description: competition.description || null
         }));
 
         const { data, error } = await supabase
@@ -114,22 +116,56 @@ export const competitionsService = {
         if (error) throw error;
     },
 
+    /**
+     * Competiciones para la página pública.
+     *
+     * Se pide el perfil del atleta incrustado para poner su nombre junto a
+     * cada competición. Ese `embed` es la parte frágil: `profiles` no es
+     * legible sin sesión, y cuando el permiso falta PostgREST no devuelve la
+     * competición sin nombre — devuelve 401 y se cae la consulta ENTERA, así
+     * que la página se quedaba vacía para cualquier visitante.
+     *
+     * Por eso hay un segundo intento sin el `embed`. Enseñar las
+     * competiciones sin el nombre del atleta es infinitamente mejor que no
+     * enseñar ninguna, y así la página aguanta aunque la base todavía no
+     * tenga aplicado database/FIX_INCONSISTENCIAS.sql.
+     */
     async getPublicCompetitions() {
         const today = new Date().toISOString().split('T')[0];
+        const range = `date.gte.${today},end_date.gte.${today}`; // futura o en curso
 
-        // Fetch all future competitions assigned to athletes
-        // We fetch ALL assignments and group them in the frontend (or could use a distinct query if RPC available)
-        // This ensures we only show competitions that HAVE athletes assigned.
         const { data, error } = await supabase
             .from('competitions')
             .select(`
                 *,
                 athlete:profiles!athlete_id (full_name, avatar_url)
             `)
-            .or(`date.gte.${today},end_date.gte.${today}`) // Future or Ongoing
+            .or(range)
             .order('date', { ascending: true });
 
-        if (error) throw error;
-        return data;
+        if (!error) return data;
+
+        // 42501 = permission denied. Cualquier otro error sí es un fallo real.
+        if (error.code !== '42501') {
+            console.error(
+                'Error al leer las competiciones:',
+                `${error.code ?? 'sin código'} — ${error.message}`
+            );
+            throw error;
+        }
+
+        console.warn(
+            'Sin permiso para leer los perfiles de los atletas: se muestran las ' +
+            'competiciones sin nombre. Ejecuta database/FIX_INCONSISTENCIAS.sql.'
+        );
+
+        const { data: plain, error: plainError } = await supabase
+            .from('competitions')
+            .select('*')
+            .or(range)
+            .order('date', { ascending: true });
+
+        if (plainError) throw plainError;
+        return plain;
     }
 };

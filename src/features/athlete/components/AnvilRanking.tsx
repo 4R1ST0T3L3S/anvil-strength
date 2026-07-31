@@ -36,10 +36,12 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
     const fetchRankings = async () => {
         setLoading(true);
         try {
+            // public_profiles: proyección sin email ni datos de cuenta.
+            // Ver database/SECURITY_HARDENING.sql — profiles ya no es
+            // legible en bloque por otros usuarios.
             const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('role', 'athlete');
+                .from('public_profiles')
+                .select('id, full_name, nickname, avatar_url, gender, weight_category, squat_pr, bench_pr, deadlift_pr');
 
             if (error) throw error;
 
@@ -62,7 +64,7 @@ export function AnvilRanking({ isOpen, onClose }: AnvilRankingProps) {
 
                     return {
                         id: profile.id,
-                        full_name: profile.full_name || profile.name || 'Atleta',
+                        full_name: profile.full_name || profile.nickname || 'Atleta',
                         avatar_url: profile.avatar_url,
                         gender: gender,
                         weight_category: profile.weight_category,

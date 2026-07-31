@@ -102,22 +102,21 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         if (betAmount > balance) { alert("Saldo insuficiente"); return; }
         setIsActionLoading(true);
         try {
-            const sidePool = selectedSide === 'a' ? 'pool_a' : 'pool_b';
-            const currentPool = selectedSide === 'a' ? betModal.fight.pool_a : betModal.fight.pool_b;
-
-            await supabase.from('profiles').update({ anvil_coins: balance - betAmount }).eq('id', user.id);
-            await supabase.from('arena_fights').update({ [sidePool]: currentPool + betAmount }).eq('id', betModal.fight.id);
-            // Guardamos en 'selected_side' para que la resolución manual funcione
-            await supabase.from('arena_fight_bets').insert([{
-                fight_id: betModal.fight.id,
-                user_id: user.id,
-                amount: betAmount,
-                selected_side: selectedSide
-            }]);
+            // Saldo, pool y registro de apuesta se mueven juntos en el
+            // servidor: atómico y no manipulable desde el navegador.
+            const { error } = await supabase.rpc('arena_place_bet', {
+                p_fight_id: betModal.fight.id,
+                p_side: selectedSide,
+                p_amount: betAmount
+            });
+            if (error) throw error;
 
             setBetModal({ open: false, fight: null });
             fetchData();
-        } catch (err) { console.error(err); } finally { setIsActionLoading(false); }
+        } catch (err) {
+            console.error(err);
+            alert(err instanceof Error ? err.message : 'No se pudo registrar la apuesta');
+        } finally { setIsActionLoading(false); }
     };
 
     const handleResolveFight = async (side: 'a' | 'b') => {
@@ -125,49 +124,35 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         if (!fight) return;
         setIsActionLoading(true);
         try {
-            const totalPool = fight.pool_a + fight.pool_b;
-            const winnerPool = side === 'a' ? fight.pool_a : fight.pool_b;
+            // El reparto se calcula y se paga en el servidor. La versión
+            // anterior escribía sobre perfiles ajenos desde el cliente, algo
+            // que la RLS descartaba en silencio: los premios nunca llegaban.
+            const { error } = await supabase.rpc('arena_resolve_fight', {
+                p_fight_id: fight.id,
+                p_side: side
+            });
+            if (error) throw error;
 
-            // Buscamos apuestas por LADO (a o b)
-            const { data: winners } = await supabase.from('arena_fight_bets').select('*').eq('fight_id', fight.id).eq('selected_side', side);
-
-            if (winners && winnerPool > 0) {
-                const payouts: Record<string, number> = {};
-                winners.forEach(bet => {
-                    const share = Math.floor((bet.amount / winnerPool) * totalPool);
-                    payouts[bet.user_id] = (payouts[bet.user_id] || 0) + share;
-                });
-
-                for (const [uid, amt] of Object.entries(payouts)) {
-                    const { data: p } = await supabase.from('profiles').select('anvil_coins').eq('id', uid).single();
-                    if (p) await supabase.from('profiles').update({ anvil_coins: p.anvil_coins + amt }).eq('id', uid);
-                }
-            }
-
-            await supabase.from('arena_fights').update({ status: 'resolved', winner_side: side }).eq('id', fight.id);
             setResolveModal({ open: false, fight: null });
             fetchData();
             alert("Combate resuelto correctamente.");
-        } catch (err) { console.error(err); } finally { setIsActionLoading(false); }
+        } catch (err) {
+            console.error(err);
+            alert(err instanceof Error ? err.message : 'No se pudo resolver el combate');
+        } finally { setIsActionLoading(false); }
     };
 
     const handleCancelFight = async (fight: Fight) => {
         if (!window.confirm("¿Anular combate?")) return;
         setIsActionLoading(true);
         try {
-            const { data: bets } = await supabase.from('arena_fight_bets').select('*').eq('fight_id', fight.id);
-            if (bets) {
-                const refunds: Record<string, number> = {};
-                bets.forEach(b => refunds[b.user_id] = (refunds[b.user_id] || 0) + b.amount);
-                for (const [uid, amt] of Object.entries(refunds)) {
-                    const { data: p } = await supabase.from('profiles').select('anvil_coins').eq('id', uid).single();
-                    if (p) await supabase.from('profiles').update({ anvil_coins: p.anvil_coins + amt }).eq('id', uid);
-                }
-            }
-            await supabase.from('arena_fight_bets').delete().eq('fight_id', fight.id);
-            await supabase.from('arena_fights').delete().eq('id', fight.id);
+            const { error } = await supabase.rpc('arena_cancel_fight', { p_fight_id: fight.id });
+            if (error) throw error;
             fetchData();
-        } catch (err) { console.error(err); } finally { setIsActionLoading(false); }
+        } catch (err) {
+            console.error(err);
+            alert(err instanceof Error ? err.message : 'No se pudo anular el combate');
+        } finally { setIsActionLoading(false); }
     };
 
     const handleCreateFight = async (e: React.FormEvent) => {

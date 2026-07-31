@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /competiciones
+
+Disallow: /dashboard
+Disallow: /coach-dashboard
+Disallow: /admin
+Disallow: /perfil
+Disallow: /pending
+
+Sitemap: https://anvilstrength.es/sitemap.xml

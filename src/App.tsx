@@ -15,6 +15,9 @@ import { CountdownPage } from './features/landing/pages/CountdownPage';
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // La portada ofrece "Entrar" y "Crear cuenta" por separado: quien viene a
+  // registrarse no debería aterrizar en un formulario de login.
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const { data: user, isLoading, isError, error } = useUser();
   const queryClient = useQueryClient();
 
@@ -36,7 +39,8 @@ function App() {
     window.location.reload();
   };
 
-  const handleLoginClick = () => setIsAuthModalOpen(true);
+  const handleLoginClick = () => { setAuthMode('login'); setIsAuthModalOpen(true); };
+  const handleSignupClick = () => { setAuthMode('signup'); setIsAuthModalOpen(true); };
 
   if (isLoading) return <LoadingSpinner fullscreen message="Verificando sesión..." />;
 
@@ -65,6 +69,7 @@ function App() {
         <AppRoutes
           user={user}
           onLoginClick={handleLoginClick}
+          onSignupClick={handleSignupClick}
           onLogout={handleLogout}
         />
       </ErrorBoundary>
@@ -72,6 +77,7 @@ function App() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
+        initialMode={authMode}
       />
     </div>
   );

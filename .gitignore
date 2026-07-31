@@ -40,3 +40,9 @@ yarn-error.log*
 # Database
 server/database.db
 server/database.db-journal
+
+# Herramientas de asistente instaladas localmente. Son 2,5 MB de skills
+# vendorizadas: no forman parte del proyecto y cada actualización metería un
+# diff enorme sin relación con el código.
+.agents/
+skills-lock.json

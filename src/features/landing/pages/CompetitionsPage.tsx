@@ -6,9 +6,12 @@ import { Calendar, MapPin, Users } from 'lucide-react'; // Added Users icon
 import { UserProfile } from '../../../hooks/useUser';
 import { competitionsService } from '../../../services/competitionsService';
 import { getCompetitionColorClass, LiveCountdown } from '../../../components/ui/CompetitionCountdown';
+import { useSeo } from '../../../hooks/useSeo';
+import { AthleteSpotlightModal, SpotlightData } from '../components/AthleteSpotlightModal';
 
 interface CompetitionsPageProps {
     onLoginClick: () => void;
+    onSignupClick?: () => void;
     user?: UserProfile | null;
 }
 
@@ -17,12 +20,20 @@ interface GroupedCompetition {
     date: string;
     location: string;
     level: string;
+    description?: string;
     athletes: { full_name: string; avatar_url: string | null }[];
 }
 
-export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
+export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPageProps) {
     const [upcomingEvents, setUpcomingEvents] = useState<GroupedCompetition[]>([]);
     const [loading, setLoading] = useState(true);
+    const [spotlight, setSpotlight] = useState<SpotlightData | null>(null);
+
+    useSeo({
+        title: 'Próximas Competiciones | Anvil Strength — Powerlifting AEP',
+        description: 'Calendario de competiciones de powerlifting del club Anvil Strength: campeonatos AEP e IPF con los atletas convocados y cuenta atrás en directo.',
+        canonical: 'https://anvilstrength.es/competiciones'
+    });
 
     useEffect(() => {
         const fetchCompetitions = async () => {
@@ -34,7 +45,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                 // Group by name + date
                 const groupedMap = new Map<string, GroupedCompetition>();
 
-                data.forEach((assignment: { name: string, date: string, location?: string, level?: string, athlete?: { full_name: string, avatar_url: string | null } }) => {
+                data.forEach((assignment: { name: string, date: string, location?: string, level?: string, description?: string, athlete?: { full_name: string, avatar_url: string | null } }) => {
                     // STRICT FILTER: Now that RLS is fixed, we can require visible athlete data.
                     // This will show Gema (valid) and hide ghosts (invalid/null).
                     if (!assignment.athlete || !assignment.athlete.full_name) return;
@@ -47,8 +58,15 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                             date: assignment.date,
                             location: assignment.location || 'Ubicación por confirmar',
                             level: assignment.level || 'Competición',
+                            description: assignment.description,
                             athletes: []
                         });
+                    }
+
+                    // Keep the first non-empty description found for the group
+                    const existing = groupedMap.get(key)!;
+                    if (!existing.description && assignment.description) {
+                        existing.description = assignment.description;
                     }
 
                     const group = groupedMap.get(key)!;
@@ -102,13 +120,12 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
 
     return (
         <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
-            <PublicHeader onLoginClick={onLoginClick} />
+            <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* --- HERO SECTION --- */}
             <section className="relative pt-48 pb-24 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-[#0a0a0a]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-[#0a0a0a] to-[#0a0a0a]" />
-                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
                 </div>
 
                 <div className="relative z-10 text-center px-4">
@@ -176,16 +193,30 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
                                                     </p>
                                                     <div className="flex flex-wrap gap-2">
                                                         {event.athletes.map((athlete, i) => (
-                                                            <motion.span
+                                                            <motion.button
                                                                 key={i}
                                                                 initial={{ opacity: 0, scale: 0.9 }}
                                                                 whileInView={{ opacity: 1, scale: 1 }}
-                                                                className="text-xs md:text-sm text-black font-bold bg-white px-2 py-1 rounded-md flex items-center shadow-sm max-w-full"
+                                                                whileHover={{ scale: 1.05 }}
+                                                                whileTap={{ scale: 0.95 }}
+                                                                onClick={() => setSpotlight({
+                                                                    athleteName: athlete.full_name,
+                                                                    avatarUrl: athlete.avatar_url,
+                                                                    competitionName: event.name,
+                                                                    date: event.date,
+                                                                    location: event.location,
+                                                                    level: event.level,
+                                                                    description: event.description
+                                                                })}
+                                                                className="text-xs md:text-sm text-black font-bold bg-white hover:bg-anvil-red hover:text-white px-2 py-1 rounded-md flex items-center shadow-sm max-w-full cursor-pointer transition-colors"
                                                             >
                                                                 <span className="truncate w-full">{athlete.full_name}</span>
-                                                            </motion.span>
+                                                            </motion.button>
                                                         ))}
                                                     </div>
+                                                    <p className="text-[10px] text-white/50 mt-2 uppercase tracking-wider font-bold">
+                                                        Pulsa un atleta para ver su ficha
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -227,6 +258,8 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
             </section>
 
             <PublicFooter />
+
+            <AthleteSpotlightModal data={spotlight} onClose={() => setSpotlight(null)} />
         </div>
     );
 }

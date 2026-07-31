@@ -1,73 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
 import { ReviewsSection } from '../../reviews/components/ReviewsSection';
-import { BenefitsSection } from '../components/BenefitsSection';
+import { StatsSection } from '../components/StatsSection';
+import { Fold, PressButton, Reveal, StaggerList, StaggerItem } from '../components/landingKit';
+import { HowItWorksSection } from '../components/HowItWorksSection';
+import { FAQSection } from '../components/FAQSection';
 import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../../../data/athletes';
 import { coaches, Coach } from '../../../data/coaches';
+import { nutritionists } from '../../../data/nutritionists';
+import { achievements as allAchievements } from '../../../data/achievements';
+import { SafeImage } from '../../../components/ui/SafeImage';
 
+import { useSeo } from '../../../hooks/useSeo';
 import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 
-import { Bubble } from "@typebot.io/react"; // Añade este import
+/**
+ * Typebot pesa 608 KB minificado — más que React, el router y Supabase juntos.
+ * Se cargaba en el bundle inicial de la portada aunque el widget arranca
+ * oculto (`.typebot-bubble-button { display: none }` en index.css) y solo se
+ * abre al pulsar la mascota. Ahora el chunk se descarga en ese clic.
+ */
+const Bubble = lazy(() =>
+    import("@typebot.io/react").then((m) => ({ default: m.Bubble }))
+);
 
 interface LandingPageProps {
     onLoginClick: () => void;
+    /** Abre el modal directamente en la pestaña de alta. */
+    onSignupClick?: () => void;
     user?: UserProfile | null;
+    /** La misma portada servida en /inicio, que no debe indexarse. */
+    noindex?: boolean;
 }
 
-// Definimos los logros (puedes mover esto a un archivo /data/achievements.ts luego)
-const featuredAchievements = [
-    { 
-        id: 1,
-        title: "Campeonato Nacional SBJ 2026", 
-        result: "Primer puesto -105Kg", 
-        images: ["/Logros/PAU RODRIGUEZ-44.jpg", "/Logros/PODIO_SBJ26.jpg"], // Rutas a tus fotos
-        desc: "Campeón de España en los 3 movimientos y pase directo para competir en el Europeo Subjunior para Pau Rodríguez." 
-    },
-    { 
-        id: 2,
-        title: "SBD CUP 2025", 
-        result: "2 Segundos puestos", 
-        images: ["/Logros/podio_sbd.jpg"],
-        desc: "Plata en la categoría de -83Kg y -105Kg. En esta última, un record de España (no oficial) en press banca con 192.5kg." 
-    },
-    { 
-        id: 3,
-        title: "Campeonato Nacional SBJ 2026", 
-        result: "Tercer puesto -105Kg", 
-        images: ["/Logros/Santiago_sbj26.jpg"], // Rutas a tus fotos
-        desc: "Tercero de España en los 3 movimientos para Santiago Badía." 
-    },
-    { 
-        id: 4,
-        title: "Black Oni VI", 
-        result: "Podio Absoluto", 
-        images: ["/logro3_1.jpg"],
-        desc: "Tercer puesto absoluto de nuestro atleta Pau Camacho, además de hacerse con el oro en la categoría de 83Kg" 
-    },
-    { 
-        id: 5,
-        title: "Campeonato Nacional SBJ 2026", 
-        result: "2do puesto por clubes", 
-        images: ["/logro1_1.jpg", "/logro1_2.jpg"], // Rutas a tus fotos
-        desc: "Segundo mejor club del campeonato de España Subjunior 2026 gracias a las actuaciones de Pau Rodriguez y Santi!" 
-    }
-];
+const featuredAchievements = allAchievements;
 
 
 
-export function LandingPage({ onLoginClick, user }: LandingPageProps) {
+export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: LandingPageProps) {
+    // Solo se declara metainformación en /inicio. En "/" mandan las etiquetas
+    // de index.html, que ya son las correctas y las únicas que ven los
+    // rastreadores que no ejecutan JavaScript.
+    useSeo({
+        title: 'Anvil Strength | Club de Powerlifting Online en España — Gratis',
+        description: 'Anvil Strength es el club de powerlifting digital de España. Gratis, sin sede física, afiliado AEP e IPF. Entrenadores de élite, app exclusiva y comunidad real. ¿Empezamos?',
+        canonical: 'https://anvilstrength.es/',
+        noindex: noindex === true,
+    });
+
+    const reduceMotion = useReducedMotion();
+
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
     const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
-    const [isBotOpen, setIsBotOpen] = useState(false);
+    // El widget de chat solo se monta cuando el usuario lo pide. `pendingOpen`
+    // recuerda que hay que abrirlo en cuanto el chunk termine de cargar, para
+    // que el primer clic no se pierda.
+    const [isBotMounted, setIsBotMounted] = useState(false);
+    const [pendingOpen, setPendingOpen] = useState(false);
     // Carousel State
     const [carouselIndex, setCarouselIndex] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(true);
@@ -80,15 +78,35 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
 
 
     // Añade esto debajo de tus useState
+    // Typebot vuelve a pintar su propio botón, que aquí sobra porque abrimos
+    // desde la mascota. Antes esto corría cada 100ms durante toda la vida de
+    // la página; ahora solo mientras el widget existe, y para en cuanto lo oculta.
     useEffect(() => {
-        const interval = setInterval(() => {
-            const botButton = document.querySelector('.typebot-bubble-button');
-            if (botButton) {
-                (botButton as HTMLElement).style.display = 'none';
-            }
-        }, 100);
+        if (!isBotMounted) return;
+        const hide = () => {
+            const btn = document.querySelector<HTMLElement>('.typebot-bubble-button');
+            if (btn) { btn.style.display = 'none'; return true; }
+            return false;
+        };
+        if (hide()) return;
+        const interval = setInterval(() => { if (hide()) clearInterval(interval); }, 100);
         return () => clearInterval(interval);
-    }, []);
+    }, [isBotMounted]);
+
+    // Abre el chat en cuanto está disponible, aunque el clic ocurriera antes
+    // de que el chunk terminase de descargarse: así no se pierde el primer clic.
+    useEffect(() => {
+        if (!pendingOpen || !isBotMounted) return;
+        const timer = setInterval(() => {
+            const api = (window as { Typebot?: { toggle?: () => void } }).Typebot;
+            if (api?.toggle) {
+                api.toggle();
+                setPendingOpen(false);
+                clearInterval(timer);
+            }
+        }, 120);
+        return () => clearInterval(timer);
+    }, [pendingOpen, isBotMounted]);
 
     useEffect(() => {
         if (isPaused || isManualMode) return;
@@ -151,180 +169,313 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
     };
 
     return (
-        <div className="font-sans">
-            {/* Shared Public Header */}
-            <PublicHeader onLoginClick={onLoginClick} />
+        <div className="font-sans bg-surface-canvas">
+            <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
-            {/* Hero Section */}
-            <section className="relative h-screen flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/portadaanvil2.jpg')] bg-cover bg-center">
-                    <div className="absolute inset-0 bg-black/40" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent" />
+            {/* =====================================================
+                1. PORTADA
+                =====================================================
+                Una sola idea: quién somos y qué se hace aquí. La foto
+                ocupa el fold entero porque un club se vende enseñando
+                gente levantando, no describiéndolo.
+
+                El degradado inferior no es decoración: sin él, el texto
+                blanco se apoya en la zona clara de la foto y deja de
+                leerse. Va del color del siguiente fold para que el corte
+                entre secciones no se vea.                              */}
+            <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
+                <div className="absolute inset-0">
+                    <img
+                        src="/portadaanvil2.jpg"
+                        alt="Atleta de Anvil Strength en plena sentadilla durante una competición"
+                        className="h-full w-full object-cover"
+                        fetchPriority="high"
+                    />
+                    <div className="absolute inset-0 bg-surface-sunken/55" />
+                    <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-fold-light to-transparent" />
                 </div>
-                <div className="relative z-10 text-center px-4 max-w-5xl mx-auto mt-24 md:mt-24<">
-                    <h1 className="text-5xl sm:text-6xl md:text-9xl font-black tracking-tighter mb-8 text-white flex flex-col md:block items-center gap-2 md:gap-0">
-                        <span>ANVIL</span>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">STRENGTH</span>
-                    </h1>
-                    <p className="text-lg md:text-3xl text-gray-200 mb-12 font-bold tracking-wide uppercase max-w-lg mx-auto md:max-w-none">
-                        WHERE CHAMPIONS ARE FORGED
-                    </p>
-                    <div className="flex flex-col md:flex-row gap-4 justify-center mt-16 md:mt-50">
-                        <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full md:w-auto" />
+
+                <div className="relative z-10 mx-auto w-full max-w-[1180px] px-6 pb-24 pt-32 text-center md:px-10">
+                    <motion.h1
+                        initial={{ opacity: 0, y: 24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                        className="text-d-lg font-black uppercase text-white"
+                    >
+                        Aquí se forjan
+                        <br />
+                        campeones
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                        className="mx-auto mt-6 max-w-xl text-t-lg font-medium leading-relaxed text-white/85 md:text-t-xl"
+                    >
+                        El club de powerlifting digital de España. Entrenas en tu gimnasio,
+                        compites con nuestro nombre y no pagas cuota.
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.65, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                        className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+                    >
+                        {!user ? (
+                            <PressButton onClick={onSignupClick ?? onLoginClick} className="w-full sm:w-auto">
+                                Crear cuenta gratis
+                            </PressButton>
+                        ) : (
+                            <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full sm:w-auto" />
+                        )}
                         <a
-                            href="#afiliacion"
-                            onClick={(e) => scrollToSection(e, '#afiliacion')}
-                            className="inline-block bg-white text-black hover:bg-gray-200 font-black py-4 px-10 rounded-xl transition-all uppercase tracking-wider"
+                            href="#club"
+                            onClick={(e) => scrollToSection(e, '#club')}
+                            className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-white hover:underline"
                         >
-                            Únete al equipo
+                            Ver de qué va
                         </a>
-                    </div>
-                </div>
-
-                {/* Federation Logos */}
-                <div className="absolute bottom-[10%] md:bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
-                    <a
-                        href="https://www.powerlifting.sport/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/Logo-ipf.png"
-                            alt="IPF Approved"
-                            className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
-                        />
-                    </a>
-                    <a
-                        href="https://powerliftingspain.es/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/logo-aep.png"
-                            alt="AEP Federación"
-                            className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                        />
-                    </a>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* Filosofía Section */}
-            <section id="filosofia" className="min-h-screen flex flex-col justify-center py-32 bg-[#1c1c1c]">
-                <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-                    <div className="text-center md:text-left">
-                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 uppercase">
-                            WHERE <span className="text-anvil-red">CHAMPIONS</span> <br /> ARE <span className="text-anvil-red">FORGED</span>
+            {/* =====================================================
+                2. QUÉ ES ANVIL — fold claro
+                =====================================================
+                Sustituye a las dos rejillas de tarjetas que había aquí
+                (cuatro "pilares" + seis "beneficios"): dieciséis cajas
+                idénticas con un icono arriba, que es la forma más rápida
+                de que una página parezca una plantilla y la más lenta de
+                leer. Ahora son cuatro afirmaciones en texto corrido, que
+                es como se lee una idea.                                */}
+            <Fold id="club" tone="light" className="py-24 md:py-32">
+                <div className="grid gap-14 md:grid-cols-[1fr_0.85fr] md:items-start md:gap-20">
+                    <div>
+                        <h2 className="text-d-md font-black uppercase leading-[0.95] text-fold-light-ink text-balance">
+                            Un club sin
+                            <br />
+                            puerta de entrada
                         </h2>
-                        <div className="space-y-6 text-lg text-gray-400 leading-relaxed font-medium">
-                            <p>
-                                No somos un club convencional, buscamos que tu experiencia en tarima sea inmejorable. Como nuestro propio lema dice, <span className="text-white font-bold">FORJAMOS CAMPEONES.</span>
-                            </p>
-                            <p>
-                                En Anvil Strength no solo te unes a un club, <span className="text-anvil-red font-bold">te unes a una familia.</span> Queremos que tu camino vaya más allá de la competición; por eso, contamos con los mejores entrenadores del panorama para garantizarte un proceso claro, directo y sin trabas. <span className="text-white font-bold">Tú pones el esfuerzo, nosotros la estructura.</span>
-                            </p>
-                            <p>
-                                No construimos perdedores, <span className="text-white font-bold">construimos atletas de alto rendimiento</span>, porque para rendir como tal necesitas planificaciones de alto rendimiento. En un deporte con normas de competición, <span className="text-anvil-red font-bold">entrena con normas de competición.</span>
-                            </p>
-                        </div>
+                        <p className="mt-8 max-w-[62ch] text-t-lg leading-relaxed text-fold-light-ink-muted">
+                            Anvil Strength nació de una idea sencilla: el powerlifting no debería
+                            ser un deporte cerrado. Si quieres competir, ya tienes sitio. No hace
+                            falta que muevas ningún número concreto ni que vengas de ningún lado.
+                        </p>
+
+                        <dl className="mt-12 space-y-8">
+                            {[
+                                {
+                                    t: 'No tiene sede, y es a propósito',
+                                    d: 'Entrenas en tu gimnasio, estés donde estés, y compites bajo el nombre del club. Nadie se muda por entrenar.',
+                                },
+                                {
+                                    t: 'Cuesta cero euros',
+                                    d: 'Unirse no tiene coste. Solo pagas las tasas oficiales de federación y las inscripciones a cada competición, que van íntegras a la AEP.',
+                                },
+                                {
+                                    t: 'Federados en AEP e IPF',
+                                    d: 'Compites en campeonatos oficiales, con marcas homologadas y ranking que cuenta.',
+                                },
+                                {
+                                    t: 'Entrenador y nutricionista',
+                                    d: 'Asignados de verdad, con la programación dentro de la app y contacto directo por chat.',
+                                },
+                            ].map(({ t, d }) => (
+                                <Reveal key={t}>
+                                    <dt className="text-t-xl font-black uppercase tracking-display text-fold-light-ink">
+                                        {t}
+                                    </dt>
+                                    <dd className="mt-2 max-w-[62ch] text-t-base leading-relaxed text-fold-light-ink-muted">
+                                        {d}
+                                    </dd>
+                                </Reveal>
+                            ))}
+                        </dl>
                     </div>
-                    <div className="relative">
-                        <div className="aspect-[4/5] bg-gray-800 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
-                            <img src="/filosofia-competition.jpg" alt="Filosofía" className="w-full h-full object-cover" loading="lazy" />
+
+                    <Reveal className="md:sticky md:top-28">
+                        <div className="overflow-hidden rounded-sheet">
+                            <img
+                                src="/filosofia-competition.jpg"
+                                alt="Un atleta del club bloquea un peso muerto ante los tres jueces"
+                                className="aspect-[4/5] w-full object-cover"
+                                loading="lazy"
+                            />
                         </div>
-                        <div className="absolute -bottom-10 -left-10 w-full h-full border-2 border-anvil-red -z-10 hidden md:block rounded-xl"></div>
-                    </div>
+                        <p className="mt-4 text-t-sm leading-relaxed text-fold-light-ink-muted">
+                            En un deporte con normas de competición, entrena con normas de
+                            competición. Tú pones el esfuerzo; nosotros, la estructura.
+                        </p>
+                    </Reveal>
                 </div>
-            </section>
+            </Fold>
 
-            {/* Benefits Section */}
-            <BenefitsSection />
+            {/* 3. CIFRAS — banda estrecha, no un fold entero. Son un dato
+                   de apoyo, no el argumento. */}
+            <StatsSection />
 
-            {/* Entrenadores Section */}
-            <section id="entrenadores" className="min-h-[70vh] flex flex-col justify-center py-20 bg-[#252525]">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Entrenadores</h2>
-                        <div className="w-20 h-1 bg-anvil-red mx-auto"></div>
-                    </div>
+            {/* 4. CÓMO SE EMPIEZA — los números aquí SÍ son una secuencia
+                   real, no un adorno de sección. */}
+            <HowItWorksSection />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-                        {coaches.map((coach) => (
-                            <div
-                                key={coach.id}
-                                className="group relative overflow-hidden bg-[#1c1c1c] aspect-[3/4] shadow-2xl rounded-xl cursor-pointer"
-                                onClick={() => setSelectedCoach(coach)}
-                            >
-                                <img
-                                    src={coach.image}
-                                    alt={coach.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                                    loading="lazy"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-3xl font-bold text-white uppercase mb-1">{coach.name}</h3>
-                                    <p className="text-anvil-red font-bold tracking-wider mb-4">{coach.role}</p>
-                                    <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                                        <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); window.open(coach.instagram, '_blank'); }}>
-                                            <Instagram size={20} />
-                                        </button>
-                                        <button className="p-2 bg-white text-black hover:bg-anvil-red hover:text-white transition-colors rounded-lg" onClick={(e) => { e.stopPropagation(); if (coach.email) window.location.href = `mailto:${coach.email}`; }}>
-                                            <Mail size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-                                {/* Coach Logo in Bottom Right */}
-                                {coach.logo && (
-                                    <div className="absolute bottom-4 right-4 z-10">
-                                        <img
-                                            src={coach.logo}
-                                            alt={`${coach.name} logo`}
-                                            className="w-16 h-16 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+            {/* =====================================================
+                5. QUÉ TRAE LA APP
+                ===================================================== */}
+            <Fold tone="dark" className="py-24 md:py-28">
+                <div className="max-w-2xl">
+                    <h2 className="text-d-sm font-black uppercase leading-[1.02] text-ink text-balance">
+                        Y una aplicación que hace el trabajo aburrido
+                    </h2>
+                    <p className="mt-5 text-t-lg leading-relaxed text-ink-muted">
+                        La misma que usan los entrenadores del club para programar. Incluida.
+                    </p>
                 </div>
-            </section>
 
-            {/* Atletas Section */}
-            <section id="atletas" className="py-32 bg-[#1c1c1c] overflow-hidden">
-                <div className="max-w-[1400px] mx-auto px-6 mb-16">
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">Nuestros Atletas</h2>
-                            <div className="w-20 h-1 bg-anvil-red"></div>
-                        </div>
+                <StaggerList className="mt-14 grid gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+                    {[
+                        ['Programación semanal', 'Tu entrenador publica la semana y la ves con sus series, kilos y RPE. Registras desde el móvil entre series.'],
+                        ['Vídeo y VBT', 'Subes la serie, tu entrenador la corrige. Si usas encoder, el archivo se asocia a la serie que toca.'],
+                        ['Estadísticas reales', 'Tonelaje, intensidad y progresión por ejercicio. Sin hojas de cálculo.'],
+                        ['Chat directo', 'Con tu entrenador y tu nutricionista. Sin buscar el mensaje entre cien de un grupo.'],
+                        ['Calendario', 'Competiciones, inscripciones y la planificación del año de un vistazo.'],
+                        ['Comunidad', 'Ranking del club, logros y la Arena. Entrenas solo, pero no estás solo.'],
+                    ].map(([t, d]) => (
+                        <StaggerItem key={t}>
+                            <h3 className="text-t-lg font-black uppercase tracking-display text-ink">{t}</h3>
+                            <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">{d}</p>
+                        </StaggerItem>
+                    ))}
+                </StaggerList>
+            </Fold>
+
+            {/* =====================================================
+                6. STAFF TÉCNICO
+                ===================================================== */}
+            <Fold id="entrenadores" tone="light" className="py-24 md:py-32">
+                <Reveal>
+                    <h2 className="text-d-md font-black uppercase leading-[0.95] text-fold-light-ink">
+                        Quién te entrena
+                    </h2>
+                    <p className="mt-5 max-w-[52ch] text-t-lg leading-relaxed text-fold-light-ink-muted">
+                        Personas concretas, con nombre y con historial. Pulsa para ver el suyo.
+                    </p>
+                </Reveal>
+
+                <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {coaches.map((coach) => (
                         <button
-                            onClick={() => setIsTeamModalOpen(true)}
-                            className="hidden md:block text-gray-400 hover:text-white font-bold uppercase tracking-wider text-sm transition-colors"
+                            key={coach.id}
+                            onClick={() => setSelectedCoach(coach)}
+                            className="group relative aspect-[3/4] overflow-hidden rounded-sheet bg-surface-sunken text-left transition-transform duration-base ease-snap hover:-translate-y-1"
                         >
-                            Ver todo el equipo &rarr;
+                            <SafeImage
+                                src={coach.image}
+                                alt={`${coach.name}, ${coach.role} de Anvil Strength`}
+                                className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 p-6">
+                                <span className="text-t-2xs font-black uppercase tracking-widest text-brand">
+                                    Entrenador
+                                </span>
+                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-white">
+                                    {coach.name}
+                                </h3>
+                                <p className="mt-1.5 text-t-sm font-medium text-white/70">{coach.role}</p>
+                            </div>
+                            {coach.logo && (
+                                <img
+                                    src={coach.logo}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="absolute right-5 top-5 h-12 w-12 object-contain opacity-70"
+                                />
+                            )}
                         </button>
-                    </div>
+                    ))}
+
+                    {nutritionists.map((nutri) => (
+                        <div
+                            key={nutri.id}
+                            className="group relative aspect-[3/4] overflow-hidden rounded-sheet bg-surface-sunken"
+                        >
+                            <SafeImage
+                                src={nutri.image}
+                                alt={`${nutri.name}, ${nutri.role} de Anvil Strength`}
+                                className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 p-6">
+                                <span className="text-t-2xs font-black uppercase tracking-widest text-success">
+                                    Nutrición
+                                </span>
+                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-white">
+                                    {nutri.name}
+                                </h3>
+                                <p className="mt-1.5 text-t-sm font-medium text-white/70">{nutri.role}</p>
+                                <div className="mt-4 flex gap-2">
+                                    <a
+                                        href={nutri.instagram}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={`Instagram de ${nutri.name}`}
+                                        className="rounded-field bg-white/10 p-2 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                    >
+                                        <Instagram size={16} />
+                                    </a>
+                                    <a
+                                        href={nutri.contactForm}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={`Formulario de contacto de ${nutri.name}`}
+                                        className="rounded-field bg-white/10 p-2 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                    >
+                                        <FileText size={16} />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Fold>
+
+            {/* =====================================================
+                7. ATLETAS — carrusel infinito
+                ===================================================== */}
+            <section id="atletas" className="overflow-hidden bg-surface-canvas py-24 md:py-28">
+                <div className="mx-auto mb-12 flex max-w-[1180px] items-end justify-between gap-6 px-6 md:px-10">
+                    <h2 className="text-d-sm font-black uppercase leading-none text-ink">
+                        Nuestros atletas
+                    </h2>
+                    <button
+                        onClick={() => setIsTeamModalOpen(true)}
+                        className="shrink-0 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
+                    >
+                        Ver equipo
+                    </button>
                 </div>
 
-                {/* Infinite Carousel */}
-                <div className="relative group/carousel">
-                    {/* Gradient Fades */}
-                    <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
-                    <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#1c1c1c] to-transparent z-10 pointer-events-none" />
+                <div className="group/carousel relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-surface-canvas to-transparent md:w-28" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-surface-canvas to-transparent md:w-28" />
 
-                    {/* Navigation Arrows */}
                     <button
                         onClick={() => handleManualNav('prev')}
-                        className="absolute left-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
+                        aria-label="Atletas anteriores"
+                        className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-pill bg-surface-sunken/80 p-3 text-ink opacity-0 transition-opacity duration-fast hover:bg-brand group-hover/carousel:opacity-100 focus-visible:opacity-100 md:block"
                     >
-                        <ChevronLeft size={32} />
+                        <ChevronLeft size={22} />
                     </button>
                     <button
                         onClick={() => handleManualNav('next')}
-                        className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 bg-black/50 hover:bg-anvil-red text-white rounded-full backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100"
+                        aria-label="Atletas siguientes"
+                        className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-pill bg-surface-sunken/80 p-3 text-ink opacity-0 transition-opacity duration-fast hover:bg-brand group-hover/carousel:opacity-100 focus-visible:opacity-100 md:block"
                     >
-                        <ChevronRight size={32} />
+                        <ChevronRight size={22} />
                     </button>
 
                     <div
@@ -335,196 +486,169 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                         <motion.div
                             className="flex gap-4 px-4"
                             animate={{ x: -(carouselIndex * (280 + 16)) }}
-                            transition={isTransitioning ? {
-                                duration: 0.8,
-                                ease: [0.4, 0, 0.2, 1]
-                            } : { duration: 0 }}
+                            transition={isTransitioning ? { duration: 0.8, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}
                         >
                             {[...athletes, ...athletes, ...athletes, ...athletes].map((athlete, index) => (
-                                <div
+                                <button
                                     key={`${athlete.id}-${index}`}
-                                    className="relative flex-shrink-0 w-[280px] aspect-[4/5] bg-[#252525] rounded-xl overflow-hidden cursor-pointer shadow-xl group"
                                     onClick={() => setSelectedAthlete(athlete)}
+                                    className="group relative aspect-[4/5] w-[280px] shrink-0 overflow-hidden rounded-sheet bg-surface-raised text-left"
                                 >
-                                    <img src={athlete.image} alt={athlete.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" loading="lazy" />
-                                    <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
-                                        <p className="text-white font-bold uppercase">{athlete.name}</p>
-                                        <p className="text-xs text-gray-400 uppercase">{athlete.category}</p>
+                                    <SafeImage
+                                        src={athlete.image}
+                                        alt={`${athlete.name}, categoría ${athlete.category}`}
+                                        className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                        loading="lazy"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-sunken to-transparent p-4 pt-12">
+                                        <p className="text-t-base font-black uppercase leading-tight text-white">
+                                            {athlete.name}
+                                        </p>
+                                        <p className="text-t-xs uppercase tracking-wide text-white/60">
+                                            {athlete.category}
+                                        </p>
                                     </div>
-                                </div>
+                                </button>
                             ))}
                         </motion.div>
                     </div>
                 </div>
             </section>
 
-            {/* Reviews Section */}
+            {/* =====================================================
+                8. LOGROS
+                ===================================================== */}
+            <Fold id="logros" tone="black" className="py-24 md:py-32">
+                <div className="flex flex-wrap items-end justify-between gap-6">
+                    <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink">
+                        Lo que ha ganado
+                        <br />
+                        el club
+                    </h2>
+                    <button
+                        onClick={() => setIsAllAchievementsModalOpen(true)}
+                        className="group flex items-center gap-1.5 text-t-sm font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:text-ink"
+                    >
+                        Historial completo
+                        <ChevronRight size={16} className="transition-transform duration-fast ease-snap group-hover:translate-x-1" />
+                    </button>
+                </div>
+
+                <StaggerList className="mt-14 grid gap-4 md:grid-cols-3">
+                    {featuredAchievements.slice(0, 3).map((item) => (
+                        <StaggerItem key={item.id}>
+                            <button
+                                onClick={() => setSelectedAchievement(item)}
+                                className="flex h-full w-full flex-col rounded-sheet bg-surface-canvas p-8 text-left transition-transform duration-base ease-snap hover:-translate-y-1"
+                            >
+                                <Trophy className="h-8 w-8 text-brand" aria-hidden="true" />
+                                <h3 className="mt-8 text-t-2xl font-black uppercase leading-tight tracking-display text-ink">
+                                    {item.title}
+                                </h3>
+                                <p className="mt-auto pt-8 text-t-lg font-black uppercase tracking-display text-brand">
+                                    {item.result}
+                                </p>
+                            </button>
+                        </StaggerItem>
+                    ))}
+                </StaggerList>
+            </Fold>
+
             <ReviewsSection isAuthenticated={!!user} />
 
-            {/* Logros Section - Versión Épica */}
-            <section id="logros" className="min-h-screen flex flex-col justify-center py-32 bg-[#0a0a0a]">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    <div className="flex justify-between items-end mb-20">
-                        <div>
-                            <h2 className="text-4xl md:text-7xl font-black tracking-tighter uppercase mb-4 text-white italic">
-                                 <span className="text-anvil-red drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]">Logros</span> del club
-                            </h2>
-                            <div className="w-32 h-2 bg-anvil-red"></div>
-                        </div>
-                        <button 
-                            onClick={() => setIsAllAchievementsModalOpen(true)}
-                            className="group flex items-center gap-2 text-gray-500 hover:text-white font-bold uppercase tracking-[0.2em] text-xs transition-all"
-                        >
-                            VER HISTORIAL COMPLETO 
-                            <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
-                        </button>
-                    </div>
+            {/* =====================================================
+                9. AFILIACIÓN — el fold de conversión
+                =====================================================
+                Es el único drenado en rojo de toda la página. Funciona
+                porque llega después de nueve pantallas donde el rojo
+                casi no ha aparecido: si el rojo estuviera por todas
+                partes, aquí no diría nada.                            */}
+            <Fold id="afiliacion" tone="brand" className="py-24 md:py-32">
+                <div className="mx-auto max-w-2xl text-center">
+                    <Reveal>
+                        <p className="text-t-sm font-black uppercase tracking-widest text-brand-ink/70">
+                            Gratis · Sin cuota · Sin compromiso
+                        </p>
+                        <h2 className="mt-5 text-d-md font-black uppercase leading-[0.95] text-brand-ink text-balance">
+                            ¿Te vienes?
+                        </h2>
+                        <p className="mx-auto mt-6 max-w-[48ch] text-t-lg leading-relaxed text-brand-ink/85">
+                            Créate la cuenta y entra a ver la app. Si luego quieres competir con
+                            nosotros, rellenas la ficha de inscripción y listo.
+                        </p>
+                    </Reveal>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {featuredAchievements.slice(0, 3).map((item, index) => (
-                            <motion.div 
-                                key={item.id} 
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1, duration: 0.6 }}
-                                viewport={{ once: true }}
-                                whileHover={{ y: -20 }}
-                                onClick={() => setSelectedAchievement(item)}
-                                className="relative group cursor-pointer"
-                            >
-                                {/* Efecto de resplandor exterior al pasar el ratón */}
-                                <div className="absolute -inset-1 bg-gradient-to-b from-anvil-red/30 to-transparent rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition duration-700" />
-                                
-                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#080808] p-12 rounded-2xl border border-white/5 group-hover:border-anvil-red/40 transition-all duration-500 flex flex-col items-center text-center h-full shadow-2xl overflow-hidden">
-                                    
-                                    {/* Número decorativo de fondo */}
-                                    <span className="absolute -top-4 -right-2 text-9xl font-black text-white/[0.02] group-hover:text-anvil-red/[0.05] transition-colors select-none italic">
-                                        {index + 1}
-                                    </span>
-
-                                    <div className="relative mb-10">
-                                        {/* Brillo detrás del trofeo */}
-                                        <div className="absolute -inset-6 bg-anvil-red/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                        <Trophy className="h-20 w-20 text-anvil-red relative drop-shadow-[0_0_20px_rgba(220,38,38,0.6)] group-hover:scale-110 transition-transform duration-500" />
-                                    </div>
-                                    
-                                    <h3 className="text-2xl md:text-4xl font-black text-white uppercase mb-6 leading-[0.9] tracking-tighter italic">
-                                        {item.title}
-                                    </h3>
-                                    
-                                    <div className="mt-auto w-full pt-8 border-t border-white/5">
-                                        <p className="text-xl md:text-2xl text-anvil-red font-black uppercase tracking-tighter italic group-hover:tracking-normal transition-all">
-                                            {item.result}
-                                        </p>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Afiliación Section */}
-            <section id="afiliacion" className="min-h-screen flex flex-col justify-center py-32 bg-anvil-red relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
-                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 text-white uppercase">
-                        ¿Listo para competir?
-                    </h2>
-                    <p className="text-white/90 text-xl mb-12 font-medium">
-                        Únete a Anvil Strength. Descarga los documentos necesarios y comienza tu camino hacia la tarima.
-                    </p>
-
-                    <div className="flex flex-col md:flex-row gap-6 justify-center">
-                        <a href="https://typebot.co/lead-generation-hhwa24t" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-black text-white hover:bg-gray-900 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
-                            <FileText size={20} />
-                            Formulario de Inscripción
-                        </a>
-                        <button className="flex items-center justify-center gap-3 bg-white text-anvil-red hover:bg-gray-100 py-4 px-8 rounded-xl font-bold uppercase tracking-wider transition-all shadow-2xl">
-                            <FileText size={20} />
-                            Normativa del Equipo
-                        </button>
-                    </div>
-                </div>
-
-                {/* Federation Logos */}
-                <div className="absolute bottom-[10%] md:bottom-8 left-0 right-0 flex justify-center md:left-auto md:right-8 md:justify-end items-center gap-4 z-10">
-                    <a
-                        href="https://www.powerlifting.sport/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/Logo-ipf.png"
-                            alt="IPF Approved"
-                            className="h-[54px] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity translate-x-8 md:translate-x-0"
-                        />
-                    </a>
-                    <a
-                        href="https://powerliftingspain.es/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:scale-105 transition-transform"
-                    >
-                        <img
-                            src="/logo-aep.png"
-                            alt="AEP Federación"
-                            className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
-                        />
-                    </a>
-                </div>
-            </section>
-
-            {/* Contacto Section */}
-            <section id="contacto" className="py-20 bg-[#1c1c1c] border-t border-white/5">
-                <div className="max-w-4xl mx-auto px-6 text-center">
-                    <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-2 text-white">Contacto</h2>
-                    <div className="w-20 h-1 bg-anvil-red mx-auto mb-12"></div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Instagram */}
+                    <Reveal delay={0.08} className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        {!user ? (
+                            <PressButton tone="light" onClick={onSignupClick ?? onLoginClick} className="w-full sm:w-auto">
+                                Crear cuenta gratis
+                            </PressButton>
+                        ) : (
+                            <PressButton tone="light" href="https://typebot.co/lead-generation-hhwa24t" className="w-full sm:w-auto">
+                                Ficha de inscripción
+                            </PressButton>
+                        )}
                         <a
-                            href="https://www.instagram.com/anvilstrength_"
+                            href="/normativa_equipo.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
+                            className="inline-flex items-center gap-2 text-t-sm font-bold uppercase tracking-wide text-brand-ink/80 underline-offset-8 transition-colors duration-fast hover:text-brand-ink hover:underline"
                         >
-                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
-                                <Instagram size={32} />
-                            </div>
-                            <h3 className="font-bold text-xl uppercase mb-2 text-white">Instagram</h3>
-                            <p className="text-gray-400 text-sm">@anvilstrength_</p>
+                            <FileText size={16} />
+                            Normativa del equipo
                         </a>
+                    </Reveal>
 
-                        {/* Email */}
-                        <a
-                            href="mailto:anvilstrengthclub@gmail.com"
-                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
-                        >
-                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
-                                <Mail size={32} />
-                            </div>
-                            <h3 className="font-bold text-xl uppercase mb-2 text-white">Email</h3>
-                            <p className="text-gray-400 text-sm">anvilstrengthclub@gmail.com</p>
+                    <Reveal delay={0.16} className="mt-16 flex items-center justify-center gap-8">
+                        <a href="https://www.powerlifting.sport/" target="_blank" rel="noopener noreferrer">
+                            <img
+                                src="/Logo-ipf.png"
+                                alt="IPF — International Powerlifting Federation"
+                                className="h-11 w-auto object-contain opacity-80 transition-opacity duration-fast hover:opacity-100"
+                            />
                         </a>
-
-                        {/* WhatsApp */}
-                        <a
-                            href="https://wa.me/34640761674"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-[#252525] p-8 rounded-xl border border-white/5 hover:border-anvil-red/50 hover:-translate-y-2 transition-all group shadow-xl flex flex-col items-center"
-                        >
-                            <div className="bg-white/5 p-4 rounded-full mb-4 group-hover:bg-anvil-red/20 group-hover:text-anvil-red transition-colors">
-                                <MessageCircle size={32} />
-                            </div>
-                            <h3 className="font-bold text-xl uppercase mb-2 text-white">WhatsApp</h3>
-                            <p className="text-gray-400 text-sm">+34 640 76 16 74</p>
+                        <a href="https://powerliftingspain.es/" target="_blank" rel="noopener noreferrer">
+                            <img
+                                src="/logo-aep.png"
+                                alt="AEP — Asociación Española de Powerlifting"
+                                className="h-10 w-auto object-contain opacity-80 transition-opacity duration-fast hover:opacity-100"
+                            />
                         </a>
-                    </div>
+                    </Reveal>
                 </div>
-            </section>
+            </Fold>
+
+            <FAQSection />
+
+            {/* =====================================================
+                10. CONTACTO
+                =====================================================
+                Tres enlaces, no tres tarjetas. Es una lista de formas de
+                escribirnos; envolverlas en cajas con icono y borde no
+                añadía ninguna información.                             */}
+            <Fold id="contacto" tone="dark" className="border-t border-subtle py-20">
+                <h2 className="text-d-sm font-black uppercase leading-none text-ink">Hablamos</h2>
+
+                <div className="mt-10 grid gap-px overflow-hidden rounded-sheet bg-[var(--border-subtle)] sm:grid-cols-3">
+                    {[
+                        { icon: Instagram, label: 'Instagram', value: '@anvilstrength_', href: 'https://www.instagram.com/anvilstrength_', external: true },
+                        { icon: Mail, label: 'Email', value: 'anvilstrengthclub@gmail.com', href: 'mailto:anvilstrengthclub@gmail.com', external: false },
+                        { icon: MessageCircle, label: 'WhatsApp', value: '+34 640 76 16 74', href: 'https://wa.me/34640761674', external: true },
+                    ].map(({ icon: Icon, label, value, href, external }) => (
+                        <a
+                            key={label}
+                            href={href}
+                            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                            className="group flex flex-col gap-3 bg-surface-canvas p-7 transition-colors duration-fast hover:bg-surface-raised"
+                        >
+                            <Icon size={20} className="text-ink-subtle transition-colors duration-fast group-hover:text-brand" aria-hidden="true" />
+                            <span className="text-t-lg font-black uppercase tracking-display text-ink">{label}</span>
+                            <span className="break-all text-t-sm text-ink-muted">{value}</span>
+                        </a>
+                    ))}
+                </div>
+            </Fold>
+
             <PublicFooter />
 
             <TeamModal
@@ -540,113 +664,79 @@ export function LandingPage({ onLoginClick, user }: LandingPageProps) {
                 athlete={selectedAthlete}
             />
 
-            {/* ... resto de tus secciones y modales anteriores ... */}
-
             <CoachDetailsModal
                 isOpen={!!selectedCoach}
                 onClose={() => setSelectedCoach(null)}
                 coach={selectedCoach}
             />
 
-                        {/* Añade esto al final de tu return, antes del último </div> */}
-            <AchievementModal 
-                isOpen={!!selectedAchievement} 
-                onClose={() => setSelectedAchievement(null)} 
-                achievement={selectedAchievement} 
+            <AchievementModal
+                isOpen={!!selectedAchievement}
+                onClose={() => setSelectedAchievement(null)}
+                achievement={selectedAchievement}
             />
 
-            <AllAchievementsModal 
-                isOpen={isAllAchievementsModalOpen} 
-                onClose={() => setIsAllAchievementsModalOpen(false)} 
-                achievements={featuredAchievements} 
-                onSelect={setSelectedAchievement} 
+            <AllAchievementsModal
+                isOpen={isAllAchievementsModalOpen}
+                onClose={() => setIsAllAchievementsModalOpen(false)}
+                achievements={featuredAchievements}
+                onSelect={setSelectedAchievement}
             />
 
-            {/* --- TYPEBOT BUBBLE (Configurado para el lado izquierdo vía CSS) --- */}
-            <Bubble
-                typebot="lead-generation-hhwa24t"
-                apiHost="https://typebot.io"
-            />
+            {/* --- TYPEBOT BUBBLE (se monta bajo demanda, ver import) --- */}
+            {isBotMounted && (
+                <Suspense fallback={null}>
+                    <Bubble typebot="lead-generation-hhwa24t" apiHost="https://typebot.io" />
+                </Suspense>
+            )}
 
-            {/* --- MASCOTA ANVIL: EL "LOCUTOR" (AHORA A LA DERECHA) --- */}
-            <motion.div
-                initial={{ opacity: 0, x: 50 }} // Entra desde la derecha
-                animate={{ 
-                    opacity: 1, 
-                    x: 0,
-                    y: [0, -10, 0] 
+            {/* =====================================================
+                MASCOTA
+                =====================================================
+                Es el único elemento de la página que se mueve solo, y por
+                eso puede permitírselo: es el punto de entrada al chat y
+                tiene que pedir el clic. El balanceo se para con
+                `prefers-reduced-motion` — una animación infinita es
+                justo la que peor sienta a quien la desactiva.          */}
+            <motion.button
+                type="button"
+                aria-label="Abrir el chat de Anvil Strength"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -8, 0] }}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.94 }}
+                transition={{
+                    y: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+                    duration: 0.4,
+                    ease: [0.22, 1, 0.36, 1],
                 }}
-                whileHover={{ 
-                    scale: 1.2,
-                    rotate: [0, -5, 5, 0],
-                    transition: { duration: 0.3 } 
+                onClick={() => {
+                    setIsBotMounted(true);
+                    const api = (window as { Typebot?: { toggle?: () => void } }).Typebot;
+                    if (api?.toggle) api.toggle();
+                    else setPendingOpen(true);
                 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ 
-                    y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                    duration: 0.5 
-                }}
-                onClick={() => (window as any).Typebot.toggle()}
-                // CAMBIO CLAVE: right-6 en lugar de left-6
-                className="fixed bottom-6 right-6 z-[100] cursor-pointer group"
+                className="group fixed bottom-6 right-6 z-toast cursor-pointer"
             >
-                {/* Bocadillo de aviso (Ajustado para alinearse a la derecha) */}
-                <div className="absolute -top-16 right-0 bg-white text-black text-[10px] font-[900] px-4 py-2 rounded-2xl rounded-br-none whitespace-nowrap uppercase italic shadow-2xl border-2 border-anvil-red group-hover:bg-anvil-red group-hover:text-white transition-colors">
-                    ¿HABLAMOS, ANIMAL? 🦍
-                </div>
-
-                {/* TU MASCOTA */}
-                {/* --- ESTO AÑADE LAS PATAS Y OJOS --- */}
-                <AnvilMascot className="w-24 h-24 md:w-32 md:h-32" />
-            </motion.div>
+                <span className="absolute -top-12 right-0 whitespace-nowrap rounded-card rounded-br-none bg-white px-3.5 py-2 text-t-2xs font-black uppercase text-fold-light-ink shadow-overlay transition-colors duration-fast group-hover:bg-brand group-hover:text-brand-ink">
+                    ¿Hablamos?
+                </span>
+                <AnvilMascot className="h-24 w-24 md:h-28 md:w-28" />
+            </motion.button>
         </div>
     );
 }
 
 
-function MascotWithChat() {
-    const [messageIndex, setMessageIndex] = useState(0);
-    const messages = [
-        "¿Necesitas ayuda?",
-        "¿Quieres afiliarte?",
-        "¡Forja tu legado!",
-        "¿Listo para competir?"
-    ];
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setMessageIndex((prev) => (prev + 1) % messages.length);
-        }, 5000); // Cambia mensaje cada 5 segundos
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <div className="fixed bottom-4 left-4 z-50 hidden md:block group/mascot">
-            <AnvilMascot className="w-24 h-24 drop-shadow-2xl hover:scale-110 transition-transform cursor-pointer" />
-
-            {/* Chat Bubble Dinámico */}
-            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white text-black px-4 py-3 rounded-2xl font-bold uppercase text-xs shadow-xl whitespace-nowrap pointer-events-none">
-                <motion.div
-                    key={messageIndex}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    {messages[messageIndex]}
-                </motion.div>
-                {/* Flechita del bocadillo */}
-                <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-3 h-3 bg-white rotate-45"></div>
-            </div>
-        </div>
-    );
-}
 
 function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean, onClose: () => void, achievement: any }) {
     const [imgIndex, setImgIndex] = useState(0);
+    // Fotos que el navegador no ha podido decodificar. Ver SafeImage: el
+    // rewrite de SPA devuelve 200 con HTML cuando el archivo no existe.
+    const [brokenImgs, setBrokenImgs] = useState<Record<number, boolean>>({});
 
     // Reiniciar índice al abrir nuevo logro
-    useEffect(() => { setImgIndex(0); }, [achievement]);
+    useEffect(() => { setImgIndex(0); setBrokenImgs({}); }, [achievement]);
 
     if (!isOpen || !achievement) return null;
 
@@ -665,9 +755,18 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean, o
 
                     {/* Lado Izquierdo: Carrusel con Swipe */}
                     <div className="w-full md:w-3/5 bg-black relative aspect-video md:aspect-auto overflow-hidden group/img">
+                        {brokenImgs[imgIndex] && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-600">
+                                <Trophy size={32} />
+                                <p className="text-[11px] font-bold uppercase tracking-widest">Foto no disponible</p>
+                            </div>
+                        )}
                         <motion.img 
                             key={imgIndex}
                             src={achievement.images[imgIndex]} 
+                            alt={achievement.title}
+                            onError={() => setBrokenImgs(prev => ({ ...prev, [imgIndex]: true }))}
+                            style={{ display: brokenImgs[imgIndex] ? 'none' : undefined }}
                             className="w-full h-full object-cover cursor-grab active:cursor-grabbing"
                             initial={{ x: 100, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}

@@ -1,7 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
-import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity } from 'lucide-react';
+import { UserProfile, useUser } from '../../../hooks/useUser';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Utensils, ClipboardCheck, Swords } from 'lucide-react';
+import { AthleteNutritionView } from '../../athlete/components/AthleteNutritionView';
+import { CoachCheckInsTab } from '../../forms/CoachCheckInsTab';
+import { GamePlanEditor } from './GamePlanEditor';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import CoachVbtTab from './CoachVbtTab';
@@ -14,14 +18,17 @@ interface CoachAthleteDetailsProps {
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'competitions' | 'vbt';
+type Tab = 'planning' | 'competitions' | 'vbt' | 'nutrition' | 'checkins';
 
 export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsProps) {
+    const { data: currentUser } = useUser();
+    const isNutritionist = currentUser?.role === 'nutritionist';
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
+    const [gamePlanCompetition, setGamePlanCompetition] = useState<CompetitionAssignment | null>(null);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -119,31 +126,36 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
 
                 {/* Tabs Navigation */}
                 <div className="w-full md:w-auto pb-1 md:pb-0">
-                    <div className="grid grid-cols-3 gap-1 md:flex bg-black/20 p-1 rounded-lg">
-                        <button
-                            onClick={() => setActiveTab('planning')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'planning' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-gray-400 hover:text-white'
-                            }`}
-                        >
-                            <FileText size={14} className="md:w-4 md:h-4" /> <span className="truncate">Planning</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('vbt')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'vbt' ? 'bg-[#0ea5e9] text-black shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'text-gray-400 hover:text-white'
-                            }`}
-                        >
-                            <Activity size={14} className="md:w-4 md:h-4" /> <span className="truncate">VBT</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('competitions')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-gray-400 hover:text-white'
-                            }`}
-                        >
-                            <Trophy size={14} className="md:w-4 md:h-4" /> <span className="truncate">Competición</span>
-                        </button>
+                    <div className={`grid ${isNutritionist ? 'grid-cols-5' : 'grid-cols-4'} gap-1 md:flex bg-black/20 p-1 rounded-lg`}>
+                        {([
+                            { id: 'planning' as Tab, label: 'Planning', icon: <FileText size={14} className="md:w-4 md:h-4" />, pill: 'bg-anvil-red' },
+                            { id: 'vbt' as Tab, label: 'VBT', icon: <Activity size={14} className="md:w-4 md:h-4" />, pill: 'bg-[#0ea5e9]' },
+                            { id: 'competitions' as Tab, label: 'Competición', icon: <Trophy size={14} className="md:w-4 md:h-4" />, pill: 'bg-[#f59e0b]' },
+                            { id: 'checkins' as Tab, label: 'Check-ins', icon: <ClipboardCheck size={14} className="md:w-4 md:h-4" />, pill: 'bg-purple-500' },
+                            ...(isNutritionist ? [{ id: 'nutrition' as Tab, label: 'Nutrición', icon: <Utensils size={14} className="md:w-4 md:h-4" />, pill: 'bg-emerald-500' }] : [])
+                        ]).map(tab => {
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`relative px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
+                                        isActive ? 'text-black' : 'text-gray-400 hover:text-white'
+                                    }`}
+                                >
+                                    {isActive && (
+                                        <motion.span
+                                            layoutId="athlete-tab-pill"
+                                            className={`absolute inset-0 rounded-md ${tab.pill}`}
+                                            transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                                        />
+                                    )}
+                                    <span className="relative flex items-center gap-2">
+                                        {tab.icon} <span className="truncate">{tab.label}</span>
+                                    </span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -165,11 +177,13 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                                 <WorkoutBuilder
                                     athleteId={athleteId}
                                     blockId={selectedBlockId}
+                                    athleteName={athlete.full_name}
                                 />
                             </div>
                         ) : (
                             <TrainingBlockList
                                 athleteId={athleteId}
+                                athleteName={athlete.full_name || undefined}
                                 onSelectBlock={(block: TrainingBlock) => setSelectedBlockId(block.id)}
                             />
                         )}
@@ -239,13 +253,22 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                                                 </div>
                                             </div>
 
-                                            <button
-                                                onClick={() => handleRemoveCompetition(comp.id, comp.name)}
-                                                className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group"
-                                            >
-                                                <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
-                                                Eliminar
-                                            </button>
+                                            <div className="self-end md:self-center flex items-center gap-2">
+                                                <button
+                                                    onClick={() => setGamePlanCompetition(comp)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-anvil-red/10 hover:bg-anvil-red/20 text-anvil-red rounded-lg transition-colors text-sm font-bold uppercase tracking-wide"
+                                                >
+                                                    <Swords size={16} />
+                                                    Game Plan
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRemoveCompetition(comp.id, comp.name)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group"
+                                                >
+                                                    <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                                                    Eliminar
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -261,7 +284,32 @@ export function CoachAthleteDetails({ athleteId, onBack }: CoachAthleteDetailsPr
                     </div>
                 )}
 
+                {/* 5. NUTRICIÓN (solo nutricionistas) */}
+                {activeTab === 'nutrition' && isNutritionist && (
+                    <div className="max-w-4xl mx-auto w-full pb-6">
+                        <AthleteNutritionView user={athlete} />
+                    </div>
+                )}
+
+                {/* 6. CHECK-INS */}
+                {activeTab === 'checkins' && currentUser && (
+                    <div className="w-full pb-6">
+                        <CoachCheckInsTab athleteId={athleteId} coachId={currentUser.id} />
+                    </div>
+                )}
+
             </div>
+            {/* GAME PLAN EDITOR */}
+            {gamePlanCompetition && currentUser && athlete && (
+                <GamePlanEditor
+                    coachId={currentUser.id}
+                    athleteId={athleteId}
+                    athleteName={athlete.full_name || 'Atleta'}
+                    competition={gamePlanCompetition}
+                    onClose={() => setGamePlanCompetition(null)}
+                />
+            )}
+
             <ConfirmationModal
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}

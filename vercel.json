@@ -1,1 +1,42 @@
-{"rewrites":[{"source":"/(.*)","destination":"/index.html"}]}
+{
+  "_comment_rewrites": "El comodín anterior servía index.html para CUALQUIER ruta no encontrada, incluidas las imágenes: una foto que falta devolvía 200 con text/html en vez de 404, así que no salía en la web y no aparecía ningún error en consola ni en la pestaña de red. El lookahead negativo excluye las extensiones de fichero para que un asset ausente falle de forma visible.",
+  "rewrites": [
+    {
+      "source": "/((?!.*\\.(?:jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm|pdf|json|xml|txt|js|css|map|woff2?)$).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=(), interest-cohort=()"
+        },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/push-sw.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    }
+  ]
+}

@@ -33,13 +33,5 @@ export const coaches: Coach[] = [
     contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSfACXcjom-FbRi1a-PNyrJdvY_wAO9Hpa3_hktaNY82QDx4tg/viewform",
     bio: "Apasionado del powerlifting y cansado de un mundo donde a todo el mundo le dan una programación de copiar y pegar, donde todo se basa en una escala de RPE del 1 al 10 sin baremos intermedios y sin datos confiables. Por ello, implemento las técnicas más avanzadas con tal de recopilar todos los datos posibles de ti y tus levantamientos, convirtiendo una sensación en números que se pueden tratar para conocerte mejor como atleta. No dejes ningún entrenamiento al azar. En un deporte con normas de competición, entrena con ellas."
   },
-  {
-    id: 3,
-    name: "Javier Rubio",
-    role: "NUTRICIONISTA DEPORTIVO",
-    image: "/Nutricionistas/Javier Rubio Nutricionista Foto Presentacion.jpeg",
-    instagram: "https://www.instagram.com/javitenutre?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
-    contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSdvFzfh0A97R6U3zXbllOsDgSEP-KTs6zQi8RKtDcWlBZ_nTQ/viewform?usp=sf_link",
-    bio: "Especialista en nutrición deportiva enfocada al rendimiento y la composición corporal. Ayudo a atletas de fuerza a maximizar sus resultados a través de estrategias nutricionales personalizadas y basadas en la evidencia.",
-  }
 ];
+

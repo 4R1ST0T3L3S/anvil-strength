@@ -5,8 +5,10 @@ import {
     Utensils,
     Calendar,
     Trophy,
-    User
+    User,
+    MessageCircle
 } from 'lucide-react';
+import { ChatView } from '../../chat/ChatView';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 
 import { WorkoutLogger } from '../../training/components/WorkoutLogger';
@@ -25,9 +27,9 @@ interface UserDashboardProps {
 }
 
 // Eliminamos 'arena' de los tipos de vista interna
-type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'profile';
+type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'chat' | 'profile';
 
-export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps) {
+export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const [currentView, setCurrentView] = useState<AthleteView>('home');
     const { refetch } = useUser();
 
@@ -75,6 +77,12 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
             isActive: currentView === 'calendar'
         },
         {
+            icon: <MessageCircle size={20} />,
+            label: 'Mensajes',
+            onClick: () => setCurrentView('chat'),
+            isActive: currentView === 'chat'
+        },
+        {
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
@@ -89,7 +97,7 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
                 return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view as AthleteView)} />;
             case 'planning':
                 if (user.has_access === false) return <RestrictedFeature title="Planificación Premium" />;
-                return <WorkoutLogger athleteId={user.id} />;
+                return <WorkoutLogger athleteId={user.id} athleteName={user.full_name} />;
             case 'nutrition':
                 if (user.has_access === false) return <RestrictedFeature title="Nutrición Premium" />;
                 return <AthleteNutritionView user={user} />;
@@ -101,6 +109,8 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
                         <CalendarSection />
                     </div>
                 );
+            case 'chat':
+                return <ChatView user={user} />;
             case 'profile':
                 return <ProfileSection user={user} onUpdate={() => refetch()} />;
             default:
@@ -108,9 +118,24 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
         }
     };
 
+    const viewTitles: Record<AthleteView, string> = {
+        home: '',
+        planning: 'Mi Planificación',
+        nutrition: 'Mi Nutrición',
+        competitions: 'Mis Competiciones',
+        calendar: 'Calendario AEP',
+        chat: 'Mensajes',
+        profile: 'Mi Perfil'
+    };
+
     return (
         <DashboardLayout
             menuItems={menuItems}
+            userId={user.id}
+            title={viewTitles[currentView]}
+            onBack={currentView !== 'home' ? () => setCurrentView('home') : undefined}
+            onLogout={onLogout}
+            userName={user.full_name}
         >
             {renderContent()}
         </DashboardLayout>

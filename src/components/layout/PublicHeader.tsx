@@ -3,14 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useUser } from '../../hooks/useUser';
 
 interface PublicHeaderProps {
     onLoginClick: () => void;
+    onSignupClick?: () => void;
 }
 
-export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
+export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { data: user } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -103,8 +106,19 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                     ))}
                 </nav>
 
-                <div className="flex items-center space-x-4 md:space-x-6">
+                <div className="flex items-center space-x-3 md:space-x-4">
                     <SmartAuthButton variant="ghost" onLoginClick={onLoginClick} />
+                    {/* El alta solo se ofrece a quien no ha entrado todavía.
+                        SmartAuthButton ya cambia a "Ir a mi panel" cuando hay
+                        sesión, y dos botones de cuenta a la vez confunden. */}
+                    {onSignupClick && !user && (
+                        <button
+                            onClick={onSignupClick}
+                            className="hidden sm:inline-flex items-center justify-center rounded-lg bg-anvil-red px-5 py-2 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-anvil-red/20 transition-colors hover:bg-red-700"
+                        >
+                            Crear cuenta
+                        </button>
+                    )}
                     <button className="hidden md:block text-gray-300 hover:text-white relative">
                         <ShoppingBag className="h-5 w-5" />
                         <span className="absolute -top-2 -right-2 bg-anvil-red text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">0</span>
@@ -179,6 +193,18 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                                         {link.name}
                                     </motion.a>
                                 ))}
+
+                                {onSignupClick && !user && (
+                                    <motion.button
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.1 + navLinks.length * 0.05 }}
+                                        onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
+                                        className="mt-4 w-full max-w-xs rounded-xl bg-anvil-red px-6 py-4 text-base font-black uppercase tracking-wider text-white shadow-lg shadow-anvil-red/20"
+                                    >
+                                        Crear cuenta
+                                    </motion.button>
+                                )}
                             </nav>
                         </div>
 
