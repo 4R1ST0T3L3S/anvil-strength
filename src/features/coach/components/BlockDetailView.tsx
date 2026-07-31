@@ -38,9 +38,9 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#1c1c1c]">
+        <div className="flex flex-col h-full bg-[#0a0a0a]">
             {/* Header */}
-            <div className="border-b border-white/5 bg-[#252525] p-6">
+            <div className="border-b border-white/5 bg-[#0a0a0a] p-6">
                 <div className="flex items-center gap-4 mb-4">
                     <button
                         onClick={onBack}
@@ -112,7 +112,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                         {sessions.map((session) => (
                             <div
                                 key={session.id}
-                                className="group bg-[#252525] border border-white/5 rounded-xl p-4 hover:border-anvil-red/30 transition-all cursor-pointer"
+                                className="group bg-[#0a0a0a] border border-white/5 rounded-xl p-4 hover:border-anvil-red/30 transition-all cursor-pointer"
                                 onClick={() => onSelectSession(session)}
                             >
                                 <div className="flex items-center justify-between">

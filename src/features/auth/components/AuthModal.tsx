@@ -162,7 +162,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-[#1c1c1c] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl p-8">
+      <div className="relative bg-[#0a0a0a] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl p-8">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
@@ -202,7 +202,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                 type="text"
                 placeholder="Apodo (Ej: El Toro)"
                 autoComplete="nickname"
-                className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
+                className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
                 value={formData.nickname}
                 onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                 required={!isLogin}
@@ -220,7 +220,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="email"
               placeholder="Email"
               autoComplete="username email"
-              className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -238,7 +238,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="password"
               placeholder="Contraseña"
               autoComplete={isLogin ? "current-password" : "new-password"}
-              className="w-full bg-[#252525] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -266,7 +266,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-[#1c1c1c] text-gray-500 font-bold uppercase tracking-wider">O continuar con</span>
+            <span className="px-4 bg-[#0a0a0a] text-gray-500 font-bold uppercase tracking-wider">O continuar con</span>
           </div>
         </div>
 
@@ -274,7 +274,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-[#252525] hover:bg-[#303030] text-white border border-white/10 font-black uppercase py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
+          className="w-full bg-[#0a0a0a] hover:bg-[#303030] text-white border border-white/10 font-black uppercase py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
         >
           {isGoogleLoading ? (
             <Loader className="animate-spin" size={20} />

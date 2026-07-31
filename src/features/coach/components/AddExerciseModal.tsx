@@ -79,10 +79,10 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#1c1c1c] w-full max-w-2xl h-[80vh] rounded-2xl border border-white/10 shadow-2xl flex flex-col"
+                    className="relative bg-[#0a0a0a] w-full max-w-2xl h-[80vh] rounded-2xl border border-white/10 shadow-2xl flex flex-col"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#252525]">
+                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#0a0a0a]">
                         <h2 className="text-xl font-black uppercase text-white">Librería de Ejercicios</h2>
                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
                             <X size={20} />

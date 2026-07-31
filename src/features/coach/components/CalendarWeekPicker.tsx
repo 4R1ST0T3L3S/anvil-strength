@@ -115,7 +115,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
     ];
 
     return (
-        <div className="bg-[#1c1c1c] rounded-xl border border-white/10 p-4 select-none h-full flex flex-col">
+        <div className="bg-[#0a0a0a] rounded-xl border border-white/10 p-4 select-none h-full flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 shrink-0">
                 <button

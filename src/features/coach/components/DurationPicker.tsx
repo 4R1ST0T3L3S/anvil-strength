@@ -65,11 +65,11 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
             {/* Dropdown Popover */}
             {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-[#1c1c1c] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex gap-2 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex gap-2 animate-in fade-in zoom-in-95 duration-100">
 
                     {/* Minutes Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-1">
-                        <div className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#1c1c1c]">Min</div>
+                        <div className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Min</div>
                         <div className="space-y-1">
                             {minuteOptions.map(m => (
                                 <button
@@ -91,7 +91,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
                     {/* Seconds Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pl-1">
-                        <div className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#1c1c1c]">Seg</div>
+                        <div className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Seg</div>
                         <div className="space-y-1">
                             {fineSecondOptions.map(s => (
                                 <button

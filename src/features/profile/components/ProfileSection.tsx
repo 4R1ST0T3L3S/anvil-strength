@@ -172,9 +172,9 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Avatar Section */}
-                <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 transition-all hover:border-white/10">
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 transition-all hover:border-white/10">
                     <div className="relative group">
-                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-anvil-red bg-[#1c1c1c] flex items-center justify-center relative">
+                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-anvil-red bg-[#0a0a0a] flex items-center justify-center relative">
                             {imagePreview ? (
                                 <img src={imagePreview} alt="Avatar" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                             ) : (
@@ -209,7 +209,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 </div>
 
                 {/* Personal Info */}
-                <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 space-y-6">
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">Información Personal</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
@@ -219,7 +219,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 required
-                                className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
                             />
                         </div>
                         <div className="space-y-2">
@@ -228,7 +228,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 type="text"
                                 value={formData.nickname}
                                 onChange={e => setFormData({ ...formData, nickname: e.target.value })}
-                                className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all font-bold tracking-widest"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all font-bold tracking-widest"
                             />
                         </div>
                         <div className="space-y-2">
@@ -237,12 +237,12 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 type="email"
                                 value={user.email}
                                 disabled
-                                className="w-full bg-[#1c1c1c]/50 border border-white/5 rounded-xl px-4 py-3 text-gray-500 cursor-not-allowed"
+                                className="w-full bg-[#0a0a0a]/50 border border-white/5 rounded-xl px-4 py-3 text-gray-500 cursor-not-allowed"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Rol</label>
-                            <div className="w-full bg-[#1c1c1c]/50 border border-white/5 rounded-xl px-4 py-3 text-gray-400 capitalize font-bold">
+                            <div className="w-full bg-[#0a0a0a]/50 border border-white/5 rounded-xl px-4 py-3 text-gray-400 capitalize font-bold">
                                 {user.role === 'coach' ? 'Entrenador' : 'Atleta'}
                             </div>
                         </div>
@@ -251,7 +251,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
 
                 {/* Categories & PRs */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 space-y-6">
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
                         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">Categorías</h3>
                         <div className="grid grid-cols-1 gap-6">
                             <div className="space-y-2">
@@ -259,7 +259,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 <select
                                     value={formData.age_category}
                                     onChange={e => setFormData({ ...formData, age_category: e.target.value })}
-                                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
                                 >
                                     <option value="">Seleccionar...</option>
                                     <option value="Sub-Junior">Sub-Junior</option>
@@ -276,7 +276,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 <select
                                     value={formData.gender}
                                     onChange={e => setFormData({ ...formData, gender: e.target.value })}
-                                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
                                 >
                                     <option value="">Seleccionar...</option>
                                     <option value="male">Masculino</option>
@@ -288,7 +288,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 <select
                                     value={formData.weight_category}
                                     onChange={e => setFormData({ ...formData, weight_category: e.target.value })}
-                                    className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
                                 >
                                     <option value="">Seleccionar...</option>
                                     <optgroup label="Masculino">
@@ -316,10 +316,10 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                         </div>
                     </div>
 
-                    <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 space-y-6">
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
                         <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">Marcas (PRs)</h3>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between bg-[#1c1c1c] p-4 rounded-xl border border-white/5">
+                            <div className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5">
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sentadilla</span>
                                 <input
                                     type="number"
@@ -330,7 +330,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                     placeholder="0"
                                 />
                             </div>
-                            <div className="flex items-center justify-between bg-[#1c1c1c] p-4 rounded-xl border border-white/5">
+                            <div className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5">
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Banca</span>
                                 <input
                                     type="number"
@@ -341,7 +341,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                     placeholder="0"
                                 />
                             </div>
-                            <div className="flex items-center justify-between bg-[#1c1c1c] p-4 rounded-xl border border-white/5">
+                            <div className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5">
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Muerto</span>
                                 <input
                                     type="number"
@@ -357,7 +357,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 </div>
 
                 {/* Biography */}
-                <div className="bg-[#252525] border border-white/5 rounded-2xl p-8 space-y-6">
+                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">
                         {user.role === 'coach' ? 'Biografía / Especialidad' : 'Sobre mí / Objetivos'}
                     </h3>
@@ -366,7 +366,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                         onChange={e => setFormData({ ...formData, biography: e.target.value })}
                         rows={5}
                         placeholder="Escribe algo sobre ti..."
-                        className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all resize-none"
+                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all resize-none"
                     />
                 </div>
 
@@ -396,7 +396,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 <button
                     type="button"
                     onClick={() => setShowLogoutConfirm(true)}
-                    className="w-full bg-[#1c1c1c] border border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
+                    className="w-full bg-[#0a0a0a] border border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
                 >
                     <LogOut size={20} />
                     <span>Cerrar Sesión</span>

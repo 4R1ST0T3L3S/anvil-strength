@@ -156,6 +156,7 @@ export interface SessionExercise {
     velocity_avg?: string | null;
     rest_seconds?: number | null; // Moved from Set level
     vbt_file_url?: string | null; // New field for VBT files
+    modifiers?: string[]; // Extras / Tags for the exercise
     created_at: string;
 
     // Joint Relation

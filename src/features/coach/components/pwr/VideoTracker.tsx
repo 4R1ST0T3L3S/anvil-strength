@@ -262,7 +262,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
 
       {/* Toolbar - stacks vertically, mobile-first */}
       {!isResultMode && (
-          <div className="bg-[#252525] border border-white/5 p-3 rounded-xl flex flex-col gap-2.5">
+          <div className="bg-[#0a0a0a] border border-white/5 p-3 rounded-xl flex flex-col gap-2.5">
              {/* Status line */}
              <div className="flex items-center gap-2 min-w-0">
                  {state === 'upload' && <><Upload size={18} className="text-gray-400 shrink-0" /><span className="text-xs md:text-sm font-bold text-white truncate">Sube un vídeo frontal/lateral</span></>}

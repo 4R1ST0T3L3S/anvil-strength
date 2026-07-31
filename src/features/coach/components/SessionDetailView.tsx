@@ -35,9 +35,9 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
     }, [session.id, fetchExercises]);
 
     return (
-        <div className="flex flex-col h-full bg-[#1c1c1c]">
+        <div className="flex flex-col h-full bg-[#0a0a0a]">
             {/* Header */}
-            <div className="border-b border-white/5 bg-[#252525] p-6">
+            <div className="border-b border-white/5 bg-[#0a0a0a] p-6">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
@@ -91,7 +91,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                         {exercises.map((item, index) => (
                             <div
                                 key={item.id}
-                                className="bg-[#252525] border border-white/5 rounded-xl overflow-hidden"
+                                className="bg-[#0a0a0a] border border-white/5 rounded-xl overflow-hidden"
                             >
                                 {/* Exercise Header */}
                                 <div className="p-4 flex items-center justify-between bg-black/20">

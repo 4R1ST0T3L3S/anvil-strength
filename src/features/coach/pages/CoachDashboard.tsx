@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom'; // <--- 1. IMPORTANTE: Hook de navegación
 import {
     LayoutDashboard,
@@ -7,27 +7,21 @@ import {
     Trophy,
     User,
     Activity,
-    MessageCircle,
-    Loader
+    LogOut,
+    Globe
 } from 'lucide-react';
-/**
- * El coach entra siempre a 'home'. Cargar por adelantado el análisis PWR
- * (visión por computador), el editor de bloques o las gráficas es descargar
- * megabytes que la mayoría de sesiones no llegan a abrir. Cada vista se trae
- * su código la primera vez que se visita.
- */
-const ChatView = lazy(() => import('../../chat/ChatView').then(m => ({ default: m.ChatView })));
+import { useNavigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
-// Arrastra TrainingBlockList -> WorkoutBuilder (118 KB) y AthleteStatsModal -> recharts.
-const CoachAthleteDetails = lazy(() => import('../components/CoachAthleteDetails').then(m => ({ default: m.CoachAthleteDetails })));
-const CoachTeamSchedule = lazy(() => import('../components/CoachTeamSchedule').then(m => ({ default: m.CoachTeamSchedule })));
+import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
+import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
-const CalendarSection = lazy(() => import('../components/CalendarSection').then(m => ({ default: m.CalendarSection })));
-const ProfileSection = lazy(() => import('../../profile/components/ProfileSection').then(m => ({ default: m.ProfileSection })));
+import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
+import { CalendarSection } from '../components/CalendarSection';
+import { ProfileSection } from '../../profile/components/ProfileSection';
 import { UserProfile, useUser } from '../../../hooks/useUser';
-// La más pesada de todas: VideoTracker (visión por computador) + recharts.
-const PwrAnalysisTab = lazy(() => import('../components/pwr/PwrAnalysisTab').then(m => ({ default: m.PwrAnalysisTab })));
+import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
+import { FloatingChat } from '../../chat/components/FloatingChat';
 
 // Nota: Ya no importamos ArenaView aquí porque es una página externa
 
@@ -37,13 +31,23 @@ interface CoachDashboardProps {
 }
 
 // Ya no necesitamos 'arena' en el estado de la vista
-type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'chat' | 'profile' | 'pwr_analysis';
+type ViewState = 'home' | 'athletes' | 'schedule' | 'calendar' | 'athlete_details' | 'profile' | 'pwr_analysis';
 
-export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
-    // const navigate = useNavigate(); // Removed unused navigate
+export function CoachDashboard({ user, onLogout: _onLogout }: CoachDashboardProps) {
+    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
     const [selectedAthleteId, setSelectedAthleteId] = useState<string | null>(null);
+    const [chatAthlete, setChatAthlete] = useState<{ id: string; full_name: string; avatar_url?: string } | null>(null);
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+
+    useEffect(() => {
+        const hasSeenTour = localStorage.getItem(`has_seen_tour_${user.id}`);
+        if (!hasSeenTour) {
+            setIsWelcomeModalOpen(true);
+            localStorage.setItem(`has_seen_tour_${user.id}`, 'true');
+        }
+    }, [user.id]);
 
     // Verificación de seguridad básica
     if (user?.role !== 'coach') {
@@ -82,12 +86,6 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             isActive: currentView === 'calendar'
         },
         {
-            icon: <MessageCircle size={20} />,
-            label: 'Mensajes',
-            onClick: () => setCurrentView('chat'),
-            isActive: currentView === 'chat'
-        },
-        {
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
@@ -98,61 +96,71 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             label: 'PWR Análisis',
             onClick: () => setCurrentView('pwr_analysis'),
             isActive: currentView === 'pwr_analysis'
+        },
+        {
+            icon: <Globe size={20} className="text-blue-400" />,
+            label: 'Ver Web',
+            onClick: () => navigate('/web'),
+            isActive: false
+        },
+        {
+            icon: <LogOut size={20} className="text-red-500" />,
+            label: 'Salir',
+            onClick: () => _onLogout(),
+            isActive: false
         }
     ];
 
     const renderContent = () => {
         switch (currentView) {
             case 'home': return <CoachHome user={user} onNavigate={(view) => setCurrentView(view as ViewState)} />;
-            case 'athletes': return <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
+            case 'athletes': return (
+                <CoachAthletes 
+                    user={user} 
+                    onSelectAthlete={handleSelectAthlete} 
+                    onOpenChat={(a) => setChatAthlete(a)}
+                    onBack={() => setCurrentView('home')} 
+                />
+            );
             case 'athlete_details': return selectedAthleteId ? (
-                <CoachAthleteDetails athleteId={selectedAthleteId} onBack={() => setCurrentView('athletes')} />
-            ) : <CoachAthletes user={user} onSelectAthlete={handleSelectAthlete} onBack={() => setCurrentView('home')} />;
+                <CoachAthleteDetails 
+                    athleteId={selectedAthleteId} 
+                    onOpenChat={(a) => setChatAthlete(a)}
+                    onBack={() => setCurrentView('athletes')} 
+                />
+            ) : (
+                <CoachAthletes 
+                    user={user} 
+                    onSelectAthlete={handleSelectAthlete} 
+                    onOpenChat={(a) => setChatAthlete(a)}
+                    onBack={() => setCurrentView('home')} 
+                />
+            );
             case 'schedule': return <CoachTeamSchedule user={user} onBack={() => setCurrentView('home')} />;
             case 'calendar': return <CalendarSection onBack={() => setCurrentView('home')} />;
-            case 'chat': return <ChatView user={user} />;
             case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => setCurrentView('home')} />;
-            case 'pwr_analysis': return <PwrAnalysisTab onBack={() => setCurrentView('home')} />;
+            case 'pwr_analysis': return <PwrAnalysisTab />;
             default: return <CoachHome user={user} onNavigate={(view) => setCurrentView(view as ViewState)} />;
         }
-    };
-
-    const viewTitles: Record<ViewState, string> = {
-        home: '',
-        athletes: 'Mis Atletas',
-        athlete_details: 'Ficha del Atleta',
-        schedule: 'Agenda Equipo',
-        calendar: 'Calendario AEP',
-        chat: 'Mensajes',
-        profile: 'Mi Perfil',
-        pwr_analysis: 'PWR Análisis'
-    };
-
-    const handleBack = () => {
-        if (currentView === 'athlete_details') setCurrentView('athletes');
-        else setCurrentView('home');
     };
 
     return (
         <DashboardLayout
             menuItems={menuItems}
-            userId={user.id}
-            title={viewTitles[currentView]}
-            onBack={currentView !== 'home' ? handleBack : undefined}
-            onLogout={onLogout}
-            userName={user.full_name}
         >
-            {/* La vista se descarga al visitarla por primera vez. El fallback
-                mantiene la altura para que la cabecera no dé un salto. */}
-            <Suspense
-                fallback={
-                    <div className="flex min-h-[60vh] items-center justify-center">
-                        <Loader className="animate-spin text-anvil-red" size={28} />
-                    </div>
-                }
-            >
-                {renderContent()}
-            </Suspense>
+            {renderContent()}
+            
+            <FloatingChat 
+                isOpen={!!chatAthlete}
+                onClose={() => setChatAthlete(null)}
+                athlete={chatAthlete}
+                coach={user}
+            />
+
+            <WelcomeTourModal 
+                isOpen={isWelcomeModalOpen} 
+                onClose={() => setIsWelcomeModalOpen(false)} 
+            />
         </DashboardLayout>
     );
 }

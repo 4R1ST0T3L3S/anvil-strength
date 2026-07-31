@@ -102,10 +102,10 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full h-full sm:h-[90vh] sm:max-w-5xl bg-[#1c1c1c] sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border sm:border-white/10"
+                        className="relative w-full h-full sm:h-[90vh] sm:max-w-5xl bg-[#0a0a0a] sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border sm:border-white/10"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 bg-[#252525] border-b border-white/10 shrink-0 z-10">
+                        <div className="flex items-center justify-between p-4 bg-[#0a0a0a] border-b border-white/10 shrink-0 z-10">
                             <h3 className="text-lg md:text-xl font-black text-white uppercase italic tracking-wider truncate mr-4">
                                 {title}
                             </h3>
@@ -131,7 +131,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         <div className="bg-[#151515] p-2 flex items-center justify-between border-b border-white/5 shrink-0 px-4">
                             <div className="flex items-center gap-2 text-white text-sm font-medium">
                                 <span className="hidden sm:inline text-gray-400">Página</span>
-                                <span className="bg-[#252525] px-2 py-1 rounded border border-white/10 min-w-[30px] text-center">
+                                <span className="bg-[#0a0a0a] px-2 py-1 rounded border border-white/10 min-w-[30px] text-center">
                                     {pageNumber}
                                 </span>
                                 <span className="text-gray-400">de {numPages || '--'}</span>
@@ -201,11 +201,11 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
 
                         {/* Footer Navigation */}
                         {numPages && numPages > 1 && (
-                            <div className="p-4 bg-[#252525] border-t border-white/10 flex justify-center items-center gap-6 shrink-0 z-10 pb-8 sm:pb-4">
+                            <div className="p-4 bg-[#0a0a0a] border-t border-white/10 flex justify-center items-center gap-6 shrink-0 z-10 pb-8 sm:pb-4">
                                 <button
                                     disabled={pageNumber <= 1}
                                     onClick={previousPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-[#1c1c1c] text-white rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-white/5"
+                                    className="flex items-center gap-2 px-6 py-3 bg-[#0a0a0a] text-white rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-white/5"
                                 >
                                     <ChevronLeft size={20} />
                                     <span className="hidden sm:inline">Anterior</span>
@@ -218,7 +218,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 <button
                                     disabled={pageNumber >= numPages}
                                     onClick={nextPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-[#1c1c1c] text-white rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-white/5"
+                                    className="flex items-center gap-2 px-6 py-3 bg-[#0a0a0a] text-white rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-white/5"
                                 >
                                     <span className="hidden sm:inline">Siguiente</span>
                                     <ChevronRight size={20} />

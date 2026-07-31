@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Search, Dumbbell, Calendar, User as UserIcon } from 'lucide-react';
+import { Search, Dumbbell, Calendar, User as UserIcon, MessageSquare } from 'lucide-react';
 import { Skeleton } from '../../../components/ui/Skeleton';
 
 interface CoachAthletesProps {
     user: UserProfile;
     onSelectAthlete: (id: string) => void;
+    onOpenChat: (athlete: { id: string; full_name: string; avatar_url?: string }) => void;
     onBack?: () => void;
 }
 
@@ -17,7 +18,7 @@ interface AthleteWithPlan extends UserProfile {
     current_block_week?: number | string;
 }
 
-export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesProps) {
+export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: CoachAthletesProps) {
     const [athletes, setAthletes] = useState<AthleteWithPlan[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -137,7 +138,7 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                        <div key={i} className="bg-[#252525] rounded-2xl border border-white/5 p-6 space-y-4">
+                        <div key={i} className="bg-[#0a0a0a] rounded-2xl border border-white/5 p-6 space-y-4">
                             <div className="flex items-center gap-4">
                                 <Skeleton className="w-16 h-16 rounded-full" />
                                 <div className="space-y-2">
@@ -178,7 +179,7 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
                     <input
                         type="text"
                         placeholder="Buscar atleta..."
-                        className="w-full bg-[#252525] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-anvil-red transition-all text-sm placeholder:text-gray-600"
+                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-anvil-red transition-all text-sm placeholder:text-gray-600"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -190,7 +191,7 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
                     <div
                         key={athlete.id}
                         onClick={() => onSelectAthlete(athlete.id)}
-                        className="group bg-[#252525] hover:bg-[#2a2a2a] rounded-2xl p-4 border border-white/5 hover:border-anvil-red/30 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                        className="group bg-[#0a0a0a] hover:bg-[#111] rounded-2xl p-4 border border-white/5 hover:border-anvil-red/30 transition-all duration-300 cursor-pointer relative overflow-hidden"
                     >
 
 
@@ -232,6 +233,16 @@ export function CoachAthletes({ user, onSelectAthlete, onBack }: CoachAthletesPr
                                     )}
                                 </div>
                             </div>
+                            
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenChat({ id: athlete.id, full_name: athlete.full_name || '', avatar_url: athlete.avatar_url });
+                                }}
+                                className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-lg shadow-blue-500/10 active:scale-90"
+                            >
+                                <MessageSquare size={18} />
+                            </button>
                         </div>
 
                         <div className="mb-3 bg-gradient-to-r from-white/5 to-transparent rounded-xl p-3 border border-white/5 relative group">

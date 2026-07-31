@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     FileText,
@@ -6,18 +6,23 @@ import {
     Calendar,
     Trophy,
     User,
-    MessageCircle
+    Globe,
+    LogOut,
+    ShoppingBag
 } from 'lucide-react';
-import { ChatView } from '../../chat/ChatView';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
+import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
 
 import { WorkoutLogger } from '../../training/components/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
+import { AnvilStore } from '../../profile/components/AnvilStore';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
 import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
+import { AnvilRanking } from '../components/AnvilRanking';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 
@@ -27,16 +32,26 @@ interface UserDashboardProps {
 }
 
 // Eliminamos 'arena' de los tipos de vista interna
-type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'chat' | 'profile';
+type AthleteView = 'home' | 'planning' | 'nutrition' | 'competitions' | 'calendar' | 'ranking' | 'profile' | 'store';
 
-export function UserDashboard({ user, onLogout }: UserDashboardProps) {
+export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps) {
+    const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<AthleteView>('home');
+    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
     const { refetch } = useUser();
+
+    useEffect(() => {
+        const hasSeenTour = localStorage.getItem(`has_seen_tour_${user.id}`);
+        if (!hasSeenTour) {
+            setIsWelcomeModalOpen(true);
+            localStorage.setItem(`has_seen_tour_${user.id}`, 'true');
+        }
+    }, [user.id]);
 
     // Security Check
     if (user?.role === 'coach' && user?.has_access) {
         return (
-            <div className="flex h-screen items-center justify-center bg-[#1c1c1c] text-white">
+            <div className="flex h-screen items-center justify-center bg-black text-white">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-anvil-red mb-2">Acceso Denegado</h1>
                     <p className="text-gray-400">Esta cuenta de entrenador no tiene acceso al panel de atleta.</p>
@@ -77,16 +92,28 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: currentView === 'calendar'
         },
         {
-            icon: <MessageCircle size={20} />,
-            label: 'Mensajes',
-            onClick: () => setCurrentView('chat'),
-            isActive: currentView === 'chat'
-        },
-        {
             icon: <User size={20} />,
             label: 'Mi Perfil',
             onClick: () => setCurrentView('profile'),
             isActive: currentView === 'profile'
+        },
+        {
+            icon: <ShoppingBag size={20} />,
+            label: 'Tienda Anvil',
+            onClick: () => setCurrentView('store'),
+            isActive: currentView === 'store'
+        },
+        {
+            icon: <Globe size={20} className="text-blue-400" />,
+            label: 'Ver Web',
+            onClick: () => navigate('/web'),
+            isActive: false
+        },
+        {
+            icon: <LogOut size={20} className="text-red-500" />,
+            label: 'Salir',
+            onClick: () => _onLogout(),
+            isActive: false
         }
     ];
 
@@ -106,38 +133,28 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             case 'calendar':
                 return (
                     <div className="p-4 md:p-8">
-                        <CalendarSection />
+                        <CalendarSection onBack={() => setCurrentView('home')} />
                     </div>
                 );
-            case 'chat':
-                return <ChatView user={user} />;
-            case 'profile':
-                return <ProfileSection user={user} onUpdate={() => refetch()} />;
-            default:
-                return null;
+            case 'ranking': return <AnvilRanking user={user} onBack={() => setCurrentView('home')} />;
+            case 'profile': return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => setCurrentView('home')} />;
+            case 'store': return <AnvilStore userId={user.id} />;
+            default: return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view as AthleteView)} />;
         }
     };
 
-    const viewTitles: Record<AthleteView, string> = {
-        home: '',
-        planning: 'Mi Planificación',
-        nutrition: 'Mi Nutrición',
-        competitions: 'Mis Competiciones',
-        calendar: 'Calendario AEP',
-        chat: 'Mensajes',
-        profile: 'Mi Perfil'
-    };
-
     return (
-        <DashboardLayout
-            menuItems={menuItems}
-            userId={user.id}
-            title={viewTitles[currentView]}
-            onBack={currentView !== 'home' ? () => setCurrentView('home') : undefined}
-            onLogout={onLogout}
-            userName={user.full_name}
-        >
-            {renderContent()}
-        </DashboardLayout>
+        <>
+            <DashboardLayout
+                menuItems={menuItems}
+            >
+                {renderContent()}
+            </DashboardLayout>
+
+            <WelcomeTourModal 
+                isOpen={isWelcomeModalOpen} 
+                onClose={() => setIsWelcomeModalOpen(false)} 
+            />
+        </>
     );
 }

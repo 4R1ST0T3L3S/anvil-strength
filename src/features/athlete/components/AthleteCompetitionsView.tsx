@@ -34,7 +34,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
 
     if (!competitions || competitions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 max-w-lg mx-auto mt-12 bg-[#1c1c1c] border border-white/5 rounded-3xl">
+            <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 max-w-lg mx-auto mt-12 bg-[#0a0a0a] border border-white/5 rounded-3xl">
                 <div className="w-24 h-24 bg-anvil-red/10 rounded-full flex items-center justify-center text-anvil-red mb-4">
                     <Trophy size={48} />
                 </div>
@@ -150,7 +150,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {past.map((comp) => (
-                            <div key={comp.id} className="bg-[#1c1c1c] border border-white/5 rounded-2xl p-6 flex items-start gap-4 hover:bg-[#252525] transition-colors">
+                            <div key={comp.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 flex items-start gap-4 hover:bg-[#0a0a0a] transition-colors">
                                 <div className="mt-1 bg-gray-800/50 p-3 rounded-xl text-gray-500">
                                     <Medal size={24} />
                                 </div>

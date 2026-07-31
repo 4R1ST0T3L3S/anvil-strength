@@ -44,7 +44,7 @@ export function ConfirmationModal({
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative w-full max-w-md overflow-hidden rounded-sheet border border-[var(--border-default)] bg-surface-raised shadow-overlay"
+                    className="relative w-full max-w-md overflow-hidden rounded-sheet border border-[var(--border-default)] bg-surface-sunken shadow-overlay"
                 >
                     <div className="p-6 text-center space-y-4">
                         <div className="w-12 h-12 rounded-full bg-danger-quiet flex items-center justify-center mx-auto text-danger">

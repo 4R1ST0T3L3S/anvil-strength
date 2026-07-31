@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { UserProfile } from '../hooks/useUser';
 import { useAuth } from '../context/AuthContext';
@@ -10,20 +10,13 @@ const CompetitionsPage = lazy(() => import('../features/landing/pages/Competitio
 const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
-const AvisoLegal = lazy(() => import('../features/legal/pages/AvisoLegal').then(module => ({ default: module.AvisoLegal })));
-const PoliticaPrivacidad = lazy(() => import('../features/legal/pages/PoliticaPrivacidad').then(module => ({ default: module.PoliticaPrivacidad })));
-const PoliticaCookies = lazy(() => import('../features/legal/pages/PoliticaCookies').then(module => ({ default: module.PoliticaCookies })));
+const NutritionDashboard = lazy(() => import('../features/nutrition/pages/NutritionDashboard').then(module => ({ default: module.NutritionDashboard })));
+const AthleteChatView = lazy(() => import('../features/chat/pages/AthleteChatView').then(module => ({ default: module.AthleteChatView })));
+const CoachChatManager = lazy(() => import('../features/chat/components/CoachChatManager').then(module => ({ default: module.CoachChatManager })));
 const AuthCallback = lazy(() => import('../features/auth/pages/AuthCallback').then(module => ({ default: module.AuthCallback })));
+const AnvilGamesHub = lazy(() => import('../features/games/pages/AnvilGamesHub').then(module => ({ default: module.AnvilGamesHub })));
 
-const LegalSuspense = ({ children }: { children: ReactNode }) => (
-    <Suspense fallback={
-        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
-        </div>
-    }>
-        {children}
-    </Suspense>
-);
+
 
 /**
  * ¿Este usuario gestiona a OTROS atletas?
@@ -78,21 +71,14 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 Google y los enlaces de confirmación de email vuelven aquí.
                 Ver src/lib/authRedirect.ts. */}
             <Route path="/auth/callback" element={
-                <LegalSuspense><AuthCallback /></LegalSuspense>
+                <Suspense fallback={<DashboardSkeleton />}><AuthCallback /></Suspense>
             } />
-
-            {/* --- WEB PÚBLICA CON SESIÓN INICIADA ---
-                "/" redirige al panel en cuanto hay sesión, así que un coach o
-                un atleta no tenían forma de volver a ver la web sin cerrar
-                sesión. Esta ruta muestra siempre la portada.
-                Va con noindex: es un atajo interno y no debe competir en
-                Google con "/", que es la URL canónica de la portada. */}
-            <Route path="/inicio" element={
+            
+            <Route path="/web" element={
                 <LandingPage
                     onLoginClick={onLoginClick}
                     onSignupClick={onSignupClick}
                     user={user}
-                    noindex
                 />
             } />
 
@@ -116,21 +102,16 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         <div className="w-12 h-12 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 }>
-                    <CompetitionsPage onLoginClick={onLoginClick} onSignupClick={onSignupClick} user={user} />
+                    <CompetitionsPage onLoginClick={onLoginClick} user={user} />
                 </Suspense>
             } />
-
-            {/* --- LEGAL PAGES --- */}
-            <Route path="/legal/aviso-legal" element={<LegalSuspense><AvisoLegal onLoginClick={onLoginClick} /></LegalSuspense>} />
-            <Route path="/legal/privacidad" element={<LegalSuspense><PoliticaPrivacidad onLoginClick={onLoginClick} /></LegalSuspense>} />
-            <Route path="/legal/cookies" element={<LegalSuspense><PoliticaCookies onLoginClick={onLoginClick} /></LegalSuspense>} />
 
             {/* --- 2. RUTA DEDICADA: LA ARENA --- */}
             {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}
             <Route path="/dashboard/community" element={
                 hasActiveSession && user ? (
                     user.has_access === false ? (
-                        <Navigate to="/dashboard" replace />
+                        <Navigate to="/pending" replace />
                     ) : (
                         <Suspense fallback={<DashboardSkeleton />}>
                             <ArenaView user={user} />
@@ -140,6 +121,32 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     <Navigate to="/" replace />
                 )
             } />
+
+            <Route path="/dashboard/chat" element={
+                hasActiveSession && user ? (
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        {user.role === 'coach' || (user.role as string) === 'admin' || (user as any).is_developer ? (
+                            <CoachChatManager coach={user} />
+                        ) : (
+                            <AthleteChatView user={user} />
+                        )}
+                    </Suspense>
+                ) : (
+                    <Navigate to="/" replace />
+                )
+            } />
+
+            <Route path="/dashboard/games" element={
+                hasActiveSession && user ? (
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        <AnvilGamesHub user={user} />
+                    </Suspense>
+                ) : (
+                    <Navigate to="/" replace />
+                )
+            } />
+
+            <Route path="/dashboard/arena" element={<Navigate to="/dashboard/community" replace />} />
 
             {/* --- DASHBOARD ATLETA --- */}
             <Route path="/dashboard" element={
@@ -174,11 +181,26 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 ) : null
             } />
 
+            {/* --- NUTRITION DASHBOARD --- */}
+            <Route path="/nutrition" element={
+                !user && !hasActiveSession ? (
+                    <Navigate to="/" replace />
+                ) : !user && hasActiveSession ? (
+                    <DashboardSkeleton />
+                ) : !['coach', 'nutritionist'].includes(user?.role || '') && !user?.is_developer ? (
+                    <Navigate to="/dashboard" replace />
+                ) : user ? (
+                    <Suspense fallback={<DashboardSkeleton />}>
+                        <NutritionDashboard user={user} onLogout={onLogout} />
+                    </Suspense>
+                ) : null
+            } />
+
             {/* --- ADMIN DASHBOARD --- */}
             <Route path="/admin" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email || '') ? (
+                ) : (!['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email?.toLowerCase() || '')) ? (
                     <Navigate to="/" replace />
                 ) : (
                     <Suspense fallback={<DashboardSkeleton />}>
