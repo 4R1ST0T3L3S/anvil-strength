@@ -268,3 +268,19 @@ imágenes incluidas. Una foto que falta daba **200 con `text/html`**, no 404: el
 navegador dejaba un hueco sin error en consola ni en la pestaña de red.
 `vercel.json` ya excluye las extensiones de fichero del rewrite para que vuelvan
 a dar 404, y `SafeImage` se encarga de que el hueco se vea intencionado.
+
+### No simplifiques el `rewrite` de `vercel.json`
+
+```
+/((?!.*\.(?:jpg|jpeg|png|webp|...|woff2?)$).*)
+```
+
+Ese lookahead negativo es justo lo que hace que un asset ausente falle **de
+forma visible**. Cambiarlo por un `/(.*)` cómodo devuelve el bug de arriba: la
+imagen no sale y no hay ni un error que lo delate.
+
+La explicación vivía como una clave `_comment_rewrites` dentro del propio
+`vercel.json`, pero Vercel valida ese archivo contra un esquema cerrado y el
+despliegue fallaba con *"should NOT have additional property"*. **JSON no
+admite comentarios y `vercel.json` tampoco admite claves inventadas**: lo que
+haya que explicar de ese archivo se explica aquí.

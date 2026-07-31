@@ -1,5 +1,4 @@
 {
-  "_comment_rewrites": "El comodín anterior servía index.html para CUALQUIER ruta no encontrada, incluidas las imágenes: una foto que falta devolvía 200 con text/html en vez de 404, así que no salía en la web y no aparecía ningún error en consola ni en la pestaña de red. El lookahead negativo excluye las extensiones de fichero para que un asset ausente falle de forma visible.",
   "rewrites": [
     {
       "source": "/((?!.*\\.(?:jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm|pdf|json|xml|txt|js|css|map|woff2?)$).*)",
