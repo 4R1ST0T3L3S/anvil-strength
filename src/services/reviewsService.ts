@@ -12,7 +12,15 @@ export const reviewsService = {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching reviews:', error);
+            // Los errores de PostgREST son objetos planos: pasarlos tal cual a
+            // console.error los imprime como "[object Object]" y llevaban meses
+            // sin decir absolutamente nada de lo que estaba fallando.
+            console.error(
+                'Error al leer las reseñas:',
+                `${error.code ?? 'sin código'} — ${error.message}`,
+                error.details ?? '',
+                error.hint ?? ''
+            );
             throw error;
         }
 

@@ -1,222 +1,102 @@
 // Supabase Edge Function: send-push
-// Envía push notifications cuando se inserta en tabla notifications
-// 
-// CONFIGURACIÓN REQUERIDA (Supabase Dashboard → Settings → Edge Functions):
-// - VAPID_PUBLIC_KEY
-// - VAPID_PRIVATE_KEY  
-// - VAPID_SUBJECT (ej: mailto:admin@anvilstrength.com)
+// Envía Web Push a las suscripciones del usuario cuando se inserta una notificación.
+// Se invoca desde el trigger de BD (ver database/push_reminders.sql).
+//
+// CONFIGURACIÓN (una vez):
+//   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:anvilstrengthclub@gmail.com
+//   supabase functions deploy send-push --no-verify-jwt
+//
+// Usa la librería estándar web-push (npm) — cifra el payload correctamente (aes128gcm),
+// cosa que la implementación manual anterior no hacía.
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2';
+import webpush from 'npm:web-push@3.6.7';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') ?? '';
+const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') ?? '';
+const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:anvilstrengthclub@gmail.com';
+
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 }
 
-serve(async (req) => {
-    // Handle CORS preflight
+Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders });
     }
 
     try {
-        const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!
-        const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!
-        const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:admin@anvilstrength.com'
+        const body = await req.json();
+        const record = body.record ?? body; // formato webhook o llamada directa
+        const { user_id, title, message, link } = record || {};
 
-        // El webhook envía el registro insertado
-        const { record } = await req.json()
-
-        if (!record) {
+        if (!user_id || !title) {
             return new Response(
-                JSON.stringify({ error: 'No record provided' }),
+                JSON.stringify({ error: 'user_id y title requeridos' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
+            );
         }
 
-        const { user_id, title, message, link } = record
-
-        // Crear cliente Supabase con service role
         const supabase = createClient(
             Deno.env.get('SUPABASE_URL')!,
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-        )
+        );
 
-        // Buscar suscripciones del usuario
         const { data: subscriptions, error } = await supabase
             .from('push_subscriptions')
-            .select('*')
-            .eq('user_id', user_id)
+            .select('id, endpoint, p256dh, auth')
+            .eq('user_id', user_id);
 
-        if (error) {
-            console.error('Error fetching subscriptions:', error)
-            return new Response(
-                JSON.stringify({ error: 'Failed to fetch subscriptions' }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
-        }
+        if (error) throw error;
 
         if (!subscriptions || subscriptions.length === 0) {
             return new Response(
-                JSON.stringify({ sent: 0, message: 'No subscriptions found' }),
+                JSON.stringify({ sent: 0, reason: 'sin suscripciones' }),
                 { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
+            );
         }
 
-        // Payload de la notificación
         const payload = JSON.stringify({
             title: title || 'Anvil Strength',
-            body: message,
-            icon: '/pwa-192x192.png',
-            badge: '/pwa-192x192.png',
-            tag: `notification-${record.id}`,
-            data: { url: link || '/' }
-        })
+            message: message || '',
+            link: link || '/'
+        });
 
-        let sent = 0
-        const expiredSubs: string[] = []
+        let sent = 0;
+        const expired: string[] = [];
 
-        // Enviar a cada dispositivo
-        for (const sub of subscriptions) {
+        await Promise.all(subscriptions.map(async (sub) => {
             try {
-                const vapidHeaders = await generateVapidHeaders(
-                    sub.endpoint,
-                    VAPID_PUBLIC_KEY,
-                    VAPID_PRIVATE_KEY,
-                    VAPID_SUBJECT
-                )
-
-                const response = await fetch(sub.endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/octet-stream',
-                        'Content-Encoding': 'aes128gcm',
-                        'TTL': '86400',
-                        ...vapidHeaders
-                    },
-                    body: payload
-                })
-
-                if (response.status === 201 || response.status === 200) {
-                    sent++
-                    console.log(`✅ Push sent to endpoint: ${sub.endpoint.substring(0, 50)}...`)
-                } else if (response.status === 404 || response.status === 410) {
-                    // Suscripción expirada
-                    expiredSubs.push(sub.id)
-                    console.log(`⚠️ Subscription expired: ${sub.endpoint.substring(0, 50)}...`)
-                } else {
-                    console.error(`❌ Push failed with status ${response.status}`)
-                }
-            } catch (e) {
-                console.error('Push error:', e)
+                await webpush.sendNotification(
+                    { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+                    payload
+                );
+                sent++;
+            } catch (err) {
+                const status = (err as { statusCode?: number }).statusCode;
+                if (status === 404 || status === 410) expired.push(sub.id);
+                else console.error('Push error:', err);
             }
-        }
+        }));
 
-        // Limpiar suscripciones expiradas
-        if (expiredSubs.length > 0) {
-            await supabase
-                .from('push_subscriptions')
-                .delete()
-                .in('id', expiredSubs)
-            console.log(`🧹 Cleaned ${expiredSubs.length} expired subscriptions`)
+        if (expired.length > 0) {
+            await supabase.from('push_subscriptions').delete().in('id', expired);
         }
 
         return new Response(
-            JSON.stringify({
-                sent,
-                total: subscriptions.length,
-                expired: expiredSubs.length
-            }),
+            JSON.stringify({ sent, total: subscriptions.length, expired: expired.length }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-
+        );
     } catch (err) {
-        console.error('Edge function error:', err)
+        console.error('Edge function error:', err);
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: String(err) }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        );
     }
-})
-
-/**
- * Genera headers VAPID para autenticación con push service
- */
-async function generateVapidHeaders(
-    endpoint: string,
-    publicKey: string,
-    privateKey: string,
-    subject: string
-): Promise<Record<string, string>> {
-    const audience = new URL(endpoint).origin
-
-    // Crear JWT para VAPID
-    const header = { alg: 'ES256', typ: 'JWT' }
-    const payload = {
-        aud: audience,
-        exp: Math.floor(Date.now() / 1000) + 86400, // 24 horas
-        sub: subject
-    }
-
-    const token = await createES256JWT(header, payload, privateKey)
-
-    return {
-        'Authorization': `vapid t=${token}, k=${publicKey}`,
-    }
-}
-
-/**
- * Crea un JWT firmado con ES256
- */
-async function createES256JWT(
-    header: object,
-    payload: object,
-    privateKeyBase64: string
-): Promise<string> {
-    const enc = new TextEncoder()
-
-    // Encode header y payload
-    const headerB64 = base64UrlEncode(JSON.stringify(header))
-    const payloadB64 = base64UrlEncode(JSON.stringify(payload))
-    const unsignedToken = `${headerB64}.${payloadB64}`
-
-    // Decodificar clave privada
-    const keyData = base64ToUint8Array(privateKeyBase64)
-
-    // Importar clave como ECDSA
-    const cryptoKey = await crypto.subtle.importKey(
-        'pkcs8',
-        keyData,
-        { name: 'ECDSA', namedCurve: 'P-256' },
-        false,
-        ['sign']
-    )
-
-    // Firmar
-    const signature = await crypto.subtle.sign(
-        { name: 'ECDSA', hash: 'SHA-256' },
-        cryptoKey,
-        enc.encode(unsignedToken)
-    )
-
-    const signatureB64 = base64UrlEncode(
-        String.fromCharCode(...new Uint8Array(signature))
-    )
-
-    return `${unsignedToken}.${signatureB64}`
-}
-
-function base64UrlEncode(str: string): string {
-    return btoa(str)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '')
-}
-
-function base64ToUint8Array(base64: string): Uint8Array {
-    const padding = '='.repeat((4 - base64.length % 4) % 4)
-    const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/')
-    const rawData = atob(b64)
-    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)))
-}
+});

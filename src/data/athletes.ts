@@ -196,7 +196,7 @@ export const athletes: Athlete[] = [
     id: 13,
     name: "Alejandro",
     category: "-66Kg Junior",
-    image: "/athletes/Alejandro_malaga.jpeg",
+    image: "/athletes/Alejandro_malaga.jpg",
     stats: {
       lastCompetition: " ",
       glPoints: 0,

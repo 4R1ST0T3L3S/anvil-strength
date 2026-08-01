@@ -13,17 +13,33 @@ const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard
 const NutritionDashboard = lazy(() => import('../features/nutrition/pages/NutritionDashboard').then(module => ({ default: module.NutritionDashboard })));
 const AthleteChatView = lazy(() => import('../features/chat/pages/AthleteChatView').then(module => ({ default: module.AthleteChatView })));
 const CoachChatManager = lazy(() => import('../features/chat/components/CoachChatManager').then(module => ({ default: module.CoachChatManager })));
+const AuthCallback = lazy(() => import('../features/auth/pages/AuthCallback').then(module => ({ default: module.AuthCallback })));
 const AnvilGamesHub = lazy(() => import('../features/games/pages/AnvilGamesHub').then(module => ({ default: module.AnvilGamesHub })));
 
 
 
+/**
+ * ¿Este usuario gestiona a OTROS atletas?
+ *
+ * Entrenadores y nutricionistas comparten panel: los dos tienen atletas
+ * asignados, agenda, calendario y chat, y las diferencias entre ambos son
+ * dos entradas de menú, no una aplicación distinta.
+ *
+ * Antes solo se comprobaba `role === 'coach'`, así que un nutricionista
+ * aterrizaba en el panel de ATLETA — con "Mi planificación" y "Mi dieta" en
+ * vez de su lista de pacientes— y no tenía ninguna forma de salir de ahí.
+ */
+const isStaff = (user: UserProfile | null | undefined): boolean =>
+    user?.role === 'coach' || user?.role === 'nutritionist';
+
 interface AppRoutesProps {
     user: UserProfile | null | undefined;
     onLoginClick: () => void;
+    onSignupClick: () => void;
     onLogout: () => Promise<void>;
 }
 
-export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
+export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRoutesProps) {
     const location = useLocation();
     const { session } = useAuth();
 
@@ -32,28 +48,36 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
     return (
         <Routes location={location} key={location.pathname}>
 
-            {/* --- PORTADA (Siempre accesible) --- */}
+            {/* --- PORTADA (Siempre accesible) ---
+                Quien tiene sesión entra en su panel, tenga o no `has_access`.
+                Antes a los usuarios sin acceso se les devolvía a la portada,
+                así que registrarse terminaba justo donde había empezado y no
+                había forma de llegar al perfil para completar los datos. */}
             <Route path="/" element={
                 !user && !hasActiveSession ? (
                     <LandingPage
                         onLoginClick={onLoginClick}
+                        onSignupClick={onSignupClick}
                         user={user}
                     />
-                ) : user?.has_access === false ? (
-                    <LandingPage
-                        onLoginClick={onLoginClick}
-                        user={user}
-                    />
-                ) : user?.role === 'coach' && user?.has_access ? (
+                ) : isStaff(user) ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : (
                     <Navigate to="/dashboard" replace />
                 )
             } />
+
+            {/* --- VUELTA DE UN LOGIN EXTERNO ---
+                Google y los enlaces de confirmación de email vuelven aquí.
+                Ver src/lib/authRedirect.ts. */}
+            <Route path="/auth/callback" element={
+                <Suspense fallback={<DashboardSkeleton />}><AuthCallback /></Suspense>
+            } />
             
             <Route path="/web" element={
                 <LandingPage
                     onLoginClick={onLoginClick}
+                    onSignupClick={onSignupClick}
                     user={user}
                 />
             } />
@@ -130,7 +154,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
-                ) : user?.role === 'coach' && user?.has_access ? (
+                ) : isStaff(user) ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
@@ -148,9 +172,7 @@ export function AppRoutes({ user, onLoginClick, onLogout }: AppRoutesProps) {
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
-                ) : user?.has_access === false ? (
-                    <Navigate to="/dashboard" replace />
-                ) : user?.role !== 'coach' ? (
+                ) : !isStaff(user) ? (
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>

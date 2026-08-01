@@ -20,6 +20,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
     const [startWeek, setStartWeek] = useState<number>(getWeekNumber());
     const [endWeek, setEndWeek] = useState<number>(getWeekNumber() + 4);
     const [color, setColor] = useState('#ef4444');
+    const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
 
     const BLOCK_COLORS = [
@@ -87,11 +88,13 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                 end_week: endWeek,
                 start_date: startDateObj.toISOString(),
                 color: color,
+                description: description.trim() || null,
                 is_active: true
             });
 
             toast.success('Bloque creado correctamente');
             setName('');
+            setDescription('');
             setStartWeek(getWeekNumber());
             setEndWeek(getWeekNumber() + 4);
             setColor('#ef4444');
@@ -148,6 +151,21 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                         placeholder="Ej: Bloque Fuerza Enero"
                                         className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-bold"
                                         autoFocus
+                                    />
+                                </div>
+
+                                {/* Description */}
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                        Descripción y objetivos <span className="text-gray-600 normal-case font-medium">(el atleta la verá)</span>
+                                    </label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        rows={3}
+                                        maxLength={1000}
+                                        placeholder="Objetivos del bloque, enfoque de las semanas, por qué se hacen ciertas cosas..."
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-6 py-4 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all resize-none"
                                     />
                                 </div>
 

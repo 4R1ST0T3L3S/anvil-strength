@@ -21,6 +21,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [description, setDescription] = useState('');
 
     const fetchAthletes = useCallback(async () => {
         try {
@@ -94,7 +95,8 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                     date: finalDate,
                     end_date: competition.endDateIso, // Pass end_date
                     location: competition.sede,
-                    level: competition.level // Pass level
+                    level: competition.level, // Pass level
+                    description: description.trim() || undefined
                 },
                 Array.from(selectedAthletes),
                 session.user.id
@@ -103,6 +105,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
             toast.success(`Competición asignada a ${selectedAthletes.size} atletas`);
             onClose();
             setSelectedAthletes(new Set()); // Reset selection
+            setDescription('');
         } catch (error) {
             console.error('Error assigning competition:', error);
             // Show more specific error
@@ -215,6 +218,21 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                                 No se encontraron atletas.
                             </div>
                         )}
+
+                        {/* Description (shown on the public competition page) */}
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+                                Descripción pública <span className="text-gray-600 normal-case font-medium">(se muestra en la web al pinchar en el atleta)</span>
+                            </label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows={3}
+                                maxLength={400}
+                                placeholder="Ej: Fernando busca revalidar su título en -74kg tras su victoria en Chiva..."
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors resize-none"
+                            />
+                        </div>
                     </div>
 
                     {/* Footer */}

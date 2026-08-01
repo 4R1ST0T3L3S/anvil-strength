@@ -1,24 +1,19 @@
+@import "./styles/tokens.css";
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&family=Oswald:wght@400;700&display=swap');
-
-.font-bebas {
-  font-family: 'Bebas Neue', sans-serif;
-}
-
-.font-oswald {
-  font-family: 'Oswald', sans-serif;
-}
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #1c1c1c;
+  color: var(--ink);
+  background-color: var(--surface-canvas);
+
+  /* Cifras de igual anchura en toda la app: sin esto, un peso que pasa de
+     97,5 a 100 desplaza la fila entera al re-renderizar. */
+  font-variant-numeric: tabular-nums;
 }
 
 html {
@@ -32,7 +27,30 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overscroll-behavior: none;
-  background-color: #1c1c1c;
+  background-color: var(--surface-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Titulares con líneas equilibradas */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* Prosa larga sin líneas huérfanas (descripciones de bloque, notas). */
+p {
+  text-wrap: pretty;
+}
+
+/* Accesibilidad: sin animaciones para quien las desactiva en su sistema */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* --- SCROLLBAR UTILITIES --- */
@@ -48,27 +66,28 @@ body {
   /* Chrome, Safari and Opera */
 }
 
-/* --- CUSTOM SCROLLBAR --- */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
+/* --- GAME PLAN: EXPORTACIÓN A PDF (impresión) --- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
+  #gameplan-print,
+  #gameplan-print * {
+    visibility: visible;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(220, 38, 38, 0.3);
-  border-radius: 10px;
-}
+  #gameplan-print {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    background: white !important;
+    color: black !important;
+  }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(220, 38, 38, 0.5);
-}
-
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(220, 38, 38, 0.3) transparent;
+  @page {
+    margin: 1.5cm;
+  }
 }
 
 /* --- TYPEBOT CUSTOMIZATION --- */
@@ -109,54 +128,4 @@ body {
   max-height: calc(100vh - 190px) !important;
   width: 90vw !important;
   max-width: 400px !important;
-}
-
-/* --- PRINT / PDF EXPORT --- */
-@media print {
-  body {
-    background: white !important;
-    color: black !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* Hide everything except the print component */
-  body > *:not(.print-plan-wrapper) {
-    display: none !important;
-  }
-  
-  .print-plan-wrapper {
-    display: block !important;
-    position: static !important;
-  }
-
-  .print-plan {
-    display: block !important;
-    background: white !important;
-  }
-
-  /* Page breaks */
-  .break-inside-avoid {
-    break-inside: avoid;
-  }
-
-  @page {
-    margin: 1.5cm;
-    size: A4;
-  }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes border-glow {
-  0%, 100% { border-color: rgba(220, 38, 38, 0.2); }
-  50% { border-color: rgba(220, 38, 38, 0.8); }
-}
-
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }

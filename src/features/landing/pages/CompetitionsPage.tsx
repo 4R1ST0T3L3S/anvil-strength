@@ -28,6 +28,7 @@ const formatDate = (dateStr: string): string => {
 
 interface CompetitionsPageProps {
     onLoginClick: () => void;
+    onSignupClick?: () => void;
     user?: UserProfile | null;
 }
 
@@ -41,7 +42,7 @@ interface GroupedCompetition {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
+export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPageProps) {
     const [upcomingEvents, setUpcomingEvents] = useState<GroupedCompetition[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedEvent, setSelectedEvent] = useState<GroupedCompetition | null>(null);
@@ -110,7 +111,7 @@ export function CompetitionsPage({ onLoginClick }: CompetitionsPageProps) {
 
     return (
         <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
-            <PublicHeader onLoginClick={onLoginClick} />
+            <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* ── HERO ─────────────────────────────────────────────────────── */}
             <section className="relative pt-48 pb-24 flex items-center justify-center overflow-hidden">

@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ShoppingBag } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
+import { useUser } from '../../hooks/useUser';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface PublicHeaderProps {
     onLoginClick: () => void;
+    /** Abre el modal directamente en la pestaña de alta. */
+    onSignupClick?: () => void;
 }
 
-export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
+export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps) {
+    const { data: currentUser } = useUser();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
@@ -116,6 +120,15 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                         />
                     </div>
                     
+                    {onSignupClick && !currentUser && (
+                        <button
+                            onClick={onSignupClick}
+                            className="hidden sm:inline-flex items-center justify-center rounded-lg bg-anvil-red px-5 py-1.5 font-bebas text-base italic tracking-[0.1em] text-white transition-all duration-300 hover:bg-red-700"
+                        >
+                            Crear cuenta
+                        </button>
+                    )}
+
                     <button className="text-gray-400 hover:text-white relative group transition-colors">
                         <ShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
                         <span className="absolute -top-2 -right-2 bg-anvil-red text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(220,38,38,0.5)]">0</span>
@@ -167,8 +180,16 @@ export function PublicHeader({ onLoginClick }: PublicHeaderProps) {
                             ))}
                         </nav>
                         
-                        <div className="p-10">
+                        <div className="space-y-3 p-10">
                             <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full bg-anvil-red py-6" />
+                            {onSignupClick && !currentUser && (
+                                <button
+                                    onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
+                                    className="w-full rounded-lg border border-white/20 py-4 font-bebas text-lg italic tracking-[0.1em] text-white transition-colors hover:bg-white/5"
+                                >
+                                    Crear cuenta
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 )}

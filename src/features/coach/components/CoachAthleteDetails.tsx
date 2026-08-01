@@ -183,6 +183,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                 <WorkoutBuilder
                                     athleteId={athleteId}
                                     blockId={selectedBlockId}
+                                    athleteName={athlete.full_name}
                                 />
                             </div>
                         ) : (

@@ -124,7 +124,7 @@ export function UserDashboard({ user, onLogout: _onLogout }: UserDashboardProps)
                 return <AthleteHome user={user} onNavigate={(view) => setCurrentView(view as AthleteView)} />;
             case 'planning':
                 if (user.has_access === false) return <RestrictedFeature title="Planificación Premium" />;
-                return <WorkoutLogger athleteId={user.id} />;
+                return <WorkoutLogger athleteId={user.id} athleteName={user.full_name} />;
             case 'nutrition':
                 if (user.has_access === false) return <RestrictedFeature title="Nutrición Premium" />;
                 return <AthleteNutritionView user={user} />;

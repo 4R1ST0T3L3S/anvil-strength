@@ -1,8 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { trainingService } from '../../../services/trainingService';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet } from '../../../types/training';
-import { Loader, Check, AlertCircle, UploadCloud, FileCheck } from 'lucide-react';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS } from '../../../types/training';
+import type { TargetMetric } from '../../../types/training';
+import {
+    getWeekNumber, getDateRangeFromWeek, formatDateRange,
+    getDateForWeekday, startOfToday,
+} from '../../../utils/dateUtils';
+import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Printer } from 'lucide-react';
+import { printWeek, sessionToPrintDay } from '../../../lib/export/weekPrint';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -10,9 +16,14 @@ import { RestTimerOverlay } from './RestTimerOverlay';
 
 interface WorkoutLoggerProps {
     athleteId: string;
+    /** Solo para la cabecera de la hoja exportada a PDF. */
+    athleteName?: string | null;
 }
 
 // Helper for classes
+import { Modal } from '../../../components/ui/Modal';
+import { ExerciseVideoPanel } from './ExerciseVideoPanel';
+
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
 }
@@ -20,12 +31,19 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 // ==========================================
 // TYPES (Expanded)
 // ==========================================
+/**
+ * `exercise` puede venir NULL aunque la fila de session_exercises exista: el
+ * join a exercise_library lo filtra la RLS, y si el ejercicio no es visible
+ * para el atleta PostgREST devuelve `exercise: null` sin ningún error.
+ * Tiparlo como obligatorio era lo que reventaba la pantalla entera con
+ * "Cannot read properties of null (reading 'name')".
+ */
 interface ExtendedSessionExercise extends Omit<SessionExercise, 'exercise'> {
     exercise: {
         name: string;
         video_url?: string | null;
         muscle_group?: string | null;
-    };
+    } | null;
     sets: TrainingSet[];
 }
 
@@ -33,13 +51,65 @@ interface ExtendedSession extends Omit<TrainingSession, 'exercises'> {
     exercises: ExtendedSessionExercise[];
 }
 
+/**
+ * Ordena los días como los vive el atleta: primero los agendados a un día de
+ * la semana, en orden de calendario; detrás los que no lo están, por número.
+ */
+function sortSessions<T extends { day_number: number; day_of_week?: string | null }>(sessions: T[]): T[] {
+    return [...sessions].sort((a, b) => {
+        const ia = weekdayIndex(a.day_of_week);
+        const ib = weekdayIndex(b.day_of_week);
+        if (ia != null && ib != null) return ia - ib;
+        if (ia != null) return -1;
+        if (ib != null) return 1;
+        return a.day_number - b.day_number;
+    });
+}
+
+/**
+ * Qué día de la semana abrir al entrar.
+ *
+ * Se busca el de hoy por fecha exacta y, si no, por día de la semana
+ * agendado. Cuando no hay ninguno —día de descanso, o una semana sin agendar—
+ * se cae en el primero de la lista en vez de dejar la pantalla vacía.
+ */
+function pickSessionForToday<T extends { id: string; date?: string | null; day_of_week?: string | null; day_number: number }>(
+    sessions: T[]
+): string | null {
+    const ordered = sortSessions(sessions);
+    if (ordered.length === 0) return null;
+
+    const today = startOfToday();
+    // Fecha local en formato ISO. `toISOString()` convierte a UTC y en España
+    // devuelve el día anterior durante las primeras horas de la mañana.
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todayIndex = today.getDay() || 7; // lunes = 1 … domingo = 7
+
+    return (
+        ordered.find(s => s.date === todayStr)?.id
+        ?? ordered.find(s => weekdayIndex(s.day_of_week) === todayIndex)?.id
+        ?? ordered[0].id
+    );
+}
+
 // ==========================================
 // COMPONENT: WORKOUT LOGGER
 // ==========================================
-export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
+export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     const [loading, setLoading] = useState(true);
     const [block, setBlock] = useState<TrainingBlock | null>(null);
-    const [sessions, setSessions] = useState<ExtendedSession[]>([]);
+    /**
+     * TODAS las sesiones que el servidor deja ver, de todas las semanas.
+     *
+     * Filtrar aquí las semanas futuras sería redundante y engañoso: la RLS ya
+     * no devuelve las que aún no se han publicado (ver `week_is_released()` en
+     * database/week_visibility_and_scheduling.sql). Lo que llega es, por
+     * definición, lo que el atleta tiene derecho a ver.
+     */
+    const [allSessions, setAllSessions] = useState<ExtendedSession[]>([]);
+    const [weekNames, setWeekNames] = useState<Record<number, string>>({});
+    const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+    const [weekPickerOpen, setWeekPickerOpen] = useState(false);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     // Timer State
@@ -103,52 +173,36 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                         }))
                 }));
 
-                // NEW: Calculate Current Week
-                const startDate = new Date(active.start_date ?? new Date());
-                const today = new Date();
-                startDate.setHours(0, 0, 0, 0);
-                today.setHours(0, 0, 0, 0);
+                setAllSessions(formatted);
 
-                const diffTime = today.getTime() - startDate.getTime();
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                // Calculate week number (1-based). If negative (before start), default to 1.
-                let currentWeek = Math.floor(diffDays / 7) + 1;
-                if (currentWeek < 1) currentWeek = 1;
+                // Nombres de las semanas. Son decorativos: si la tabla no está
+                // migrada se sigue navegando por "Semana 31".
+                setWeekNames(
+                    Object.fromEntries(
+                        Object.entries(await trainingService.getWeekMetaByBlock(active.id))
+                            .map(([w, m]) => [Number(w), m.name ?? ''])
+                    )
+                );
 
-                // NEW: Filter sessions for Current Week based on Absolute Day Number
-                // Week 1 = Days 1-7, Week 2 = Days 8-14, etc.
-                let currentWeekSessions = formatted.filter(s => Math.ceil(s.day_number / 7) === currentWeek);
-
-                // FALLBACK: If no sessions for calculated week, show ALL sessions
-                // This prevents blank screens when start_date is wrong or plan is shorter than current week
-                if (currentWeekSessions.length === 0 && formatted.length > 0) {
-                    currentWeekSessions = formatted;
-                }
-
-                setSessions(currentWeekSessions);
-
-                if (currentWeekSessions.length > 0) {
-                    // 5. Try to find session for this specific date or day_number
-                    const todayStr = today.toISOString().split('T')[0];
-
-                    // day_number is usually absolute (1..30). logic checks if session matches today's absolute day index
-                    // But now we operate on filtered list.
-
-                    const sessionForToday = currentWeekSessions.find(s =>
-                        s.date === todayStr || s.day_number === (diffDays + 1)
-                    );
-
-                    if (sessionForToday) {
-                        setActiveSessionId(sessionForToday.id);
-                    } else {
-                        // Default to first available in this week
-                        setActiveSessionId(currentWeekSessions[0].id);
-                    }
-                } else {
-                    // Fallback logic if week is empty? 
-                    // Ideally we might want to warn or show "Week Completed" but for now let's just leave empty array
+                // 4. Semana por defecto: la de HOY si está publicada. Si no —el
+                // atleta entra un domingo, o el bloque ya terminó— la última
+                // que haya llegado a estar disponible, que es donde estaba
+                // trabajando. Nunca la primera del bloque: obligaría a navegar
+                // hacia delante cada vez que abre la app.
+                const weeksAvailable = [...new Set(formatted.map(s => s.week_number))].sort((a, b) => a - b);
+                if (weeksAvailable.length === 0) {
+                    setSelectedWeek(null);
                     setActiveSessionId(null);
+                    return;
                 }
+
+                const thisWeek = getWeekNumber();
+                const week = weeksAvailable.includes(thisWeek)
+                    ? thisWeek
+                    : weeksAvailable.filter(w => w <= thisWeek).pop() ?? weeksAvailable[0];
+
+                setSelectedWeek(week);
+                setActiveSessionId(pickSessionForToday(formatted.filter(s => s.week_number === week)));
             } catch (err) {
                 console.error(err);
                 toast.error("Error cargando entrenamiento");
@@ -158,6 +212,49 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
         };
         init();
     }, [athleteId]);
+
+    // Semanas que el atleta puede abrir, de menor a mayor.
+    const availableWeeks = useMemo(
+        () => [...new Set(allSessions.map(s => s.week_number))].sort((a, b) => a - b),
+        [allSessions]
+    );
+
+    // Días de la semana elegida, en orden de calendario.
+    const sessions = useMemo(
+        () => sortSessions(allSessions.filter(s => s.week_number === selectedWeek)),
+        [allSessions, selectedWeek]
+    );
+
+    const blockYear = block?.start_date
+        ? new Date(block.start_date).getFullYear()
+        : new Date().getFullYear();
+
+    /** Saca la semana en PDF para llevarla al gimnasio en papel. */
+    const handlePrintWeek = () => {
+        if (!block || selectedWeek === null || sessions.length === 0) return;
+
+        const range = getDateRangeFromWeek(selectedWeek, blockYear);
+        const opened = printWeek({
+            blockName: block.name,
+            athleteName: athleteName ?? 'Mi entrenamiento',
+            weekLabel: weekNames[selectedWeek] || `Semana ${availableWeeks.indexOf(selectedWeek) + 1}`,
+            dateRange: formatDateRange(range.start, range.end),
+            days: sessions.map(sessionToPrintDay),
+        });
+
+        if (!opened) {
+            toast.error('El navegador bloqueó la ventana. Permite las ventanas emergentes para exportar.');
+        }
+    };
+
+    const changeWeek = (week: number) => {
+        setSelectedWeek(week);
+        setWeekPickerOpen(false);
+        // Al cambiar de semana se cae en el día de hoy si lo hay, y si no en el
+        // primero: mantener el día anterior seleccionado dejaba la pantalla en
+        // un "Día 3" que en la semana nueva podía no existir.
+        setActiveSessionId(pickSessionForToday(allSessions.filter(s => s.week_number === week)));
+    };
 
     if (loading) return <div className="h-screen flex items-center justify-center bg-black"><Loader className="animate-spin text-white" /></div>;
 
@@ -188,7 +285,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
     if (!activeSession && sessions.length === 0) {
         return (
             <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
-                <div className="bg-[#0a0a0a] border-b border-white/5 pb-2">
+                <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                     <div className="p-4">
                         <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                         <h2 className="text-2xl font-black italic">Sin Sesiones</h2>
@@ -199,9 +296,13 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                         <Check size={32} />
                     </div>
                     <div className="max-w-xs">
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Semana Completada</h3>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">
+                            {availableWeeks.length === 0 ? 'Aún no disponible' : 'Semana Completada'}
+                        </h3>
                         <p className="text-sm leading-relaxed">
-                            No hay sesiones programadas para esta semana. Si crees que es un error, contacta a tu entrenador.
+                            {availableWeeks.length === 0
+                                ? 'Tu entrenador todavía no ha abierto ninguna semana de este bloque. Aparecerá aquí en cuanto la publique.'
+                                : 'No hay sesiones programadas para esta semana. Si crees que es un error, contacta a tu entrenador.'}
                         </p>
                     </div>
                 </div>
@@ -213,34 +314,156 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
         <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
 
             {/* 1. Header & Navigation */}
-            <div className="bg-[#0a0a0a] border-b border-white/5 pb-2">
+            <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
                 <div className="p-4">
                     <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
+                    {block.description && (
+                        <details className="group mt-1">
+                            <summary className="text-[10px] font-black uppercase tracking-widest text-gray-500 cursor-pointer list-none hover:text-white transition-colors select-none">
+                                Objetivos del bloque <span className="group-open:hidden">▸</span><span className="hidden group-open:inline">▾</span>
+                            </summary>
+                            <p className="text-xs text-gray-400 leading-relaxed mt-2 whitespace-pre-wrap bg-white/[0.03] border border-white/5 rounded-xl p-3">
+                                {block.description}
+                            </p>
+                        </details>
+                    )}
                 </div>
+
+                {/* Selector de semana. El atleta entrena por semanas, así que
+                    la semana es el contexto principal y va por encima de los
+                    días, no escondida en un menú. */}
+                {selectedWeek !== null && (
+                    <div className="px-4 pb-1">
+                      <div className="flex items-stretch gap-2">
+                        <button
+                            onClick={() => setWeekPickerOpen(v => !v)}
+                            aria-expanded={weekPickerOpen}
+                            disabled={availableWeeks.length <= 1}
+                            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-[#252525] px-3 py-2.5 text-left transition-colors hover:bg-[#2e2e2e] disabled:hover:bg-[#252525]"
+                        >
+                            <span className="flex min-w-0 items-center gap-2">
+                                <CalendarDays size={15} className="shrink-0 text-anvil-red" aria-hidden="true" />
+                                <span className="min-w-0">
+                                    <span className="block truncate text-sm font-bold leading-tight">
+                                        Semana {availableWeeks.indexOf(selectedWeek) + 1}
+                                        {weekNames[selectedWeek] && (
+                                            <span className="ml-1.5 font-normal text-gray-400">{weekNames[selectedWeek]}</span>
+                                        )}
+                                    </span>
+                                    <span className="block text-[10px] uppercase tracking-widest text-gray-500">
+                                        {formatDateRange(
+                                            getDateRangeFromWeek(selectedWeek, blockYear).start,
+                                            getDateRangeFromWeek(selectedWeek, blockYear).end
+                                        )}
+                                    </span>
+                                </span>
+                            </span>
+                            {availableWeeks.length > 1 && (
+                                <ChevronDown
+                                    size={16}
+                                    aria-hidden="true"
+                                    className={cn('shrink-0 text-gray-500 transition-transform', weekPickerOpen && 'rotate-180')}
+                                />
+                            )}
+                        </button>
+
+                        {/* Llevarse la semana en papel al gimnasio. Va junto al
+                            selector porque exporta LA SEMANA que se está
+                            viendo, no el bloque entero. */}
+                        <button
+                            onClick={handlePrintWeek}
+                            title="Exportar esta semana a PDF"
+                            aria-label="Exportar esta semana a PDF"
+                            className="flex shrink-0 items-center justify-center rounded-xl bg-[#252525] px-3.5 text-gray-400 transition-colors hover:bg-[#2e2e2e] hover:text-white"
+                        >
+                            <Printer size={17} />
+                        </button>
+                      </div>
+
+                        {weekPickerOpen && (
+                            <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-white/5 bg-[#202020] p-1.5">
+                                {availableWeeks.map((w, i) => (
+                                    <button
+                                        key={w}
+                                        onClick={() => changeWeek(w)}
+                                        className={cn(
+                                            'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors',
+                                            w === selectedWeek ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5'
+                                        )}
+                                    >
+                                        <span className="min-w-0">
+                                            <span className="block truncate text-xs font-bold">
+                                                Semana {i + 1}
+                                                {weekNames[w] && <span className="ml-1.5 font-normal opacity-70">{weekNames[w]}</span>}
+                                            </span>
+                                            <span className="block text-[10px] text-gray-500">
+                                                {formatDateRange(
+                                                    getDateRangeFromWeek(w, blockYear).start,
+                                                    getDateRangeFromWeek(w, blockYear).end
+                                                )}
+                                            </span>
+                                        </span>
+                                        {w === getWeekNumber() && (
+                                            <span className="ml-2 shrink-0 rounded-full bg-anvil-red/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-anvil-red">
+                                                Ahora
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Day Tabs Scroll */}
                 <div className="flex overflow-x-auto px-4 gap-3 py-2 scrollbar-hide">
-                    {sessions.map(s => (
-                        <button
-                            key={s.id}
-                            onClick={() => setActiveSessionId(s.id)}
-                            className={cn(
-                                "flex flex-col items-center justify-center min-w-[4.5rem] py-3 rounded-xl transition-all border",
-                                activeSessionId === s.id
-                                    ? "bg-white text-black border-white shadow-lg scale-105 font-bold"
-                                    : "bg-[#0a0a0a] text-gray-400 border-transparent hover:bg-[#111]"
-                            )}
-                        >
-                            {s.name ? (
-                                <span className="text-xs font-black uppercase tracking-wider">{s.name}</span>
-                            ) : (
-                                <>
-                                    <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
-                                    <span className="text-xl font-bold leading-none">{s.day_number}</span>
-                                </>
-                            )}
-                        </button>
-                    ))}
+                    {sessions.map(s => {
+                        // El día agendado manda sobre el número: "Lun 4 ago" le
+                        // dice al atleta si le toca hoy; "Día 2" no.
+                        const label = weekdayLabel(s.day_of_week);
+                        const index = weekdayIndex(s.day_of_week);
+                        const date = index != null && selectedWeek != null
+                            ? getDateForWeekday(selectedWeek, blockYear, index)
+                            : null;
+                        const isToday = date != null && date.getTime() === startOfToday().getTime();
+
+                        return (
+                            <button
+                                key={s.id}
+                                onClick={() => setActiveSessionId(s.id)}
+                                className={cn(
+                                    "relative flex flex-col items-center justify-center min-w-[4.5rem] px-2 py-3 rounded-xl transition-all border",
+                                    activeSessionId === s.id
+                                        ? "bg-white text-black border-white shadow-lg scale-105 font-bold"
+                                        : "bg-[#2a2a2a] text-gray-400 border-transparent hover:bg-[#333]",
+                                    isToday && activeSessionId !== s.id && "border-anvil-red/40"
+                                )}
+                            >
+                                {label ? (
+                                    <>
+                                        <span className="text-[10px] uppercase tracking-widest opacity-60">
+                                            {WEEKDAYS.find(d => d.key === s.day_of_week)?.short}
+                                        </span>
+                                        <span className="text-sm font-bold leading-tight">
+                                            {date?.getDate()}
+                                        </span>
+                                        {s.name && (
+                                            <span className="mt-0.5 max-w-[4.5rem] truncate text-[9px] uppercase tracking-wider opacity-70">
+                                                {s.name}
+                                            </span>
+                                        )}
+                                    </>
+                                ) : s.name ? (
+                                    <span className="text-xs font-black uppercase tracking-wider">{s.name}</span>
+                                ) : (
+                                    <>
+                                        <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
+                                        <span className="text-xl font-bold leading-none">{s.day_number}</span>
+                                    </>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -250,6 +473,7 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
                     <LoggerExerciseCard
                         key={ex.id}
                         sessionExercise={ex}
+                        athleteId={athleteId}
                         onStartTimer={handleStartTimer}
                     />
                 ))}
@@ -276,13 +500,50 @@ export function WorkoutLogger({ athleteId }: WorkoutLoggerProps) {
 // ==========================================
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
-function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise: ExtendedSessionExercise, onStartTimer: (s: number) => void }) {
-    const [noteOpen, setNoteOpen] = useState(false);
+function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sessionExercise: ExtendedSessionExercise, athleteId: string, onStartTimer: (s: number) => void }) {
+    // Unidad en la que el coach pautó este ejercicio. Las series antiguas no
+    // la traen: son kilos, que era lo único que había antes de la migración.
+    const prescriptionMetric: TargetMetric =
+        sessionExercise.sets?.[0]?.target_metric ?? 'kg';
+    const prescriptionLabel =
+        TARGET_METRICS.find(m => m.key === prescriptionMetric)?.label ?? 'Kg';
+
+    // Si la biblioteca no devolvió el ejercicio (RLS), la sesión se sigue
+    // pudiendo registrar: series, kilos y vídeos no dependen de él.
+    const exerciseName = sessionExercise.exercise?.name ?? 'Ejercicio sin nombre';
+
+    // Las notas del coach nacen ABIERTAS. Es el único sitio donde escribe
+    // "hoy sin cinturón" o "para en el pecho": esconderlas detrás de un
+    // "Ver notas" garantiza que la mitad de las sesiones se hagan sin leerlas.
+    // Se pueden plegar, pero por defecto se ven.
+    const [noteOpen, setNoteOpen] = useState(true);
+    // Ficha del ejercicio: vídeo de técnica + músculos + cues. Se abre bajo
+    // demanda para no montar un <video> por cada ejercicio de la sesión.
+    const [detailOpen, setDetailOpen] = useState(false);
     
     // VBT Logic
     const [uploading, setUploading] = useState(false);
     const [vbtUrl, setVbtUrl] = useState<string | null>(sessionExercise.vbt_file_url || null);
+    // Tras subir, permitir asociar el archivo a una serie concreta
+    const [pendingSetTag, setPendingSetTag] = useState<string | null>(null); // url pendiente de etiquetar
+    const [taggedSetId, setTaggedSetId] = useState<string | null>(
+        sessionExercise.sets.find(s => s.vbt_file_url)?.id || null
+    );
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const tagSetWithVbt = async (setId: string | null) => {
+        const url = pendingSetTag;
+        setPendingSetTag(null);
+        if (!url || !setId) return; // "todo el ejercicio" → ya está guardado a nivel ejercicio
+        try {
+            await trainingService.updateSet(setId, { vbt_file_url: url });
+            setTaggedSetId(setId);
+            toast.success('VBT asociado a la serie');
+        } catch (e) {
+            console.error(e);
+            toast.error('No se pudo asociar a la serie');
+        }
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -317,6 +578,13 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
             await trainingService.updateSessionExercise(sessionExercise.id, { vbt_file_url: publicUrl });
             setVbtUrl(publicUrl);
             toast.success("Archivo VBT adjuntado");
+            // Si hay más de una serie, preguntar a cuál corresponde
+            if (sessionExercise.sets.length > 1) {
+                setPendingSetTag(publicUrl);
+            } else if (sessionExercise.sets.length === 1) {
+                await trainingService.updateSet(sessionExercise.sets[0].id, { vbt_file_url: publicUrl });
+                setTaggedSetId(sessionExercise.sets[0].id);
+            }
         } catch (error) {
             console.error("Upload error full detail:", error);
             const errMsg = error instanceof Error ? error.message : "Error desconocido";
@@ -327,17 +595,39 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
     };
 
     return (
-        <div className="bg-[#0a0a0a] rounded-2xl overflow-hidden border border-white/5 shadow-sm">
+        <div className="bg-[#1c1c1c] rounded-2xl overflow-hidden border border-white/5 shadow-sm">
+            <Modal
+                open={detailOpen}
+                onClose={() => setDetailOpen(false)}
+                title={exerciseName}
+                size="xl"
+            >
+                <ExerciseVideoPanel
+                    exerciseId={sessionExercise.exercise_id}
+                    exerciseName={exerciseName}
+                    athleteId={athleteId}
+                    prescription={sessionExercise.sets.map(s => s.target_reps).filter(Boolean).join(' · ')}
+                    coachNotes={sessionExercise.notes}
+                />
+            </Modal>
+
             {/* Header */}
-            <div className="p-4 bg-[#0a0a0a] flex justify-between items-start">
+            <div className="p-4 bg-[#252525] flex justify-between items-start">
                 <div>
-                    <h3 className="font-bold text-lg leading-tight text-gray-100">{sessionExercise.exercise.name}</h3>
+                    <button
+                        onClick={() => setDetailOpen(true)}
+                        className="group flex items-center gap-1.5 text-left"
+                        title="Ver técnica y detalles"
+                    >
+                        <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-anvil-red transition-colors">{exerciseName}</h3>
+                        <PlayCircle size={15} className="text-gray-600 group-hover:text-anvil-red transition-colors shrink-0" />
+                    </button>
                     {sessionExercise.notes && (
                         <button
                             onClick={() => setNoteOpen(!noteOpen)}
                             className="text-xs text-anvil-red mt-1 flex items-center gap-1 hover:underline"
                         >
-                            Ver notas {noteOpen ? '▲' : '▼'}
+                            {noteOpen ? 'Ocultar notas' : 'Ver notas'} {noteOpen ? '▲' : '▼'}
                         </button>
                     )}
                 </div>
@@ -354,6 +644,11 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
                     {vbtUrl ? (
                          <div className="flex items-center gap-1 text-[10px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
                             <FileCheck size={12} /> VBT SUBIDO
+                            {taggedSetId && (
+                                <span className="text-green-300/70 normal-case font-medium">
+                                    · Serie {sessionExercise.sets.findIndex(s => s.id === taggedSetId) + 1}
+                                </span>
+                            )}
                          </div>
                     ) : (
                         <button
@@ -368,8 +663,34 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
                 </div>
             </div>
 
+            {/* Selector: ¿a qué serie corresponde el archivo VBT? */}
+            {pendingSetTag && (
+                <div className="px-4 py-3 bg-anvil-red/5 border-b border-anvil-red/20 animate-in slide-in-from-top-2">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-anvil-red mb-2">
+                        ¿A qué serie corresponde el archivo?
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {sessionExercise.sets.map((s, i) => (
+                            <button
+                                key={s.id}
+                                onClick={() => tagSetWithVbt(s.id)}
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red hover:text-white text-gray-300 text-xs font-black uppercase transition-colors border border-white/10"
+                            >
+                                Serie {i + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => tagSetWithVbt(null)}
+                            className="px-3 py-1.5 rounded-lg text-gray-500 hover:text-white text-xs font-bold uppercase transition-colors"
+                        >
+                            Todo el ejercicio
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {noteOpen && sessionExercise.notes && (
-                <div className="px-4 py-2 bg-[#0a0a0a] text-sm text-gray-400 border-b border-white/5 animate-in slide-in-from-top-2">
+                <div className="whitespace-pre-wrap border-b border-subtle bg-surface-sunken px-4 py-3 text-t-sm leading-relaxed text-ink-muted">
                     {sessionExercise.notes}
                 </div>
             )}
@@ -399,10 +720,14 @@ function LoggerExerciseCard({ sessionExercise, onStartTimer }: { sessionExercise
             )}
 
             {/* Sets Header */}
-            <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-2 bg-[#0a0a0a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
+            <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
                 <span className="text-left">Serie</span>
                 <span>Reps</span>
-                <span>Kg</span>
+                {/* Esta columna son SIEMPRE kilos movidos, porque la escribe el
+                    atleta. Cuando el coach pautó en otra unidad —RPE, RIR,
+                    velocidad— su objetivo aparece encima de cada casilla, que
+                    es donde no se confunde con lo que se ha levantado. */}
+                <span>Kg{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
                 <span>RPE</span>
                 <span className="text-right">OK</span>
             </div>
@@ -455,7 +780,13 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
     defaultRestSeconds?: number | null; 
 }) {
     // Local state for optimistic UI
-    const actualLoad = set.actual_load?.toString() ?? '';
+    //
+    // El peso lo escribe el ATLETA. Antes esta columna era de solo lectura y
+    // enseñaba la prescripción del coach, así que en los ejercicios que no se
+    // pautan en kilos —accesorios, trabajo por RPE o por RIR— no había forma
+    // de anotar lo que se había movido de verdad: el dato no existía, y el
+    // coach no podía verlo ni entraba en las estadísticas.
+    const [actualLoad, setActualLoad] = useState<string>(set.actual_load?.toString() ?? '');
     const actualReps = set.actual_reps?.toString() ?? '';
     const [actualRpe, setActualRpe] = useState<string>(set.actual_rpe?.toString() ?? '');
     const [isCompleted, setIsCompleted] = useState(!!(set.actual_reps && set.actual_load)); // Pseudo-logic for completion
@@ -464,8 +795,18 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
     // Effective Rest Logic
     const effectiveRest = set.rest_seconds || defaultRestSeconds;
 
-    // Debounce Ref
+    // Un temporizador POR CASILLA. Con uno compartido, escribir el RPE
+    // cancelaba el guardado pendiente del peso y ese kilaje se perdía.
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const loadTimer = useRef<NodeJS.Timeout | null>(null);
+
+    // Qué pautó el coach, para enseñarlo sin pisar la casilla del atleta.
+    const prescribedMetric = set.target_metric ?? 'kg';
+    const prescribedTarget = prescribedMetric === 'rpe'
+        ? set.target_rpe
+        : set.target_load !== null && set.target_load !== undefined
+            ? String(set.target_load)
+            : null;
 
     // Persist to DB
     const persistChange = useCallback(async (updates: Partial<TrainingSet>) => {
@@ -492,8 +833,19 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
         setIsCompleted(newState);
 
         if (newState) {
-            // Auto-save the prescribed values as actuals when marking done
-            const targetLoad = set.target_load ? Number(set.target_load) : null;
+            // Auto-save the prescribed values as actuals when marking done.
+            //
+            // `actual_load` son SIEMPRE kilos movidos. Copiar aquí el objetivo
+            // sin mirar la unidad grababa 0,45 kg en una serie pautada a
+            // 0,45 m/s, o 20 kg en una pautada al 20% de pérdida — y esa cifra
+            // falsa entraba luego en el tonelaje, en el histórico de cargas y
+            // en las estimaciones de 1RM del atleta. Si no se pautó en kilos,
+            // el peso lo pone el atleta, no lo inventa la app.
+            // Si el atleta ya escribió el peso, manda el suyo.
+            const typed = actualLoad ? Number(actualLoad) : null;
+            const prescribedInKg = prescribedMetric === 'kg';
+            const targetLoad = typed ?? (prescribedInKg && set.target_load ? Number(set.target_load) : null);
+            if (targetLoad !== null && !actualLoad) setActualLoad(String(targetLoad));
             const targetReps = parsedReps ? Number(parsedReps) : null;
             const rpeValue = actualRpe ? Number(actualRpe) : null;
             persistChange({
@@ -507,6 +859,7 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
             }
         } else {
             // Un-complete: clear actuals
+            setActualLoad('');
             persistChange({ actual_load: null, actual_reps: null, actual_rpe: null });
         }
     };
@@ -531,11 +884,41 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
                 </span>
             </div>
 
-            {/* Kg (prescribed, locked) */}
+            {/* Peso movido, EDITABLE.
+                El marcador de posición es lo que pautó el coach, así que la
+                casilla vacía ya dice el objetivo; en cuanto el atleta escribe,
+                lo que se ve es lo que ha hecho. Cuando la prescripción no va en
+                kilos (RPE, RIR, velocidad) el objetivo se enseña encima en
+                pequeño y la casilla queda libre para los kilos reales. */}
             <div className="text-center">
-                <span className={cn("font-black text-sm tabular-nums", isCompleted ? "text-green-400" : "text-white")}>
-                    {set.target_load ?? '-'}
-                </span>
+                {prescribedMetric !== 'kg' && (
+                    <span className="block text-[9px] font-bold uppercase leading-none text-ink-subtle">
+                        {prescribedTarget ?? '-'}
+                    </span>
+                )}
+                <input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.5"
+                    value={actualLoad}
+                    onChange={(e) => {
+                        setActualLoad(e.target.value);
+                        if (loadTimer.current) clearTimeout(loadTimer.current);
+                        loadTimer.current = setTimeout(() => {
+                            persistChange({ actual_load: e.target.value ? Number(e.target.value) : null });
+                        }, 800);
+                    }}
+                    placeholder={prescribedMetric === 'kg' && set.target_load !== null && set.target_load !== undefined
+                        ? String(set.target_load)
+                        : 'kg'}
+                    aria-label="Peso movido en kilos"
+                    className={cn(
+                        'w-full rounded-field border bg-surface-sunken px-0 py-1.5 text-center text-t-sm font-black tabular-nums outline-none transition-colors duration-fast focus:border-brand',
+                        actualLoad
+                            ? 'border-[var(--brand-line)] text-ink'
+                            : 'border-subtle text-ink-muted placeholder:font-normal placeholder:text-ink-subtle'
+                    )}
+                />
             </div>
 
             {/* RPE real (editable) */}
@@ -551,7 +934,7 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
                 }}
                 placeholder="-"
                 className={cn(
-                    "w-full bg-[#0a0a0a] border rounded-lg px-0 py-1.5 text-center text-xs font-bold focus:border-anvil-red outline-none transition-colors",
+                    "w-full bg-[#111] border rounded-lg px-0 py-1.5 text-center text-xs font-bold focus:border-anvil-red outline-none transition-colors",
                     actualRpe ? "text-anvil-red border-anvil-red/40" : "text-gray-600 border-white/5 placeholder-gray-700"
                 )}
             />
@@ -564,7 +947,7 @@ function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSe
                         "w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm",
                         isCompleted
                             ? "bg-green-500 text-black hover:bg-green-400"
-                            : "bg-[#0a0a0a] border border-white/10 text-gray-600 hover:bg-[#111] hover:text-white"
+                            : "bg-[#2a2a2a] border border-white/10 text-gray-600 hover:bg-[#333] hover:text-white"
                     )}
                 >
                     <Check size={14} strokeWidth={3} />

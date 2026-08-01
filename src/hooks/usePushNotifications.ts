@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
-// ⚠️ REEMPLAZA ESTO CON TU VAPID PUBLIC KEY
-const VAPID_PUBLIC_KEY = 'TU_VAPID_PUBLIC_KEY_AQUI';
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
 /**
  * Convierte una clave VAPID base64 a Uint8Array
@@ -66,8 +65,8 @@ export function usePushNotifications() {
      * @returns true si la suscripción fue exitosa
      */
     const subscribeToPush = useCallback(async (): Promise<boolean> => {
-        if (!state.isSupported) {
-            console.warn('Push notifications not supported');
+        if (!state.isSupported || !VAPID_PUBLIC_KEY) {
+            console.warn('Push notifications not supported or VAPID key missing');
             return false;
         }
 

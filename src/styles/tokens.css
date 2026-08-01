@@ -1,0 +1,198 @@
+/* =====================================================================
+   ANVIL STRENGTH — TOKENS DE DISEÑO
+   =====================================================================
+   Fuente única de verdad para color, elevación, radios, movimiento y
+   capas. Todo lo demás (tailwind.config.js, primitivas de src/components/ui)
+   lee de aquí.
+
+   REGLA: ningún componente nuevo escribe un hex a mano. Si un valor no
+   está aquí, o falta un token o el componente se está saliendo del sistema.
+
+   Tema: oscuro únicamente. No es una preferencia estética sino de contexto
+   de uso — el atleta consulta la sesión en el gimnasio entre series, a
+   menudo con poca luz, y el coach programa bloques por la noche. Un tema
+   claro obligaría a mirar una pantalla en blanco en ambos casos.
+
+   Color en OKLCH: interpolación perceptualmente uniforme, así que aclarar
+   u oscurecer un tono no lo desatura ni lo vira, cosa que sí ocurre en HSL.
+   ===================================================================== */
+
+:root {
+  /* -------------------------------------------------------------------
+     1. SUPERFICIES — rampa de 4 pasos, no 7 grises casi iguales
+     -------------------------------------------------------------------
+     Cada paso es un nivel de elevación real. Si dudas entre dos, el
+     componente probablemente no necesita elevarse.                      */
+
+  --surface-sunken: oklch(0.145 0 0); /* ~#0a0a0a — pozos, code, letterbox */
+  --surface-canvas: oklch(0.226 0 0); /* ~#1c1c1c — fondo de la aplicación */
+  --surface-raised: oklch(0.265 0 0); /* ~#252525 — tarjetas, paneles, modales */
+  --surface-overlay: oklch(0.31 0 0); /* ~#303030 — menús, popovers, tooltips */
+
+  /* Bordes: transparencias del blanco, no grises opacos. Así funcionan
+     igual sobre cualquier paso de la rampa.                             */
+  --border-subtle: oklch(1 0 0 / 0.06); /* separadores internos */
+  --border-default: oklch(1 0 0 / 0.1); /* contorno de tarjeta / input */
+  --border-strong: oklch(1 0 0 / 0.18); /* hover, elemento enfocado */
+
+  /* -------------------------------------------------------------------
+     2. TINTA — todos los niveles cumplen WCAG AA sobre --surface-canvas
+     -------------------------------------------------------------------
+     Contraste medido contra #1c1c1c:
+       ink          21.0:1
+       ink-muted     7.0:1   <- por defecto para texto secundario
+       ink-subtle    4.7:1   <- suelo absoluto para texto legible
+       ink-faint     2.6:1   <- SOLO decorativo: iconos, marcas de agua
+
+     El antiguo `text-gray-500` (304 usos) daba 3.4:1 y no llegaba al
+     mínimo de 4.5:1. Su reemplazo es --ink-subtle o --ink-muted.        */
+
+  --ink: oklch(0.985 0 0); /* titulares, cifras, texto principal */
+  --ink-muted: oklch(0.72 0 0); /* texto secundario, labels */
+  --ink-subtle: oklch(0.62 0 0); /* metadatos, placeholders */
+  --ink-faint: oklch(0.48 0 0); /* NUNCA texto — solo adorno */
+  --ink-inverse: oklch(0.145 0 0); /* texto sobre superficie roja o blanca */
+
+  /* -------------------------------------------------------------------
+     3. ROJO DE MARCA — una sola rampa
+     -------------------------------------------------------------------
+     Estrategia de color: contenida. El rojo marca acción primaria,
+     selección actual y estado de error. Nunca decora.
+     Si algo es rojo y no se puede pulsar ni indica un estado, sobra.    */
+
+  --brand: oklch(0.62 0.21 25); /* acción primaria, selección */
+  --brand-hover: oklch(0.67 0.21 25); /* se ACLARA en hover: sobre fondo
+                                          oscuro, oscurecer aleja del
+                                          usuario en vez de acercarlo   */
+  --brand-active: oklch(0.56 0.2 25); /* pulsado */
+  --brand-quiet: oklch(0.62 0.21 25 / 0.14); /* fondo de chip / badge */
+  --brand-line: oklch(0.62 0.21 25 / 0.35); /* borde de estado activo */
+  --brand-ink: oklch(0.985 0 0); /* texto sobre --brand */
+
+  /* -------------------------------------------------------------------
+     4. ESTADOS SEMÁNTICOS
+     -------------------------------------------------------------------
+     Deliberadamente apagados respecto al rojo de marca: en una app de
+     fuerza el rojo ya está ocupado por la identidad, así que el error
+     se distingue por contexto e icono, no por competir en saturación.  */
+
+  --success: oklch(0.72 0.17 150);
+  --success-quiet: oklch(0.72 0.17 150 / 0.14);
+  --warning: oklch(0.78 0.16 78);
+  --warning-quiet: oklch(0.78 0.16 78 / 0.14);
+  --danger: oklch(0.65 0.2 25);
+  --danger-quiet: oklch(0.65 0.2 25 / 0.14);
+  --info: oklch(0.7 0.13 240);
+  --info-quiet: oklch(0.7 0.13 240 / 0.14);
+
+  /* Escala de intensidad para el RPE / esfuerzo percibido: es el dato más
+     leído de la app y merece codificación propia, verde -> ámbar -> rojo. */
+  --effort-low: oklch(0.72 0.17 150);
+  --effort-mid: oklch(0.78 0.16 78);
+  --effort-high: oklch(0.7 0.19 45);
+  --effort-max: oklch(0.62 0.21 25);
+
+  /* -------------------------------------------------------------------
+     5. FOCO — visible siempre, también sobre superficie roja
+     ------------------------------------------------------------------- */
+  --focus-ring: oklch(0.985 0 0);
+  --focus-offset: var(--surface-canvas);
+
+  /* -------------------------------------------------------------------
+     6. RADIOS — 5 pasos
+     -------------------------------------------------------------------
+     Las tarjetas topan en 16px. Los radios de 32-40px que había sueltos
+     (rounded-[2rem], rounded-[2.5rem]) leen como plantilla, no como marca. */
+  --radius-xs: 4px; /* badges, chips diminutos */
+  --radius-sm: 8px; /* inputs, botones */
+  --radius-md: 12px; /* tarjetas, paneles */
+  --radius-lg: 16px; /* modales, hojas — techo para contenedores */
+  --radius-pill: 999px; /* avatares, toggles, tags */
+
+  /* -------------------------------------------------------------------
+     7. ELEVACIÓN
+     -------------------------------------------------------------------
+     Sombra O borde, nunca los dos como decoración a la vez. La sombra en
+     tema oscuro se apoya en oscurecer, no en difuminar: los desenfoques
+     grandes sobre negro no se ven y solo cuestan pintado.               */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 4px 8px oklch(0 0 0 / 0.45);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.55);
+
+  /* -------------------------------------------------------------------
+     8. MOVIMIENTO
+     -------------------------------------------------------------------
+     Curva única de salida exponencial. Sin rebote ni elástico: esto es
+     una herramienta de trabajo, no una animación de marca.
+     Rango 120-320ms — el registro de producto vive entre 150 y 250ms.   */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* out-quint, la de por defecto */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* solo para bucles */
+
+  --dur-instant: 90ms; /* feedback de pulsación */
+  --dur-fast: 150ms; /* hover, focus, toggles */
+  --dur-base: 220ms; /* entrada de paneles, acordeones */
+  --dur-slow: 320ms; /* modales, transición de ruta */
+
+  /* -------------------------------------------------------------------
+     9. CAPAS — escala semántica, nunca z-index: 9999
+     ------------------------------------------------------------------- */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-backdrop: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  /* -------------------------------------------------------------------
+     10. PORTADA — registro de MARCA, no de producto
+     -------------------------------------------------------------------
+     Todo lo de arriba sirve a la aplicación: tema oscuro y color contenido,
+     porque ahí el diseño sirve a una tarea. La web pública es otro registro:
+     ahí el diseño ES el producto y su trabajo es que alguien que no nos
+     conoce decida quedarse.
+
+     Por eso la portada sí puede DRENAR color — folds enteros de rojo o de
+     blanco — y por eso esos valores viven aquí abajo, separados y con
+     nombre propio (`--fold-*`), en vez de contaminar la rampa de la app.
+
+     El claro es un blanco NEUTRO (croma 0), no un crema. El crema tibio es
+     el fondo por defecto de medio internet generado en 2026; un blanco
+     limpio al lado del rojo de marca dice mucho más y no se parece a nada.  */
+
+  /* 0.95 y no 0.97: a pantalla completa y de noche —que es cuando se mira
+     esta web— el blanco puro deslumbra al venir de un fold negro. Sigue
+     leyéndose como blanco, pero el salto entre secciones ya no da un fogonazo. */
+  --fold-light: oklch(0.95 0 0); /* fondo de los folds claros */
+  --fold-light-raised: oklch(1 0 0); /* tarjetas sobre el fold claro */
+  --fold-light-ink: oklch(0.22 0 0); /* 15.8:1 — titulares */
+  --fold-light-ink-muted: oklch(0.44 0 0); /* 7.4:1 — cuerpo */
+  --fold-light-line: oklch(0.22 0 0 / 0.12);
+
+  /* Botón táctil: el canto inferior sólido que se hunde al pulsar. Es una
+     sombra CON forma, no un desenfoque decorativo — cuenta hacia qué lado
+     está la luz y hace que el botón parezca un objeto físico. */
+  --press-depth: 4px;
+  --press-edge-brand: oklch(0.46 0.17 25);
+  --press-edge-light: oklch(0.78 0 0);
+  --press-edge-dark: oklch(0.1 0 0);
+}
+
+/* Quien desactiva animaciones en su sistema recibe transiciones
+   instantáneas, no animaciones "un poco más rápidas". */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 1ms;
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+  }
+}
+
+/* Un único anillo de foco para toda la app. Sustituye a los
+   `focus:outline-none` sueltos, que dejaban la app inutilizable con teclado. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}

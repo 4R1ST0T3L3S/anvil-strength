@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingSession } from '../../../types/training';
+import type { Weekday } from '../../../types/training';
 
 interface CreateSessionModalProps {
     isOpen: boolean;
@@ -16,7 +17,8 @@ interface CreateSessionModalProps {
 export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions, onSessionCreated }: CreateSessionModalProps) {
     const [name, setName] = useState('');
     const [dayNumber, setDayNumber] = useState(1);
-    const [dayOfWeek, setDayOfWeek] = useState('');
+    // '' = sin agendar; el día se identificará por su número.
+    const [dayOfWeek, setDayOfWeek] = useState<Weekday | ''>('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -130,7 +132,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                             </label>
                             <select
                                 value={dayOfWeek}
-                                onChange={(e) => setDayOfWeek(e.target.value)}
+                                onChange={(e) => setDayOfWeek(e.target.value as Weekday | '')}
                                 className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white font-bold focus:outline-none focus:border-anvil-red/50 transition-all appearance-none cursor-pointer"
                             >
                                 <option value="">Seleccionar día (Opcional)</option>

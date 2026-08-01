@@ -4,7 +4,7 @@ import { VideoTracker } from './VideoTracker';
 import { MetricsDashboard } from './MetricsDashboard';
 import { TrackingPoint } from '../../../../lib/cv/tracker';
 
-export function PwrAnalysisTab() {
+export function PwrAnalysisTab({ onBack }: { onBack?: () => void }) {
   const [trackingData, setTrackingData] = useState<{ path: TrackingPoint[], ratio: number } | null>(null);
   const [seekTime, setSeekTime] = useState<number | undefined>();
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
@@ -23,12 +23,22 @@ export function PwrAnalysisTab() {
   return (
     <div className={`mx-auto px-2 sm:px-4 py-4 animate-in fade-in duration-300 w-full ${trackingData ? 'max-w-[1800px] h-[calc(100vh-32px)] min-h-[600px] flex flex-col' : 'max-w-5xl space-y-6'}`}>
       <div className="flex items-center justify-between shrink-0 mb-6">
-          <h3 className="text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-              <Activity className="text-orange-500" />
-              PWR Análisis
-              <span className="text-xs font-bold bg-orange-500/10 text-orange-500 px-2 py-1 rounded ml-2">BETA</span>
-          </h3>
-          
+          <div className="flex items-center gap-3">
+              {onBack && (
+                  <button
+                      onClick={onBack}
+                      className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider bg-white/5 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                      <ArrowLeft size={16} /> Dashboard
+                  </button>
+              )}
+              <h3 className="text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
+                  <Activity className="text-orange-500" />
+                  PWR Análisis
+                  <span className="text-xs font-bold bg-orange-500/10 text-orange-500 px-2 py-1 rounded ml-2">BETA</span>
+              </h3>
+          </div>
+
           {trackingData && (
               <button 
                 onClick={handleReset}

@@ -90,12 +90,13 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     // Create if missing
                     const { data: newProfile } = await supabase
                         .from('profiles')
+                        // `role` y `has_access` los fija el servidor (DEFAULT
+                        // + columnas revocadas). Enviarlos desde aquí haría
+                        // fallar el INSERT por permisos de columna.
                         .insert([{
                             id: userId,
                             full_name: optimisticUser.name,
-                            nickname: optimisticUser.nickname || 'Atleta',
-                            role: 'athlete',
-                            has_access: false
+                            nickname: optimisticUser.nickname || 'Atleta'
                         }])
                         .select()
                         .single();

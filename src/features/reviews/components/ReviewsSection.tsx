@@ -43,14 +43,14 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
     }, {} as Record<number, number>);
 
     return (
-        <section id="reviews" className="py-24 px-6 bg-[#0a0a0a]">
+        <section id="reviews" className="bg-surface-canvas px-6 py-24">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">
                         Opiniones de <span className="text-anvil-red">Nuestros Atletas</span>
                     </h2>
-                    <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                    <p className="text-ink-muted text-lg max-w-2xl mx-auto">
                         Descubre lo que nuestros atletas piensan sobre su experiencia con Anvil Strength
                     </p>
 
@@ -62,7 +62,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                     {averageRating.toFixed(1)}
                                 </div>
                                 <StarRating rating={Math.round(averageRating)} readonly size={28} />
-                                <p className="text-sm text-gray-500 mt-2">
+                                <p className="text-sm text-ink-subtle mt-2">
                                     {reviews.length} {reviews.length === 1 ? 'reseña' : 'reseñas'}
                                 </p>
                             </div>
@@ -74,14 +74,14 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                     const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
                                     return (
                                         <div key={star} className="flex items-center gap-2 text-sm">
-                                            <span className="text-gray-400 w-12">{star} ★</span>
-                                            <div className="flex-1 bg-[#0a0a0a] rounded-full h-2 overflow-hidden">
+                                            <span className="text-ink-muted w-12">{star} ★</span>
+                                            <div className="flex-1 bg-surface-raised rounded-full h-2 overflow-hidden">
                                                 <div
                                                     className="bg-yellow-400 h-full transition-all duration-500"
                                                     style={{ width: `${percentage}%` }}
                                                 />
                                             </div>
-                                            <span className="text-gray-500 w-8 text-right">{count}</span>
+                                            <span className="text-ink-subtle w-8 text-right">{count}</span>
                                         </div>
                                     );
                                 })}
@@ -99,10 +99,10 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
 
                 {/* Info box for non-authenticated users */}
                 {!isAuthenticated && reviews.length > 0 && (
-                    <div className="mb-12 max-w-3xl mx-auto bg-[#0a0a0a] p-6 rounded-xl border border-white/10 text-center">
+                    <div className="mb-12 max-w-3xl mx-auto bg-surface-raised p-6 rounded-card border border-line text-center">
                         <MessageCircle className="inline-block mb-3 text-anvil-red" size={32} />
                         <h3 className="text-lg font-bold mb-2">¿Quieres dejar tu opinión?</h3>
-                        <p className="text-gray-400 mb-4">
+                        <p className="text-ink-muted mb-4">
                             Inicia sesión o regístrate para compartir tu experiencia con la comunidad
                         </p>
                         <button
@@ -119,7 +119,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                     {isLoading ? (
                         <div className="text-center py-12">
                             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-anvil-red"></div>
-                            <p className="text-gray-400 mt-4">Cargando reseñas...</p>
+                            <p className="text-ink-muted mt-4">Cargando reseñas...</p>
                         </div>
                     ) : error ? (
                         <div className="text-center py-12">
@@ -132,13 +132,13 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                             </button>
                         </div>
                     ) : reviews.length === 0 ? (
-                        <div className="text-center py-12 bg-[#0a0a0a] rounded-xl border border-white/10">
-                            <MessageCircle className="inline-block mb-4 text-gray-600" size={48} />
-                            <p className="text-gray-400 text-lg">
+                        <div className="text-center py-12 bg-surface-raised rounded-card border border-line">
+                            <MessageCircle className="inline-block mb-4 text-ink-faint" size={48} />
+                            <p className="text-ink-muted text-lg">
                                 Aún no hay reseñas.
                             </p>
                             {isAuthenticated && (
-                                <p className="text-gray-500 mt-2">
+                                <p className="text-ink-subtle mt-2">
                                     ¡Sé el primero en compartir tu experiencia!
                                 </p>
                             )}
@@ -148,14 +148,14 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                             {reviews.map((review) => (
                                 <div
                                     key={review.id}
-                                    className="bg-[#0a0a0a] p-6 rounded-xl border border-white/10 hover:border-white/20 transition-colors"
+                                    className="bg-surface-raised p-6 rounded-card border border-line hover:border-strong transition-colors"
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <div>
                                             <p className="font-bold text-lg mb-1">{review.athlete_name}</p>
                                             <StarRating rating={review.rating} readonly size={18} />
                                         </div>
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-xs text-ink-subtle">
                                             {new Date(review.created_at).toLocaleDateString('es-ES', {
                                                 year: 'numeric',
                                                 month: 'short',
@@ -163,7 +163,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                             })}
                                         </span>
                                     </div>
-                                    <p className="text-gray-300 leading-relaxed">
+                                    <p className="text-ink-muted leading-relaxed">
                                         {review.review_text}
                                     </p>
                                 </div>
