@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '../../../hooks/useUser';
 import { supabase } from '../../../lib/supabase';
 import { calcular1RMporVelocidad, Movimiento } from '../../../utils/vbtCalculator';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
 interface OneRMCalculatorProps {
     isOpen: boolean;
@@ -330,15 +331,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
     const currentPR = getCurrentPR();
 
+    // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
+        if (!isOpen) return;
+        return lockBodyScroll();
     }, [isOpen]);
 
     if (!isOpen) return null;

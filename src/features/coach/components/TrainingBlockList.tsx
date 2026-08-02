@@ -112,10 +112,14 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 className={`group relative bg-surface-canvas border border-subtle rounded-card transition-all duration-base hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''}`}
                 onClick={() => onSelectBlock(block)}
             >
-                <div className="px-6 py-5 flex items-center justify-between transition-all duration-base group-hover:bg-white/5 rounded-card">
-                    <div className="flex items-center gap-6 min-w-0">
+                {/* En movil la tarjeta es de DOS filas y no de una.
+                    Con una sola, el titulo, el estado y los cinco controles
+                    competian por 375px: los botones se salian de la pantalla y
+                    el nombre del bloque se quedaba en tres letras. */}
+                <div className="flex flex-col gap-3 rounded-card px-4 py-4 transition-all duration-base group-hover:bg-white/5 md:flex-row md:items-center md:justify-between md:gap-4 md:px-6 md:py-5">
+                    <div className="flex min-w-0 items-center gap-3 md:gap-6">
                         {/* Status Badge */}
-                        <div className={`px-3 py-1 rounded-md text-[10px] font-black tracking-wider border shrink-0 ${isActive
+                        <div className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wider border shrink-0 ${isActive
                             ? "bg-anvil-red/10 text-anvil-red border-anvil-red/20"
                             : "bg-gray-500/10 text-ink-subtle border-gray-500/20"
                             }`}>
@@ -123,20 +127,20 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         </div>
 
                         {/* Title & info */}
-                        <div className="flex flex-col gap-1 min-w-0">
-                            <h4 className="text-2xl font-black text-white italic tracking-tighter uppercase group-hover:text-anvil-red transition-colors truncate">
+                        <div className="flex min-w-0 flex-col gap-1">
+                            <h4 className="truncate text-lg font-black uppercase italic tracking-tighter text-white transition-colors group-hover:text-anvil-red md:text-2xl">
                                 {block.name}
                             </h4>
 
-                            <div className="flex items-center gap-4 text-xs text-ink-subtle font-medium uppercase tracking-wider">
-                                <span className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 truncate text-xs font-medium uppercase tracking-wider text-ink-subtle md:gap-4">
+                                <span className="flex shrink-0 items-center gap-2">
                                     <Calendar size={12} />
                                     Semana {block.start_week || '?'} - {block.end_week || '?'}
                                 </span>
                                 {block.start_week && block.end_week && (
                                     <>
-                                        <span className="w-1 h-1 rounded-full bg-gray-700" />
-                                        <span className="text-ink-subtle normal-case">
+                                        <span className="hidden h-1 w-1 shrink-0 rounded-full bg-gray-700 sm:block" />
+                                        <span className="hidden truncate normal-case text-ink-subtle sm:block">
                                             {formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)}
                                         </span>
                                     </>
@@ -145,7 +149,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 relative shrink-0">
+                    <div className="relative flex shrink-0 items-center justify-end gap-1 md:gap-2">
                         {/* Asignar a macro */}
                         <button
                             onClick={(e) => {
@@ -188,7 +192,9 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         >
                             <Trash2 size={18} />
                         </button>
-                        <div className="text-ink-subtle group-hover:text-white transition-colors ml-1">
+                        {/* La flecha sobra en movil: la tarjeta entera ya es
+                            pulsable y ahi cada pixel de ancho cuenta. */}
+                        <div className="ml-1 hidden text-ink-subtle transition-colors group-hover:text-white md:block">
                             <ChevronRight size={20} />
                         </div>
 
@@ -239,13 +245,13 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
 
     return (
         <div className="space-y-6">
-            <div className="px-6 py-8">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="px-1 py-6 md:px-6 md:py-8">
+                <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end md:gap-6">
                     <div>
-                        <h2 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
+                        <h2 className="text-4xl font-black uppercase italic leading-[0.9] tracking-tighter text-white md:text-6xl">
                             Bloques
                         </h2>
-                        <div className="h-2 w-24 bg-anvil-red mt-4 rounded-full" />
+                        <div className="mt-3 h-1.5 w-20 rounded-full bg-anvil-red md:mt-4 md:h-2 md:w-24" />
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <button

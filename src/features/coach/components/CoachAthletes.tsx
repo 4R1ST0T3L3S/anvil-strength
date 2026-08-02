@@ -279,7 +279,8 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                             pone "eliminar" hace pensar que se pierde todo, y esa
                             duda es la que hace que nadie lo use nunca. */}
                         <span className="mt-2 block text-t-xs text-ink-muted">
-                            No se borra su cuenta ni su historial de entrenamiento. Si vuelve a
+                            No se borra su cuenta, ni su historial de entrenamiento, ni las
+                            competiciones que le hayas asignado —siguen en tu agenda—. Si vuelve a
                             entrar con una invitación tuya, lo recuperas todo tal y como estaba.
                         </span>
                     </>

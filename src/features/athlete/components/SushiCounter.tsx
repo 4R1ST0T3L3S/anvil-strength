@@ -4,6 +4,7 @@ import { X, Fish, RotateCcw, Plus, Minus, Trophy, Save, Loader2 } from 'lucide-r
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '../../../hooks/useUser';
 import { supabase } from '../../../lib/supabase';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
 interface SushiCounterProps {
     isOpen: boolean;
@@ -95,15 +96,10 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
         }
     };
 
+    // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
+        if (!isOpen) return;
+        return lockBodyScroll();
     }, [isOpen]);
 
     if (!isOpen) return null;

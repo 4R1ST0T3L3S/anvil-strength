@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Calendar } from 'lucide-react';
 import { athletes as clubAthletes } from '../../../data/athletes';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
 export interface SpotlightData {
     athleteName: string;
@@ -83,10 +84,8 @@ function SmokeLayer() {
 export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData | null; onClose: () => void }) {
     // Bloquear scroll del body mientras está abierto
     useEffect(() => {
-        if (data) {
-            document.body.style.overflow = 'hidden';
-            return () => { document.body.style.overflow = ''; };
-        }
+        if (!data) return;
+        return lockBodyScroll();
     }, [data]);
 
     // Cerrar con Escape

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { lockBodyScroll } from '../../lib/scrollLock';
 
 // Configurar el worker de PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -58,14 +59,11 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
         return () => window.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
-    // Prevent body scroll
+    // Bloqueo del scroll de fondo. Cerradura compartida con contador: ver
+    // src/lib/scrollLock.ts.
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => { document.body.style.overflow = 'unset'; };
+        if (!isOpen) return;
+        return lockBodyScroll();
     }, [isOpen]);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {

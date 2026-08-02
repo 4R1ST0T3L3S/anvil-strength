@@ -1,10 +1,11 @@
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary, TARGET_METRICS, WEEKDAYS, weekdayIndex, weekdayLabel } from '../../../types/training';
 import type { TargetMetric, WeekMeta, Weekday } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, CalendarPlus, Activity, X, Dumbbell, ArrowRightLeft, FileText, BarChart3, Flame, Timer, Eye, EyeOff, LayoutTemplate, CopyPlus, GripVertical, ChevronDown, TrendingUp, Send, Check, Printer } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, CalendarPlus, Activity, X, Dumbbell, ArrowRightLeft, FileText, BarChart3, Flame, Timer, Eye, EyeOff, LayoutTemplate, CopyPlus, GripVertical, ChevronDown, TrendingUp, Send, Check, Download, Flame as FlameIcon, MoreVertical, Sparkles } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { DayTemplate, DayTemplateExercise } from '../../../types/training';
@@ -24,9 +25,10 @@ import { parseLoadInput, percentOfMax } from '../../../lib/planning/loadMath';
 import { ResizeHandle, usePanelWidth } from '../../../components/ui/ResizeHandle';
 import { maxesService, findMax, type MaxesByExercise } from '../../../services/maxesService';
 import { toVolumeInput } from '../../../lib/volume/engine';
-import { printWeek, sessionToPrintDay } from '../../../lib/export/weekPrint';
+import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
 import { Button } from '../../../components/ui/Button';
 import { transition, DURATION } from '../../../lib/motion';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
 // Helpers to parse and format target_reps field specifically for grouped sets
 const getSeriesCount = (target_reps: string | null | undefined) => {
@@ -60,6 +62,77 @@ function sortSessions<T extends { day_number: number; day_of_week?: string | nul
         if (ib != null) return 1;
         return a.day_number - b.day_number;
     });
+}
+
+/**
+ * ACTUALIZAR EL BLOQUE SIN REESCRIBIRLO ENTERO
+ * =====================================================================
+ *
+ * El estado del constructor es un árbol de tres niveles: bloque → sesiones →
+ * ejercicios → series. Los `setBlockData` de este fichero lo recorrían entero
+ * con `map` anidados y devolvían objetos nuevos en TODOS los niveles, tocara
+ * lo que tocara el cambio.
+ *
+ * React compara props por identidad. Con todo reconstruido, cada pulsación en
+ * un campo de kilos convertía a "cambiado" a las 32 sesiones de un bloque de
+ * ocho semanas, y con ellas todas sus tarjetas de día. El editor de un día
+ * abierto encima repintaba también.
+ *
+ * Estas dos funciones cortan por lo sano en cuanto encuentran lo que buscan y
+ * devuelven EL MISMO array cuando no hay nada que cambiar, así que solo se
+ * repinta la rama afectada.
+ */
+
+/** Aplica `fn` a la serie con ese id. Devolver `null` la elimina. */
+function mapSets(
+    sessions: ExtendedSession[],
+    setId: string,
+    fn: (set: TrainingSet) => TrainingSet | null
+): ExtendedSession[] {
+    let touched = false;
+
+    const next = sessions.map(session => {
+        let sessionTouched = false;
+
+        const exercises = session.exercises.map(exercise => {
+            if (!exercise.sets.some(s => s.id === setId)) return exercise;
+
+            sessionTouched = true;
+            const sets: TrainingSet[] = [];
+            for (const set of exercise.sets) {
+                if (set.id !== setId) { sets.push(set); continue; }
+                const result = fn(set);
+                if (result) sets.push(result);
+            }
+            return { ...exercise, sets };
+        });
+
+        if (!sessionTouched) return session;
+        touched = true;
+        return { ...session, exercises };
+    });
+
+    return touched ? next : sessions;
+}
+
+/** Aplica `fn` al ejercicio con ese id. */
+function mapExercise(
+    sessions: ExtendedSession[],
+    exerciseId: string,
+    fn: (exercise: ExtendedSessionExercise) => ExtendedSessionExercise
+): ExtendedSession[] {
+    let touched = false;
+
+    const next = sessions.map(session => {
+        if (!session.exercises.some(e => e.id === exerciseId)) return session;
+        touched = true;
+        return {
+            ...session,
+            exercises: session.exercises.map(e => (e.id === exerciseId ? fn(e) : e)),
+        };
+    });
+
+    return touched ? next : sessions;
 }
 
 const formatTargetReps = (series: string, reps: string) => {
@@ -125,12 +198,18 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     const currentRealWeek = getWeekNumber();
 
     // Confirmation Modal State
+    // `confirmText`/`variant` existen porque este mismo diálogo se usa para
+    // borrar una semana y para copiar una sobre otra. Estaba fijo en "Eliminar"
+    // y en rojo, así que al copiar salía un botón rojo que decía ELIMINAR: el
+    // coach cancelaba por miedo y daba por hecho que la copia no funcionaba.
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
         description: string;
+        confirmText: string;
+        variant: 'danger' | 'info';
         onConfirm: () => void;
-    }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
+    }>({ isOpen: false, title: '', description: '', confirmText: 'Eliminar', variant: 'danger', onConfirm: () => { } });
 
     const [vbtModalConfig, setVbtModalConfig] = useState<{ isOpen: boolean; url: string; exerciseName: string }>({ isOpen: false, url: '', exerciseName: '' });
 
@@ -138,8 +217,6 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     // Biblioteca de ejercicios para autocompletado
     const [libraryNames, setLibraryNames] = useState<string[]>([]);
-    // Copiar semana sobre otra: origen seleccionado (null = cerrado)
-    const [copyIntoSource, setCopyIntoSource] = useState<number | null>(null);
     // Edición de descripción del bloque
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [descriptionDraft, setDescriptionDraft] = useState('');
@@ -374,22 +451,28 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             return;
         }
         try {
-            const block = await trainingService.getBlock(blockId);
-
-            // 2. Fetch Sessions
-            const { data: sessions, error: sessError } = await supabase
-                .from('training_sessions')
-                .select(`
-                    *,
-                    session_exercises (
+            // Las tres consultas son INDEPENDIENTES. Se lanzaban en fila —el
+            // bloque, luego las sesiones, luego los nombres de las semanas— así
+            // que abrir un mesociclo costaba tres viajes completos encadenados
+            // en vez de uno. Es la espera que se nota nada más entrar.
+            const [block, sessionsResult, meta] = await Promise.all([
+                trainingService.getBlock(blockId),
+                supabase
+                    .from('training_sessions')
+                    .select(`
                         *,
-                        exercise:exercise_library (*),
-                        training_sets (*)
-                    )
-                `)
-                .eq('block_id', blockId)
-                .order('day_number');
+                        session_exercises (
+                            *,
+                            exercise:exercise_library (*),
+                            training_sets (*)
+                        )
+                    `)
+                    .eq('block_id', blockId)
+                    .order('day_number'),
+                trainingService.getWeekMetaByBlock(blockId),
+            ]);
 
+            const { data: sessions, error: sessError } = sessionsResult;
             if (sessError) throw sessError;
 
             // Sort nested data properly
@@ -403,10 +486,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                     }))
             }));
 
-            // Nombres y visibilidad de las semanas
-            const meta = await trainingService.getWeekMetaByBlock(blockId);
             setWeekMeta(meta);
-
             setBlockData({ ...block, sessions: formattedSessions });
 
         } catch (err) {
@@ -553,17 +633,16 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
         try {
             setLoading(true);
-            // En serie y no en paralelo: son inserciones sobre la misma tabla
-            // y lanzar treinta a la vez multiplica el riesgo de que alguna
-            // falle dejando el bloque a medias.
-            for (const { week, day } of pending) {
-                await trainingService.createSession({
-                    block_id: blockData.id,
-                    week_number: week,
-                    day_number: day,
-                    name: `Día ${day}`,
-                });
-            }
+            // Una sola inserción con todas las filas. Antes iban de una en una
+            // y esperando: cuarenta días son cuarenta viajes encadenados, y
+            // además dejaba el bloque a medias si fallaba el número treinta.
+            // En lote, o entran todos o no entra ninguno.
+            await trainingService.createSessions(pending.map(({ week, day }) => ({
+                block_id: blockData.id,
+                week_number: week,
+                day_number: day,
+                name: `Día ${day}`,
+            })));
             await loadData();
             toast.success(`${pending.length} ${pending.length === 1 ? 'día creado' : 'días creados'}`);
         } catch {
@@ -586,6 +665,39 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         // Background update
         await supabase.from('training_sessions').update({ name }).eq('id', sessionId);
     };
+
+    /**
+     * Guarda el calentamiento o los extras de un día.
+     *
+     * Se llama al SALIR del campo, no en cada tecla: son textos largos y una
+     * escritura por pulsación convertía escribir un calentamiento en cincuenta
+     * peticiones. El estado local ya va al día con lo que se escribe.
+     */
+    const updateSessionAppendix = useCallback(
+        async (sessionId: string, field: 'warmup' | 'extras', value: string) => {
+            const clean = value.trim() || null;
+            const previous = blockData?.sessions.find(s => s.id === sessionId)?.[field] ?? null;
+            if (previous === clean) return;
+
+            setBlockData(prev => prev && ({
+                ...prev,
+                sessions: prev.sessions.map(s => s.id === sessionId ? { ...s, [field]: clean } : s),
+            }));
+
+            try {
+                await trainingService.setSessionAppendix(sessionId, { [field]: clean });
+            } catch (err) {
+                setBlockData(prev => prev && ({
+                    ...prev,
+                    sessions: prev.sessions.map(s => s.id === sessionId ? { ...s, [field]: previous } : s),
+                }));
+                toast.error(
+                    err instanceof Error ? err.message : 'No se pudo guardar el apéndice'
+                );
+            }
+        },
+        [blockData]
+    );
 
     // --- Exercises ---
     const addExercise = async (sessionId: string, exerciseName: string) => {
@@ -639,7 +751,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         setConfirmModal({
             isOpen: true,
             title: 'Eliminar ejercicio',
-            description: '¿Estás seguro de que quieres eliminar este ejercicio? Se perderán todas las series registradas.',
+            description: 'Se pierden todas las series de este ejercicio. No se puede deshacer.',
+            confirmText: 'Eliminar',
+            variant: 'danger',
             onConfirm: async () => {
                 try {
                     await supabase.from('session_exercises').delete().eq('id', sessionExerciseId);
@@ -667,16 +781,12 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     // --- Sets (All Local until Save) ---
     const addSet = (sessionExerciseId: string) => {
         const newSetId = crypto.randomUUID(); // Valid V4 UUID
+        setHasUnsavedChanges(true);
         setBlockData(prev => {
             if (!prev) return null;
-            setHasUnsavedChanges(true); // Flag change
             return {
                 ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => {
-                        if (ex.id !== sessionExerciseId) return ex;
-
+                sessions: mapExercise(prev.sessions, sessionExerciseId, ex => {
                         const nextOrder = ex.sets.length;
                         const previousSet = ex.sets[ex.sets.length - 1];
 
@@ -694,42 +804,55 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                         };
 
                         return { ...ex, sets: [...ex.sets, newSet] };
-                    })
-                }))
+                }),
             };
         });
     };
 
 
 
+    /**
+     * Duplica una serie justo debajo de la original.
+     *
+     * `setHasUnsavedChanges` va FUERA del updater. Estaba dentro, y un updater
+     * de `useState` tiene que ser puro: React lo ejecuta dos veces en
+     * desarrollo y puede descartarlo, así que meter ahí otro `setState` es un
+     * efecto secundario que a veces se aplicaba dos veces y a veces ninguna.
+     */
     const duplicateSet = (setId: string) => {
+        setHasUnsavedChanges(true);
         setBlockData(prev => {
             if (!prev) return null;
-            setHasUnsavedChanges(true);
+
+            const owner = prev.sessions
+                .flatMap(s => s.exercises)
+                .find(ex => ex.sets.some(set => set.id === setId));
+            if (!owner) return prev;
+
             return {
                 ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => {
-                        const setIndex = ex.sets.findIndex(set => set.id === setId);
-                        if (setIndex === -1) return ex;
-                        const sourceSet = ex.sets[setIndex];
-                        const newSet: TrainingSet = {
-                            id: crypto.randomUUID(),
-                            session_exercise_id: sourceSet.session_exercise_id,
-                            order_index: (ex.sets.length + 1) * 10,
-                            target_reps: sourceSet.target_reps,
-                            target_rpe: sourceSet.target_rpe,
-                            target_load: sourceSet.target_load,
-                            rest_seconds: sourceSet.rest_seconds,
-                            is_video_required: sourceSet.is_video_required,
-                            created_at: new Date().toISOString()
-                        };
-                        const newSets = [...ex.sets];
-                        newSets.splice(setIndex + 1, 0, newSet);
-                        return { ...ex, sets: newSets };
-                    })
-                }))
+                sessions: mapExercise(prev.sessions, owner.id, ex => {
+                    const setIndex = ex.sets.findIndex(set => set.id === setId);
+                    if (setIndex === -1) return ex;
+
+                    const sourceSet = ex.sets[setIndex];
+                    const newSet: TrainingSet = {
+                        id: crypto.randomUUID(),
+                        session_exercise_id: sourceSet.session_exercise_id,
+                        order_index: (ex.sets.length + 1) * 10,
+                        target_reps: sourceSet.target_reps,
+                        target_rpe: sourceSet.target_rpe,
+                        target_load: sourceSet.target_load,
+                        target_metric: sourceSet.target_metric,
+                        rest_seconds: sourceSet.rest_seconds,
+                        is_video_required: sourceSet.is_video_required,
+                        created_at: new Date().toISOString()
+                    };
+
+                    const newSets = [...ex.sets];
+                    newSets.splice(setIndex + 1, 0, newSet);
+                    return { ...ex, sets: newSets };
+                }),
             };
         });
     };
@@ -904,44 +1027,38 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
         setBlockData(prev => {
             if (!prev) return null;
-            return {
-                ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => ({
-                        ...ex,
-                        sets: ex.sets.filter(set => set.id !== setId)
-                    }))
-                }))
-            };
+            return { ...prev, sessions: mapSets(prev.sessions, setId, () => null) };
         });
     };
 
+    /**
+     * Cambia un campo de una serie.
+     *
+     * Conserva la IDENTIDAD de todo lo que no cambia. La versión anterior
+     * reconstruía cada sesión y cada ejercicio del bloque en cada pulsación
+     * —`{...s, exercises: s.exercises.map(...)}` para las 32 sesiones de un
+     * bloque de 8 semanas— así que React veía props nuevas en todas las
+     * tarjetas de día y volvía a pintar el mesociclo entero por cada tecla.
+     * Eso es la lentitud que se notaba al escribir kilos.
+     *
+     * Ahora solo cambia el objeto de la serie tocada y la cadena de padres que
+     * la contiene; el resto del árbol se reutiliza tal cual.
+     */
     const updateSetField = (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => {
         setHasUnsavedChanges(true);
         setBlockData(prev => {
             if (!prev) return null;
-            return {
-                ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => ({
-                        ...ex,
-                        sets: ex.sets.map(set => {
-                            if (set.id !== setId) return set;
-                            return { ...set, [field]: value };
-                        })
-                    }))
-                }))
-            };
+            return { ...prev, sessions: mapSets(prev.sessions, setId, set => ({ ...set, [field]: value })) };
         });
     };
 
-    const removeSession = async (sessionId: string) => {
+    const removeSession = useCallback(async (sessionId: string) => {
         setConfirmModal({
             isOpen: true,
             title: 'Eliminar día',
-            description: '¿Estás seguro de que quieres eliminar este día de entrenamiento? Esta acción no se puede deshacer.',
+            description: 'Se borra este día de entrenamiento con todos sus ejercicios. No se puede deshacer.',
+            confirmText: 'Eliminar',
+            variant: 'danger',
             onConfirm: async () => {
                 try {
                     await trainingService.deleteSession(sessionId);
@@ -958,22 +1075,28 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 }
             }
         });
-    };
+    }, [setConfirmModal]);
 
     // Handlers for Weeks
+    /**
+     * Añade una semana vacía al final.
+     *
+     * NO recarga el bloque. Una semana nueva no tiene días ni ejercicios: lo
+     * único que cambia es `end_week`, del que se derivan las semanas pintadas.
+     * Volver a pedir el mesociclo entero —con todos sus ejercicios y series—
+     * para enterarse de que hay un número más era lo que hacía que añadir una
+     * semana tardara lo mismo que abrir el bloque.
+     */
     const handleAddWeek = async () => {
         if (!blockData) return;
         try {
-            setLoading(true); // Optional: show loading state
             const newEndWeek = await trainingService.addWeek(blockData.id);
-            await loadData();
+            setBlockData(prev => prev && ({ ...prev, end_week: newEndWeek }));
             setExpandedWeeks(prev => [...prev, newEndWeek]);
             toast.success("Semana añadida");
         } catch (err) {
             console.error(err);
             toast.error("Error añadiendo semana");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -998,15 +1121,16 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     /** Copia el contenido de sourceWeek SOBRE targetWeek (sustituye lo que hubiera). */
     const handleCopyWeekInto = (sourceWeek: number, targetWeek: number) => {
         if (!blockData) return;
-        setCopyIntoSource(null);
 
         const targetIndex = weeks.indexOf(targetWeek) + 1;
         const sourceIndex = weeks.indexOf(sourceWeek) + 1;
 
         setConfirmModal({
             isOpen: true,
-            title: `Copiar Semana ${sourceIndex} → Semana ${targetIndex}`,
-            description: `El contenido actual de la Semana ${targetIndex} se sustituirá por una copia de la Semana ${sourceIndex}. ¿Continuar?`,
+            title: `Copiar semana ${sourceIndex} sobre la ${targetIndex}`,
+            description: `Los días de la semana ${targetIndex} se sustituyen por una copia de los de la semana ${sourceIndex}. Lo que hubiera programado en la ${targetIndex} se pierde.`,
+            confirmText: 'Copiar',
+            variant: 'info',
             onConfirm: async () => {
                 try {
                     setLoading(true);
@@ -1042,8 +1166,10 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
         setConfirmModal({
             isOpen: true,
-            title: `Eliminar Semana ${week}`,
-            description: `¿Estás seguro de que quieres eliminar la Semana ${week}? Se borrarán todas las sesiones asociadas y esta acción no se puede deshacer.`,
+            title: `Eliminar semana ${week}`,
+            description: `Se borran todos los días de la semana ${week} y sus ejercicios. No se puede deshacer.`,
+            confirmText: 'Eliminar',
+            variant: 'danger',
             onConfirm: async () => {
                 try {
                     setLoading(true);
@@ -1065,17 +1191,13 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             if (!prev) return null;
             return {
                 ...prev,
-                sessions: prev.sessions.map(s => ({
-                    ...s,
-                    exercises: s.exercises.map(ex => {
-                        if (ex.id !== sessionExerciseId) return ex;
-                        const newEx: ExtendedSessionExercise = { ...ex, ...updates };
-                        if (updates.exercise && ex.exercise) {
-                            newEx.exercise = { ...ex.exercise, ...updates.exercise };
-                        }
-                        return newEx;
-                    })
-                }))
+                sessions: mapExercise(prev.sessions, sessionExerciseId, ex => {
+                    const newEx: ExtendedSessionExercise = { ...ex, ...updates };
+                    if (updates.exercise && ex.exercise) {
+                        newEx.exercise = { ...ex.exercise, ...updates.exercise };
+                    }
+                    return newEx;
+                }),
             };
         });
     };
@@ -1161,14 +1283,25 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         }
     };
 
-    /** Agenda un día de la semana a una sesión (o lo quita con null). */
-    const changeSessionWeekday = async (sessionId: string, day: Weekday | null) => {
-        const previous = blockData?.sessions.find(s => s.id === sessionId)?.day_of_week ?? null;
+    /**
+     * Agenda un día de la semana a una sesión (o lo quita con null).
+     *
+     * `useCallback` sin dependencias: la identidad estable es lo que permite
+     * que `DayCard` esté memoizada. El valor anterior —para poder revertir— se
+     * lee dentro del propio updater en lugar de capturar `blockData`, que
+     * cambia en cada pulsación de teclado del editor.
+     */
+    const changeSessionWeekday = useCallback(async (sessionId: string, day: Weekday | null) => {
+        let previous: Weekday | null = null;
 
-        setBlockData(prev => prev && ({
-            ...prev,
-            sessions: prev.sessions.map(s => s.id === sessionId ? { ...s, day_of_week: day } : s),
-        }));
+        setBlockData(prev => {
+            if (!prev) return prev;
+            previous = prev.sessions.find(s => s.id === sessionId)?.day_of_week ?? null;
+            return {
+                ...prev,
+                sessions: prev.sessions.map(s => s.id === sessionId ? { ...s, day_of_week: day } : s),
+            };
+        });
 
         try {
             await trainingService.setSessionDayOfWeek(sessionId, day);
@@ -1179,17 +1312,18 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             }));
             toast.error('No se pudo agendar el día');
         }
-    };
+    }, []);
 
     /**
-     * Saca la semana en PDF: una página por día, una fila por ejercicio.
+     * Descarga la semana en PDF: una página por día, una fila por ejercicio,
+     * con el calentamiento y los extras como apéndices.
      *
      * Se exporta lo que hay EN PANTALLA, no lo último guardado, porque el
-     * coach normalmente imprime justo después de retocar algo. Si quedan
-     * cambios sin guardar se avisa, para que nadie imprima una hoja que el
+     * coach normalmente exporta justo después de retocar algo. Si quedan
+     * cambios sin guardar se avisa, para que nadie reparta una hoja que el
      * atleta no va a ver en la app.
      */
-    const handlePrintWeek = (week: number, index: number) => {
+    const handleExportWeek = (week: number, index: number) => {
         if (!blockData) return;
 
         const days = sortSessions(blockData.sessions.filter(s => s.week_number === week));
@@ -1199,18 +1333,22 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         }
 
         const range = getDateRangeFromWeek(week, blockYear);
-        const opened = printWeek({
-            blockName: blockData.name,
-            athleteName: athleteDisplayName,
-            weekLabel: weekName(week) || `Semana ${index + 1}`,
-            dateRange: formatDateRange(range.start, range.end),
-            days: days.map(sessionToPrintDay),
-        });
 
-        if (!opened) {
-            toast.error('El navegador bloqueó la ventana. Permite las ventanas emergentes para exportar.');
+        try {
+            const filename = downloadWeekPdf({
+                blockName: blockData.name,
+                athleteName: athleteDisplayName,
+                weekLabel: weekName(week) || `Semana ${index + 1}`,
+                dateRange: formatDateRange(range.start, range.end),
+                days: days.map(sessionToPrintDay),
+            });
+            toast.success(`PDF descargado: ${filename}`);
+        } catch (err) {
+            console.error('Error generando el PDF:', err);
+            toast.error('No se pudo generar el PDF de la semana');
             return;
         }
+
         if (hasUnsavedChanges) {
             toast.warning('Has exportado cambios que aún no has guardado.');
         }
@@ -1546,7 +1684,15 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                     return (
                         <div
                             key={week}
-                            className={`overflow-hidden rounded-card border bg-surface-raised transition-colors duration-base ease-snap ${isCurrent ? 'border-[var(--brand-line)]' : 'border-[var(--border-default)]'}`}
+                            // SIN `overflow-hidden`. Lo tenía, y era lo que hacía
+                            // que "copiar sobre otra semana" pareciera roto: el
+                            // desplegable de la semana destino se dibuja debajo
+                            // de la cabecera, y con la semana plegada la tarjeta
+                            // mide justo la cabecera, así que el menú se
+                            // recortaba entero y el clic no abría nada visible.
+                            // El recorte que sí hacía falta —el del acordeón—
+                            // vive ahora en su propio contenedor.
+                            className={`rounded-card border bg-surface-raised transition-colors duration-base ease-snap ${isCurrent ? 'border-[var(--brand-line)]' : 'border-[var(--border-default)]'}`}
                         >
                             {/* Cabecera de semana */}
                             <div
@@ -1560,9 +1706,13 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                         toggleWeek(week);
                                     }
                                 }}
-                                className="flex cursor-pointer items-center justify-between gap-4 px-5 py-5 transition-colors duration-fast ease-snap hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand md:px-5"
+                                // El relleno es menor en móvil: con 20px por
+                                // lado, el título y las cifras de la semana se
+                                // quedaban en una columna de unos 200px y todo
+                                // salía partido en tres renglones.
+                                className="flex cursor-pointer items-center justify-between gap-2 rounded-card px-4 py-4 transition-colors duration-fast ease-snap hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand md:gap-4 md:px-5 md:py-5"
                             >
-                                <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex min-w-0 items-center gap-2.5 md:gap-3">
                                     <ChevronDown
                                         size={16}
                                         aria-hidden="true"
@@ -1589,7 +1739,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                             </div>
                                         ) : (
                                             <div className="group flex min-w-0 items-baseline gap-2">
-                                                <h3 className="truncate text-t-lg font-semibold text-ink">
+                                                <h3 className="truncate text-t-base font-semibold text-ink md:text-t-lg">
                                                     Semana {index + 1}
                                                     {weekName(week) && (
                                                         <span className="ml-2 font-normal text-ink-muted">{weekName(week)}</span>
@@ -1607,7 +1757,15 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
                                         {/* Resumen de la semana en la propia cabecera: así se lee
                                             la progresión del bloque sin abrir un solo acordeón. */}
-                                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-t-xs text-ink-subtle">
+                                        {/* En móvil esta línea NO envuelve: se
+                                            recorta. Envolviendo, una semana con
+                                            nombre largo y cinco cifras empujaba
+                                            la cabecera a 90px de alto y la lista
+                                            de semanas dejaba de caber de un
+                                            vistazo, que es justo para lo que
+                                            sirve. Las cifras secundarias solo
+                                            aparecen a partir de `sm`. */}
+                                        <div className="mt-0.5 flex items-center gap-x-2 gap-y-0.5 overflow-hidden whitespace-nowrap text-t-xs text-ink-subtle sm:mt-1 sm:flex-wrap sm:whitespace-normal">
                                             <span>
                                                 {formatDateRange(
                                                     getDateRangeFromWeek(week).start,
@@ -1624,14 +1782,14 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                             )}
                                             {stats && stats.tonnage > 0 && (
                                                 <>
-                                                    <span className="text-ink-faint" aria-hidden="true">·</span>
-                                                    <span className="tabular-nums">{(stats.tonnage / 1000).toFixed(1)} t</span>
+                                                    <span className="hidden text-ink-faint sm:inline" aria-hidden="true">·</span>
+                                                    <span className="hidden tabular-nums sm:inline">{(stats.tonnage / 1000).toFixed(1)} t</span>
                                                 </>
                                             )}
                                             {stats?.avgRpe != null && (
                                                 <>
-                                                    <span className="text-ink-faint" aria-hidden="true">·</span>
-                                                    <span className="tabular-nums">RPE {stats.avgRpe}</span>
+                                                    <span className="hidden text-ink-faint sm:inline" aria-hidden="true">·</span>
+                                                    <span className="hidden tabular-nums sm:inline">RPE {stats.avgRpe}</span>
                                                 </>
                                             )}
 
@@ -1653,18 +1811,23 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                     </div>
                                 </div>
 
-                                <div className="relative flex shrink-0 items-center gap-1">
+                                <div className="flex shrink-0 items-center gap-1">
                                     {isCurrent && (
-                                        <span className="mr-2 hidden rounded-chip bg-brand-quiet px-2 py-0.5 text-t-2xs font-semibold text-brand sm:inline">
+                                        <span className="mr-1 hidden rounded-chip bg-brand-quiet px-2 py-0.5 text-t-2xs font-semibold text-brand sm:inline">
                                             En curso
                                         </span>
                                     )}
                                     {isDeload && (
-                                        <span className="mr-2 hidden rounded-chip bg-info/15 px-2 py-0.5 text-t-2xs font-semibold text-info sm:inline">
+                                        <span className="mr-1 hidden rounded-chip bg-info/15 px-2 py-0.5 text-t-2xs font-semibold text-info sm:inline">
                                             Descarga
                                         </span>
                                     )}
 
+                                    {/* Publicar/ocultar se queda FUERA del menú:
+                                        es la única acción de la semana que se
+                                        usa a diario y que además comunica un
+                                        estado, así que tiene que verse sin
+                                        abrir nada. */}
                                     <IconAction
                                         label={visible ? 'Ocultar esta semana al atleta' : 'Publicar esta semana para el atleta'}
                                         active={!visible}
@@ -1672,71 +1835,36 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                     >
                                         {visible ? <Eye size={16} /> : <EyeOff size={16} />}
                                     </IconAction>
-                                    <IconAction
-                                        label="Exportar esta semana a PDF"
-                                        onClick={(e) => { e.stopPropagation(); handlePrintWeek(week, index); }}
-                                    >
-                                        <Printer size={16} />
-                                    </IconAction>
-                                    <IconAction
-                                        label="Copiar como semana nueva"
-                                        onClick={(e) => { e.stopPropagation(); handleCopyWeek(week); }}
-                                    >
-                                        <Copy size={16} />
-                                    </IconAction>
-                                    <IconAction
-                                        label="Copiar sobre otra semana existente"
-                                        active={copyIntoSource === week}
-                                        onClick={(e) => { e.stopPropagation(); setCopyIntoSource(copyIntoSource === week ? null : week); }}
-                                    >
-                                        <ArrowRightLeft size={16} />
-                                    </IconAction>
-                                    <IconAction
-                                        label="Eliminar semana"
-                                        danger
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteWeek(week); }}
-                                    >
-                                        <Trash2 size={16} />
-                                    </IconAction>
 
-                                    {/* Popover: elegir semana destino */}
-                                    {copyIntoSource === week && (
-                                        <div
-                                            className="absolute right-0 top-full z-dropdown mt-2 w-56 rounded-card bg-surface-overlay p-2 shadow-overlay"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <p className="px-2 pb-1.5 pt-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
-                                                Copiar semana {index + 1} sobre…
-                                            </p>
-                                            <div className="space-y-0.5">
-                                                {weeks.filter(w => w !== week).map((w) => (
-                                                    <button
-                                                        key={w}
-                                                        onClick={() => handleCopyWeekInto(week, w)}
-                                                        className="w-full rounded-field px-2.5 py-2 text-left text-t-sm text-ink-muted transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink"
-                                                    >
-                                                        Semana {weeks.indexOf(w) + 1}
-                                                        {weekName(w) && <span className="ml-2 text-t-xs opacity-70">{weekName(w)}</span>}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                    <WeekMenu
+                                        weekLabel={`Semana ${index + 1}`}
+                                        otherWeeks={weeks
+                                            .filter(w => w !== week)
+                                            .map(w => ({
+                                                week: w,
+                                                label: `Semana ${weeks.indexOf(w) + 1}`,
+                                                name: weekName(w),
+                                            }))}
+                                        onExport={() => handleExportWeek(week, index)}
+                                        onDuplicate={() => handleCopyWeek(week)}
+                                        onCopyInto={(target) => handleCopyWeekInto(week, target)}
+                                        onDelete={() => handleDeleteWeek(week)}
+                                    />
                                 </div>
                             </div>
 
                             {/* Contenido del acordeón */}
-                            <div className={`grid transition-[grid-template-rows] duration-base ease-snap ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                            <div className={`grid overflow-hidden rounded-b-card transition-[grid-template-rows] duration-base ease-snap ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                                 <div className="overflow-hidden">
-                                    <div className="border-t border-[var(--border-subtle)] p-5 md:p-6">
-                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                                    <div className="border-t border-[var(--border-subtle)] p-3 md:p-6">
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
                                             {weekSessions.map((session) => (
                                                 <DayCard
                                                     key={session.id}
                                                     session={session}
-                                                    onOpen={() => setEditingSessionId(session.id)}
-                                                    onRemove={() => removeSession(session.id)}
-                                                    onChangeWeekday={(day) => changeSessionWeekday(session.id, day)}
+                                                    onOpen={setEditingSessionId}
+                                                    onRemove={removeSession}
+                                                    onChangeWeekday={changeSessionWeekday}
                                                 />
                                             ))}
 
@@ -1788,6 +1916,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                         onReorder={(ids) => reorderExercises(session.id, ids)}
                         onClose={() => setEditingSessionId(null)}
                         onUpdateName={updateSessionName}
+                        onUpdateAppendix={updateSessionAppendix}
                         onAddExercise={addExercise}
                         onUpdateExercise={updateSessionExercise}
                         onRemoveExercise={removeExercise}
@@ -1810,9 +1939,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 onConfirm={confirmModal.onConfirm}
                 title={confirmModal.title}
                 description={confirmModal.description}
-                confirmText="Eliminar"
+                confirmText={confirmModal.confirmText}
                 cancelText="Cancelar"
-                variant="danger"
+                variant={confirmModal.variant}
             />
 
             {/* Editor de progresión del ejercicio a lo largo del bloque */}
@@ -1992,6 +2121,275 @@ function IconAction({
 }
 
 /**
+ * MENÚ DE ACCIONES DE UNA SEMANA
+ *
+ * Antes esto eran cinco iconos en fila dentro de la cabecera. En escritorio
+ * pasaba; en un móvil de 375px, cinco objetivos de 32px más el título más las
+ * cifras de la semana no caben, y lo que ocurría es que la fila se desbordaba
+ * fuera de la pantalla y la mitad de las acciones quedaban inalcanzables.
+ *
+ * Con un solo botón, la cabecera vuelve a ser un rectángulo limpio que se
+ * pulsa para desplegar los días —que es lo que se hace el 95% de las veces— y
+ * las acciones destructivas dejan de estar a un dedo de distancia del gesto
+ * de abrir.
+ *
+ * Se cierra con Escape y con un clic fuera. Sin lo segundo, el menú se
+ * quedaba abierto por la pantalla y había que volver a pulsar el mismo botón
+ * para quitarlo, que es de las cosas que hacen pensar que la web está colgada.
+ */
+function WeekMenu({
+    weekLabel,
+    otherWeeks,
+    onExport,
+    onDuplicate,
+    onCopyInto,
+    onDelete,
+}: {
+    weekLabel: string;
+    otherWeeks: { week: number; label: string; name: string }[];
+    onExport: () => void;
+    onDuplicate: () => void;
+    onCopyInto: (targetWeek: number) => void;
+    onDelete: () => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const [copyMode, setCopyMode] = useState(false);
+    const rootRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const onPointerDown = (e: PointerEvent) => {
+            if (!rootRef.current?.contains(e.target as Node)) {
+                setOpen(false);
+                setCopyMode(false);
+            }
+        };
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'Escape') return;
+            setOpen(false);
+            setCopyMode(false);
+        };
+
+        document.addEventListener('pointerdown', onPointerDown);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('pointerdown', onPointerDown);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [open]);
+
+    /**
+     * Cierra el menú.
+     *
+     * Vuelve SIEMPRE al primer nivel: reabrirlo y encontrarse la lista de
+     * semanas destino de la vez anterior desorienta. Se hace aquí, en el único
+     * sitio por el que se cierra, y no en un efecto que vigile `open`: un
+     * efecto para esto es un render extra por cada cierre.
+     */
+    const close = useCallback(() => {
+        setOpen(false);
+        setCopyMode(false);
+    }, []);
+
+    const run = (action: () => void) => {
+        close();
+        action();
+    };
+
+    return (
+        <div className="relative" ref={rootRef}>
+            <IconAction
+                label={`Acciones de ${weekLabel}`}
+                active={open}
+                onClick={(e) => { e.stopPropagation(); if (open) close(); else setOpen(true); }}
+            >
+                <MoreVertical size={16} />
+            </IconAction>
+
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.97, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.97, y: -4 }}
+                        transition={transition(DURATION.fast)}
+                        style={{ transformOrigin: 'top right' }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 top-full z-dropdown mt-2 w-60 rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay"
+                    >
+                        {copyMode ? (
+                            <>
+                                <button
+                                    onClick={() => setCopyMode(false)}
+                                    className="mb-1 flex w-full items-center gap-1.5 rounded-field px-2.5 py-1.5 text-left text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
+                                >
+                                    <ChevronDown size={12} className="rotate-90" aria-hidden="true" />
+                                    Copiar {weekLabel} sobre…
+                                </button>
+                                <div className="max-h-64 space-y-0.5 overflow-y-auto">
+                                    {otherWeeks.length === 0 && (
+                                        <p className="px-2.5 py-2 text-t-xs italic text-ink-faint">
+                                            No hay otra semana en el bloque.
+                                        </p>
+                                    )}
+                                    {otherWeeks.map(w => (
+                                        <button
+                                            key={w.week}
+                                            onClick={() => run(() => onCopyInto(w.week))}
+                                            className="w-full truncate rounded-field px-2.5 py-2 text-left text-t-sm text-ink-muted transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink"
+                                        >
+                                            {w.label}
+                                            {w.name && <span className="ml-2 text-t-xs opacity-70">{w.name}</span>}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <MenuItem icon={Download} onClick={() => run(onExport)}>
+                                    Descargar en PDF
+                                </MenuItem>
+                                <MenuItem icon={Copy} onClick={() => run(onDuplicate)}>
+                                    Duplicar como semana nueva
+                                </MenuItem>
+                                <MenuItem
+                                    icon={ArrowRightLeft}
+                                    onClick={() => setCopyMode(true)}
+                                    trailing={<ChevronDown size={12} className="-rotate-90" aria-hidden="true" />}
+                                >
+                                    Copiar sobre otra semana
+                                </MenuItem>
+                                <div className="my-1 h-px bg-[var(--border-subtle)]" />
+                                <MenuItem icon={Trash2} danger onClick={() => run(onDelete)}>
+                                    Eliminar semana
+                                </MenuItem>
+                            </>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function MenuItem({
+    icon: Icon,
+    children,
+    onClick,
+    danger = false,
+    trailing,
+}: {
+    icon: LucideIcon;
+    children: React.ReactNode;
+    onClick: () => void;
+    danger?: boolean;
+    trailing?: React.ReactNode;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex w-full items-center gap-2.5 rounded-field px-2.5 py-2.5 text-left text-t-sm transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand ${danger
+                ? 'text-danger hover:bg-[var(--danger-quiet)]'
+                : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
+                }`}
+        >
+            <Icon size={14} aria-hidden="true" className="shrink-0" />
+            <span className="min-w-0 flex-1 truncate">{children}</span>
+            {trailing}
+        </button>
+    );
+}
+
+/**
+ * APÉNDICE DEL DÍA: calentamiento o extras.
+ *
+ * Texto libre a propósito. Un calentamiento son aproximaciones, movilidad y
+ * activación, y forzarlo a la rejilla de series/reps/kg obligaba al coach a
+ * inventarse ejercicios falsos que además CONTAMINABAN las métricas: sumaban
+ * series al reparto por patrón y kilos al tonelaje de un día que todavía no
+ * había empezado.
+ *
+ * Arranca plegado cuando está vacío: la mayoría de días no lo llevan y no
+ * puede robarle sitio a la lista de ejercicios en una pantalla de móvil.
+ */
+function AppendixEditor({
+    label,
+    icon: Icon,
+    placeholder,
+    value,
+    onCommit,
+}: {
+    label: string;
+    icon: LucideIcon;
+    placeholder: string;
+    value: string | null | undefined;
+    onCommit: (value: string) => void;
+}) {
+    const [draft, setDraft] = useState(value ?? '');
+    const [open, setOpen] = useState(Boolean(value));
+
+    // El día cambia bajo el MISMO componente al saltar de una sesión a otra, y
+    // sin esto el borrador del día anterior se quedaba en pantalla —listo para
+    // guardarse encima del nuevo en cuanto el campo perdiera el foco—.
+    //
+    // El ajuste va durante el render y no en un efecto: así React descarta el
+    // resultado y vuelve a pintar antes de tocar el DOM, en vez de enseñar un
+    // fotograma con el texto equivocado y corregirlo después.
+    const [syncedValue, setSyncedValue] = useState(value);
+    if (syncedValue !== value) {
+        setSyncedValue(value);
+        setDraft(value ?? '');
+        setOpen(Boolean(value));
+    }
+
+    const filled = Boolean((value ?? '').trim());
+
+    return (
+        <div className="shrink-0 rounded-card border border-[var(--border-default)] bg-surface-raised">
+            <button
+                type="button"
+                onClick={() => setOpen(v => !v)}
+                aria-expanded={open}
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+            >
+                <Icon size={13} className={filled ? 'text-brand' : 'text-ink-faint'} aria-hidden="true" />
+                <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    {label}
+                </span>
+                {filled && !open && (
+                    <span className="ml-1 min-w-0 flex-1 truncate text-t-xs text-ink-faint">
+                        {(value ?? '').replace(/\s+/g, ' ')}
+                    </span>
+                )}
+                <ChevronDown
+                    size={14}
+                    aria-hidden="true"
+                    className={`ml-auto shrink-0 text-ink-faint transition-transform duration-fast ease-snap ${open ? 'rotate-180' : ''}`}
+                />
+            </button>
+
+            {open && (
+                <div className="px-3 pb-3">
+                    <textarea
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onBlur={() => onCommit(draft)}
+                        rows={3}
+                        maxLength={2000}
+                        placeholder={placeholder}
+                        className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm leading-relaxed text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand focus:outline-none"
+                    />
+                    <p className="mt-1 text-t-2xs text-ink-faint">
+                        Se guarda al salir del campo. Lo ve el atleta y sale en el PDF.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
  * Tarjeta de día dentro de una semana.
  *
  * Antes solo decía "3 ejercicios", lo que obligaba a abrir el editor para
@@ -1999,16 +2397,19 @@ function IconAction({
  * las series, que es lo que hace falta para escanear una semana entera y
  * decidir dónde tocar.
  */
-function DayCard({
+const DayCard = memo(function DayCard({
     session,
     onOpen,
     onRemove,
     onChangeWeekday,
 }: {
     session: ExtendedSession;
-    onOpen: () => void;
-    onRemove: () => void;
-    onChangeWeekday: (day: Weekday | null) => void;
+    // Reciben el id en vez de venir ya cerrados sobre él. Con una lambda por
+    // tarjeta, `memo` no servía de nada: las props cambiaban de identidad en
+    // cada render del constructor aunque el día fuese exactamente el mismo.
+    onOpen: (sessionId: string) => void;
+    onRemove: (sessionId: string) => void;
+    onChangeWeekday: (sessionId: string, day: Weekday | null) => void;
 }) {
     const metrics = useMemo(() => computeDayMetrics(session.exercises), [session.exercises]);
     const names = session.exercises
@@ -2025,7 +2426,7 @@ function DayCard({
             {/* Eliminar va fuera del botón principal: un <button> dentro de otro
                 <button> es HTML inválido y el navegador lo reestructura. */}
             <button
-                onClick={onRemove}
+                onClick={() => onRemove(session.id)}
                 title="Eliminar día"
                 aria-label={`Eliminar ${session.name || `día ${session.day_number}`}`}
                 className="absolute right-2 top-2 z-10 rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
@@ -2055,7 +2456,7 @@ function DayCard({
                         {WEEKDAYS.map(d => (
                             <button
                                 key={d.key}
-                                onClick={() => { onChangeWeekday(d.key); setPickerOpen(false); }}
+                                onClick={() => { onChangeWeekday(session.id, d.key); setPickerOpen(false); }}
                                 className={`flex w-full items-center justify-between rounded-field px-2.5 py-1.5 text-left text-t-sm transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink ${session.day_of_week === d.key ? 'font-semibold text-ink' : 'text-ink-muted'
                                     }`}
                             >
@@ -2065,7 +2466,7 @@ function DayCard({
                         ))}
                         {session.day_of_week && (
                             <button
-                                onClick={() => { onChangeWeekday(null); setPickerOpen(false); }}
+                                onClick={() => { onChangeWeekday(session.id, null); setPickerOpen(false); }}
                                 className="mt-1 w-full rounded-field border-t border-[var(--border-subtle)] px-2.5 py-1.5 text-left text-t-xs text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
                             >
                                 Quitar día — usar «Día {session.day_number}»
@@ -2076,7 +2477,7 @@ function DayCard({
             </div>
 
             <button
-                onClick={onOpen}
+                onClick={() => onOpen(session.id)}
                 className="flex min-h-[150px] w-full flex-col rounded-card p-4 pt-9 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
             >
                 <h4 className="mt-0.5 truncate pr-6 text-t-base font-semibold text-ink">
@@ -2109,7 +2510,7 @@ function DayCard({
             </button>
         </div>
     );
-}
+});
 
 // ==========================================
 // HELPERS: TEMA POR LEVANTAMIENTO + MÉTRICAS DEL DÍA
@@ -2217,6 +2618,20 @@ function Sparkline({ values, className = '' }: { values: number[]; className?: s
     );
 }
 
+/**
+ * Orden de las pestañas del editor en móvil.
+ *
+ * Vive fuera del componente porque el gesto de deslizar necesita saber cuál
+ * es la siguiente y cuál la anterior, y ese orden es el mismo que el de la
+ * barra: si se definieran en dos sitios, deslizar acabaría llevando a una
+ * pestaña distinta de la que dice la barra.
+ */
+const MOBILE_TABS = [
+    { key: 'lista' as const, label: 'Ejercicios' },
+    { key: 'editar' as const, label: 'Editar' },
+    { key: 'datos' as const, label: 'Resumen' },
+];
+
 interface DayEditorModalProps {
     session: ExtendedSession;
     allSessions: ExtendedSession[];
@@ -2234,6 +2649,8 @@ interface DayEditorModalProps {
     onReorder: (orderedIds: string[]) => void;
     onClose: () => void;
     onUpdateName: (id: string, name: string) => void;
+    /** Guarda el calentamiento o los extras del día (texto libre). */
+    onUpdateAppendix: (sessionId: string, field: 'warmup' | 'extras', value: string) => void;
     onAddExercise: (sessionId: string, name: string) => void;
     onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
     onRemoveExercise: (id: string, sessionId: string) => void;
@@ -2250,7 +2667,7 @@ interface DayEditorModalProps {
 function DayEditorModal({
     session, allSessions, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
     onSaveTemplate, onApplyTemplate, onDeleteTemplate, onCopyExercise, onReorder,
-    onClose, onUpdateName, onAddExercise, onUpdateExercise,
+    onClose, onUpdateName, onUpdateAppendix, onAddExercise, onUpdateExercise,
     onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onOpenVbtChart,
     hasUnsavedChanges, onSave, isSaving
 }: DayEditorModalProps) {
@@ -2264,6 +2681,51 @@ function DayEditorModal({
     // Pestaña visible en móvil. En escritorio no se usa: los tres paneles
     // caben en fila y no hay nada que ocultar.
     const [mobileTab, setMobileTab] = useState<'lista' | 'editar' | 'datos'>('lista');
+    const tabIndex = MOBILE_TABS.findIndex(t => t.key === mobileTab);
+
+    /**
+     * Carrusel de las tres pestañas en móvil.
+     *
+     * Los paneles ya no se ocultan con `hidden`: los tres están montados en una
+     * cinta de 300% de ancho que se desplaza. Ocultándolos no había nada que
+     * animar —el panel entrante no existía hasta el instante del cambio— y el
+     * salto entre "Ejercicios" y "Editar" era seco.
+     *
+     * El desplazamiento se calcula en PÍXELES a partir del ancho real medido, y
+     * no en porcentajes, porque el arrastre de framer trabaja en píxeles:
+     * mezclando las dos unidades el panel pega un tirón al soltar el dedo.
+     */
+    const trackRef = useRef<HTMLDivElement>(null);
+    const [viewportWidth, setViewportWidth] = useState(0);
+    const [isDesktop, setIsDesktop] = useState(
+        () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+    );
+
+    useEffect(() => {
+        const query = window.matchMedia('(min-width: 1024px)');
+        const sync = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+        query.addEventListener('change', sync);
+        return () => query.removeEventListener('change', sync);
+    }, []);
+
+    useEffect(() => {
+        const node = trackRef.current;
+        if (!node) return;
+        const observer = new ResizeObserver(([entry]) => {
+            setViewportWidth(entry.contentRect.width);
+        });
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, []);
+
+    /** Salta a la pestaña de al lado. Se para en los extremos, no da la vuelta. */
+    const goToTab = useCallback((delta: number) => {
+        setMobileTab(prev => {
+            const current = MOBILE_TABS.findIndex(t => t.key === prev);
+            const next = Math.min(MOBILE_TABS.length - 1, Math.max(0, current + delta));
+            return MOBILE_TABS[next].key;
+        });
+    }, []);
 
     /**
      * Anchura del panel de datos, a gusto del entrenador.
@@ -2320,11 +2782,10 @@ function DayEditorModal({
         return () => window.removeEventListener('keydown', handler);
     }, [onClose, isAddingEx]);
 
-    // Bloquear scroll del fondo
-    useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = ''; };
-    }, []);
+    // Bloquear scroll del fondo. Con contador compartido: encima de este
+    // editor se abren confirmaciones que también bloquean, y cada uno
+    // restaurando el estilo por su cuenta dejaba la página congelada.
+    useEffect(() => lockBodyScroll(), []);
 
     return (
         <div className="fixed inset-0 z-[150] bg-surface-canvas flex flex-col animate-in fade-in duration-200">
@@ -2542,6 +3003,26 @@ function DayEditorModal({
                                 onCancel={() => { /* siempre visible en día vacío */ }}
                             />
                         </div>
+
+                        {/* Un día puede ser SOLO movilidad o solo trabajo
+                            complementario. Sin esto había que inventarse un
+                            ejercicio para poder escribirlo en alguna parte. */}
+                        <div className="mt-4 space-y-2 text-left">
+                            <AppendixEditor
+                                label="Calentamiento"
+                                icon={FlameIcon}
+                                placeholder={'Movilidad de cadera 5\'\nBarra 20kg x10, 60x5, 80x3...'}
+                                value={session.warmup}
+                                onCommit={(v) => onUpdateAppendix(session.id, 'warmup', v)}
+                            />
+                            <AppendixEditor
+                                label="Extras"
+                                icon={Sparkles}
+                                placeholder={'Core 3x15\nBici suave 10\'\nEstiramiento de psoas'}
+                                value={session.extras}
+                                onCommit={(v) => onUpdateAppendix(session.id, 'extras', v)}
+                            />
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -2554,11 +3035,7 @@ function DayEditorModal({
                    altura fija es justo lo que se veía superpuesto.            */
                 <>
                 <div className="flex lg:hidden shrink-0 border-b border-subtle bg-surface-canvas px-2" role="tablist" aria-label="Secciones del día">
-                    {([
-                        { key: 'lista' as const, label: 'Ejercicios', count: session.exercises.length },
-                        { key: 'editar' as const, label: 'Editar' },
-                        { key: 'datos' as const, label: 'Resumen' },
-                    ]).map(t => (
+                    {MOBILE_TABS.map(t => (
                         <button
                             key={t.key}
                             role="tab"
@@ -2567,8 +3044,8 @@ function DayEditorModal({
                             className={`relative flex-1 py-3 text-t-xs font-semibold transition-colors duration-fast ease-snap ${mobileTab === t.key ? 'text-ink' : 'text-ink-subtle'}`}
                         >
                             {t.label}
-                            {t.count !== undefined && t.count > 0 && (
-                                <span className="ml-1.5 text-ink-faint">{t.count}</span>
+                            {t.key === 'lista' && session.exercises.length > 0 && (
+                                <span className="ml-1.5 text-ink-faint">{session.exercises.length}</span>
                             )}
                             {mobileTab === t.key && (
                                 <motion.span
@@ -2581,10 +3058,53 @@ function DayEditorModal({
                     ))}
                 </div>
 
-                <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+                {/* Ventana del carrusel. `overflow-hidden` solo en móvil: en
+                    escritorio los paneles vuelven a ser una fila normal y
+                    recortar aquí cortaría los desplegables de la cabecera. */}
+                <div ref={trackRef} className="flex-1 min-h-0 overflow-hidden lg:overflow-visible">
+                <motion.div
+                    className="flex h-full w-[300%] lg:w-full"
+                    drag={isDesktop ? false : 'x'}
+                    // Bloquear la dirección al primer movimiento es lo que
+                    // permite que los paneles sigan haciendo scroll vertical:
+                    // sin esto, cualquier intento de bajar por la lista de
+                    // ejercicios arrastraba la cinta de lado.
+                    dragDirectionLock
+                    dragElastic={0.06}
+                    dragMomentum={false}
+                    dragConstraints={{
+                        left: -(MOBILE_TABS.length - 1) * viewportWidth,
+                        right: 0,
+                    }}
+                    onDragEnd={(_, info) => {
+                        // Se decide con el desplazamiento O con la velocidad:
+                        // un gesto rápido y corto es un cambio de pestaña tan
+                        // claro como uno lento y largo, y exigir solo distancia
+                        // hace que los deslizamientos naturales no cuenten.
+                        const far = Math.abs(info.offset.x) > viewportWidth * 0.22;
+                        const fast = Math.abs(info.velocity.x) > 420;
+                        if (far || fast) goToTab(info.offset.x < 0 ? 1 : -1);
+                    }}
+                    animate={{ x: isDesktop ? 0 : -tabIndex * viewportWidth }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 42, mass: 0.9 }}
+                >
 
                     {/* IZQUIERDA: pila de ejercicios (arrastra para reordenar) */}
-                    <div className={`${mobileTab === 'lista' ? 'flex' : 'hidden'} lg:flex flex-1 lg:flex-none lg:w-80 xl:w-96 shrink-0 lg:border-r border-subtle bg-surface-canvas flex-col min-h-0 overflow-y-auto p-3 gap-2 scrollbar-hide`}>
+                    {/* `w-1/3` = un tercio de una cinta que mide 300%, o sea
+                        exactamente el ancho de la pantalla. En `lg` la cinta
+                        vuelve a medir 100% y mandan las anchuras de siempre. */}
+                    <div className="flex w-1/3 shrink-0 flex-col gap-2 overflow-y-auto border-subtle bg-surface-canvas p-3 scrollbar-hide min-h-0 lg:w-80 lg:border-r xl:w-96">
+                        {/* El calentamiento va ARRIBA y los extras ABAJO porque
+                            ese es el orden real de la sesión: la columna se lee
+                            de principio a fin como se entrena el día. */}
+                        <AppendixEditor
+                            label="Calentamiento"
+                            icon={FlameIcon}
+                            placeholder={'Movilidad de cadera 5\'\nBarra 20kg x10, 60x5, 80x3...'}
+                            value={session.warmup}
+                            onCommit={(v) => onUpdateAppendix(session.id, 'warmup', v)}
+                        />
+
                         <Reorder.Group
                             axis="y"
                             values={session.exercises.map(e => e.id)}
@@ -2662,10 +3182,18 @@ function DayEditorModal({
                                 </div>
                             )}
                         </div>
+
+                        <AppendixEditor
+                            label="Extras"
+                            icon={Sparkles}
+                            placeholder={'Core 3x15\nBici suave 10\'\nEstiramiento de psoas'}
+                            value={session.extras}
+                            onCommit={(v) => onUpdateAppendix(session.id, 'extras', v)}
+                        />
                     </div>
 
                     {/* CENTRO: detalle del ejercicio seleccionado (pop-up animado) */}
-                    <div className={`${mobileTab === 'editar' ? 'block' : 'hidden'} lg:block flex-1 overflow-y-auto p-4 md:p-6 min-h-0`}>
+                    <div className="w-1/3 shrink-0 overflow-y-auto p-4 min-h-0 md:p-6 lg:w-auto lg:flex-1 lg:shrink">
                         <AnimatePresence mode="wait">
                             {selectedEx ? (
                                 <motion.div
@@ -2726,7 +3254,7 @@ function DayEditorModal({
                         // saldría con 320px fijos también en móvil, donde tiene
                         // que ocupar la pantalla entera.
                         style={{ '--panel-w': `${panel.width}px` } as React.CSSProperties}
-                        className={`${mobileTab === 'datos' ? 'block' : 'hidden'} w-full flex-1 shrink-0 overflow-y-auto border-subtle bg-surface-canvas p-4 space-y-4 min-h-0 lg:block lg:w-[var(--panel-w)] lg:flex-none lg:border-l`}
+                        className="w-1/3 shrink-0 space-y-4 overflow-y-auto border-subtle bg-surface-canvas p-4 min-h-0 lg:w-[var(--panel-w)] lg:border-l"
                     >
                         <p className="text-[10px] font-black uppercase tracking-[0.25em] text-ink-subtle flex items-center gap-2">
                             <BarChart3 size={13} className="text-anvil-red" /> Resumen del día
@@ -2819,6 +3347,7 @@ function DayEditorModal({
                             })}
                         </div>
                     </div>
+                </motion.div>
                 </div>
                 </>
             )}
@@ -2862,7 +3391,12 @@ function AthletePreview({ session, onClose }: { session: ExtendedSession; onClos
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {session.exercises.length === 0 ? (
+                    {/* El espejo tiene que enseñar TODO lo que ve el atleta,
+                        apéndices incluidos: si el calentamiento no sale aquí,
+                        el coach no puede comprobar cómo le queda. */}
+                    <PreviewAppendix label="Calentamiento" body={session.warmup} />
+
+                    {session.exercises.length === 0 && !session.warmup && !session.extras ? (
                         <p className="text-center text-ink-subtle text-sm py-16 font-bold">Día vacío</p>
                     ) : (
                         session.exercises.map(ex => (
@@ -2893,9 +3427,27 @@ function AthletePreview({ session, onClose }: { session: ExtendedSession; onClos
                             </div>
                         ))
                     )}
+
+                    <PreviewAppendix label="Extras" body={session.extras} />
                 </div>
             </motion.div>
         </motion.div>
+    );
+}
+
+/** Calentamiento o extras dentro del espejo de la vista del atleta. */
+function PreviewAppendix({ label, body }: { label: string; body?: string | null }) {
+    if (!body?.trim()) return null;
+
+    return (
+        <div className="overflow-hidden rounded-card border border-subtle bg-surface-canvas">
+            <div className="border-l-2 border-anvil-red px-3.5 py-3">
+                <p className="text-[9px] font-black uppercase tracking-widest text-anvil-red">{label}</p>
+                <p className="mt-1.5 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
+                    {body.trim()}
+                </p>
+            </div>
+        </div>
     );
 }
 

@@ -93,18 +93,56 @@ export const competitionsService = {
         return data as CompetitionAssignment[];
     },
 
+    /**
+     * Competiciones que ha asignado un entrenador, con el nombre del atleta.
+     *
+     * POR QUÉ NO ES UN SIMPLE `select` CON EMBED
+     *
+     * Al sacar a un atleta del equipo desaparecía el CALENDARIO ENTERO del
+     * entrenador, no solo las filas de ese atleta.
+     *
+     * La causa es el `embed` a `profiles`. La política de lectura de perfiles
+     * deja al coach ver los de SUS atletas, y "sus atletas" son las filas de
+     * `coach_athletes`. Al romper el vínculo, ese perfil deja de ser legible;
+     * y cuando la RLS bloquea una tabla incrustada, PostgREST no devuelve la
+     * competición sin nombre: rechaza la consulta COMPLETA con 401. Las
+     * competiciones seguían ahí —tienen `coach_id`, no dependen del vínculo—
+     * pero la pantalla se quedaba vacía.
+     *
+     * Aquí las competiciones se piden SIN embed, que es una consulta que
+     * depende solo de `coach_id` y no puede fallar por un vínculo roto. Los
+     * nombres se piden aparte y en un segundo viaje: si alguno no es legible,
+     * ese atleta sale como "Atleta" y el resto del calendario intacto.
+     */
     async getCoachAssignments(coachId: string) {
         const { data, error } = await supabase
             .from('competitions')
-            .select(`
-                *,
-                athlete:profiles!athlete_id (full_name, avatar_url)
-            `)
+            .select('*')
             .eq('coach_id', coachId)
             .order('date', { ascending: true });
 
         if (error) throw error;
-        return data; // Returns competitions with nested athlete profile
+
+        const assignments = (data ?? []) as CompetitionAssignment[];
+        if (assignments.length === 0) return [];
+
+        const athleteIds = [...new Set(assignments.map(a => a.athlete_id).filter(Boolean))];
+
+        // Un fallo aquí NO puede tumbar el calendario: el nombre es una
+        // comodidad, la competición es el dato.
+        const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', athleteIds);
+
+        const byId = new Map(
+            (profiles ?? []).map(p => [p.id, { full_name: p.full_name, avatar_url: p.avatar_url }])
+        );
+
+        return assignments.map(assignment => ({
+            ...assignment,
+            athlete: byId.get(assignment.athlete_id) ?? null,
+        }));
     },
 
     async removeAssignment(assignmentId: string) {

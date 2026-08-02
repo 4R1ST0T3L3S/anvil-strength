@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { dialogIn, sheetIn, fade, transition, DURATION } from '../../lib/motion';
+import { lockBodyScroll } from '../../lib/scrollLock';
 
 /**
  * Diálogo del sistema de diseño.
@@ -68,22 +69,14 @@ export function Modal({
         if (dismissible) onClose();
     }, [dismissible, onClose]);
 
-    // Bloqueo de scroll. Se compensa el ancho de la barra para que el
-    // contenido de fondo no se desplace al abrir el modal.
+    // Bloqueo de scroll. La cerradura es compartida y lleva contador: este
+    // diálogo se abre a menudo ENCIMA de otra capa que también bloquea, y
+    // cuando cada una guardaba y restauraba el estilo por su cuenta el
+    // `<body>` acababa con `overflow: hidden` pegado o desbloqueado antes de
+    // tiempo, según el orden en que se cerraran.
     useEffect(() => {
         if (!open) return;
-        const { body, documentElement } = document;
-        const gap = window.innerWidth - documentElement.clientWidth;
-        const prevOverflow = body.style.overflow;
-        const prevPadding = body.style.paddingRight;
-
-        body.style.overflow = 'hidden';
-        if (gap > 0) body.style.paddingRight = `${gap}px`;
-
-        return () => {
-            body.style.overflow = prevOverflow;
-            body.style.paddingRight = prevPadding;
-        };
+        return lockBodyScroll();
     }, [open]);
 
     // Foco: se recuerda quién abrió el modal y se le devuelve al cerrar.

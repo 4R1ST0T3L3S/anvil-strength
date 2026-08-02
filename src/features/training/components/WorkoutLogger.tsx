@@ -11,8 +11,8 @@ import {
     getWeekNumber, getDateRangeFromWeek, formatDateRange,
     getDateForWeekday, startOfToday,
 } from '../../../utils/dateUtils';
-import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Printer } from 'lucide-react';
-import { printWeek, sessionToPrintDay } from '../../../lib/export/weekPrint';
+import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download } from 'lucide-react';
+import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -233,21 +233,24 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         ? new Date(block.start_date).getFullYear()
         : new Date().getFullYear();
 
-    /** Saca la semana en PDF para llevarla al gimnasio en papel. */
+    /** Descarga la semana en PDF para llevarla al gimnasio en papel. */
     const handlePrintWeek = () => {
         if (!block || selectedWeek === null || sessions.length === 0) return;
 
         const range = getDateRangeFromWeek(selectedWeek, blockYear);
-        const opened = printWeek({
-            blockName: block.name,
-            athleteName: athleteName ?? 'Mi entrenamiento',
-            weekLabel: weekNames[selectedWeek] || `Semana ${availableWeeks.indexOf(selectedWeek) + 1}`,
-            dateRange: formatDateRange(range.start, range.end),
-            days: sessions.map(sessionToPrintDay),
-        });
 
-        if (!opened) {
-            toast.error('El navegador bloqueó la ventana. Permite las ventanas emergentes para exportar.');
+        try {
+            const filename = downloadWeekPdf({
+                blockName: block.name,
+                athleteName: athleteName ?? 'Mi entrenamiento',
+                weekLabel: weekNames[selectedWeek] || `Semana ${availableWeeks.indexOf(selectedWeek) + 1}`,
+                dateRange: formatDateRange(range.start, range.end),
+                days: sessions.map(sessionToPrintDay),
+            });
+            toast.success(`PDF descargado: ${filename}`);
+        } catch (err) {
+            console.error('Error generando el PDF:', err);
+            toast.error('No se pudo generar el PDF de la semana');
         }
     };
 
@@ -467,16 +470,16 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             )}
                         </button>
 
-                        {/* Llevarse la semana en papel al gimnasio. Va junto al
-                            selector porque exporta LA SEMANA que se está
-                            viendo, no el bloque entero. */}
+                        {/* Descargar la semana para llevarla al gimnasio. Va
+                            junto al selector porque exporta LA SEMANA que se
+                            está viendo, no el bloque entero. */}
                         <button
                             onClick={handlePrintWeek}
-                            title="Exportar esta semana a PDF"
-                            aria-label="Exportar esta semana a PDF"
+                            title="Descargar esta semana en PDF"
+                            aria-label="Descargar esta semana en PDF"
                             className="flex shrink-0 items-center justify-center rounded-xl bg-surface-raised px-3.5 text-ink-muted transition-colors hover:bg-surface-overlay hover:text-white"
                         >
-                            <Printer size={17} />
+                            <Download size={17} />
                         </button>
                       </div>
 
@@ -569,6 +572,15 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 
             {/* 2. Content (Exercise List) */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-40">
+                {/* Calentamiento ANTES de la primera serie: si va al final o
+                    escondido en un desplegable, nadie lo lee y el coach lo
+                    escribe para nada. */}
+                <AppendixBlock
+                    label="Calentamiento"
+                    accent="warm"
+                    body={activeSession?.warmup}
+                />
+
                 {activeSession?.exercises.map(ex => (
                     <LoggerExerciseCard
                         key={ex.id}
@@ -580,11 +592,17 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     />
                 ))}
 
-                {activeSession?.exercises.length === 0 && (
+                {activeSession?.exercises.length === 0 && !activeSession?.warmup && !activeSession?.extras && (
                     <div className="py-12 text-center text-t-sm italic text-ink-subtle">
                         Día de descanso o sin ejercicios programados.
                     </div>
                 )}
+
+                <AppendixBlock
+                    label="Extras"
+                    accent="cool"
+                    body={activeSession?.extras}
+                />
             </div>
 
             {/* 3. Cierre del día.
@@ -610,6 +628,49 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 />
             )}
         </div>
+    );
+}
+
+// ==========================================
+// SUB-COMPONENT: APÉNDICE DEL DÍA
+// ==========================================
+/**
+ * Calentamiento o extras, tal y como los escribió el coach.
+ *
+ * No lleva casillas que marcar a propósito. Son indicaciones, no series: el
+ * progreso del día se mide con lo que está pautado, y meter aquí checkboxes
+ * haría que "3 de 12 series" empezara a contar el estiramiento de psoas.
+ *
+ * `whitespace-pre-line` es lo que respeta los saltos de línea del coach, que
+ * es como escribe una escalera de aproximaciones.
+ */
+function AppendixBlock({
+    label,
+    body,
+    accent,
+}: {
+    label: string;
+    body?: string | null;
+    accent: 'warm' | 'cool';
+}) {
+    if (!body?.trim()) return null;
+
+    const tone = accent === 'warm'
+        ? { bar: 'bg-brand', text: 'text-brand' }
+        : { bar: 'bg-info', text: 'text-info' };
+
+    return (
+        <section className="relative overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised">
+            <span className={cn('absolute inset-y-0 left-0 w-1', tone.bar)} aria-hidden="true" />
+            <div className="py-3 pl-4 pr-3.5">
+                <h3 className={cn('text-t-2xs font-bold uppercase tracking-widest', tone.text)}>
+                    {label}
+                </h3>
+                <p className="mt-1.5 whitespace-pre-line text-t-sm leading-relaxed text-ink-muted">
+                    {body.trim()}
+                </p>
+            </div>
+        </section>
     );
 }
 

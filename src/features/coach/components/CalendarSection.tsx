@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, Star, Award, Plus } from 'lucide-react';
-import { fetchCompetitions, Competition } from '../../../services/aepService';
+import { useCallback, useEffect, useState } from 'react';
+import { Calendar as CalendarIcon, MapPin, Users, Star, Award, Plus, RefreshCw, CloudOff, AlertTriangle } from 'lucide-react';
+import { fetchCompetitionsDetailed, Competition, CompetitionSource } from '../../../services/aepService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
 import { useUser } from '../../../hooks/useUser';
 import { toast } from 'sonner';
@@ -41,30 +41,47 @@ const esDeNuestraZona = (comp: Competition) => {
 export function CalendarSection({ onBack }: { onBack?: () => void }) {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [source, setSource] = useState<CompetitionSource>('red');
+    const [warning, setWarning] = useState<string | null>(null);
     const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
     const [addingCompId, setAddingCompId] = useState<number | string | null>(null);
     const { data: user } = useUser();
 
-    useEffect(() => {
-        const loadAEPData = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchCompetitions();
-                const filtered = data.filter(c => {
-                    if (!c.fecha || !c.campeonato) return false;
-                    const nivel = (c.level || "").toUpperCase().trim().replace(/\s/g, '');
-                    const local = esDeNuestraZona(c);
+    /**
+     * Carga el calendario.
+     *
+     * `fetchCompetitionsDetailed` no lanza nunca: cuando la federacion no
+     * responde devuelve la ultima copia descargada o la del Excel oficial que
+     * viaja con la aplicacion, y dice de donde vienen los datos. Antes esto
+     * hacia `catch { console.error }` y dejaba la lista vacia, que es lo que
+     * se veia como "el calendario no funciona": ni datos, ni error, ni forma
+     * de reintentar.
+     */
+    const load = useCallback(async (force = false) => {
+        if (force) setRefreshing(true); else setLoading(true);
 
-                    if (nivel.includes('AEP1') || nivel.includes('COPA') || nivel.includes('EPF') || nivel.includes('IPF') || nivel.includes('NACIONAL') || nivel === 'ESP.') return true;
-                    if (nivel.includes('AEP3')) return true;
-                    if (nivel.includes('AEP2')) return local;
-                    return false;
-                });
-                setCompetitions(filtered);
-            } catch (err) { console.error(err); } finally { setLoading(false); }
-        };
-        loadAEPData();
+        const result = await fetchCompetitionsDetailed({ force });
+
+        const filtered = result.competitions.filter(c => {
+            if (!c.fecha || !c.campeonato) return false;
+            const nivel = (c.level || "").toUpperCase().trim().replace(/\s/g, '');
+            const local = esDeNuestraZona(c);
+
+            if (nivel.includes('AEP1') || nivel.includes('COPA') || nivel.includes('EPF') || nivel.includes('IPF') || nivel.includes('NACIONAL') || nivel === 'ESP.') return true;
+            if (nivel.includes('AEP3')) return true;
+            if (nivel.includes('AEP2')) return local;
+            return false;
+        });
+
+        setCompetitions(filtered);
+        setSource(result.source);
+        setWarning(result.warning);
+        setLoading(false);
+        setRefreshing(false);
     }, []);
+
+    useEffect(() => { load(); }, [load]);
 
     const handleAddSelfCompetition = async (comp: Competition, indexKey: number) => {
         if (!user) return;
@@ -136,16 +153,55 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         ← Volver al Dashboard
                     </button>
                 )}
-                <div className="flex items-center gap-3">
-                    <CalendarIcon className="h-6 w-6 text-anvil-red" />
-                    <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
-                        Calendario AEP 2026
-                    </h2>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <CalendarIcon className="h-6 w-6 text-anvil-red" />
+                        <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
+                            Calendario AEP 2026
+                        </h2>
+                    </div>
+
+                    {/* Reintentar tiene que estar SIEMPRE, no solo cuando algo
+                        falla: la federacion publica cambios durante la
+                        temporada y la cache dura horas. */}
+                    <button
+                        onClick={() => load(true)}
+                        disabled={refreshing || loading}
+                        className="flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-[11px] font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-white disabled:opacity-40"
+                    >
+                        <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                        {refreshing ? 'Actualizando' : 'Actualizar'}
+                    </button>
                 </div>
+
+                {/* De donde salen los datos. Solo se dice cuando NO vienen
+                    frescos de la federacion: en el caso normal es ruido. */}
+                {warning && (
+                    <div className="flex items-start gap-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3.5">
+                        {source === 'local'
+                            ? <CloudOff size={16} className="mt-0.5 shrink-0 text-yellow-500" />
+                            : <AlertTriangle size={16} className="mt-0.5 shrink-0 text-yellow-500" />}
+                        <p className="text-xs leading-relaxed text-yellow-200/90">{warning}</p>
+                    </div>
+                )}
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64 bg-[#0a0a0a] rounded-xl border border-white/5 font-black text-gray-500 italic">CARGANDO...</div>
+                <div className="flex h-64 items-center justify-center rounded-xl border border-white/5 bg-[#0a0a0a] font-black italic text-gray-500">CARGANDO...</div>
+            ) : competitions.length === 0 ? (
+                <div className="rounded-xl border border-white/5 bg-[#0a0a0a] p-12 text-center">
+                    <CalendarIcon size={40} className="mx-auto mb-4 text-gray-700" />
+                    <p className="font-black uppercase tracking-wider text-gray-400">Sin competiciones</p>
+                    <p className="mx-auto mt-2 max-w-sm text-sm text-gray-600">
+                        No se ha podido leer el calendario de la federacion y no hay ninguna copia guardada.
+                    </p>
+                    <button
+                        onClick={() => load(true)}
+                        className="mt-6 text-xs font-black uppercase tracking-widest text-anvil-red transition-colors hover:text-red-400"
+                    >
+                        Reintentar &rarr;
+                    </button>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 gap-4">
                     {competitions.map((comp, index) => {

@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Calendar, ChevronRight, Trophy, Weight, List, Calculator, Users, Swords,
-    Lock, FileText, Utensils, User, Fish, Dumbbell, Loader, BookOpen, Quote,
+    Lock, FileText, User, Fish, Dumbbell, Loader, BookOpen, Quote,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { CheckInCard } from '../../forms/AthleteCheckIns';
+import { TodayPanel } from './TodayPanel';
 import { OneRMCalculator } from './OneRMCalculator';
 import { WarmUpCalculator } from './WarmUpCalculator';
 import { PlateCalculator } from './PlateCalculator';
@@ -221,51 +222,16 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                 <section>
                     <SectionLabel icon={Dumbbell}>Hoy</SectionLabel>
 
-                    <div className="grid gap-3 md:grid-cols-2">
-                        <button
-                            onClick={() => onNavigate('planning')}
-                            className="group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active"
-                        >
-                            <Dumbbell
-                                size={128}
-                                aria-hidden="true"
-                                className="pointer-events-none absolute -right-6 -top-4 text-brand-ink opacity-[0.12] transition-transform duration-base ease-snap group-hover:scale-105"
-                            />
-                            <Dumbbell size={26} className="relative text-brand-ink" aria-hidden="true" />
-                            <span className="relative">
-                                <span className="block text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
-                                    Entrenar
-                                </span>
-                                <span className="mt-1.5 flex items-center gap-1 text-t-sm text-brand-ink/80">
-                                    Tu sesión de esta semana
-                                    <ChevronRight size={14} aria-hidden="true" className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
-                                </span>
-                            </span>
-                        </button>
-
-                        <button
-                            onClick={() => onNavigate('nutrition')}
-                            className="group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay"
-                        >
-                            <Utensils
-                                size={128}
-                                aria-hidden="true"
-                                className="pointer-events-none absolute -right-6 -top-4 text-success opacity-[0.06] transition-transform duration-base ease-snap group-hover:scale-105"
-                            />
-                            <span className="relative flex h-10 w-10 items-center justify-center rounded-field bg-success-quiet">
-                                <Utensils size={20} className="text-success" aria-hidden="true" />
-                            </span>
-                            <span className="relative">
-                                <span className="block text-t-2xl font-black uppercase leading-none tracking-display text-ink">
-                                    Mi dieta
-                                </span>
-                                <span className="mt-1.5 flex items-center gap-1 text-t-sm text-ink-subtle">
-                                    Plan y macros del día
-                                    <ChevronRight size={14} aria-hidden="true" className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
-                                </span>
-                            </span>
-                        </button>
-                    </div>
+                    {/* El entrenamiento pautado y los macros del día, con datos
+                        de verdad. Antes eran dos botones que no decían nada de
+                        lo que había detrás: para saber qué tocaba hoy había que
+                        entrar en otra pantalla y esperar a que cargara. */}
+                    <TodayPanel
+                        athleteId={user.id}
+                        locked={locked}
+                        onOpenTraining={() => onNavigate('planning')}
+                        onOpenNutrition={() => onNavigate('nutrition')}
+                    />
 
                     <div className="mt-3">
                         <CheckInCard athleteId={user.id} />

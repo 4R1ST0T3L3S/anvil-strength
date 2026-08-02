@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, TrendingUp, Dumbbell, List, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
 interface WarmUpCalculatorProps {
     isOpen: boolean;
@@ -117,15 +118,10 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
         }, 100);
     };
 
+    // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
+        if (!isOpen) return;
+        return lockBodyScroll();
     }, [isOpen]);
 
     if (!isOpen) return null;

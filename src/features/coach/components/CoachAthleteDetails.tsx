@@ -166,12 +166,20 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 </div>
             </div>
 
-            {/* Content Area */}
-            <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-surface-sunken">
+            {/* Contenido.
+                `overflow-x-hidden` es el corte de seguridad: dentro viven el
+                constructor de bloques y el analisis, con rejillas y tablas
+                anchas, y en un movil de 375px cualquiera de ellas arrastraba la
+                PAGINA ENTERA hacia la derecha -cabecera y pestanas incluidas-
+                dejando media pantalla en negro.
+                El relleno lateral baja a 12px en movil: los hijos ya traen el
+                suyo, y sumar los dos dejaba las tarjetas de bloque en una
+                columna de poco mas de 200px. */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden bg-surface-sunken p-3 md:p-6">
 
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
-                    <div className="max-w-7xl mx-auto w-full pb-6 px-4">
+                    <div className="mx-auto w-full max-w-7xl pb-6">
                         {selectedBlockId ? (
                             <div className="h-full flex flex-col">
                                 <button
@@ -275,14 +283,14 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                 {/* 4. VBT (Velocity Based Training) */}
                 {activeTab === 'vbt' && (
-                    <div className="max-w-7xl mx-auto w-full pb-6 px-4">
+                    <div className="mx-auto w-full max-w-7xl pb-6">
                         <CoachVbtTab athleteId={athleteId} />
                     </div>
                 )}
 
                 {/* 5. NUTRICIÓN */}
                 {activeTab === 'nutrition' && (
-                    <div className="max-w-7xl mx-auto w-full pb-6 px-4">
+                    <div className="mx-auto w-full max-w-7xl pb-6">
                         <NutritionPlanEditor athleteId={athleteId} />
                     </div>
                 )}

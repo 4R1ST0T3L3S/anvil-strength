@@ -149,6 +149,13 @@ export interface TrainingSession {
     completed_at?: string | null;
     /** Cómo fue el día, en palabras del atleta. Distinto de las notas por serie. */
     athlete_notes?: string | null;
+    /**
+     * Apéndices del día, en texto libre. NO son ejercicios: no cuentan para el
+     * volumen, el tonelaje ni el reparto por patrón. Ausentes en bases sin
+     * database/session_warmup_extras.sql aplicado.
+     */
+    warmup?: string | null;
+    extras?: string | null;
     created_at: string;
     // Relations (Optional for UI rendering)
     exercises?: SessionExercise[];

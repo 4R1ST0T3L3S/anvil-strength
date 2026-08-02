@@ -1,126 +1,128 @@
 import Papa from 'papaparse';
+import { AEP_2026_FALLBACK_CSV, AEP_2026_FALLBACK_UPDATED } from '../data/aepCalendar2026';
 
 export interface Competition {
     fecha: string;
     dateIso?: string;
-    endDateIso?: string; // Add End Date ISO
+    endDateIso?: string;
     campeonato: string;
     sede: string;
-    organizador?: string; // Added field
+    organizador?: string;
     inscripciones: string;
     level: 'IPF' | 'EPF' | 'NACIONAL' | 'AEP 1' | 'AEP 2' | 'AEP 3' | 'COMPETICIÓN';
 }
 
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSMIGAG6eqYDt4/export?format=csv&gid=577884253';
+/** De dónde han salido los datos que se están enseñando. */
+export type CompetitionSource = 'red' | 'cache' | 'local';
 
-// Fallback proxy strategy
-const fetchWithFallback = async (targetUrl: string): Promise<string> => {
-    const proxies = [
-        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
-        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
-    ];
+export interface CompetitionsResult {
+    competitions: Competition[];
+    source: CompetitionSource;
+    /** Cuándo se leyeron de la federación. Null si vienen del respaldo local. */
+    fetchedAt: string | null;
+    /** Qué falló, si es que falló algo. Se enseña junto a los datos, no en vez de ellos. */
+    warning: string | null;
+}
 
-    let lastError: unknown;
+/**
+ * Ruta propia, en el mismo origen. Ver `api/aep.ts`.
+ *
+ * Sustituye a los tres proxies públicos que había aquí. Aquellos eran
+ * servicios ajenos y gratuitos, y cuando caían —que caían— la pantalla se
+ * quedaba vacía sin explicación. Además ninguno estaba en la política de
+ * contenido del sitio, que solo permite `connect-src 'self'`.
+ */
+const CSV_ENDPOINT = '/api/aep';
 
-    for (const proxy of proxies) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per proxy
+const CACHE_KEY = 'aep_calendar_data_v3';
+const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 h
 
-            const response = await fetch(proxy, { signal: controller.signal });
-            clearTimeout(timeoutId);
+interface CachedPayload {
+    timestamp: number;
+    data: Competition[];
+}
 
-            if (!response.ok) throw new Error(`Status ${response.status}`);
-            const text = await response.text();
-            if (!text || text.trim().length === 0) throw new Error('Empty response');
+// =====================================================================
+// PARSEO
+// =====================================================================
 
-            return text;
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            const errorName = err instanceof Error ? err.name : 'Error';
-            console.warn(`Proxy failed: ${proxy}`, errorName === 'AbortError' ? 'Timeout' : errorMessage);
-            lastError = err;
-        }
-    }
-
-    const lastErrorMessage = lastError instanceof Error ? lastError.message : String(lastError);
-    throw new Error(`All proxies failed. Last error: ${lastErrorMessage || 'Unknown'}`);
-};
-
-// Helper to parse Spanish date formats and select the "Best" date based on rules:
-// - If AEP 3: Prefer SUNDAY
-// - If AEP 1 / AEP 2 / National: Prefer SATURDAY
-// - If range detected: Return range start and end
-const parseBestDate = (dateStr: string): { str: string, iso?: string, endIso?: string } => {
+/**
+ * Elige la fecha "buena" de una celda que puede traer un día suelto ("17 ene")
+ * o un rango ("24-25 ene", "28-01 feb-mar").
+ */
+const parseBestDate = (dateStr: string): { str: string; iso?: string; endIso?: string } => {
     try {
         const year = 2026;
         const months: { [key: string]: number } = {
-            'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
-            'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+            ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5,
+            jul: 6, ago: 7, sep: 8, oct: 9, nov: 10, dic: 11,
         };
 
         const cleanStr = dateStr.toLowerCase().trim();
-        const foundMonths = Object.keys(months).filter(m => cleanStr.includes(m));
 
-        if (foundMonths.length === 0) return { str: dateStr }; // Return original if parse fails
+        // Los meses, EN EL ORDEN EN QUE APARECEN en el texto. Antes se sacaban
+        // recorriendo el diccionario, que va de enero a diciembre, así que en
+        // "29 ago - 07 sep" el orden de aparición se perdía.
+        const monthMatches = [...cleanStr.matchAll(/ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic/g)]
+            .map(m => m[0]);
 
-        const lastMonthStr = foundMonths[foundMonths.length - 1];
-        const monthIndex = months[lastMonthStr];
+        if (monthMatches.length === 0) return { str: dateStr };
 
-        // Extract all numbers (potential days)
+        const startMonth = monthMatches[0];
+        const endMonth = monthMatches[monthMatches.length - 1];
+        const crossesMonths = startMonth !== endMonth;
+
         const numbers = cleanStr.match(/\d+/g);
         if (!numbers) return { str: dateStr };
 
         const dayCandidates = numbers.map(n => parseInt(n)).filter(n => n >= 1 && n <= 31);
-
         if (dayCandidates.length === 0) return { str: dateStr };
 
-        // If only one day, return it
-        if (dayCandidates.length === 1) {
+        const cap = (m: string) => m.charAt(0).toUpperCase() + m.slice(1);
+        const iso = (month: string, day: number) =>
+            `${year}-${String(months[month] + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-            // Adjust simple string to be cleaner? e.g. "20 Ene"
+        if (dayCandidates.length === 1) {
             return {
-                str: `${dayCandidates[0]} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`,
-                iso: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(dayCandidates[0]).padStart(2, '0')}`
+                str: `${dayCandidates[0]} ${cap(endMonth)}`,
+                iso: iso(endMonth, dayCandidates[0]),
             };
         }
 
-        // Multiple days: Apply Logic
-        // Determine target Day of Week (0=Sun, 6=Sat)
-        // Rule: AEP 3 -> Sunday (0). Others -> Saturday (6).
+        // Con DOS meses no se puede ordenar por número: "29 ago - 07 sep"
+        // ordenado da 7-29, que es un rango al revés y además del mes
+        // equivocado. Cuando el rango cruza de mes manda el orden de lectura;
+        // dentro de un mismo mes sí se ordena, porque hay hojas que escriben
+        // "25-24 ene".
+        let firstDay: number;
+        let lastDay: number;
 
-        // NEWLOGIC: If range (e.g. 2 days), we want the START and END.
-        // Assuming consecutive days from the candidates.
-        dayCandidates.sort((a, b) => a - b);
-        const firstDay = dayCandidates[0];
-        const lastDay = dayCandidates[dayCandidates.length - 1];
-
-        // Construct ISOs
-        const startIso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(firstDay).padStart(2, '0')}`;
-        const endIso = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-
-        // formatted string "25-26 Ene"
-        const formattedStr = `${firstDay}-${lastDay} ${lastMonthStr.charAt(0).toUpperCase() + lastMonthStr.slice(1)}`;
+        if (crossesMonths) {
+            firstDay = dayCandidates[0];
+            lastDay = dayCandidates[dayCandidates.length - 1];
+        } else {
+            const sorted = [...dayCandidates].sort((a, b) => a - b);
+            firstDay = sorted[0];
+            lastDay = sorted[sorted.length - 1];
+        }
 
         return {
-            str: formattedStr,
-            iso: startIso,
-            endIso: endIso
+            str: crossesMonths
+                ? `${firstDay} ${cap(startMonth)} - ${lastDay} ${cap(endMonth)}`
+                : `${firstDay}-${lastDay} ${cap(endMonth)}`,
+            iso: iso(startMonth, firstDay),
+            endIso: iso(endMonth, lastDay),
         };
-
     } catch {
         return { str: dateStr };
     }
 };
 
-// Helper to determine competition level based on strict hierarchy AND explicit Excel column
+/** Nivel de la competición: manda la columna del Excel; el nombre es el respaldo. */
 const determineLevel = (name: string, rawLevel: string = ''): Competition['level'] => {
     const n = name.toLowerCase();
     const l = rawLevel.toLowerCase().trim();
 
-    // 0. EXPLICIT EXCEL COLUMN (Highest Priority if clear match)
-    // Added 'aep2', 'aep1' (no space) support
     if (l.includes('aep-1') || l.includes('aep 1') || l.includes('aep1')) return 'AEP 1';
     if (l.includes('aep-2') || l.includes('aep 2') || l.includes('aep2') || l.includes('este-2')) return 'AEP 2';
     if (l.includes('aep-3') || l.includes('aep 3') || l.includes('aep3')) return 'AEP 3';
@@ -128,158 +130,231 @@ const determineLevel = (name: string, rawLevel: string = ''): Competition['level
     if (l.includes('europeo') || l.includes('epf') || l.includes('western')) return 'EPF';
     if (l.includes('mundial') || l.includes('world') || l.includes('ipf') || l.includes('olimpiada')) return 'IPF';
 
-    // 1. Fallback: Name-based Hierarchy (International)
     if (n.includes('world') || n.includes('mundial') || n.includes('ipf') || n.includes('olimpiada')) return 'IPF';
     if (n.includes('europeo') || n.includes('epf') || n.includes('western')) return 'EPF';
-
-    // 2. National
     if (n.includes('nacional') || n.includes('españa') || n.includes('copa de españa')) return 'NACIONAL';
-
-    // 3. Regional (AEP Levels) - Fallback
     if (n.includes('aep-1') || n.includes('aep 1')) return 'AEP 1';
     if (n.includes('aep-2') || n.includes('aep 2') || n.includes('este-2')) return 'AEP 2';
     if (n.includes('aep-3') || n.includes('aep 3') || n.includes('regional')) return 'AEP 3';
 
-    // Default
     return 'COMPETICIÓN';
 };
 
-const CACHE_KEY = 'aep_calendar_data_v2';
-const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour
+/**
+ * CSV crudo -> competiciones.
+ *
+ * Es SÍNCRONO y no devuelve una promesa. Antes vivía dentro del callback
+ * `complete` de Papa envuelto en un `new Promise`, lo que ataba el parseo al
+ * único origen que había. Ahora el mismo código sirve para lo que llega de la
+ * red y para el respaldo local, así que no hay dos caminos que puedan
+ * comportarse distinto.
+ */
+export function parseCompetitionsCsv(csvText: string): Competition[] {
+    const results = Papa.parse<string[]>(csvText, { header: false, skipEmptyLines: true });
+    const rows = results.data;
 
-export const fetchCompetitions = async (): Promise<Competition[]> => {
-    // 1. Check Cache
+    // La cabecera no está en la primera fila: la hoja de la AEP arranca con el
+    // logotipo, el título y la fecha de actualización.
+    let headerRowIndex = -1;
+    for (let i = 0; i < Math.min(rows.length, 20); i++) {
+        const rowStr = JSON.stringify(rows[i]).toLowerCase();
+        if (
+            rowStr.includes('fecha') &&
+            (rowStr.includes('competicion') || rowStr.includes('localidad') ||
+                rowStr.includes('organizador') || rowStr.includes('club'))
+        ) {
+            headerRowIndex = i;
+            break;
+        }
+    }
+
+    if (headerRowIndex === -1) {
+        throw new Error('No se encontró la fila de cabecera (FECHA / COMPETICIONES / LOCALIDAD)');
+    }
+
+    const headers = rows[headerRowIndex].map(h => h.toString().toLowerCase().trim());
+    const dateIdx = headers.findIndex(h => h.includes('fecha'));
+    const nameIdx = headers.findIndex(h => h.includes('campeonato') || h.includes('competicion') || h.includes('nombre'));
+    const locIdx = headers.findIndex(h => h.includes('sede') || h.includes('localidad') || h.includes('lugar'));
+    const orgIdx = headers.findIndex(h => h.includes('organizador') || h.includes('club'));
+    const linkIdx = headers.findIndex(h => h.includes('inscrip') || h.includes('link'));
+
+    let levelIdx = headers.findIndex(h =>
+        h.includes('nivel') || h.includes('caracter') || h.includes('carácter') || h.includes('tipo')
+    );
+    // La columna F es la del nivel en el formato histórico de la federación.
+    if (levelIdx === -1 && headers.length > 5) levelIdx = 5;
+
+    if (dateIdx === -1 || nameIdx === -1) {
+        throw new Error(`Cabeceras críticas no encontradas (fecha=${dateIdx}, nombre=${nameIdx})`);
+    }
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(new Date().getDate() - 7);
+
+    return rows
+        .slice(headerRowIndex + 1)
+        .map(row => {
+            const rawDateStr = row[dateIdx] || '';
+            const name = row[nameIdx] || '';
+            const rawLevel = levelIdx !== -1 ? (row[levelIdx] || '') : '';
+
+            const level = determineLevel(name, rawLevel);
+            const parsed = parseBestDate(rawDateStr);
+
+            const sede = locIdx !== -1 ? (row[locIdx] || '') : '';
+            const organizador = orgIdx !== -1 ? (row[orgIdx] || '') : '';
+
+            return {
+                fecha: parsed.str,
+                dateIso: parsed.iso,
+                endDateIso: parsed.endIso,
+                campeonato: name,
+                sede: sede || 'Por determinar',
+                organizador,
+                inscripciones: linkIdx !== -1 ? row[linkIdx] : '',
+                level,
+                // Solo para filtrar: distingue una competición de verdad de una
+                // fila de la leyenda. No sale de esta función.
+                _hasData: Boolean(rawLevel.trim() || sede.trim() || organizador.trim()),
+            };
+        })
+        .filter(item => {
+            const isValid =
+                item.fecha &&
+                item.fecha.length > 2 &&
+                !item.fecha.toLowerCase().includes('fecha') &&
+                !item.fecha.toLowerCase().includes('trimestre') &&
+                item.campeonato;
+
+            if (!isValid) return false;
+
+            // La hoja de la AEP termina con una LEYENDA de colores
+            // ("CÓDIGO / DE / COLORES" + el significado de cada nivel). Esas
+            // filas tienen nombre pero ni nivel, ni sede, ni organizador, y se
+            // colaban en el calendario como si fueran competiciones:
+            // "CAMPEONATO CLASIFICATORIO NACIONAL" con fecha "CÓDIGO".
+            if (!item._hasData) return false;
+
+            // Las que no tienen fecha cerrada ("pendiente", "sin confirmar")
+            // se quedan: son competiciones reales del año en curso.
+            if (!item.dateIso) return true;
+            return new Date(item.dateIso) >= oneWeekAgo;
+        })
+        .map(({ _hasData, ...competition }) => {
+            void _hasData;
+            return competition satisfies Competition;
+        });
+}
+
+// =====================================================================
+// CACHÉ
+// =====================================================================
+
+function readCache(): CachedPayload | null {
     try {
         const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-            const parsed = JSON.parse(cached);
-            const now = new Date().getTime();
-            if (now - parsed.timestamp < CACHE_DURATION) {
-                // Return cached data if valid
-                return parsed.data;
-            }
-        }
-    } catch (e) {
-        console.warn('Error reading from cache', e);
+        if (!cached) return null;
+        const parsed = JSON.parse(cached) as CachedPayload;
+        return Array.isArray(parsed.data) ? parsed : null;
+    } catch {
+        return null;
     }
+}
 
-    // 2. Fetch Fresh Data
+function writeCache(data: Competition[]) {
     try {
-        const csvText = await fetchWithFallback(SHEET_URL);
-
-        return new Promise((resolve, reject) => {
-            Papa.parse(csvText, {
-                header: false,
-                skipEmptyLines: true,
-                complete: (results) => {
-                    const rows = results.data as string[][];
-                    let headerRowIndex = -1;
-
-                    // Find Header
-                    for (let i = 0; i < Math.min(rows.length, 20); i++) {
-                        const rowStr = JSON.stringify(rows[i]).toLowerCase();
-                        if (rowStr.includes('fecha') && (
-                            rowStr.includes('competiciones') ||
-                            rowStr.includes('localidad') ||
-                            rowStr.includes('organizador') ||
-                            rowStr.includes('club')
-                        )) {
-                            headerRowIndex = i;
-                            break;
-                        }
-                    }
-
-                    if (headerRowIndex === -1) {
-                        reject(new Error('No se encontró la fila de cabecera (FECHA/COMPETICIONES/LOCALIDAD)'));
-                        return;
-                    }
-
-                    // Map Indices
-                    const headers = rows[headerRowIndex].map(h => h.toString().toLowerCase().trim());
-                    const dateIdx = headers.findIndex(h => h.includes('fecha'));
-                    const nameIdx = headers.findIndex(h => h.includes('campeonato') || h.includes('competiciones') || h.includes('nombre'));
-                    const locIdx = headers.findIndex(h => h.includes('sede') || h.includes('localidad') || h.includes('lugar'));
-                    const orgIdx = headers.findIndex(h => h.includes('organizador') || h.includes('club'));
-                    const linkIdx = headers.findIndex(h => h.includes('inscrip') || h.includes('link'));
-                    // User mentioned Column F (Index 5). We look for "Nivel", "Caracter", "Tipo" or fallback to index 5 if plausible.
-                    let levelIdx = headers.findIndex(h => h.includes('nivel') || h.includes('caracter') || h.includes('carácter') || h.includes('tipo'));
-
-                    // Fallback to Column F (Index 5 relative to table start) if header not found but matches typical structure
-                    if (levelIdx === -1 && headers.length > 5) {
-                        // Heuristic: If column 5 exists, use it. The user specifically mentioned Column F.
-                        levelIdx = 5;
-                        console.warn('Level header not found, falling back to Column F (Index 5)');
-                    }
-
-                    if (dateIdx === -1 || nameIdx === -1) {
-                        reject(new Error(`Cabeceras críticas no encontradas. Indices: Date=${dateIdx}, Name=${nameIdx}`));
-                        return;
-                    }
-
-                    const oneWeekAgo = new Date();
-                    oneWeekAgo.setDate(new Date().getDate() - 7);
-
-                    const validData: Competition[] = rows
-                        .slice(headerRowIndex + 1)
-                        .map(row => {
-                            const rawDateStr = row[dateIdx] || '';
-                            const name = row[nameIdx] || '';
-                            const rawLevel = levelIdx !== -1 ? (row[levelIdx] || '') : '';
-
-                            // 1. Determine Level First
-                            const level = determineLevel(name, rawLevel);
-
-                            // 2. Parse Date using Level Context
-                            const parsed = parseBestDate(rawDateStr);
-
-                            return {
-                                fecha: parsed.str, // Use the formatted "best" date string
-                                dateIso: parsed.iso,
-                                endDateIso: parsed.endIso,
-                                campeonato: name,
-                                sede: locIdx !== -1 ? row[locIdx] : 'Por determinar',
-                                organizador: orgIdx !== -1 ? row[orgIdx] : '',
-                                inscripciones: linkIdx !== -1 ? row[linkIdx] : '',
-                                level: level
-                            };
-                        })
-                        .filter(item => {
-                            // 1. Basic Validity
-                            const isValid = item.fecha &&
-                                item.fecha.length > 2 &&
-                                !item.fecha.toLowerCase().includes('fecha') &&
-                                !item.fecha.toLowerCase().includes('trimestre') &&
-                                item.campeonato;
-
-                            if (!isValid) return false;
-
-                            // 2. Date Filtering
-                            if (!item.dateIso) return true;
-                            const itemDate = new Date(item.dateIso);
-                            if (itemDate < oneWeekAgo) return false;
-
-                            return true;
-                        });
-
-                    // SAVE TO CACHE
-                    try {
-                        localStorage.setItem(CACHE_KEY, JSON.stringify({
-                            timestamp: new Date().getTime(),
-                            data: validData
-                        }));
-                    } catch (e) {
-                        console.warn('Failed to save to cache', e);
-                    }
-
-                    resolve(validData);
-                },
-                error: (error: Error) => {
-                    reject(new Error(`Error parseando CSV: ${error.message}`));
-                }
-            });
-        });
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Error desconocido al cargar el calendario';
-        throw new Error(message);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+    } catch {
+        /* modo privado o cuota llena: la caché es una mejora, no un requisito */
     }
-};
+}
+
+// =====================================================================
+// API PÚBLICA
+// =====================================================================
+
+/**
+ * Trae el calendario, en este orden:
+ *
+ *   1. Caché fresca (menos de 6 h). Instantáneo.
+ *   2. La federación, a través de nuestro propio proxy.
+ *   3. Caché caducada, si la hay.
+ *   4. La copia local del Excel oficial.
+ *
+ * NUNCA lanza. Un calendario es información de consulta: quedarse sin él
+ * porque un servidor de terceros esté caído no es una respuesta aceptable, y
+ * era exactamente lo que pasaba. Lo que sí hace es decir de dónde salen los
+ * datos, para que la pantalla lo pueda advertir.
+ */
+export async function fetchCompetitionsDetailed(
+    { force = false }: { force?: boolean } = {}
+): Promise<CompetitionsResult> {
+    const cached = readCache();
+
+    if (!force && cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        return {
+            competitions: cached.data,
+            source: 'cache',
+            fetchedAt: new Date(cached.timestamp).toISOString(),
+            warning: null,
+        };
+    }
+
+    let networkError = 'No se pudo contactar con la federación';
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        const response = await fetch(CSV_ENDPOINT, {
+            signal: controller.signal,
+            headers: { Accept: 'text/csv' },
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`El servidor respondió ${response.status}`);
+
+        const csvText = await response.text();
+        if (!csvText.trim()) throw new Error('Respuesta vacía');
+
+        const competitions = parseCompetitionsCsv(csvText);
+        if (competitions.length === 0) throw new Error('La hoja no traía ninguna competición');
+
+        writeCache(competitions);
+        return { competitions, source: 'red', fetchedAt: new Date().toISOString(), warning: null };
+    } catch (error) {
+        networkError = error instanceof Error ? error.message : String(error);
+        console.warn('Calendario AEP: falló la lectura remota —', networkError);
+    }
+
+    if (cached) {
+        return {
+            competitions: cached.data,
+            source: 'cache',
+            fetchedAt: new Date(cached.timestamp).toISOString(),
+            warning: 'No se ha podido comprobar si hay cambios. Estás viendo la última versión descargada.',
+        };
+    }
+
+    try {
+        return {
+            competitions: parseCompetitionsCsv(AEP_2026_FALLBACK_CSV),
+            source: 'local',
+            fetchedAt: null,
+            warning: `No se ha podido contactar con la federación. Calendario oficial del ${AEP_2026_FALLBACK_UPDATED}.`,
+        };
+    } catch (error) {
+        console.error('Calendario AEP: el respaldo local tampoco se pudo leer', error);
+        return {
+            competitions: [],
+            source: 'local',
+            fetchedAt: null,
+            warning: `No se pudo cargar el calendario: ${networkError}`,
+        };
+    }
+}
+
+/** Compatibilidad con las pantallas que solo quieren la lista. */
+export const fetchCompetitions = async (): Promise<Competition[]> =>
+    (await fetchCompetitionsDetailed()).competitions;

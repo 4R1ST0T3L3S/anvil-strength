@@ -60,8 +60,24 @@ export const isNutritionist = (user: RoleBearer): boolean => user?.role === 'nut
  * El administrador entra también: si no, el dueño del club no puede ver el
  * panel que administra.
  */
+/**
+ * `is_developer` NO entra aquí.
+ *
+ * Entraba, y era lo que hacía que cuentas de ATLETA acabaran en el panel de
+ * gestión: cualquier perfil con la marca de desarrollador —que se usa para
+ * abrir funciones en pruebas, no para dar permisos— aterrizaba en "Mis
+ * atletas", con lista de deportistas y agenda de equipo, y sin sus check-ins,
+ * su entrenamiento ni su nutrición por ninguna parte. `AppRoutes` incluso
+ * redirigía `/dashboard` a `/coach-dashboard`, así que no había forma de
+ * llegar a la pantalla correcta.
+ *
+ * Un desarrollador que además necesite el panel de entrenador tiene que
+ * tenerlo por su ROL, que es lo que la RLS comprueba de todas formas: la marca
+ * de desarrollador nunca dio acceso real a los datos de otros atletas, solo
+ * enseñaba una pantalla que luego salía vacía.
+ */
 export const isStaff = (user: RoleBearer): boolean =>
-    isCoach(user) || isNutritionist(user) || isAdmin(user) || user?.is_developer === true;
+    isCoach(user) || isNutritionist(user) || isAdmin(user);
 
 /** El panel de atleta es el destino por defecto de todo el que no es staff. */
 export const isAthlete = (user: RoleBearer): boolean => !isStaff(user);

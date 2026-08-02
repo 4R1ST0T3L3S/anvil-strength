@@ -224,7 +224,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
-                ) : !['coach', 'nutritionist'].includes(user?.role || '') && !user?.is_developer ? (
+                ) : !['coach', 'nutritionist'].includes(user?.role || '') && !isAdmin(user) ? (
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>

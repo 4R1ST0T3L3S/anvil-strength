@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { X, Trophy, User as UserIcon, Fish, ArrowUpRight } from 'lucide-react';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
 import { motion, AnimatePresence } from 'framer-motion';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
 interface AnvilRankingProps {
     isOpen?: boolean;
@@ -34,16 +35,15 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
     const [rankingType, setRankingType] = useState<'gl' | 'sushi'>('gl');
 
     useEffect(() => {
-        if (isVisible) {
-            fetchRankings();
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
+        if (isVisible) fetchRankings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isVisible, rankingType]);
+
+    // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
+    useEffect(() => {
+        if (!isVisible) return;
+        return lockBodyScroll();
+    }, [isVisible]);
 
     const fetchRankings = async () => {
         setLoading(true);

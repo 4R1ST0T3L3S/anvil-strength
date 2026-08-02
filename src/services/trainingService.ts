@@ -1,5 +1,23 @@
 import { supabase } from '../lib/supabase';
-import { TrainingBlock, TrainingSession, ExerciseLibrary, SessionExercise, TrainingSet, Macrocycle, DayTemplate, DayTemplateExercise, WeekMeta, Weekday } from '../types/training';
+import { TrainingBlock, TrainingSession, ExerciseLibrary, SessionExercise, TrainingSet, Macrocycle, DayTemplate, DayTemplateExercise, WeekMeta, Weekday, weekdayIndex, weekdayLabel } from '../types/training';
+import { getWeekNumber } from '../utils/dateUtils';
+
+/** Lo que le toca hoy a un atleta, resumido para la pantalla de inicio. */
+export interface TodayTraining {
+    blockName: string;
+    /** No hay sesión agendada para hoy en la semana en curso. */
+    isRestDay: boolean;
+    session: {
+        id: string;
+        title: string;
+        completed: boolean;
+        hasWarmup: boolean;
+        hasExtras: boolean;
+        exerciseNames: string[];
+        totalSets: number;
+        completedSets: number;
+    } | null;
+}
 
 /** Fila del historial de un ejercicio para estadísticas de tendencia. */
 export interface ExerciseHistoryRow {
@@ -183,6 +201,36 @@ export const trainingService = {
         if (error) throw error;
     },
 
+    /**
+     * Guarda el calentamiento o los extras de un día.
+     *
+     * Las dos columnas llegaron con database/session_warmup_extras.sql. Si esa
+     * migración todavía no está aplicada contra la base, PostgREST responde
+     * PGRST204 ("column not found"). Eso NO puede tumbar el editor: el resto
+     * del día se sigue pudiendo programar sin apéndices, así que se traduce a
+     * un error con instrucciones en vez de propagar el código críptico.
+     */
+    async setSessionAppendix(
+        sessionId: string,
+        updates: { warmup?: string | null; extras?: string | null }
+    ): Promise<void> {
+        const { error } = await supabase
+            .from('training_sessions')
+            .update(updates)
+            .eq('id', sessionId);
+
+        if (!error) return;
+
+        if ((error as { code?: string }).code === 'PGRST204') {
+            throw new Error(
+                'Faltan las columnas de calentamiento y extras. Ejecuta ' +
+                'database/session_warmup_extras.sql contra la base de datos.'
+            );
+        }
+
+        throw error;
+    },
+
     async updateBlock(blockId: string, updates: Partial<TrainingBlock>): Promise<TrainingBlock> {
         const { data, error } = await supabase
             .from('training_blocks')
@@ -209,6 +257,97 @@ export const trainingService = {
     },
 
     /**
+     * El entrenamiento que le toca HOY a un atleta, resumido.
+     *
+     * Lo usa la pantalla de inicio, que hasta ahora solo tenía un botón de
+     * "Entrenar" sin decir a qué. Un atleta que abre la aplicación quiere saber
+     * qué le ha puesto su entrenador para hoy; tener que entrar en otra
+     * pantalla para averiguarlo es la fricción que hace que la gente deje de
+     * abrir la app.
+     *
+     * Solo devuelve lo que la RLS deja ver, que es justo lo que el coach ha
+     * publicado: las semanas ocultas o todavía sin abrir no llegan hasta aquí.
+     */
+    async getTodayForAthlete(athleteId: string): Promise<TodayTraining | null> {
+        const blocks = await this.getBlocksByAthlete(athleteId);
+        const block = blocks.find(b => b.is_active);
+        if (!block) return null;
+
+        const week = getWeekNumber();
+
+        const { data, error } = await supabase
+            .from('training_sessions')
+            .select(`
+                id, name, day_number, day_of_week, date, completed_at, warmup, extras, week_number,
+                session_exercises (
+                    id, order_index,
+                    exercise:exercise_library (name),
+                    training_sets (id, target_reps, target_load, target_metric, target_rpe, is_completed)
+                )
+            `)
+            .eq('block_id', block.id)
+            .eq('week_number', week);
+
+        // Un fallo aquí no puede tumbar el inicio: es un resumen, no el
+        // entrenamiento en sí. La pantalla de "Entrenar" sigue siendo la
+        // fuente de verdad.
+        if (error) {
+            console.warn('No se pudo leer el entrenamiento de hoy:', error.message);
+            return null;
+        }
+
+        type Row = {
+            id: string; name: string | null; day_number: number;
+            day_of_week: string | null; date: string | null;
+            completed_at: string | null; warmup: string | null; extras: string | null;
+            session_exercises: {
+                id: string; order_index: number;
+                exercise: { name: string } | null;
+                training_sets: { is_completed?: boolean | null }[];
+            }[];
+        };
+
+        const sessions = (data as unknown as Row[] | null) ?? [];
+        if (sessions.length === 0) return null;
+
+        // Hoy es, por este orden: la sesión con la fecha exacta de hoy, o la
+        // agendada en este día de la semana. Si no hay ninguna, hoy toca
+        // descansar — y eso también es una respuesta que hay que dar.
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const todayIndex = now.getDay() || 7;
+
+        const session =
+            sessions.find(s => s.date === todayStr)
+            ?? sessions.find(s => weekdayIndex(s.day_of_week) === todayIndex)
+            ?? null;
+
+        if (!session) {
+            return { blockName: block.name, session: null, isRestDay: true };
+        }
+
+        const exercises = [...(session.session_exercises ?? [])]
+            .sort((a, b) => a.order_index - b.order_index);
+
+        const allSets = exercises.flatMap(e => e.training_sets ?? []);
+
+        return {
+            blockName: block.name,
+            isRestDay: false,
+            session: {
+                id: session.id,
+                title: session.name || weekdayLabel(session.day_of_week) || `Día ${session.day_number}`,
+                completed: Boolean(session.completed_at),
+                hasWarmup: Boolean(session.warmup?.trim()),
+                hasExtras: Boolean(session.extras?.trim()),
+                exerciseNames: exercises.map(e => e.exercise?.name ?? 'Ejercicio'),
+                totalSets: allSets.length,
+                completedSets: allSets.filter(s => s.is_completed).length,
+            },
+        };
+    },
+
+    /**
      * SESSIONS
      */
     async getSessionsByBlock(blockId: string): Promise<TrainingSession[]> {
@@ -231,6 +370,26 @@ export const trainingService = {
 
         if (error) throw error;
         return data;
+    },
+
+    /**
+     * Crea varias sesiones de una vez.
+     *
+     * "Días por semana" creaba hasta 40 sesiones con un `await` por cada una,
+     * en serie. Con la latencia normal contra Supabase eso son varios segundos
+     * mirando un spinner para una decisión que se toma una sola vez al empezar
+     * el bloque.
+     */
+    async createSessions(sessions: Omit<TrainingSession, 'id' | 'created_at'>[]): Promise<TrainingSession[]> {
+        if (sessions.length === 0) return [];
+
+        const { data, error } = await supabase
+            .from('training_sessions')
+            .insert(sessions)
+            .select();
+
+        if (error) throw error;
+        return data || [];
     },
 
     async deleteSession(sessionId: string): Promise<void> {
@@ -873,7 +1032,21 @@ export const trainingService = {
         await this.cloneWeekContents(blockId, sourceWeek, targetWeek);
     },
 
-    /** Clona sesiones + ejercicios + series de sourceWeek a targetWeek (mismo bloque). */
+    /**
+     * Clona sesiones + ejercicios + series de sourceWeek a targetWeek.
+     *
+     * TRES viajes al servidor, no uno por serie.
+     *
+     * Esto insertaba fila a fila y esperando: una sesión, luego cada ejercicio
+     * uno a uno, y dentro de cada uno sus series. Una semana normal de 4 días
+     * con 6 ejercicios son 4 + 24 inserciones encadenadas, cada una con su ida
+     * y vuelta completa; a 80 ms de latencia eso son más de dos segundos de
+     * reloj para copiar una semana, y es exactamente la operación con la que
+     * se construye un bloque entero. De ahí la lentitud de la pantalla.
+     *
+     * Ahora se insertan los tres niveles en lote. Solo hacen falta tres
+     * llamadas porque cada nivel necesita los ids que devuelve el anterior.
+     */
     async cloneWeekContents(blockId: string, sourceWeek: number, targetWeek: number): Promise<void> {
         const { data: sourceSessions, error: sessionError } = await supabase
             .from('training_sessions')
@@ -890,61 +1063,88 @@ export const trainingService = {
         if (sessionError) throw sessionError;
         if (!sourceSessions || sourceSessions.length === 0) return;
 
-        for (const session of sourceSessions) {
-            const { data: newSession, error: createSessionError } = await supabase
-                .from('training_sessions')
-                .insert({
-                    block_id: blockId,
-                    week_number: targetWeek,
-                    day_number: session.day_number,
-                    day_of_week: session.day_of_week ?? null,
-                    name: session.name,
-                    date: null,
-                    notes: session.notes
-                })
-                .select()
-                .single();
+        // 1. Todas las sesiones de golpe. El orden que devuelve un INSERT
+        //    múltiple de PostgREST es el mismo del payload, así que la
+        //    posición i del resultado corresponde a la sesión origen i.
+        const { data: newSessions, error: createSessionError } = await supabase
+            .from('training_sessions')
+            .insert(sourceSessions.map(session => ({
+                block_id: blockId,
+                week_number: targetWeek,
+                day_number: session.day_number,
+                day_of_week: session.day_of_week ?? null,
+                name: session.name,
+                // La fecha NO se copia: pertenece a la semana de origen.
+                date: null,
+                notes: session.notes,
+                warmup: session.warmup ?? null,
+                extras: session.extras ?? null,
+            })))
+            .select('id');
 
-            if (createSessionError) throw createSessionError;
+        if (createSessionError) throw createSessionError;
+        if (!newSessions) return;
 
-            for (const ex of (session.session_exercises || [])) {
-                const { data: newEx, error: createExError } = await supabase
-                    .from('session_exercises')
-                    .insert({
-                        session_id: newSession.id,
-                        exercise_id: ex.exercise_id,
-                        order_index: ex.order_index,
-                        notes: ex.notes,
-                        variant_name: ex.variant_name,
-                        rpe: ex.rpe,
-                        velocity_avg: ex.velocity_avg,
-                        rest_seconds: ex.rest_seconds
-                    })
-                    .select()
-                    .single();
+        // 2. Todos los ejercicios de todas las sesiones, de golpe.
+        type SourceExercise = SessionExercise & { training_sets?: TrainingSet[] };
 
-                if (createExError) throw createExError;
+        const exercisePayload: Record<string, unknown>[] = [];
+        const exerciseSources: SourceExercise[] = [];
 
-                if (ex.training_sets && ex.training_sets.length > 0) {
-                    const newSets = ex.training_sets.map((set: TrainingSet) => ({
-                        session_exercise_id: newEx.id,
-                        order_index: set.order_index,
-                        target_reps: set.target_reps,
-                        target_rpe: set.target_rpe,
-                        target_load: set.target_load,
-                        rest_seconds: set.rest_seconds,
-                        is_video_required: set.is_video_required,
-                        notes: set.notes
-                    }));
+        sourceSessions.forEach((session, i) => {
+            const targetSessionId = newSessions[i]?.id;
+            if (!targetSessionId) return;
 
-                    const { error: createSetsError } = await supabase
-                        .from('training_sets')
-                        .insert(newSets);
-
-                    if (createSetsError) throw createSetsError;
-                }
+            for (const ex of ((session.session_exercises ?? []) as SourceExercise[])) {
+                exerciseSources.push(ex);
+                exercisePayload.push({
+                    session_id: targetSessionId,
+                    exercise_id: ex.exercise_id,
+                    order_index: ex.order_index,
+                    notes: ex.notes,
+                    variant_name: ex.variant_name,
+                    rpe: ex.rpe,
+                    velocity_avg: ex.velocity_avg,
+                    rest_seconds: ex.rest_seconds,
+                });
             }
-        }
+        });
+
+        if (exercisePayload.length === 0) return;
+
+        const { data: newExercises, error: createExError } = await supabase
+            .from('session_exercises')
+            .insert(exercisePayload)
+            .select('id');
+
+        if (createExError) throw createExError;
+        if (!newExercises) return;
+
+        // 3. Todas las series de todos los ejercicios, de golpe.
+        const setsPayload = exerciseSources.flatMap((ex, i) => {
+            const targetExerciseId = newExercises[i]?.id;
+            if (!targetExerciseId) return [];
+
+            return (ex.training_sets ?? []).map((set: TrainingSet) => ({
+                session_exercise_id: targetExerciseId,
+                order_index: set.order_index,
+                target_reps: set.target_reps,
+                target_rpe: set.target_rpe,
+                target_load: set.target_load,
+                target_metric: set.target_metric ?? 'kg',
+                rest_seconds: set.rest_seconds,
+                is_video_required: set.is_video_required,
+                notes: set.notes,
+            }));
+        });
+
+        if (setsPayload.length === 0) return;
+
+        const { error: createSetsError } = await supabase
+            .from('training_sets')
+            .insert(setsPayload);
+
+        if (createSetsError) throw createSetsError;
     },
 
     /**
@@ -977,43 +1177,59 @@ export const trainingService = {
         if (error) throw error;
     },
 
-    /** Aplica una plantilla a una sesión: crea ejercicios + series al final del día. */
+    /**
+     * Aplica una plantilla a una sesión: crea ejercicios + series al final.
+     *
+     * Los ejercicios se resuelven en paralelo y se insertan en dos lotes. Antes
+     * era una cadena de esperas por cada ejercicio de la plantilla (buscar o
+     * crear el ejercicio, insertarlo, insertar sus series), así que aplicar una
+     * plantilla de ocho ejercicios costaba veinticuatro viajes seguidos.
+     */
     async applyDayTemplate(sessionId: string, template: DayTemplate, coachId: string, startOrder: number): Promise<void> {
-        let order = startOrder;
-        for (const ex of template.payload) {
-            const exerciseId = await this.findOrCreateExercise(ex.name, coachId);
-            const { data: newEx, error } = await supabase
-                .from('session_exercises')
-                .insert({
-                    session_id: sessionId,
-                    exercise_id: exerciseId,
-                    order_index: order++,
-                    notes: ex.notes || null,
-                    variant_name: ex.variant_name || null,
-                    rpe: ex.rpe || null,
-                    velocity_avg: ex.velocity_avg || null,
-                    rest_seconds: ex.rest_seconds || null
-                })
-                .select()
-                .single();
+        if (template.payload.length === 0) return;
 
-            if (error) throw error;
+        // `findOrCreateExercise` puede insertar, así que se lanzan a la vez pero
+        // se conserva el orden del array para no barajar la plantilla.
+        const exerciseIds = await Promise.all(
+            template.payload.map(ex => this.findOrCreateExercise(ex.name, coachId))
+        );
 
-            if (ex.sets && ex.sets.length > 0) {
-                const { error: setsError } = await supabase
-                    .from('training_sets')
-                    .insert(ex.sets.map((s, i) => ({
-                        session_exercise_id: newEx.id,
-                        order_index: i,
-                        target_reps: s.target_reps,
-                        target_rpe: s.target_rpe,
-                        target_load: s.target_load,
-                        rest_seconds: s.rest_seconds,
-                        is_video_required: false
-                    })));
-                if (setsError) throw setsError;
-            }
-        }
+        const { data: newExercises, error } = await supabase
+            .from('session_exercises')
+            .insert(template.payload.map((ex, i) => ({
+                session_id: sessionId,
+                exercise_id: exerciseIds[i],
+                order_index: startOrder + i,
+                notes: ex.notes || null,
+                variant_name: ex.variant_name || null,
+                rpe: ex.rpe || null,
+                velocity_avg: ex.velocity_avg || null,
+                rest_seconds: ex.rest_seconds || null,
+            })))
+            .select('id');
+
+        if (error) throw error;
+        if (!newExercises) return;
+
+        const setsPayload = template.payload.flatMap((ex, i) => {
+            const sessionExerciseId = newExercises[i]?.id;
+            if (!sessionExerciseId) return [];
+
+            return (ex.sets ?? []).map((set, index) => ({
+                session_exercise_id: sessionExerciseId,
+                order_index: index,
+                target_reps: set.target_reps,
+                target_rpe: set.target_rpe,
+                target_load: set.target_load,
+                rest_seconds: set.rest_seconds,
+                is_video_required: false,
+            }));
+        });
+
+        if (setsPayload.length === 0) return;
+
+        const { error: setsError } = await supabase.from('training_sets').insert(setsPayload);
+        if (setsError) throw setsError;
     },
 
     /** Persiste el nuevo orden de los ejercicios de una sesión. */
@@ -1121,84 +1337,18 @@ export const trainingService = {
             .sort((a, b) => a.weekNumber - b.weekNumber || a.dayNumber - b.dayNumber);
     },
 
+    /**
+     * Duplica una semana AL FINAL del bloque y devuelve su número.
+     *
+     * Reutiliza `cloneWeekContents` en vez de repetir el copiado aquí. La copia
+     * propia que tenía se dejaba por el camino la variante, el RPE global, la
+     * velocidad, el descanso y la métrica de cada serie: el coach duplicaba una
+     * semana y la copia salía con los mismos ejercicios pero sin la mitad de la
+     * prescripción, y había que repasarla entera a mano.
+     */
     async copyWeek(blockId: string, sourceWeek: number): Promise<number> {
-        // 1. Add a new week to the block
         const newEndWeek = await this.addWeek(blockId);
-
-        // 2. Get sessions from source week
-        const { data: sourceSessions, error: sessionError } = await supabase
-            .from('training_sessions')
-            .select(`
-                *,
-                session_exercises (
-                    *,
-                    training_sets (*)
-                )
-            `)
-            .eq('block_id', blockId)
-            .eq('week_number', sourceWeek);
-
-        if (sessionError) throw sessionError;
-        if (!sourceSessions || sourceSessions.length === 0) return newEndWeek;
-
-        // 3. Duplicate sessions
-        for (const session of sourceSessions) {
-            // Create new session
-            const { data: newSession, error: createSessionError } = await supabase
-                .from('training_sessions')
-                .insert({
-                    block_id: blockId,
-                    week_number: newEndWeek,
-                    day_number: session.day_number,
-                    day_of_week: session.day_of_week ?? null,
-                    name: session.name,
-                    date: null, // Clear date for copied session
-                    notes: session.notes
-                })
-                .select()
-                .single();
-
-            if (createSessionError) throw createSessionError;
-
-            // Copy exercises
-            if (session.session_exercises && session.session_exercises.length > 0) {
-                for (const ex of session.session_exercises) {
-                    const { data: newEx, error: createExError } = await supabase
-                        .from('session_exercises')
-                        .insert({
-                            session_id: newSession.id,
-                            exercise_id: ex.exercise_id,
-                            order_index: ex.order_index,
-                            notes: ex.notes
-                        })
-                        .select()
-                        .single();
-
-                    if (createExError) throw createExError;
-
-                    // Copy sets
-                    if (ex.training_sets && ex.training_sets.length > 0) {
-                        const newSets = ex.training_sets.map((set: TrainingSet) => ({
-                            session_exercise_id: newEx.id,
-                            order_index: set.order_index,
-                            target_reps: set.target_reps,
-                            target_rpe: set.target_rpe,
-                            target_load: set.target_load,
-                            rest_seconds: set.rest_seconds,
-                            is_video_required: set.is_video_required,
-                            notes: set.notes
-                        }));
-
-                        const { error: createSetsError } = await supabase
-                            .from('training_sets')
-                            .insert(newSets);
-
-                        if (createSetsError) throw createSetsError;
-                    }
-                }
-            }
-        }
-
+        await this.cloneWeekContents(blockId, sourceWeek, newEndWeek);
         return newEndWeek;
     }
 };
