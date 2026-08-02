@@ -204,6 +204,97 @@ export const TARGET_METRICS: {
         { key: 'vel_loss', label: 'Pérdida', unit: '%', hint: 'Pérdida de velocidad permitida' },
     ];
 
+/**
+ * Técnica de intensidad aplicada a una serie.
+ *
+ * NO incluye superserie ni triserie: esas no son un tipo de serie sino una
+ * relación entre ejercicios distintos, y viven en `group_tag`. Meterlas aquí
+ * obligaría a que una serie declarase con quién se encadena sin tener dónde
+ * decirlo.
+ */
+export type SetType = 'dropset' | 'rest_pause' | 'cluster' | 'myo_reps' | 'amrap';
+
+/**
+ * Cómo se presenta cada técnica y qué se le pide al coach.
+ *
+ * `detailHint` es el ejemplo que aparece como marcador de posición: sin él,
+ * "detalle" es una casilla en blanco y cada coach inventa su notación, que es
+ * exactamente lo que hace que el atleta no entienda lo que le han puesto.
+ */
+export const SET_TYPES: {
+    key: SetType;
+    label: string;
+    short: string;
+    detailHint: string;
+    hint: string;
+}[] = [
+        {
+            key: 'dropset',
+            label: 'Dropset',
+            short: 'DROP',
+            detailHint: '-20% x2',
+            hint: 'Al fallo, bajas el peso y sigues sin descansar',
+        },
+        {
+            key: 'rest_pause',
+            label: 'Rest-pause',
+            short: 'R-P',
+            detailHint: '15s x3',
+            hint: 'Al fallo, pausa corta y más repeticiones con el mismo peso',
+        },
+        {
+            key: 'cluster',
+            label: 'Cluster',
+            short: 'CLU',
+            detailHint: '3+3+3 / 20s',
+            hint: 'La serie se parte en microseries con pausas dentro',
+        },
+        {
+            key: 'myo_reps',
+            label: 'Myo-reps',
+            short: 'MYO',
+            detailHint: '12 + 4x4',
+            hint: 'Serie de activación y luego miniseries seguidas',
+        },
+        {
+            key: 'amrap',
+            label: 'AMRAP',
+            short: 'AMRAP',
+            detailHint: 'mínimo 8',
+            hint: 'Todas las repeticiones que salgan con buena técnica',
+        },
+    ];
+
+export const setTypeLabel = (type?: SetType | null): string | null =>
+    SET_TYPES.find(t => t.key === type)?.label ?? null;
+
+export const setTypeShort = (type?: SetType | null): string | null =>
+    SET_TYPES.find(t => t.key === type)?.short ?? null;
+
+/**
+ * Etiquetas de encadenado disponibles.
+ *
+ * Letras y no números: "Superserie A" no se confunde con "Día 2" ni con
+ * "Semana 3", y en la pantalla del atleta un chip con una letra cabe donde
+ * "Superserie 1" no.
+ */
+export const GROUP_TAGS = ['A', 'B', 'C', 'D'] as const;
+
+/**
+ * Cómo se llama un encadenado según cuántos ejercicios lo forman.
+ *
+ * Lo decide el número real de ejercicios que comparten la etiqueta, no el
+ * coach: si marca tres y luego borra uno, el chip tiene que dejar de decir
+ * "triserie" solo. Un encadenado de uno no es nada y se dice así, porque el
+ * caso normal de verlo es haber marcado el primero y no el segundo todavía.
+ */
+export function groupLabel(exerciseCount: number): string {
+    if (exerciseCount >= 4) return `Serie encadenada ×${exerciseCount}`;
+    if (exerciseCount === 3) return 'Triserie';
+    if (exerciseCount === 2) return 'Superserie';
+    return 'Sin encadenar';
+}
+
 // 5. TRAINING SETS (La tabla crítica)
 export interface TrainingSet {
     id: string;
@@ -234,6 +325,33 @@ export interface TrainingSet {
      * tocado el peso.
      */
     is_completed?: boolean | null;
+
+    /**
+     * Técnica de intensidad de ESTA serie. NULL —el 95% de las filas— es una
+     * serie normal. Ver database/MIGRACION_PENDIENTE.sql.
+     */
+    set_type?: SetType | null;
+    /**
+     * Parámetros de la técnica, en texto corto y tal cual los escribe el
+     * coach: "-20% x2" en un dropset, "15s x3" en un cluster.
+     *
+     * Texto libre y no campos numéricos porque cada técnica se parametriza
+     * distinto —un dropset por porcentaje, un rest-pause por segundos, un
+     * cluster por ambos— y una rejilla que valga para todas acabaría con la
+     * mitad de las casillas vacías en cada caso.
+     */
+    set_detail?: string | null;
+    /**
+     * Etiqueta de encadenado. Las series de EJERCICIOS DISTINTOS que
+     * comparten etiqueta dentro de un día se ejecutan alternando: dos
+     * ejercicios son una superserie, tres una triserie.
+     *
+     * Va aquí y no en `set_type` porque "superserie" no es una propiedad de
+     * una serie suelta: es una relación entre varias, y sin la etiqueta no se
+     * podría decir CON QUÉ se encadena — que es justo lo que el atleta
+     * necesita saber.
+     */
+    group_tag?: string | null;
 
     // Feedback / Media
     is_video_required: boolean;

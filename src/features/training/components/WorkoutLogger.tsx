@@ -5,8 +5,10 @@ import { trainingService, parseGroupedReps } from '../../../services/trainingSer
 import { LoggerSetRow } from './LoggerSetRow';
 import { SaveIndicator } from '../../../components/ui/SaveIndicator';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS } from '../../../types/training';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS, groupLabel } from '../../../types/training';
 import type { TargetMetric } from '../../../types/training';
+import { RichText } from '../../../components/ui/RichText';
+import { VideoModal } from '../../../components/ui/VideoModal';
 import {
     getWeekNumber, getDateRangeFromWeek, formatDateRange,
     getDateForWeekday, startOfToday,
@@ -115,6 +117,11 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const [weekPickerOpen, setWeekPickerOpen] = useState(false);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
+    // Vídeo enlazado desde el calentamiento o los extras. Se reproduce dentro
+    // de la app para no sacar al atleta de la sesión a medio registrar.
+    const [video, setVideo] = useState<{ url: string; label: string } | null>(null);
+    const playVideo = useCallback((url: string, label: string) => setVideo({ url, label }), []);
 
     // Timer State
     const [timerEndTime, setTimerEndTime] = useState<number | null>(null);
@@ -315,26 +322,6 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         })));
     }, []);
 
-    const handleToggleSessionComplete = useCallback(async (sessionId: string, completed: boolean) => {
-        // Optimista: el botón cambia ya. Si la escritura falla se revierte,
-        // que es mejor que un botón que no responde durante medio segundo.
-        const stamp = completed ? new Date().toISOString() : null;
-        setAllSessions(prev =>
-            prev.map(s => (s.id === sessionId ? { ...s, completed_at: stamp } : s))
-        );
-
-        try {
-            await trainingService.setSessionCompleted(sessionId, completed);
-            if (completed) toast.success('Día cerrado. Buen trabajo.');
-        } catch (err) {
-            console.error(err);
-            setAllSessions(prev =>
-                prev.map(s => (s.id === sessionId ? { ...s, completed_at: completed ? null : stamp } : s))
-            );
-            toast.error('No se pudo guardar. Revisa la conexión.');
-        }
-    }, []);
-
     const changeWeek = (week: number) => {
         setSelectedWeek(week);
         setWeekPickerOpen(false);
@@ -368,6 +355,8 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     }
 
     const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+
+    const chains = computeChains(activeSession?.exercises ?? []);
 
     // Progreso del día. Una serie agrupada ("4x8") cuenta como cuatro: es lo
     // que el atleta ve en pantalla, y contar uno haría que la barra saltara
@@ -414,10 +403,28 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     }
 
     return (
-        <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
+        /**
+         * ESTRUCTURA DE SCROLL
+         *
+         * Antes esto era `h-full overflow-hidden` con su propia zona
+         * desplazable dentro. Como `main` del panel YA es un contenedor con
+         * scroll, había dos scrolls anidados: en el móvil el dedo movía uno o
+         * el otro según dónde cayera, la barra de arriba no se quedaba fija
+         * al subir, y el pie —posicionado contra el alto de este div, no
+         * contra la pantalla— acababa flotando en mitad del contenido.
+         *
+         * Ahora hay UN solo scroll, el de `main`, y la cabecera se pega
+         * arriba con `sticky`. Es lo que hace que el gesto de deslizar se
+         * comporte igual en toda la pantalla.
+         */
+        <div className="mx-auto w-full max-w-md text-white">
 
-            {/* 1. Header & Navigation */}
-            <div className="bg-surface-canvas border-b border-subtle pb-2">
+            {/* 1. Header & Navigation.
+                `sticky`: el selector de semana y los días siguen accesibles
+                al bajar por la lista de ejercicios. Un día tiene seis u ocho
+                ejercicios y volver arriba para cambiar de día era un viaje
+                de pantalla y media. */}
+            <div className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 pb-2 backdrop-blur">
                 <div className="p-4">
                     <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                     {block.description && (
@@ -568,10 +575,43 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         );
                     })}
                 </div>
+
+                {/* Progreso del día.
+                    Sustituye al pie con el botón "Terminar el día". Ese botón
+                    pedía un gesto que no aportaba nada —las series ya estaban
+                    marcadas una a una— y encima se posicionaba contra el alto
+                    del contenedor, así que en el móvil aparecía flotando en
+                    mitad de la pantalla y por debajo de la barra de pestañas.
+                    Lo único que valía la pena de aquel pie era saber cuánto
+                    queda, y eso cabe en cuatro píxeles de alto aquí arriba,
+                    donde además se ve SIEMPRE y no solo al llegar al final. */}
+                {totalSets > 0 && (
+                    <div className="flex items-center gap-2.5 px-4 pt-1">
+                        <div className="h-1 flex-1 overflow-hidden rounded-pill bg-surface-sunken">
+                            {/* Se anima el ancho y no un `transform`: una barra
+                                escalada deforma sus propios bordes redondeados,
+                                y a 4px de alto el coste de layout es nulo. */}
+                            <motion.div
+                                className={completedSets >= totalSets ? 'h-full bg-success' : 'h-full bg-brand'}
+                                initial={false}
+                                animate={{ width: `${Math.round((completedSets / totalSets) * 100)}%` }}
+                                transition={{ duration: prefersReducedMotion() ? 0 : DURATION.base, ease: EASE_OUT }}
+                            />
+                        </div>
+                        <span className="shrink-0 text-t-2xs font-bold uppercase tracking-widest tabular-nums text-ink-subtle">
+                            {completedSets}/{totalSets}
+                        </span>
+                        <SaveIndicator />
+                    </div>
+                )}
             </div>
 
-            {/* 2. Content (Exercise List) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-40">
+            {/* 2. Content (Exercise List).
+                El relleno inferior deja libre la barra de pestañas del móvil,
+                que es fija y vive por encima del borde de la pantalla, más el
+                hueco de gestos del iPhone. En escritorio esa barra no existe
+                y basta con un margen normal. */}
+            <div className="space-y-5 p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] md:pb-8">
                 {/* Calentamiento ANTES de la primera serie: si va al final o
                     escondido en un desplegable, nadie lo lee y el coach lo
                     escribe para nada. */}
@@ -579,13 +619,16 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     label="Calentamiento"
                     accent="warm"
                     body={activeSession?.warmup}
+                    onPlayVideo={playVideo}
                 />
 
-                {activeSession?.exercises.map(ex => (
+                {activeSession?.exercises.map((ex, i) => (
                     <LoggerExerciseCard
                         key={ex.id}
                         sessionExercise={ex}
                         athleteId={athleteId}
+                        position={i + 1}
+                        chain={chains.get(ex.id) ?? null}
                         onStartTimer={handleStartTimer}
                         onExpandSet={handleExpandSet}
                         onSetChange={handleSetChange}
@@ -602,22 +645,9 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     label="Extras"
                     accent="cool"
                     body={activeSession?.extras}
+                    onPlayVideo={playVideo}
                 />
             </div>
-
-            {/* 3. Cierre del día.
-                Marcar series sueltas no decía en ningún momento que el día
-                estuviera terminado, así que el coach no podía distinguir "ha
-                entrenado y ha ido bien" de "empezó y lo dejó a medias", ni
-                calcular adherencia sin adivinar. */}
-            {activeSession && activeSession.exercises.length > 0 && (
-                <SessionFooter
-                    session={activeSession}
-                    completedSets={completedSets}
-                    totalSets={totalSets}
-                    onToggleComplete={handleToggleSessionComplete}
-                />
-            )}
 
             {/* Overlay Timer */}
             {timerEndTime && (
@@ -627,6 +657,13 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     onAddSeconds={handleAddTimerSeconds}
                 />
             )}
+
+            <VideoModal
+                open={video !== null}
+                onClose={() => setVideo(null)}
+                url={video?.url ?? null}
+                title={video?.label}
+            />
         </div>
     );
 }
@@ -648,10 +685,13 @@ function AppendixBlock({
     label,
     body,
     accent,
+    onPlayVideo,
 }: {
     label: string;
     body?: string | null;
     accent: 'warm' | 'cool';
+    /** Abre un vídeo enlazado sin sacar al atleta de la sesión. */
+    onPlayVideo?: (url: string, label: string) => void;
 }) {
     if (!body?.trim()) return null;
 
@@ -666,9 +706,15 @@ function AppendixBlock({
                 <h3 className={cn('text-t-2xs font-bold uppercase tracking-widest', tone.text)}>
                     {label}
                 </h3>
-                <p className="mt-1.5 whitespace-pre-line text-t-sm leading-relaxed text-ink-muted">
-                    {body.trim()}
-                </p>
+                {/* `RichText` respeta los saltos de línea —así escribe el coach
+                    una escalera de aproximaciones— y convierte en enlace lo que
+                    haya escrito como [texto](url). Los que son vídeo se abren
+                    dentro de la app. */}
+                <RichText
+                    body={body.trim()}
+                    onPlayVideo={onPlayVideo}
+                    className="mt-1.5 text-t-sm leading-relaxed text-ink-muted"
+                />
             </div>
         </section>
     );
@@ -689,70 +735,48 @@ function AppendixBlock({
  * La barra de progreso no es decoración: es la respuesta a "¿me falta algo?"
  * sin tener que subir a repasar.
  */
-function SessionFooter({
-    session,
-    completedSets,
-    totalSets,
-    onToggleComplete,
-}: {
-    session: ExtendedSession;
-    completedSets: number;
-    totalSets: number;
-    onToggleComplete: (sessionId: string, completed: boolean) => void;
-}) {
-    const done = Boolean(session.completed_at);
-    const progress = totalSets > 0 ? completedSets / totalSets : 0;
-    const reduced = prefersReducedMotion();
+/**
+ * Qué ejercicios van encadenados con cuáles, dentro de un día.
+ *
+ * Devuelve, para cada ejercicio que forme parte de un encadenado, la etiqueta
+ * ("A", "B"…), cuántos ejercicios la comparten y qué puesto ocupa este dentro
+ * del grupo. Con eso la tarjeta puede decir "Superserie A · 1 de 2", que es la
+ * única forma de que el atleta sepa que después de esta serie le toca ir al
+ * otro ejercicio y no descansar.
+ *
+ * La etiqueta vive en las SERIES, así que un ejercicio pertenece al grupo si
+ * alguna de las suyas la lleva: marcar solo la primera serie de un ejercicio
+ * es lo que hace el coach cuando encadena, y exigirle marcarlas todas sería
+ * trabajo repetido para el mismo significado.
+ */
+function computeChains(exercises: ExtendedSessionExercise[]): Map<string, ChainInfo> {
+    const byTag = new Map<string, string[]>();
 
-    return (
-        // El relleno inferior deja libre la barra de pestañas del móvil, que
-        // es fija y vive por encima del borde de la pantalla. En escritorio
-        // esa barra no existe y el pie baja hasta abajo del todo.
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-sticky px-3 pb-[calc(env(safe-area-inset-bottom)+4.75rem)] pt-3 md:pb-3">
-            <div className="pointer-events-auto rounded-card border border-[var(--border-default)] bg-surface-raised/95 p-3 shadow-overlay backdrop-blur">
-                <div className="mb-2.5 flex items-center justify-between gap-3">
-                    <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                        {completedSets} de {totalSets} series
-                    </span>
-                    <SaveIndicator />
-                </div>
+    for (const ex of exercises) {
+        const tag = ex.sets.find(s => s.group_tag)?.group_tag;
+        if (!tag) continue;
+        const list = byTag.get(tag) ?? [];
+        list.push(ex.id);
+        byTag.set(tag, list);
+    }
 
-                {/* Barra de progreso. Se anima el ancho y no un `transform`
-                    porque una barra escalada deforma sus propios bordes
-                    redondeados; a 4px de alto el coste de layout es nulo. */}
-                <div className="mb-3 h-1 overflow-hidden rounded-pill bg-surface-sunken">
-                    <motion.div
-                        className={done ? 'h-full bg-success' : 'h-full bg-brand'}
-                        initial={false}
-                        animate={{ width: `${Math.round(progress * 100)}%` }}
-                        transition={{ duration: reduced ? 0 : DURATION.base, ease: EASE_OUT }}
-                    />
-                </div>
+    const chains = new Map<string, ChainInfo>();
+    for (const [tag, ids] of byTag) {
+        // Un grupo de uno no es un encadenado: es el coach a mitad de
+        // marcarlo. Enseñar "Superserie A · 1 de 1" sería mentir.
+        if (ids.length < 2) continue;
+        ids.forEach((id, i) => {
+            chains.set(id, { tag, size: ids.length, position: i + 1 });
+        });
+    }
 
-                <button
-                    onClick={() => onToggleComplete(session.id, !done)}
-                    className={cn(
-                        'flex w-full items-center justify-center gap-2 rounded-field py-3 text-t-sm font-extrabold uppercase tracking-wide transition-colors duration-fast ease-snap active:scale-[0.985]',
-                        done
-                            ? 'bg-[var(--success-quiet)] text-success'
-                            : 'bg-brand text-brand-ink hover:bg-brand-hover'
-                    )}
-                >
-                    {done ? (
-                        <>
-                            <Check size={16} strokeWidth={3} aria-hidden="true" />
-                            Día terminado
-                            <span className="font-semibold normal-case tracking-normal opacity-70">
-                                · toca para reabrir
-                            </span>
-                        </>
-                    ) : (
-                        'Terminar el día'
-                    )}
-                </button>
-            </div>
-        </div>
-    );
+    return chains;
+}
+
+interface ChainInfo {
+    tag: string;
+    size: number;
+    position: number;
 }
 
 // ==========================================
@@ -761,12 +785,18 @@ function SessionFooter({
 function LoggerExerciseCard({
     sessionExercise,
     athleteId,
+    position,
+    chain,
     onStartTimer,
     onExpandSet,
     onSetChange,
 }: {
     sessionExercise: ExtendedSessionExercise;
     athleteId: string;
+    /** Puesto del ejercicio en el día, empezando en 1. */
+    position: number;
+    /** Encadenado al que pertenece, si lo hay. */
+    chain: ChainInfo | null;
     onStartTimer: (s: number) => void;
     onExpandSet: (setId: string, baseOrderIndex: number, groupIndex: number) => Promise<string | null>;
     onSetChange: (setId: string, completed: boolean) => void;
@@ -918,16 +948,41 @@ function LoggerExerciseCard({
                 />
             </Modal>
 
+            {/* Encadenado. Va ARRIBA DEL TODO y a ancho completo, tocando el
+                borde: es lo primero que hay que saber del ejercicio, porque
+                cambia lo que se hace al terminar la serie —ir al siguiente
+                ejercicio en vez de descansar—. Dentro de la cabecera, entre
+                el nombre y las notas, se leía como una etiqueta más. */}
+            {chain && (
+                <div className="flex items-center gap-2 bg-[var(--info-quiet)] px-4 py-1.5">
+                    <span className="text-t-2xs font-black uppercase tracking-widest text-info">
+                        {groupLabel(chain.size)} {chain.tag}
+                    </span>
+                    <span className="text-t-2xs text-info/70">
+                        · {chain.position} de {chain.size}
+                        {chain.position < chain.size
+                            ? ' · sin descanso, sigue al siguiente'
+                            : ' · ahora sí, descansa'}
+                    </span>
+                </div>
+            )}
+
             {/* Header */}
-            <div className="p-4 bg-surface-raised flex justify-between items-start">
-                <div>
+            <div className="p-4 bg-surface-raised flex justify-between items-start gap-3">
+                <div className="min-w-0">
                     <button
                         onClick={() => setDetailOpen(true)}
-                        className="group flex items-center gap-1.5 text-left"
+                        className="group flex items-start gap-1.5 text-left"
                         title="Ver técnica y detalles"
                     >
+                        {/* El número del ejercicio en el día. Sin él, seis
+                            tarjetas iguales en una pantalla de móvil no dicen
+                            por dónde va uno al volver de un descanso largo. */}
+                        <span className="mt-1 shrink-0 text-t-2xs font-black tabular-nums text-ink-faint">
+                            {position}
+                        </span>
                         <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-anvil-red transition-colors">{exerciseName}</h3>
-                        <PlayCircle size={15} className="text-ink-subtle group-hover:text-anvil-red transition-colors shrink-0" />
+                        <PlayCircle size={15} className="mt-1.5 text-ink-subtle group-hover:text-anvil-red transition-colors shrink-0" />
                     </button>
                     {sessionExercise.notes && (
                         <button

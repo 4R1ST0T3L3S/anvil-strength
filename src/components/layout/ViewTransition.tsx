@@ -46,14 +46,21 @@ export function ViewTransition({ transitionKey, children }: ViewTransitionProps)
                     duration: reduced ? 0.01 : DURATION.fast,
                     ease: EASE_OUT,
                 }}
-                // `h-full` y no `min-h-full`: las pantallas que colocan algo
-                // en absoluto respecto al alto disponible —el pie del
-                // registro de series— necesitan que este contenedor tenga
-                // altura definida. Con `min-h-full` la cadena de porcentajes
-                // se rompe y el pie se va al final del contenido, fuera de la
-                // vista. Lo más alto que esto sigue desbordando y hace scroll
-                // en `main`, que es quien lo gestiona.
-                className="h-full"
+                // `min-h-full` y no `h-full`.
+                //
+                // Con `h-full` este contenedor medía exactamente el alto
+                // disponible aunque su contenido fuera mucho más largo, y eso
+                // rompía dos cosas en el móvil: las cabeceras `sticky` dejaban
+                // de pegarse en cuanto se pasaba de ese alto, y cualquier
+                // elemento colocado en absoluto contra el contenedor —el
+                // antiguo pie del registro de series— aparecía flotando en
+                // mitad de la pantalla en vez de abajo.
+                //
+                // `min-h-full` mantiene el suelo (una vista corta sigue
+                // ocupando la pantalla entera, sin franja vacía) y deja que lo
+                // largo crezca y haga scroll en `main`, que es quien lo
+                // gestiona.
+                className="min-h-full"
             >
                 {children}
             </motion.div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
     LayoutDashboard, FileText, Utensils, Trophy, User, Calendar, Medal, ShoppingBag,
 } from 'lucide-react';
@@ -6,6 +6,8 @@ import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { LoggerSetRow } from '../training/components/LoggerSetRow';
 import { SaveIndicator } from '../../components/ui/SaveIndicator';
 import { DangerConfirmModal } from '../../components/modals/DangerConfirmModal';
+import { AnchoredMenu } from '../../components/ui/AnchoredMenu';
+import { WEEKDAYS } from '../../types/training';
 import type { TrainingSet } from '../../types/training';
 
 /**
@@ -40,12 +42,19 @@ const mockSet = (over: Partial<TrainingSet> = {}): TrainingSet => ({
 
 export function MobilePreview() {
     const [danger, setDanger] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuAnchor = useRef<HTMLButtonElement>(null);
 
     const sets = [
         mockSet({ target_reps: '5', target_load: 140 }),
         mockSet({ target_reps: '5', target_load: 145, actual_reps: 5, actual_load: 145, actual_rpe: 8, is_completed: true }),
         mockSet({ target_reps: '5', target_load: 150, notes: 'La cadera se me va a la derecha' }),
-        mockSet({ target_reps: 'AMRAP', target_load: null, target_metric: 'rpe', target_rpe: '9' }),
+        // Las técnicas se miden aquí porque son la fila más alta: el chip y
+        // su detalle añaden un renglón bajo la rejilla, y a 375px hay que
+        // comprobar que no empuja el botón de "hecho" fuera de su sitio.
+        mockSet({ target_reps: '8', target_load: 100, set_type: 'dropset', set_detail: '-20% x2' }),
+        mockSet({ target_reps: '6', target_load: 120, set_type: 'cluster', set_detail: '3+3 / 20s', group_tag: 'A' }),
+        mockSet({ target_reps: 'AMRAP', target_load: null, target_metric: 'rpe', target_rpe: '9', set_type: 'amrap' }),
     ];
 
     const menuItems = [
@@ -66,9 +75,31 @@ export function MobilePreview() {
             title="Mi planificación"
             onLogout={() => {}}
         >
-            <div className="mx-auto flex h-full max-w-md flex-col">
-                <div className="flex-1 space-y-4 overflow-y-auto p-4 pb-40">
+            {/* Mismo armazón que WorkoutLogger: UN solo scroll —el de `main`—
+                y la cabecera pegada arriba. Si esto diverge, el banco deja de
+                medir lo que se envía. */}
+            <div className="mx-auto w-full max-w-md">
+                <div data-probe="cabecera" className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 pb-2 backdrop-blur">
+                    <div className="p-4">
+                        <h1 className="text-t-2xs font-bold uppercase tracking-wider text-anvil-red">Bloque de fuerza</h1>
+                    </div>
+                    <div data-probe="progreso" className="flex items-center gap-2.5 px-4 pt-1">
+                        <div className="h-1 flex-1 overflow-hidden rounded-pill bg-surface-sunken">
+                            <div className="h-full w-1/6 bg-brand" />
+                        </div>
+                        <span className="shrink-0 text-t-2xs font-bold uppercase tracking-widest tabular-nums text-ink-subtle">1/6</span>
+                        <SaveIndicator />
+                    </div>
+                </div>
+
+                <div className="space-y-4 p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] md:pb-8">
                     <div data-probe="tarjeta-ejercicio" className="overflow-hidden rounded-card border border-subtle bg-surface-canvas">
+                        {/* Cinta de encadenado, a ancho completo y arriba del
+                            todo, igual que en la tarjeta real. */}
+                        <div className="flex items-center gap-2 bg-[var(--info-quiet)] px-4 py-1.5">
+                            <span className="text-t-2xs font-black uppercase tracking-widest text-info">Superserie A</span>
+                            <span className="text-t-2xs text-info/70">· 1 de 2 · sin descanso, sigue al siguiente</span>
+                        </div>
                         <div className="flex items-start justify-between gap-2 bg-surface-raised p-4">
                             <h3 className="text-t-lg font-bold leading-tight text-ink">Sentadilla trasera</h3>
                         </div>
@@ -102,22 +133,37 @@ export function MobilePreview() {
                     >
                         Probar diálogo de borrado
                     </button>
-                </div>
 
-                <div data-probe="pie-sesion" className="pointer-events-none absolute inset-x-0 bottom-0 z-sticky px-3 pb-[calc(env(safe-area-inset-bottom)+4.75rem)] pt-3 md:pb-3">
-                    <div className="pointer-events-auto rounded-card border border-[var(--border-default)] bg-surface-raised/95 p-3 shadow-overlay backdrop-blur">
-                        <div className="mb-2.5 flex items-center justify-between gap-3">
-                            <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">1 de 4 series</span>
-                            <SaveIndicator />
-                        </div>
-                        <div className="mb-3 h-1 overflow-hidden rounded-pill bg-surface-sunken">
-                            <div className="h-full w-1/4 bg-brand" />
-                        </div>
-                        <button className="w-full rounded-field bg-brand py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink">
-                            Terminar el día
+                    {/* MENÚ ANCLADO DENTRO DE UN CONTENEDOR QUE RECORTA.
+                        El `overflow-hidden` de aquí reproduce el del acordeón
+                        de semana del constructor, que es lo que recortaba el
+                        desplegable de "agendar día" y dejaba los últimos días
+                        sin poder pulsarse. Si el menú vuelve a ser `absolute`,
+                        esta caja lo vuelve a partir y se ve al instante. */}
+                    <div data-probe="caja-que-recorta" className="h-16 overflow-hidden rounded-card border border-subtle p-3">
+                        <button
+                            ref={menuAnchor}
+                            onClick={() => setMenuOpen(v => !v)}
+                            aria-expanded={menuOpen}
+                            className="rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-semibold uppercase tracking-wide text-brand"
+                        >
+                            Agendar día
                         </button>
+                        <AnchoredMenu open={menuOpen} onClose={() => setMenuOpen(false)} anchorRef={menuAnchor}>
+                            {WEEKDAYS.map(d => (
+                                <button
+                                    key={d.key}
+                                    role="menuitem"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="flex w-full rounded-field px-2.5 py-2 text-left text-t-sm text-ink-muted hover:bg-brand hover:text-brand-ink"
+                                >
+                                    {d.label}
+                                </button>
+                            ))}
+                        </AnchoredMenu>
                     </div>
                 </div>
+
             </div>
 
             <DangerConfirmModal

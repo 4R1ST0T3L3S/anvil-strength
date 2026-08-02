@@ -45,6 +45,29 @@ const PLACEHOLDER = `4x6 70%
 4x6 80%
 3x5 60%`;
 
+/**
+ * Traduce el fallo de la tabla de plantillas a algo que se pueda arreglar.
+ *
+ * El caso real y repetido es que `progression_templates` no existe todavía:
+ * PostgREST responde 404 con "relation does not exist" o el código PGRST205,
+ * y sin traducir eso el coach solo ve "no se pudo guardar".
+ */
+function explainStorageError(err: unknown): string {
+    const raw = (err as { message?: string })?.message ?? '';
+
+    if (
+        raw.includes('does not exist') ||
+        raw.includes('PGRST205') ||
+        raw.includes('schema cache')
+    ) {
+        return 'falta la tabla de plantillas. Ejecuta database/MIGRACION_PENDIENTE.sql en Supabase.';
+    }
+    if (raw.includes('row-level security') || raw.includes('violates row-level')) {
+        return 'el servidor ha rechazado la escritura por permisos.';
+    }
+    return raw || 'error desconocido';
+}
+
 export function ProgressionModal({
     isOpen,
     onClose,
@@ -65,14 +88,25 @@ export function ProgressionModal({
     );
     const [saved, setSaved] = useState<Progression[]>([]);
     const [templateName, setTemplateName] = useState('');
+    /**
+     * Por qué no se pueden guardar plantillas, si es que no se puede.
+     *
+     * Antes esto se tragaba en un `catch` vacío: la lista salía vacía, el
+     * botón de guardar decía "No se pudo guardar la progresión" sin más, y no
+     * había forma de saber desde la interfaz que lo que faltaba era una
+     * migración. Se pierde media tarde buscando un fallo en el código que
+     * está en la base de datos.
+     */
+    const [storageError, setStorageError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!isOpen || !coachId) return;
         progressionService.list(coachId)
-            .then(setSaved)
+            .then((rows) => { setSaved(rows); setStorageError(null); })
             // Las plantillas guardadas son un atajo, no un requisito: si la
-            // tabla aún no está migrada, se puede escribir la progresión igual.
-            .catch(() => { /* tabla sin migrar */ });
+            // tabla aún no está migrada se puede escribir y aplicar la
+            // progresión igual, así que esto avisa pero no bloquea nada.
+            .catch((err) => setStorageError(explainStorageError(err)));
     }, [isOpen, coachId]);
 
     const { steps, errors } = useMemo(() => parseProgressionText(text), [text]);
@@ -91,9 +125,12 @@ export function ProgressionModal({
             const created = await progressionService.save(coachId, templateName, steps);
             setSaved((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
             setTemplateName('');
+            setStorageError(null);
             toast.success('Progresión guardada');
-        } catch {
-            toast.error('No se pudo guardar la progresión');
+        } catch (err) {
+            const reason = explainStorageError(err);
+            setStorageError(reason);
+            toast.error(`No se pudo guardar la progresión: ${reason}`, { duration: 8000 });
         }
     };
 
@@ -164,6 +201,22 @@ export function ProgressionModal({
                     {/* Plantillas guardadas */}
                     {coachId && (
                         <div className="space-y-2 border-t border-[var(--border-subtle)] pt-3">
+                            {/* Se dice ARRIBA y antes de intentarlo: descubrir
+                                que no se puede guardar después de escribir el
+                                nombre y pulsar el botón es la peor versión de
+                                este aviso. La progresión se puede aplicar
+                                igual, y eso también se dice. */}
+                            {storageError && (
+                                <p className="flex items-start gap-2 rounded-field bg-[var(--warning-quiet)] px-2.5 py-2 text-t-xs text-warning">
+                                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                    <span>
+                                        No se pueden guardar plantillas: {storageError}
+                                        <br />
+                                        La progresión de arriba sí se puede aplicar al bloque.
+                                    </span>
+                                </p>
+                            )}
+
                             <div className="flex gap-2">
                                 <input
                                     value={templateName}

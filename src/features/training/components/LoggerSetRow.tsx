@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Check, MessageSquare, MessageSquareText } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { TrainingSet, TargetMetric } from '../../../types/training';
+import { TrainingSet, TargetMetric, SET_TYPES } from '../../../types/training';
 import { writeQueue } from '../../../lib/offlineQueue';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
 
@@ -191,6 +191,7 @@ export function LoggerSetRow({
             : null;
 
     const hasNote = note.trim().length > 0;
+    const setType = SET_TYPES.find(t => t.key === set.set_type) ?? null;
 
     return (
         <div className={cn('transition-colors duration-fast', done && 'bg-[var(--success-quiet)]')}>
@@ -319,6 +320,25 @@ export function LoggerSetRow({
                     <Check size={17} strokeWidth={3.5} aria-hidden="true" />
                 </button>
             </div>
+
+            {/* TÉCNICA DE INTENSIDAD.
+                Debajo de la fila y no dentro: la rejilla ya va justa en un
+                móvil de 320px, y meter aquí un chip obligaría a robarle ancho
+                a las casillas de repeticiones o kilos, que se usan siempre.
+                Esto aparece en una serie de cada veinte.
+
+                Alineado con la primera casilla, no con el número de serie: se
+                lee como una nota al pie de ESA serie. */}
+            {setType && (
+                <div className="flex items-baseline gap-2 px-2.5 pb-2 pl-[1.75rem] sm:px-3 sm:pl-[2rem]">
+                    <span className="shrink-0 rounded-chip bg-[var(--warning-quiet)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-warning">
+                        {setType.short}
+                    </span>
+                    <span className="min-w-0 text-t-2xs leading-snug text-ink-subtle">
+                        {set.set_detail?.trim() || setType.hint}
+                    </span>
+                </div>
+            )}
 
             {/* La nota se despliega DEBAJO de su serie, no en un modal: sigue
                 estando claro a qué serie pertenece y no se pierde el sitio en

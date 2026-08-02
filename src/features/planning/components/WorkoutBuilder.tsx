@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary, TARGET_METRICS, WEEKDAYS, weekdayIndex, weekdayLabel } from '../../../types/training';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary, TARGET_METRICS, WEEKDAYS, weekdayIndex, weekdayLabel, SET_TYPES, GROUP_TAGS } from '../../../types/training';
 import type { TargetMetric, WeekMeta, Weekday } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
@@ -27,6 +27,7 @@ import { maxesService, findMax, type MaxesByExercise } from '../../../services/m
 import { toVolumeInput } from '../../../lib/volume/engine';
 import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
 import { Button } from '../../../components/ui/Button';
+import { AnchoredMenu } from '../../../components/ui/AnchoredMenu';
 import { transition, DURATION } from '../../../lib/motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
 
@@ -62,6 +63,54 @@ function sortSessions<T extends { day_number: number; day_of_week?: string | nul
         if (ib != null) return 1;
         return a.day_number - b.day_number;
     });
+}
+
+/**
+ * La serie tal y como viaja al servidor.
+ *
+ * Existe como función suelta porque se usa en DOS sitios que tienen que
+ * coincidir campo por campo: al guardar y al tomar la foto de lo que ya
+ * está guardado. Si divergieran, la comparación daría "cambiado" siempre y
+ * volveríamos a mandar el bloque entero en cada guardado.
+ */
+function savableSet(sessionExerciseId: string, set: TrainingSet) {
+    return {
+        id: set.id,
+        session_exercise_id: sessionExerciseId,
+        order_index: set.order_index,
+        target_reps: set.target_reps ?? null,
+        target_load: set.target_load ?? null,
+        target_metric: set.target_metric ?? 'kg',
+        target_rpe: set.target_rpe ?? null,
+        rest_seconds: set.rest_seconds ?? null,
+        is_video_required: set.is_video_required ?? false,
+        notes: set.notes ?? null,
+        set_type: set.set_type ?? null,
+        set_detail: set.set_detail ?? null,
+        group_tag: set.group_tag ?? null,
+    };
+}
+
+/**
+ * Traduce el error crudo de PostgREST a algo accionable.
+ *
+ * "canceling statement due to statement timeout" no le dice al coach ni que
+ * el problema no es suyo ni qué hacer. Los tres casos de aquí son los que se
+ * han visto de verdad en producción, y los tres tienen arreglo concreto.
+ */
+function explainSaveError(raw: string): string {
+    if (raw.includes('statement timeout')) {
+        return 'el servidor ha tardado demasiado. No es tu conexión. ' +
+            'Ejecuta database/MIGRACION_PENDIENTE.sql, que crea los índices que faltan.';
+    }
+    if (raw.includes('PGRST204') || (raw.includes('column') && raw.includes('does not exist'))) {
+        return `falta una columna en la base de datos (${raw}). ` +
+            'Ejecuta database/MIGRACION_PENDIENTE.sql.';
+    }
+    if (raw.includes('row-level security') || raw.includes('violates row-level')) {
+        return 'el servidor ha rechazado el cambio por permisos. ¿Sigues siendo el entrenador de este atleta?';
+    }
+    return raw;
 }
 
 /**
@@ -174,6 +223,15 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    /**
+     * Foto de cada serie tal y como está EN EL SERVIDOR, serializada.
+     *
+     * Es lo que permite mandar al guardar solo lo que ha cambiado. Va en una
+     * `ref` y no en el estado porque nadie la pinta: cambiarla no debe
+     * provocar un render, y `handleSaveChanges` necesita leer el valor de
+     * AHORA justo después de un `await`.
+     */
+    const savedSnapshot = useRef<Map<string, string>>(new Map());
     // Expanded weeks state - default to collapsed
     const [expandedWeeks, setExpandedWeeks] = useState<number[]>([]);
 
@@ -489,6 +547,16 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             setWeekMeta(meta);
             setBlockData({ ...block, sessions: formattedSessions });
 
+            // Punto de partida de "qué ha cambiado". Lo que acaba de llegar
+            // del servidor es, por definición, lo que hay guardado.
+            savedSnapshot.current = new Map(
+                formattedSessions.flatMap(session =>
+                    session.exercises.flatMap(ex =>
+                        ex.sets.map(set => [set.id, JSON.stringify(savableSet(ex.id, set))] as const)
+                    )
+                )
+            );
+
         } catch (err) {
             console.error(err);
             toast.error("Error cargando el mesociclo");
@@ -518,44 +586,71 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             // PostgREST rechazara el lote completo con PGRST204 y no se
             // guardara ni una serie.
             const allSets = blockData.sessions.flatMap(session =>
-                session.exercises.flatMap(ex =>
-                    ex.sets.map(set => ({
-                        id: set.id,
-                        session_exercise_id: ex.id,
-                        order_index: set.order_index,
-                        target_reps: set.target_reps ?? null,
-                        target_load: set.target_load ?? null,
-                        target_metric: set.target_metric ?? 'kg',
-                        target_rpe: set.target_rpe ?? null,
-                        rest_seconds: set.rest_seconds ?? null,
-                        is_video_required: set.is_video_required ?? false,
-                        notes: set.notes ?? null,
-                    }))
-                )
+                session.exercises.flatMap(ex => ex.sets.map(set => savableSet(ex.id, set)))
             );
 
-            if (allSets.length === 0) {
+            /**
+             * SOLO LAS SERIES QUE HAN CAMBIADO.
+             *
+             * Esto mandaba el bloque ENTERO en cada guardado: ocho semanas
+             * por cuatro días por seis ejercicios por cuatro series son casi
+             * 800 filas, y la política RLS de `training_sets` recorre
+             * session_exercises → training_sessions → training_blocks POR
+             * CADA UNA. El servidor abortaba la sentencia a medias con
+             * "canceling statement due to statement timeout" — no es la
+             * conexión del coach, es Postgres cortando por tiempo.
+             *
+             * Retocar una serie manda ahora una fila, no ochocientas.
+             */
+            const changed = allSets.filter(set => {
+                const previous = savedSnapshot.current.get(set.id);
+                return !previous || previous !== JSON.stringify(set);
+            });
+
+            if (changed.length === 0) {
                 setHasUnsavedChanges(false);
+                toast.success('No hay cambios que guardar');
                 return;
             }
 
-            // Batch UPSERT
-            const { error } = await supabase
-                .from('training_sets')
-                .upsert(allSets, { onConflict: 'id' });
+            /**
+             * Y en lotes, porque un cambio grande sigue siendo grande:
+             * aplicar una progresión o pegar una semana toca cientos de
+             * series de golpe y volvería a plantarse en el mismo timeout.
+             *
+             * 100 filas es el tamaño en el que el coste por lote sigue
+             * cómodamente por debajo del límite y el número de viajes no se
+             * dispara. Los lotes van EN SERIE a propósito: en paralelo se
+             * pisan bloqueando las mismas filas y Postgres los serializa
+             * igual, pero con contención de por medio.
+             */
+            const BATCH = 100;
+            for (let i = 0; i < changed.length; i += BATCH) {
+                const { error } = await supabase
+                    .from('training_sets')
+                    .upsert(changed.slice(i, i + BATCH), { onConflict: 'id' });
 
-            if (error) throw error;
+                if (error) throw error;
+            }
 
-            toast.success("Progreso guardado");
+            // La foto de "lo que hay guardado" se actualiza al terminar, no
+            // al empezar: si el guardado falla a mitad, el siguiente intento
+            // tiene que volver a mandar lo que no llegó a subir.
+            savedSnapshot.current = new Map(allSets.map(s => [s.id, JSON.stringify(s)]));
+
+            toast.success(
+                changed.length === allSets.length
+                    ? 'Progreso guardado'
+                    : `Guardadas ${changed.length} ${changed.length === 1 ? 'serie' : 'series'}`
+            );
             setHasUnsavedChanges(false);
         } catch (err) {
             console.error('Error guardando series:', err);
             // El mensaje real de PostgREST importa: distingue "falta la
             // columna target_metric" (migración pendiente) de un rechazo de
             // RLS. Sin él, el fallo era indepurable desde la interfaz.
-            const detail =
-                (err as { message?: string })?.message ?? 'error desconocido';
-            toast.error(`Error al guardar cambios: ${detail}`);
+            const raw = (err as { message?: string })?.message ?? 'error desconocido';
+            toast.error(`Error al guardar cambios: ${explainSaveError(raw)}`, { duration: 8000 });
         } finally {
             setIsSaving(false);
         }
@@ -2419,6 +2514,7 @@ const DayCard = memo(function DayCard({
     // Agendar es opcional: sin día asignado la tarjeta se sigue llamando
     // "Día 1", que es como funcionaba antes de poder ponerles fecha.
     const [pickerOpen, setPickerOpen] = useState(false);
+    const pickerAnchor = useRef<HTMLButtonElement>(null);
     const scheduled = weekdayLabel(session.day_of_week);
 
     return (
@@ -2437,8 +2533,10 @@ const DayCard = memo(function DayCard({
             {/* Agenda. Va fuera del botón principal por lo mismo. */}
             <div className="absolute left-3 top-3 z-10">
                 <button
+                    ref={pickerAnchor}
                     onClick={() => setPickerOpen(v => !v)}
                     aria-expanded={pickerOpen}
+                    aria-haspopup="menu"
                     title="Agendar en un día de la semana"
                     className={`rounded-chip px-1.5 py-0.5 text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
                         ? 'bg-brand-quiet font-semibold text-brand'
@@ -2448,32 +2546,43 @@ const DayCard = memo(function DayCard({
                     {scheduled || `Día ${session.day_number}`}
                 </button>
 
-                {pickerOpen && (
-                    <div className="absolute left-0 top-full z-dropdown mt-1.5 w-44 rounded-card bg-surface-overlay p-1.5 shadow-overlay">
-                        <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
-                            Agendar en
-                        </p>
-                        {WEEKDAYS.map(d => (
-                            <button
-                                key={d.key}
-                                onClick={() => { onChangeWeekday(session.id, d.key); setPickerOpen(false); }}
-                                className={`flex w-full items-center justify-between rounded-field px-2.5 py-1.5 text-left text-t-sm transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink ${session.day_of_week === d.key ? 'font-semibold text-ink' : 'text-ink-muted'
-                                    }`}
-                            >
-                                {d.label}
-                                {session.day_of_week === d.key && <Check size={13} aria-hidden="true" />}
-                            </button>
-                        ))}
-                        {session.day_of_week && (
-                            <button
-                                onClick={() => { onChangeWeekday(session.id, null); setPickerOpen(false); }}
-                                className="mt-1 w-full rounded-field border-t border-[var(--border-subtle)] px-2.5 py-1.5 text-left text-t-xs text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
-                            >
-                                Quitar día — usar «Día {session.day_number}»
-                            </button>
-                        )}
-                    </div>
-                )}
+                {/* En portal, no en `absolute`.
+                    Este menú vive dentro del acordeón de la semana, que lleva
+                    `overflow-hidden` para poder animar su plegado. Un
+                    desplegable absoluto se recortaba contra ese borde: los
+                    últimos días de la lista quedaban fuera y no había forma de
+                    asignar jueves, viernes, sábado ni domingo. `z-index` no lo
+                    arreglaba porque `overflow` recorta, no ordena. */}
+                <AnchoredMenu
+                    open={pickerOpen}
+                    onClose={() => setPickerOpen(false)}
+                    anchorRef={pickerAnchor}
+                >
+                    <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                        Agendar en
+                    </p>
+                    {WEEKDAYS.map(d => (
+                        <button
+                            key={d.key}
+                            role="menuitem"
+                            onClick={() => { onChangeWeekday(session.id, d.key); setPickerOpen(false); }}
+                            className={`flex w-full items-center justify-between rounded-field px-2.5 py-2 text-left text-t-sm transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink ${session.day_of_week === d.key ? 'font-semibold text-ink' : 'text-ink-muted'
+                                }`}
+                        >
+                            {d.label}
+                            {session.day_of_week === d.key && <Check size={13} aria-hidden="true" />}
+                        </button>
+                    ))}
+                    {session.day_of_week && (
+                        <button
+                            role="menuitem"
+                            onClick={() => { onChangeWeekday(session.id, null); setPickerOpen(false); }}
+                            className="mt-1 w-full rounded-field border-t border-[var(--border-subtle)] px-2.5 py-2 text-left text-t-xs text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
+                        >
+                            Quitar día — usar «Día {session.day_number}»
+                        </button>
+                    )}
+                </AnchoredMenu>
             </div>
 
             <button
@@ -3758,7 +3867,8 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                     const repsVal = getRepsCount(set.target_reps);
 
                     return (
-                        <div key={set.id} className="grid grid-cols-[1fr_1fr_1.3fr_40px] gap-2 items-center group/row">
+                        <div key={set.id} className="group/row">
+                            <div className="grid grid-cols-[1fr_1fr_1.3fr_40px] gap-2 items-center">
                             <CompactInput
                                 value={seriesVal}
                                 onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(v as string, repsVal))}
@@ -3813,6 +3923,13 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                                     <button onClick={() => onRemoveSet(set.id)} className="text-ink-faint hover:text-danger p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
                                 </span>
                             </div>
+                            </div>
+
+                            {/* Técnica de intensidad de esta serie. Plegada
+                                mientras no haya ninguna: la lleva una serie de
+                                cada veinte y desplegarla siempre metería cinco
+                                filas de ruido en cada ejercicio. */}
+                            <SetTechniqueEditor set={set} onUpdateSet={onUpdateSet} />
                         </div>
                     );
                 })}
@@ -3836,6 +3953,120 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                     </button>
                 </div>
             </div>
+        </div>
+    );
+}
+
+// ==========================================
+// SUB-COMPONENT: TÉCNICA DE UNA SERIE
+// ==========================================
+/**
+ * Dropset, rest-pause, cluster, myo-reps o AMRAP para UNA serie.
+ *
+ * POR QUÉ POR SERIE Y NO POR EJERCICIO
+ * Un dropset casi nunca se hace en todas las series: se hace en la última.
+ * Ponerlo a nivel de ejercicio obligaría al coach a partir el ejercicio en
+ * dos para pautar "3 series normales y una al fallo con bajadas", que es el
+ * caso corriente.
+ *
+ * POR QUÉ ARRANCA PLEGADO
+ * Diecinueve de cada veinte series son normales. Un selector desplegado en
+ * todas metería cinco filas de ruido por ejercicio y empujaría hacia abajo
+ * lo que sí se toca siempre —series, repeticiones y carga—.
+ */
+function SetTechniqueEditor({
+    set,
+    onUpdateSet,
+}: {
+    set: TrainingSet;
+    onUpdateSet: (setId: string, field: keyof TrainingSet, value: string | number | null) => void;
+}) {
+    const active = SET_TYPES.find(t => t.key === set.set_type) ?? null;
+    // Abierto si ya tiene técnica o encadenado: lo que está puesto se ve sin
+    // tener que descubrir que hay algo escondido detrás de un botón.
+    const [open, setOpen] = useState(Boolean(set.set_type || set.group_tag));
+
+    return (
+        <div className="mt-0.5">
+            {!open ? (
+                <button
+                    onClick={() => setOpen(true)}
+                    className="ml-1 text-t-2xs text-ink-faint opacity-0 transition-opacity duration-fast group-hover/row:opacity-100 hover:text-ink-muted focus-visible:opacity-100"
+                >
+                    + técnica
+                </button>
+            ) : (
+                <div className="mt-1 space-y-1.5 rounded-field border border-[var(--border-subtle)] bg-black/20 p-1.5">
+                    <div className="flex flex-wrap items-center gap-1">
+                        {SET_TYPES.map(t => {
+                            const on = set.set_type === t.key;
+                            return (
+                                <button
+                                    key={t.key}
+                                    title={t.hint}
+                                    // Volver a pulsar la activa la quita: sin
+                                    // eso, marcar una técnica por error no
+                                    // tendría deshacer.
+                                    onClick={() => onUpdateSet(set.id, 'set_type', on ? null : t.key)}
+                                    className={`rounded-chip px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                        ? 'bg-warning text-[var(--surface-sunken)]'
+                                        : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+                                        }`}
+                                >
+                                    {t.short}
+                                </button>
+                            );
+                        })}
+
+                        {/* Encadenado. Separado por una línea porque responde a
+                            otra pregunta: la técnica es qué se hace DENTRO de
+                            la serie, esto es con qué otro ejercicio se
+                            alterna. */}
+                        <span className="mx-0.5 h-3.5 w-px bg-[var(--border-default)]" aria-hidden="true" />
+                        {GROUP_TAGS.map(tag => {
+                            const on = set.group_tag === tag;
+                            return (
+                                <button
+                                    key={tag}
+                                    title={`Encadenar con los ejercicios marcados ${tag} en este día`}
+                                    onClick={() => onUpdateSet(set.id, 'group_tag', on ? null : tag)}
+                                    className={`rounded-chip px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                        ? 'bg-info text-[var(--surface-sunken)]'
+                                        : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+                                        }`}
+                                >
+                                    {tag}
+                                </button>
+                            );
+                        })}
+
+                        {!set.set_type && !set.group_tag && (
+                            <button
+                                onClick={() => setOpen(false)}
+                                className="ml-auto p-0.5 text-ink-faint transition-colors duration-fast hover:text-ink"
+                                title="Ocultar"
+                            >
+                                <X size={11} aria-hidden="true" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* El detalle solo tiene sentido con una técnica elegida.
+                        El marcador de posición es el ejemplo de ESA técnica:
+                        sin él cada coach inventa su notación y el atleta acaba
+                        leyendo algo que no entiende. */}
+                    {active && (
+                        <input
+                            type="text"
+                            defaultValue={set.set_detail ?? ''}
+                            key={`${set.id}_detail`}
+                            onBlur={(e) => onUpdateSet(set.id, 'set_detail', e.target.value.trim() || null)}
+                            placeholder={active.detailHint}
+                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 py-1 text-t-2xs text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
 }
