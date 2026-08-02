@@ -215,9 +215,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                         className="text-d-lg font-black uppercase text-white"
                     >
-                        Aquí se forjan
-                        <br />
-                        campeones
+                        Anvil Strength
                     </motion.h1>
 
                     <motion.p

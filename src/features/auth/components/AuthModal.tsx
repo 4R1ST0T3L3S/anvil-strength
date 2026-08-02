@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Mail, Lock, User as UserIcon, Loader } from 'lucide-react';
+import { X, Mail, Lock, User as UserIcon, Loader, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getAuthCallbackUrl } from '../../../lib/authRedirect';
 
@@ -17,6 +17,26 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [isCheckingConnectivity, setIsCheckingConnectivity] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState<'unknown' | 'online' | 'offline'>('unknown');
+
+  // Verificar conectividad con Supabase cuando hay error de red
+  const checkSupabaseConnectivity = async () => {
+    setIsCheckingConnectivity(true);
+    try {
+      const response = await fetch('https://ihcyuoczbmjxfinxvzra.supabase.co/rest/v1/', {
+        method: 'GET',
+        headers: {
+          'apikey': 'sb_publishable_W_yJ-b6yTtx4Qnc4_G9M-w_aYh1agiZ',
+        }
+      });
+      setSupabaseStatus(response.ok ? 'online' : 'offline');
+    } catch {
+      setSupabaseStatus('offline');
+    } finally {
+      setIsCheckingConnectivity(false);
+    }
+  };
 
   // El modal se monta una vez y se reutiliza: sin esto, pulsar "Registrarse"
   // después de haber abierto "Entrar" seguía enseñando el formulario de login.
@@ -25,6 +45,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setIsLogin(initialMode === 'login');
       setError('');
       setNotice('');
+      setSupabaseStatus('unknown');
     }
   }, [isOpen, initialMode]);
 
@@ -149,11 +170,27 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
     } catch (err: unknown) {
       console.error('Error capturado en handleSubmit:', err);
-      // Translate common Supabase errors to Spanish friendly messages
+
       let msg = err instanceof Error ? err.message : 'Error desconocido';
-      if (msg.includes('Invalid login credentials')) msg = 'Email o contraseña incorrectos.';
+
+      // Translate common Supabase errors to Spanish friendly messages
+      if (msg.includes('Invalid login credentials')) {
+        msg = 'Email o contraseña incorrectos.';
+      } else if (msg.includes('Failed to fetch') || msg.includes('fetch failed')) {
+        msg = 'Sin conexión. Verifica tu internet o que la URL de Supabase sea accesible.';
+      } else if (msg.includes('CORS')) {
+        msg = 'Error de permiso entre el navegador y el servidor. Verifica la configuración CORS de Supabase.';
+      } else if (msg.includes('timeout')) {
+        msg = 'La solicitud tardó demasiado. Intenta de nuevo.';
+      }
 
       setError(msg || 'Error de conexión con el servidor');
+
+      // Si es un error de red, verificar conectividad con Supabase
+      if (msg.includes('Failed to fetch') || msg.includes('fetch failed')) {
+        await checkSupabaseConnectivity();
+      }
+
       setIsLoading(false);
     }
   };
@@ -180,8 +217,40 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
         </div>
 
         {error && (
-          <div data-testid="auth-error-message" className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold rounded-lg">
-            {error}
+          <div>
+            <div data-testid="auth-error-message" className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold rounded-lg">
+              {error}
+            </div>
+
+            {(error.includes('Sin conexión') || error.includes('permiso')) && (
+              <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-3 mb-6 text-xs rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-bold mb-1">Diagnóstico:</p>
+                    <p className="mb-2">✓ Verifica que tienes conexión a internet</p>
+                    <p className="mb-2">✓ Intenta desde otra red WiFi o datos móviles</p>
+                    <p className="mb-2">✓ Si sigue fallando, el servidor podría estar caído</p>
+                    {supabaseStatus === 'unknown' && (
+                      <button
+                        type="button"
+                        onClick={checkSupabaseConnectivity}
+                        disabled={isCheckingConnectivity}
+                        className="text-amber-300 hover:text-amber-200 underline font-bold mt-2"
+                      >
+                        {isCheckingConnectivity ? 'Verificando...' : 'Verificar servidor'}
+                      </button>
+                    )}
+                    {supabaseStatus === 'online' && (
+                      <p className="text-emerald-400 font-bold mt-2">✓ Servidor online. Es un problema de tu red.</p>
+                    )}
+                    {supabaseStatus === 'offline' && (
+                      <p className="text-red-400 font-bold mt-2">✗ Servidor no responde. Intenta más tarde.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
