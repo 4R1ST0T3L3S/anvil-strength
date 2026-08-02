@@ -1156,11 +1156,16 @@ export const trainingService = {
                     session_id: targetSessionId,
                     exercise_id: ex.exercise_id,
                     order_index: ex.order_index,
+                    /**
+                     * Solo se copian los campos que session_exercises realmente tiene.
+                     * `rpe`, `velocity_avg` y `rest_seconds` pertenecen a training_sets,
+                     * no a ejercicios. El error PGRST204 ("column not found") salía porque
+                     * supabase-js arma el parámetro `columns` de la petición con las claves
+                     * del objeto aunque valgan undefined, y PostgREST rechaza el INSERT
+                     * completo por columnas que no existen.
+                     */
                     notes: ex.notes,
                     variant_name: ex.variant_name,
-                    rpe: ex.rpe,
-                    velocity_avg: ex.velocity_avg,
-                    rest_seconds: ex.rest_seconds,
                 });
             }
         }
