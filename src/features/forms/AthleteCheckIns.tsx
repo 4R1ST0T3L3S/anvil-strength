@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ClipboardCheck, X, Check, Loader, CalendarCheck } from 'lucide-react';
+import { ClipboardCheck, X, Check, Loader, CalendarCheck, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-    formsService, getPeriodKey,
+    formsService, getPeriodKey, mergeQuestions,
     FormType, FormQuestion, FormAnswer
 } from '../../services/formsService';
 import { chatService } from '../../services/chatService';
+import { CheckInAnswerFields, AnswerValues } from './CheckInAnswerFields';
 
 // ============ Tarjeta de acceso (para el home del atleta) ============
 
@@ -89,9 +90,10 @@ function CheckInFormModal({
     onSubmitted: () => void;
 }) {
     const [questions, setQuestions] = useState<FormQuestion[]>([]);
-    const [values, setValues] = useState<Record<string, string | number | null>>({});
+    const [values, setValues] = useState<AnswerValues>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [editedByCoach, setEditedByCoach] = useState(false);
 
     useEffect(() => {
         const load = async () => {
@@ -99,14 +101,17 @@ function CheckInFormModal({
                 // Plantilla del coach del atleta (o predefinida)
                 const coach = await chatService.getMyCoach(athleteId).catch(() => null);
                 const qs = await formsService.getTemplate(coach?.id || null, type);
-                setQuestions(qs);
 
                 // Precargar respuesta existente del periodo (permite editar)
                 const existing = await formsService.getResponse(athleteId, type, getPeriodKey(type));
+                // El coach puede haber añadido preguntas que ya no están en la
+                // plantilla; se conservan para no perder lo respondido.
+                setQuestions(mergeQuestions(qs, existing?.answers));
                 if (existing) {
-                    const vals: Record<string, string | number | null> = {};
+                    const vals: AnswerValues = {};
                     existing.answers.forEach(a => { vals[a.id] = a.value; });
                     setValues(vals);
+                    setEditedByCoach(!!existing.updated_by && existing.updated_by !== athleteId);
                 }
             } catch (e) {
                 console.error(e);
@@ -124,7 +129,7 @@ function CheckInFormModal({
                 ...q,
                 value: values[q.id] ?? null
             }));
-            await formsService.submitResponse(athleteId, type, getPeriodKey(type), answers);
+            await formsService.submitResponse(athleteId, type, getPeriodKey(type), answers, athleteId);
             toast.success('Check-in enviado. ¡Tu coach lo verá!');
             onSubmitted();
         } catch (e) {
@@ -160,54 +165,19 @@ function CheckInFormModal({
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                        {editedByCoach && (
+                            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-anvil-red bg-anvil-red/10 border border-anvil-red/20 rounded-xl px-3 py-2">
+                                <UserCog size={13} /> Tu coach ha modificado este check-in
+                            </p>
+                        )}
                         {loading ? (
                             <div className="flex justify-center py-10"><Loader className="animate-spin text-anvil-red" size={24} /></div>
                         ) : (
-                            questions.map(q => (
-                                <div key={q.id}>
-                                    <label className="block text-sm font-bold text-white mb-3">{q.label}</label>
-
-                                    {q.qtype === 'scale' && (
-                                        <div className="grid grid-cols-11 gap-1">
-                                            {Array.from({ length: 11 }, (_, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => setValues(v => ({ ...v, [q.id]: i }))}
-                                                    className={`aspect-square rounded-lg text-xs font-black transition-all ${
-                                                        values[q.id] === i
-                                                            ? 'bg-anvil-red text-white scale-110 shadow-lg shadow-anvil-red/30'
-                                                            : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'
-                                                    }`}
-                                                >
-                                                    {i}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {q.qtype === 'number' && (
-                                        <input
-                                            type="number"
-                                            inputMode="numeric"
-                                            value={values[q.id] ?? ''}
-                                            onChange={(e) => setValues(v => ({ ...v, [q.id]: e.target.value === '' ? null : Number(e.target.value) }))}
-                                            placeholder="0"
-                                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
-                                        />
-                                    )}
-
-                                    {q.qtype === 'text' && (
-                                        <textarea
-                                            value={(values[q.id] as string) ?? ''}
-                                            onChange={(e) => setValues(v => ({ ...v, [q.id]: e.target.value }))}
-                                            rows={3}
-                                            maxLength={1000}
-                                            placeholder="Escribe aquí..."
-                                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors resize-none"
-                                        />
-                                    )}
-                                </div>
-                            ))
+                            <CheckInAnswerFields
+                                questions={questions}
+                                values={values}
+                                onChange={(id, value) => setValues(v => ({ ...v, [id]: value }))}
+                            />
                         )}
                     </div>
 

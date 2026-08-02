@@ -20,6 +20,9 @@ export interface FormResponse {
     period_key: string;
     answers: FormAnswer[];
     created_at: string;
+    /** Última persona que guardó la respuesta (el atleta o su coach). */
+    updated_by?: string | null;
+    updated_at?: string | null;
 }
 
 // ============ Plantillas predefinidas ============
@@ -52,6 +55,30 @@ export function getPeriodKey(type: FormType, date = new Date()): string {
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
     return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+/** Texto legible de un periodo: '2026-08-02' → 'domingo, 2 de agosto'; '2026-W31' → 'Semana 31 · 2026'. */
+export function periodLabel(type: FormType, periodKey: string): string {
+    if (type === 'daily') {
+        const d = new Date(`${periodKey}T00:00:00`);
+        if (Number.isNaN(d.getTime())) return periodKey;
+        return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    const [year, week] = periodKey.split('-W');
+    return week ? `Semana ${week} · ${year}` : periodKey;
+}
+
+/**
+ * Preguntas a mostrar al editar una respuesta: las de la plantilla actual del coach,
+ * más las que solo existan en la respuesta guardada (preguntas antiguas ya retiradas
+ * de la plantilla, para no perder lo que el atleta contestó en su día).
+ */
+export function mergeQuestions(template: FormQuestion[], answers: FormAnswer[] = []): FormQuestion[] {
+    const inTemplate = new Set(template.map(q => q.id));
+    const legacy = answers
+        .filter(a => !inTemplate.has(a.id))
+        .map(({ id, label, qtype }) => ({ id, label, qtype }));
+    return [...template, ...legacy];
 }
 
 export const formsService = {
@@ -107,13 +134,36 @@ export const formsService = {
         return data as FormResponse | null;
     },
 
-    async submitResponse(athleteId: string, type: FormType, periodKey: string, answers: FormAnswer[]): Promise<void> {
+    /**
+     * Guarda (crea o sobreescribe) la respuesta de un periodo.
+     * `editorId` es quien guarda: el propio atleta o su coach editándole el check-in.
+     */
+    async submitResponse(
+        athleteId: string,
+        type: FormType,
+        periodKey: string,
+        answers: FormAnswer[],
+        editorId?: string
+    ): Promise<void> {
         const { error } = await supabase
             .from('form_responses')
             .upsert(
-                { athlete_id: athleteId, type, period_key: periodKey, answers },
+                {
+                    athlete_id: athleteId,
+                    type,
+                    period_key: periodKey,
+                    answers,
+                    updated_by: editorId ?? athleteId,
+                    updated_at: new Date().toISOString()
+                },
                 { onConflict: 'athlete_id, type, period_key' }
             );
+        if (error) throw error;
+    },
+
+    /** Borra una respuesta (el atleta la suya, el coach las de sus atletas). */
+    async deleteResponse(id: string): Promise<void> {
+        const { error } = await supabase.from('form_responses').delete().eq('id', id);
         if (error) throw error;
     },
 

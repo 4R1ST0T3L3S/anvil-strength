@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare } from 'lucide-react';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare, ClipboardCheck } from 'lucide-react';
+import { useUser } from '../../../hooks/useUser';
+import { CoachCheckInsTab } from '../../forms/CoachCheckInsTab';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
 import CoachVbtTab from './CoachVbtTab';
@@ -16,9 +18,10 @@ interface CoachAthleteDetailsProps {
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'competitions' | 'vbt' | 'nutrition';
+type Tab = 'planning' | 'competitions' | 'vbt' | 'nutrition' | 'checkins';
 
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
+    const { data: currentUser } = useUser();
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
@@ -155,6 +158,14 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                             <Apple size={14} className="md:w-4 md:h-4" /> <span>Nutrición</span>
                         </button>
                         <button
+                            onClick={() => setActiveTab('checkins')}
+                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                activeTab === 'checkins' ? 'bg-[#a855f7] text-black shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-ink-muted hover:text-white'
+                            }`}
+                        >
+                            <ClipboardCheck size={14} className="md:w-4 md:h-4" /> <span>Check-ins</span>
+                        </button>
+                        <button
                             onClick={() => setActiveTab('competitions')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
                                 activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-ink-muted hover:text-white'
@@ -288,7 +299,14 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                     </div>
                 )}
 
-                {/* 5. NUTRICIÓN */}
+                {/* 5. CHECK-INS (el coach los consulta y también los rellena o corrige) */}
+                {activeTab === 'checkins' && currentUser && (
+                    <div className="mx-auto w-full max-w-7xl pb-6">
+                        <CoachCheckInsTab athleteId={athleteId} coachId={currentUser.id} />
+                    </div>
+                )}
+
+                {/* 6. NUTRICIÓN */}
                 {activeTab === 'nutrition' && (
                     <div className="mx-auto w-full max-w-7xl pb-6">
                         <NutritionPlanEditor athleteId={athleteId} />
