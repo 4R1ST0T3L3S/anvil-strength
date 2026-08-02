@@ -139,6 +139,16 @@ export interface TrainingSession {
     date?: string | null; // Optional specific date
     /** Día de la semana agendado. NULL = el día se identifica por day_number. */
     day_of_week?: Weekday | null;
+    /**
+     * Cuándo cerró el atleta este día. NULL = todavía no lo ha dado por
+     * terminado. Es una marca de tiempo y no un booleano porque "cuándo"
+     * responde a preguntas que "sí/no" no puede: a qué hora entrena, si
+     * entrena el día que le toca, cuántos días lleva sin aparecer.
+     * Ver database/admin_role_and_session_completion.sql.
+     */
+    completed_at?: string | null;
+    /** Cómo fue el día, en palabras del atleta. Distinto de las notas por serie. */
+    athlete_notes?: string | null;
     created_at: string;
     // Relations (Optional for UI rendering)
     exercises?: SessionExercise[];
@@ -209,6 +219,14 @@ export interface TrainingSet {
     actual_reps?: number | null;
     actual_load?: number | null;
     actual_rpe?: number | null; // Precise RPE (e.g. 8.5)
+    /**
+     * La serie está hecha. La columna existe en la base de datos desde el
+     * esquema original pero el registro no la usaba: deducía "hecha" de
+     * `actual_reps && actual_load`, lo que hacía imposible cerrar una serie
+     * corporal —sin kilos— y daba por hecha una en la que solo se había
+     * tocado el peso.
+     */
+    is_completed?: boolean | null;
 
     // Feedback / Media
     is_video_required: boolean;

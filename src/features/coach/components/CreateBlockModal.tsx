@@ -126,11 +126,11 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#0a0a0a] w-full max-w-4xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
+                    className="relative bg-surface-sunken w-full max-w-4xl rounded-3xl border border-[var(--border-default)] shadow-2xl overflow-hidden"
                 >
-                    <div className="flex items-center justify-between p-8 border-b border-white/5 bg-[#0a0a0a]">
+                    <div className="flex items-center justify-between p-8 border-b border-subtle bg-surface-sunken">
                         <h2 className="text-3xl font-black uppercase text-white italic tracking-tighter">Nuevo Bloque</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
                             <X size={24} />
                         </button>
                     </div>
@@ -141,7 +141,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                             <div className="flex-1 space-y-8">
                                 {/* Name Input */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                         Nombre del Bloque <span className="text-anvil-red">*</span>
                                     </label>
                                     <input
@@ -149,15 +149,15 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="Ej: Bloque Fuerza Enero"
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-bold"
+                                        className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-card px-6 py-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-bold"
                                         autoFocus
                                     />
                                 </div>
 
                                 {/* Description */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
-                                        Descripción y objetivos <span className="text-gray-600 normal-case font-medium">(el atleta la verá)</span>
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                                        Descripción y objetivos <span className="text-ink-subtle normal-case font-medium">(el atleta la verá)</span>
                                     </label>
                                     <textarea
                                         value={description}
@@ -165,13 +165,13 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                         rows={3}
                                         maxLength={1000}
                                         placeholder="Objetivos del bloque, enfoque de las semanas, por qué se hacen ciertas cosas..."
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-6 py-4 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all resize-none"
+                                        className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-card px-6 py-4 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all resize-none"
                                     />
                                 </div>
 
                                 {/* Color Picker */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                         Color del Bloque
                                     </label>
                                     <div className="flex items-center gap-3">
@@ -195,7 +195,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                     <button
                                         type="button"
                                         onClick={onClose}
-                                        className="flex-1 px-4 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-wider text-sm transition-colors"
+                                        className="flex-1 px-4 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-ink-muted font-bold uppercase tracking-wider text-sm transition-colors"
                                     >
                                         Cancelar
                                     </button>
@@ -219,7 +219,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                             {/* RIGHT COLUMN: Calendar */}
                             <div className="flex-1">
                                 <div className="space-y-3 h-full flex flex-col">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider flex items-center gap-2">
                                         <CalendarIcon size={14} /> Duración del Bloque
                                     </label>
                                     <div className="flex-1 min-h-[400px]">

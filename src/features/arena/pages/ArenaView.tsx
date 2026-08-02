@@ -197,7 +197,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                     </div>
                     <div>
                         <h1 className="text-lg md:text-xl font-black uppercase italic tracking-tighter leading-none">La Arena</h1>
-                        <p className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Anvil Strength</p>
+                        <p className="text-t-2xs font-bold text-gray-500 uppercase tracking-widest mt-1">Anvil Strength</p>
                     </div>
                 </div>
 
@@ -277,7 +277,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                     <div className="space-y-6 w-full pr-4 md:pr-0">
                         {/* Mobile Balance Card */}
                         <div className="md:hidden bg-gradient-to-br from-yellow-500/20 to-transparent border border-yellow-500/20 p-6 rounded-[2rem] text-center">
-                            <span className="text-[9px] font-black text-yellow-500/60 uppercase tracking-widest block mb-1">TU SALDO</span>
+                            <span className="text-t-2xs font-black text-yellow-500/60 uppercase tracking-widest block mb-1">TU SALDO</span>
                             <div className="text-4xl font-black text-white italic tracking-tighter mb-1">
                                 {pointsData?.balance?.toLocaleString() || 0}
                             </div>

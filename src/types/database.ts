@@ -1,4 +1,8 @@
-export type Role = 'coach' | 'athlete' | 'nutritionist' | 'visitor';
+/**
+ * `admin` no existía como rol: la administración se comprobaba con una lista
+ * de correos escrita a mano en seis ficheros. Ver src/lib/roles.ts.
+ */
+export type Role = 'coach' | 'athlete' | 'nutritionist' | 'visitor' | 'admin';
 
 export interface UserPoints {
     user_id: string;

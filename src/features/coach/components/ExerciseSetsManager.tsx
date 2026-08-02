@@ -69,7 +69,7 @@ function SetTextInput({
                 onChange(e.target.value);
             }}
             onBlur={onBlur}
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+            className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
         />
     );
 }
@@ -159,12 +159,12 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
         }
     };
 
-    if (loading) return <div className="text-xs text-gray-500 p-4">Cargando prescripciones...</div>;
+    if (loading) return <div className="text-xs text-ink-subtle p-4">Cargando prescripciones...</div>;
 
     return (
         <div className="p-4 bg-black/10">
             {sets.length > 0 && (
-                <div className="grid grid-cols-11 gap-2 mb-2 text-[10px] uppercase font-bold text-gray-500 tracking-wider text-center">
+                <div className="grid grid-cols-11 gap-2 mb-2 text-[10px] uppercase font-bold text-ink-subtle tracking-wider text-center">
                     <div className="col-span-2">Series</div>
                     <div className="col-span-2">Reps</div>
                     <div className="col-span-2">RPE</div>
@@ -213,7 +213,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                     onChange={(e) => handleUpdateSet(set.id, 'target_rpe', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_rpe: e.target.value })}
                                     placeholder="@"
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
                                 />
                             </div>
 
@@ -225,7 +225,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                     onChange={(e) => handleUpdateSet(set.id, 'target_load', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_load: e.target.value ? parseFloat(e.target.value) : null })}
                                     placeholder="kg"
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
                                 />
                             </div>
 
@@ -245,7 +245,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                 ) : (
                                     <button
                                         onClick={() => handleDeleteSet(set.id)}
-                                        className="p-1.5 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors mx-auto"
+                                        className="p-1.5 text-ink-subtle hover:text-danger hover:bg-[var(--danger-quiet)] rounded transition-colors mx-auto"
                                     >
                                         <Trash2 size={12} />
                                     </button>
@@ -258,7 +258,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
 
             <button
                 onClick={handleAddSet}
-                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-white/10 rounded-lg text-xs font-bold text-gray-500 uppercase tracking-wider hover:bg-white/5 hover:text-white hover:border-white/20 transition-all"
+                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-white hover:border-[var(--border-strong)] transition-all"
             >
                 <Plus size={14} />
                 Prescribir Series

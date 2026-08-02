@@ -70,7 +70,7 @@ export function ConfirmationModal({
                                 onClose();
                             }}
                             className={`flex-1 rounded-field px-4 py-3 text-t-xs font-bold uppercase tracking-wider text-brand-ink transition-colors duration-fast ${
-                                variant === 'danger' ? 'bg-danger hover:bg-brand-hover' : 'bg-info hover:opacity-90'
+                                variant === 'danger' ? 'bg-danger hover:bg-danger-hover' : 'bg-info hover:opacity-90'
                             }`}
                         >
                             {confirmText}

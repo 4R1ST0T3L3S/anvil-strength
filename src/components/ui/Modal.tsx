@@ -207,20 +207,31 @@ export function Modal({
                                         type="button"
                                         onClick={onClose}
                                         aria-label="Cerrar"
-                                        className="-mr-1 -mt-1 shrink-0 rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
+                                        // 44x44. Medía 32 y es el control con
+                                        // el que se sale de cualquier diálogo:
+                                        // fallarlo en un móvil obliga a buscar
+                                        // el hueco de fuera para cerrar, que en
+                                        // una hoja inferior casi no existe.
+                                        className="-mr-2 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-field text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
                                     >
-                                        <X className="h-4 w-4" />
+                                        <X className="h-5 w-5" />
                                     </button>
                                 )}
                             </header>
                         )}
 
-                        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 sm:px-6">
+                        {/* En móvil esto es una HOJA INFERIOR pegada al borde de
+                            la pantalla, así que el último control cae justo
+                            encima del indicador de inicio del iPhone, donde el
+                            sistema se queda el toque. Se le suma la zona segura
+                            al relleno de abajo. En escritorio `env()` vale 0 y
+                            la expresión se queda en los 20px de siempre. */}
+                        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:pb-5">
                             {children}
                         </div>
 
                         {footer && (
-                            <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-5 py-4 sm:px-6">
+                            <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-[var(--border-subtle)] px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:pb-4">
                                 {footer}
                             </footer>
                         )}

@@ -19,6 +19,34 @@ export interface ExerciseHistoryRow {
     sets: TrainingSet[];
 }
 
+/** Resumen de constancia de un atleta, para la lista del coach. */
+export interface AthleteAdherence {
+    /** Días del bloque activo cuya fecha ya pasó. */
+    dueSessions: number;
+    /** De esos, cuántos ha cerrado el atleta. */
+    completedSessions: number;
+    /** ISO de la última sesión terminada. Null si nunca ha cerrado ninguna. */
+    lastCompletedAt: string | null;
+}
+
+/**
+ * "4x8" → { count: 4, reps: "8" }. Cualquier otra cosa → null.
+ *
+ * Solo se considera agrupada si el primer factor es un número mayor que uno.
+ * "8" son ocho repeticiones en una serie; "AMRAP" o "5-8" no son grupos.
+ */
+export function parseGroupedReps(
+    targetReps: string | null | undefined
+): { count: number; reps: string } | null {
+    if (!targetReps) return null;
+    const [head, ...rest] = targetReps.toLowerCase().split('x');
+    if (rest.length === 0) return null;
+    const count = Number.parseInt(head.trim(), 10);
+    if (!Number.isFinite(count) || count <= 1) return null;
+    const reps = rest.join('x').trim();
+    return reps ? { count, reps } : null;
+}
+
 export const trainingService = {
     /**
      * Fetch all training blocks for a specific athlete.
@@ -368,6 +396,319 @@ export const trainingService = {
             .eq('id', setId);
 
         if (error) throw error;
+    },
+
+    /**
+     * Convierte una serie AGRUPADA ("4x8") en cuatro filas reales de 8.
+     *
+     * POR QUÉ HACE FALTA
+     *
+     * El coach programa "4x8" como UNA fila de `training_sets`, y el registro
+     * la pintaba como cuatro renglones para que el atleta los fuese marcando.
+     * Pero los cuatro renglones compartían el mismo `id`: registrar la serie
+     * 3 machacaba lo escrito en la 1. Mientras la única columna editable era
+     * el peso apenas se notaba —solían coincidir—, pero en cuanto el atleta
+     * puede anotar las repeticiones REALES el problema es evidente: un 4x8
+     * donde se hacen 8, 8, 7 y 6 no se puede representar con una fila.
+     *
+     * CUÁNDO SE EJECUTA
+     *
+     * En el primer cambio que el atleta hace sobre una serie agrupada, no al
+     * cargar la pantalla. Un bloque programado y no empezado no se toca, y
+     * quien no llega a registrar nada no genera escrituras.
+     *
+     * Devuelve las series del ejercicio ya renumeradas, o `null` si no había
+     * nada que separar (la inmensa mayoría de las llamadas).
+     */
+    async expandGroupedSet(setId: string): Promise<TrainingSet[] | null> {
+        const { data: set, error } = await supabase
+            .from('training_sets')
+            .select('*')
+            .eq('id', setId)
+            .single();
+
+        if (error) throw error;
+
+        const parsed = parseGroupedReps(set.target_reps);
+        if (!parsed || parsed.count <= 1) return null;
+
+        // Las hermanas que van DETRÁS tienen que desplazarse para dejar hueco,
+        // o el orden de la sesión queda al azar.
+        const { data: siblings, error: siblingsError } = await supabase
+            .from('training_sets')
+            .select('id, order_index')
+            .eq('session_exercise_id', set.session_exercise_id)
+            .gt('order_index', set.order_index);
+
+        if (siblingsError) throw siblingsError;
+
+        const shift = parsed.count - 1;
+        await Promise.all(
+            (siblings ?? []).map(s =>
+                supabase
+                    .from('training_sets')
+                    .update({ order_index: s.order_index + shift })
+                    .eq('id', s.id)
+            )
+        );
+
+        // La fila original se queda como la PRIMERA repetición del grupo y
+        // conserva lo que el atleta ya hubiera escrito en ella.
+        const { error: updateError } = await supabase
+            .from('training_sets')
+            .update({ target_reps: parsed.reps })
+            .eq('id', set.id);
+
+        if (updateError) throw updateError;
+
+        const clones = Array.from({ length: shift }, (_, i) => ({
+            session_exercise_id: set.session_exercise_id,
+            order_index: set.order_index + i + 1,
+            target_reps: parsed.reps,
+            target_rpe: set.target_rpe,
+            target_load: set.target_load,
+            target_metric: set.target_metric,
+            rest_seconds: set.rest_seconds,
+            is_video_required: set.is_video_required,
+            // Las columnas de ejecución (`actual_*`, `notes`) NO se copian:
+            // pertenecen a la serie que el atleta ya hizo, no a las que
+            // todavía le quedan.
+        }));
+
+        const { error: insertError } = await supabase.from('training_sets').insert(clones);
+        if (insertError) throw insertError;
+
+        const { data: refreshed, error: refreshError } = await supabase
+            .from('training_sets')
+            .select('*')
+            .eq('session_exercise_id', set.session_exercise_id)
+            .order('order_index', { ascending: true });
+
+        if (refreshError) throw refreshError;
+        return refreshed ?? null;
+    },
+
+    /**
+     * Marca (o desmarca) un día como terminado.
+     *
+     * Es una marca de TIEMPO, no un booleano: "cuándo" responde a preguntas
+     * que "sí/no" no puede —a qué hora entrena, si entrena el día que le
+     * toca, cuántos días lleva sin aparecer— y el booleano se deriva de ella.
+     */
+    /**
+     * Copia un bloque entero —semanas, días, ejercicios y series— a uno o
+     * varios atletas más.
+     *
+     * POR QUÉ
+     *
+     * Un club programa por grupos: los seis atletas de nivel iniciación
+     * hacen el mismo bloque con distintas cargas. Sin esto, el coach lo
+     * construye seis veces desde cero, y construir un mesociclo de cuatro
+     * semanas son unos cuarenta minutos. Es, con diferencia, la tarea que
+     * más tiempo le come.
+     *
+     * QUÉ SE COPIA Y QUÉ NO
+     *
+     * Se copia la PRESCRIPCIÓN: días, ejercicios, series, objetivos, notas
+     * del coach y descansos. NO se copia nada de la ejecución (`actual_*`,
+     * `is_completed`, vídeos, archivos VBT): eso pertenece al atleta que lo
+     * hizo, y aparecer en el plan de otro sería sencillamente falso.
+     *
+     * El bloque nuevo nace INACTIVO. Activar seis bloques de golpe le
+     * cambiaría el entrenamiento a seis personas sin que el coach haya
+     * revisado las cargas de ninguna.
+     *
+     * Devuelve cuántos se han creado y a quién ha fallado, en vez de tirar
+     * al primer error: que un atleta falle no es razón para dejar a los
+     * otros cinco sin bloque.
+     */
+    async duplicateBlockToAthletes(
+        blockId: string,
+        athleteIds: string[],
+        options?: { nameSuffix?: string }
+    ): Promise<{ created: string[]; failed: string[] }> {
+        const source = await this.getBlock(blockId);
+
+        const { data: sessions, error: sessionsError } = await supabase
+            .from('training_sessions')
+            .select(`
+                *,
+                session_exercises (
+                    *,
+                    training_sets (*)
+                )
+            `)
+            .eq('block_id', blockId)
+            .order('day_number', { ascending: true });
+
+        if (sessionsError) throw sessionsError;
+
+        const created: string[] = [];
+        const failed: string[] = [];
+
+        for (const athleteId of athleteIds) {
+            try {
+                const { data: newBlock, error: blockError } = await supabase
+                    .from('training_blocks')
+                    .insert({
+                        coach_id: source.coach_id,
+                        athlete_id: athleteId,
+                        name: options?.nameSuffix ? `${source.name} ${options.nameSuffix}` : source.name,
+                        start_date: source.start_date,
+                        end_date: source.end_date,
+                        start_week: source.start_week,
+                        end_week: source.end_week,
+                        color: source.color,
+                        description: source.description,
+                        objectives: source.objectives,
+                        release_offset_days: source.release_offset_days,
+                        is_active: false,
+                    })
+                    .select()
+                    .single();
+
+                if (blockError) throw blockError;
+
+                for (const session of sessions ?? []) {
+                    const { data: newSession, error: sessionError } = await supabase
+                        .from('training_sessions')
+                        .insert({
+                            block_id: newBlock.id,
+                            week_number: session.week_number,
+                            day_number: session.day_number,
+                            name: session.name,
+                            date: session.date,
+                            day_of_week: session.day_of_week,
+                        })
+                        .select()
+                        .single();
+
+                    if (sessionError) throw sessionError;
+
+                    for (const exercise of session.session_exercises ?? []) {
+                        const { data: newExercise, error: exerciseError } = await supabase
+                            .from('session_exercises')
+                            .insert({
+                                session_id: newSession.id,
+                                exercise_id: exercise.exercise_id,
+                                order_index: exercise.order_index,
+                                notes: exercise.notes,
+                                variant_name: exercise.variant_name,
+                                rpe: exercise.rpe,
+                                velocity_avg: exercise.velocity_avg,
+                                rest_seconds: exercise.rest_seconds,
+                                modifiers: exercise.modifiers,
+                            })
+                            .select()
+                            .single();
+
+                        if (exerciseError) throw exerciseError;
+
+                        const sets = (exercise.training_sets ?? []).map((set: TrainingSet) => ({
+                            session_exercise_id: newExercise.id,
+                            order_index: set.order_index,
+                            target_reps: set.target_reps,
+                            target_rpe: set.target_rpe,
+                            target_load: set.target_load,
+                            target_metric: set.target_metric,
+                            rest_seconds: set.rest_seconds,
+                            is_video_required: set.is_video_required,
+                        }));
+
+                        if (sets.length > 0) {
+                            const { error: setsError } = await supabase.from('training_sets').insert(sets);
+                            if (setsError) throw setsError;
+                        }
+                    }
+                }
+
+                created.push(athleteId);
+            } catch (err) {
+                console.error(`No se pudo copiar el bloque a ${athleteId}:`, err);
+                failed.push(athleteId);
+            }
+        }
+
+        return { created, failed };
+    },
+
+    async setSessionCompleted(sessionId: string, completed: boolean, notes?: string | null): Promise<void> {
+        const payload: Record<string, unknown> = {
+            completed_at: completed ? new Date().toISOString() : null,
+        };
+        if (notes !== undefined) payload.athlete_notes = notes;
+
+        const { error } = await supabase
+            .from('training_sessions')
+            .update(payload)
+            .eq('id', sessionId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * Adherencia y última sesión de varios atletas, en UNA consulta.
+     *
+     * El panel del coach lo necesita para cada tarjeta de la lista. Pedirlo
+     * atleta por atleta serían N+1 consultas y con veinte atletas la lista
+     * tardaría segundos en pintarse.
+     *
+     * "Adherencia" aquí es: de los días que ya han PASADO en el bloque
+     * activo, cuántos están marcados como terminados. No se cuentan los días
+     * futuros — un atleta al que le quedan tres días de la semana no está al
+     * 40% de adherencia, está al día.
+     */
+    async getTeamAdherence(athleteIds: string[]): Promise<Record<string, AthleteAdherence>> {
+        if (athleteIds.length === 0) return {};
+
+        const { data: blocks, error: blocksError } = await supabase
+            .from('training_blocks')
+            .select('id, athlete_id')
+            .in('athlete_id', athleteIds)
+            .eq('is_active', true);
+
+        if (blocksError) throw blocksError;
+        if (!blocks || blocks.length === 0) return {};
+
+        const blockToAthlete = new Map(blocks.map(b => [b.id, b.athlete_id as string]));
+
+        const { data: sessions, error: sessionsError } = await supabase
+            .from('training_sessions')
+            .select('id, block_id, week_number, day_number, day_of_week, date, completed_at')
+            .in('block_id', [...blockToAthlete.keys()]);
+
+        if (sessionsError) throw sessionsError;
+
+        const result: Record<string, AthleteAdherence> = {};
+        const todayMs = Date.now();
+
+        (sessions ?? []).forEach(session => {
+            const athleteId = blockToAthlete.get(session.block_id);
+            if (!athleteId) return;
+
+            const entry = result[athleteId] ?? (result[athleteId] = {
+                dueSessions: 0,
+                completedSessions: 0,
+                lastCompletedAt: null,
+            });
+
+            if (session.completed_at) {
+                entry.completedSessions += 1;
+                if (!entry.lastCompletedAt || session.completed_at > entry.lastCompletedAt) {
+                    entry.lastCompletedAt = session.completed_at;
+                }
+            }
+
+            // Un día cuenta como "vencido" si tiene fecha y ya pasó. Los días
+            // sin fecha agendada no se pueden situar en el calendario, así que
+            // no entran en el cálculo: inventar que vencían hoy castigaría a
+            // quien programa por "Día 1 / Día 2" sin fechas.
+            if (session.date && new Date(session.date).getTime() <= todayMs) {
+                entry.dueSessions += 1;
+            }
+        });
+
+        return result;
     },
 
     async deleteSet(setId: string): Promise<void> {

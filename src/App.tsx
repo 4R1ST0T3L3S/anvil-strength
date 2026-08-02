@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
+import { useRedeemPendingInvite } from './hooks/useRedeemPendingInvite';
 import { AuthModal } from './features/auth/components/AuthModal';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
@@ -22,6 +23,12 @@ function App() {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const { data: user, isLoading, isError, error } = useUser();
   const queryClient = useQueryClient();
+
+  // Quien llega por un enlace de invitación sin tener cuenta se va a
+  // registrarse y vuelve por otra ruta (el correo de confirmación, o Google),
+  // así que el código no puede canjearse en la página de la invitación: se
+  // canjea aquí, en cuanto aparece una sesión, mire el usuario donde mire.
+  useRedeemPendingInvite(user);
 
   // COUNTDOWN LOGIC
   const isPreLaunch = false;

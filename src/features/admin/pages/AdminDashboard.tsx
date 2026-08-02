@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser, UserProfile } from '../../../hooks/useUser';
 import { adminService } from '../services/adminService';
+import { isAdmin } from '../../../lib/roles';
 import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +40,7 @@ export function AdminDashboard() {
     };
 
     useEffect(() => {
-        if (['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser?.email?.toLowerCase() || '')) {
+        if (isAdmin(currentUser)) {
             loadUsers();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,7 +175,7 @@ export function AdminDashboard() {
         );
     }
 
-    if (!currentUser || !['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(currentUser.email?.toLowerCase() || '')) {
+    if (!isAdmin(currentUser)) {
         return <Navigate to="/" replace />;
     }
 

@@ -5,8 +5,9 @@ import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, Calendar, User, Weight, List, Calculator,
     ChevronRight, Swords, Activity, Fish, CalendarDays, Loader,
-    BookOpen, Quote, LayoutDashboard,
+    BookOpen, Quote, LayoutDashboard, AlertTriangle,
 } from 'lucide-react';
+import { AttentionPanel } from './AttentionPanel';
 import type { LucideIcon } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
@@ -258,6 +259,16 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
                     </div>
                 </section>
 
+                {/* -----------------------------------------------------
+                    QUÉ REQUIERE TU ATENCIÓN
+                    Va justo después de la acción principal y por delante de
+                    la rejilla de herramientas: es lo que decide a qué se
+                    dedica el coach hoy, y las calculadoras no. */}
+                <section>
+                    <SectionLabel icon={AlertTriangle}>Requiere tu atención</SectionLabel>
+                    <AttentionPanel coachId={user.id} />
+                </section>
+
                 {/* ----------------------------------------------------- */}
                 <section>
                     <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
@@ -275,7 +286,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
 
                 <section>
                     <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
-                    <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
                         <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
                         <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
                         <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />

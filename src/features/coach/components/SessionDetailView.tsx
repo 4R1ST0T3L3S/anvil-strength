@@ -35,13 +35,13 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
     }, [session.id, fetchExercises]);
 
     return (
-        <div className="flex flex-col h-full bg-[#0a0a0a]">
+        <div className="flex flex-col h-full bg-surface-sunken">
             {/* Header */}
-            <div className="border-b border-white/5 bg-[#0a0a0a] p-6">
+            <div className="border-b border-subtle bg-surface-sunken p-6">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
-                        className="p-2 -ml-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                        className="p-2 -ml-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-white transition-colors"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -77,8 +77,8 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                         <Loader className="text-anvil-red animate-spin" />
                     </div>
                 ) : exercises.length === 0 ? (
-                    <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-xl">
-                        <p className="text-gray-500 mb-4">No hay ejercicios para este día.</p>
+                    <div className="text-center py-12 border-2 border-dashed border-subtle rounded-xl">
+                        <p className="text-ink-subtle mb-4">No hay ejercicios para este día.</p>
                         <button
                             onClick={() => setIsAddModalOpen(true)}
                             className="text-anvil-red font-bold uppercase tracking-wider text-sm hover:underline"
@@ -91,12 +91,12 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                         {exercises.map((item, index) => (
                             <div
                                 key={item.id}
-                                className="bg-[#0a0a0a] border border-white/5 rounded-xl overflow-hidden"
+                                className="bg-surface-sunken border border-subtle rounded-xl overflow-hidden"
                             >
                                 {/* Exercise Header */}
                                 <div className="p-4 flex items-center justify-between bg-black/20">
                                     <div className="flex items-center gap-4">
-                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 text-xs font-bold text-gray-400">
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 text-xs font-bold text-ink-muted">
                                             {index + 1}
                                         </div>
                                         <div>
@@ -104,7 +104,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                                 {item.exercise?.name || 'Ejercicio desconocido'}
                                             </h4>
                                             {item.exercise?.muscle_group && (
-                                                <span className="text-xs text-gray-500 uppercase tracking-widest font-bold">
+                                                <span className="text-xs text-ink-subtle uppercase tracking-widest font-bold">
                                                     {item.exercise.muscle_group}
                                                 </span>
                                             )}
@@ -122,14 +122,14 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                                 VBT
                                             </button>
                                         )}
-                                        <button className="text-gray-600 hover:text-white transition-colors p-2">
+                                        <button className="text-ink-subtle hover:text-white transition-colors p-2">
                                             <MoreVertical size={18} />
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Sets Manager */}
-                                <div className="border-t border-white/5">
+                                <div className="border-t border-subtle">
                                     <ExerciseSetsManager sessionExerciseId={item.id} />
                                 </div>
                             </div>

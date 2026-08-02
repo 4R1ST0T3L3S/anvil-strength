@@ -88,14 +88,14 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     }, [athleteId, fetchCompetitions]);
 
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
-    if (!athlete) return <div className="p-8 text-center text-red-500">Atleta no encontrado</div>;
+    if (!athlete) return <div className="p-8 text-center text-danger">Atleta no encontrado</div>;
 
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4 border-b border-white/5 bg-[#0a0a0a] shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4 border-b border-subtle bg-surface-sunken shrink-0">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors shrink-0">
+                    <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-white transition-colors shrink-0">
                         <ArrowLeft size={20} />
                     </button>
                     <div className="flex items-center gap-4">
@@ -108,7 +108,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         )}
                         <div className="min-w-0">
                             <h2 className="text-lg md:text-xl font-black uppercase tracking-tight truncate">{athlete.full_name}</h2>
-                            <p className="text-xs md:text-sm text-gray-400 flex flex-wrap items-center gap-2">
+                            <p className="text-xs md:text-sm text-ink-muted flex flex-wrap items-center gap-2">
                                 <span className="whitespace-nowrap">{athlete.weight_category || '-'}</span>
                                 <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
                                 <span className="whitespace-nowrap">{athlete.age_category || '-'}</span>
@@ -133,7 +133,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         <button
                             onClick={() => setActiveTab('planning')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'planning' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-gray-400 hover:text-white'
+                                activeTab === 'planning' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-ink-muted hover:text-white'
                             }`}
                         >
                             <FileText size={14} className="md:w-4 md:h-4" /> <span>Planning</span>
@@ -141,7 +141,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         <button
                             onClick={() => setActiveTab('vbt')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'vbt' ? 'bg-[#0ea5e9] text-black shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'text-gray-400 hover:text-white'
+                                activeTab === 'vbt' ? 'bg-[#0ea5e9] text-black shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'text-ink-muted hover:text-white'
                             }`}
                         >
                             <Activity size={14} className="md:w-4 md:h-4" /> <span>VBT</span>
@@ -149,7 +149,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         <button
                             onClick={() => setActiveTab('nutrition')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'nutrition' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-gray-400 hover:text-white'
+                                activeTab === 'nutrition' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-ink-muted hover:text-white'
                             }`}
                         >
                             <Apple size={14} className="md:w-4 md:h-4" /> <span>Nutrición</span>
@@ -157,7 +157,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         <button
                             onClick={() => setActiveTab('competitions')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-gray-400 hover:text-white'
+                                activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-ink-muted hover:text-white'
                             }`}
                         >
                             <Trophy size={14} className="md:w-4 md:h-4" /> <span>Competición</span>
@@ -167,7 +167,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
             </div>
 
             {/* Content Area */}
-            <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-[#0a0a0a]">
+            <div className="p-4 md:p-6 flex-1 overflow-y-auto bg-surface-sunken">
 
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
@@ -176,7 +176,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                             <div className="h-full flex flex-col">
                                 <button
                                     onClick={() => setSelectedBlockId(null)}
-                                    className="self-start mb-2 text-sm text-gray-500 hover:text-white flex items-center gap-1 transition-colors"
+                                    className="self-start mb-2 text-sm text-ink-subtle hover:text-white flex items-center gap-1 transition-colors"
                                 >
                                     &larr; Ver todos los bloques
                                 </button>
@@ -206,9 +206,9 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         </div>
 
                         {competitions.length === 0 ? (
-                            <div className="text-center py-12 bg-[#0a0a0a] border border-white/5 rounded-xl">
-                                <Trophy size={48} className="mx-auto text-gray-600 mb-4" />
-                                <p className="text-gray-400 font-medium">No hay competiciones asignadas.</p>
+                            <div className="text-center py-12 bg-surface-sunken border border-subtle rounded-xl">
+                                <Trophy size={48} className="mx-auto text-ink-subtle mb-4" />
+                                <p className="text-ink-muted font-medium">No hay competiciones asignadas.</p>
                             </div>
                         ) : (
                             <div className="grid gap-4">
@@ -226,7 +226,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     }
 
                                     return (
-                                        <div key={comp.id} className={`bg-[#0a0a0a] border ${meta.border} rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-white/20 transition-colors`}>
+                                        <div key={comp.id} className={`bg-surface-sunken border ${meta.border} rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-[var(--border-strong)] transition-colors`}>
                                             <div className="space-y-2">
                                                 <div className="flex flex-wrap items-center gap-3">
                                                     {comp.level && (
@@ -238,7 +238,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                                         {comp.name}
                                                     </h4>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-sm text-gray-400">
+                                                <div className="flex items-center gap-4 text-sm text-ink-muted">
                                                     <div className="flex items-center gap-1.5">
                                                         <Calendar size={14} className={meta.color} />
                                                         <span>
@@ -260,7 +260,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                                             <button
                                                 onClick={() => handleRemoveCompetition(comp.id, comp.name)}
-                                                className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group"
+                                                className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] text-danger rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group"
                                             >
                                                 <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
                                                 Eliminar

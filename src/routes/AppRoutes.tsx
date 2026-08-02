@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { UserProfile } from '../hooks/useUser';
+import { isStaff, isAdmin } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
@@ -15,22 +16,21 @@ const AthleteChatView = lazy(() => import('../features/chat/pages/AthleteChatVie
 const CoachChatManager = lazy(() => import('../features/chat/components/CoachChatManager').then(module => ({ default: module.CoachChatManager })));
 const AuthCallback = lazy(() => import('../features/auth/pages/AuthCallback').then(module => ({ default: module.AuthCallback })));
 const AnvilGamesHub = lazy(() => import('../features/games/pages/AnvilGamesHub').then(module => ({ default: module.AnvilGamesHub })));
-
-
-
+const InvitePage = lazy(() => import('../features/auth/pages/InvitePage').then(module => ({ default: module.InvitePage })));
 /**
- * ¿Este usuario gestiona a OTROS atletas?
+ * Banco de pruebas de maquetación. Solo en desarrollo.
  *
- * Entrenadores y nutricionistas comparten panel: los dos tienen atletas
- * asignados, agenda, calendario y chat, y las diferencias entre ambos son
- * dos entradas de menú, no una aplicación distinta.
- *
- * Antes solo se comprobaba `role === 'coach'`, así que un nutricionista
- * aterrizaba en el panel de ATLETA — con "Mi planificación" y "Mi dieta" en
- * vez de su lista de pacientes— y no tenía ninguna forma de salir de ahí.
+ * El ternario es lo que hace que DESAPAREZCA del build, y no basta con
+ * envolver la ruta: con un `lazy(() => import(...))` suelto en el módulo,
+ * Rollup ve una importación dinámica incondicional y emite el chunk igual
+ * aunque nadie llegue a pedirlo. Aquí `import.meta.env.DEV` se sustituye por
+ * `false` al compilar, la rama muere y con ella la importación.
  */
-const isStaff = (user: UserProfile | null | undefined): boolean =>
-    user?.role === 'coach' || user?.role === 'nutritionist';
+const MobilePreview = import.meta.env.DEV
+    ? lazy(() => import('../features/devtools/MobilePreview').then(module => ({ default: module.MobilePreview })))
+    : null;
+
+
 
 interface AppRoutesProps {
     user: UserProfile | null | undefined;
@@ -45,8 +45,15 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
 
     const hasActiveSession = !!session;
 
+    // Sin `key={location.pathname}` en <Routes>.
+    //
+    // Esa clave forzaba a React a DESMONTAR y volver a montar el árbol entero
+    // en cada cambio de ruta. Con las vistas del panel ahora en la URL, eso
+    // significaba tirar el panel y reconstruirlo —perdiendo el estado,
+    // volviendo a pedir los datos y parpadeando— cada vez que se toca una
+    // pestaña. El enrutador ya sabe qué tiene que cambiar.
     return (
-        <Routes location={location} key={location.pathname}>
+        <Routes location={location}>
 
             {/* --- PORTADA (Siempre accesible) ---
                 Quien tiene sesión entra en su panel, tenga o no `has_access`.
@@ -65,6 +72,24 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 ) : (
                     <Navigate to="/dashboard" replace />
                 )
+            } />
+
+            {/* --- BANCO DE PRUEBAS DE MAQUETACIÓN ---
+                Solo en desarrollo. Ver la nota de `MobilePreview` arriba. */}
+            {MobilePreview && (
+                <Route path="/dev/movil" element={
+                    <Suspense fallback={<DashboardSkeleton />}><MobilePreview /></Suspense>
+                } />
+            )}
+
+            {/* --- INVITACIÓN DE UN ENTRENADOR ---
+                Accesible SIN sesión a propósito: el caso normal es alguien
+                que todavía no tiene cuenta, y tiene que poder ver de quién
+                es la invitación antes de registrarse. */}
+            <Route path="/invitacion/:code" element={
+                <Suspense fallback={<DashboardSkeleton />}>
+                    <InvitePage onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
+                </Suspense>
             } />
 
             {/* --- VUELTA DE UN LOGIN EXTERNO ---
@@ -125,7 +150,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             <Route path="/dashboard/chat" element={
                 hasActiveSession && user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
-                        {user.role === 'coach' || (user.role as string) === 'admin' || (user as any).is_developer ? (
+                        {isStaff(user) ? (
                             <CoachChatManager coach={user} />
                         ) : (
                             <AthleteChatView user={user} />
@@ -148,38 +173,50 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
 
             <Route path="/dashboard/arena" element={<Navigate to="/dashboard/community" replace />} />
 
-            {/* --- DASHBOARD ATLETA --- */}
-            <Route path="/dashboard" element={
-                !user && !hasActiveSession ? (
-                    <Navigate to="/" replace />
-                ) : !user && hasActiveSession ? (
-                    <DashboardSkeleton />
-                ) : isStaff(user) ? (
-                    <Navigate to="/coach-dashboard" replace />
-                ) : user ? (
-                    <Suspense fallback={<DashboardSkeleton />}>
-                        <UserDashboard
-                            user={user}
-                            onLogout={onLogout}
-                        />
-                    </Suspense>
-                ) : null
-            } />
+            {/* --- DASHBOARD ATLETA ---
+                Dos rutas al mismo elemento en vez de un parámetro opcional:
+                `/dashboard` y `/dashboard/<vista>`. Las rutas hermanas con
+                segmento fijo (`/dashboard/chat`, `/dashboard/community`,
+                `/dashboard/games`) ganan por especificidad, así que siguen
+                resolviendo a sus páginas completas y no al panel. */}
+            {['/dashboard', '/dashboard/:view'].map(path => (
+                <Route key={path} path={path} element={
+                    !user && !hasActiveSession ? (
+                        <Navigate to="/" replace />
+                    ) : !user && hasActiveSession ? (
+                        <DashboardSkeleton />
+                    ) : isStaff(user) ? (
+                        <Navigate to="/coach-dashboard" replace />
+                    ) : user ? (
+                        <Suspense fallback={<DashboardSkeleton />}>
+                            <UserDashboard
+                                user={user}
+                                onLogout={onLogout}
+                            />
+                        </Suspense>
+                    ) : null
+                } />
+            ))}
 
-            {/* --- DASHBOARD COACH --- */}
-            <Route path="/coach-dashboard" element={
-                !user && !hasActiveSession ? (
-                    <Navigate to="/" replace />
-                ) : !user && hasActiveSession ? (
-                    <DashboardSkeleton />
-                ) : !isStaff(user) ? (
-                    <Navigate to="/dashboard" replace />
-                ) : user ? (
-                    <Suspense fallback={<DashboardSkeleton />}>
-                        <CoachDashboard user={user} onLogout={onLogout} />
-                    </Suspense>
-                ) : null
-            } />
+            {/* --- DASHBOARD COACH ---
+                La tercera ruta es la ficha de un atleta. Tener URL propia es
+                lo que permite volver con el botón atrás y compartir el enlace
+                de un atleta concreto. */}
+            {['/coach-dashboard', '/coach-dashboard/:view', '/coach-dashboard/atletas/:athleteId'].map(path => (
+                <Route key={path} path={path} element={
+                    !user && !hasActiveSession ? (
+                        <Navigate to="/" replace />
+                    ) : !user && hasActiveSession ? (
+                        <DashboardSkeleton />
+                    ) : !isStaff(user) ? (
+                        <Navigate to="/dashboard" replace />
+                    ) : user ? (
+                        <Suspense fallback={<DashboardSkeleton />}>
+                            <CoachDashboard user={user} onLogout={onLogout} />
+                        </Suspense>
+                    ) : null
+                } />
+            ))}
 
             {/* --- NUTRITION DASHBOARD --- */}
             <Route path="/nutrition" element={
@@ -200,7 +237,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             <Route path="/admin" element={
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
-                ) : (!['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user?.email?.toLowerCase() || '')) ? (
+                ) : !isAdmin(user) ? (
                     <Navigate to="/" replace />
                 ) : (
                     <Suspense fallback={<DashboardSkeleton />}>

@@ -170,7 +170,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                 <div className="mt-1 md:mt-2 flex flex-col items-center gap-2 h-[60px] md:h-[80px]">
                                     <div className="flex items-center gap-1.5 md:gap-2 text-yellow-500 bg-yellow-500/10 px-3 md:px-4 py-1 md:py-1.5 rounded-full border border-yellow-500/20">
                                         <Trophy size={12} className="md:w-3.5 md:h-3.5" />
-                                        <span className="text-[9px] md:text-xs font-black uppercase tracking-widest">Récord: {user.max_sushi_pieces || 0}</span>
+                                        <span className="text-t-2xs md:text-t-xs font-black uppercase tracking-widest">Récord: {user.max_sushi_pieces || 0}</span>
                                     </div>
                                     
                                     <AnimatePresence>
@@ -205,7 +205,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                             <div key={type.id} className={`bg-gradient-to-br ${type.bgStyle} border-2 rounded-2xl md:rounded-[2rem] p-3 md:p-6 flex items-center justify-between shadow-inner backdrop-blur-md`}>
                                 <div className="flex-1 pr-2">
                                     <h3 className="text-lg md:text-2xl font-black uppercase italic text-white leading-none mb-1">{type.name}</h3>
-                                    <p className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-tight">
+                                    <p className="text-t-2xs md:text-t-xs font-bold text-gray-400 uppercase tracking-widest leading-tight">
                                         ~{type.kcal} kcal • {type.protein}g P / {type.carbs}g C / {type.fat}g G
                                     </p>
                                 </div>
@@ -247,19 +247,19 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                     <div className="max-w-4xl mx-auto">
                         <div className="grid grid-cols-4 gap-1.5 md:gap-4">
                             <div className="bg-white/5 border border-white/10 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-[8px] md:text-[11px] font-black text-gray-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Cals</span>
+                                <span className="text-t-2xs md:text-[11px] font-black text-gray-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Cals</span>
                                 <span className="text-sm md:text-3xl font-black text-white italic">{totals.kcal}</span>
                             </div>
                             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-[8px] md:text-[11px] font-black text-blue-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Protes</span>
+                                <span className="text-t-2xs md:text-[11px] font-black text-blue-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Protes</span>
                                 <span className="text-sm md:text-3xl font-black text-white italic">{totals.protein.toFixed(1)}<span className="text-[10px] md:text-base">g</span></span>
                             </div>
                             <div className="bg-green-500/10 border border-green-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-[8px] md:text-[11px] font-black text-green-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Carbos</span>
+                                <span className="text-t-2xs md:text-[11px] font-black text-green-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Carbos</span>
                                 <span className="text-sm md:text-3xl font-black text-white italic">{totals.carbs.toFixed(1)}<span className="text-[10px] md:text-base">g</span></span>
                             </div>
                             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-[8px] md:text-[11px] font-black text-yellow-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Grasas</span>
+                                <span className="text-t-2xs md:text-[11px] font-black text-yellow-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Grasas</span>
                                 <span className="text-sm md:text-3xl font-black text-white italic">{totals.fat.toFixed(1)}<span className="text-[10px] md:text-base">g</span></span>
                             </div>
                         </div>

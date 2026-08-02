@@ -254,7 +254,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
       )}
 
       {cvError && (
-        <div className="bg-red-500/10 text-red-500 border border-red-500/20 p-3 rounded-xl flex items-center gap-3">
+        <div className="bg-[var(--danger-quiet)] text-danger border border-[color-mix(in_oklch,var(--danger)_30%,transparent)] p-3 rounded-xl flex items-center gap-3">
             <span className="text-xs md:text-sm font-bold flex-1">Error: {cvError}</span>
             <button onClick={() => window.location.reload()} className="text-xs font-bold underline shrink-0">Reintentar</button>
         </div>

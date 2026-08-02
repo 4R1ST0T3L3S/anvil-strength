@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
-import { trainingService } from '../../../services/trainingService';
+import { trainingService, parseGroupedReps } from '../../../services/trainingService';
+import { LoggerSetRow } from './LoggerSetRow';
+import { SaveIndicator } from '../../../components/ui/SaveIndicator';
+import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS } from '../../../types/training';
 import type { TargetMetric } from '../../../types/training';
 import {
@@ -247,6 +251,87 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         }
     };
 
+    /**
+     * Separa una serie agrupada en filas reales y refresca la sesión.
+     *
+     * Se llama en la PRIMERA escritura sobre un "4x8", no al cargar: un
+     * bloque programado y todavía sin empezar no genera ninguna escritura.
+     * `expandGroupedSet` devuelve null cuando no había nada que separar, que
+     * es lo que ocurre en la mayoría de llamadas.
+     */
+    const expansions = useRef(new Map<string, Promise<TrainingSet[] | null>>());
+
+    const handleExpandSet = useCallback(async (
+        setId: string,
+        baseOrderIndex: number,
+        groupIndex: number
+    ): Promise<string | null> => {
+        try {
+            // Los cuatro renglones de un "4x8" pueden pedir la separación a la
+            // vez —basta con tocar el peso y el RPE seguidos—. Compartiendo la
+            // MISMA promesa se separa una sola vez; sin esto el ejercicio
+            // acabaría con ocho o doce series en lugar de cuatro.
+            let pending = expansions.current.get(setId);
+            if (!pending) {
+                pending = trainingService.expandGroupedSet(setId);
+                expansions.current.set(setId, pending);
+            }
+
+            const refreshed = await pending;
+            if (!refreshed) return null;
+
+            setAllSessions(prev => prev.map(session => ({
+                ...session,
+                exercises: session.exercises.map(exercise =>
+                    exercise.sets.some(s => s.id === setId)
+                        ? { ...exercise, sets: refreshed }
+                        : exercise
+                ),
+            })));
+
+            // La fila que le toca a este renglón. Al separar, el grupo que
+            // ocupaba la posición O pasa a ocupar O, O+1, O+2… así que el
+            // renglón `groupIndex` es el de `order_index === O + groupIndex`.
+            return refreshed.find(s => s.order_index === baseOrderIndex + groupIndex)?.id ?? null;
+        } catch (err) {
+            console.error(err);
+            expansions.current.delete(setId); // Que se pueda reintentar.
+            toast.error('No se pudo separar la serie. Inténtalo otra vez.');
+            return null;
+        }
+    }, []);
+
+    /** Refleja al instante en el contador del pie lo que se marca arriba. */
+    const handleSetChange = useCallback((setId: string, completed: boolean) => {
+        setAllSessions(prev => prev.map(session => ({
+            ...session,
+            exercises: session.exercises.map(exercise => ({
+                ...exercise,
+                sets: exercise.sets.map(s => (s.id === setId ? { ...s, is_completed: completed } : s)),
+            })),
+        })));
+    }, []);
+
+    const handleToggleSessionComplete = useCallback(async (sessionId: string, completed: boolean) => {
+        // Optimista: el botón cambia ya. Si la escritura falla se revierte,
+        // que es mejor que un botón que no responde durante medio segundo.
+        const stamp = completed ? new Date().toISOString() : null;
+        setAllSessions(prev =>
+            prev.map(s => (s.id === sessionId ? { ...s, completed_at: stamp } : s))
+        );
+
+        try {
+            await trainingService.setSessionCompleted(sessionId, completed);
+            if (completed) toast.success('Día cerrado. Buen trabajo.');
+        } catch (err) {
+            console.error(err);
+            setAllSessions(prev =>
+                prev.map(s => (s.id === sessionId ? { ...s, completed_at: completed ? null : stamp } : s))
+            );
+            toast.error('No se pudo guardar. Revisa la conexión.');
+        }
+    }, []);
+
     const changeWeek = (week: number) => {
         setSelectedWeek(week);
         setWeekPickerOpen(false);
@@ -260,8 +345,8 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 
     if (!block) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-transparent text-gray-400 p-8 text-center space-y-6">
-                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
+            <div className="h-full flex flex-col items-center justify-center bg-transparent text-ink-muted p-8 text-center space-y-6">
+                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-ink-faint">
                     <AlertCircle size={64} />
                 </div>
                 <div className="max-w-xs">
@@ -271,7 +356,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     </p>
                 </div>
                 <div className="pt-4">
-                    <div className="px-6 py-3 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest text-gray-500">
+                    <div className="px-6 py-3 border border-[var(--border-default)] rounded-xl text-xs font-black uppercase tracking-widest text-ink-subtle">
                         Esperando programación...
                     </div>
                 </div>
@@ -281,18 +366,33 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 
     const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
 
+    // Progreso del día. Una serie agrupada ("4x8") cuenta como cuatro: es lo
+    // que el atleta ve en pantalla, y contar uno haría que la barra saltara
+    // del 20 al 100% de golpe.
+    const { completedSets, totalSets } = (activeSession?.exercises ?? []).reduce(
+        (acc, exercise) => {
+            exercise.sets.forEach(set => {
+                const count = parseGroupedReps(set.target_reps)?.count ?? 1;
+                acc.totalSets += count;
+                if (set.is_completed) acc.completedSets += count;
+            });
+            return acc;
+        },
+        { completedSets: 0, totalSets: 0 }
+    );
+
     // FIX: Handle case where activeSession is undefined (e.g. empty week)
     if (!activeSession && sessions.length === 0) {
         return (
             <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
-                <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
+                <div className="bg-surface-canvas border-b border-subtle pb-2">
                     <div className="p-4">
                         <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                         <h2 className="text-2xl font-black italic">Sin Sesiones</h2>
                     </div>
                 </div>
-                <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8 text-center space-y-6">
-                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-gray-700">
+                <div className="h-full flex flex-col items-center justify-center text-ink-muted p-8 text-center space-y-6">
+                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-faint">
                         <Check size={32} />
                     </div>
                     <div className="max-w-xs">
@@ -314,15 +414,15 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
 
             {/* 1. Header & Navigation */}
-            <div className="bg-[#1c1c1c] border-b border-white/5 pb-2">
+            <div className="bg-surface-canvas border-b border-subtle pb-2">
                 <div className="p-4">
                     <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
                     {block.description && (
                         <details className="group mt-1">
-                            <summary className="text-[10px] font-black uppercase tracking-widest text-gray-500 cursor-pointer list-none hover:text-white transition-colors select-none">
+                            <summary className="text-[10px] font-black uppercase tracking-widest text-ink-subtle cursor-pointer list-none hover:text-white transition-colors select-none">
                                 Objetivos del bloque <span className="group-open:hidden">▸</span><span className="hidden group-open:inline">▾</span>
                             </summary>
-                            <p className="text-xs text-gray-400 leading-relaxed mt-2 whitespace-pre-wrap bg-white/[0.03] border border-white/5 rounded-xl p-3">
+                            <p className="text-xs text-ink-muted leading-relaxed mt-2 whitespace-pre-wrap bg-white/[0.03] border border-subtle rounded-xl p-3">
                                 {block.description}
                             </p>
                         </details>
@@ -339,7 +439,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             onClick={() => setWeekPickerOpen(v => !v)}
                             aria-expanded={weekPickerOpen}
                             disabled={availableWeeks.length <= 1}
-                            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-[#252525] px-3 py-2.5 text-left transition-colors hover:bg-[#2e2e2e] disabled:hover:bg-[#252525]"
+                            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-surface-raised px-3 py-2.5 text-left transition-colors hover:bg-surface-overlay disabled:hover:bg-surface-raised"
                         >
                             <span className="flex min-w-0 items-center gap-2">
                                 <CalendarDays size={15} className="shrink-0 text-anvil-red" aria-hidden="true" />
@@ -347,10 +447,10 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     <span className="block truncate text-sm font-bold leading-tight">
                                         Semana {availableWeeks.indexOf(selectedWeek) + 1}
                                         {weekNames[selectedWeek] && (
-                                            <span className="ml-1.5 font-normal text-gray-400">{weekNames[selectedWeek]}</span>
+                                            <span className="ml-1.5 font-normal text-ink-muted">{weekNames[selectedWeek]}</span>
                                         )}
                                     </span>
-                                    <span className="block text-[10px] uppercase tracking-widest text-gray-500">
+                                    <span className="block text-[10px] uppercase tracking-widest text-ink-subtle">
                                         {formatDateRange(
                                             getDateRangeFromWeek(selectedWeek, blockYear).start,
                                             getDateRangeFromWeek(selectedWeek, blockYear).end
@@ -362,7 +462,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 <ChevronDown
                                     size={16}
                                     aria-hidden="true"
-                                    className={cn('shrink-0 text-gray-500 transition-transform', weekPickerOpen && 'rotate-180')}
+                                    className={cn('shrink-0 text-ink-subtle transition-transform', weekPickerOpen && 'rotate-180')}
                                 />
                             )}
                         </button>
@@ -374,21 +474,21 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             onClick={handlePrintWeek}
                             title="Exportar esta semana a PDF"
                             aria-label="Exportar esta semana a PDF"
-                            className="flex shrink-0 items-center justify-center rounded-xl bg-[#252525] px-3.5 text-gray-400 transition-colors hover:bg-[#2e2e2e] hover:text-white"
+                            className="flex shrink-0 items-center justify-center rounded-xl bg-surface-raised px-3.5 text-ink-muted transition-colors hover:bg-surface-overlay hover:text-white"
                         >
                             <Printer size={17} />
                         </button>
                       </div>
 
                         {weekPickerOpen && (
-                            <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-white/5 bg-[#202020] p-1.5">
+                            <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-subtle bg-surface-raised p-1.5">
                                 {availableWeeks.map((w, i) => (
                                     <button
                                         key={w}
                                         onClick={() => changeWeek(w)}
                                         className={cn(
                                             'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors',
-                                            w === selectedWeek ? 'bg-white/10 text-white' : 'text-gray-400 hover:bg-white/5'
+                                            w === selectedWeek ? 'bg-white/10 text-white' : 'text-ink-muted hover:bg-white/5'
                                         )}
                                     >
                                         <span className="min-w-0">
@@ -396,7 +496,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                                 Semana {i + 1}
                                                 {weekNames[w] && <span className="ml-1.5 font-normal opacity-70">{weekNames[w]}</span>}
                                             </span>
-                                            <span className="block text-[10px] text-gray-500">
+                                            <span className="block text-[10px] text-ink-subtle">
                                                 {formatDateRange(
                                                     getDateRangeFromWeek(w, blockYear).start,
                                                     getDateRangeFromWeek(w, blockYear).end
@@ -435,7 +535,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     "relative flex flex-col items-center justify-center min-w-[4.5rem] px-2 py-3 rounded-xl transition-all border",
                                     activeSessionId === s.id
                                         ? "bg-white text-black border-white shadow-lg scale-105 font-bold"
-                                        : "bg-[#2a2a2a] text-gray-400 border-transparent hover:bg-[#333]",
+                                        : "bg-surface-overlay text-ink-muted border-transparent hover:bg-surface-overlay",
                                     isToday && activeSessionId !== s.id && "border-anvil-red/40"
                                 )}
                             >
@@ -468,22 +568,38 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
             </div>
 
             {/* 2. Content (Exercise List) */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-24">
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-40">
                 {activeSession?.exercises.map(ex => (
                     <LoggerExerciseCard
                         key={ex.id}
                         sessionExercise={ex}
                         athleteId={athleteId}
                         onStartTimer={handleStartTimer}
+                        onExpandSet={handleExpandSet}
+                        onSetChange={handleSetChange}
                     />
                 ))}
 
                 {activeSession?.exercises.length === 0 && (
-                    <div className="text-center text-gray-600 py-12 italic">
+                    <div className="py-12 text-center text-t-sm italic text-ink-subtle">
                         Día de descanso o sin ejercicios programados.
                     </div>
                 )}
             </div>
+
+            {/* 3. Cierre del día.
+                Marcar series sueltas no decía en ningún momento que el día
+                estuviera terminado, así que el coach no podía distinguir "ha
+                entrenado y ha ido bien" de "empezó y lo dejó a medias", ni
+                calcular adherencia sin adivinar. */}
+            {activeSession && activeSession.exercises.length > 0 && (
+                <SessionFooter
+                    session={activeSession}
+                    completedSets={completedSets}
+                    totalSets={totalSets}
+                    onToggleComplete={handleToggleSessionComplete}
+                />
+            )}
 
             {/* Overlay Timer */}
             {timerEndTime && (
@@ -498,9 +614,139 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 }
 
 // ==========================================
+// SUB-COMPONENT: PIE DE SESIÓN
+// ==========================================
+/**
+ * Cierre del día.
+ *
+ * Va FIJO al pie y no al final del scroll: el atleta llega aquí después de
+ * la última serie, con el móvil en una mano, y hacer scroll hasta abajo para
+ * encontrar el botón es exactamente el tipo de fricción que hace que la
+ * gente no lo pulse nunca — y si no lo pulsa nadie, la adherencia que ve el
+ * coach es basura.
+ *
+ * La barra de progreso no es decoración: es la respuesta a "¿me falta algo?"
+ * sin tener que subir a repasar.
+ */
+function SessionFooter({
+    session,
+    completedSets,
+    totalSets,
+    onToggleComplete,
+}: {
+    session: ExtendedSession;
+    completedSets: number;
+    totalSets: number;
+    onToggleComplete: (sessionId: string, completed: boolean) => void;
+}) {
+    const done = Boolean(session.completed_at);
+    const progress = totalSets > 0 ? completedSets / totalSets : 0;
+    const reduced = prefersReducedMotion();
+
+    return (
+        // El relleno inferior deja libre la barra de pestañas del móvil, que
+        // es fija y vive por encima del borde de la pantalla. En escritorio
+        // esa barra no existe y el pie baja hasta abajo del todo.
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-sticky px-3 pb-[calc(env(safe-area-inset-bottom)+4.75rem)] pt-3 md:pb-3">
+            <div className="pointer-events-auto rounded-card border border-[var(--border-default)] bg-surface-raised/95 p-3 shadow-overlay backdrop-blur">
+                <div className="mb-2.5 flex items-center justify-between gap-3">
+                    <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        {completedSets} de {totalSets} series
+                    </span>
+                    <SaveIndicator />
+                </div>
+
+                {/* Barra de progreso. Se anima el ancho y no un `transform`
+                    porque una barra escalada deforma sus propios bordes
+                    redondeados; a 4px de alto el coste de layout es nulo. */}
+                <div className="mb-3 h-1 overflow-hidden rounded-pill bg-surface-sunken">
+                    <motion.div
+                        className={done ? 'h-full bg-success' : 'h-full bg-brand'}
+                        initial={false}
+                        animate={{ width: `${Math.round(progress * 100)}%` }}
+                        transition={{ duration: reduced ? 0 : DURATION.base, ease: EASE_OUT }}
+                    />
+                </div>
+
+                <button
+                    onClick={() => onToggleComplete(session.id, !done)}
+                    className={cn(
+                        'flex w-full items-center justify-center gap-2 rounded-field py-3 text-t-sm font-extrabold uppercase tracking-wide transition-colors duration-fast ease-snap active:scale-[0.985]',
+                        done
+                            ? 'bg-[var(--success-quiet)] text-success'
+                            : 'bg-brand text-brand-ink hover:bg-brand-hover'
+                    )}
+                >
+                    {done ? (
+                        <>
+                            <Check size={16} strokeWidth={3} aria-hidden="true" />
+                            Día terminado
+                            <span className="font-semibold normal-case tracking-normal opacity-70">
+                                · toca para reabrir
+                            </span>
+                        </>
+                    ) : (
+                        'Terminar el día'
+                    )}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ==========================================
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
-function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sessionExercise: ExtendedSessionExercise, athleteId: string, onStartTimer: (s: number) => void }) {
+function LoggerExerciseCard({
+    sessionExercise,
+    athleteId,
+    onStartTimer,
+    onExpandSet,
+    onSetChange,
+}: {
+    sessionExercise: ExtendedSessionExercise;
+    athleteId: string;
+    onStartTimer: (s: number) => void;
+    onExpandSet: (setId: string, baseOrderIndex: number, groupIndex: number) => Promise<string | null>;
+    onSetChange: (setId: string, completed: boolean) => void;
+}) {
+    /**
+     * Renglones a pintar.
+     *
+     * Una fila de `training_sets` puede representar varias series ("4x8").
+     * Se despliega para poder marcarlas de una en una, pero todos los
+     * renglones desplegados apuntan todavía a la MISMA fila: hasta que el
+     * atleta escribe algo no se separan de verdad. `needsExpansion` es lo
+     * que le dice al renglón que, antes de su primera escritura, hay que
+     * partir el grupo o se pisarían entre ellos.
+     */
+    const rows = useMemo(
+        () => {
+            let position = 0;
+            return sessionExercise.sets.flatMap(set => {
+                const group = parseGroupedReps(set.target_reps);
+                const count = group?.count ?? 1;
+                const targetReps = group?.reps ?? set.target_reps ?? null;
+
+                return Array.from({ length: count }, (_, i) => ({
+                    // La clave va por POSICIÓN dentro del ejercicio, no por
+                    // id de serie. Es lo que hace que al separar un grupo React
+                    // reutilice el mismo componente en vez de desmontarlo: si
+                    // la clave cambiara, el renglón se remontaría en mitad de
+                    // la escritura y se perdería lo que el atleta acababa de
+                    // teclear.
+                    key: `${sessionExercise.id}:${position++}`,
+                    set,
+                    targetReps,
+                    needsExpansion: count > 1,
+                    groupIndex: i,
+                    baseOrderIndex: set.order_index,
+                }));
+            });
+        },
+        [sessionExercise.id, sessionExercise.sets]
+    );
+
     // Unidad en la que el coach pautó este ejercicio. Las series antiguas no
     // la traen: son kilos, que era lo único que había antes de la migración.
     const prescriptionMetric: TargetMetric =
@@ -595,7 +841,7 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
     };
 
     return (
-        <div className="bg-[#1c1c1c] rounded-2xl overflow-hidden border border-white/5 shadow-sm">
+        <div className="bg-surface-canvas rounded-card overflow-hidden border border-subtle shadow-sm">
             <Modal
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}
@@ -612,7 +858,7 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
             </Modal>
 
             {/* Header */}
-            <div className="p-4 bg-[#252525] flex justify-between items-start">
+            <div className="p-4 bg-surface-raised flex justify-between items-start">
                 <div>
                     <button
                         onClick={() => setDetailOpen(true)}
@@ -620,7 +866,7 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
                         title="Ver técnica y detalles"
                     >
                         <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-anvil-red transition-colors">{exerciseName}</h3>
-                        <PlayCircle size={15} className="text-gray-600 group-hover:text-anvil-red transition-colors shrink-0" />
+                        <PlayCircle size={15} className="text-ink-subtle group-hover:text-anvil-red transition-colors shrink-0" />
                     </button>
                     {sessionExercise.notes && (
                         <button
@@ -654,7 +900,7 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading}
-                            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-white/10 transition-colors"
+                            className="flex items-center gap-1 text-[10px] text-ink-muted hover:text-white bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
                         >
                             {uploading ? <Loader size={12} className="animate-spin" /> : <UploadCloud size={12} />}
                             {uploading ? "SUBIENDO..." : "+ VBT"}
@@ -674,14 +920,14 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
                             <button
                                 key={s.id}
                                 onClick={() => tagSetWithVbt(s.id)}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red hover:text-white text-gray-300 text-xs font-black uppercase transition-colors border border-white/10"
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red hover:text-white text-ink-muted text-xs font-black uppercase transition-colors border border-[var(--border-default)]"
                             >
                                 Serie {i + 1}
                             </button>
                         ))}
                         <button
                             onClick={() => tagSetWithVbt(null)}
-                            className="px-3 py-1.5 rounded-lg text-gray-500 hover:text-white text-xs font-bold uppercase transition-colors"
+                            className="px-3 py-1.5 rounded-lg text-ink-subtle hover:text-white text-xs font-bold uppercase transition-colors"
                         >
                             Todo el ejercicio
                         </button>
@@ -697,31 +943,33 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
 
             {/* Prescription Summary Bar: vel_avg, rpe, rest */}
             {(sessionExercise.velocity_avg || sessionExercise.rpe || sessionExercise.rest_seconds) && (
-                <div className="flex items-center gap-4 px-4 py-2 bg-black/30 border-b border-white/5 text-[11px] text-gray-500">
+                <div className="flex items-center gap-4 px-4 py-2 bg-black/30 border-b border-subtle text-[11px] text-ink-subtle">
                     {sessionExercise.velocity_avg && (
                         <span>
-                            <span className="font-bold text-gray-300">{sessionExercise.velocity_avg}</span>
+                            <span className="font-bold text-ink-muted">{sessionExercise.velocity_avg}</span>
                             <span className="ml-1">m/s</span>
                         </span>
                     )}
                     {sessionExercise.rpe && (
                         <span>
-                            <span className="text-gray-600">RPE </span>
-                            <span className="font-bold text-gray-300">{sessionExercise.rpe}</span>
+                            <span className="text-ink-subtle">RPE </span>
+                            <span className="font-bold text-ink-muted">{sessionExercise.rpe}</span>
                         </span>
                     )}
                     {sessionExercise.rest_seconds && (
                         <span>
-                            <span className="text-gray-600">Descanso </span>
-                            <span className="font-bold text-gray-300">{Math.floor(sessionExercise.rest_seconds / 60)}′{(sessionExercise.rest_seconds % 60).toString().padStart(2, '0')}″</span>
+                            <span className="text-ink-subtle">Descanso </span>
+                            <span className="font-bold text-ink-muted">{Math.floor(sessionExercise.rest_seconds / 60)}′{(sessionExercise.rest_seconds % 60).toString().padStart(2, '0')}″</span>
                         </span>
                     )}
                 </div>
             )}
 
-            {/* Sets Header */}
-            <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-2 bg-[#2a2a2a]/50 text-[10px] uppercase font-bold text-gray-500 text-center">
-                <span className="text-left">Serie</span>
+            {/* Cabecera de las columnas */}
+            {/* Mismas columnas que LoggerSetRow. Si se cambian ahí, aquí
+                también: son la cabecera de esa rejilla. */}
+            <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold uppercase tracking-wide text-ink-subtle sm:gap-1.5 sm:px-3">
+                <span className="text-left">#</span>
                 <span>Reps</span>
                 {/* Esta columna son SIEMPRE kilos movidos, porque la escribe el
                     atleta. Cuando el coach pautó en otra unidad —RPE, RIR,
@@ -729,232 +977,32 @@ function LoggerExerciseCard({ sessionExercise, athleteId, onStartTimer }: { sess
                     es donde no se confunde con lo que se ha levantado. */}
                 <span>Kg{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
                 <span>RPE</span>
-                <span className="text-right">OK</span>
+                <span />
+                <span />
             </div>
 
-            {/* Sets List — expand grouped "NxM" into N individual rows */}
-            <div className="divide-y divide-white/5">
-                {sessionExercise.sets.flatMap((set) => {
-                    const { series, reps } = parseTargetReps(set.target_reps);
-                    const count = series && series > 1 ? series : 1;
-                    return Array.from({ length: count }, (_, i) => (
-                        <LoggerSetRow
-                            key={`${set.id}_${i}`}
-                            set={set}
-                            serieIndex={i}
-                            parsedReps={reps}
-                            onStartTimer={onStartTimer}
-                            defaultRestSeconds={sessionExercise.rest_seconds}
-                        />
-                    ));
-                })}
+            {/* Series.
+                Una serie agrupada ("4x8") se pinta como cuatro renglones para
+                poder marcarlos uno a uno, pero los cuatro comparten `id` hasta
+                que el atleta escribe algo: en ese momento se separa en filas
+                reales (ver `expandGroupedSet`). Mientras nadie toque nada, un
+                bloque programado no genera ni una escritura. */}
+            <div className="divide-y divide-[var(--border-subtle)]">
+                {rows.map((row, index) => (
+                    <LoggerSetRow
+                        key={row.key}
+                        set={row.set}
+                        displayIndex={index + 1}
+                        targetReps={row.targetReps}
+                        onStartTimer={onStartTimer}
+                        defaultRestSeconds={sessionExercise.rest_seconds}
+                        needsExpansion={row.needsExpansion}
+                        groupIndex={row.groupIndex}
+                        onExpand={(groupIndex) => onExpandSet(row.set.id, row.baseOrderIndex, groupIndex)}
+                        onChange={onSetChange}
+                    />
+                ))}
             </div>
-        </div>
-    );
-}
-
-
-// ==========================================
-// HELPERS: Parse target_reps format (e.g. "10x1" -> series=10, reps=1)
-// ==========================================
-const parseTargetReps = (target_reps: string | null | undefined) => {
-    if (!target_reps) return { series: null, reps: null };
-    const parts = target_reps.toLowerCase().split('x');
-    if (parts.length >= 2) {
-        const series = parseInt(parts[0].trim()) || null;
-        const reps = parts.slice(1).join('x').trim() || null;
-        return { series, reps };
-    }
-    // No 'x' found -> it's just reps
-    return { series: null, reps: target_reps.trim() };
-};
-
-// ==========================================
-// SUB-COMPONENT: SET ROW (The Core Logic)
-// ==========================================
-function LoggerSetRow({ set, serieIndex, parsedReps, onStartTimer, defaultRestSeconds }: { 
-    set: TrainingSet; 
-    serieIndex: number;
-    parsedReps: string | null;
-    onStartTimer: (s: number) => void; 
-    defaultRestSeconds?: number | null; 
-}) {
-    // Local state for optimistic UI
-    //
-    // El peso lo escribe el ATLETA. Antes esta columna era de solo lectura y
-    // enseñaba la prescripción del coach, así que en los ejercicios que no se
-    // pautan en kilos —accesorios, trabajo por RPE o por RIR— no había forma
-    // de anotar lo que se había movido de verdad: el dato no existía, y el
-    // coach no podía verlo ni entraba en las estadísticas.
-    const [actualLoad, setActualLoad] = useState<string>(set.actual_load?.toString() ?? '');
-    const actualReps = set.actual_reps?.toString() ?? '';
-    const [actualRpe, setActualRpe] = useState<string>(set.actual_rpe?.toString() ?? '');
-    const [isCompleted, setIsCompleted] = useState(!!(set.actual_reps && set.actual_load)); // Pseudo-logic for completion
-    const [saving, setSaving] = useState(false);
-
-    // Effective Rest Logic
-    const effectiveRest = set.rest_seconds || defaultRestSeconds;
-
-    // Un temporizador POR CASILLA. Con uno compartido, escribir el RPE
-    // cancelaba el guardado pendiente del peso y ese kilaje se perdía.
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-    const loadTimer = useRef<NodeJS.Timeout | null>(null);
-
-    // Qué pautó el coach, para enseñarlo sin pisar la casilla del atleta.
-    const prescribedMetric = set.target_metric ?? 'kg';
-    const prescribedTarget = prescribedMetric === 'rpe'
-        ? set.target_rpe
-        : set.target_load !== null && set.target_load !== undefined
-            ? String(set.target_load)
-            : null;
-
-    // Persist to DB
-    const persistChange = useCallback(async (updates: Partial<TrainingSet>) => {
-        setSaving(true);
-        try {
-            await trainingService.updateSetActuals(set.id, updates);
-            // Verify completion locally for UI feedback
-            // We use the NEW values if present in updates, else falling back to state
-            const newReps = updates.actual_reps !== undefined ? updates.actual_reps : (actualReps ? Number(actualReps) : null);
-            const newLoad = updates.actual_load !== undefined ? updates.actual_load : (actualLoad ? Number(actualLoad) : null);
-
-            if (newReps && newLoad) setIsCompleted(true);
-        } catch (err) {
-            console.error(err);
-            toast.error("Error guardando datos");
-        } finally {
-            setSaving(false);
-        }
-    }, [set.id, actualReps, actualLoad]);
-
-
-    const toggleComplete = () => {
-        const newState = !isCompleted;
-        setIsCompleted(newState);
-
-        if (newState) {
-            // Auto-save the prescribed values as actuals when marking done.
-            //
-            // `actual_load` son SIEMPRE kilos movidos. Copiar aquí el objetivo
-            // sin mirar la unidad grababa 0,45 kg en una serie pautada a
-            // 0,45 m/s, o 20 kg en una pautada al 20% de pérdida — y esa cifra
-            // falsa entraba luego en el tonelaje, en el histórico de cargas y
-            // en las estimaciones de 1RM del atleta. Si no se pautó en kilos,
-            // el peso lo pone el atleta, no lo inventa la app.
-            // Si el atleta ya escribió el peso, manda el suyo.
-            const typed = actualLoad ? Number(actualLoad) : null;
-            const prescribedInKg = prescribedMetric === 'kg';
-            const targetLoad = typed ?? (prescribedInKg && set.target_load ? Number(set.target_load) : null);
-            if (targetLoad !== null && !actualLoad) setActualLoad(String(targetLoad));
-            const targetReps = parsedReps ? Number(parsedReps) : null;
-            const rpeValue = actualRpe ? Number(actualRpe) : null;
-            persistChange({
-                actual_load: targetLoad,
-                actual_reps: targetReps,
-                actual_rpe: rpeValue,
-            });
-            toast.success("Serie completada ✓");
-            if (effectiveRest && effectiveRest > 0) {
-                onStartTimer(effectiveRest);
-            }
-        } else {
-            // Un-complete: clear actuals
-            setActualLoad('');
-            persistChange({ actual_load: null, actual_reps: null, actual_rpe: null });
-        }
-    };
-
-    return (
-        <div className={cn(
-            "grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] gap-2 px-4 py-3 items-center transition-all relative",
-            isCompleted ? "bg-green-500/10" : "hover:bg-white/5"
-        )}>
-            {/* Serie number */}
-            <div 
-                className="text-left font-mono text-sm font-black tabular-nums"
-                style={{ color: isCompleted ? '#22c55e' : '#6b7280' }}
-            >
-                {serieIndex + 1}
-            </div>
-
-            {/* Reps (prescribed, locked) */}
-            <div className="text-center">
-                <span className={cn("font-black text-sm tabular-nums", isCompleted ? "text-green-400" : "text-white")}>
-                    {parsedReps ?? '-'}
-                </span>
-            </div>
-
-            {/* Peso movido, EDITABLE.
-                El marcador de posición es lo que pautó el coach, así que la
-                casilla vacía ya dice el objetivo; en cuanto el atleta escribe,
-                lo que se ve es lo que ha hecho. Cuando la prescripción no va en
-                kilos (RPE, RIR, velocidad) el objetivo se enseña encima en
-                pequeño y la casilla queda libre para los kilos reales. */}
-            <div className="text-center">
-                {prescribedMetric !== 'kg' && (
-                    <span className="block text-[9px] font-bold uppercase leading-none text-ink-subtle">
-                        {prescribedTarget ?? '-'}
-                    </span>
-                )}
-                <input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.5"
-                    value={actualLoad}
-                    onChange={(e) => {
-                        setActualLoad(e.target.value);
-                        if (loadTimer.current) clearTimeout(loadTimer.current);
-                        loadTimer.current = setTimeout(() => {
-                            persistChange({ actual_load: e.target.value ? Number(e.target.value) : null });
-                        }, 800);
-                    }}
-                    placeholder={prescribedMetric === 'kg' && set.target_load !== null && set.target_load !== undefined
-                        ? String(set.target_load)
-                        : 'kg'}
-                    aria-label="Peso movido en kilos"
-                    className={cn(
-                        'w-full rounded-field border bg-surface-sunken px-0 py-1.5 text-center text-t-sm font-black tabular-nums outline-none transition-colors duration-fast focus:border-brand',
-                        actualLoad
-                            ? 'border-[var(--brand-line)] text-ink'
-                            : 'border-subtle text-ink-muted placeholder:font-normal placeholder:text-ink-subtle'
-                    )}
-                />
-            </div>
-
-            {/* RPE real (editable) */}
-            <input
-                type="number"
-                value={actualRpe}
-                onChange={(e) => {
-                    setActualRpe(e.target.value);
-                    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-                    debounceTimer.current = setTimeout(() => {
-                        persistChange({ actual_rpe: e.target.value ? Number(e.target.value) : null });
-                    }, 800);
-                }}
-                placeholder="-"
-                className={cn(
-                    "w-full bg-[#111] border rounded-lg px-0 py-1.5 text-center text-xs font-bold focus:border-anvil-red outline-none transition-colors",
-                    actualRpe ? "text-anvil-red border-anvil-red/40" : "text-gray-600 border-white/5 placeholder-gray-700"
-                )}
-            />
-
-            {/* Done button */}
-            <div className="flex justify-end">
-                <button
-                    onClick={toggleComplete}
-                    className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm",
-                        isCompleted
-                            ? "bg-green-500 text-black hover:bg-green-400"
-                            : "bg-[#2a2a2a] border border-white/10 text-gray-600 hover:bg-[#333] hover:text-white"
-                    )}
-                >
-                    <Check size={14} strokeWidth={3} />
-                </button>
-            </div>
-
-            {saving && <div className="absolute right-1 top-1"><div className="w-1.5 h-1.5 bg-anvil-red rounded-full animate-ping"></div></div>}
         </div>
     );
 }

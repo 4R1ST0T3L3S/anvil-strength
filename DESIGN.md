@@ -19,10 +19,13 @@ un estado, sobra.*
 
 | Archivo | Contiene |
 |---|---|
-| [src/styles/tokens.css](src/styles/tokens.css) | **Fuente única de verdad.** Color, elevación, radios, movimiento, capas. |
+| [src/styles/tokens.css](src/styles/tokens.css) | **Fuente única de verdad.** Color, tipografía, elevación, radios, movimiento, capas. |
 | [tailwind.config.js](tailwind.config.js) | Expone los tokens como utilidades. No define valores propios. |
+| [src/index.css](src/index.css) | La **capa de respuesta** (ver abajo) y los reset globales. |
 | [src/lib/motion.ts](src/lib/motion.ts) | Espejo en JS de los tokens de movimiento, para framer-motion. |
-| [src/components/ui/](src/components/ui) | Primitivas: `Button`, `Modal`, `Panel`, `EmptyState`. |
+| [src/lib/roles.ts](src/lib/roles.ts) | Quién ve qué. Una sola definición de coach / staff / admin. |
+| [src/lib/offlineQueue.ts](src/lib/offlineQueue.ts) | Cola de escritura que sobrevive a quedarse sin cobertura. |
+| [src/components/ui/](src/components/ui) | Primitivas: `Button`, `Modal`, `Panel`, `EmptyState`, `SaveIndicator`. |
 
 **Regla 1:** ningún componente nuevo escribe un hex a mano. Si un valor no está
 en `tokens.css`, o falta un token o el componente se está saliendo del sistema.
@@ -89,9 +92,26 @@ app y merece escala propia.
 
 ## Tipografía
 
-Una sola familia (Inter). El registro de producto no necesita pareja
-display + cuerpo: hay muchos niveles de texto y el contraste exagerado
-entre ellos genera ruido.
+Una sola familia: **Plus Jakarta Sans**, cargada desde Google Fonts en
+`index.html` y expuesta como `--font-sans`. El registro de producto no
+necesita pareja display + cuerpo: hay muchos niveles de texto y el contraste
+exagerado entre ellos genera ruido.
+
+> **Inter nunca llegó a cargarse.** El CSS declaraba `font-family: Inter`
+> pero no había `@font-face` ni enlace en ninguna parte, así que toda la app
+> —portada incluida— venía cayendo a la fuente del sistema. Esa es la razón
+> de que se viera genérica, no la elección de familia.
+
+Plus Jakarta Sans tiene el asta más gruesa y una `a` de doble piso con más
+carácter, aguanta el peso 800 en los titulares en mayúsculas que usa la app
+y trae cifras tabulares, que aquí son obligatorias.
+
+El peso base es **500**, no 400: sobre fondo oscuro el texto adelgaza
+ópticamente y a 400 esta familia se queda fina de más.
+
+`font-bebas` era una clase muerta —se usaba en 5 ficheros contra una clave
+que nunca existió en `tailwind.config.js`— y ahora apunta a la misma familia,
+para que esos ficheros hereden la fuente real sin tocarlos uno a uno.
 
 Escala **fija en rem** con prefijo `t-` (`text-t-sm`, `text-t-2xl`…), razón ~1.2.
 El prefijo existe para no pisar `text-sm`/`text-xl` de Tailwind. Nada de `clamp()`: la app se consume a DPI
@@ -155,6 +175,89 @@ Reglas:
   entrada a todas las secciones de una pantalla es reflejo, no diseño.
 - `prefers-reduced-motion` colapsa todas las duraciones a 1ms, y se lee en cada
   llamada porque la preferencia se puede cambiar con la pestaña abierta.
+
+### La capa de respuesta
+
+Seis reglas globales en [`src/index.css`](src/index.css) que hacen más por la
+sensación de velocidad que cualquier animación de pantalla, porque se aplican
+a toda la interfaz sin tocar un componente:
+
+| Regla | Qué arregla |
+|---|---|
+| `touch-action: manipulation` | El retardo de 300ms del navegador móvil. En una sesión de doce series son casi cuatro segundos de espera pura. |
+| `-webkit-tap-highlight-color: transparent` | El recuadro azul del sistema, que tapa el feedback propio. |
+| `:active { scale(0.97) }` | Acuse de recibo en el mismo frame, sin depender de la red. Escape: `data-no-press`. |
+| `font-size: max(16px, 1em)` en campos, en móvil | Safari amplía la página al enfocar un campo pequeño **y no vuelve atrás**. |
+| `:focus-visible` y no `:focus` | Anillo para quien navega con teclado, nada para quien usa el ratón. |
+| `-webkit-overflow-scrolling: touch` | Inercia de scroll en los paneles con scroll propio. |
+
+La velocidad que percibe una persona no es la que mide un cronómetro: es
+cuánto tarda la interfaz en acusar recibo. Una app que responde en 16ms y
+termina en 400 se siente más rápida que una que calla y termina en 200.
+
+### Guardar sin conexión
+
+El gimnasio es un sótano de hormigón. Ninguna escritura del atleta va directa
+a la red: pasa por [`writeQueue`](src/lib/offlineQueue.ts), que persiste en
+`localStorage`, funde los cambios de una misma fila y reintenta al recuperar
+señal, al volver a la pestaña o en el siguiente arranque.
+
+`SaveIndicator` pinta ese estado con una regla: **el silencio es el estado
+bueno**. Solo aparece cuando acaba de guardar (y se va solo), cuando hay algo
+pendiente, o cuando no hay conexión — y ahí dice que el dato está a salvo en
+el dispositivo, en vez de asustar.
+
+---
+
+## Móvil
+
+El atleta usa esta app **de pie, entre series, con una mano y el móvil
+moviéndose**. No es un escritorio estrecho: es el contexto de uso principal.
+
+### Zona pulsable: 44px
+
+Cualquier control mide **44px de alto como mínimo**. Cuando el ancho no da
+—una fila de series en un móvil de 320px—, se estira la zona sensible con un
+pseudo-elemento en vez de engordar el botón:
+
+```
+before:absolute before:-inset-y-1 before:-left-1 before:-right-2.5
+```
+
+Así el objetivo crece sin robarle sitio a las casillas donde se escribe.
+
+> El registro de series tenía botones de 28 y 32px. Cada fallo de pulsación
+> ahí son tres segundos y una serie sin marcar.
+
+### Zona segura del dispositivo
+
+`index.html` lleva **`viewport-fit=cover`**. Sin él, `env(safe-area-inset-*)`
+vale cero siempre y todas las reservas de espacio de la app no reservan nada:
+la barra de pestañas queda debajo del indicador de inicio del iPhone, donde el
+sistema se come el toque. Se nota sobre todo con la app instalada como PWA.
+
+`pb-safe` existe como utilidad (`spacing.safe` en `tailwind.config.js`). Se
+usaba desde hacía tiempo **sin estar definida en ninguna parte**.
+
+### Suelo de texto: 11px
+
+`text-t-2xs`. Y nunca `text-[9px] md:text-xs`: eso da 9px en el móvil y 12 en
+el escritorio, justo al revés de lo que hace falta. La pantalla pequeña es la
+que se mira a un brazo de distancia.
+
+### Cinco pestañas
+
+La barra inferior topa en cinco. Lo que sobra lleva `hideOnMobileBar` y
+aparece en el menú de cuenta, sin perder ningún acceso. Si una etiqueta no
+cabe en 73px, se le pone `shortLabel` a mano — recortar con puntos
+suspensivos no ayuda, "Competi…" no dice más que "Competir".
+
+### Cómo se comprueba
+
+`/dev/movil` monta las pantallas críticas con datos falsos, solo en
+desarrollo (`import.meta.env.DEV`, así que el empaquetador la borra del build).
+Existe porque revisar la maquetación del registro de series a 375px obligaba
+a tener cuenta, datos y sesión: sin ella, ajustar espaciados es adivinar.
 
 ---
 

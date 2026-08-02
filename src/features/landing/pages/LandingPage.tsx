@@ -93,6 +93,19 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
         return () => clearInterval(interval);
     }, [isBotMounted]);
 
+    // Al llegar a la portada desde otra ruta (por ejemplo pulsando ATLETAS
+    // estando en /competiciones) la URL trae un hash, pero el navegador no
+    // puede saltar solo porque la sección todavía no existe en el DOM. Se
+    // espera un frame y se hace el salto a mano.
+    useEffect(() => {
+        const hash = window.location.hash;
+        if (!hash || hash.length < 2) return;
+        const timer = window.setTimeout(() => {
+            document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 120);
+        return () => window.clearTimeout(timer);
+    }, []);
+
     // Abre el chat en cuanto está disponible, aunque el clic ocurriera antes
     // de que el chunk terminase de descargarse: así no se pierde el primer clic.
     useEffect(() => {
@@ -231,8 +244,8 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                             <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full sm:w-auto" />
                         )}
                         <a
-                            href="#club"
-                            onClick={(e) => scrollToSection(e, '#club')}
+                            href="#filosofia"
+                            onClick={(e) => scrollToSection(e, '#filosofia')}
                             className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-white hover:underline"
                         >
                             Ver de qué va
@@ -250,7 +263,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 de que una página parezca una plantilla y la más lenta de
                 leer. Ahora son cuatro afirmaciones en texto corrido, que
                 es como se lee una idea.                                */}
-            <Fold id="club" tone="light" className="py-24 md:py-32">
+            <Fold id="filosofia" tone="light" className="py-24 md:py-32">
                 <div className="grid gap-14 md:grid-cols-[1fr_0.85fr] md:items-start md:gap-20">
                     <div>
                         <h2 className="text-d-md font-black uppercase leading-[0.95] text-fold-light-ink text-balance">
@@ -323,7 +336,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             {/* =====================================================
                 5. QUÉ TRAE LA APP
                 ===================================================== */}
-            <Fold tone="dark" className="py-24 md:py-28">
+            <Fold id="software" tone="dark" className="py-24 md:py-28">
                 <div className="max-w-2xl">
                     <h2 className="text-d-sm font-black uppercase leading-[1.02] text-ink text-balance">
                         Y una aplicación que hace el trabajo aburrido
@@ -423,7 +436,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={`Instagram de ${nutri.name}`}
-                                        className="rounded-field bg-white/10 p-2 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
                                     >
                                         <Instagram size={16} />
                                     </a>
@@ -432,7 +445,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={`Formulario de contacto de ${nutri.name}`}
-                                        className="rounded-field bg-white/10 p-2 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
                                     >
                                         <FileText size={16} />
                                     </a>

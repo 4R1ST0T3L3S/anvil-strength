@@ -41,7 +41,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                 <div className="p-1.5 md:p-2 bg-anvil-red/10 rounded-lg text-anvil-red border border-anvil-red/20 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
                     {getIcon()}
                 </div>
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/60 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5">
+                <span className="text-t-2xs font-black uppercase tracking-[0.2em] text-white/60 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5">
                     {getTypeLabel()}
                 </span>
             </div>
@@ -52,7 +52,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                     {bet.title}
                 </h3>
                 {bet.description && (
-                    <p className="text-gray-500 text-[8px] md:text-xs font-bold uppercase tracking-widest mb-6">
+                    <p className="text-gray-500 text-t-2xs md:text-t-xs font-bold uppercase tracking-widest mb-6">
                         {bet.description}
                     </p>
                 )}
@@ -173,12 +173,12 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                     <div className={`w-2 h-2 rounded-full ${
                         bet.status === 'open' ? 'bg-anvil-red animate-pulse' : 'bg-gray-600'
                     }`} />
-                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500">
+                    <span className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500">
                         {bet.status === 'open' ? 'En Vivo / Abierta' : bet.status === 'resolved' ? 'Resuelta' : 'Cerrada'}
                     </span>
                 </div>
                 {bet.resolved_at && (
-                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">
+                    <span className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-400">
                         {new Date(bet.resolved_at).toLocaleDateString()}
                     </span>
                 )}

@@ -207,7 +207,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                 />
                                                 <button
                                                     onClick={() => updateLift(key, { warmups: lift.warmups.filter((_, xi) => xi !== i) })}
-                                                    className="text-gray-700 hover:text-red-500 p-0.5"
+                                                    className="text-gray-700 hover:text-danger p-0.5"
                                                 >
                                                     <Trash2 size={11} />
                                                 </button>

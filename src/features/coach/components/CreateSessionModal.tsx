@@ -96,11 +96,11 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#0a0a0a] w-full max-w-sm rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+                    className="relative bg-surface-sunken w-full max-w-sm rounded-card border border-[var(--border-default)] shadow-2xl overflow-hidden"
                 >
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#0a0a0a]">
+                    <div className="flex items-center justify-between p-6 border-b border-subtle bg-surface-sunken">
                         <h2 className="text-xl font-black uppercase text-white">Añadir Día</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
                             <X size={20} />
                         </button>
                     </div>
@@ -109,31 +109,31 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
 
                         {/* Day Number */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                 Número de Día
                             </label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">Día</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted font-bold">Día</span>
                                 <input
                                     type="number"
                                     min="1"
                                     max="30"
                                     value={dayNumber}
                                     onChange={(e) => setDayNumber(parseInt(e.target.value))}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white font-bold text-lg focus:outline-none focus:border-anvil-red/50 transition-all text-center"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl pl-12 pr-4 py-3 text-white font-bold text-lg focus:outline-none focus:border-anvil-red/50 transition-all text-center"
                                 />
                             </div>
                         </div>
 
                         {/* Day of Week Selector */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                 Día de la Semana
                             </label>
                             <select
                                 value={dayOfWeek}
                                 onChange={(e) => setDayOfWeek(e.target.value as Weekday | '')}
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white font-bold focus:outline-none focus:border-anvil-red/50 transition-all appearance-none cursor-pointer"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white font-bold focus:outline-none focus:border-anvil-red/50 transition-all appearance-none cursor-pointer"
                             >
                                 <option value="">Seleccionar día (Opcional)</option>
                                 <option value="monday">Lunes</option>
@@ -148,7 +148,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
 
                         {/* Name Input */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                 Etiqueta (Opcional)
                             </label>
                             <input
@@ -156,7 +156,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ej: Torso Pesado, Pierna..."
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all"
                             />
                         </div>
 

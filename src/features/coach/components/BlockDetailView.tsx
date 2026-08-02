@@ -38,13 +38,13 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#0a0a0a]">
+        <div className="flex flex-col h-full bg-surface-sunken">
             {/* Header */}
-            <div className="border-b border-white/5 bg-[#0a0a0a] p-6">
+            <div className="border-b border-subtle bg-surface-sunken p-6">
                 <div className="flex items-center gap-4 mb-4">
                     <button
                         onClick={onBack}
-                        className="p-2 -ml-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                        className="p-2 -ml-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-white transition-colors"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -59,7 +59,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                                 </span>
                             )}
                         </div>
-                        <p className="text-gray-400 text-sm mt-1 flex items-center gap-2">
+                        <p className="text-ink-muted text-sm mt-1 flex items-center gap-2">
                             <Calendar size={14} />
                             {formatDate(block.start_date)} - {formatDate(block.end_date)}
                         </p>
@@ -69,11 +69,11 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                 {/* Microcycle Stats (Placeholder) */}
                 <div className="flex gap-8 text-sm">
                     <div>
-                        <span className="block text-gray-500 text-xs font-bold uppercase">Días / S</span>
+                        <span className="block text-ink-subtle text-xs font-bold uppercase">Días / S</span>
                         <span className="text-white font-bold text-lg">{sessions.length}</span>
                     </div>
                     <div>
-                        <span className="block text-gray-500 text-xs font-bold uppercase">Volumen</span>
+                        <span className="block text-ink-subtle text-xs font-bold uppercase">Volumen</span>
                         <span className="text-white font-bold text-lg">-</span>
                     </div>
                 </div>
@@ -98,8 +98,8 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                         <Loader className="text-anvil-red animate-spin" />
                     </div>
                 ) : sessions.length === 0 ? (
-                    <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-xl">
-                        <p className="text-gray-500 mb-4">No hay días de entrenamiento definidos.</p>
+                    <div className="text-center py-12 border-2 border-dashed border-subtle rounded-xl">
+                        <p className="text-ink-subtle mb-4">No hay días de entrenamiento definidos.</p>
                         <button
                             onClick={() => setIsCreateSessionModalOpen(true)}
                             className="text-anvil-red font-bold uppercase tracking-wider text-sm hover:underline"
@@ -112,27 +112,27 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                         {sessions.map((session) => (
                             <div
                                 key={session.id}
-                                className="group bg-[#0a0a0a] border border-white/5 rounded-xl p-4 hover:border-anvil-red/30 transition-all cursor-pointer"
+                                className="group bg-surface-sunken border border-subtle rounded-xl p-4 hover:border-anvil-red/30 transition-all cursor-pointer"
                                 onClick={() => onSelectSession(session)}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-black/40 rounded-lg flex flex-col items-center justify-center border border-white/5 text-center">
-                                            <span className="text-[10px] text-gray-500 font-bold uppercase">Día</span>
+                                        <div className="w-12 h-12 bg-black/40 rounded-lg flex flex-col items-center justify-center border border-subtle text-center">
+                                            <span className="text-[10px] text-ink-subtle font-bold uppercase">Día</span>
                                             <span className="text-xl font-black text-white leading-none">{session.day_number}</span>
                                         </div>
                                         <div>
                                             <h4 className="text-white font-bold uppercase tracking-wider text-lg">
                                                 {session.name || `Entrenamiento Día ${session.day_number}`}
                                             </h4>
-                                            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                                            <p className="text-xs text-ink-subtle flex items-center gap-1.5">
                                                 <Dumbbell size={12} />
                                                 0 Ejercicios
                                             </p>
                                         </div>
                                     </div>
 
-                                    <button className="text-gray-600 hover:text-white transition-colors p-2">
+                                    <button className="text-ink-subtle hover:text-white transition-colors p-2">
                                         <MoreVertical size={20} />
                                     </button>
                                 </div>

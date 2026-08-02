@@ -59,7 +59,7 @@ export default {
         },
         success: { DEFAULT: token("--success"), quiet: token("--success-quiet") },
         warning: { DEFAULT: token("--warning"), quiet: token("--warning-quiet") },
-        danger: { DEFAULT: token("--danger"), quiet: token("--danger-quiet") },
+        danger: { DEFAULT: token("--danger"), hover: token("--danger-hover"), quiet: token("--danger-quiet") },
         info: { DEFAULT: token("--info"), quiet: token("--info-quiet") },
         effort: {
           low: token("--effort-low"),
@@ -101,6 +101,34 @@ export default {
         subtle: token("--border-subtle"),
         line: token("--border-default"),
         strong: token("--border-strong"),
+      },
+
+      /* Una sola familia. `sans` es clave por defecto de Tailwind y aquí se
+         PISA a propósito: es el único cambio que hace que `font-sans` y la
+         fuente heredada por defecto sean la misma cosa.
+
+         `bebas` no es una segunda familia: apunta al mismo sitio. Había 5
+         ficheros usando `font-bebas` contra una clave que nunca existió en
+         esta config, así que la utilidad no se generaba y el texto caía a la
+         fuente del sistema. Se mapea en vez de borrarse para que esos
+         ficheros hereden la familia real sin tocarlos uno a uno. */
+      fontFamily: {
+        sans: "var(--font-sans)",
+        bebas: "var(--font-sans)",
+      },
+
+      /* ZONA SEGURA DEL DISPOSITIVO.
+         `pb-safe` se usaba en la barra de pestañas del móvil desde siempre...
+         y NO EXISTÍA: no había ni plugin ni clase que la definiera, así que
+         Tailwind no generaba nada y la barra quedaba pegada al borde de la
+         pantalla, debajo del indicador de inicio del iPhone.
+
+         Va en `spacing` y no como utilidad suelta para que sirva en cualquier
+         lado (`pb-safe`, `mb-safe`, `bottom-safe`) y se pueda componer con
+         `calc()` donde hay que sumarle la altura de una barra. */
+      spacing: {
+        safe: "env(safe-area-inset-bottom, 0px)",
+        "safe-top": "env(safe-area-inset-top, 0px)",
       },
 
       borderRadius: {

@@ -81,6 +81,11 @@
   --warning: oklch(0.78 0.16 78);
   --warning-quiet: oklch(0.78 0.16 78 / 0.14);
   --danger: oklch(0.65 0.2 25);
+  /* Igual que la marca, en hover SE ACLARA: sobre fondo oscuro, oscurecer
+     aleja el elemento del usuario en vez de acercarlo. Existe para que un
+     botón de borrar no tenga que tomar prestado el hover del rojo de marca
+     — guardar y borrar no pueden reaccionar igual al pasar por encima. */
+  --danger-hover: oklch(0.71 0.2 25);
   --danger-quiet: oklch(0.65 0.2 25 / 0.14);
   --info: oklch(0.7 0.13 240);
   --info-quiet: oklch(0.7 0.13 240 / 0.14);
@@ -91,6 +96,24 @@
   --effort-mid: oklch(0.78 0.16 78);
   --effort-high: oklch(0.7 0.19 45);
   --effort-max: oklch(0.62 0.21 25);
+
+  /* -------------------------------------------------------------------
+     4b. TIPOGRAFÍA — una sola familia
+     -------------------------------------------------------------------
+     El registro de producto no necesita pareja display + cuerpo: hay
+     muchos niveles de texto y el contraste exagerado entre ellos genera
+     ruido. Una familia en varios pesos hace el mismo trabajo sin él.
+
+     Plus Jakarta Sans y no Inter: el asta es más gruesa, la 'a' de doble
+     piso tiene más carácter y aguanta el peso 800 en mayúsculas que la
+     app usa en cada titular. Inter, además, NUNCA llegó a cargarse — se
+     declaraba en el CSS pero no había ni @font-face ni enlace, así que
+     todo caía a la fuente del sistema. De ahí que se viera genérica.
+
+     El peso base es 500, no 400: sobre fondo oscuro el texto adelgaza
+     ópticamente, y a 400 esta familia se queda fina de más.             */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
 
   /* -------------------------------------------------------------------
      5. FOCO — visible siempre, también sobre superficie roja

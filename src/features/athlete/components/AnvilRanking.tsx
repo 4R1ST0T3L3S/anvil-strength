@@ -136,13 +136,13 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         <div className="hidden sm:flex p-1 md:p-1.5 bg-white/5 rounded-xl md:rounded-2xl border border-white/10 shadow-inner mr-2">
                             <button 
                                 onClick={() => setRankingType('gl')}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-xs font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
                                 <span className="flex items-center gap-2"><Trophy size={14} className="hidden md:block" /> GL Points</span>
                             </button>
                             <button 
                                 onClick={() => setRankingType('sushi')}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-xs font-black uppercase tracking-widest transition-all ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-all ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
                                 <span className="flex items-center gap-2"><Fish size={14} className="hidden md:block" /> Sushi</span>
                             </button>
@@ -211,7 +211,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                                             'text-gray-600 text-xl md:text-3xl'
                                         }`}>
                                             {index + 1}
-                                            {index === 0 && <span className="text-[8px] md:text-[10px] font-black tracking-widest uppercase mt-1 not-italic">MVP</span>}
+                                            {index === 0 && <span className="text-t-2xs font-black tracking-widest uppercase mt-1 not-italic">MVP</span>}
                                         </div>
 
                                         {/* Avatar */}
@@ -236,7 +236,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                                                 {athlete.full_name}
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className="bg-white/10 text-gray-400 text-[9px] md:text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-white/5">
+                                                <span className="bg-white/10 text-gray-400 text-t-2xs md:text-t-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-white/5">
                                                     {athlete.weight_category !== 'N/A' ? athlete.weight_category : 'SIN CATEGORÍA'}
                                                 </span>
                                             </div>
@@ -250,7 +250,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                                                 </p>
                                                 <ArrowUpRight size={16} className={`mb-2 md:mb-3 ${rankingType === 'sushi' ? 'text-cyan-600' : 'text-anvil-red'}`} />
                                             </div>
-                                            <p className={`text-[9px] md:text-[11px] font-black uppercase tracking-widest ${rankingType === 'sushi' ? 'text-cyan-600' : 'text-anvil-red'}`}>
+                                            <p className={`text-t-2xs md:text-t-xs font-black uppercase tracking-widest ${rankingType === 'sushi' ? 'text-cyan-600' : 'text-anvil-red'}`}>
                                                 {rankingType === 'gl' ? 'GL POINTS' : 'PIEZAS'}
                                             </p>
                                         </div>

@@ -6,13 +6,35 @@
   <link rel="icon" type="image/svg+xml" href="/logo.svg" media="(prefers-color-scheme: dark)" />
   <link rel="icon" type="image/svg+xml" href="/logo-black.svg" media="(prefers-color-scheme: light)" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- `viewport-fit=cover` es lo que ACTIVA las variables `env(safe-area-inset-*)`.
+       Sin él valen cero siempre, y todas las reservas de espacio que hace la app
+       para la barra de gestos del iPhone —la barra de pestañas del panel, el pie
+       del registro de series, las hojas inferiores— no reservan nada: los
+       controles quedan justo debajo del indicador de inicio, donde el sistema se
+       come el toque. Se nota sobre todo con la app instalada como PWA, que es
+       donde no hay barra del navegador que disimule. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <!-- El tema es oscuro únicamente: se declara para que el navegador pinte los
        controles nativos y la barra de estado en oscuro desde el primer frame,
        en vez de dar un destello blanco antes de que cargue el CSS. -->
   <meta name="color-scheme" content="dark" />
   <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- TIPOGRAFÍA — Plus Jakarta Sans.
+       El CSS declaraba `font-family: Inter` pero Inter no se cargaba en ningún
+       sitio: toda la app estaba cayendo a la fuente del sistema, que es la
+       razón de que se viera genérica. Plus Jakarta Sans tiene el asta más
+       gruesa y una 'a' de doble piso con más carácter, aguanta el peso 800 de
+       los titulares en mayúsculas que usa la app y trae cifras tabulares, que
+       son obligatorias aquí (ver `font-variant-numeric` en index.css).
+       `display=swap` para que el texto se lea desde el primer frame. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
+  />
 
   <!-- SEO Primary -->
   <title>Anvil Strength | Club de Powerlifting Online en España — Gratis</title>

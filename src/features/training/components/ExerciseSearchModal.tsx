@@ -83,7 +83,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-surface-sunken border border-zinc-800 rounded-card shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-zinc-800">
                     <h2 className="text-white font-black uppercase text-lg tracking-wider flex items-center gap-2">
@@ -132,7 +132,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                 <button 
                                     onClick={handleCreateCustom}
                                     disabled={!customName.trim() || submitting}
-                                    className="flex-1 py-3 bg-anvil-red hover:bg-red-600 text-black rounded-lg font-black uppercase text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 bg-anvil-red hover:bg-brand text-black rounded-lg font-black uppercase text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {submitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                                     Crear y Seleccionar

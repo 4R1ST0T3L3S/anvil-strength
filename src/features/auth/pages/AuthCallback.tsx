@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useUser } from '../../../hooks/useUser';
+import { homeRouteFor } from '../../../lib/roles';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
 
 /**
@@ -41,8 +42,8 @@ export function AuthCallback() {
         return <Navigate to="/" replace />;
     }
 
-    // Un coach recién autenticado va a su panel; el resto, al de atleta. Los
+    // Quien gestiona atletas va a su panel; el resto, al de atleta. Los
     // usuarios sin perfil todavía cargado caen en /dashboard, que ya sabe
-    // esperar a que llegue.
-    return <Navigate to={user?.role === 'coach' ? '/coach-dashboard' : '/dashboard'} replace />;
+    // esperar a que llegue. Ver src/lib/roles.ts.
+    return <Navigate to={homeRouteFor(user)} replace />;
 }

@@ -4,8 +4,7 @@ import { Send, User, Megaphone, MessageCircle, ChevronLeft, Loader, Trash2 } fro
 import { toast } from 'sonner';
 import { UserProfile } from '../../hooks/useUser';
 import { chatService, ChatMessage, ChatContact, Announcement } from '../../services/chatService';
-
-const ADMIN_EMAILS = ['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'];
+import { isAdmin as isAdminUser, isCoach as isCoachUser } from '../../lib/roles';
 
 type Tab = 'chat' | 'announcements';
 
@@ -16,8 +15,8 @@ export function ChatView({ user }: { user: UserProfile }) {
     const [unreadBySender, setUnreadBySender] = useState<Record<string, number>>({});
     const [loadingContacts, setLoadingContacts] = useState(true);
 
-    const isCoach = user.role === 'coach';
-    const isAdmin = ADMIN_EMAILS.includes(user.email || '');
+    const isCoach = isCoachUser(user);
+    const isAdmin = isAdminUser(user);
 
     // Cargar contactos: el coach ve a sus atletas; el atleta a su coach
     useEffect(() => {

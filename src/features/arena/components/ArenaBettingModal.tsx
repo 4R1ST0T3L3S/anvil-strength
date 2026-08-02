@@ -132,7 +132,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                                 <TrendingUp size={20} className="text-yellow-500 shrink-0" />
                                 <div>
                                     <p className="text-[10px] font-black text-white uppercase italic mb-1">Reparto Proporcional</p>
-                                    <p className="text-[9px] font-bold text-gray-500 uppercase leading-tight tracking-wider">
+                                    <p className="text-t-2xs font-bold text-gray-500 uppercase leading-tight tracking-wider">
                                         Si ganas, recibirás una parte del bote total proporcional a tu apuesta.
                                     </p>
                                 </div>

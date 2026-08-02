@@ -64,14 +64,16 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
         }
     };
 
+    // El orden es el mismo en el que aparecen las secciones en la portada:
+    // así la barra se lee como un índice de la página y no como una lista suelta.
     const navLinks = [
         { name: 'FILOSOFÍA', href: '#filosofia' },
         { name: 'SOFTWARE', href: '#software' },
         { name: 'EQUIPO', href: '#entrenadores' },
         { name: 'ATLETAS', href: '#atletas' },
-        { name: 'OPINIONES', href: '#reviews' },
         { name: 'LOGROS', href: '#logros' },
-        { name: 'AFILIATE', href: '#afiliacion' },
+        { name: 'OPINIONES', href: '#reviews' },
+        { name: 'AFÍLIATE', href: '#afiliacion' },
         { name: 'CONTACTO', href: '#contacto' },
         { name: 'COMPETICIONES', href: '/competiciones' },
     ];
@@ -82,7 +84,9 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                 ? 'bg-[#050505]/90 backdrop-blur-md border-white/5 py-3 shadow-2xl' 
                 : 'bg-transparent border-transparent py-6'}`}
         >
-            <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between relative min-h-[80px]">
+            {/* Más ancho que el contenido de la página (1400) porque el menú
+                centrado necesita hueco a los lados sin comerse los botones. */}
+            <div className="max-w-[1560px] mx-auto px-6 flex items-center justify-between relative min-h-[80px]">
                 {/* Logo Area */}
                 <div className="flex-shrink-0 flex items-center">
                     <a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); window.scrollTo(0, 0); }} className="block group">
@@ -94,14 +98,18 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     </a>
                 </div>
 
-                {/* Desktop Navigation - Dynamically Centered in Available Space */}
-                <nav className="hidden xl:flex flex-1 items-center justify-center space-x-8 px-8">
+                {/* Navegación de escritorio. Va posicionada en absoluto y
+                    centrada respecto a la cabecera entera: con `flex-1` se
+                    centraba en el hueco que dejaban logo y botones, que no
+                    miden lo mismo, y por eso el menú aparecía desplazado a la
+                    derecha. */}
+                <nav className="pointer-events-none absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-x-3 whitespace-nowrap 2xl:flex">
                     {navLinks.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className={`text-lg font-black tracking-[0.15em] hover:text-white transition-all duration-300 uppercase font-bebas italic ${
+                            className={`pointer-events-auto text-[13px] font-bold uppercase leading-none tracking-[0.06em] transition-colors duration-fast ease-snap hover:text-white ${
                                 location.pathname === link.href ? 'text-anvil-red' : 'text-gray-400'
                             }`}
                         >
@@ -111,19 +119,19 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                 </nav>
 
                 {/* Right Actions */}
-                <div className="flex-shrink-0 flex items-center space-x-6">
+                <div className="flex-shrink-0 flex items-center space-x-3">
                     <div className="hidden sm:block">
                         <SmartAuthButton 
                             variant="ghost" 
                             onLoginClick={onLoginClick} 
-                            className="!font-bebas !italic !tracking-[0.1em] !text-base !py-1.5 !px-5 hover:!text-white hover:!border-white hover:!bg-white/5 transition-all duration-300 border border-white/20 rounded-lg" 
+                            className="!font-bebas !italic !tracking-[0.08em] !text-sm !py-1.5 !px-4 hover:!text-white hover:!border-white hover:!bg-white/5 transition-all duration-300 border border-white/20 rounded-lg"
                         />
                     </div>
                     
                     {onSignupClick && !currentUser && (
                         <button
                             onClick={onSignupClick}
-                            className="hidden sm:inline-flex items-center justify-center rounded-lg bg-anvil-red px-5 py-1.5 font-bebas text-base italic tracking-[0.1em] text-white transition-all duration-300 hover:bg-red-700"
+                            className="hidden sm:inline-flex items-center justify-center rounded-lg bg-anvil-red px-4 py-1.5 font-bebas text-sm italic tracking-[0.08em] text-white transition-all duration-300 hover:bg-red-700"
                         >
                             Crear cuenta
                         </button>
@@ -137,7 +145,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="xl:hidden text-gray-400 p-2 hover:bg-white/5 rounded-xl transition-colors"
+                        className="2xl:hidden text-gray-400 p-2 hover:bg-white/5 rounded-xl transition-colors"
                     >
                         <Menu className="h-6 w-6" />
                     </button>
@@ -152,7 +160,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col lg:hidden"
+                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col 2xl:hidden"
                     >
                         <div className="flex items-center justify-between px-6 py-8 border-b border-white/5">
                             <img src="/logo-dark-removebg-preview.png" className="h-8 w-auto" alt="Logo" />

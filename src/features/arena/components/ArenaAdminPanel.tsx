@@ -95,7 +95,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         }`}
                                     >
                                         {type === '1vs1' ? <Swords size={18} /> : type === 'pool' ? <Users size={18} /> : type === 'event' ? <HelpCircle size={18} /> : <TrendingUp size={18} />}
-                                        <span className="text-[8px] font-black uppercase tracking-widest">{type}</span>
+                                        <span className="text-t-2xs font-black uppercase tracking-widest">{type}</span>
                                     </button>
                                 ))}
                             </div>
@@ -153,7 +153,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                     <p className="text-[10px] font-black text-yellow-500 uppercase italic mb-2 flex items-center gap-2">
                                         <TrendingUp size={14} /> Modo Predicción Numérica
                                     </p>
-                                    <p className="text-[9px] font-bold text-gray-500 uppercase leading-tight tracking-wider">
+                                    <p className="text-t-2xs font-bold text-gray-500 uppercase leading-tight tracking-wider">
                                         Los usuarios podrán indicar cualquier número. El bote se repartirá proporcionalmente a la cercanía con el resultado final.
                                     </p>
                                 </div>
@@ -177,7 +177,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                 {bet.type === 'prediction' ? (
                                     <button 
                                         onClick={() => handleResolve(bet.id)}
-                                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-[8px] font-black uppercase hover:bg-yellow-500 hover:text-black transition-all"
+                                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-yellow-500 hover:text-black transition-all"
                                     >
                                         Resolver con Valor Real
                                     </button>
@@ -186,7 +186,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         <button 
                                             key={opt.id}
                                             onClick={() => handleResolve(bet.id, opt.id)}
-                                            className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-[8px] font-black uppercase hover:bg-green-500 hover:text-black transition-all whitespace-nowrap"
+                                            className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-green-500 hover:text-black transition-all whitespace-nowrap"
                                         >
                                             Resolver: {opt.name}
                                         </button>

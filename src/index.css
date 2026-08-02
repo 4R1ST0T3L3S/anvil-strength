@@ -4,9 +4,9 @@
 @import "tailwindcss/utilities";
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.5;
-  font-weight: 400;
+  font-weight: 500;
   color-scheme: dark;
   color: var(--ink);
   background-color: var(--surface-canvas);
@@ -41,7 +41,99 @@ p {
   text-wrap: pretty;
 }
 
+/* =====================================================================
+   CAPA DE RESPUESTA
+   =====================================================================
+   Estas seis reglas hacen más por la sensación de velocidad de la app que
+   cualquier animación que se pueda añadir a una pantalla concreta, porque
+   se aplican a TODA la interfaz sin tocar un solo componente.
+
+   La velocidad que percibe una persona no es la que mide un cronómetro:
+   es cuánto tarda la interfaz en ACUSAR RECIBO de lo que ha hecho. Una app
+   que responde en 16ms y termina en 400 se siente más rápida que una que
+   no dice nada y termina en 200.                                        */
+
+/* 1. EL RETARDO DE 300ms DEL MÓVIL.
+      El navegador espera ese tercio de segundo por si el toque era la
+      primera mitad de un doble toque para hacer zoom. En una app donde el
+      atleta marca doce series seguidas, son casi cuatro segundos de espera
+      pura repartidos en toda la sesión, y la sensación es de app lenta sin
+      que nada vaya lento de verdad. */
+button,
+a,
+[role="button"],
+label,
+summary,
+input[type="checkbox"],
+input[type="radio"] {
+  touch-action: manipulation;
+}
+
+/* 2. EL DESTELLO AZUL AL TOCAR.
+      El rectángulo gris-azulado que pinta el sistema encima de lo que se
+      pulsa tapa el feedback propio de la app y delata que esto es una web
+      metida en un móvil. Se quita y se sustituye por el punto 3. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 3. FEEDBACK DE PULSACIÓN, EN TODA LA APP.
+      Hundir el control 3 centésimas confirma que la interfaz ha oído el
+      toque, y ocurre en el mismo frame: no depende de la red ni de que
+      termine nada. Es lo que hace que una acción lenta no se sienta rota.
+
+      3% y no más: por debajo de 0.95 el control parece que se cae hacia
+      dentro. `data-no-press` es la salida para los pocos casos donde el
+      botón ES el contenedor de la pantalla y encogerlo se vería raro. */
+button:not(:disabled):not([data-no-press]):active,
+[role="button"]:not([data-no-press]):active {
+  transform: scale(0.97);
+}
+
+button:not([data-no-press]),
+[role="button"]:not([data-no-press]) {
+  transition: transform var(--dur-instant) var(--ease-out);
+}
+
+/* 4. EL ZOOM DE iOS AL ESCRIBIR.
+      Safari amplía la página entera al enfocar un campo de menos de 16px,
+      y al salir NO vuelve a desamplíar. El atleta escribe un peso y se
+      queda con la pantalla ampliada y descolocada el resto de la sesión.
+      Se arregla con el tamaño, no con `maximum-scale`: bloquear el zoom
+      del usuario para arreglar esto rompe la accesibilidad de la app. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* 5. FOCO VISIBLE, PERO SOLO PARA QUIEN NAVEGA CON TECLADO.
+      `:focus-visible` y no `:focus`: el anillo tras un clic de ratón es
+      ruido, tras un tabulador es lo único que te dice dónde estás. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* 6. INERCIA DE SCROLL EN iOS dentro de los paneles con scroll propio. */
+[class*="overflow-y-auto"],
+[class*="overflow-x-auto"] {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Accesibilidad: sin animaciones para quien las desactiva en su sistema */
+@media (prefers-reduced-motion: reduce) {
+  /* También la pulsación: es movimiento, y para quien marca esta
+     preferencia el movimiento es el problema, no la decoración. */
+  button:active,
+  [role="button"]:active {
+    transform: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

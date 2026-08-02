@@ -336,7 +336,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                     HERRAMIENTAS                                          */}
                 <section>
                     <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                         <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
                         <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
                         <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />

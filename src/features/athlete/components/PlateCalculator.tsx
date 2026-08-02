@@ -194,7 +194,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
 
                             {/* Competition Collars Selector */}
                             <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-3 flex flex-row items-center justify-between gap-4 shrink-0 h-20 md:h-24">
-                                <label className="block text-[9px] md:text-[10px] font-black text-gray-600 uppercase tracking-widest leading-tight">Cierres de<br />Competición</label>
+                                <label className="block text-t-2xs font-black text-gray-600 uppercase tracking-widest leading-tight">Cierres de<br />Competición</label>
                                 <div className="flex bg-black/60 p-1 rounded-lg border border-white/5 shrink-0">
                                     <button
                                         onClick={() => setHasCollars(true)}
@@ -240,7 +240,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                         transition={{ delay: idx * 0.05 }}
                                                         className="flex items-center gap-3 bg-black/40 pr-5 pl-2 py-3 rounded-2xl border border-white/5 hover:border-white/20 transition-colors"
                                                     >
-                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border-2 border-white/5 flex items-center justify-center text-[8px] md:text-[10px] font-black text-black/50" style={{ backgroundColor: plate?.color }}>
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border-2 border-white/5 flex items-center justify-center text-t-2xs font-black text-black/50" style={{ backgroundColor: plate?.color }}>
                                                             {weight}
                                                         </div>
                                                         <div className="flex flex-col leading-none">

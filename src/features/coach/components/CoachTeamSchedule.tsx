@@ -195,7 +195,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
-                                                className="p-1.5 text-gray-500 hover:text-red-500 rounded-md transition-colors"
+                                                className="p-1.5 text-gray-500 hover:text-danger rounded-md transition-colors"
                                                 title="Desasignar atleta"
                                             >
                                                 <Trash2 size={14} />

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/useUser';
+import { isAdmin, homeRouteFor } from '../../lib/roles';
 import { Loader } from 'lucide-react';
 
 interface SmartAuthButtonProps {
@@ -28,13 +29,11 @@ export function SmartAuthButton({
         }
 
         // User exists -> navigate to their dashboard or profile
-        const destination = ['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user.email?.toLowerCase() || '')
+        const destination = isAdmin(user)
             ? '/admin'
             : !user.has_access
                 ? '/perfil'
-                : user.role === 'coach'
-                    ? '/coach-dashboard'
-                    : '/dashboard';
+                : homeRouteFor(user);
         navigate(destination);
     };
 
@@ -51,7 +50,7 @@ export function SmartAuthButton({
         ? 'Cargando...'
         : !user
             ? 'Iniciar Sesión'
-            : ['anvilstrengthclub@gmail.com', 'anvilstrengthdata@gmail.com'].includes(user.email?.toLowerCase() || '')
+            : isAdmin(user)
                 ? 'Panel Admin'
                 : !user.has_access
                     ? 'Mi perfil'

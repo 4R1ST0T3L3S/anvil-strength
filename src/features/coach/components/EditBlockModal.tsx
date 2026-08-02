@@ -95,11 +95,11 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#0a0a0a] w-full max-w-4xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
+                    className="relative bg-surface-sunken w-full max-w-4xl rounded-3xl border border-[var(--border-default)] shadow-2xl overflow-hidden"
                 >
-                    <div className="flex items-center justify-between p-8 border-b border-white/5 bg-[#0a0a0a]">
+                    <div className="flex items-center justify-between p-8 border-b border-subtle bg-surface-sunken">
                         <h2 className="text-3xl font-black uppercase text-white italic tracking-tighter">Editar Bloque</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
                             <X size={24} />
                         </button>
                     </div>
@@ -110,7 +110,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                             <div className="flex-1 space-y-8">
                                 {/* Name Input */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                         Nombre del Bloque <span className="text-anvil-red">*</span>
                                     </label>
                                     <input
@@ -118,14 +118,14 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="Ej: Bloque Fuerza Enero"
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl px-6 py-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-bold"
+                                        className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-card px-6 py-4 text-white text-lg placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 focus:ring-1 focus:ring-anvil-red/50 transition-all font-bold"
                                         autoFocus
                                     />
                                 </div>
 
                                 {/* Color Picker */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
                                         Color del Bloque
                                     </label>
                                     <div className="flex items-center gap-3">
@@ -146,10 +146,10 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                 </div>
 
                                 {/* Active Toggle */}
-                                <div className="flex items-center justify-between p-6 bg-[#0a0a0a] rounded-2xl border border-white/5">
+                                <div className="flex items-center justify-between p-6 bg-surface-sunken rounded-card border border-subtle">
                                     <div>
                                         <p className="font-bold text-white text-sm uppercase tracking-wide">Bloque Activo</p>
-                                        <p className="text-xs text-gray-500 mt-1">Visible en el constructor</p>
+                                        <p className="text-xs text-ink-subtle mt-1">Visible en el constructor</p>
                                     </div>
                                     <button
                                         type="button"
@@ -164,7 +164,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                     <button
                                         type="button"
                                         onClick={onClose}
-                                        className="flex-1 px-4 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-wider text-sm transition-colors"
+                                        className="flex-1 px-4 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-ink-muted font-bold uppercase tracking-wider text-sm transition-colors"
                                     >
                                         Cancelar
                                     </button>
@@ -188,7 +188,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                             {/* RIGHT COLUMN */}
                             <div className="flex-1">
                                 <div className="space-y-3 h-full flex flex-col">
-                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                    <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider flex items-center gap-2">
                                         <CalendarIcon size={14} /> Duración del Bloque
                                     </label>
                                     <div className="flex-1 min-h-[400px]">
