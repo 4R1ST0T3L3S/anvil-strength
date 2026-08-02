@@ -92,23 +92,107 @@ function savableSet(sessionExerciseId: string, set: TrainingSet) {
 }
 
 /**
+ * El texto completo del fallo, no solo `message`.
+ *
+ * PostgREST reparte la información en cuatro campos y `message` es el más
+ * pobre: el nombre de la columna que falta viene en `message`, pero el de la
+ * restricción violada vive en `details` y la pista de qué hacer en `hint`.
+ * Quedarse con `message` dejaba errores indepurables desde la interfaz.
+ */
+function rawSaveError(err: unknown): string {
+    const e = (err ?? {}) as { message?: string; details?: string; hint?: string; code?: string };
+    const parts = [e.message, e.details, e.hint, e.code].filter(Boolean);
+    return parts.length ? parts.join(' | ') : 'error desconocido';
+}
+
+/**
  * Traduce el error crudo de PostgREST a algo accionable.
  *
  * "canceling statement due to statement timeout" no le dice al coach ni que
- * el problema no es suyo ni qué hacer. Los tres casos de aquí son los que se
- * han visto de verdad en producción, y los tres tienen arreglo concreto.
+ * el problema no es suyo ni qué hacer. Los casos de aquí son los que se han
+ * visto de verdad en producción, y todos tienen arreglo concreto.
  */
-function explainSaveError(raw: string): string {
+function explainSaveError(raw: string, filas: number): string {
     if (raw.includes('statement timeout')) {
-        return 'el servidor ha tardado demasiado. No es tu conexión. ' +
-            'Ejecuta database/MIGRACION_PENDIENTE.sql, que crea los índices que faltan.';
+        /**
+         * EL NÚMERO DE FILAS ES EL DATO QUE DISTINGUE LAS DOS CAUSAS.
+         *
+         * Este mensaje mandaba siempre a crear los índices, y con los índices
+         * ya creados dejaba al coach sin salida. Pero un timeout guardando UNA
+         * fila no puede ser un problema de índices: con una fila no hay nada
+         * que buscar. Lo que cuesta ahí es comprobar el permiso, y eso pasa
+         * cuando training_sets acumula políticas duplicadas de varias
+         * migraciones que además se evalúan anidadas. Ver la cabecera de
+         * database/FIX_TIMEOUT_SERIES.sql.
+         */
+        if (filas <= 5) {
+            return `el servidor ha tardado demasiado en guardar ${filas === 1 ? 'una sola serie' : `${filas} series`}. ` +
+                'Con tan pocas filas no es cosa de índices ni de tu conexión: son las políticas de ' +
+                'permisos de training_sets. Ejecuta database/FIX_TIMEOUT_SERIES.sql en Supabase.';
+        }
+        return `el servidor ha tardado demasiado guardando ${filas} series. No es tu conexión. ` +
+            'Ejecuta database/MIGRACION_PENDIENTE.sql (crea los índices) y, si sigue, ' +
+            'database/FIX_TIMEOUT_SERIES.sql (simplifica las políticas de permisos).';
     }
     if (raw.includes('PGRST204') || (raw.includes('column') && raw.includes('does not exist'))) {
-        return `falta una columna en la base de datos (${raw}). ` +
-            'Ejecuta database/MIGRACION_PENDIENTE.sql.';
+        /**
+         * QUÉ columna, y no solo "falta una columna".
+         *
+         * Este mensaje mandaba a ejecutar MIGRACION_PENDIENTE.sql sin decir
+         * qué faltaba, y ese archivo no añadía `target_metric` ni `notes` —
+         * las traían set_target_metric.sql y FIX_ENTRENAMIENTO.sql. El coach
+         * ejecutaba la migración, la verificación decía OK, y el guardado
+         * seguía fallando por una columna que nadie llegaba a nombrar. Ahora
+         * las añade MIGRACION_PENDIENTE.sql (sección 3B) y, si algún día
+         * vuelve a faltar otra, aquí se lee cuál.
+         */
+        const column = /'([^']+)' column/.exec(raw)?.[1]
+            ?? /column "?([\w.]+)"? does not exist/.exec(raw)?.[1];
+
+        return (column
+            ? `la base de datos no tiene la columna "${column}" de training_sets. `
+            : `falta una columna en la base de datos (${raw}). `) +
+            'Ejecuta database/MIGRACION_PENDIENTE.sql ENTERO en el editor SQL de Supabase ' +
+            'y comprueba que las cinco filas de la verificación dicen OK.';
+    }
+    if (raw.includes('violates check constraint')) {
+        return `el servidor ha rechazado un valor de la serie (${raw}). ` +
+            'Suele ser una métrica o un tipo de serie que la base todavía no admite: ' +
+            'ejecuta database/MIGRACION_PENDIENTE.sql.';
     }
     if (raw.includes('row-level security') || raw.includes('violates row-level')) {
         return 'el servidor ha rechazado el cambio por permisos. ¿Sigues siendo el entrenador de este atleta?';
+    }
+    if (raw.includes('foreign key') || raw.includes('violates foreign key')) {
+        return 'la serie apunta a un ejercicio que ya no existe. Recarga la página y vuelve a intentarlo.';
+    }
+    return raw;
+}
+
+/**
+ * Traduce el error de copiar, clonar o crear una semana.
+ *
+ * Los tres manejadores de semana decían "Error copiando semana" y nada más,
+ * con el motivo real solo en la consola. El caso que se ha visto —el choque de
+ * clave única— tiene además un arreglo concreto que el mensaje puede dar.
+ */
+function explainWeekError(raw: string): string {
+    if (raw.includes('duplicate key') || raw.includes('23505') || raw.includes('unique constraint')) {
+        /**
+         * training_sessions se creó con UNIQUE(block_id, day_number), de cuando
+         * un bloque era una lista plana de días. Con semanas, un bloque tiene
+         * un "Día 1" por semana y esa restricción solo deja pasar el primero:
+         * copiar una semana choca siempre. Ver database/FIX_COPIA_SEMANAS.sql.
+         */
+        return 'la base de datos no admite dos días con el mismo número en el bloque, ' +
+            'y cada semana tiene su propio "Día 1". Ejecuta database/FIX_COPIA_SEMANAS.sql en Supabase.';
+    }
+    if (raw.includes('statement timeout')) {
+        return 'el servidor ha tardado demasiado. Si la semana tiene muchos ejercicios, ' +
+            'vuelve a intentarlo; si falla siempre, ejecuta database/FIX_TIMEOUT_SERIES.sql.';
+    }
+    if (raw.includes('row-level security') || raw.includes('violates row-level')) {
+        return 'el servidor ha rechazado la copia por permisos. ¿Sigues siendo el entrenador de este atleta?';
     }
     return raw;
 }
@@ -579,6 +663,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     const handleSaveChanges = async () => {
         if (!blockData) return;
         setIsSaving(true);
+        // Fuera del try: el manejador de errores lo necesita para distinguir un
+        // guardado grande de uno de una sola serie, que son fallos distintos.
+        let enviadas = 0;
         try {
             // Se envían SOLO las columnas que el coach edita. Mandar el objeto
             // entero arrastraba campos que la fila local trae de más (o de
@@ -606,6 +693,8 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 const previous = savedSnapshot.current.get(set.id);
                 return !previous || previous !== JSON.stringify(set);
             });
+
+            enviadas = changed.length;
 
             if (changed.length === 0) {
                 setHasUnsavedChanges(false);
@@ -649,8 +738,8 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             // El mensaje real de PostgREST importa: distingue "falta la
             // columna target_metric" (migración pendiente) de un rechazo de
             // RLS. Sin él, el fallo era indepurable desde la interfaz.
-            const raw = (err as { message?: string })?.message ?? 'error desconocido';
-            toast.error(`Error al guardar cambios: ${explainSaveError(raw)}`, { duration: 8000 });
+            const raw = rawSaveError(err);
+            toast.error(`Error al guardar cambios: ${explainSaveError(raw, enviadas)}`, { duration: 10000 });
         } finally {
             setIsSaving(false);
         }
@@ -1191,7 +1280,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             toast.success("Semana añadida");
         } catch (err) {
             console.error(err);
-            toast.error("Error añadiendo semana");
+            toast.error(`Error añadiendo semana: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
         }
     };
 
@@ -1207,7 +1296,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             toast.success(`Semana ${week} copiada a Semana ${newEndWeek}`);
         } catch (err) {
             console.error(err);
-            toast.error("Error copiando semana");
+            toast.error(`Error copiando semana: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
         } finally {
             setLoading(false);
         }
@@ -1235,7 +1324,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                     toast.success(`Semana ${sourceIndex} copiada sobre la Semana ${targetIndex}`);
                 } catch (err) {
                     console.error(err);
-                    toast.error("Error copiando la semana");
+                    toast.error(`Error copiando la semana: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
                 } finally {
                     setLoading(false);
                 }

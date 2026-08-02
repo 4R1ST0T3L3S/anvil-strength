@@ -60,15 +60,11 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     useEffect(() => {
         fetchBets();
 
-        // Real-time subscription for bets and options
-        const betsChannel = supabase.channel('arena_updates')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'arena_bets' }, () => fetchBets())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'arena_options' }, () => fetchBets())
-            .subscribe();
+        // Polling cada 3 segundos en lugar de realtime (ahorramos muchas queries)
+        // El arena no necesita notificación al instante como mensajes o entrenamientos
+        const interval = setInterval(fetchBets, 3000);
 
-        return () => {
-            supabase.removeChannel(betsChannel);
-        };
+        return () => clearInterval(interval);
     }, [fetchBets]);
 
     const activeBets = bets.filter(b => b.status === 'open' || b.status === 'locked');

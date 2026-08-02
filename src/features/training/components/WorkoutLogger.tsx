@@ -141,6 +141,48 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         }
     };
 
+    // Lazy load: cuando el usuario cambia a una semana aún no cargada, traerla.
+    const loadingWeeks = useRef(new Set<number>());
+
+    useEffect(() => {
+        if (!block || selectedWeek === null) return;
+
+        // ¿Ya está esta semana cargada?
+        const hasWeek = allSessions.some(s => s.week_number === selectedWeek);
+        if (hasWeek || loadingWeeks.current.has(selectedWeek)) return;
+
+        loadingWeeks.current.add(selectedWeek);
+        supabase
+            .from('training_sessions')
+            .select(`
+                *,
+                session_exercises (
+                    *,
+                    exercise:exercise_library (name, video_url, muscle_group),
+                    training_sets (*)
+                )
+            `)
+            .eq('block_id', block.id)
+            .eq('week_number', selectedWeek)
+            .order('day_number', { ascending: true })
+            .then(({ data: sessData, error }) => {
+                if (error) {
+                    console.error(`Error cargando semana ${selectedWeek}:`, error);
+                    return;
+                }
+                const formatted: ExtendedSession[] = (sessData || []).map(s => ({
+                    ...s,
+                    exercises: (s.session_exercises || [])
+                        .sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
+                        .map((e: SessionExercise & { training_sets: TrainingSet[] }) => ({
+                            ...e,
+                            sets: (e.training_sets || []).sort((a: TrainingSet, b: TrainingSet) => a.order_index - b.order_index)
+                        }))
+                }));
+                setAllSessions(prev => [...prev, ...formatted]);
+            });
+    }, [block, selectedWeek, allSessions]);
+
     // Initial Load
     useEffect(() => {
         const init = async () => {
@@ -157,7 +199,9 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 }
                 setBlock(active);
 
-                // 2. Get Sessions
+                // 2. Get Sessions — solo la semana actual, no el bloque entero.
+                // Las otras semanas se cargan bajo demanda al navegar (lazy loading).
+                const currentWeek = getWeekNumber();
                 const { data: sessData, error } = await supabase
                     .from('training_sessions')
                     .select(`
@@ -169,6 +213,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         )
                     `)
                     .eq('block_id', active.id)
+                    .eq('week_number', currentWeek)
                     .order('day_number', { ascending: true });
 
                 if (error) throw error;
@@ -225,10 +270,16 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     }, [athleteId]);
 
     // Semanas que el atleta puede abrir, de menor a mayor.
-    const availableWeeks = useMemo(
-        () => [...new Set(allSessions.map(s => s.week_number))].sort((a, b) => a - b),
-        [allSessions]
-    );
+    // Se calcula del bloque (start_week .. end_week) en lugar de allSessions,
+    // así están todas disponibles en el selector aunque aún no se hayan cargado.
+    // Cambiar a una semana que aún no está cargada dispara lazy loading.
+    const availableWeeks = useMemo(() => {
+        if (!block?.start_week || !block?.end_week) return [];
+        return Array.from(
+            { length: block.end_week - block.start_week + 1 },
+            (_, i) => block.start_week! + i
+        );
+    }, [block?.start_week, block?.end_week]);
 
     // Días de la semana elegida, en orden de calendario.
     const sessions = useMemo(

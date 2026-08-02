@@ -22,6 +22,13 @@
 --   3. set_type / group_tag  → Dropsets, rest-pause, clusters,
 --                              superseries y triseries. Columnas nuevas.
 --
+--   3B. target_metric/notes  → "Error al guardar cambios" al tocar series,
+--                              repeticiones o RPE de un ejercicio. El
+--                              constructor escribe estas dos columnas en
+--                              CADA serie; si falta cualquiera de ellas,
+--                              PostgREST rechaza el lote entero (PGRST204)
+--                              y no se guarda ni una fila.
+--
 --   4. Índices               → "canceling statement due to statement
 --                              timeout" al guardar la rutina. Ver el
 --                              bloque 4, que explica el porqué a fondo.
@@ -175,6 +182,72 @@ CREATE INDEX IF NOT EXISTS training_sets_group_tag_idx
 
 
 -- ---------------------------------------------------------------------
+-- 3B. MÉTRICA DE PRESCRIPCIÓN Y NOTAS DE LA SERIE
+-- ---------------------------------------------------------------------
+-- SÍNTOMA
+-- "Error al guardar cambios" al tocar series / repeticiones / RPE de un
+-- ejercicio, con esta migración ya ejecutada y dando OK en la verificación.
+--
+-- CAUSA
+-- Estas dos columnas nunca estuvieron en este archivo: `target_metric` la
+-- añadía database/set_target_metric.sql y `notes` database/FIX_ENTRENAMIENTO.sql,
+-- así que en una base donde solo se ejecutó MIGRACION_PENDIENTE.sql siguen
+-- faltando. El constructor las manda en TODAS las series (ver
+-- WorkoutBuilder.savableSet), y PostgREST rechaza el lote completo con
+-- PGRST204 en cuanto una columna del payload no existe: no se guarda nada.
+--
+-- Van aquí para que este archivo sea el único que hay que ejecutar, que es
+-- lo que dice el mensaje de error de la aplicación.
+--
+-- DÓNDE VIVE EL VALOR DE CADA MÉTRICA
+--
+--   target_metric | valor en      | ejemplo
+--   --------------+---------------+---------------------------------
+--   kg            | target_load   | 170
+--   rir           | target_load   | 2
+--   vel           | target_load   | 0.45   (m/s objetivo)
+--   vel_loss      | target_load   | 20     (% de pérdida permitido)
+--   rpe           | target_rpe    | "@8", "7-8"
+--
+-- El RPE se queda en su columna de texto porque ya hay datos escritos ahí y
+-- es la única métrica que se prescribe en rango ("7-8"), cosa que un NUMERIC
+-- no admite.
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_schema = 'public' AND table_name = 'training_sets'
+                     AND column_name = 'target_metric') THEN
+
+        -- DEFAULT 'kg': las series ya escritas siguen significando
+        -- exactamente lo mismo, sin una ventana en la que el tonelaje salga
+        -- mal. Sin el default haría falta un UPDATE de la tabla entera.
+        ALTER TABLE public.training_sets
+            ADD COLUMN target_metric TEXT NOT NULL DEFAULT 'kg';
+
+        RAISE NOTICE 'Añadida training_sets.target_metric';
+    END IF;
+END $$;
+
+-- La restricción va aparte y con nombre fijo para poder reejecutar el
+-- archivo sin que falle por duplicado.
+ALTER TABLE public.training_sets
+    DROP CONSTRAINT IF EXISTS training_sets_target_metric_check;
+
+ALTER TABLE public.training_sets
+    ADD CONSTRAINT training_sets_target_metric_check
+    CHECK (target_metric IN ('kg', 'rir', 'rpe', 'vel', 'vel_loss'));
+
+COMMENT ON COLUMN public.training_sets.target_metric IS
+    'Unidad de la prescripción de la serie. El valor está en target_rpe si es ''rpe'', y en target_load en el resto de casos.';
+
+-- Nota del coach sobre ESA serie. Venía en MASTER_DEPLOY_V3 pero no en
+-- feature_efort_schema, así que falta en parte de los despliegues.
+ALTER TABLE public.training_sets
+    ADD COLUMN IF NOT EXISTS notes TEXT;
+
+
+-- ---------------------------------------------------------------------
 -- 4. ÍNDICES: EL "STATEMENT TIMEOUT" AL GUARDAR
 -- ---------------------------------------------------------------------
 -- SÍNTOMA
@@ -233,7 +306,7 @@ NOTIFY pgrst, 'reload schema';
 -- ---------------------------------------------------------------------
 -- 6. VERIFICACIÓN
 -- ---------------------------------------------------------------------
--- Las cuatro filas tienen que decir OK. Si alguna dice FALTA, esa parte no
+-- Las cinco filas tienen que decir OK. Si alguna dice FALTA, esa parte no
 -- se ha aplicado y el error correspondiente seguirá apareciendo.
 
 SELECT
@@ -262,6 +335,16 @@ FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name = 'training_sets'
   AND column_name IN ('set_type', 'set_detail', 'group_tag')
+
+UNION ALL
+
+SELECT
+    'métrica y notas de serie',
+    CASE WHEN COUNT(*) = 2 THEN 'OK' ELSE 'FALTA' END
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'training_sets'
+  AND column_name IN ('target_metric', 'notes')
 
 UNION ALL
 

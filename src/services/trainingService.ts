@@ -934,13 +934,41 @@ export const trainingService = {
         // 1. Get current block
         const { data: block, error: blockError } = await supabase
             .from('training_blocks')
-            .select('end_week')
+            .select('start_week, end_week')
             .eq('id', blockId)
             .single();
 
         if (blockError || !block) throw blockError || new Error("Block not found");
 
-        const newEndWeek = (block.end_week || 0) + 1;
+        /**
+         * DE DÓNDE SALE EL NÚMERO DE LA SEMANA NUEVA.
+         *
+         * Esto era `(block.end_week || 0) + 1`. Las semanas son SEMANAS ISO
+         * del año —la 31, la 32—, no un contador que empiece en uno, así que
+         * en un bloque sin `end_week` el `|| 0` daba la semana 1: un número
+         * por debajo de `start_week`, fuera del rango que pinta el
+         * constructor. La semana se creaba en la base y no aparecía por
+         * ninguna parte, y si además se copiaba contenido en ella, se perdía
+         * de vista.
+         *
+         * Sin `end_week` se parte de la última semana que EXISTE de verdad, y
+         * si tampoco hay sesiones, de `start_week`.
+         */
+        let base = block.end_week ?? null;
+
+        if (base === null) {
+            const { data: ultima } = await supabase
+                .from('training_sessions')
+                .select('week_number')
+                .eq('block_id', blockId)
+                .order('week_number', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            base = ultima?.week_number ?? block.start_week ?? getWeekNumber();
+        }
+
+        const newEndWeek = base + 1;
 
         // 2. Update block
         const { error: updateError } = await supabase
@@ -1063,9 +1091,17 @@ export const trainingService = {
         if (sessionError) throw sessionError;
         if (!sourceSessions || sourceSessions.length === 0) return;
 
-        // 1. Todas las sesiones de golpe. El orden que devuelve un INSERT
-        //    múltiple de PostgREST es el mismo del payload, así que la
-        //    posición i del resultado corresponde a la sesión origen i.
+        /**
+         * 1. Todas las sesiones de golpe.
+         *
+         * Se pide de vuelta `day_number` y no solo el `id`, y los tres niveles
+         * se emparejan por ese valor en lugar de por la POSICIÓN en el array.
+         * El emparejamiento posicional daba por hecho que un INSERT múltiple
+         * devuelve las filas en el orden del payload; es lo que suele pasar,
+         * pero no está garantizado, y el día que no pase la copia sale con los
+         * ejercicios de un día colgando de otro. Nadie se daría cuenta hasta
+         * ver la semana ya programada.
+         */
         const { data: newSessions, error: createSessionError } = await supabase
             .from('training_sessions')
             .insert(sourceSessions.map(session => ({
@@ -1076,14 +1112,33 @@ export const trainingService = {
                 name: session.name,
                 // La fecha NO se copia: pertenece a la semana de origen.
                 date: null,
-                notes: session.notes,
+                /**
+                 * NO se manda `notes`.
+                 *
+                 * training_sessions no tiene esa columna y TrainingSession
+                 * tampoco declara ese campo —lo del día son `warmup`, `extras`
+                 * y `athlete_notes`—, así que `session.notes` valía siempre
+                 * undefined. Pero supabase-js arma el parámetro `columns` de la
+                 * petición con las CLAVES del objeto, no con las que llevan
+                 * valor, así que "notes" viajaba igual y PostgREST rechazaba el
+                 * INSERT completo con PGRST204. Copiar una semana no ha
+                 * funcionado nunca por esto.
+                 *
+                 * `athlete_notes` tampoco se copia, y ahí es a propósito: es lo
+                 * que escribió el atleta sobre CÓMO le fue ese día, y no
+                 * significa nada en una semana que todavía no ha entrenado.
+                 */
                 warmup: session.warmup ?? null,
                 extras: session.extras ?? null,
             })))
-            .select('id');
+            .select('id, day_number');
 
         if (createSessionError) throw createSessionError;
         if (!newSessions) return;
+
+        const sessionIdByDay = new Map<number, string>(
+            newSessions.map(s => [s.day_number, s.id])
+        );
 
         // 2. Todos los ejercicios de todas las sesiones, de golpe.
         type SourceExercise = SessionExercise & { training_sets?: TrainingSet[] };
@@ -1091,9 +1146,9 @@ export const trainingService = {
         const exercisePayload: Record<string, unknown>[] = [];
         const exerciseSources: SourceExercise[] = [];
 
-        sourceSessions.forEach((session, i) => {
-            const targetSessionId = newSessions[i]?.id;
-            if (!targetSessionId) return;
+        for (const session of sourceSessions) {
+            const targetSessionId = sessionIdByDay.get(session.day_number);
+            if (!targetSessionId) continue;
 
             for (const ex of ((session.session_exercises ?? []) as SourceExercise[])) {
                 exerciseSources.push(ex);
@@ -1108,21 +1163,41 @@ export const trainingService = {
                     rest_seconds: ex.rest_seconds,
                 });
             }
-        });
+        }
 
         if (exercisePayload.length === 0) return;
 
         const { data: newExercises, error: createExError } = await supabase
             .from('session_exercises')
             .insert(exercisePayload)
-            .select('id');
+            .select('id, session_id, order_index');
 
         if (createExError) throw createExError;
         if (!newExercises) return;
 
+        /**
+         * Cada ejercicio se identifica por el día al que pertenece y su
+         * posición dentro de él.
+         *
+         * Una LISTA de ids por clave y no un id suelto: los datos antiguos
+         * pueden tener dos ejercicios con el mismo `order_index` en el mismo
+         * día, y con un solo id por clave los dos apuntarían al mismo destino
+         * —uno se quedaría con las series de ambos y el otro vacío—. Al ir
+         * sacándolos en orden, ese caso se reparte como antes y el resto deja
+         * de depender de la posición.
+         */
+        const exerciseIdsByPlace = new Map<string, string[]>();
+        for (const e of newExercises) {
+            const key = `${e.session_id}|${e.order_index}`;
+            const lista = exerciseIdsByPlace.get(key);
+            if (lista) lista.push(e.id);
+            else exerciseIdsByPlace.set(key, [e.id]);
+        }
+
         // 3. Todas las series de todos los ejercicios, de golpe.
         const setsPayload = exerciseSources.flatMap((ex, i) => {
-            const targetExerciseId = newExercises[i]?.id;
+            const sessionId = exercisePayload[i].session_id as string;
+            const targetExerciseId = exerciseIdsByPlace.get(`${sessionId}|${ex.order_index}`)?.shift();
             if (!targetExerciseId) return [];
 
             return (ex.training_sets ?? []).map((set: TrainingSet) => ({
@@ -1283,7 +1358,29 @@ export const trainingService = {
      * ESTADÍSTICAS: historial completo de ejercicios del atleta
      * (todas las prescripciones + registros, con bloque y semana para ordenar).
      */
+    /**
+     * Historial de cargas de ejercicios.
+     *
+     * Limita a los últimos 2 bloques activos para evitar cargar gigabytes de
+     * histórico completo. El WorkoutBuilder solo necesita las últimas 8 cargas
+     * de cada ejercicio para los sparklines; tomar 2 bloques es más que
+     * suficiente y evita tabletear la base en bloque grande.
+     */
     async getExerciseHistoryByAthlete(athleteId: string): Promise<ExerciseHistoryRow[]> {
+        // 1. Últimos 2 bloques del atleta (probablemente el actual + el anterior)
+        const { data: blocks, error: blocksError } = await supabase
+            .from('training_blocks')
+            .select('id')
+            .eq('athlete_id', athleteId)
+            .order('created_at', { ascending: false })
+            .limit(2);
+
+        if (blocksError) throw blocksError;
+        if (!blocks || blocks.length === 0) return [];
+
+        const blockIds = blocks.map(b => b.id);
+
+        // 2. Ejercicios en esos bloques únicamente
         const { data, error } = await supabase
             .from('session_exercises')
             .select(`
@@ -1295,7 +1392,7 @@ export const trainingService = {
                     block:training_blocks!inner (id, name, athlete_id, created_at, macro_id)
                 )
             `)
-            .eq('session.block.athlete_id', athleteId);
+            .in('session.block_id', blockIds);
 
         if (error) throw error;
 
