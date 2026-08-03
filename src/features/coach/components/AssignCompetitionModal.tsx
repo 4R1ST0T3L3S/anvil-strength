@@ -89,7 +89,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                 finalDate = new Date().toISOString().split('T')[0];
             }
 
-            await competitionsService.assignCompetition(
+            const creadas = await competitionsService.assignCompetition(
                 {
                     name: competition.campeonato,
                     date: finalDate,
@@ -102,7 +102,21 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                 session.user.id
             );
 
-            toast.success(`Competición asignada a ${selectedAthletes.size} atletas`);
+            // Se dice cuántas se han creado DE VERDAD. Los atletas que ya la
+            // tenían —porque se la auto-asignaron o porque ya se la habías
+            // puesto— no generan una segunda fila, y anunciar "asignada a 6"
+            // cuando solo entraron 2 haría dudar de si funcionó.
+            const nuevas = creadas?.length ?? 0;
+            const repetidas = selectedAthletes.size - nuevas;
+
+            if (nuevas === 0) {
+                toast.info('Todos los atletas seleccionados ya tenían esta competición');
+            } else {
+                toast.success(
+                    `Competición asignada a ${nuevas} ${nuevas === 1 ? 'atleta' : 'atletas'}` +
+                    (repetidas > 0 ? ` · ${repetidas} ya la ${repetidas === 1 ? 'tenía' : 'tenían'}` : '')
+                );
+            }
             onClose();
             setSelectedAthletes(new Set()); // Reset selection
             setDescription('');

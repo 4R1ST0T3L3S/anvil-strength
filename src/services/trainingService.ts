@@ -34,7 +34,81 @@ export interface ExerciseHistoryRow {
     dayNumber: number;
     rpeGlobal: string | null;
     velocityAvg: string | null;
+    /**
+     * Clasificación muscular fijada por el coach para ESTA prescripción.
+     * Viaja con el historial para que el reparto de volumen de las
+     * estadísticas coincida con el que se ve en el planificador; si no, las
+     * dos pantallas darían cifras distintas del mismo bloque.
+     */
+    primaryMuscles: string[] | null;
+    secondaryMuscles: string[] | null;
     sets: TrainingSet[];
+}
+
+/**
+ * REGISTRO DE EJECUCIÓN
+ * =====================================================================
+ * Lo que el atleta HIZO, junto a lo que se le pidió, sin mezclarlos nunca.
+ *
+ * La prescripción vive en `target_*` y la ejecución en `actual_*`. Son
+ * columnas distintas a propósito: si el atleta hace 7-9-9 donde ponía RPE 8,
+ * el 8 sigue siendo lo prescrito —el plan no se reescribe solo— y el 7-9-9
+ * es el dato con el que se decide la semana siguiente. Fundirlos borraría la
+ * única pregunta que importa al revisar un entrenamiento: ¿se ha cumplido?
+ */
+export interface LoggedSet {
+    id: string;
+    orderIndex: number;
+    /** Lo pautado. */
+    targetReps: string | null;
+    targetLoad: number | null;
+    targetMetric: string | null;
+    targetRpe: string | null;
+    restSeconds: number | null;
+    setType: string | null;
+    setDetail: string | null;
+    groupTag: string | null;
+    /** Lo ejecutado. */
+    actualReps: number | null;
+    actualLoad: number | null;
+    actualRpe: number | null;
+    isCompleted: boolean;
+    /** Lo que escribió el atleta sobre ESTA serie. */
+    notes: string | null;
+    videoUrl: string | null;
+    vbtFileUrl: string | null;
+    vbtMeanVelocity: number | null;
+    vbtPeakVelocity: number | null;
+    vbtVelocityLoss: number | null;
+    vbtEst1RM: number | null;
+}
+
+export interface LoggedExercise {
+    id: string;
+    exerciseId: string;
+    name: string;
+    variantName: string | null;
+    coachNotes: string | null;
+    restSeconds: number | null;
+    orderIndex: number;
+    sets: LoggedSet[];
+}
+
+export interface LoggedSession {
+    id: string;
+    blockId: string;
+    blockName: string;
+    weekNumber: number;
+    dayNumber: number;
+    name: string | null;
+    dayOfWeek: string | null;
+    date: string | null;
+    /** Cuándo cerró el día. Null = no lo ha dado por terminado. */
+    completedAt: string | null;
+    athleteNotes: string | null;
+    warmup: string | null;
+    extras: string | null;
+    exercises: LoggedExercise[];
 }
 
 /** Resumen de constancia de un atleta, para la lista del coach. */
@@ -63,6 +137,55 @@ export function parseGroupedReps(
     if (!Number.isFinite(count) || count <= 1) return null;
     const reps = rest.join('x').trim();
     return reps ? { count, reps } : null;
+}
+
+/**
+ * Inserta un lote y, si el servidor se queja de una COLUMNA QUE NO EXISTE,
+ * lo reintenta sin las columnas opcionales.
+ *
+ * POR QUÉ HACE FALTA
+ *
+ * supabase-js arma el parámetro `columns` de la petición con las CLAVES del
+ * objeto, valgan o no undefined. Si la base todavía no tiene aplicada una
+ * migración, PostgREST rechaza el INSERT COMPLETO con PGRST204 — no la
+ * columna, las cuarenta filas — y copiar una semana falla entera.
+ *
+ * La alternativa que había era no mandar nunca esas columnas, y eso es lo que
+ * hacía que al copiar una semana se perdieran los descansos, el RPE global y
+ * las técnicas de intensidad de cada serie. Preferimos mandarlo todo y
+ * degradar solo cuando la base de verdad no puede guardarlo.
+ */
+async function insertWithOptionalColumns<T extends Record<string, unknown>>(
+    table: string,
+    rows: T[],
+    optionalKeys: string[],
+    select?: string
+): Promise<{ data: Record<string, unknown>[] | null }> {
+    const attempt = async (payload: Record<string, unknown>[]) => {
+        const query = supabase.from(table).insert(payload);
+        return select ? await query.select(select) : await query.select();
+    };
+
+    const { data, error } = await attempt(rows);
+    if (!error) return { data: data as Record<string, unknown>[] | null };
+
+    const code = (error as { code?: string }).code;
+    if (code !== 'PGRST204' && code !== '42703') throw error;
+
+    console.warn(
+        `[${table}] la base no admite alguna columna opcional (${error.message}). ` +
+        'Se copia sin ella. Ejecuta database/MEJORAS_ANALISIS_VBT.sql para no perder datos.'
+    );
+
+    const stripped = rows.map(row => {
+        const copy = { ...row } as Record<string, unknown>;
+        optionalKeys.forEach(key => { delete copy[key]; });
+        return copy;
+    });
+
+    const retry = await attempt(stripped);
+    if (retry.error) throw retry.error;
+    return { data: retry.data as Record<string, unknown>[] | null };
 }
 
 export const trainingService = {
@@ -348,6 +471,145 @@ export const trainingService = {
     },
 
     /**
+     * REGISTRO DE EJECUCIÓN de un atleta: qué se le pidió y qué hizo.
+     *
+     * POR QUÉ NO VALÍA `getExerciseHistoryByAthlete`
+     *
+     * Aquella devuelve filas de EJERCICIO sueltas, sin el día al que
+     * pertenecen ni las notas del atleta ni la hora de cierre. Sirve para una
+     * gráfica de progresión, pero no para la pregunta que se hace un
+     * entrenador el martes por la mañana: "¿cómo le fue ayer?". Eso necesita
+     * la SESIÓN entera, en orden, con lo prescrito y lo ejecutado uno al lado
+     * del otro.
+     *
+     * Se limita a los últimos bloques por la misma razón que el historial: un
+     * año de registro son decenas de miles de filas y el servidor corta la
+     * consulta por tiempo. Con dos bloques se cubre el mesociclo en curso y
+     * el anterior, que es el horizonte con el que se toman decisiones.
+     */
+    async getExecutionLog(
+        athleteId: string,
+        options?: { blockIds?: string[]; blockLimit?: number }
+    ): Promise<LoggedSession[]> {
+        let blockIds = options?.blockIds ?? null;
+        const blockNames = new Map<string, string>();
+
+        if (!blockIds) {
+            const { data: blocks, error: blocksError } = await supabase
+                .from('training_blocks')
+                .select('id, name')
+                .eq('athlete_id', athleteId)
+                .order('is_active', { ascending: false })
+                .order('created_at', { ascending: false })
+                .limit(options?.blockLimit ?? 2);
+
+            if (blocksError) throw blocksError;
+            if (!blocks || blocks.length === 0) return [];
+
+            blockIds = blocks.map(b => b.id);
+            blocks.forEach(b => blockNames.set(b.id, b.name));
+        } else {
+            const { data: blocks } = await supabase
+                .from('training_blocks')
+                .select('id, name')
+                .in('id', blockIds);
+            (blocks ?? []).forEach(b => blockNames.set(b.id, b.name));
+        }
+
+        if (blockIds.length === 0) return [];
+
+        const { data, error } = await supabase
+            .from('training_sessions')
+            .select(`
+                id, block_id, week_number, day_number, name, date, day_of_week,
+                completed_at, athlete_notes, warmup, extras,
+                session_exercises (
+                    id, exercise_id, order_index, notes, variant_name, rest_seconds,
+                    exercise:exercise_library (name),
+                    training_sets (*)
+                )
+            `)
+            .in('block_id', blockIds)
+            .order('week_number', { ascending: true })
+            .order('day_number', { ascending: true });
+
+        if (error) throw error;
+
+        type Row = {
+            id: string; block_id: string; week_number: number; day_number: number;
+            name: string | null; date: string | null; day_of_week: string | null;
+            completed_at: string | null; athlete_notes: string | null;
+            warmup: string | null; extras: string | null;
+            session_exercises: {
+                id: string; exercise_id: string; order_index: number;
+                notes: string | null; variant_name: string | null;
+                rest_seconds: number | null;
+                exercise: { name: string } | null;
+                training_sets: TrainingSet[];
+            }[];
+        };
+
+        return ((data as unknown as Row[] | null) ?? []).map(session => ({
+            id: session.id,
+            blockId: session.block_id,
+            blockName: blockNames.get(session.block_id) ?? 'Bloque',
+            weekNumber: session.week_number,
+            dayNumber: session.day_number,
+            name: session.name,
+            dayOfWeek: session.day_of_week,
+            date: session.date,
+            completedAt: session.completed_at,
+            athleteNotes: session.athlete_notes,
+            warmup: session.warmup,
+            extras: session.extras,
+            exercises: [...(session.session_exercises ?? [])]
+                .sort((a, b) => a.order_index - b.order_index)
+                .map(ex => ({
+                    id: ex.id,
+                    exerciseId: ex.exercise_id,
+                    // La RLS puede filtrar el join a la biblioteca sin dar
+                    // error: el ejercicio llega como null y no por eso hay que
+                    // esconder las series que el atleta sí registró.
+                    name: ex.exercise?.name ?? 'Ejercicio',
+                    variantName: ex.variant_name,
+                    coachNotes: ex.notes,
+                    restSeconds: ex.rest_seconds,
+                    orderIndex: ex.order_index,
+                    sets: [...(ex.training_sets ?? [])]
+                        .sort((a, b) => a.order_index - b.order_index)
+                        .map(set => ({
+                            id: set.id,
+                            orderIndex: set.order_index,
+                            targetReps: set.target_reps ?? null,
+                            targetLoad: set.target_load ?? null,
+                            targetMetric: set.target_metric ?? null,
+                            targetRpe: set.target_rpe ?? null,
+                            restSeconds: set.rest_seconds ?? null,
+                            setType: set.set_type ?? null,
+                            setDetail: set.set_detail ?? null,
+                            groupTag: set.group_tag ?? null,
+                            actualReps: set.actual_reps ?? null,
+                            actualLoad: set.actual_load ?? null,
+                            actualRpe: set.actual_rpe ?? null,
+                            // "Hecha" es la columna, no una deducción. Las
+                            // filas antiguas no la tienen: ahí sí hay que
+                            // deducirla de lo registrado o darían todas por
+                            // pendientes.
+                            isCompleted: set.is_completed
+                                ?? Boolean(set.actual_reps || set.actual_load),
+                            notes: set.notes ?? null,
+                            videoUrl: set.video_url ?? null,
+                            vbtFileUrl: set.vbt_file_url ?? null,
+                            vbtMeanVelocity: set.vbt_mean_velocity ?? null,
+                            vbtPeakVelocity: set.vbt_peak_velocity ?? null,
+                            vbtVelocityLoss: set.vbt_velocity_loss ?? null,
+                            vbtEst1RM: set.vbt_est_1rm ?? null,
+                        })),
+                })),
+        }));
+    },
+
+    /**
      * SESSIONS
      */
     async getSessionsByBlock(blockId: string): Promise<TrainingSession[]> {
@@ -468,6 +730,37 @@ export const trainingService = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    /**
+     * Fija qué músculos cuentan como DIRECTOS y cuáles como INDIRECTOS en
+     * esta prescripción concreta.
+     *
+     * `null` en los dos borra la anulación y devuelve el ejercicio a la
+     * clasificación heredada (biblioteca → reglas por patrón). Es importante
+     * poder volver: una anulación equivocada que no se pueda quitar es peor
+     * que no tener anulación.
+     */
+    async setExerciseMuscles(
+        sessionExerciseId: string,
+        primary: string[] | null,
+        secondary: string[] | null
+    ): Promise<void> {
+        const { error } = await supabase
+            .from('session_exercises')
+            .update({ primary_muscles: primary, secondary_muscles: secondary })
+            .eq('id', sessionExerciseId);
+
+        if (!error) return;
+
+        if ((error as { code?: string }).code === 'PGRST204') {
+            throw new Error(
+                'La base de datos todavía no tiene las columnas de músculos por ' +
+                'prescripción. Ejecuta database/MEJORAS_ANALISIS_VBT.sql.'
+            );
+        }
+
+        throw error;
     },
 
     async getVbtExercisesByAthlete(athleteId: string): Promise<(SessionExercise & { session: TrainingSession; block: TrainingBlock })[]> {
@@ -757,6 +1050,8 @@ export const trainingService = {
                                 velocity_avg: exercise.velocity_avg,
                                 rest_seconds: exercise.rest_seconds,
                                 modifiers: exercise.modifiers,
+                                primary_muscles: exercise.primary_muscles,
+                                secondary_muscles: exercise.secondary_muscles,
                             })
                             .select()
                             .single();
@@ -772,6 +1067,13 @@ export const trainingService = {
                             target_metric: set.target_metric,
                             rest_seconds: set.rest_seconds,
                             is_video_required: set.is_video_required,
+                            notes: set.notes,
+                            // Técnicas de intensidad y encadenados: son
+                            // prescripción, no ejecución, y sin ellos el bloque
+                            // copiado no es el mismo bloque.
+                            set_type: set.set_type ?? null,
+                            set_detail: set.set_detail ?? null,
+                            group_tag: set.group_tag ?? null,
                         }));
 
                         if (sets.length > 0) {
@@ -1157,27 +1459,46 @@ export const trainingService = {
                     exercise_id: ex.exercise_id,
                     order_index: ex.order_index,
                     /**
-                     * Solo se copian los campos que session_exercises realmente tiene.
-                     * `rpe`, `velocity_avg` y `rest_seconds` pertenecen a training_sets,
-                     * no a ejercicios. El error PGRST204 ("column not found") salía porque
-                     * supabase-js arma el parámetro `columns` de la petición con las claves
-                     * del objeto aunque valgan undefined, y PostgREST rechaza el INSERT
-                     * completo por columnas que no existen.
+                     * SE COPIA LA PRESCRIPCIÓN ENTERA.
+                     *
+                     * Antes solo viajaban `notes` y `variant_name`, con el
+                     * argumento de que el resto "pertenece a training_sets".
+                     * No es cierto: el editor del día escribe `rest_seconds`,
+                     * `rpe` y `velocity_avg` en ESTA tabla. El resultado era
+                     * que el coach programaba la semana 1 con sus descansos,
+                     * la copiaba a las tres siguientes, y las tres salían sin
+                     * descanso ninguno — que es exactamente el "no se guardan
+                     * los tiempos de descanso" que se veía.
+                     *
+                     * Si la base no tiene alguna de estas columnas, el
+                     * reintento de `insertWithOptionalColumns` copia sin ella
+                     * en vez de tumbar la semana completa.
                      */
                     notes: ex.notes,
                     variant_name: ex.variant_name,
+                    rest_seconds: ex.rest_seconds ?? null,
+                    rpe: ex.rpe ?? null,
+                    velocity_avg: ex.velocity_avg ?? null,
+                    modifiers: ex.modifiers ?? null,
+                    // La clasificación muscular que haya fijado el coach para
+                    // esta prescripción viaja con ella: si no, el volumen de la
+                    // semana copiada no coincidiría con el de la original.
+                    primary_muscles: ex.primary_muscles ?? null,
+                    secondary_muscles: ex.secondary_muscles ?? null,
                 });
             }
         }
 
         if (exercisePayload.length === 0) return;
 
-        const { data: newExercises, error: createExError } = await supabase
-            .from('session_exercises')
-            .insert(exercisePayload)
-            .select('id, session_id, order_index');
+        const { data: newExercisesRaw } = await insertWithOptionalColumns(
+            'session_exercises',
+            exercisePayload,
+            ['rest_seconds', 'rpe', 'velocity_avg', 'modifiers', 'primary_muscles', 'secondary_muscles'],
+            'id, session_id, order_index'
+        );
 
-        if (createExError) throw createExError;
+        const newExercises = newExercisesRaw as { id: string; session_id: string; order_index: number }[] | null;
         if (!newExercises) return;
 
         /**
@@ -1215,16 +1536,32 @@ export const trainingService = {
                 rest_seconds: set.rest_seconds,
                 is_video_required: set.is_video_required,
                 notes: set.notes,
+                /**
+                 * Las técnicas de intensidad también son prescripción.
+                 *
+                 * Un dropset o una superserie programados en la semana 1
+                 * desaparecían al copiarla: el coach veía los mismos
+                 * ejercicios y los mismos kilos y daba por buena la copia, sin
+                 * notar que había perdido la mitad de la intención del bloque.
+                 *
+                 * Lo que NO se copia sigue siendo la ejecución: `actual_*`,
+                 * `is_completed`, vídeos y archivos VBT pertenecen a la semana
+                 * en la que se hicieron.
+                 */
+                set_type: set.set_type ?? null,
+                set_detail: set.set_detail ?? null,
+                group_tag: set.group_tag ?? null,
             }));
         });
 
         if (setsPayload.length === 0) return;
 
-        const { error: createSetsError } = await supabase
-            .from('training_sets')
-            .insert(setsPayload);
-
-        if (createSetsError) throw createSetsError;
+        await insertWithOptionalColumns(
+            'training_sets',
+            setsPayload,
+            ['set_type', 'set_detail', 'group_tag', 'target_metric', 'notes'],
+            'id'
+        );
     },
 
     /**
@@ -1390,7 +1727,8 @@ export const trainingService = {
             .from('session_exercises')
             .select(`
                 id, exercise_id, variant_name, rpe, velocity_avg,
-                exercise:exercise_library (id, name),
+                primary_muscles, secondary_muscles,
+                exercise:exercise_library (id, name, primary_muscles, secondary_muscles),
                 training_sets (*),
                 session:training_sessions!inner (
                     id, week_number, day_number,
@@ -1407,7 +1745,13 @@ export const trainingService = {
             variant_name: string | null;
             rpe: string | null;
             velocity_avg: string | null;
-            exercise: { id: string; name: string } | null;
+            primary_muscles: string[] | null;
+            secondary_muscles: string[] | null;
+            exercise: {
+                id: string; name: string;
+                primary_muscles: string[] | null;
+                secondary_muscles: string[] | null;
+            } | null;
             training_sets: TrainingSet[];
             session: {
                 id: string;
@@ -1434,6 +1778,10 @@ export const trainingService = {
                 dayNumber: r.session.day_number,
                 rpeGlobal: r.rpe,
                 velocityAvg: r.velocity_avg,
+                // La de la prescripción manda; si no la hay, la de la
+                // biblioteca; si tampoco, null y que decidan las reglas.
+                primaryMuscles: r.primary_muscles ?? r.exercise?.primary_muscles ?? null,
+                secondaryMuscles: r.secondary_muscles ?? r.exercise?.secondary_muscles ?? null,
                 sets: (r.training_sets || []).sort((a, b) => a.order_index - b.order_index)
             }))
             .sort((a, b) => a.weekNumber - b.weekNumber || a.dayNumber - b.dayNumber);

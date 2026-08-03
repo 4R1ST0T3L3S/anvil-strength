@@ -174,6 +174,20 @@ export interface SessionExercise {
     rest_seconds?: number | null; // Moved from Set level
     vbt_file_url?: string | null; // New field for VBT files
     modifiers?: string[]; // Extras / Tags for the exercise
+    /**
+     * Anulación de la clasificación muscular PARA ESTA PRESCRIPCIÓN.
+     *
+     * Va aquí y no solo en `exercise_library` porque la de la biblioteca es
+     * global: cambiarla afecta a todos los atletas y a todos los bloques. Un
+     * mismo remo puede ser dorsal directo en un bloque de espalda y accesorio
+     * de espalda alta en uno de press. El coach decide caso a caso.
+     *
+     * NULL = "no opino, hereda". Un array VACÍO = "no aporta volumen a
+     * nadie", que es lo que hay que poder decir de una movilidad metida como
+     * ejercicio. Ver database/MEJORAS_ANALISIS_VBT.sql.
+     */
+    primary_muscles?: string[] | null;
+    secondary_muscles?: string[] | null;
     created_at: string;
 
     // Joint Relation
@@ -358,7 +372,98 @@ export interface TrainingSet {
     video_url?: string | null;
     vbt_file_url?: string | null; // Archivo de encoder asociado a ESTA serie
 
+    /**
+     * MÉTRICAS VBT DE ESTA SERIE.
+     *
+     * El CSV del encoder es materia prima; esto es el resumen consultable.
+     * Sin estas columnas, pintar el perfil carga-velocidad de un bloque
+     * obligaba a descargar y volver a parsear treinta ficheros.
+     *
+     * Ver database/MEJORAS_ANALISIS_VBT.sql.
+     */
+    /** Velocidad media concéntrica, m/s. La métrica de referencia en VBT. */
+    vbt_mean_velocity?: number | null;
+    vbt_peak_velocity?: number | null;
+    /** Caída de velocidad DENTRO de la serie, en %. */
+    vbt_velocity_loss?: number | null;
+    vbt_mean_power?: number | null;
+    vbt_peak_power?: number | null;
+    /** Recorrido, en metros. */
+    vbt_rom?: number | null;
+    vbt_est_1rm?: number | null;
+    /** De dónde salen los números. */
+    vbt_source?: VbtSource | null;
+
     order_index: number;
     created_at: string;
     notes?: string | null;
+}
+
+/**
+ * De dónde sale una medición de velocidad.
+ *
+ * Importa al leerla: un `encoder` mide de verdad, `video` lo estima con
+ * visión artificial sobre un vídeo de móvil y `manual` es lo que alguien
+ * copió de otra pantalla. Mezclarlas sin decir cuál es cuál convertiría un
+ * perfil de cargas en una nube de puntos de fiabilidad desconocida.
+ */
+export type VbtSource = 'encoder' | 'video' | 'manual';
+
+export const VBT_SOURCES: { key: VbtSource; label: string; hint: string }[] = [
+    { key: 'encoder', label: 'Encoder', hint: 'Medido por un dispositivo (CSV)' },
+    { key: 'video', label: 'Vídeo', hint: 'Estimado con PWR Análisis' },
+    { key: 'manual', label: 'Manual', hint: 'Introducido a mano' },
+];
+
+/**
+ * Métricas VBT de una serie, agrupadas.
+ *
+ * Existe como tipo propio porque las mismas siete cifras viajan entre
+ * `training_sets`, `vbt_measurements` y el analizador de vídeo, y tenerlas
+ * sueltas en tres sitios garantizaba que antes o después dejaran de
+ * coincidir.
+ */
+export interface VbtMetrics {
+    meanVelocity?: number | null;
+    peakVelocity?: number | null;
+    velocityLoss?: number | null;
+    meanPower?: number | null;
+    peakPower?: number | null;
+    rom?: number | null;
+    est1RM?: number | null;
+}
+
+/**
+ * Medición VBT que NO cuelga de una serie programada.
+ *
+ * El caso que la justifica: un perfil de cargas hecho una tarde suelta, sin
+ * bloque abierto. Obligar a que toda medición colgase del plan haría
+ * imposible medir antes de programar, que es el orden natural.
+ */
+export interface VbtMeasurement {
+    id: string;
+    athlete_id: string;
+    created_by?: string | null;
+    exercise_id?: string | null;
+    exercise_name: string;
+    /** Enlace opcional con el plan, cuando la medición sí es de una serie. */
+    training_set_id?: string | null;
+    session_exercise_id?: string | null;
+    performed_at: string;
+    set_number?: number | null;
+    reps?: number | null;
+    load_kg?: number | null;
+    mean_velocity?: number | null;
+    peak_velocity?: number | null;
+    velocity_loss?: number | null;
+    mean_power?: number | null;
+    peak_power?: number | null;
+    rom?: number | null;
+    est_1rm?: number | null;
+    /** Velocidad de cada repetición, en orden. Dibuja la caída de la serie. */
+    rep_velocities?: number[] | null;
+    file_url?: string | null;
+    source: VbtSource;
+    notes?: string | null;
+    created_at: string;
 }

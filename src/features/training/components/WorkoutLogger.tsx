@@ -13,12 +13,15 @@ import {
     getWeekNumber, getDateRangeFromWeek, formatDateRange,
     getDateForWeekday, startOfToday,
 } from '../../../utils/dateUtils';
-import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download } from 'lucide-react';
+import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download, Info } from 'lucide-react';
 import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { RestTimerOverlay } from './RestTimerOverlay';
+import { vbtService } from '../../../services/vbtService';
+import { parseVbtFile, type ParsedVbtFile } from '../../../lib/vbt/csv';
+import { SetVbtModal } from '../../vbt/components/SetVbtModal';
 
 interface WorkoutLoggerProps {
     athleteId: string;
@@ -116,6 +119,9 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     const [weekNames, setWeekNames] = useState<Record<number, string>>({});
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const [weekPickerOpen, setWeekPickerOpen] = useState(false);
+    // Los objetivos del bloque se leen el primer día del mesociclo y no
+    // vuelven a mirarse: van plegados y no ocupan alto de cabecera.
+    const [objectivesOpen, setObjectivesOpen] = useState(false);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     // Vídeo enlazado desde el calentamiento o los extras. Se reproduce dentro
@@ -470,76 +476,114 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
          */
         <div className="mx-auto w-full max-w-md text-white">
 
-            {/* 1. Header & Navigation.
+            {/* 1. CABECERA Y NAVEGACIÓN.
+                =========================================================
+                ALTURA, que es lo que se estaba yendo de las manos.
+
+                Esto ocupaba unos 210px en un móvil de 812: sumados a los 56
+                de la barra de la aplicación, un tercio de la pantalla estaba
+                dedicado a decir en qué semana estamos. El atleta abre esto
+                DE PIE, entre series, para leer una fila de números que
+                quedaba a media pantalla de distancia.
+
+                Ahora son ~118px (14%): nombre del bloque y semana comparten
+                renglón, los días son fichas de 44px —el mínimo para un
+                pulgar, ni uno más— y la barra de progreso se funde con el
+                borde inferior en vez de tener su propia franja.
+
+                En escritorio se recupera el aire (`md:`): allí el alto no es
+                un recurso escaso y la jerarquía se lee mejor separada.
+
                 `sticky`: el selector de semana y los días siguen accesibles
                 al bajar por la lista de ejercicios. Un día tiene seis u ocho
                 ejercicios y volver arriba para cambiar de día era un viaje
                 de pantalla y media. */}
-            <div className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 pb-2 backdrop-blur">
-                <div className="p-4">
-                    <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
-                    {block.description && (
-                        <details className="group mt-1">
-                            <summary className="text-[10px] font-black uppercase tracking-widest text-ink-subtle cursor-pointer list-none hover:text-white transition-colors select-none">
-                                Objetivos del bloque <span className="group-open:hidden">▸</span><span className="hidden group-open:inline">▾</span>
-                            </summary>
-                            <p className="text-xs text-ink-muted leading-relaxed mt-2 whitespace-pre-wrap bg-white/[0.03] border border-subtle rounded-xl p-3">
-                                {block.description}
-                            </p>
-                        </details>
-                    )}
-                </div>
+            <div className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 backdrop-blur">
 
-                {/* Selector de semana. El atleta entrena por semanas, así que
-                    la semana es el contexto principal y va por encima de los
-                    días, no escondida en un menú. */}
-                {selectedWeek !== null && (
-                    <div className="px-4 pb-1">
-                      <div className="flex items-stretch gap-2">
-                        <button
-                            onClick={() => setWeekPickerOpen(v => !v)}
-                            aria-expanded={weekPickerOpen}
-                            disabled={availableWeeks.length <= 1}
-                            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-surface-raised px-3 py-2.5 text-left transition-colors hover:bg-surface-overlay disabled:hover:bg-surface-raised"
-                        >
-                            <span className="flex min-w-0 items-center gap-2">
-                                <CalendarDays size={15} className="shrink-0 text-anvil-red" aria-hidden="true" />
-                                <span className="min-w-0">
-                                    <span className="block truncate text-sm font-bold leading-tight">
-                                        Semana {availableWeeks.indexOf(selectedWeek) + 1}
-                                        {weekNames[selectedWeek] && (
-                                            <span className="ml-1.5 font-normal text-ink-muted">{weekNames[selectedWeek]}</span>
-                                        )}
-                                    </span>
-                                    <span className="block text-[10px] uppercase tracking-widest text-ink-subtle">
-                                        {formatDateRange(
-                                            getDateRangeFromWeek(selectedWeek, blockYear).start,
-                                            getDateRangeFromWeek(selectedWeek, blockYear).end
-                                        )}
+                {/* Renglón 1: bloque + semana + acciones.
+                    El nombre del bloque era un titular propio de 40px de
+                    alto. Es contexto, no navegación: cabe como sobretítulo
+                    del selector de semana, que es lo que de verdad se pulsa. */}
+                {selectedWeek !== null ? (
+                    <div className="px-3 pt-2 md:px-4 md:pt-3">
+                        <div className="flex items-stretch gap-1.5">
+                            <button
+                                onClick={() => setWeekPickerOpen(v => !v)}
+                                aria-expanded={weekPickerOpen}
+                                disabled={availableWeeks.length <= 1}
+                                className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-surface-raised px-2.5 py-1.5 text-left transition-colors hover:bg-surface-overlay disabled:hover:bg-surface-raised md:px-3 md:py-2.5"
+                            >
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <CalendarDays size={14} className="shrink-0 text-anvil-red" aria-hidden="true" />
+                                    <span className="min-w-0">
+                                        <span className="block truncate text-[9px] font-bold uppercase leading-tight tracking-widest text-anvil-red">
+                                            {block.name}
+                                        </span>
+                                        <span className="block truncate text-t-sm font-bold leading-tight">
+                                            Semana {availableWeeks.indexOf(selectedWeek) + 1}
+                                            {weekNames[selectedWeek] && (
+                                                <span className="ml-1.5 font-normal text-ink-muted">{weekNames[selectedWeek]}</span>
+                                            )}
+                                            {/* El rango de fechas pasa a la MISMA línea en
+                                                gris: era un segundo renglón de 14px para un
+                                                dato que se consulta una vez al entrar. */}
+                                            <span className="ml-1.5 hidden font-normal text-ink-subtle sm:inline">
+                                                {formatDateRange(
+                                                    getDateRangeFromWeek(selectedWeek, blockYear).start,
+                                                    getDateRangeFromWeek(selectedWeek, blockYear).end
+                                                )}
+                                            </span>
+                                        </span>
                                     </span>
                                 </span>
-                            </span>
-                            {availableWeeks.length > 1 && (
-                                <ChevronDown
-                                    size={16}
-                                    aria-hidden="true"
-                                    className={cn('shrink-0 text-ink-subtle transition-transform', weekPickerOpen && 'rotate-180')}
-                                />
-                            )}
-                        </button>
+                                {availableWeeks.length > 1 && (
+                                    <ChevronDown
+                                        size={15}
+                                        aria-hidden="true"
+                                        className={cn('shrink-0 text-ink-subtle transition-transform', weekPickerOpen && 'rotate-180')}
+                                    />
+                                )}
+                            </button>
 
-                        {/* Descargar la semana para llevarla al gimnasio. Va
-                            junto al selector porque exporta LA SEMANA que se
-                            está viendo, no el bloque entero. */}
-                        <button
-                            onClick={handlePrintWeek}
-                            title="Descargar esta semana en PDF"
-                            aria-label="Descargar esta semana en PDF"
-                            className="flex shrink-0 items-center justify-center rounded-xl bg-surface-raised px-3.5 text-ink-muted transition-colors hover:bg-surface-overlay hover:text-white"
-                        >
-                            <Download size={17} />
-                        </button>
-                      </div>
+                            {/* Objetivos del bloque: de `details` siempre
+                                presente a un botón que solo aparece si hay algo
+                                que leer. Ocupaba una franja fija para un texto
+                                que se lee el primer día del mesociclo. */}
+                            {block.description && (
+                                <button
+                                    onClick={() => setObjectivesOpen(v => !v)}
+                                    aria-expanded={objectivesOpen}
+                                    title="Objetivos del bloque"
+                                    aria-label="Objetivos del bloque"
+                                    className={cn(
+                                        'flex shrink-0 items-center justify-center rounded-xl px-2.5 transition-colors',
+                                        objectivesOpen
+                                            ? 'bg-anvil-red/15 text-anvil-red'
+                                            : 'bg-surface-raised text-ink-muted hover:bg-surface-overlay hover:text-white'
+                                    )}
+                                >
+                                    <Info size={16} />
+                                </button>
+                            )}
+
+                            {/* Descargar la semana para llevarla al gimnasio. Va
+                                junto al selector porque exporta LA SEMANA que se
+                                está viendo, no el bloque entero. */}
+                            <button
+                                onClick={handlePrintWeek}
+                                title="Descargar esta semana en PDF"
+                                aria-label="Descargar esta semana en PDF"
+                                className="flex shrink-0 items-center justify-center rounded-xl bg-surface-raised px-2.5 text-ink-muted transition-colors hover:bg-surface-overlay hover:text-white"
+                            >
+                                <Download size={16} />
+                            </button>
+                        </div>
+
+                        {objectivesOpen && block.description && (
+                            <p className="mt-1.5 whitespace-pre-wrap rounded-xl border border-subtle bg-white/[0.03] p-3 text-t-xs leading-relaxed text-ink-muted">
+                                {block.description}
+                            </p>
+                        )}
 
                         {weekPickerOpen && (
                             <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-subtle bg-surface-raised p-1.5">
@@ -574,12 +618,21 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             </div>
                         )}
                     </div>
+                ) : (
+                    <h1 className="px-3 pt-2 text-t-xs font-bold uppercase tracking-widest text-anvil-red md:px-4 md:pt-3">
+                        {block.name}
+                    </h1>
                 )}
 
-                {/* Day Tabs Scroll */}
-                <div className="flex overflow-x-auto px-4 gap-3 py-2 scrollbar-hide">
+                {/* Renglón 2: los días.
+                    Fichas de 44px de alto —el mínimo real para un pulgar— en
+                    lugar de las de 62 que había. El nombre del día se queda
+                    en una sola línea junto al número: apilarlo obligaba a que
+                    la ficha midiera el triple para un texto que casi nunca
+                    existe. */}
+                <div className="flex gap-1.5 overflow-x-auto px-3 py-2 scrollbar-hide md:gap-2.5 md:px-4">
                     {sessions.map(s => {
-                        // El día agendado manda sobre el número: "Lun 4 ago" le
+                        // El día agendado manda sobre el número: "Lun 4" le
                         // dice al atleta si le toca hoy; "Día 2" no.
                         const label = weekdayLabel(s.day_of_week);
                         const index = weekdayIndex(s.day_of_week);
@@ -587,57 +640,69 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             ? getDateForWeekday(selectedWeek, blockYear, index)
                             : null;
                         const isToday = date != null && date.getTime() === startOfToday().getTime();
+                        const active = activeSessionId === s.id;
+
+                        // Cuántas series lleva hechas de ese día. Un punto en
+                        // la ficha responde a "¿me quedó algo del lunes?" sin
+                        // tener que entrar a mirar.
+                        const daySets = s.exercises.flatMap(e => e.sets);
+                        const dayDone = daySets.length > 0 && daySets.every(x => x.is_completed);
 
                         return (
                             <button
                                 key={s.id}
                                 onClick={() => setActiveSessionId(s.id)}
+                                aria-current={active ? 'page' : undefined}
                                 className={cn(
-                                    "relative flex flex-col items-center justify-center min-w-[4.5rem] px-2 py-3 rounded-xl transition-all border",
-                                    activeSessionId === s.id
-                                        ? "bg-white text-black border-white shadow-lg scale-105 font-bold"
-                                        : "bg-surface-overlay text-ink-muted border-transparent hover:bg-surface-overlay",
-                                    isToday && activeSessionId !== s.id && "border-anvil-red/40"
+                                    'relative flex h-11 min-w-[3.75rem] shrink-0 flex-col items-center justify-center rounded-xl border px-2.5 leading-none transition-colors duration-fast',
+                                    active
+                                        ? 'border-white bg-white font-bold text-black'
+                                        : 'border-transparent bg-surface-overlay text-ink-muted hover:text-white',
+                                    !active && isToday && 'border-anvil-red/50'
                                 )}
                             >
                                 {label ? (
                                     <>
-                                        <span className="text-[10px] uppercase tracking-widest opacity-60">
+                                        <span className="text-[9px] uppercase tracking-widest opacity-60">
                                             {WEEKDAYS.find(d => d.key === s.day_of_week)?.short}
                                         </span>
-                                        <span className="text-sm font-bold leading-tight">
-                                            {date?.getDate()}
-                                        </span>
-                                        {s.name && (
-                                            <span className="mt-0.5 max-w-[4.5rem] truncate text-[9px] uppercase tracking-wider opacity-70">
-                                                {s.name}
-                                            </span>
-                                        )}
+                                        <span className="mt-0.5 text-t-sm font-bold">{date?.getDate()}</span>
                                     </>
                                 ) : s.name ? (
-                                    <span className="text-xs font-black uppercase tracking-wider">{s.name}</span>
+                                    <span className="max-w-[6rem] truncate text-t-2xs font-black uppercase tracking-wider">
+                                        {s.name}
+                                    </span>
                                 ) : (
                                     <>
-                                        <span className="text-[10px] uppercase tracking-widest opacity-60">Día</span>
-                                        <span className="text-xl font-bold leading-none">{s.day_number}</span>
+                                        <span className="text-[9px] uppercase tracking-widest opacity-60">Día</span>
+                                        <span className="mt-0.5 text-t-sm font-bold">{s.day_number}</span>
                                     </>
+                                )}
+
+                                {dayDone && !active && (
+                                    <span
+                                        className="absolute right-1 top-1 h-1.5 w-1.5 rounded-pill bg-success"
+                                        aria-label="Día completado"
+                                    />
                                 )}
                             </button>
                         );
                     })}
                 </div>
 
-                {/* Progreso del día.
-                    Sustituye al pie con el botón "Terminar el día". Ese botón
-                    pedía un gesto que no aportaba nada —las series ya estaban
+                {/* Progreso del día, PEGADO AL BORDE.
+                    Tenía su propia franja con relleno arriba y abajo: 20px de
+                    alto para una barra de 4. Ahora es el propio borde inferior
+                    de la cabecera y el contador vive flotando sobre él, así
+                    que informa igual sin ocupar nada.
+
+                    Sustituye al pie con el botón "Terminar el día", que pedía
+                    un gesto que no aportaba nada —las series ya estaban
                     marcadas una a una— y encima se posicionaba contra el alto
                     del contenedor, así que en el móvil aparecía flotando en
-                    mitad de la pantalla y por debajo de la barra de pestañas.
-                    Lo único que valía la pena de aquel pie era saber cuánto
-                    queda, y eso cabe en cuatro píxeles de alto aquí arriba,
-                    donde además se ve SIEMPRE y no solo al llegar al final. */}
+                    mitad de la pantalla. */}
                 {totalSets > 0 && (
-                    <div className="flex items-center gap-2.5 px-4 pt-1">
+                    <div className="flex items-center gap-2 px-3 pb-1.5 md:px-4 md:pb-2">
                         <div className="h-1 flex-1 overflow-hidden rounded-pill bg-surface-sunken">
                             {/* Se anima el ancho y no un `transform`: una barra
                                 escalada deforma sus propios bordes redondeados,
@@ -649,7 +714,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 transition={{ duration: prefersReducedMotion() ? 0 : DURATION.base, ease: EASE_OUT }}
                             />
                         </div>
-                        <span className="shrink-0 text-t-2xs font-bold uppercase tracking-widest tabular-nums text-ink-subtle">
+                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest tabular-nums text-ink-subtle">
                             {completedSets}/{totalSets}
                         </span>
                         <SaveIndicator />
@@ -914,19 +979,72 @@ function LoggerExerciseCard({
     const [vbtUrl, setVbtUrl] = useState<string | null>(sessionExercise.vbt_file_url || null);
     // Tras subir, permitir asociar el archivo a una serie concreta
     const [pendingSetTag, setPendingSetTag] = useState<string | null>(null); // url pendiente de etiquetar
+    // Lo leído del fichero, a la espera de saber a qué serie pertenece.
+    const [pendingParsed, setPendingParsed] = useState<ParsedVbtFile | null>(null);
+    // Ficha de velocidad abierta: la serie y su número visible.
+    const [vbtSet, setVbtSet] = useState<{ set: TrainingSet; number: number } | null>(null);
     const [taggedSetId, setTaggedSetId] = useState<string | null>(
         sessionExercise.sets.find(s => s.vbt_file_url)?.id || null
     );
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const tagSetWithVbt = async (setId: string | null) => {
-        const url = pendingSetTag;
+    /**
+     * Asocia el archivo recién subido a una serie Y GUARDA SUS NÚMEROS.
+     *
+     * Antes esto solo escribía la URL. El fichero quedaba adjunto y sus cifras
+     * seguían dentro del CSV: para saber a qué velocidad se movió una serie
+     * había que abrir la gráfica, y comparar dos semanas era abrir dos
+     * gráficas y mirarlas a ojo. Ahora la velocidad de la serie es un número
+     * en la base, así que el perfil carga-velocidad del atleta se construye
+     * solo.
+     */
+    const tagSetWithVbt = async (
+        setId: string | null,
+        // El archivo y su lectura llegan por parámetro y NO del estado: cuando
+        // el ejercicio tiene una sola serie esto se llama en el mismo turno en
+        // que se guardan, y el estado todavía no se ha actualizado.
+        urlArg?: string,
+        parsedArg?: ParsedVbtFile | null
+    ) => {
+        const url = urlArg ?? pendingSetTag;
+        const parsed = parsedArg !== undefined ? parsedArg : pendingParsed;
         setPendingSetTag(null);
+        setPendingParsed(null);
         if (!url || !setId) return; // "todo el ejercicio" → ya está guardado a nivel ejercicio
+
+        const index = sessionExercise.sets.findIndex(s => s.id === setId);
+        const set = sessionExercise.sets[index];
+
         try {
             await trainingService.updateSet(setId, { vbt_file_url: url });
             setTaggedSetId(setId);
-            toast.success('VBT asociado a la serie');
+
+            // Del fichero se toma la serie con el mismo número; si no viene
+            // separado por series, el resumen del fichero entero.
+            const match = parsed?.sets.find(s => s.setNumber === index + 1) ?? parsed?.sets[0];
+            const metrics = match?.metrics ?? parsed?.overall;
+
+            if (metrics?.meanVelocity) {
+                await vbtService.saveMeasurement({
+                    athleteId,
+                    createdBy: athleteId,
+                    exerciseName: sessionExercise.exercise?.name ?? 'Ejercicio',
+                    exerciseId: sessionExercise.exercise_id,
+                    trainingSetId: setId,
+                    sessionExerciseId: sessionExercise.id,
+                    setNumber: index + 1,
+                    reps: set?.actual_reps ?? null,
+                    loadKg: set?.actual_load
+                        ?? ((set?.target_metric ?? 'kg') === 'kg' ? set?.target_load ?? null : null),
+                    metrics,
+                    repVelocities: match?.repVelocities ?? null,
+                    fileUrl: url,
+                    source: 'encoder',
+                });
+                toast.success(`Serie ${index + 1}: ${metrics.meanVelocity.toFixed(2)} m/s guardados`);
+            } else {
+                toast.success('VBT asociado a la serie');
+            }
         } catch (e) {
             console.error(e);
             toast.error('No se pudo asociar a la serie');
@@ -953,7 +1071,7 @@ function LoggerExerciseCard({
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${sessionExercise.id}_${Date.now()}.${fileExt}`;
-            
+
             const { error: uploadError } = await supabase.storage
                 .from('vbt_files')
                 .upload(fileName, file);
@@ -963,15 +1081,31 @@ function LoggerExerciseCard({
             const { data } = supabase.storage.from('vbt_files').getPublicUrl(fileName);
             const publicUrl = data.publicUrl;
 
+            // Se lee EN EL NAVEGADOR, antes de preguntar nada. Si el formato no
+            // se reconoce el archivo queda adjunto igual —siempre es mejor
+            // tenerlo que no tenerlo— pero sin inventar cifras.
+            let parsed: ParsedVbtFile | null = null;
+            try {
+                parsed = await parseVbtFile(file);
+                if (parsed.rowCount === 0) parsed = null;
+            } catch {
+                parsed = null;
+            }
+
             await trainingService.updateSessionExercise(sessionExercise.id, { vbt_file_url: publicUrl });
             setVbtUrl(publicUrl);
-            toast.success("Archivo VBT adjuntado");
+            toast.success(
+                parsed
+                    ? `Archivo leído · ${parsed.rowCount} repeticiones`
+                    : 'Archivo VBT adjuntado'
+            );
+
             // Si hay más de una serie, preguntar a cuál corresponde
             if (sessionExercise.sets.length > 1) {
+                setPendingParsed(parsed);
                 setPendingSetTag(publicUrl);
             } else if (sessionExercise.sets.length === 1) {
-                await trainingService.updateSet(sessionExercise.sets[0].id, { vbt_file_url: publicUrl });
-                setTaggedSetId(sessionExercise.sets[0].id);
+                await tagSetWithVbt(sessionExercise.sets[0].id, publicUrl, parsed);
             }
         } catch (error) {
             console.error("Upload error full detail:", error);
@@ -1035,6 +1169,28 @@ function LoggerExerciseCard({
                         <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-anvil-red transition-colors">{exerciseName}</h3>
                         <PlayCircle size={15} className="mt-1.5 text-ink-subtle group-hover:text-anvil-red transition-colors shrink-0" />
                     </button>
+
+                    {/* LA VARIANTE PRESCRITA.
+                        =================================================
+                        Esto NO SE ENSEÑABA. El coach escribe aquí "Tempo 2\" ·
+                        Pausa 4\"" —o lo compone con los botones de modificador
+                        del editor— y el atleta veía "Press banca" a secas.
+                        Salía en la vista previa del coach y en el PDF, así que
+                        el coach daba por hecho que estaba puesto; en la
+                        aplicación, que es donde se entrena, no existía.
+
+                        Va debajo del nombre y con el color de marca porque
+                        CAMBIA EL EJERCICIO: una banca con pausa de cuatro
+                        segundos no es una banca, y confundirlas invalida la
+                        sesión entera. Es la misma jerarquía que ya tenía en la
+                        vista previa del entrenador, así que lo que él revisa y
+                        lo que el atleta ve por fin coinciden. */}
+                    {sessionExercise.variant_name?.trim() && (
+                        <p className="mt-1 text-t-xs font-bold leading-snug text-anvil-red">
+                            {sessionExercise.variant_name.trim()}
+                        </p>
+                    )}
+
                     {sessionExercise.notes && (
                         <button
                             onClick={() => setNoteOpen(!noteOpen)}
@@ -1167,9 +1323,31 @@ function LoggerExerciseCard({
                         groupIndex={row.groupIndex}
                         onExpand={(groupIndex) => onExpandSet(row.set.id, row.baseOrderIndex, groupIndex)}
                         onChange={onSetChange}
+                        // La velocidad solo se ofrece en series YA SEPARADAS: en
+                        // un "4x8" sin separar las cuatro comparten fila, y
+                        // guardar una velocidad ahí la asignaría a las cuatro.
+                        onOpenVbt={
+                            row.needsExpansion
+                                ? undefined
+                                : () => setVbtSet({ set: row.set, number: index + 1 })
+                        }
                     />
                 ))}
             </div>
+
+            {vbtSet && (
+                <SetVbtModal
+                    open
+                    onClose={() => setVbtSet(null)}
+                    athleteId={athleteId}
+                    createdBy={athleteId}
+                    exerciseName={exerciseName}
+                    exerciseId={sessionExercise.exercise_id}
+                    sessionExerciseId={sessionExercise.id}
+                    set={vbtSet.set}
+                    setNumber={vbtSet.number}
+                />
+            )}
         </div>
     );
 }

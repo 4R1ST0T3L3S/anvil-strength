@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, MessageSquare, MessageSquareText } from 'lucide-react';
+import { Check, Gauge, MessageSquare, MessageSquareText } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { TrainingSet, TargetMetric, SET_TYPES } from '../../../types/training';
@@ -47,6 +47,12 @@ interface LoggerSetRowProps {
     groupIndex?: number;
     /** Lo que ya está registrado se propaga al pie de la sesión. */
     onChange?: (setId: string, completed: boolean) => void;
+    /**
+     * Abre la ficha de velocidad de esta serie. Ausente cuando la serie
+     * todavía forma parte de un grupo sin separar: los renglones comparten
+     * fila y la medición se asignaría a todos.
+     */
+    onOpenVbt?: () => void;
 }
 
 export function LoggerSetRow({
@@ -59,6 +65,7 @@ export function LoggerSetRow({
     onExpand,
     groupIndex = 0,
     onChange,
+    onOpenVbt,
 }: LoggerSetRowProps) {
     /**
      * Las repeticiones REALES ahora se escriben.
@@ -118,7 +125,7 @@ export function LoggerSetRow({
      * quedarse sin cobertura y a cerrar la app, que en un gimnasio es el
      * caso normal y no el raro. Ver src/lib/offlineQueue.ts.
      */
-    const commit = async (patch: Partial<TrainingSet>) => {
+    const commit = async (patch: Partial<TrainingSet>): Promise<string> => {
         if (needsExpansion && onExpand) {
             // La separación se pide siempre al padre, que la desduplica: los
             // cuatro renglones de un "4x8" comparten una sola llamada. Aquí
@@ -129,6 +136,11 @@ export function LoggerSetRow({
             if (realId) targetId.current = realId;
         }
         writeQueue.enqueue('training_sets', targetId.current, patch as Record<string, unknown>);
+        // Devuelve la fila contra la que se ha escrito DE VERDAD. Quien avisa
+        // al resto de la pantalla necesita ese id y no `set.id`: en un grupo
+        // sin separar los cuatro renglones comparten `set.id`, y decir "esta
+        // está hecha" con él daría por hechas las cuatro.
+        return targetId.current;
     };
 
     /** Guarda pasado `COMMIT_DELAY` sin escribir, con un reloj por casilla. */
@@ -142,13 +154,26 @@ export function LoggerSetRow({
         return Number.isFinite(parsed) ? parsed : null;
     };
 
+    /**
+     * Marca o desmarca la serie.
+     *
+     * EL AVISO AL RESTO DE LA PANTALLA VA DESPUÉS DE ESCRIBIR, no antes.
+     *
+     * Antes se llamaba a `onChange(set.id, …)` de forma síncrona, y en un
+     * "4x8" todavía sin separar los cuatro renglones comparten `set.id`: el
+     * contador del día daba las cuatro series por hechas en cuanto se marcaba
+     * la primera. En press banca, que es donde el coach pauta agrupado, marcar
+     * una serie completaba el ejercicio entero.
+     *
+     * `commit` devuelve la fila REAL —separando el grupo si hacía falta—, así
+     * que el aviso llega con el id que corresponde a ESTE renglón.
+     */
     const toggleDone = () => {
         const next = !done;
         setDone(next);
-        onChange?.(set.id, next);
 
         if (!next) {
-            void commit({ is_completed: false });
+            void commit({ is_completed: false }).then(id => onChange?.(id, false));
             return;
         }
 
@@ -175,7 +200,7 @@ export function LoggerSetRow({
             actual_reps: repsValue,
             actual_load: loadValue,
             actual_rpe: toNumber(rpe),
-        });
+        }).then(id => onChange?.(id, true));
 
         const rest = set.rest_seconds || defaultRestSeconds;
         if (rest && rest > 0) onStartTimer(rest);
@@ -337,6 +362,37 @@ export function LoggerSetRow({
                     <span className="min-w-0 text-t-2xs leading-snug text-ink-subtle">
                         {set.set_detail?.trim() || setType.hint}
                     </span>
+                </div>
+            )}
+
+            {/* VELOCIDAD DE LA SERIE.
+                Debajo de la fila y no dentro, por lo mismo que la técnica: la
+                rejilla ya va justa en un móvil de 320px. Cuando hay medición se
+                enseña el número; cuando no, un botón discreto para añadirla.
+                Solo aparece si el ejercicio admite medición (`onOpenVbt`). */}
+            {onOpenVbt && (
+                <div className="px-2.5 pb-1.5 pl-[1.75rem] sm:px-3 sm:pl-[2rem]">
+                    <button
+                        onClick={onOpenVbt}
+                        className={cn(
+                            'inline-flex items-center gap-1.5 rounded-chip px-1.5 py-0.5 text-[10px] font-semibold transition-colors duration-fast ease-snap',
+                            set.vbt_mean_velocity != null
+                                ? 'bg-[var(--info-quiet)] text-info'
+                                : 'text-ink-faint hover:bg-surface-overlay hover:text-ink-muted'
+                        )}
+                    >
+                        <Gauge size={11} aria-hidden="true" />
+                        {set.vbt_mean_velocity != null ? (
+                            <>
+                                <span className="tabular-nums">{set.vbt_mean_velocity}</span> m/s
+                                {set.vbt_velocity_loss != null && (
+                                    <span className="opacity-70">· −{set.vbt_velocity_loss}%</span>
+                                )}
+                            </>
+                        ) : (
+                            'Añadir velocidad'
+                        )}
+                    </button>
                 </div>
             )}
 

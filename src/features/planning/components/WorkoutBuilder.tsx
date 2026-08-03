@@ -4,7 +4,7 @@ import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseL
 import type { TargetMetric, WeekMeta, Weekday } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, CalendarPlus, Activity, X, Dumbbell, ArrowRightLeft, FileText, BarChart3, Flame, Timer, Eye, EyeOff, LayoutTemplate, CopyPlus, GripVertical, ChevronDown, TrendingUp, Send, Check, Download, Flame as FlameIcon, MoreVertical, Sparkles } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, CalendarPlus, Activity, X, Dumbbell, ArrowRightLeft, FileText, BarChart3, Flame, Timer, Eye, EyeOff, LayoutTemplate, CopyPlus, GripVertical, ChevronDown, TrendingUp, Send, Check, Download, Flame as FlameIcon, MoreVertical, Sparkles, Target } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
@@ -17,6 +17,8 @@ import {
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 import { VbtChartModal } from '../../coach/components/VbtChartModal';
 import { VolumePanel } from './VolumePanel';
+import { MuscleMappingEditor } from './MuscleMappingEditor';
+import { SetVbtModal } from '../../vbt/components/SetVbtModal';
 import { BlockOverviewPanel } from './BlockOverviewPanel';
 import { ProgressionModal } from './ProgressionModal';
 import { resolveStep, type ProgressionStep } from '../../../lib/planning/progression';
@@ -30,6 +32,7 @@ import { Button } from '../../../components/ui/Button';
 import { AnchoredMenu } from '../../../components/ui/AnchoredMenu';
 import { transition, DURATION } from '../../../lib/motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
+import { cn } from '../../../lib/utils';
 
 // Helpers to parse and format target_reps field specifically for grouped sets
 const getSeriesCount = (target_reps: string | null | undefined) => {
@@ -2087,6 +2090,8 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                     <DayEditorModal
                         session={session}
                         allSessions={blockData.sessions}
+                        athleteId={athleteId}
+                        coachId={coachId}
                         libraryNames={libraryNames}
                         historyByExercise={historyByExercise}
                         maxes={maxes}
@@ -2833,6 +2838,9 @@ const MOBILE_TABS = [
 interface DayEditorModalProps {
     session: ExtendedSession;
     allSessions: ExtendedSession[];
+    /** Atleta y entrenador: los necesita el registro de velocidad por serie. */
+    athleteId: string;
+    coachId: string | null;
     libraryNames: string[];
     historyByExercise: Record<string, number[]>;
     /** Máximos del atleta, para resolver los porcentajes. */
@@ -2863,7 +2871,7 @@ interface DayEditorModalProps {
 }
 
 function DayEditorModal({
-    session, allSessions, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
+    session, allSessions, athleteId, coachId, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
     onSaveTemplate, onApplyTemplate, onDeleteTemplate, onCopyExercise, onReorder,
     onClose, onUpdateName, onUpdateAppendix, onAddExercise, onUpdateExercise,
     onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onOpenVbtChart,
@@ -3404,6 +3412,8 @@ function DayEditorModal({
                                 >
                                     <ExerciseCard
                                         sessionExercise={selectedEx}
+                                        athleteId={athleteId}
+                                        coachId={coachId}
                                         referenceMax={findMax(maxes, selectedEx.exercise?.name)?.one_rm ?? null}
                                         recentLoads={historyByExercise[selectedEx.exercise?.name || ''] || []}
                                         onSetMax={(kg) => onSetMax(selectedEx.exercise?.name || '', kg)}
@@ -3653,6 +3663,10 @@ function PreviewAppendix({ label, body }: { label: string; body?: string | null 
 // SUB-COMPONENT: EXERCISE CARD
 // ==========================================
 interface ExerciseCardProps {
+    /** Atleta al que pertenece el bloque. Lo necesita el registro de VBT. */
+    athleteId: string;
+    /** Quién está editando. Va a `created_by` de las mediciones. */
+    coachId: string | null;
     /** 1RM del atleta para este ejercicio. null si no hay ninguno registrado. */
     referenceMax: number | null;
     /** Últimas cargas top registradas en este ejercicio. */
@@ -3680,10 +3694,34 @@ const VARIANT_MODIFIERS = [
     { key: 'Pin', prompt: 'altura', suffix: '' },
 ] as const;
 
-function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, onOpenProgression, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onOpenVbtChart }: ExerciseCardProps) {
+function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax, recentLoads, onSetMax, onOpenProgression, onUpdateExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onRemoveExercise, onOpenVbtChart }: ExerciseCardProps) {
     const [pendingModifier, setPendingModifier] = useState<string | null>(null);
     const [modifierValue, setModifierValue] = useState('');
     const [editingMax, setEditingMax] = useState(false);
+    const [musclesOpen, setMusclesOpen] = useState(false);
+    /** Serie cuya ficha de velocidad está abierta. */
+    const [vbtSet, setVbtSet] = useState<{ set: TrainingSet; number: number } | null>(null);
+
+    // Hay anulación cuando `primary_muscles` es un array, aunque esté vacío:
+    // "ninguno" es una respuesta, y distinguirla de "no opino" es justo lo que
+    // permite decir que una movilidad no aporta volumen.
+    const hasMuscleOverride = Array.isArray(sessionExercise.primary_muscles);
+
+    const saveMuscles = async (primary: string[] | null, secondary: string[] | null) => {
+        // Optimista: el panel de volumen recalcula con el estado local, y
+        // esperar al servidor dejaría la barra quieta un segundo justo cuando
+        // el coach está mirando el efecto de su cambio.
+        onUpdateExercise(sessionExercise.id, {
+            primary_muscles: primary,
+            secondary_muscles: secondary,
+        });
+        try {
+            await trainingService.setExerciseMuscles(sessionExercise.id, primary, secondary);
+        } catch (err) {
+            console.error(err);
+            toast.error(err instanceof Error ? err.message : 'No se pudo guardar el reparto de volumen');
+        }
+    };
 
     /**
      * Guarda el 1RM escrito. Un valor vacío o absurdo cierra sin tocar nada:
@@ -3889,8 +3927,7 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                         )}
                     </div>
 
-                    {/* Stats Grid */}
-                    {/* Solo el descanso.
+                    {/* Descanso y reparto de volumen.
                         Vel AVG y RPE vivían aquí como campos sueltos del
                         ejercicio entero, lo que obligaba a pautar el mismo RPE
                         para todas las series y dejaba tres cajas idénticas
@@ -3898,21 +3935,49 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                         velocidad son opciones de la columna de carga, serie a
                         serie. El descanso sí es del ejercicio: se descansa
                         igual entre todas sus series. */}
-                    <div className="flex justify-center">
+                    <div className="flex flex-wrap items-end justify-center gap-2">
                         <div className="w-28">
-                            <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Descanso (s)</div>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                defaultValue={sessionExercise.rest_seconds || ''}
-                                key={sessionExercise.id + '_rest'}
-                                onChange={(e) => handleGlobalUpdate('rest_seconds', parseInt(e.target.value) || 0)}
-                                onBlur={(e) => handleGlobalBlur('rest_seconds', parseInt(e.target.value) || 0)}
-                                placeholder="-"
-                                className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken py-1.5 text-center text-t-sm tabular-nums text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                            <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Descanso</div>
+                            <RestInput
+                                seconds={sessionExercise.rest_seconds ?? null}
+                                onChange={(value) => handleGlobalUpdate('rest_seconds', value)}
+                                onCommit={(value) => handleGlobalBlur('rest_seconds', value)}
                             />
                         </div>
+
+                        {/* A qué músculos cuenta este ejercicio.
+                            Aquí y no en la biblioteca porque la decisión es de
+                            ESTE bloque: el mismo remo puede programarse
+                            buscando dorsal o buscando espalda alta, y el
+                            volumen que sale es distinto. La etiqueta dice si
+                            hay anulación puesta, para que se vea sin abrir. */}
+                        <div className="w-28">
+                            <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Volumen</div>
+                            <button
+                                onClick={() => setMusclesOpen(true)}
+                                title="Elegir a qué músculos cuenta este ejercicio como volumen directo e indirecto"
+                                className={cn(
+                                    'flex h-[34px] w-full items-center justify-center gap-1.5 rounded-field border text-t-2xs font-semibold transition-colors duration-fast ease-snap',
+                                    hasMuscleOverride
+                                        ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand'
+                                        : 'border-[var(--border-default)] bg-surface-sunken text-ink-subtle hover:text-ink'
+                                )}
+                            >
+                                <Target size={12} aria-hidden="true" />
+                                {hasMuscleOverride ? 'Ajustado' : 'Auto'}
+                            </button>
+                        </div>
                     </div>
+
+                    {musclesOpen && (
+                        <MuscleMappingEditor
+                            exerciseName={exerciseName}
+                            primary={sessionExercise.primary_muscles}
+                            secondary={sessionExercise.secondary_muscles}
+                            onClose={() => setMusclesOpen(false)}
+                            onSave={saveMuscles}
+                        />
+                    )}
 
                     {/* Notes Input */}
                     <textarea
@@ -3951,7 +4016,7 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                     <span></span>
                 </div>
 
-                {sessionExercise.sets.map((set: TrainingSet) => {
+                {sessionExercise.sets.map((set: TrainingSet, setIndex: number) => {
                     const seriesVal = getSeriesCount(set.target_reps);
                     const repsVal = getRepsCount(set.target_reps);
 
@@ -3998,13 +4063,31 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
 
                             {/* Actions */}
                             <div className="flex justify-end items-center gap-0.5">
+                                {/* VELOCIDAD DE ESTA SERIE.
+                                    El icono se queda encendido cuando ya hay
+                                    datos, así que de un vistazo se ve qué
+                                    series están medidas y cuáles no — que es
+                                    la pregunta al construir un perfil de
+                                    cargas, donde faltan puntos casi siempre. */}
+                                <button
+                                    onClick={() => setVbtSet({ set, number: setIndex + 1 })}
+                                    title={set.vbt_mean_velocity != null
+                                        ? `Velocidad registrada: ${set.vbt_mean_velocity} m/s`
+                                        : 'Añadir datos de velocidad (VBT) a esta serie'}
+                                    className={`p-0.5 transition-colors ${set.vbt_mean_velocity != null
+                                        ? 'text-green-400 hover:text-green-300'
+                                        : 'text-ink-faint opacity-100 hover:text-brand md:opacity-0 group-hover/row:opacity-100'
+                                        }`}
+                                >
+                                    <Activity size={11} />
+                                </button>
                                 {set.vbt_file_url && (
                                     <button
-                                        onClick={() => onOpenVbtChart(set.vbt_file_url!, `${exerciseName} · Serie`)}
-                                        className="text-green-400 hover:text-green-300 p-0.5"
-                                        title="Ver VBT de esta serie"
+                                        onClick={() => onOpenVbtChart(set.vbt_file_url!, `${exerciseName} · Serie ${setIndex + 1}`)}
+                                        className="p-0.5 text-green-400 hover:text-green-300"
+                                        title="Ver la gráfica del archivo de esta serie"
                                     >
-                                        <Activity size={11} />
+                                        <BarChart3 size={11} />
                                     </button>
                                 )}
                                 <span className="flex gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
@@ -4042,6 +4125,239 @@ function ExerciseCard({ sessionExercise, referenceMax, recentLoads, onSetMax, on
                     </button>
                 </div>
             </div>
+
+            {/* LO QUE EL ATLETA HIZO DE VERDAD.
+                Va debajo de la prescripción y claramente separado: es
+                información, no un campo. El coach estaba programando a ciegas
+                —la única forma de saber si la semana pasada se completó era
+                salir del planificador— y esa consulta es justo la que se hace
+                ANTES de escribir los kilos de la siguiente. */}
+            <ExecutedSummary sets={sessionExercise.sets} />
+
+            {vbtSet && (
+                <SetVbtModal
+                    open
+                    onClose={() => setVbtSet(null)}
+                    athleteId={athleteId}
+                    createdBy={coachId}
+                    exerciseName={exerciseName}
+                    exerciseId={sessionExercise.exercise_id}
+                    sessionExerciseId={sessionExercise.id}
+                    set={vbtSet.set}
+                    setNumber={vbtSet.number}
+                    onSaved={(metrics, source, fileUrl) => {
+                        // Se refleja en el estado local para que el icono de la
+                        // fila cambie sin recargar el bloque entero.
+                        onUpdateSet(vbtSet.set.id, 'vbt_mean_velocity', metrics.meanVelocity ?? null);
+                        onUpdateSet(vbtSet.set.id, 'vbt_peak_velocity', metrics.peakVelocity ?? null);
+                        onUpdateSet(vbtSet.set.id, 'vbt_velocity_loss', metrics.velocityLoss ?? null);
+                        onUpdateSet(vbtSet.set.id, 'vbt_est_1rm', metrics.est1RM ?? null);
+                        onUpdateSet(vbtSet.set.id, 'vbt_source', source);
+                        if (fileUrl) onUpdateSet(vbtSet.set.id, 'vbt_file_url', fileUrl);
+                    }}
+                />
+            )}
+        </div>
+    );
+}
+
+// ==========================================
+// SUB-COMPONENT: LO EJECUTADO
+// ==========================================
+/**
+ * Resumen de lo que el atleta registró en este ejercicio.
+ *
+ * QUÉ ENSEÑA Y POR QUÉ ASÍ
+ *
+ * Una línea por serie hecha, con las repeticiones, los kilos y el RPE REALES.
+ * No toca la prescripción ni la sugiere cambiar: si el coach pautó RPE 8 y el
+ * atleta hizo 7-9-9, lo pautado sigue siendo 8 —el plan no se reescribe solo—
+ * y el 7-9-9 aparece aquí, que es donde se decide la semana que viene.
+ *
+ * Las desviaciones se marcan en color solo cuando son relevantes: media
+ * unidad de RPE arriba o abajo es ruido de medición, dos unidades es una
+ * sesión que no ha ido como se pensaba.
+ *
+ * No aparece nada si no hay nada registrado. Un bloque recién programado no
+ * debe llenarse de huecos vacíos que hay que aprender a ignorar.
+ */
+function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
+    const done = sets.filter(
+        s => s.is_completed || s.actual_reps != null || s.actual_load != null
+    );
+
+    if (done.length === 0) return null;
+
+    return (
+        <div className="mt-3 rounded-card border border-[var(--success-line,var(--border-subtle))] bg-[var(--success-quiet)] px-3 py-2">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-success">
+                <Check size={10} aria-hidden="true" />
+                Registrado · {done.length} {done.length === 1 ? 'serie' : 'series'}
+            </p>
+
+            <ul className="space-y-0.5">
+                {done.map((set, i) => {
+                    const targetRpe = parseFloat((set.target_rpe ?? '').replace(',', '.'));
+                    const rpeGap =
+                        set.actual_rpe != null && Number.isFinite(targetRpe)
+                            ? set.actual_rpe - targetRpe
+                            : null;
+
+                    return (
+                        <li key={set.id} className="flex items-baseline gap-2 text-t-2xs tabular-nums">
+                            <span className="w-3 shrink-0 text-ink-faint">{i + 1}</span>
+                            <span className="text-ink">
+                                {set.actual_reps ?? '—'}
+                                <span className="text-ink-subtle"> reps</span>
+                                {set.actual_load != null && (
+                                    <>
+                                        {' × '}
+                                        <span className="font-semibold">{set.actual_load}</span>
+                                        <span className="text-ink-subtle"> kg</span>
+                                    </>
+                                )}
+                            </span>
+                            {set.actual_rpe != null && (
+                                <span
+                                    className={
+                                        rpeGap != null && Math.abs(rpeGap) >= 1
+                                            ? rpeGap > 0 ? 'font-semibold text-warning' : 'font-semibold text-info'
+                                            : 'text-ink-muted'
+                                    }
+                                    title={
+                                        rpeGap != null
+                                            ? `Pautado RPE ${set.target_rpe} · ${rpeGap > 0 ? '+' : ''}${Math.round(rpeGap * 10) / 10}`
+                                            : undefined
+                                    }
+                                >
+                                    RPE {set.actual_rpe}
+                                </span>
+                            )}
+                            {set.vbt_mean_velocity != null && (
+                                <span className="text-ink-subtle">{set.vbt_mean_velocity} m/s</span>
+                            )}
+                            {set.notes?.trim() && (
+                                <span className="min-w-0 truncate italic text-ink-subtle" title={set.notes}>
+                                    “{set.notes.trim()}”
+                                </span>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
+    );
+}
+
+// ==========================================
+// SUB-COMPONENT: DESCANSO DEL EJERCICIO
+// ==========================================
+/**
+ * EL DESCANSO, QUE NO SE GUARDABA
+ * =====================================================================
+ *
+ * Esto era un `<input defaultValue>` que solo persistía en `onBlur` con
+ * `parseInt(valor) || 0`. Tres fallos, y los tres se notaban:
+ *
+ *   1. Sin blur no hay guardado. Escribir "180" y cerrar el editor del día
+ *      con Escape, con el botón de la esquina o cambiando de día en el
+ *      teclado del móvil —donde "hecho" no siempre dispara blur— perdía el
+ *      valor sin avisar. Es el caso normal, no el raro.
+ *
+ *   2. `|| 0` convierte el campo vacío en CERO, no en "sin pautar". Un
+ *      descanso de 0 segundos es una prescripción real y falsa: el atleta
+ *      veía "Descanso 0″" donde el coach había querido borrar el dato.
+ *
+ *   3. `defaultValue` con una `key` fija ignora los cambios que vengan de
+ *      fuera. Tras aplicar una plantilla o recargar el bloque, la casilla
+ *      seguía enseñando lo anterior.
+ *
+ * Ahora es controlado, guarda solo (medio segundo tras dejar de teclear) y
+ * VACÍA el temporizador al desmontarse, así que cerrar el editor guarda en
+ * lugar de perder.
+ */
+const REST_COMMIT_DELAY = 500;
+
+function RestInput({
+    seconds,
+    onChange,
+    onCommit,
+}: {
+    seconds: number | null;
+    /** Actualiza el estado local del constructor (optimista). */
+    onChange: (value: number | null) => void;
+    /** Persiste. Se llama sola, no hace falta salir del campo. */
+    onCommit: (value: number | null) => void;
+}) {
+    const [draft, setDraft] = useState(seconds != null ? String(seconds) : '');
+    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pending = useRef<number | null | undefined>(undefined);
+
+    // Si el valor cambia POR FUERA (recarga, plantilla aplicada, progresión),
+    // la casilla lo refleja. Mientras se está escribiendo no: `draft` solo se
+    // resincroniza cuando el valor de arriba deja de coincidir con lo enviado.
+    useEffect(() => {
+        setDraft(seconds != null ? String(seconds) : '');
+    }, [seconds]);
+
+    // Al desmontar se manda lo que quedara pendiente. Es lo que hace que
+    // cerrar el editor del día guarde el descanso en vez de tirarlo.
+    useEffect(() => () => {
+        if (timer.current) clearTimeout(timer.current);
+        if (pending.current !== undefined) onCommit(pending.current);
+        // Deliberadamente sin dependencias: solo tiene que correr al desmontar,
+        // y `onCommit` se recrea en cada render del padre.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handle = (raw: string) => {
+        setDraft(raw);
+
+        // Vacío es "sin pautar" (null), no cero. Cualquier otra cosa se lee
+        // como segundos; un texto sin números no cambia nada.
+        const value = raw.trim() === '' ? null : Number.parseInt(raw, 10);
+        if (value !== null && !Number.isFinite(value)) return;
+
+        const normalized = value === null ? null : Math.max(0, value);
+        onChange(normalized);
+        pending.current = normalized;
+
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => {
+            onCommit(normalized);
+            pending.current = undefined;
+        }, REST_COMMIT_DELAY);
+    };
+
+    // "180" se lee como 3 minutos mucho más rápido que como ciento ochenta
+    // segundos, y el coach piensa en minutos. La conversión va debajo, en
+    // pequeño, para no obligar a elegir unidad.
+    const asMinutes =
+        seconds && seconds >= 60
+            ? `${Math.floor(seconds / 60)}′${String(seconds % 60).padStart(2, '0')}″`
+            : null;
+
+    return (
+        <div>
+            <input
+                type="text"
+                inputMode="numeric"
+                value={draft}
+                onChange={(e) => handle(e.target.value)}
+                onBlur={() => {
+                    if (timer.current) clearTimeout(timer.current);
+                    if (pending.current !== undefined) {
+                        onCommit(pending.current);
+                        pending.current = undefined;
+                    }
+                }}
+                placeholder="seg"
+                aria-label="Descanso entre series, en segundos"
+                className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+            />
+            {asMinutes && (
+                <p className="mt-0.5 text-center text-[9px] tabular-nums text-ink-faint">{asMinutes}</p>
+            )}
         </div>
     );
 }

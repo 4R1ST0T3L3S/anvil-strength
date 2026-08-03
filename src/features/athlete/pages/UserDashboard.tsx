@@ -8,6 +8,7 @@ import {
     User,
     ShoppingBag,
     Medal,
+    Activity,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -21,6 +22,7 @@ import { AnvilStore } from '../../profile/components/AnvilStore';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
+import { AthleteVbtView } from '../components/AthleteVbtView';
 import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
 import { AnvilRanking } from '../components/AnvilRanking';
 
@@ -46,6 +48,7 @@ interface UserDashboardProps {
 const VIEWS = {
     '': 'home',
     planificacion: 'planning',
+    velocidad: 'vbt',
     nutricion: 'nutrition',
     competiciones: 'competitions',
     calendario: 'calendar',
@@ -63,6 +66,7 @@ const isSlug = (value: string | undefined): value is Slug =>
 const TITLES: Record<Slug, string | undefined> = {
     '': undefined,
     planificacion: 'Mi planificación',
+    velocidad: 'Velocidad (VBT)',
     nutricion: 'Mi nutrición',
     competiciones: 'Mis competiciones',
     calendario: 'Calendario AEP',
@@ -131,6 +135,13 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         // A partir de aquí, fuera de la barra inferior del móvil: cinco
         // pestañas es el techo antes de que los iconos dejen de ser pulsables.
         {
+            icon: <Activity size={20} />,
+            label: 'Velocidad',
+            onClick: () => go('velocidad'),
+            isActive: slug === 'velocidad',
+            hideOnMobileBar: true,
+        },
+        {
             icon: <Calendar size={20} />,
             label: 'Calendario AEP',
             onClick: () => go('calendario'),
@@ -158,6 +169,9 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             case 'planning':
                 if (user.has_access === false) return <RestrictedFeature title="Planificación Premium" />;
                 return <WorkoutLogger athleteId={user.id} athleteName={user.full_name} />;
+            case 'vbt':
+                if (user.has_access === false) return <RestrictedFeature title="Velocidad Premium" />;
+                return <AthleteVbtView athleteId={user.id} />;
             case 'nutrition':
                 if (user.has_access === false) return <RestrictedFeature title="Nutrición Premium" />;
                 return <AthleteNutritionView user={user} />;

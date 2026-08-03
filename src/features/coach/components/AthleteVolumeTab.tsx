@@ -42,6 +42,28 @@ type Scope =
     | { kind: 'macro'; id: string }
     | { kind: 'block'; id: string };
 
+/**
+ * Colores de las líneas por músculo.
+ *
+ * Salen de los tokens y no de una paleta propia: diez colores inventados aquí
+ * serían un segundo sistema de color viviendo dentro de recharts. El orden
+ * está pensado para que los cuatro primeros —que son los músculos con más
+ * volumen— se distingan también en escala de grises y para quien no separa
+ * rojo de verde.
+ */
+const MUSCLE_COLORS = [
+    'var(--brand)',
+    'var(--info)',
+    'var(--success)',
+    'var(--warning)',
+    'var(--effort-high)',
+    'var(--ink-muted)',
+    'var(--brand-line)',
+    'var(--info-quiet)',
+    'var(--ink-subtle)',
+    'var(--success-quiet)',
+];
+
 export interface AthleteVolumeTabProps {
     history: ExerciseHistoryRow[];
     macros: Macrocycle[];
@@ -102,6 +124,12 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                 id: r.sessionExerciseId,
                 exercise: { name: r.exerciseName, muscle_group: null },
                 variant_name: r.variantName,
+                // La clasificación que fijó el coach viaja con la fila: sin
+                // esto, esta pantalla y el planificador darían repartos
+                // distintos del mismo bloque y no habría forma de saber cuál
+                // creerse.
+                primary_muscles: r.primaryMuscles,
+                secondary_muscles: r.secondaryMuscles,
                 sets: r.sets,
             });
         }
@@ -126,6 +154,18 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
         [weekly]
     );
 
+    /**
+     * Los músculos que se representan, ordenados por volumen total.
+     *
+     * Se limita a diez porque una barra por cada uno de los diecisiete
+     * grupos convierte la gráfica en una lista ilegible, y los siete
+     * últimos son siempre residuales.
+     */
+    const topMuscles = useMemo(
+        () => averages.slice(0, 10).map((a) => a.muscle),
+        [averages]
+    );
+
     const muscleChart = useMemo(
         () =>
             averages.slice(0, 10).map((a) => ({
@@ -135,6 +175,28 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                 min: WEEKLY_SET_REFERENCE[a.muscle].min,
             })),
         [averages, report.weekCount]
+    );
+
+    /**
+     * SERIES DIRECTAS POR MÚSCULO Y POR SEMANA.
+     *
+     * Lo que había era la MEDIA de todas las semanas del ámbito, y una media
+     * esconde justo lo que se quiere ver: un bloque que sube de 10 a 22 series
+     * de cuádriceps y otro que se queda clavado en 16 dan los mismos 16 de
+     * media. La progresión de volumen es el diseño del mesociclo; la media es
+     * su resumen menos informativo.
+     */
+    const weeklyByMuscle = useMemo(
+        () =>
+            weekly.map((w) => {
+                const row: Record<string, string | number> = { semana: `S${w.week}` };
+                for (const muscle of topMuscles) {
+                    const entry = w.report.byMuscle.find((m) => m.muscle === muscle);
+                    row[muscle] = entry ? entry.direct : 0;
+                }
+                return row;
+            }),
+        [weekly, topMuscles]
     );
 
     if (history.length === 0) {
@@ -281,13 +343,136 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                 </div>
             </section>
 
+            {/* SERIES DIRECTAS SEMANA A SEMANA.
+                Va ANTES del reparto medio porque es la pregunta principal:
+                cómo progresa el volumen dentro del bloque. La media queda
+                debajo, como resumen. */}
+            <section>
+                <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                    Series directas por semana
+                </h4>
+                <p className="mb-3 text-xs text-ink-subtle">
+                    Cada línea es un grupo muscular. Es donde se ve si el bloque
+                    progresa, se estanca o descarga.
+                </p>
+
+                {weeklyByMuscle.length < 2 ? (
+                    <p className="py-8 text-center text-xs text-ink-subtle">
+                        Hacen falta al menos dos semanas para dibujar una progresión.
+                    </p>
+                ) : (
+                    <>
+                        <div className="h-64 w-full">
+                            <ResponsiveContainer>
+                                <LineChart data={weeklyByMuscle} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
+                                    <CartesianGrid stroke="var(--border-subtle)" vertical={false} />
+                                    <XAxis
+                                        dataKey="semana"
+                                        tick={{ fill: 'var(--ink-subtle)', fontSize: 11 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        tick={{ fill: 'var(--ink-subtle)', fontSize: 11 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        width={32}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: 'var(--surface-overlay)',
+                                            border: '1px solid var(--border-default)',
+                                            borderRadius: 'var(--radius-sm)',
+                                            fontSize: 12,
+                                        }}
+                                        labelStyle={{ color: 'var(--ink)' }}
+                                    />
+                                    {topMuscles.map((muscle, i) => (
+                                        <Line
+                                            key={muscle}
+                                            type="monotone"
+                                            dataKey={muscle}
+                                            name={muscle}
+                                            stroke={MUSCLE_COLORS[i % MUSCLE_COLORS.length]}
+                                            strokeWidth={2}
+                                            dot={{ r: 2 }}
+                                            connectNulls
+                                        />
+                                    ))}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        {/* La tabla no es redundante con la gráfica: diez líneas
+                            superpuestas dicen la FORMA, y para leer "22 series de
+                            cuádriceps en la semana 3" hace falta el número. */}
+                        <div className="mt-3 -mx-1 overflow-x-auto">
+                            <table className="w-full min-w-[28rem] border-collapse text-xs">
+                                <thead>
+                                    <tr className="text-ink-subtle">
+                                        <th className="sticky left-0 bg-surface-canvas px-2 py-1.5 text-left font-medium">
+                                            Músculo
+                                        </th>
+                                        {weekly.map((w) => (
+                                            <th key={w.week} className="px-2 py-1.5 text-right font-medium tabular-nums">
+                                                S{w.week}
+                                            </th>
+                                        ))}
+                                        <th className="px-2 py-1.5 text-right font-medium">Rango</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {topMuscles.map((muscle, i) => {
+                                        const ref = WEEKLY_SET_REFERENCE[muscle];
+                                        return (
+                                            <tr key={muscle} className="border-t border-[var(--border-subtle)]">
+                                                <td className="sticky left-0 bg-surface-canvas px-2 py-1.5 text-ink">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <span
+                                                            className="h-2 w-2 shrink-0 rounded-pill"
+                                                            style={{ background: MUSCLE_COLORS[i % MUSCLE_COLORS.length] }}
+                                                            aria-hidden="true"
+                                                        />
+                                                        {muscle}
+                                                    </span>
+                                                </td>
+                                                {weekly.map((w) => {
+                                                    const value = Number(weeklyByMuscle.find(r => r.semana === `S${w.week}`)?.[muscle] ?? 0);
+                                                    // El color sale de comparar con el rango
+                                                    // SEMANAL, que es la unidad en la que
+                                                    // están definidas las referencias.
+                                                    const tone =
+                                                        value === 0 ? 'text-ink-faint'
+                                                            : value < ref.min ? 'text-info'
+                                                                : value > ref.max ? 'text-warning'
+                                                                    : 'text-ink-muted';
+                                                    return (
+                                                        <td key={w.week} className={cn('px-2 py-1.5 text-right tabular-nums', tone)}>
+                                                            {value || '—'}
+                                                        </td>
+                                                    );
+                                                })}
+                                                <td className="px-2 py-1.5 text-right tabular-nums text-ink-faint">
+                                                    {ref.min}–{ref.max}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
+            </section>
+
             {/* Reparto por músculo */}
             <section>
                 <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-muted">
                     Series por grupo muscular
                 </h4>
                 <p className="mb-3 text-xs text-ink-subtle">
-                    Media semanal. Directas sólidas, indirectas atenuadas (también cuentan 1).
+                    Media semanal del ámbito elegido. Directas sólidas, indirectas
+                    atenuadas (también cuentan 1).
                 </p>
                 <div className="h-72 w-full">
                     <ResponsiveContainer>

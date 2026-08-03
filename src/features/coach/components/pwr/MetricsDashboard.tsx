@@ -1,17 +1,35 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TrackingPoint, calculateVelocityMetrics } from '../../../../lib/cv/tracker';
 import { extractLiftingPhases, calculateDynamics, estimate1RM } from '../../../../lib/cv/pwrMath';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ReferenceLine } from 'recharts';
 import { Activity, Gauge, ArrowDownUp, Target, Zap, Flame, TrendingUp, AlertTriangle, MoveHorizontal, Clock, Percent, Award, Dumbbell } from 'lucide-react';
+import type { VbtMetrics } from '../../../../types/training';
+
+/**
+ * Lo que este panel calcula y otro puede querer guardar.
+ *
+ * Existe porque el análisis se quedaba AQUÍ: eran unas tarjetas bonitas que
+ * desaparecían al cerrar la pestaña. Sacar el resultado permite escribirlo en
+ * la ficha del atleta y compararlo con el vídeo del mes que viene, que es
+ * para lo que sirve medir.
+ */
+export interface PwrResult {
+  metrics: VbtMetrics;
+  loadKg: number;
+  reps: number;
+  exerciseType: 'squat' | 'bench' | 'deadlift';
+}
 
 interface MetricsDashboardProps {
   path: TrackingPoint[];
   pixelToMeterRatio: number;
   onTimeHover?: (time: number) => void;
   currentVideoTime?: number;
+  /** Se llama cada vez que cambia el resultado (carga o ejercicio incluidos). */
+  onResult?: (result: PwrResult | null) => void;
 }
 
-export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, currentVideoTime }: MetricsDashboardProps) {
+export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, currentVideoTime, onResult }: MetricsDashboardProps) {
   const [loadKg, setLoadKg] = useState<number>(100);
   const [exerciseType, setExerciseType] = useState<'squat'|'bench'|'deadlift'>('squat');
   const [isHovering, setIsHovering] = useState(false);
@@ -51,6 +69,39 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
           totalReps: concentrics.length
       };
   }, [metricsData, pixelToMeterRatio, loadKg, exerciseType]);
+
+  /**
+   * El resultado, en el mismo vocabulario que usa el resto de la aplicación.
+   *
+   * Se publica hacia arriba en un efecto y no durante el render porque quien
+   * lo recibe guarda estado, y avisar en pleno render provocaría un bucle.
+   */
+  useEffect(() => {
+    if (!onResult) return;
+
+    if (!advMetrics) {
+      onResult(null);
+      return;
+    }
+
+    onResult({
+      metrics: {
+        meanVelocity: advMetrics.concentric.meanVelocity,
+        peakVelocity: advMetrics.concentric.peakVelocity,
+        // La fatiga puede salir negativa cuando la última repetición es la más
+        // rápida —pasa en series cortas y bien descansadas— y una "pérdida
+        // negativa" no significa nada: se corta en cero.
+        velocityLoss: Math.max(0, advMetrics.fatigue),
+        meanPower: advMetrics.dynamics.meanPower,
+        peakPower: advMetrics.dynamics.peakPower,
+        rom: advMetrics.concentric.rom,
+        est1RM: advMetrics.rm.rm,
+      },
+      loadKg,
+      reps: advMetrics.totalReps,
+      exerciseType,
+    });
+  }, [advMetrics, loadKg, exerciseType, onResult]);
 
   // Format data for Scatter Chart (Bar Path)
   const barPathData = useMemo(() => {

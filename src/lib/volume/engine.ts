@@ -45,6 +45,15 @@ export interface VolumeExerciseInput {
         'name' | 'muscle_group' | 'primary_muscles' | 'secondary_muscles'
     > | null;
     variant_name?: string | null;
+    /**
+     * Anulación de ESTA prescripción, la más específica de todas.
+     *
+     * Gana a la de la biblioteca porque es una decisión local: el mismo remo
+     * puede programarse buscando dorsal en un bloque y espalda alta en otro, y
+     * la biblioteca —que es global— no puede decir las dos cosas a la vez.
+     */
+    primary_muscles?: string[] | null;
+    secondary_muscles?: string[] | null;
     sets: TrainingSet[];
 }
 
@@ -308,25 +317,47 @@ export function weeklyAverages(
 }
 
 /**
- * La anulación guardada en exercise_library manda sobre las reglas por
- * patrón. Es la vía para que un coach corrija una clasificación que no le
- * encaja sin tocar código.
+ * QUIÉN DECIDE LA CLASIFICACIÓN, de más específico a más genérico:
+ *
+ *   1. La prescripción      — `session_exercises.primary_muscles`
+ *   2. La biblioteca        — `exercise_library.primary_muscles`
+ *   3. Las reglas por patrón sobre el nombre
+ *
+ * El nivel 1 es el que añade esta versión y es el que usa el coach desde el
+ * editor del día. El 2 sigue existiendo para fijar de una vez un ejercicio
+ * que la regla clasifica mal siempre.
+ *
+ * "Tiene opinión" es que el array EXISTA, aunque venga vacío: un array vacío
+ * significa "este ejercicio no aporta volumen a nadie", que es la respuesta
+ * correcta para una movilidad metida como ejercicio, y confundirlo con "no
+ * opino" haría imposible declararlo.
  *
  * Los valores desconocidos se descartan en silencio: un grupo muscular mal
  * escrito en la BD no debe tumbar el cálculo entero de un bloque.
  */
 function resolveClassification(ex: VolumeExerciseInput, name: string) {
-    const primary = sanitize(ex.exercise?.primary_muscles);
-    const secondary = sanitize(ex.exercise?.secondary_muscles);
+    const pattern = classifyExercise(name).pattern;
 
-    if (primary.length === 0) return classifyExercise(name);
+    if (Array.isArray(ex.primary_muscles)) {
+        return {
+            primary: sanitize(ex.primary_muscles),
+            secondary: sanitize(ex.secondary_muscles),
+            pattern,
+            inferred: false,
+        };
+    }
 
-    return {
-        primary,
-        secondary,
-        pattern: classifyExercise(name).pattern,
-        inferred: false,
-    };
+    const libraryPrimary = sanitize(ex.exercise?.primary_muscles);
+    if (libraryPrimary.length > 0) {
+        return {
+            primary: libraryPrimary,
+            secondary: sanitize(ex.exercise?.secondary_muscles),
+            pattern,
+            inferred: false,
+        };
+    }
+
+    return classifyExercise(name);
 }
 
 const VALID_MUSCLES = new Set<string>(MUSCLE_GROUPS);
@@ -359,6 +390,8 @@ export function toVolumeInput(
             id: ex.id,
             exercise: ex.exercise,
             variant_name: ex.variant_name,
+            primary_muscles: ex.primary_muscles,
+            secondary_muscles: ex.secondary_muscles,
             sets: ex.sets ?? [],
         })),
     };

@@ -93,7 +93,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                 finalDate = new Date().toISOString().split('T')[0];
             }
 
-            await competitionsService.addSelfCompetition(user.id, {
+            const creada = await competitionsService.addSelfCompetition(user.id, {
                 name: comp.campeonato,
                 date: finalDate,
                 end_date: comp.endDateIso,
@@ -101,7 +101,14 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                 level: comp.level
             });
 
-            toast.success("Competición añadida a tu calendario");
+            // Si tu entrenador ya te la había asignado no se crea otra fila:
+            // decir "añadida" cuando no se ha añadido nada haría pulsar de
+            // nuevo pensando que falló.
+            toast.success(
+                (creada?.length ?? 0) > 0
+                    ? 'Competición añadida a tu calendario'
+                    : 'Ya la tenías en tu calendario'
+            );
         } catch (error) {
             console.error('Error adding self competition', error);
             const msg = (error as Error).message || 'Error desconocido';

@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare, ClipboardCheck } from 'lucide-react';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare, ClipboardCheck, ClipboardList } from 'lucide-react';
 import { useUser } from '../../../hooks/useUser';
 import { CoachCheckInsTab } from '../../forms/CoachCheckInsTab';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
+import { AthleteLogTab } from './AthleteLogTab';
 import CoachVbtTab from './CoachVbtTab';
 import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEditor';
 import { TrainingBlock } from '../../../types/training';
@@ -18,7 +19,7 @@ interface CoachAthleteDetailsProps {
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'competitions' | 'vbt' | 'nutrition' | 'checkins';
+type Tab = 'planning' | 'log' | 'competitions' | 'vbt' | 'nutrition' | 'checkins';
 
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
     const { data: currentUser } = useUser();
@@ -141,6 +142,19 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         >
                             <FileText size={14} className="md:w-4 md:h-4" /> <span>Planning</span>
                         </button>
+                        {/* REGISTRO justo detrás de PLANNING, y no al final.
+                            Es la pestaña que se abre ANTES de programar la
+                            semana siguiente: "¿qué hizo?" precede a "¿qué le
+                            pongo?". Enterrarla entre nutrición y competiciones
+                            garantizaría que nadie la usara. */}
+                        <button
+                            onClick={() => setActiveTab('log')}
+                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                                activeTab === 'log' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-ink-muted hover:text-white'
+                            }`}
+                        >
+                            <ClipboardList size={14} className="md:w-4 md:h-4" /> <span>Registro</span>
+                        </button>
                         <button
                             onClick={() => setActiveTab('vbt')}
                             className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
@@ -211,6 +225,13 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                 onSelectBlock={(block: TrainingBlock) => setSelectedBlockId(block.id)}
                             />
                         )}
+                    </div>
+                )}
+
+                {/* 2. REGISTRO: lo que el atleta hizo de verdad */}
+                {activeTab === 'log' && (
+                    <div className="mx-auto w-full max-w-6xl pb-6">
+                        <AthleteLogTab athleteId={athleteId} />
                     </div>
                 )}
 
