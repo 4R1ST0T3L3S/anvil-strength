@@ -28,6 +28,7 @@ import { ResizeHandle, usePanelWidth } from '../../../components/ui/ResizeHandle
 import { maxesService, findMax, type MaxesByExercise } from '../../../services/maxesService';
 import { toVolumeInput } from '../../../lib/volume/engine';
 import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
+import { useCoachPdfTheme } from '../../../hooks/useCoachPdfTheme';
 import { Button } from '../../../components/ui/Button';
 import { AnchoredMenu } from '../../../components/ui/AnchoredMenu';
 import { transition, DURATION } from '../../../lib/motion';
@@ -308,6 +309,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     const athleteDisplayName = athleteName?.trim() || 'Atleta';
     const [loading, setLoading] = useState(true);
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
+
+    // Aspecto del PDF: la marca del entrenador dueño del bloque.
+    const pdfTheme = useCoachPdfTheme(blockData?.coach_id);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     /**
@@ -1528,6 +1532,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 weekLabel: weekName(week) || `Semana ${index + 1}`,
                 dateRange: formatDateRange(range.start, range.end),
                 days: days.map(sessionToPrintDay),
+                theme: pdfTheme,
             });
             toast.success(`PDF descargado: ${filename}`);
         } catch (err) {

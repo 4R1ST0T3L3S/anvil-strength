@@ -50,10 +50,25 @@ interface CountdownWidgetProps {
     assigned?: { name: string; date: string; location?: string; level?: string } | null;
     /** Clave única por usuario para persistir preferencias */
     userId: string;
-    mobile?: boolean;
 }
 
-export function CountdownWidget({ assigned, userId, mobile = false }: CountdownWidgetProps) {
+/**
+ * MISMA CUADRÍCULA QUE EL RESTO DE TARJETAS.
+ *
+ * Este widget se maquetaba por su cuenta: `rounded-[2rem]` donde todo lo demás
+ * usa `rounded-card`, `#252525` a pelo en vez de `bg-surface-raised`, un
+ * `shadow-xl` que ninguna otra tarjeta lleva y un relleno de 24-32px frente a
+ * los 16-20 del resto. Puesto al lado de las demás en el inicio, se leía como
+ * un bloque más grande y desalineado aunque ocupara exactamente el mismo
+ * ancho: lo que rompía la rejilla no era la anchura, era la geometría.
+ *
+ * El color SÍ se conserva: el degradado por nivel de competición es
+ * intencionado y el atleta puede elegirlo. Lo que se normaliza es la caja.
+ *
+ * También desaparece la prop `mobile`, que solo se llamaba con `false` y
+ * mantenía dos variantes del mismo bloque. Ahora es un único árbol responsive.
+ */
+export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
     const storageKey = `countdown_prefs_${userId}`;
     const [prefs, setPrefs] = useState<CountdownPrefs>(() => loadPrefs(storageKey));
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -86,8 +101,8 @@ export function CountdownWidget({ assigned, userId, mobile = false }: CountdownW
 
     if (!event) {
         return (
-            <div className="bg-[#252525] border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center relative overflow-hidden">
-                <Trophy size={32} className="text-gray-600 mb-3" />
+            <div className="relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-center md:p-6">
+                <Trophy size={32} className="text-ink-faint mb-3" />
                 <h3 className="text-sm font-bold text-gray-400 italic leading-tight mb-1">No hay competiciones a la vista.</h3>
                 <button
                     onClick={() => setSettingsOpen(true)}
@@ -107,8 +122,8 @@ export function CountdownWidget({ assigned, userId, mobile = false }: CountdownW
     }
 
     return (
-        <div className={`${colorClass} ${mobile ? 'rounded-3xl p-6' : 'rounded-[2rem] p-6 h-full justify-center'} text-white flex flex-col items-center text-center relative overflow-hidden shadow-xl`}>
-            <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 rounded-full -mr-24 -mt-24 pointer-events-none"></div>
+        <div className={`${colorClass} relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card p-5 text-center text-white md:p-6`}>
+            <div className="pointer-events-none absolute -mr-24 -mt-24 right-0 top-0 h-56 w-56 rounded-full bg-white/10"></div>
 
             {/* Botón de ajustes */}
             <button
@@ -123,7 +138,7 @@ export function CountdownWidget({ assigned, userId, mobile = false }: CountdownW
                 <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-[10px] md:text-xs uppercase tracking-widest mb-2">
                     <Trophy size={14} /> {prefs.source === 'custom' ? 'TU OBJETIVO' : prefs.source === 'aep' ? 'CALENDARIO AEP' : 'TU PRÓXIMO RETO'}
                 </div>
-                <h3 className={`${mobile ? 'text-3xl' : 'text-2xl md:text-3xl'} font-black uppercase italic leading-tight mb-2 drop-shadow-lg`}>
+                <h3 className="mb-2 text-t-xl font-black uppercase italic leading-tight drop-shadow-lg md:text-t-2xl">
                     {formatCompetitionName(event.name, event.location, event.level)}
                 </h3>
                 {event.location && (

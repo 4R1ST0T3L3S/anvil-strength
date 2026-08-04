@@ -4,6 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
 import { useRedeemPendingInvite } from './hooks/useRedeemPendingInvite';
+import { useClaimManagedProfile } from './hooks/useClaimManagedProfile';
 import { AuthModal } from './features/auth/components/AuthModal';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
@@ -29,6 +30,10 @@ function App() {
   // así que el código no puede canjearse en la página de la invitación: se
   // canjea aquí, en cuanto aparece una sesión, mire el usuario donde mire.
   useRedeemPendingInvite(user);
+
+  // Quien entra por primera vez en una ficha que le creó su entrenador la
+  // reclama aquí: no se migra nada, la cuenta ya era suya. Ver el hook.
+  useClaimManagedProfile(user);
 
   // COUNTDOWN LOGIC
   const isPreLaunch = false;

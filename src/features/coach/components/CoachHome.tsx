@@ -296,7 +296,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
 
                 <section>
                     <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
-                    <div className="relative flex min-h-[140px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-6 md:p-8">
+                    <div className="relative flex min-h-[140px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
                         <Quote
                             size={112}
                             aria-hidden="true"

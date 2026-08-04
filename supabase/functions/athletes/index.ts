@@ -1,0 +1,354 @@
+// Supabase Edge Function: athletes
+//
+// ALTA Y RECLAMACIÓN DE ATLETAS GESTIONADOS
+// =====================================================================
+//
+// POR QUÉ EXISTE
+//
+// Un atleta gestionado es una cuenta LATENTE: una fila de `auth.users` sin
+// contraseña y con el correo sin confirmar, creada por su entrenador. Eso
+// es lo que le permite tener bloques, competiciones y PDF desde el primer
+// día sin haber entrado nunca —`training_blocks.athlete_id` apunta a
+// `auth.users`, así que sin esa fila no hay entrenamiento posible— y lo que
+// hace que reclamar la cuenta más adelante NO mueva su `id` ni un solo dato.
+//
+// Crear usuarios exige `service_role`, que no puede salir del servidor. De
+// ahí esta función. Ver database/athlete_lifecycle.sql para el resto.
+//
+//
+// CONFIGURACIÓN (una vez):
+//   supabase secrets set APP_URL=https://anvilstrength.es
+//   supabase functions deploy athletes
+//
+// SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los inyecta la plataforma.
+//
+// OJO: se despliega SIN `--no-verify-jwt`. Esta función actúa en nombre de
+// quien llama, así que necesita su sesión para saber quién es y comprobar
+// que tiene permiso.
+
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://anvilstrength.es';
+
+/**
+ * Dominio de los correos de marcador.
+ *
+ * Un atleta al que solo se le va a mandar el PDF puede no tener correo, y
+ * `auth.users` exige uno. Se genera uno inventado sobre un subdominio que
+ * NO tiene registros MX: así, si algún día algo intenta escribir ahí, el
+ * mensaje muere en el emisor en vez de rebotar contra un servidor real y
+ * ensuciar la reputación del dominio de verdad.
+ *
+ * `profiles.contact_email` se queda en NULL en ese caso, que es lo que
+ * distingue "no tiene correo" de "tiene este correo".
+ */
+const PLACEHOLDER_DOMAIN = 'gestionado.anvil.invalid';
+
+const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+        status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
+    auth: { autoRefreshToken: false, persistSession: false },
+});
+
+interface Caller {
+    id: string;
+    role: string;
+}
+
+/**
+ * Quién llama y si puede gestionar atletas.
+ *
+ * Se resuelve con el token del usuario, NUNCA con un `coach_id` que venga en
+ * el cuerpo de la petición: si el identificador lo pusiera quien llama,
+ * cualquiera podría dar de alta atletas en el equipo de otro.
+ */
+async function resolveCaller(req: Request): Promise<Caller | null> {
+    const authHeader = req.headers.get('Authorization') ?? '';
+    if (!authHeader.startsWith('Bearer ')) return null;
+
+    const scoped = createClient(SUPABASE_URL, ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+        auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { data: { user }, error } = await scoped.auth.getUser();
+    if (error || !user) return null;
+
+    const { data: profile } = await admin
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    const role = profile?.role ?? 'athlete';
+    if (!['coach', 'nutritionist', 'admin'].includes(role)) return null;
+
+    return { id: user.id, role };
+}
+
+const relationFor = (role: string) => (role === 'nutritionist' ? 'nutritionist' : 'head_coach');
+
+const normalizeEmail = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+    const clean = value.trim().toLowerCase();
+    return clean.length > 3 && clean.includes('@') ? clean : null;
+};
+
+// =====================================================================
+// ACCIÓN: crear un atleta gestionado
+// =====================================================================
+/**
+ * Devuelve siempre el mismo tipo de respuesta, y el campo `outcome` dice qué
+ * ha pasado de verdad:
+ *
+ *   created  — ficha nueva, cuenta latente incluida.
+ *   linked   — ya existía alguien con ese correo y se ha vinculado.
+ *   existing — ya existía Y ya estaba en tu equipo. No se toca nada.
+ *
+ * La comprobación por correo va ANTES de crear nada: es la única forma de no
+ * acabar con dos fichas de la misma persona, que es el problema que arrastra
+ * cualquier sistema donde una parte da de alta y la otra se registra sola.
+ */
+async function createManagedAthlete(caller: Caller, body: Record<string, unknown>) {
+    const fullName = typeof body.full_name === 'string' ? body.full_name.trim() : '';
+    if (fullName.length < 2) {
+        return json({ error: 'Hace falta el nombre del atleta.' }, 400);
+    }
+
+    const email = normalizeEmail(body.email);
+    const relation = relationFor(caller.role);
+
+    // --- ¿Ya existe? -------------------------------------------------
+    if (email) {
+        // Dos consultas y no un `.or(...)`: en PostgREST el `or` se compone
+        // metiendo el valor dentro de una cadena de filtro, así que una coma
+        // o un paréntesis en el correo cambiaría el significado de la
+        // consulta. Con `.eq()` el valor viaja como parámetro.
+        const byLogin = await admin
+            .from('profiles').select('id, full_name, account_status')
+            .eq('email', email).limit(1).maybeSingle();
+
+        const found = byLogin.data ?? (await admin
+            .from('profiles').select('id, full_name, account_status')
+            .eq('contact_email', email).limit(1).maybeSingle()).data;
+
+        if (found) {
+            const { data: link } = await admin
+                .from('coach_athletes')
+                .select('id')
+                .eq('coach_id', caller.id)
+                .eq('athlete_id', found.id)
+                .eq('status', 'active')
+                .maybeSingle();
+
+            if (link) {
+                return json({
+                    outcome: 'existing',
+                    profile_id: found.id,
+                    full_name: found.full_name,
+                    account_status: found.account_status,
+                });
+            }
+
+            // Existe pero no es tuyo. NO se vincula por las bravas: enganchar
+            // la cuenta de alguien a un entrenador sin que esa persona diga
+            // nada es exactamente lo que una invitación viene a evitar. Se
+            // devuelve para que la interfaz ofrezca mandarle el enlace.
+            return json({
+                outcome: 'needs_invite',
+                profile_id: found.id,
+                full_name: found.full_name,
+                account_status: found.account_status,
+            });
+        }
+    }
+
+    // --- Cuenta latente ----------------------------------------------
+    const authEmail = email ?? `atleta-${crypto.randomUUID()}@${PLACEHOLDER_DOMAIN}`;
+
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+        email: authEmail,
+        // Sin confirmar y sin contraseña: no se puede iniciar sesión con
+        // esta cuenta hasta que su dueño la reclame por el enlace mágico.
+        email_confirm: false,
+        user_metadata: { full_name: fullName, managed: true },
+    });
+
+    if (createError || !created?.user) {
+        return json({ error: `No se pudo crear la cuenta: ${createError?.message ?? 'desconocido'}` }, 500);
+    }
+
+    const athleteId = created.user.id;
+
+    // El perfil se crea aquí y no se deja al cliente: `useUser` solo lo crea
+    // para la sesión que está abierta, y esta cuenta no va a abrir ninguna.
+    const { error: profileError } = await admin.from('profiles').insert({
+        id: athleteId,
+        email: authEmail,
+        contact_email: email,
+        full_name: fullName,
+        nickname: fullName.split(' ')[0],
+        role: 'athlete',
+        account_status: 'managed',
+        managed_by: caller.id,
+        has_access: true, // Lo entrena su coach: sin acceso no vería su plan.
+        gender: body.gender === 'male' || body.gender === 'female' ? body.gender : null,
+        weight_category: typeof body.weight_category === 'string' ? body.weight_category : null,
+        age_category: typeof body.age_category === 'string' ? body.age_category : null,
+    });
+
+    if (profileError) {
+        // Si el perfil no entra, la cuenta latente se queda huérfana y su
+        // correo bloqueado para siempre. Se deshace.
+        await admin.auth.admin.deleteUser(athleteId).catch(() => { /* ya da igual */ });
+        return json({ error: `No se pudo crear la ficha: ${profileError.message}` }, 500);
+    }
+
+    const { error: linkError } = await admin.rpc('upsert_coach_athlete', {
+        p_coach_id: caller.id,
+        p_athlete_id: athleteId,
+        p_relation: relation,
+    });
+
+    if (linkError) {
+        return json({ error: `Ficha creada pero sin vincular: ${linkError.message}` }, 500);
+    }
+
+    return json({
+        outcome: 'created',
+        profile_id: athleteId,
+        full_name: fullName,
+        account_status: 'managed',
+        has_email: Boolean(email),
+    });
+}
+
+// =====================================================================
+// ACCIÓN: invitar a un atleta gestionado a reclamar su cuenta
+// =====================================================================
+/**
+ * Manda el enlace mágico a la PROPIA cuenta latente del atleta.
+ *
+ * Esto es lo que hace que no haya nada que fusionar: la persona entra en la
+ * cuenta que ya tenía su ficha, con su historial dentro, en vez de crear una
+ * segunda y tener que juntarlas después.
+ *
+ * Si el atleta todavía no tenía correo, se le pone ahora —en `auth.users` y
+ * en la ficha— y con eso deja de ser inalcanzable.
+ */
+async function inviteManagedAthlete(caller: Caller, body: Record<string, unknown>) {
+    const athleteId = typeof body.profile_id === 'string' ? body.profile_id : '';
+    if (!athleteId) return json({ error: 'Falta el atleta.' }, 400);
+
+    const { data: link } = await admin
+        .from('coach_athletes')
+        .select('id')
+        .eq('coach_id', caller.id)
+        .eq('athlete_id', athleteId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+    if (!link) return json({ error: 'Ese atleta no está en tu equipo.' }, 403);
+
+    const { data: profile } = await admin
+        .from('profiles')
+        .select('id, email, contact_email, account_status')
+        .eq('id', athleteId)
+        .single();
+
+    if (!profile) return json({ error: 'No se encontró la ficha.' }, 404);
+
+    if (profile.account_status === 'active') {
+        return json({ error: 'Ese atleta ya tiene su cuenta activa.' }, 409);
+    }
+
+    const email = normalizeEmail(body.email) ?? profile.contact_email;
+    if (!email) {
+        return json({ error: 'Hace falta un correo para poder mandarle el acceso.' }, 400);
+    }
+
+    // Correo nuevo (o el que sustituye al de marcador): se cambia en los dos
+    // sitios. `email_confirm` lo da por bueno sin pedir confirmación previa
+    // porque quien lo aporta es su entrenador y el enlace mágico que va justo
+    // después ya comprueba que la dirección existe de verdad.
+    if (email !== profile.email) {
+        const { error: updateError } = await admin.auth.admin.updateUserById(athleteId, {
+            email,
+            email_confirm: true,
+        });
+        if (updateError) {
+            return json({ error: `No se pudo asignar ese correo: ${updateError.message}` }, 409);
+        }
+        await admin.from('profiles').update({ email, contact_email: email }).eq('id', athleteId);
+    }
+
+    /**
+     * El correo lo manda Supabase.
+     *
+     * `signInWithOtp` y NO `admin.generateLink`: generateLink DEVUELVE el
+     * enlace pero no lo envía, y ese enlace da entrada a la cuenta del
+     * atleta — pasárselo al entrenador sería darle una llave que no le
+     * corresponde. `inviteUserByEmail` tampoco vale: falla porque la cuenta
+     * ya existe, que es justo el punto de todo esto.
+     *
+     * `shouldCreateUser: false` es el cinturón: si por lo que sea el correo
+     * no corresponde a ninguna cuenta, se falla en vez de crear una segunda
+     * ficha por la puerta de atrás.
+     */
+    const anon = createClient(SUPABASE_URL, ANON_KEY, {
+        auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { error: linkError } = await anon.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false, emailRedirectTo: `${APP_URL}/auth/callback` },
+    });
+
+    if (linkError) {
+        return json({ error: `No se pudo mandar el acceso: ${linkError.message}` }, 500);
+    }
+
+    await admin.from('profiles').update({ account_status: 'invited' }).eq('id', athleteId);
+
+    return json({ outcome: 'invited', profile_id: athleteId, email });
+}
+
+// =====================================================================
+
+Deno.serve(async (req) => {
+    if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+    if (req.method !== 'POST') return json({ error: 'Método no permitido' }, 405);
+
+    if (!SUPABASE_URL || !SERVICE_ROLE) {
+        return json({ error: 'La función no está configurada.' }, 500);
+    }
+
+    const caller = await resolveCaller(req);
+    if (!caller) return json({ error: 'No autorizado.' }, 401);
+
+    let body: Record<string, unknown>;
+    try {
+        body = await req.json();
+    } catch {
+        return json({ error: 'Cuerpo no válido.' }, 400);
+    }
+
+    switch (body.action) {
+        case 'create': return await createManagedAthlete(caller, body);
+        case 'invite': return await inviteManagedAthlete(caller, body);
+        default: return json({ error: `Acción desconocida: ${String(body.action)}` }, 400);
+    }
+});

@@ -869,75 +869,41 @@ export const trainingService = {
      * cargar la pantalla. Un bloque programado y no empezado no se toca, y
      * quien no llega a registrar nada no genera escrituras.
      *
-     * Devuelve las series del ejercicio ya renumeradas, o `null` si no había
-     * nada que separar (la inmensa mayoría de las llamadas).
+     * POR QUÉ ES UNA FUNCIÓN DEL SERVIDOR Y NO TRES PETICIONES DESDE AQUÍ
+     *
+     * Porque desde aquí NO SE PUEDE, y ese era el fallo: separar el grupo
+     * exige reescribir `target_reps` de la fila original —lo prohíbe el
+     * trigger `protect_target_fields()`— e INSERTAR filas nuevas en
+     * `training_sets`, donde el atleta solo tiene SELECT y UPDATE. Las tres
+     * peticiones que había aquí fallaban SIEMPRE para el atleta, los cuatro
+     * renglones del "4x8" se quedaban apuntando al mismo id y solo
+     * sobrevivía la última serie registrada.
+     *
+     * `expand_grouped_set` (database/expand_grouped_set.sql) hace lo mismo
+     * en una sola transacción, comprobando que quien llama es el atleta o el
+     * coach de ese bloque. Ver ese archivo para el detalle.
+     *
+     * Devuelve las series del ejercicio ordenadas por `order_index`, hubiera
+     * o no algo que separar: quien llama resuelve por posición qué fila le
+     * toca a cada renglón. `null` solo si el ejercicio se quedó sin series.
      */
     async expandGroupedSet(setId: string): Promise<TrainingSet[] | null> {
-        const { data: set, error } = await supabase
-            .from('training_sets')
-            .select('*')
-            .eq('id', setId)
-            .single();
+        const { data, error } = await supabase.rpc('expand_grouped_set', { p_set_id: setId });
 
-        if (error) throw error;
+        if (error) {
+            // PGRST202 = la función no existe todavía en esta base. Es un
+            // despliegue a medias, no un error del usuario: se dice qué falta
+            // en vez de dejar un "failed to fetch" en la consola.
+            if ((error as { code?: string }).code === 'PGRST202') {
+                throw new Error(
+                    'Falta la migración database/expand_grouped_set.sql en la base de datos.'
+                );
+            }
+            throw error;
+        }
 
-        const parsed = parseGroupedReps(set.target_reps);
-        if (!parsed || parsed.count <= 1) return null;
-
-        // Las hermanas que van DETRÁS tienen que desplazarse para dejar hueco,
-        // o el orden de la sesión queda al azar.
-        const { data: siblings, error: siblingsError } = await supabase
-            .from('training_sets')
-            .select('id, order_index')
-            .eq('session_exercise_id', set.session_exercise_id)
-            .gt('order_index', set.order_index);
-
-        if (siblingsError) throw siblingsError;
-
-        const shift = parsed.count - 1;
-        await Promise.all(
-            (siblings ?? []).map(s =>
-                supabase
-                    .from('training_sets')
-                    .update({ order_index: s.order_index + shift })
-                    .eq('id', s.id)
-            )
-        );
-
-        // La fila original se queda como la PRIMERA repetición del grupo y
-        // conserva lo que el atleta ya hubiera escrito en ella.
-        const { error: updateError } = await supabase
-            .from('training_sets')
-            .update({ target_reps: parsed.reps })
-            .eq('id', set.id);
-
-        if (updateError) throw updateError;
-
-        const clones = Array.from({ length: shift }, (_, i) => ({
-            session_exercise_id: set.session_exercise_id,
-            order_index: set.order_index + i + 1,
-            target_reps: parsed.reps,
-            target_rpe: set.target_rpe,
-            target_load: set.target_load,
-            target_metric: set.target_metric,
-            rest_seconds: set.rest_seconds,
-            is_video_required: set.is_video_required,
-            // Las columnas de ejecución (`actual_*`, `notes`) NO se copian:
-            // pertenecen a la serie que el atleta ya hizo, no a las que
-            // todavía le quedan.
-        }));
-
-        const { error: insertError } = await supabase.from('training_sets').insert(clones);
-        if (insertError) throw insertError;
-
-        const { data: refreshed, error: refreshError } = await supabase
-            .from('training_sets')
-            .select('*')
-            .eq('session_exercise_id', set.session_exercise_id)
-            .order('order_index', { ascending: true });
-
-        if (refreshError) throw refreshError;
-        return refreshed ?? null;
+        const refreshed = (data ?? []) as TrainingSet[];
+        return refreshed.length > 0 ? refreshed : null;
     },
 
     /**

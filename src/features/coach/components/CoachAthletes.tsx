@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus, Mail, Link2, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { InviteAthleteModal } from './InviteAthleteModal';
 import { DangerConfirmModal } from '../../../components/modals/DangerConfirmModal';
-import { invitesService } from '../../../services/invitesService';
+import { athletesService, ACCOUNT_STATUS_LABEL, hasAccount } from '../../../services/athletesService';
+import { AddAthleteModal } from './AddAthleteModal';
+import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { SafeImage } from '../../../components/ui/SafeImage';
 import { getWeekNumber } from '../../../utils/dateUtils';
@@ -28,6 +30,8 @@ interface CoachAthletesProps {
 }
 
 export interface AthleteWithPlan extends UserProfile {
+    /** Correo real del atleta. NULL mientras no se tenga ninguno. */
+    contact_email?: string | null;
     active_plan_name?: string;
     current_block_week?: number | string;
     adherence?: AthleteAdherence;
@@ -64,14 +68,22 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
     const [filter, setFilter] = useState<FilterKey>('all');
     const [sort, setSort] = useState<SortKey>('attention');
     const [isInviteOpen, setIsInviteOpen] = useState(false);
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    /** Fuerza a recargar la lista tras dar de alta a alguien. */
+    const [reloadKey, setReloadKey] = useState(0);
     const [athleteToRemove, setAthleteToRemove] = useState<AthleteWithPlan | null>(null);
+    const [athleteToInvite, setAthleteToInvite] = useState<AthleteWithPlan | null>(null);
     const [removing, setRemoving] = useState(false);
 
     const handleRemove = async () => {
         if (!athleteToRemove) return;
         setRemoving(true);
         try {
-            await invitesService.unlinkAthlete(user.id, athleteToRemove.id);
+            // Cierra el tramo de la relación en vez de borrar la fila. El
+            // histórico —quién le entrenó y cuándo— es lo que da sentido a los
+            // bloques que el atleta conserva; borrarlo dejaba años de
+            // entrenamientos sin nadie que explicara de dónde salieron.
+            await athletesService.setRelationStatus(athleteToRemove.id, 'ended');
             setAthletes(prev => prev.filter(a => a.id !== athleteToRemove.id));
             toast.success(`${athleteToRemove.full_name} ya no está en tu equipo`);
             setAthleteToRemove(null);
@@ -88,10 +100,14 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
 
         const fetchAthletes = async () => {
             try {
+                // Solo las relaciones VIVAS. Las cerradas y las archivadas
+                // siguen en la tabla —son el histórico— y sin este filtro la
+                // lista iría creciendo con gente que ya no se entrena aquí.
                 const { data: links, error: linksError } = await supabase
                     .from('coach_athletes')
                     .select('athlete_id')
-                    .eq('coach_id', user.id);
+                    .eq('coach_id', user.id)
+                    .eq('status', 'active');
 
                 if (linksError) throw linksError;
 
@@ -167,7 +183,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
 
         fetchAthletes();
         return () => { alive = false; };
-    }, [user.id]);
+    }, [user.id, reloadKey]);
 
     const visible = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
@@ -243,16 +259,28 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                         </p>
                     </div>
 
-                    {/* Dar de alta a un atleta solo se podía hacer entrando a
-                        la base de datos a mano. Esto es lo que lo convierte en
-                        algo que el coach hace solo, desde su móvil. */}
-                    <button
-                        onClick={() => setIsInviteOpen(true)}
-                        className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
-                    >
-                        <UserPlus size={16} aria-hidden="true" />
-                        Invitar atleta
-                    </button>
+                    {/* DOS CAMINOS, Y EL ORDEN IMPORTA.
+                        "Nuevo atleta" es la acción principal porque no depende
+                        de nadie: el coach da de alta y programa. El enlace de
+                        invitación exige que la otra persona haga algo, así que
+                        es la secundaria aunque sea la que existía antes. */}
+                    <div className="flex shrink-0 items-center gap-2">
+                        <button
+                            onClick={() => setIsInviteOpen(true)}
+                            className="flex items-center gap-2 rounded-field border border-[var(--border-default)] px-3 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                        >
+                            <Link2 size={16} aria-hidden="true" />
+                            <span className="hidden sm:inline">Enlace</span>
+                        </button>
+
+                        <button
+                            onClick={() => setIsAddOpen(true)}
+                            className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                        >
+                            <UserPlus size={16} aria-hidden="true" />
+                            Nuevo atleta
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -260,6 +288,20 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 open={isInviteOpen}
                 onClose={() => setIsInviteOpen(false)}
                 coachId={user.id}
+            />
+
+            <AddAthleteModal
+                key={isAddOpen ? 'alta-abierta' : 'alta-cerrada'}
+                open={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                onCreated={() => setReloadKey(k => k + 1)}
+            />
+
+            <SendAccessModal
+                key={athleteToInvite?.id ?? 'sin-atleta'}
+                athlete={athleteToInvite}
+                onClose={() => setAthleteToInvite(null)}
+                onSent={() => { setAthleteToInvite(null); setReloadKey(k => k + 1); }}
             />
 
             <DangerConfirmModal
@@ -365,6 +407,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                                 avatar_url: athlete.avatar_url,
                             })}
                             onRemove={() => setAthleteToRemove(athlete)}
+                            onInvite={() => setAthleteToInvite(athlete)}
                         />
                     ))}
                 </div>
@@ -388,14 +431,23 @@ function AthleteCard({
     onSelect,
     onChat,
     onRemove,
+    onInvite,
 }: {
     athlete: AthleteWithPlan;
     index: number;
     onSelect: () => void;
     onChat: () => void;
     onRemove: () => void;
+    /** Pide mandarle el acceso a la app. El diálogo lo abre la lista. */
+    onInvite: () => void;
 }) {
     const days = daysSince(athlete.adherence?.lastCompletedAt);
+    /**
+     * Un atleta sin cuenta no recibe mensajes, ni avisos, ni check-ins.
+     * Ofrecerle al coach un botón de chat que no va a llegar a ninguna parte
+     * es peor que no ofrecerlo: parece que se ha enviado algo.
+     */
+    const online = hasAccount(athlete.account_status);
     const tone = activityTone(days);
     const ratio = adherenceRatio(athlete.adherence);
 
@@ -433,25 +485,60 @@ function AthleteCard({
                     )}
 
                     <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-t-base font-bold leading-tight text-ink">
-                            {athlete.full_name}
+                        <h3 className="flex items-center gap-2 text-t-base font-bold leading-tight text-ink">
+                            <span className="truncate">{athlete.full_name}</span>
+
+                            {/* SIN CUENTA / INVITADO.
+                                Va junto al nombre y no abajo del todo porque
+                                cambia lo que el coach puede esperar de esa
+                                persona: no va a registrar series, no va a
+                                contestar el chat y su constancia siempre será
+                                cero. Sin este distintivo, la tarjeta parecería
+                                la de un atleta que ha dejado de entrenar. */}
+                            {!online && (
+                                <span className="shrink-0 rounded-chip bg-surface-sunken px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-ink-subtle">
+                                    {ACCOUNT_STATUS_LABEL[athlete.account_status ?? 'active']}
+                                </span>
+                            )}
                         </h3>
 
-                        {/* EL TITULAR: cuándo entrenó por última vez. */}
-                        <p className="mt-1 flex items-center gap-1.5 text-t-xs text-ink-muted">
-                            <span className={`h-1.5 w-1.5 shrink-0 rounded-pill ${toneClass}`} aria-hidden="true" />
-                            {activityLabel(days)}
-                        </p>
+                        {/* EL TITULAR: cuándo entrenó por última vez. Para
+                            quien no tiene cuenta, "hace 0 días" no significa
+                            nada: lo que hay que decirle al coach es qué le
+                            falta a esa ficha para estar completa. */}
+                        {online ? (
+                            <p className="mt-1 flex items-center gap-1.5 text-t-xs text-ink-muted">
+                                <span className={`h-1.5 w-1.5 shrink-0 rounded-pill ${toneClass}`} aria-hidden="true" />
+                                {activityLabel(days)}
+                            </p>
+                        ) : (
+                            <p className="mt-1 text-t-xs text-ink-subtle">
+                                {athlete.account_status === 'invited'
+                                    ? 'Acceso enviado, aún sin entrar'
+                                    : 'Le programas y le mandas el PDF'}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex shrink-0 items-center">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onChat(); }}
-                            aria-label={`Escribir a ${athlete.full_name}`}
-                            className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-sunken hover:text-ink"
-                        >
-                            <MessageSquare size={16} aria-hidden="true" />
-                        </button>
+                        {online ? (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onChat(); }}
+                                aria-label={`Escribir a ${athlete.full_name}`}
+                                className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-sunken hover:text-ink"
+                            >
+                                <MessageSquare size={16} aria-hidden="true" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onInvite(); }}
+                                aria-label={`Enviar el acceso a ${athlete.full_name}`}
+                                title="Enviarle el acceso a la app"
+                                className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand disabled:opacity-40"
+                            >
+                                <Mail size={16} aria-hidden="true" />
+                            </button>
+                        )}
 
                         {/* Sacar del equipo. Aparece al pasar por encima de la
                             tarjeta y no siempre: es la única acción destructiva
@@ -589,5 +676,99 @@ function AthletesSkeleton() {
                 ))}
             </div>
         </div>
+    );
+}
+
+/**
+ * ENVIAR EL ACCESO A UN ATLETA GESTIONADO
+ *
+ * QUÉ MANDA, EXACTAMENTE
+ *
+ * Un enlace a la cuenta que ese atleta YA TIENE. No se le crea nada nuevo:
+ * la ficha existe desde que su entrenador la dio de alta, con sus bloques y
+ * su historial dentro, y este correo es lo único que faltaba para que su
+ * dueño pudiera entrar en ella. Por eso reclamarla no fusiona ni migra nada.
+ *
+ * El correo se pide aquí cuando la ficha se creó sin él —el caso de "solo le
+ * mando el PDF"—, que es justo el dato que le falta para poder alcanzarle.
+ */
+function SendAccessModal({
+    athlete,
+    onClose,
+    onSent,
+}: {
+    athlete: AthleteWithPlan | null;
+    onClose: () => void;
+    onSent: () => void;
+}) {
+    const [email, setEmail] = useState(athlete?.contact_email ?? '');
+    const [sending, setSending] = useState(false);
+
+    if (!athlete) return null;
+
+    const handleSend = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (sending) return;
+
+        setSending(true);
+        try {
+            const result = await athletesService.invite(athlete.id, email);
+            toast.success(`Acceso enviado a ${result.email}`);
+            onSent();
+        } catch (err) {
+            console.error(err);
+            toast.error(err instanceof Error ? err.message : 'No se pudo enviar el acceso');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <Modal open onClose={onClose} title="Enviar el acceso" size="sm">
+            <form onSubmit={handleSend} className="space-y-5">
+                <p className="text-t-sm leading-relaxed text-ink-muted">
+                    <strong className="font-bold text-ink">{athlete.full_name}</strong> recibirá un
+                    enlace para entrar en su ficha. Se encontrará dentro todo lo que ya le has
+                    programado: no empieza de cero.
+                </p>
+
+                <div className="space-y-1.5">
+                    <label htmlFor="acceso-correo" className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        Correo
+                    </label>
+                    <div className="relative">
+                        <Mail size={15} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
+                        <input
+                            id="acceso-correo"
+                            type="email"
+                            required
+                            autoFocus
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            placeholder="marta@ejemplo.com"
+                            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-field px-4 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={sending || !email.includes('@')}
+                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                    >
+                        {sending ? <Loader size={15} className="animate-spin" /> : <Mail size={15} />}
+                        Enviar
+                    </button>
+                </div>
+            </form>
+        </Modal>
     );
 }

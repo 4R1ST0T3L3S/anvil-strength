@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
+import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut, FileText, ChevronRight } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
+import { isStaff } from '../../../lib/roles';
+import { PdfThemeSettings } from './PdfThemeSettings';
 
 interface ProfileSectionProps {
     user: UserProfile;
@@ -10,14 +12,26 @@ interface ProfileSectionProps {
     onBack?: () => void;
 }
 
+/**
+ * MI PERFIL
+ * =====================================================================
+ * Reescrito sobre el sistema de diseño: `surface-*`/`ink-*`/`border-*` en
+ * vez de negro y grises a pelo, `rounded-card`/`rounded-field` en vez de
+ * `rounded-2xl`/`rounded-xl` sueltos, y la escala tipográfica `t-*`. Antes
+ * era la única pantalla del panel con su propia paleta de rojos, verdes y
+ * grises con opacidad a mano — el resto de la aplicación ya no se ve así.
+ */
 export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) {
+    /** "Mi perfil" y "Documento PDF" son dos pantallas, no un formulario con
+     *  pestañas: la segunda necesita el ancho entero para la vista previa. */
+    const [screen, setScreen] = useState<'profile' | 'pdf'>('profile');
+
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(user.avatar_url || user.profile_image || null);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-    // Form state
     const [formData, setFormData] = useState({
         name: user.full_name || user.name || '',
         nickname: user.nickname || '',
@@ -44,6 +58,10 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
         });
         setImagePreview(user.avatar_url || user.profile_image || null);
     }, [user]);
+
+    if (screen === 'pdf') {
+        return <PdfThemeSettings user={user} onBack={() => setScreen('profile')} />;
+    }
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -138,130 +156,145 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
     const handleLogout = async () => {
         try {
             await supabase.auth.signOut();
-            // Force a hard refresh to clear all application state
             window.location.href = '/';
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
-            // Even if there's an error, try to redirect
             window.location.href = '/';
         }
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-8">
+        <div className="mx-auto w-full max-w-4xl px-4 py-6 pb-24 md:px-8 md:py-10">
             <header className="mb-8">
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                        className="mb-2 flex items-center gap-1.5 text-t-xs font-bold uppercase tracking-widest text-ink-subtle transition-colors duration-fast hover:text-ink"
                     >
-                        ← Volver al Dashboard
+                        ← Volver
                     </button>
                 )}
-                <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-white">Mi Perfil</h1>
-                <p className="text-gray-400 text-lg">Gestiona tu información personal y marcas.</p>
+                <h1 className="text-t-3xl font-black uppercase tracking-display text-ink">Mi perfil</h1>
+                <p className="mt-1 text-t-sm text-ink-muted">Gestiona tu información personal y marcas.</p>
             </header>
 
             {message && (
-                <div className={`mb-8 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'
-                    }`}>
-                    {message.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-                    <p className="font-bold text-sm">{message.text}</p>
+                <div className={`mb-6 flex items-center gap-3 rounded-card border p-4 ${
+                    message.type === 'success'
+                        ? 'border-[var(--success-line,var(--border-strong))] bg-[var(--success-quiet)] text-success'
+                        : 'border-[var(--danger-line,var(--border-strong))] bg-[var(--danger-quiet)] text-danger'
+                }`}>
+                    {message.type === 'success' ? <CheckCircle2 size={18} aria-hidden="true" /> : <AlertCircle size={18} aria-hidden="true" />}
+                    <p className="text-t-sm font-bold">{message.text}</p>
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Avatar Section */}
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 transition-all hover:border-white/10">
-                    <div className="relative group">
-                        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-anvil-red bg-[#0a0a0a] flex items-center justify-center relative">
+            {/* Documento PDF. Solo staff: es el atleta quien lo RECIBE, no
+                quien lo diseña. Va arriba del formulario y no al final: es la
+                razón por la que muchos entrenadores abren "Mi perfil". */}
+            {isStaff(user) && (
+                <button
+                    onClick={() => setScreen('pdf')}
+                    className="group mb-6 flex w-full items-center gap-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-4 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay"
+                >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand">
+                        <FileText size={18} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-t-sm font-bold text-ink">Documento PDF</span>
+                        <span className="block text-t-xs text-ink-subtle">
+                            Colores, tipografía, logotipo y estilo del entrenamiento que reciben tus atletas
+                        </span>
+                    </span>
+                    <ChevronRight size={16} aria-hidden="true" className="shrink-0 text-ink-faint transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                </button>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Avatar */}
+                <div className="flex flex-col items-center gap-6 rounded-card border border-[var(--border-default)] bg-surface-raised p-6 md:flex-row md:p-8">
+                    <div className="relative shrink-0">
+                        <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-pill border-2 border-[var(--border-strong)] bg-surface-sunken md:h-32 md:w-32">
                             {imagePreview ? (
-                                <img src={imagePreview} alt="Avatar" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                <img src={imagePreview} alt="Avatar" className="h-full w-full object-cover" />
                             ) : (
-                                <span className="text-4xl font-black text-gray-600">
+                                <span className="text-t-2xl font-black text-ink-faint">
                                     {(formData.nickname?.[0] || formData.name?.[0] || 'U').toUpperCase()}
                                 </span>
                             )}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <Camera size={32} className="text-white" />
-                            </div>
                         </div>
-                        <label className="absolute bottom-1 right-1 bg-white text-black p-2 rounded-full cursor-pointer shadow-xl hover:bg-anvil-red hover:text-white transition-all transform hover:scale-110">
-                            <Camera size={18} />
+                        <label className="absolute -bottom-0.5 -right-0.5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-pill bg-brand text-brand-ink shadow-raise transition-colors duration-fast hover:bg-brand-hover">
+                            <Camera size={16} aria-hidden="true" />
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
                         {imagePreview && (
                             <button
                                 type="button"
                                 onClick={removePhoto}
-                                className="absolute top-1 right-1 bg-black/80 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                                aria-label="Quitar foto"
+                                className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-pill bg-surface-overlay text-ink-muted shadow-raise transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger"
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={13} aria-hidden="true" />
                             </button>
                         )}
                     </div>
-                    <div className="flex-1 text-center md:text-left space-y-2">
-                        <h3 className="text-xl font-bold text-white uppercase tracking-tight">Foto de Perfil</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                            Sube una foto clara. Se recomienda un formato cuadrado (máx. 2MB).
+                    <div className="min-w-0 text-center md:text-left">
+                        <h3 className="text-t-base font-bold text-ink">Foto de perfil</h3>
+                        <p className="mt-1 text-t-sm leading-relaxed text-ink-subtle">
+                            Una foto clara, a ser posible cuadrada. Máximo 2 MB.
                         </p>
                     </div>
                 </div>
 
-                {/* Personal Info */}
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">Información Personal</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nombre Completo</label>
+                {/* Datos personales */}
+                <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                    <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Información personal</h2>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormField label="Nombre completo">
                             <input
                                 type="text"
                                 value={formData.name}
                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 required
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                className={INPUT}
                             />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Apodo / Mote</label>
+                        </FormField>
+                        <FormField label="Apodo / mote">
                             <input
                                 type="text"
                                 value={formData.nickname}
                                 onChange={e => setFormData({ ...formData, nickname: e.target.value })}
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all font-bold tracking-widest"
+                                className={INPUT}
                             />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Email (No editable)</label>
+                        </FormField>
+                        <FormField label="Correo">
                             <input
                                 type="email"
                                 value={user.email}
                                 disabled
-                                className="w-full bg-[#0a0a0a]/50 border border-white/5 rounded-xl px-4 py-3 text-gray-500 cursor-not-allowed"
+                                className={`${INPUT} cursor-not-allowed text-ink-faint`}
                             />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Rol</label>
-                            <div className="w-full bg-[#0a0a0a]/50 border border-white/5 rounded-xl px-4 py-3 text-gray-400 capitalize font-bold">
-                                {user.role === 'coach' ? 'Entrenador' : 'Atleta'}
+                        </FormField>
+                        <FormField label="Rol">
+                            <div className={`${INPUT} flex items-center text-ink-muted`}>
+                                {user.role === 'coach' ? 'Entrenador' : user.role === 'nutritionist' ? 'Nutricionista' : 'Atleta'}
                             </div>
-                        </div>
+                        </FormField>
                     </div>
-                </div>
+                </section>
 
-                {/* Categories & PRs */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">Categorías</h3>
-                        <div className="grid grid-cols-1 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Categoría de Edad</label>
+                {/* Categorías y marcas */}
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                        <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Categorías</h2>
+                        <div className="space-y-4">
+                            <FormField label="Categoría de edad">
                                 <select
                                     value={formData.age_category}
                                     onChange={e => setFormData({ ...formData, age_category: e.target.value })}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                    className={INPUT}
                                 >
-                                    <option value="">Seleccionar...</option>
+                                    <option value="">Seleccionar…</option>
                                     <option value="Sub-Junior">Sub-Junior</option>
                                     <option value="Junior">Junior</option>
                                     <option value="Senior">Senior (Open)</option>
@@ -270,27 +303,25 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                     <option value="Master 3">Master 3</option>
                                     <option value="Master 4">Master 4</option>
                                 </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sexo</label>
+                            </FormField>
+                            <FormField label="Sexo">
                                 <select
                                     value={formData.gender}
                                     onChange={e => setFormData({ ...formData, gender: e.target.value })}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                    className={INPUT}
                                 >
-                                    <option value="">Seleccionar...</option>
+                                    <option value="">Seleccionar…</option>
                                     <option value="male">Masculino</option>
                                     <option value="female">Femenino</option>
                                 </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Categoría de Peso</label>
+                            </FormField>
+                            <FormField label="Categoría de peso">
                                 <select
                                     value={formData.weight_category}
                                     onChange={e => setFormData({ ...formData, weight_category: e.target.value })}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all"
+                                    className={INPUT}
                                 >
-                                    <option value="">Seleccionar...</option>
+                                    <option value="">Seleccionar…</option>
                                     <optgroup label="Masculino">
                                         <option value="-59kg">-59kg</option>
                                         <option value="-66kg">-66kg</option>
@@ -312,94 +343,54 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                         <option value="+84kg">+84kg</option>
                                     </optgroup>
                                 </select>
-                            </div>
+                            </FormField>
                         </div>
-                    </div>
+                    </section>
 
-                    <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">Marcas (PRs)</h3>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sentadilla</span>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    value={formData.squat_pr}
-                                    onChange={e => setFormData({ ...formData, squat_pr: e.target.value })}
-                                    className="bg-transparent text-right font-black text-xl text-white outline-none w-24"
-                                    placeholder="0"
-                                />
-                            </div>
-                            <div className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Banca</span>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    value={formData.bench_pr}
-                                    onChange={e => setFormData({ ...formData, bench_pr: e.target.value })}
-                                    className="bg-transparent text-right font-black text-xl text-white outline-none w-24"
-                                    placeholder="0"
-                                />
-                            </div>
-                            <div className="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Muerto</span>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    value={formData.deadlift_pr}
-                                    onChange={e => setFormData({ ...formData, deadlift_pr: e.target.value })}
-                                    className="bg-transparent text-right font-black text-xl text-white outline-none w-24"
-                                    placeholder="0"
-                                />
-                            </div>
+                    <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                        <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Marcas (PR)</h2>
+                        <div className="space-y-2.5">
+                            <PrField label="Sentadilla" value={formData.squat_pr} onChange={v => setFormData({ ...formData, squat_pr: v })} />
+                            <PrField label="Banca" value={formData.bench_pr} onChange={v => setFormData({ ...formData, bench_pr: v })} />
+                            <PrField label="Muerto" value={formData.deadlift_pr} onChange={v => setFormData({ ...formData, deadlift_pr: v })} />
                         </div>
-                    </div>
+                    </section>
                 </div>
 
-                {/* Biography */}
-                <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 space-y-6">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3 mb-6">
-                        {user.role === 'coach' ? 'Biografía / Especialidad' : 'Sobre mí / Objetivos'}
-                    </h3>
+                {/* Biografía */}
+                <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                    <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        {user.role === 'coach' ? 'Biografía / especialidad' : 'Sobre mí / objetivos'}
+                    </h2>
                     <textarea
                         value={formData.biography}
                         onChange={e => setFormData({ ...formData, biography: e.target.value })}
                         rows={5}
-                        placeholder="Escribe algo sobre ti..."
-                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-anvil-red transition-all resize-none"
+                        placeholder="Escribe algo sobre ti…"
+                        className={`${INPUT} h-auto resize-none py-3`}
                     />
-                </div>
+                </section>
 
-                {/* Sticky Submit Bar for Mobile / Floating for Desktop */}
-                <div className="flex justify-end pt-4 pb-12">
+                <div className="flex justify-end pt-1">
                     <button
                         type="submit"
                         disabled={isSaving}
-                        className="w-full md:w-auto bg-white text-black hover:bg-anvil-red hover:text-white font-black px-12 py-4 rounded-xl flex items-center justify-center gap-3 transition-all transform active:scale-[0.98] shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex w-full items-center justify-center gap-2 rounded-field bg-brand px-8 py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40 md:w-auto"
                     >
-                        {isSaving ? (
-                            <>
-                                <Loader className="animate-spin" size={20} />
-                                <span>Guardando...</span>
-                            </>
-                        ) : (
-                            <>
-                                <Save size={20} />
-                                <span>Guardar Cambios</span>
-                            </>
-                        )}
+                        {isSaving ? <Loader size={17} className="animate-spin" /> : <Save size={17} />}
+                        {isSaving ? 'Guardando…' : 'Guardar cambios'}
                     </button>
                 </div>
             </form>
 
-            <div className="border-t border-white/5 pt-8 mt-8">
+            <div className="mt-8 border-t border-subtle pt-6">
                 <button
                     type="button"
                     onClick={() => setShowLogoutConfirm(true)}
-                    className="w-full bg-[#0a0a0a] border border-red-500/20 text-red-500 hover:bg-red-500/10 font-bold px-8 py-4 rounded-xl flex items-center justify-center gap-3 transition-all"
+                    className="flex w-full items-center justify-center gap-2 rounded-field border border-[var(--border-default)] px-6 py-3 text-t-sm font-bold text-danger transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)]"
                 >
-                    <LogOut size={20} />
-                    <span>Cerrar Sesión</span>
+                    <LogOut size={17} aria-hidden="true" />
+                    Cerrar sesión
                 </button>
             </div>
 
@@ -407,11 +398,39 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 isOpen={showLogoutConfirm}
                 onClose={() => setShowLogoutConfirm(false)}
                 onConfirm={handleLogout}
-                title="¿Cerrar Sesión?"
-                description="¿Estás seguro de que quieres cerrar sesión? Tendrás que volver a iniciar sesión para acceder a tu cuenta."
-                confirmText="Cerrar Sesión"
+                title="¿Cerrar sesión?"
+                description="Tendrás que volver a iniciar sesión para acceder a tu cuenta."
+                confirmText="Cerrar sesión"
                 cancelText="Cancelar"
                 variant="danger"
+            />
+        </div>
+    );
+}
+
+const INPUT =
+    'h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand';
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+    return (
+        <label className="block space-y-1.5">
+            <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</span>
+            {children}
+        </label>
+    );
+}
+
+function PrField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+    return (
+        <div className="flex items-center justify-between rounded-field border border-subtle bg-surface-sunken px-4 py-2.5">
+            <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">{label}</span>
+            <input
+                type="number"
+                step="0.1"
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                placeholder="0"
+                className="w-20 bg-transparent text-right text-t-lg font-black tabular-nums text-ink outline-none"
             />
         </div>
     );

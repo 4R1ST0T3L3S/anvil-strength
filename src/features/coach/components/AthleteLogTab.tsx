@@ -9,8 +9,9 @@ import {
 } from 'lucide-react';
 import { trainingService, type LoggedSession } from '../../../services/trainingService';
 import {
-    adherenceByExercise, buildFlags, collectDeviations, prescribedKg,
-    prescribedReps, prescribedRpe, summarizeSession, weeklyExecution, acuteChronicRatio,
+    adherenceByExercise, buildFlags, collectDeviations, exerciseNames, prescribedKg,
+    prescribedReps, prescribedRpe, scopeToExercise, summarizeSession, weeklyExecution,
+    acuteChronicRatio,
     type DeviationRow, type Flag,
 } from '../../../lib/stats/executionLog';
 import { weekdayLabel } from '../../../types/training';
@@ -68,6 +69,15 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
     const [error, setError] = useState<string | null>(null);
     const [tab, setTab] = useState<LogTab>('sesiones');
     const [blockFilter, setBlockFilter] = useState<string>('all');
+    /**
+     * Ejercicio al que se acota TODA la pantalla. `all` = el bloque entero.
+     *
+     * Vive aquí arriba y no dentro de la pestaña "Por ejercicio" a propósito:
+     * lo que el coach quiere saber es "cómo va la sentadilla", y eso incluye
+     * su tonelaje semanal, sus desviaciones y sus avisos, no solo una fila de
+     * una tabla. Ver `scopeToExercise`.
+     */
+    const [exerciseFilter, setExerciseFilter] = useState<string>('all');
 
     useEffect(() => {
         let alive = true;
@@ -92,9 +102,38 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
         return [...seen.entries()].map(([id, name]) => ({ id, name }));
     }, [sessions]);
 
-    const scoped = useMemo(
+    /** Las sesiones del bloque elegido. Base de todo lo demás. */
+    const byBlock = useMemo(
         () => (blockFilter === 'all' ? sessions : sessions.filter(s => s.blockId === blockFilter)),
         [sessions, blockFilter]
+    );
+
+    /**
+     * Las opciones del desplegable salen del BLOQUE, no del ámbito ya
+     * filtrado: si salieran de `scoped`, al elegir sentadilla el desplegable
+     * se quedaría con una sola opción y no habría forma de cambiar.
+     */
+    const exercises = useMemo(() => exerciseNames(byBlock), [byBlock]);
+
+    /**
+     * El ejercicio que de verdad se aplica. Se DERIVA en el render en vez de
+     * corregirse en un efecto: cambiar de bloque puede dejar elegido un
+     * ejercicio que allí no existe, y sincronizarlo con un `setState` dentro
+     * de un efecto pinta un fotograma con la pantalla vacía antes de
+     * arreglarse. Aquí, sencillamente, nunca llega a estar mal.
+     */
+    const activeExercise =
+        exerciseFilter !== 'all' && exercises.includes(exerciseFilter) ? exerciseFilter : 'all';
+
+    /**
+     * El ámbito del que come TODO lo de abajo. Todo lo que se calcula después
+     * —totales, avisos, desviaciones, gráficas de carga y tarjetas de sesión—
+     * parte de aquí, así que acotar por ejercicio no exige duplicar ni una
+     * sola cuenta.
+     */
+    const scoped = useMemo(
+        () => (activeExercise === 'all' ? byBlock : scopeToExercise(byBlock, activeExercise)),
+        [byBlock, activeExercise]
     );
 
     /**
@@ -181,6 +220,29 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
                         <option value="all">Todos los bloques</option>
                         {blocks.map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
+                        ))}
+                    </select>
+                )}
+
+                {/* Acota la pantalla ENTERA a un ejercicio: gráficas, avisos,
+                    desviaciones y sesiones. "Sentadilla" tiene que significar
+                    sentadilla también en el tonelaje semanal, no solo en la
+                    tabla de cumplimiento. */}
+                {exercises.length > 1 && (
+                    <select
+                        value={activeExercise}
+                        onChange={e => setExerciseFilter(e.target.value)}
+                        aria-label="Ejercicio"
+                        className={cn(
+                            'max-w-[13rem] rounded-field border px-3 py-2 text-t-sm',
+                            activeExercise === 'all'
+                                ? 'border-[var(--border-default)] bg-surface-raised text-ink'
+                                : 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand'
+                        )}
+                    >
+                        <option value="all">Todos los ejercicios</option>
+                        {exercises.map(name => (
+                            <option key={name} value={name}>{name}</option>
                         ))}
                     </select>
                 )}

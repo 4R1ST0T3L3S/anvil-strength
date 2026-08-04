@@ -41,7 +41,7 @@ export default async function handler(): Promise<Response> {
             headers: {
                 // Sin esto Google responde a veces con una página de
                 // consentimiento en HTML en lugar del CSV.
-                'User-Agent': 'AnvilStrength/1.0 (+https://anvilstrength.club)',
+                'User-Agent': 'AnvilStrength/1.0 (+https://anvilstrength.es)',
                 Accept: 'text/csv,*/*',
             },
             redirect: 'follow',

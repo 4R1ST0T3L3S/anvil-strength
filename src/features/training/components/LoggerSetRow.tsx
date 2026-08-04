@@ -125,7 +125,7 @@ export function LoggerSetRow({
      * quedarse sin cobertura y a cerrar la app, que en un gimnasio es el
      * caso normal y no el raro. Ver src/lib/offlineQueue.ts.
      */
-    const commit = async (patch: Partial<TrainingSet>): Promise<string> => {
+    const commit = async (patch: Partial<TrainingSet>): Promise<string | null> => {
         if (needsExpansion && onExpand) {
             // La separación se pide siempre al padre, que la desduplica: los
             // cuatro renglones de un "4x8" comparten una sola llamada. Aquí
@@ -133,7 +133,28 @@ export function LoggerSetRow({
             // mismo renglón mientras está en vuelo.
             expanding.current ??= onExpand(groupIndex);
             const realId = await expanding.current;
-            if (realId) targetId.current = realId;
+
+            /**
+             * SIN FILA PROPIA NO SE ESCRIBE. Esto es lo que hacía que de un
+             * "4x8" solo se guardara la última serie.
+             *
+             * Antes, si la separación fallaba, este renglón seguía escribiendo
+             * contra `targetId.current`, que en un grupo sin separar es el id
+             * COMPARTIDO por los cuatro: las cuatro series se machacaban entre
+             * sí en la misma fila y ganaba la última que se tocara. Y la
+             * separación fallaba SIEMPRE para el atleta, porque se intentaba
+             * desde el navegador contra una tabla donde no tiene permiso de
+             * INSERT (ver database/expand_grouped_set.sql).
+             *
+             * Ahora se aborta y se deja reintentar. Perder una escritura y
+             * decirlo es reparable; escribirla encima de otra serie no.
+             */
+            if (!realId) {
+                expanding.current = null;
+                return null;
+            }
+
+            targetId.current = realId;
         }
         writeQueue.enqueue('training_sets', targetId.current, patch as Record<string, unknown>);
         // Devuelve la fila contra la que se ha escrito DE VERDAD. Quien avisa
@@ -172,8 +193,16 @@ export function LoggerSetRow({
         const next = !done;
         setDone(next);
 
+        // Si la escritura no llega a hacerse, la marca vuelve atrás. Una
+        // serie que se ve en verde y no está guardada es peor que una sin
+        // marcar: el atleta no la vuelve a tocar.
+        const settle = (completed: boolean) => (id: string | null) => {
+            if (id) onChange?.(id, completed);
+            else setDone(!completed);
+        };
+
         if (!next) {
-            void commit({ is_completed: false }).then(id => onChange?.(id, false));
+            void commit({ is_completed: false }).then(settle(false));
             return;
         }
 
@@ -200,20 +229,38 @@ export function LoggerSetRow({
             actual_reps: repsValue,
             actual_load: loadValue,
             actual_rpe: toNumber(rpe),
-        }).then(id => onChange?.(id, true));
+        }).then(settle(true));
 
         const rest = set.rest_seconds || defaultRestSeconds;
         if (rest && rest > 0) onStartTimer(rest);
     };
 
-    // Qué pautó el coach, para enseñarlo sin ocupar la casilla del atleta.
+    /**
+     * LO QUE PAUTÓ EL COACH, SIEMPRE VISIBLE.
+     *
+     * Antes la prescripción vivía únicamente en el `placeholder` de cada
+     * casilla, así que DESAPARECÍA en cuanto el atleta escribía encima: en el
+     * momento exacto en que la comparación importa —"me pedían 8 a 100, he
+     * hecho 6"— el plan ya no estaba en pantalla. Y quien no ve el objetivo
+     * no sabe si se está desviando.
+     *
+     * Ahora el objetivo es un renglón fijo encima de cada casilla y el
+     * `placeholder` pasa a ser la unidad. Plan arriba, ejecución abajo, en la
+     * misma columna: se leen los dos de un vistazo.
+     */
     const metric: TargetMetric = set.target_metric ?? 'kg';
-    const prescribedLoad =
-        metric === 'kg' && set.target_load != null ? String(set.target_load) : null;
-    const otherMetricTarget =
-        metric !== 'kg'
-            ? (metric === 'rpe' ? set.target_rpe : set.target_load != null ? String(set.target_load) : null)
-            : null;
+    const targetLoadText = set.target_load != null ? String(set.target_load) : null;
+    // La columna de kilos enseña el objetivo del coach en SU unidad: si pautó
+    // al 20% de pérdida de velocidad, ahí pone 20, no 20 kg.
+    const loadTarget = metric === 'kg'
+        ? targetLoadText
+        : (metric === 'rpe' ? set.target_rpe : targetLoadText);
+    const rpeTarget = set.target_rpe;
+
+    // El renglón de objetivos solo existe si hay algo que poner. Cuando lo
+    // hay, se reserva en las tres columnas aunque alguna esté vacía: si no,
+    // las casillas de la misma fila quedarían a distinta altura.
+    const hasTargets = Boolean(targetReps || loadTarget || rpeTarget);
 
     const hasNote = note.trim().length > 0;
     const setType = SET_TYPES.find(t => t.key === set.set_type) ?? null;
@@ -242,56 +289,57 @@ export function LoggerSetRow({
                     {displayIndex}
                 </span>
 
-                {/* REPETICIONES REALES — editable. El objetivo es el marcador
-                    de posición, así que la casilla vacía ya dice qué toca. */}
-                <SetInput
-                    value={reps}
-                    onChange={(value) => {
-                        setReps(value);
-                        commitDebounced('reps', { actual_reps: toNumber(value) });
-                    }}
-                    placeholder={targetReps ?? 'reps'}
-                    ariaLabel={`Repeticiones hechas en la serie ${displayIndex}`}
-                    filled={Boolean(reps)}
-                    step="1"
-                />
+                {/* REPETICIONES REALES — editable, con lo pautado encima. */}
+                <div>
+                    <TargetLabel value={targetReps} show={hasTargets} />
+                    <SetInput
+                        value={reps}
+                        onChange={(value) => {
+                            setReps(value);
+                            commitDebounced('reps', { actual_reps: toNumber(value) });
+                        }}
+                        placeholder="reps"
+                        ariaLabel={`Repeticiones hechas en la serie ${displayIndex}${targetReps ? ` (pautadas: ${targetReps})` : ''}`}
+                        filled={Boolean(reps)}
+                        step="1"
+                    />
+                </div>
 
                 {/* PESO MOVIDO — siempre kilos, lo escribe el atleta. Cuando la
-                    prescripción no va en kilos (RPE, RIR, velocidad), el
-                    objetivo se enseña encima en pequeño y la casilla queda
-                    libre para los kilos de verdad. */}
+                    prescripción no va en kilos (RPE, RIR, velocidad), lo que se
+                    enseña encima es ese objetivo y la casilla queda libre para
+                    los kilos de verdad. */}
                 <div>
-                    {otherMetricTarget && (
-                        <span className="block text-center text-[9px] font-bold uppercase leading-none text-ink-subtle">
-                            {otherMetricTarget}
-                        </span>
-                    )}
+                    <TargetLabel value={loadTarget} show={hasTargets} />
                     <SetInput
                         value={load}
                         onChange={(value) => {
                             setLoad(value);
                             commitDebounced('load', { actual_load: toNumber(value) });
                         }}
-                        placeholder={prescribedLoad ?? 'kg'}
-                        ariaLabel={`Peso movido en la serie ${displayIndex}`}
+                        placeholder="kg"
+                        ariaLabel={`Peso movido en la serie ${displayIndex}${loadTarget ? ` (pautado: ${loadTarget})` : ''}`}
                         filled={Boolean(load)}
                         step="0.5"
                     />
                 </div>
 
                 {/* RPE real */}
-                <SetInput
-                    value={rpe}
-                    onChange={(value) => {
-                        setRpe(value);
-                        commitDebounced('rpe', { actual_rpe: toNumber(value) });
-                    }}
-                    placeholder={set.target_rpe ?? '–'}
-                    ariaLabel={`RPE de la serie ${displayIndex}`}
-                    filled={Boolean(rpe)}
-                    step="0.5"
-                    tone="brand"
-                />
+                <div>
+                    <TargetLabel value={rpeTarget} show={hasTargets} />
+                    <SetInput
+                        value={rpe}
+                        onChange={(value) => {
+                            setRpe(value);
+                            commitDebounced('rpe', { actual_rpe: toNumber(value) });
+                        }}
+                        placeholder="–"
+                        ariaLabel={`RPE de la serie ${displayIndex}${rpeTarget ? ` (pautado: ${rpeTarget})` : ''}`}
+                        filled={Boolean(rpe)}
+                        step="0.5"
+                        tone="brand"
+                    />
+                </div>
 
                 {/* NOTA DE LA SERIE.
                     Un icono y no una columna de texto: la nota es la excepción
@@ -426,6 +474,26 @@ export function LoggerSetRow({
                 )}
             </AnimatePresence>
         </div>
+    );
+}
+
+/**
+ * Lo que pautó el coach para ESTA casilla.
+ *
+ * Se pinta aunque no haya valor —con un espacio duro— siempre que alguna
+ * columna de la fila tenga objetivo: es lo que mantiene las tres casillas a
+ * la misma altura. Es información de solo lectura, así que va en gris y a 9px:
+ * tiene que poder consultarse sin competir con el número que se escribe.
+ */
+function TargetLabel({ value, show }: { value?: string | null; show: boolean }) {
+    if (!show) return null;
+    return (
+        <span
+            aria-hidden="true"
+            className="mb-1 block truncate text-center text-[9px] font-bold uppercase leading-none tracking-wide text-ink-subtle"
+        >
+            {value || ' '}
+        </span>
     );
 }
 

@@ -28,6 +28,7 @@ import { AnvilRanking } from '../components/AnvilRanking';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { isStaff } from '../../../lib/roles';
+import { FEATURES } from '../../../lib/features';
 
 interface UserDashboardProps {
     user: UserProfile;
@@ -155,13 +156,18 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: slug === 'ranking',
             hideOnMobileBar: true,
         },
-        {
-            icon: <ShoppingBag size={20} />,
-            label: 'Tienda Anvil',
-            onClick: () => go('tienda'),
-            isActive: slug === 'tienda',
-            hideOnMobileBar: true,
-        },
+        // La Tienda Anvil está apagada (ver src/lib/features.ts). No se borra:
+        // se retira de la navegación y su ruta redirige al inicio, así que
+        // tampoco se llega escribiendo /dashboard/tienda a mano.
+        ...(FEATURES.anvilStore
+            ? [{
+                icon: <ShoppingBag size={20} />,
+                label: 'Tienda Anvil',
+                onClick: () => go('tienda'),
+                isActive: slug === 'tienda',
+                hideOnMobileBar: true,
+            }]
+            : []),
     ];
 
     const renderContent = () => {
@@ -188,6 +194,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             case 'profile':
                 return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => go('')} />;
             case 'store':
+                if (!FEATURES.anvilStore) return <Navigate to="/dashboard" replace />;
                 return <AnvilStore userId={user.id} />;
             case 'home':
             default:

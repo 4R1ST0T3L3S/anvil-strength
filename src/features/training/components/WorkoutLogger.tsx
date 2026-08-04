@@ -15,6 +15,7 @@ import {
 } from '../../../utils/dateUtils';
 import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download, Info } from 'lucide-react';
 import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
+import { useCoachPdfTheme } from '../../../hooks/useCoachPdfTheme';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -297,6 +298,10 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         ? new Date(block.start_date).getFullYear()
         : new Date().getFullYear();
 
+    // El PDF sale con la marca del ENTRENADOR del bloque, no con la de la
+    // aplicación: es el documento que ese coach le manda a su atleta.
+    const pdfTheme = useCoachPdfTheme(block?.coach_id);
+
     /** Descarga la semana en PDF para llevarla al gimnasio en papel. */
     const handlePrintWeek = () => {
         if (!block || selectedWeek === null || sessions.length === 0) return;
@@ -310,6 +315,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 weekLabel: weekNames[selectedWeek] || `Semana ${availableWeeks.indexOf(selectedWeek) + 1}`,
                 dateRange: formatDateRange(range.start, range.end),
                 days: sessions.map(sessionToPrintDay),
+                theme: pdfTheme,
             });
             toast.success(`PDF descargado: ${filename}`);
         } catch (err) {

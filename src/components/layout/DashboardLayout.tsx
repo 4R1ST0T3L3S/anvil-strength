@@ -1,9 +1,9 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ReactNode, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Globe, LogOut, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
-import { transition, DURATION } from '../../lib/motion';
+import { AnchoredMenu } from '../ui/AnchoredMenu';
 
 interface MenuItem {
     icon: React.ReactNode;
@@ -161,8 +161,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     </div>
                 </header>
 
-                {/* Contenido */}
-                <main className="flex-1 overflow-y-auto pb-24 md:pb-6 scrollbar-hide bg-surface-canvas">
+                {/* Contenido.
+                    `overflow-x-hidden` es el corte de seguridad del panel
+                    entero: aquí dentro viven tablas, rejillas de semanas y
+                    gráficas, y basta con que una se pase de ancho para que
+                    arrastre la PÁGINA hacia la derecha —cabecera y barra de
+                    pestañas incluidas— y deje medio móvil en negro. Los hijos
+                    que sí necesitan desplazarse de lado (las pestañas de la
+                    ficha, los días de la semana) traen su propio
+                    `overflow-x-auto` y siguen funcionando igual: esto solo
+                    impide que el desbordamiento se propague al armazón. */}
+                <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24 md:pb-6 scrollbar-hide bg-surface-canvas">
                     {children}
                 </main>
             </div>
@@ -228,27 +237,14 @@ function AccountMenu({
     items?: MenuItem[];
 }) {
     const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
-    // Cerrar al pulsar fuera o con Escape. Sin esto el menú se queda abierto
-    // tapando contenido al navegar por debajo.
-    useEffect(() => {
-        if (!open) return;
-        const onPointer = (e: PointerEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-        };
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-        document.addEventListener('pointerdown', onPointer);
-        document.addEventListener('keydown', onKey);
-        return () => {
-            document.removeEventListener('pointerdown', onPointer);
-            document.removeEventListener('keydown', onKey);
-        };
-    }, [open]);
+    // Cerrar al pulsar fuera o con Escape lo resuelve `AnchoredMenu`.
 
     return (
-        <div ref={ref} className="relative md:hidden">
+        <div className="md:hidden">
             <button
+                ref={buttonRef}
                 onClick={() => setOpen(v => !v)}
                 aria-label="Cuenta y salida"
                 aria-expanded={open}
@@ -261,19 +257,27 @@ function AccountMenu({
                 <MoreVertical size={20} aria-hidden="true" />
             </button>
 
-            <AnimatePresence>
-                {open && (
-                    <motion.div
-                        role="menu"
-                        initial={{ opacity: 0, scale: 0.97, y: -4 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.97, y: -4 }}
-                        transition={transition(DURATION.fast)}
-                        // El menú cuelga del botón, así que escala desde su
-                        // esquina y no desde el centro.
-                        style={{ transformOrigin: 'top right' }}
-                        className="absolute right-0 top-full z-dropdown mt-2 w-52 overflow-hidden rounded-card bg-surface-overlay p-1.5 shadow-overlay"
-                    >
+            {/* PORTAL, no `absolute`.
+                Esta barra superior lleva `backdrop-blur`, y un filtro crea
+                contexto de apilamiento: el menú quedaba encerrado dentro de la
+                cabecera y por debajo de cualquier elemento fijo del contenido
+                —la cabecera pegajosa del registro, con `z-sticky`—, así que en
+                "Mi planificación" aparecía cortado por arriba. Subir el
+                `z-index` no lo arregla: desde dentro de un contexto de
+                apilamiento no se puede saltar por encima de él.
+
+                `AnchoredMenu` lo saca a `document.body` en `position: fixed`,
+                mide el hueco que queda debajo del botón y, si no cabe, lo abre
+                hacia arriba. Es el mismo componente que ya usaba el
+                constructor de rutinas. */}
+            <AnchoredMenu
+                open={open}
+                onClose={() => setOpen(false)}
+                anchorRef={buttonRef}
+                align="end"
+                width={208}
+                className="z-tooltip max-h-[min(75vh,32rem)] overflow-y-auto rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay"
+            >
                         {userName && (
                             <p className="truncate px-3 py-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                                 {userName}
@@ -316,9 +320,7 @@ function AccountMenu({
                                 Cerrar sesión
                             </button>
                         )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            </AnchoredMenu>
         </div>
     );
 }

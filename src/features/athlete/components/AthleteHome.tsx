@@ -247,7 +247,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                 <section className={`grid gap-3 ${nextCompetition ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
                     <div>
                         <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
-                        <div className="relative flex min-h-[160px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-6 md:p-8">
+                        <div className="relative flex min-h-[160px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
                             <Quote
                                 size={112}
                                 aria-hidden="true"
@@ -265,7 +265,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                     {nextCompetition && (
                         <div>
                             <SectionLabel icon={Trophy}>Próxima competición</SectionLabel>
-                            <CountdownWidget assigned={nextCompetition} userId={user.id} mobile={false} />
+                            <CountdownWidget assigned={nextCompetition} userId={user.id} />
                         </div>
                     )}
                 </section>

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare, ClipboardCheck, ClipboardList } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useUser } from '../../../hooks/useUser';
 import { CoachCheckInsTab } from '../../forms/CoachCheckInsTab';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
@@ -20,6 +21,41 @@ interface CoachAthleteDetailsProps {
 }
 
 type Tab = 'planning' | 'log' | 'competitions' | 'vbt' | 'nutrition' | 'checkins';
+
+/**
+ * Las pestañas, como DATOS.
+ *
+ * El orden no es casual y merece quedar escrito: REGISTRO va justo detrás de
+ * PLANNING, y no al final. Es la pestaña que se abre ANTES de programar la
+ * semana siguiente —"¿qué hizo?" precede a "¿qué le pongo?"— y enterrarla
+ * entre nutrición y competiciones garantizaba que nadie la usara.
+ */
+const TABS: { key: Tab; label: string; icon: LucideIcon }[] = [
+    { key: 'planning', label: 'Planning', icon: FileText },
+    { key: 'log', label: 'Registro', icon: ClipboardList },
+    { key: 'vbt', label: 'VBT', icon: Activity },
+    { key: 'nutrition', label: 'Nutrición', icon: Apple },
+    { key: 'checkins', label: 'Check-ins', icon: ClipboardCheck },
+    { key: 'competitions', label: 'Competición', icon: Trophy },
+];
+
+/**
+ * UN SOLO ANCHO PARA TODA LA FICHA.
+ *
+ * Cada pestaña traía el suyo —7xl en planificación, 6xl en registro, 4xl en
+ * competiciones—, así que las tarjetas cambiaban de anchura al cambiar de
+ * pestaña y la lista de bloques se veía notablemente más ancha que todo lo
+ * demás. Con una sola constante, la columna de contenido es la misma en las
+ * seis y coincide además con la de los dos paneles de inicio.
+ */
+const TAB_WIDTH = 'mx-auto w-full max-w-6xl pb-6';
+
+/**
+ * La única excepción, y a propósito: el constructor de rutinas es una tabla
+ * de semanas por días. Ahí el ancho no es estética, es cuántos días caben sin
+ * desplazamiento lateral.
+ */
+const BUILDER_WIDTH = 'mx-auto w-full max-w-7xl pb-6';
 
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
     const { data: currentUser } = useUser();
@@ -98,11 +134,18 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4 border-b border-subtle bg-surface-sunken shrink-0">
-                <div className="flex items-center gap-4">
+                {/* `min-w-0` en la fila Y en el bloque del nombre.
+                    Sin ellos, el nombre del atleta no encoge —un elemento
+                    flex se niega a bajar del ancho de su contenido salvo que
+                    se le diga— y empuja el botón de mensaje fuera del
+                    contenedor: en móvil se veía cortado por la derecha.
+                    Con esto, lo que cede es el nombre (que ya trunca) y el
+                    botón conserva siempre su sitio. */}
+                <div className="flex min-w-0 items-center gap-3 md:gap-4">
                     <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-white transition-colors shrink-0">
                         <ArrowLeft size={20} />
                     </button>
-                    <div className="flex items-center gap-4">
+                    <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-4">
                         {athlete.avatar_url ? (
                             <img src={athlete.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                         ) : (
@@ -122,71 +165,59 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         </div>
                     </div>
                     
-                    <button 
+                    <button
                         onClick={() => athlete && onOpenChat({ id: athlete.id, full_name: athlete.full_name || '', avatar_url: athlete.avatar_url })}
-                        className="p-3 bg-blue-500/10 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2 font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-500/5 active:scale-95"
+                        aria-label={`Mensaje directo con ${athlete.full_name ?? 'el atleta'}`}
+                        // Azul suelto con sombra de color propia: era el único elemento
+                        // del panel con ese tratamiento. Pasa a acción secundaria
+                        // del sistema —la primaria de esta pantalla es programar,
+                        // no escribir— y deja de competir con las pestañas.
+                        className="flex h-11 shrink-0 items-center gap-2 rounded-field border border-[var(--border-default)] px-3 text-t-sm font-semibold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-raised hover:text-ink"
                     >
-                        <MessageSquare size={16} />
-                        <span className="hidden sm:inline">Mensaje Directo</span>
+                        <MessageSquare size={16} className="shrink-0" />
+                        <span className="hidden lg:inline">Mensaje Directo</span>
                     </button>
                 </div>
 
-                {/* Tabs Navigation */}
-                <div className="w-full md:w-auto pb-1 md:pb-0 overflow-x-auto">
-                    <div className="flex bg-black/20 p-1 rounded-lg min-w-max gap-1">
-                        <button
-                            onClick={() => setActiveTab('planning')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'planning' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-ink-muted hover:text-white'
-                            }`}
-                        >
-                            <FileText size={14} className="md:w-4 md:h-4" /> <span>Planning</span>
-                        </button>
-                        {/* REGISTRO justo detrás de PLANNING, y no al final.
-                            Es la pestaña que se abre ANTES de programar la
-                            semana siguiente: "¿qué hizo?" precede a "¿qué le
-                            pongo?". Enterrarla entre nutrición y competiciones
-                            garantizaría que nadie la usara. */}
-                        <button
-                            onClick={() => setActiveTab('log')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'log' ? 'bg-anvil-red text-black shadow-[0_0_10px_rgba(255,51,51,0.5)]' : 'text-ink-muted hover:text-white'
-                            }`}
-                        >
-                            <ClipboardList size={14} className="md:w-4 md:h-4" /> <span>Registro</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('vbt')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'vbt' ? 'bg-[#0ea5e9] text-black shadow-[0_0_10px_rgba(14,165,233,0.5)]' : 'text-ink-muted hover:text-white'
-                            }`}
-                        >
-                            <Activity size={14} className="md:w-4 md:h-4" /> <span>VBT</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('nutrition')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'nutrition' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'text-ink-muted hover:text-white'
-                            }`}
-                        >
-                            <Apple size={14} className="md:w-4 md:h-4" /> <span>Nutrición</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('checkins')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'checkins' ? 'bg-[#a855f7] text-black shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'text-ink-muted hover:text-white'
-                            }`}
-                        >
-                            <ClipboardCheck size={14} className="md:w-4 md:h-4" /> <span>Check-ins</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('competitions')}
-                            className={`px-2 md:px-4 py-2 rounded-md text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                                activeTab === 'competitions' ? 'bg-[#f59e0b] text-black shadow-[0_0_10px_rgba(245,158,11,0.5)]' : 'text-ink-muted hover:text-white'
-                            }`}
-                        >
-                            <Trophy size={14} className="md:w-4 md:h-4" /> <span>Competición</span>
-                        </button>
+                {/* PESTAÑAS DE LA FICHA.
+                    ==================================================
+                    Antes eran seis bloques de código idénticos salvo por el
+                    color: rojo, cian, verde, morado, ámbar… un tono distinto
+                    por pestaña, cada uno con su resplandor de 10px y texto
+                    NEGRO encima. Seis acentos compitiendo es lo mismo que
+                    ninguno: el color dejaba de significar "estás aquí" para
+                    ser decoración, y el conjunto se leía como una barra de
+                    herramientas de los 2000.
+
+                    Ahora hay un solo acento —el de marca, el mismo que en
+                    todo el panel— y la pestaña activa se distingue por
+                    CONTRASTE y no por matiz. Y son datos, no marcado: añadir
+                    una pestaña es una línea en la lista de abajo. */}
+                <div className="-mx-1 w-full overflow-x-auto px-1 pb-1 scrollbar-hide md:w-auto md:pb-0">
+                    <div
+                        role="tablist"
+                        aria-label="Secciones del atleta"
+                        className="flex min-w-max gap-0.5 rounded-field bg-surface-sunken p-1"
+                    >
+                        {TABS.map(({ key, label, icon: Icon }) => {
+                            const active = activeTab === key;
+                            return (
+                                <button
+                                    key={key}
+                                    role="tab"
+                                    aria-selected={active}
+                                    onClick={() => setActiveTab(key)}
+                                    className={`flex items-center justify-center gap-1.5 rounded-chip px-2.5 py-2 text-t-xs font-semibold transition-colors duration-fast ease-snap md:px-3.5 md:text-t-sm ${
+                                        active
+                                            ? 'bg-brand text-brand-ink'
+                                            : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
+                                    }`}
+                                >
+                                    <Icon size={15} aria-hidden="true" className="shrink-0" />
+                                    {label}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -204,7 +235,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                 {/* 1. PLANIFICACIÓN */}
                 {activeTab === 'planning' && (
-                    <div className="mx-auto w-full max-w-7xl pb-6">
+                    <div className={selectedBlockId ? BUILDER_WIDTH : TAB_WIDTH}>
                         {selectedBlockId ? (
                             <div className="h-full flex flex-col">
                                 <button
@@ -230,14 +261,14 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                 {/* 2. REGISTRO: lo que el atleta hizo de verdad */}
                 {activeTab === 'log' && (
-                    <div className="mx-auto w-full max-w-6xl pb-6">
+                    <div className={TAB_WIDTH}>
                         <AthleteLogTab athleteId={athleteId} />
                     </div>
                 )}
 
                 {/* 3. COMPETICIONES */}
                 {activeTab === 'competitions' && (
-                    <div className="max-w-4xl mx-auto space-y-6">
+                    <div className={`${TAB_WIDTH} space-y-6`}>
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
                                 <Trophy className="text-anvil-red" />
@@ -315,21 +346,21 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                 {/* 4. VBT (Velocity Based Training) */}
                 {activeTab === 'vbt' && (
-                    <div className="mx-auto w-full max-w-7xl pb-6">
+                    <div className={TAB_WIDTH}>
                         <CoachVbtTab athleteId={athleteId} />
                     </div>
                 )}
 
                 {/* 5. CHECK-INS (el coach los consulta y también los rellena o corrige) */}
                 {activeTab === 'checkins' && currentUser && (
-                    <div className="mx-auto w-full max-w-7xl pb-6">
+                    <div className={TAB_WIDTH}>
                         <CoachCheckInsTab athleteId={athleteId} coachId={currentUser.id} />
                     </div>
                 )}
 
                 {/* 6. NUTRICIÓN */}
                 {activeTab === 'nutrition' && (
-                    <div className="mx-auto w-full max-w-7xl pb-6">
+                    <div className={TAB_WIDTH}>
                         <NutritionPlanEditor athleteId={athleteId} />
                     </div>
                 )}

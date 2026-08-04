@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, CheckCheck, Loader, BellRing, BellOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { notificationsService, AppNotification } from '../../services/notificationsService';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import { AnchoredMenu } from './AnchoredMenu';
 
 function timeAgo(dateStr: string): string {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -28,7 +28,7 @@ export function NotificationBell({ userId }: { userId: string }) {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
-    const panelRef = useRef<HTMLDivElement>(null);
+    const bellRef = useRef<HTMLButtonElement>(null);
     const welcomeShown = useRef(false);
     const push = usePushNotifications();
 
@@ -82,17 +82,8 @@ export function NotificationBell({ userId }: { userId: string }) {
         return () => { channel.unsubscribe(); };
     }, [userId]);
 
-    // Cerrar al hacer click fuera
-    useEffect(() => {
-        if (!isOpen) return;
-        const handler = (e: MouseEvent) => {
-            if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [isOpen]);
+    // Cerrar al pulsar fuera o con Escape lo resuelve `AnchoredMenu`, que
+    // además excluye el propio botón para que su clic no cierre y reabra.
 
     const handleOpen = async () => {
         setIsOpen(prev => !prev);
@@ -114,30 +105,45 @@ export function NotificationBell({ userId }: { userId: string }) {
     };
 
     return (
-        <div className="relative" ref={panelRef}>
+        <>
             <button
+                ref={bellRef}
                 onClick={handleOpen}
-                className="relative p-2 text-gray-400 hover:text-white transition-colors"
+                aria-expanded={isOpen}
+                aria-haspopup="dialog"
+                // 44x44 reales, como el resto de controles de la barra: medía
+                // 36 y es vecino del menú de cuenta, que sí los tiene.
+                className="relative flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white"
                 aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-anvil-red rounded-full text-[10px] font-black text-white flex items-center justify-center border-2 border-[#1c1c1c]">
+                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-anvil-red px-1 text-[10px] font-black text-white">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
             </button>
 
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-sm bg-[#1c1c1c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[150]"
-                    >
-                        <div className="flex items-center justify-between p-4 border-b border-white/5">
+            {/* El panel sale del árbol por un PORTAL (`AnchoredMenu`).
+                La barra superior lleva `backdrop-blur`, que crea contexto de
+                apilamiento: cualquier desplegable colgado de ella quedaba
+                atrapado dentro y por debajo de la cabecera fija del registro,
+                que es donde se veía cortado. Y su ancho se calculaba contra la
+                ventana (`100vw - 2rem`) estando anclado a un botón que NO está
+                en el borde, así que se salía ~60px por la izquierda.
+                `AnchoredMenu` mide el botón, recorta el ancho a lo que cabe y
+                se coloca contra la ventana: alineado en móvil y en escritorio. */}
+            <AnchoredMenu
+                open={isOpen}
+                onClose={() => setIsOpen(false)}
+                anchorRef={bellRef}
+                align="end"
+                width={384}
+                role="dialog"
+                className="z-tooltip flex max-h-[min(75vh,32rem)] flex-col overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-overlay shadow-overlay"
+            >
+                <div className="flex min-h-0 flex-col">
+                        <div className="flex shrink-0 items-center justify-between p-4 border-b border-white/5">
                             <h3 className="font-black uppercase text-white text-sm tracking-wider">Notificaciones</h3>
                             {unreadCount > 0 && (
                                 <button
@@ -149,7 +155,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                             )}
                         </div>
 
-                        <div className="max-h-96 overflow-y-auto">
+                        <div className="min-h-0 flex-1 overflow-y-auto">
                             {loading ? (
                                 <div className="flex justify-center py-10">
                                     <Loader className="animate-spin text-anvil-red" size={22} />
@@ -182,7 +188,7 @@ export function NotificationBell({ userId }: { userId: string }) {
 
                         {/* Push toggle */}
                         {push.isSupported && (
-                            <div className="p-3 border-t border-white/5 bg-black/20">
+                            <div className="shrink-0 p-3 border-t border-white/5 bg-black/20">
                                 <button
                                     onClick={handleTogglePush}
                                     disabled={push.isLoading}
@@ -197,9 +203,8 @@ export function NotificationBell({ userId }: { userId: string }) {
                                 </button>
                             </div>
                         )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                </div>
+            </AnchoredMenu>
+        </>
     );
 }

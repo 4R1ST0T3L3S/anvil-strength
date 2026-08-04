@@ -1,30 +1,51 @@
 /**
  * EXPORTAR LA SEMANA DE ENTRENAMIENTO A PDF
  * =====================================================================
- * Genera y DESCARGA un .pdf. Una página por día, una fila por ejercicio,
- * columnas fijas: ejercicio, series, repeticiones, descanso e intensidad.
  *
- * POR QUÉ YA NO SE IMPRIME
+ * QUÉ CAMBIA RESPECTO A LA VERSIÓN ANTERIOR
  *
- * Antes esto abría una ventana con la hoja maquetada en HTML y lanzaba el
- * diálogo de impresión, confiando en que el usuario eligiera "Guardar como
- * PDF". Tres problemas, y los tres se daban a diario:
+ * 1. FORMATO 9:16. El documento se lee en un móvil, entre series, con una
+ *    mano. Una página con la proporción de la pantalla entra ENTERA sin
+ *    pellizcar ni girar; un A4 obliga a hacer zoom para leer una cifra, que
+ *    es justo el gesto que no se puede pedir ahí. El A4 sigue disponible
+ *    para quien imprime (`theme.page`).
  *
- *   1. En móvil —que es donde el coach revisa la semana— el diálogo de
- *      impresión de Android e iOS no siempre ofrece guardar, y cuando lo
- *      ofrece mete sus propias cabeceras y márgenes.
- *   2. Cualquier bloqueador de ventanas emergentes se lo comía en silencio.
- *   3. El resultado dependía del navegador: el mismo bloque salía con
- *      distinto tamaño de papel y distinto salto de página en cada máquina.
+ * 2. SE ACABÓ LA TABLA. Antes era una rejilla de cinco columnas: el nombre
+ *    del ejercicio en una celda de 78 mm que casi siempre partía en dos
+ *    renglones, y cuatro cifras apretadas a su derecha. En un móvil eso son
+ *    cinco columnas de dos centímetros. Ahora cada ejercicio es un BLOQUE:
+ *    el nombre a ancho completo y sus cuatro cifras debajo, cada una con su
+ *    rótulo. Se lee de arriba abajo, que es como se lee un teléfono.
  *
- * `jspdf` ya estaba en las dependencias del proyecto (lo usa la exportación
- * de nutrición), así que el PDF se compone aquí y se descarga con un nombre
- * predecible. Lo que se ve es lo que hay, en cualquier dispositivo.
+ * 3. TODO SALE DE UN TEMA. Ni un color, ni un tamaño, ni un margen están
+ *    escritos aquí: vienen de `PdfTheme`, que vive en el perfil del
+ *    entrenador. Cambiar el diseño no es tocar este archivo.
+ *
+ * LA CUADRÍCULA
+ *
+ * Una sola unidad —`u`, 4 mm por defecto— y TODAS las distancias verticales
+ * son múltiplos suyos. Es lo que hace que los bloques se alineen entre sí
+ * sin que nadie tenga que cuadrar números a mano, y lo que permite que la
+ * densidad sea un ajuste: se cambia `u` y el documento entero respira más o
+ * menos manteniendo las proporciones.
+ *
+ * Horizontalmente hay 4 columnas iguales con su medianil. Las cifras de un
+ * ejercicio ocupan una cada una, así que caen siempre en el mismo sitio de
+ * un bloque al siguiente: el ojo aprende dónde está el descanso y deja de
+ * buscarlo.
  */
 
 import { jsPDF } from 'jspdf';
 import type { TrainingSet, TargetMetric } from '../../types/training';
 import { TARGET_METRICS, weekdayLabel } from '../../types/training';
+import {
+    DEFAULT_THEME,
+    PAGE_SIZES,
+    hexToRgb,
+    resolveTheme,
+    type PdfTheme,
+    type PdfThemeInput,
+} from './pdfTheme';
 
 export interface PrintExerciseRow {
     name: string;
@@ -38,6 +59,8 @@ export interface PrintExerciseRow {
     intensity: string;
     /** Notas del coach para ese ejercicio. */
     notes?: string | null;
+    /** La variante prescrita ("Tempo 2\"", "Con pausa"). Cambia el ejercicio. */
+    variant?: string | null;
 }
 
 export interface PrintDay {
@@ -59,6 +82,8 @@ export interface PrintWeek {
     /** Rango de fechas de la semana, si se conoce. */
     dateRange?: string | null;
     days: PrintDay[];
+    /** Aspecto del documento. Sin él, el tema por defecto. */
+    theme?: PdfThemeInput | null;
 }
 
 /** Segundos a "2'30\"". Vacío si no hay descanso pautado. */
@@ -72,317 +97,546 @@ export function formatRest(seconds: number | null | undefined): string {
 }
 
 // =====================================================================
-// MAQUETA
+// LA CUADRÍCULA
 // =====================================================================
-// Todo en milímetros sobre A4 vertical (210 x 297).
 
-const PAGE = { w: 210, h: 297 };
-const MARGIN = { top: 16, right: 14, bottom: 16, left: 14 };
-const CONTENT_W = PAGE.w - MARGIN.left - MARGIN.right; // 182
+/** Unidad base en mm según la densidad elegida. Todo lo vertical es múltiplo. */
+const UNIT: Record<PdfTheme['layout']['density'], number> = {
+    compact: 3.2,
+    normal: 4,
+    relaxed: 4.8,
+};
+
+interface Grid {
+    page: { w: number; h: number };
+    margin: { top: number; right: number; bottom: number; left: number };
+    /** Ancho útil. */
+    content: number;
+    /** Unidad vertical. */
+    u: number;
+    /** Ancho de una de las 4 columnas. */
+    col: number;
+    /** Medianil entre columnas. */
+    gutter: number;
+    /** X donde empieza la columna `i` (0-3). */
+    colX: (i: number) => number;
+    /** Y por debajo de la cual hay que cambiar de página. */
+    bottom: number;
+}
+
+function buildGrid(theme: PdfTheme): Grid {
+    const size = PAGE_SIZES[theme.page] ?? PAGE_SIZES.mobile;
+    const u = UNIT[theme.layout.density] ?? UNIT.normal;
+
+    // Los márgenes también salen de la unidad: así la densidad no solo
+    // aprieta las filas, también acerca o aleja el texto del canto.
+    const side = u * 3.5;
+    const margin = { top: u * 3, right: side, bottom: u * 4, left: side };
+    const content = size.w - margin.left - margin.right;
+
+    const gutter = u * 1.5;
+    const col = (content - gutter * 3) / 4;
+
+    return {
+        page: size,
+        margin,
+        content,
+        u,
+        col,
+        gutter,
+        colX: (i: number) => margin.left + i * (col + gutter),
+        bottom: size.h - margin.bottom,
+    };
+}
+
+// =====================================================================
+// PINTAR
+// =====================================================================
 
 /**
- * Anchos de columna.
+ * Todo lo que el documento necesita saber, en un solo sitio.
  *
- * El nombre del ejercicio se lleva algo menos de la mitad porque es el único
- * que puede necesitar dos renglones; las otras cuatro son cifras cortas y
- * centradas, y darles más ancho solo separa el dato de su cabecera.
+ * Se pasa por parámetro en vez de vivir en variables de módulo porque dos
+ * pestañas pueden estar generando dos PDF distintos a la vez, y un estado
+ * compartido mezclaría el tema de un entrenador con el de otro.
  */
-const COL = {
-    name: 78,
-    series: 20,
-    reps: 28,
-    rest: 26,
-    intensity: 30,
-};
+interface Ctx {
+    doc: jsPDF;
+    theme: PdfTheme;
+    grid: Grid;
+    week: PrintWeek;
+    /** Tamaños ya multiplicados por la escala del tema. */
+    size: (base: number) => number;
+}
 
-const X = {
-    name: MARGIN.left,
-    series: MARGIN.left + COL.name,
-    reps: MARGIN.left + COL.name + COL.series,
-    rest: MARGIN.left + COL.name + COL.series + COL.reps,
-    intensity: MARGIN.left + COL.name + COL.series + COL.reps + COL.rest,
-};
+const rgb = (hex: string): [number, number, number] => hexToRgb(hex) ?? [0, 0, 0];
 
-const INK = {
-    strong: [17, 17, 17] as const,
-    muted: [90, 90, 90] as const,
-    faint: [140, 140, 140] as const,
-    rule: [205, 205, 205] as const,
-    zebra: [246, 246, 246] as const,
-    brand: [200, 30, 30] as const,
-};
+function ink(ctx: Ctx, hex: string) {
+    const [r, g, b] = rgb(hex);
+    ctx.doc.setTextColor(r, g, b);
+}
 
-/** Ancho de una cadena en la fuente y tamaño actuales, en mm. */
+function fill(ctx: Ctx, hex: string) {
+    const [r, g, b] = rgb(hex);
+    ctx.doc.setFillColor(r, g, b);
+}
+
+function stroke(ctx: Ctx, hex: string, width: number) {
+    const [r, g, b] = rgb(hex);
+    ctx.doc.setDrawColor(r, g, b);
+    ctx.doc.setLineWidth(width);
+}
+
+function font(ctx: Ctx, weight: 'normal' | 'bold' | 'italic', points: number) {
+    ctx.doc.setFont(ctx.theme.typography.family, weight);
+    ctx.doc.setFontSize(ctx.size(points));
+}
+
+const headingCase = (ctx: Ctx, text: string) =>
+    ctx.theme.typography.upperHeadings ? text.toUpperCase() : text;
+
+/** Ancho de una cadena con la fuente y el tamaño actuales, en mm. */
 function widthOf(doc: jsPDF, text: string, size: number): number {
     return (doc.getStringUnitWidth(text) * size) / doc.internal.scaleFactor;
 }
 
-/** Recorta con puntos suspensivos si no cabe. Para celdas de una línea. */
+/** Recorta con puntos suspensivos. Para celdas de una sola línea. */
 function ellipsize(doc: jsPDF, text: string, size: number, maxW: number): string {
     if (widthOf(doc, text, size) <= maxW) return text;
     let cut = text;
-    while (cut.length > 1 && widthOf(doc, `${cut}...`, size) > maxW) {
-        cut = cut.slice(0, -1);
-    }
-    return `${cut}...`;
+    while (cut.length > 1 && widthOf(doc, `${cut}…`, size) > maxW) cut = cut.slice(0, -1);
+    return `${cut}…`;
 }
 
-function setInk(doc: jsPDF, color: readonly [number, number, number]) {
-    doc.setTextColor(color[0], color[1], color[2]);
+/** El fondo de la página. Se pinta ANTES que nada, en cada hoja. */
+function paintSurface(ctx: Ctx) {
+    if (ctx.theme.palette.surface.toUpperCase() === '#FFFFFF') return; // El papel ya es blanco.
+    fill(ctx, ctx.theme.palette.surface);
+    ctx.doc.rect(0, 0, ctx.grid.page.w, ctx.grid.page.h, 'F');
+}
+
+// ---------------------------------------------------------------------
+// CABECERA
+// ---------------------------------------------------------------------
+
+/**
+ * La cabecera de marca: quién manda este entrenamiento.
+ *
+ * Se repite en TODAS las hojas, también en la segunda de un día largo. Una
+ * página suelta encima del banco —o abierta en el móvil sin las anteriores—
+ * tiene que decir de quién es sin depender de ninguna otra.
+ *
+ * Devuelve la Y a la que continúa el documento.
+ */
+function drawBrandHeader(ctx: Ctx): number {
+    const { doc, theme, grid } = ctx;
+    const { palette, header } = theme;
+    const title = header.title?.trim() || 'ANVIL STRENGTH';
+    const logo = header.showLogo ? header.logoDataUrl : null;
+
+    if (header.style === 'bar') {
+        const barH = grid.u * 4;
+        fill(ctx, palette.accent);
+        doc.rect(0, 0, grid.page.w, barH, 'F');
+
+        let x = grid.margin.left;
+        if (logo) {
+            const s = barH - grid.u * 1.6;
+            try {
+                doc.addImage(logo, 'PNG', x, (barH - s) / 2, s, s, undefined, 'FAST');
+                x += s + grid.u;
+            } catch { /* formato que jsPDF no traga: se sigue sin logotipo */ }
+        }
+
+        font(ctx, 'bold', 10);
+        ink(ctx, palette.onAccent ?? '#FFFFFF');
+        doc.text(headingCase(ctx, title), x, barH / 2 + grid.u * 0.35);
+
+        if (header.subtitle?.trim()) {
+            font(ctx, 'normal', 7.5);
+            doc.text(
+                header.subtitle.trim(),
+                grid.page.w - grid.margin.right,
+                barH / 2 + grid.u * 0.35,
+                { align: 'right' }
+            );
+        }
+
+        return barH + grid.u * 2.5;
+    }
+
+    if (header.style === 'stacked') {
+        let y = grid.margin.top;
+
+        if (logo) {
+            const s = grid.u * 4;
+            try {
+                doc.addImage(logo, 'PNG', (grid.page.w - s) / 2, y, s, s, undefined, 'FAST');
+                y += s + grid.u;
+            } catch { /* ídem */ }
+        }
+
+        font(ctx, 'bold', 11);
+        ink(ctx, palette.ink);
+        doc.text(headingCase(ctx, title), grid.page.w / 2, y + grid.u, { align: 'center' });
+        y += grid.u * 1.75;
+
+        if (header.subtitle?.trim()) {
+            font(ctx, 'normal', 7.5);
+            ink(ctx, palette.muted);
+            doc.text(header.subtitle.trim(), grid.page.w / 2, y + grid.u * 0.5, { align: 'center' });
+            y += grid.u * 1.25;
+        }
+
+        y += grid.u * 0.5;
+        stroke(ctx, palette.line, 0.3);
+        doc.line(grid.margin.left, y, grid.page.w - grid.margin.right, y);
+        return y + grid.u * 2;
+    }
+
+    // minimal
+    let y = grid.margin.top;
+    font(ctx, 'bold', 8);
+    ink(ctx, palette.muted);
+    doc.text(headingCase(ctx, title), grid.margin.left, y + grid.u * 0.5);
+
+    if (header.subtitle?.trim()) {
+        font(ctx, 'normal', 7.5);
+        doc.text(
+            header.subtitle.trim(),
+            grid.page.w - grid.margin.right,
+            y + grid.u * 0.5,
+            { align: 'right' }
+        );
+    }
+
+    y += grid.u * 1.5;
+    stroke(ctx, palette.line, 0.3);
+    doc.line(grid.margin.left, y, grid.page.w - grid.margin.right, y);
+    return y + grid.u * 2;
 }
 
 /**
- * Cabecera de página.
+ * El titular del día.
  *
- * Se repite en cada hoja —también en la segunda de un día muy largo— porque
- * una hoja suelta encima del banco del gimnasio tiene que decir de quién es y
- * de qué día, sin depender de la anterior.
+ * Es lo más grande del documento y ocupa su propia banda porque responde a
+ * la única pregunta que se hace al abrirlo: "¿qué toca hoy?". Debajo, en
+ * gris y pequeño, el contexto que solo se consulta si hace falta.
  */
-function drawHeader(
-    doc: jsPDF,
-    week: PrintWeek,
-    day: PrintDay,
-    continued: boolean
+function drawDayTitle(ctx: Ctx, day: PrintDay, y: number, continued: boolean): number {
+    const { doc, theme, grid, week } = ctx;
+    const { palette } = theme;
+
+    font(ctx, 'bold', 22);
+    ink(ctx, palette.ink);
+    const title = headingCase(ctx, continued ? `${day.title} (cont.)` : day.title);
+    doc.text(ellipsize(doc, title, ctx.size(22), grid.content), grid.margin.left, y + grid.u * 1.4);
+    // 3u y no 2,4u. A 2,4 el renglón de contexto quedaba a 17 pt de la línea
+    // base de un titular de 22: los descendentes del título rozaban la
+    // primera línea del texto de abajo.
+    y += grid.u * 3;
+
+    const meta = [day.date, week.athleteName, [week.blockName, week.weekLabel].filter(Boolean).join(' · ')]
+        .filter(Boolean)
+        .join('   ·   ');
+
+    font(ctx, 'normal', 8);
+    ink(ctx, palette.muted);
+    doc.text(ellipsize(doc, meta, ctx.size(8), grid.content), grid.margin.left, y + grid.u * 0.5);
+    y += grid.u * 1.5;
+
+    stroke(ctx, palette.ink, 0.8);
+    doc.line(grid.margin.left, y, grid.margin.left + grid.col * 1.2, y);
+
+    return y + grid.u * 2;
+}
+
+/** Rótulo de sección: CALENTAMIENTO, EJERCICIOS, EXTRAS. */
+function drawSectionLabel(ctx: Ctx, label: string, y: number): number {
+    const { doc, grid, theme } = ctx;
+    font(ctx, 'bold', 7);
+    ink(ctx, theme.palette.accent);
+    doc.text(label.toUpperCase(), grid.margin.left, y);
+    return y + grid.u * 1.5;
+}
+
+// ---------------------------------------------------------------------
+// EL BLOQUE DE UN EJERCICIO
+// ---------------------------------------------------------------------
+
+/** Las cuatro cifras, en el orden en que se necesitan al entrenar. */
+const METRICS: { key: keyof PrintExerciseRow; label: string }[] = [
+    { key: 'series', label: 'Series' },
+    { key: 'reps', label: 'Reps' },
+    { key: 'intensity', label: 'Carga' },
+    { key: 'rest', label: 'Descanso' },
+];
+
+/**
+ * Mide un ejercicio SIN pintarlo.
+ *
+ * El salto de página se decide antes de dibujar: cortar un bloque por la
+ * mitad —el nombre en una hoja y sus kilos en la siguiente— es el defecto
+ * clásico de estas exportaciones y aquí sería especialmente grave, porque
+ * lo que se parte es exactamente el dato que hay que leer.
+ */
+function measureExercise(ctx: Ctx, ex: PrintExerciseRow): {
+    height: number;
+    nameLines: string[];
+    noteLines: string[];
+} {
+    const { doc, grid, theme } = ctx;
+    const indent = theme.layout.accentBar ? grid.u * 1.5 : 0;
+    const textW = grid.content - indent;
+
+    font(ctx, 'bold', 12);
+    const nameLines = doc.splitTextToSize(ex.name, textW) as string[];
+
+    font(ctx, 'normal', 8);
+    const noteLines = theme.layout.showNotes && ex.notes?.trim()
+        ? (doc.splitTextToSize(ex.notes.trim(), textW) as string[])
+        : [];
+
+    let h = nameLines.length * grid.u * 1.35;
+    if (ex.variant?.trim()) h += grid.u * 1.1;
+    h += grid.u * 0.6;          // aire antes de las cifras
+    h += grid.u * 2.4;          // la fila de cifras (rótulo + valor)
+    if (noteLines.length > 0) h += grid.u * 0.5 + noteLines.length * grid.u * 0.95;
+    h += grid.u * 1.6;          // aire hasta el siguiente bloque
+
+    return { height: h, nameLines, noteLines };
+}
+
+function drawExercise(
+    ctx: Ctx,
+    ex: PrintExerciseRow,
+    index: number,
+    y: number,
+    measured: ReturnType<typeof measureExercise>
 ): number {
-    let y = MARGIN.top;
+    const { doc, grid, theme } = ctx;
+    const { palette } = theme;
+    const indent = theme.layout.accentBar ? grid.u * 1.5 : 0;
+    const x = grid.margin.left + indent;
+    const top = y;
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(17);
-    setInk(doc, INK.strong);
-    const title = continued ? `${day.title.toUpperCase()} (CONT.)` : day.title.toUpperCase();
-    doc.text(ellipsize(doc, title, 17, CONTENT_W - 62), MARGIN.left, y + 5);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    setInk(doc, INK.muted);
-    doc.text(week.athleteName, PAGE.w - MARGIN.right, y + 1.5, { align: 'right' });
-    const sub = [week.blockName, week.weekLabel].filter(Boolean).join(' - ');
-    doc.text(ellipsize(doc, sub, 8.5, 62), PAGE.w - MARGIN.right, y + 5.5, { align: 'right' });
-
-    y += 7;
-
-    if (day.date) {
-        doc.setFontSize(9);
-        setInk(doc, INK.faint);
-        doc.text(day.date, MARGIN.left, y + 3.5);
-        y += 4;
+    if (theme.layout.zebra && index % 2 === 1) {
+        fill(ctx, palette.panel);
+        doc.rect(grid.margin.left - grid.u * 0.5, y - grid.u, grid.content + grid.u, measured.height - grid.u * 0.4, 'F');
     }
 
-    y += 3;
-    doc.setDrawColor(INK.strong[0], INK.strong[1], INK.strong[2]);
-    doc.setLineWidth(0.6);
-    doc.line(MARGIN.left, y, PAGE.w - MARGIN.right, y);
+    // Número del ejercicio. Va en el margen, fuera de la columna de texto:
+    // ordena la lista sin robarle ancho al nombre.
+    font(ctx, 'bold', 8);
+    ink(ctx, palette.muted);
+    doc.text(String(index + 1).padStart(2, '0'), grid.margin.left, y + grid.u * 0.35);
 
-    return y + 7;
-}
+    // Nombre
+    font(ctx, 'bold', 12);
+    ink(ctx, palette.ink);
+    measured.nameLines.forEach((line, i) => {
+        doc.text(line, x + grid.u * 2.2, y + grid.u * 0.4 + i * grid.u * 1.35);
+    });
+    y += measured.nameLines.length * grid.u * 1.35;
 
-/** Fila de cabecera de la tabla. Devuelve la Y de la primera fila de datos. */
-function drawTableHead(doc: jsPDF, y: number): number {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    setInk(doc, INK.muted);
-
-    doc.text('EJERCICIO', X.name, y);
-    doc.text('SERIES', X.series + COL.series / 2, y, { align: 'center' });
-    doc.text('REPS', X.reps + COL.reps / 2, y, { align: 'center' });
-    doc.text('DESCANSO', X.rest + COL.rest / 2, y, { align: 'center' });
-    doc.text('INTENSIDAD', X.intensity + COL.intensity / 2, y, { align: 'center' });
-
-    doc.setDrawColor(INK.rule[0], INK.rule[1], INK.rule[2]);
-    doc.setLineWidth(0.3);
-    doc.line(MARGIN.left, y + 2.2, PAGE.w - MARGIN.right, y + 2.2);
-
-    return y + 7.5;
-}
-
-/** Pie con la marca, el rango de fechas y el número de página. */
-function drawFooter(doc: jsPDF, week: PrintWeek, page: number, total: number) {
-    const y = PAGE.h - MARGIN.bottom + 6;
-
-    doc.setDrawColor(INK.rule[0], INK.rule[1], INK.rule[2]);
-    doc.setLineWidth(0.2);
-    doc.line(MARGIN.left, y - 4, PAGE.w - MARGIN.right, y - 4);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    setInk(doc, INK.brand);
-    doc.text('ANVIL STRENGTH', MARGIN.left, y);
-
-    doc.setFont('helvetica', 'normal');
-    setInk(doc, INK.faint);
-    if (week.dateRange) {
-        doc.text(week.dateRange, PAGE.w / 2, y, { align: 'center' });
+    // LA VARIANTE, en el acento. No es decoración: una banca con pausa de
+    // cuatro segundos NO es una banca, y confundirlas invalida la sesión.
+    if (ex.variant?.trim()) {
+        font(ctx, 'bold', 8);
+        ink(ctx, palette.accent);
+        doc.text(
+            ellipsize(doc, ex.variant.trim(), ctx.size(8), grid.content - indent - grid.u * 2.2),
+            x + grid.u * 2.2,
+            y + grid.u * 0.4
+        );
+        y += grid.u * 1.1;
     }
-    doc.text(`${page} / ${total}`, PAGE.w - MARGIN.right, y, { align: 'right' });
+
+    y += grid.u * 0.6;
+
+    // LAS CIFRAS, una por columna de la cuadrícula.
+    // Siempre las cuatro, aunque alguna esté vacía: el hueco dice "aquí no
+    // hay descanso pautado", y mover las columnas según lo que haya
+    // obligaría a releer los rótulos en cada ejercicio.
+    METRICS.forEach((metric, i) => {
+        const cx = grid.colX(i);
+
+        font(ctx, 'normal', 6.5);
+        ink(ctx, palette.muted);
+        doc.text(metric.label.toUpperCase(), cx, y);
+
+        font(ctx, 'bold', 12);
+        ink(ctx, palette.ink);
+        const value = (ex[metric.key] as string) || '–';
+        doc.text(ellipsize(doc, value, ctx.size(12), grid.col), cx, y + grid.u * 1.5);
+    });
+    y += grid.u * 2.4;
+
+    // Nota del entrenador
+    if (measured.noteLines.length > 0) {
+        y += grid.u * 0.5;
+        font(ctx, 'normal', 8);
+        ink(ctx, palette.muted);
+        measured.noteLines.forEach((line, i) => {
+            doc.text(line, x + grid.u * 2.2, y + i * grid.u * 0.95);
+        });
+        y += measured.noteLines.length * grid.u * 0.95;
+    }
+
+    // Filete de acento a la altura EXACTA del bloque. Es lo que agrupa
+    // visualmente nombre, cifras y nota en una sola pieza.
+    if (theme.layout.accentBar) {
+        fill(ctx, palette.accent);
+        doc.rect(grid.margin.left, top - grid.u * 0.6, 0.8, y - top + grid.u * 0.6, 'F');
+    }
+
+    y += grid.u * 1.6;
+
+    stroke(ctx, palette.line, 0.2);
+    doc.line(grid.margin.left, y - grid.u * 0.8, grid.page.w - grid.margin.right, y - grid.u * 0.8);
+
+    return y;
+}
+
+// ---------------------------------------------------------------------
+// APÉNDICES
+// ---------------------------------------------------------------------
+
+function measureAppendix(ctx: Ctx, body: string): { lines: string[]; height: number } {
+    const pad = ctx.grid.u;
+    font(ctx, 'normal', 9);
+    const lines = ctx.doc.splitTextToSize(body.trim(), ctx.grid.content - pad * 2) as string[];
+    return { lines, height: pad * 2 + lines.length * ctx.grid.u * 1.1 };
 }
 
 /**
- * Apéndice en caja gris: calentamiento antes de la tabla, extras después.
+ * Calentamiento y extras: texto libre del coach, en su propia caja.
  *
- * Son texto libre del coach, así que se envuelven y pueden ocupar lo que
- * haga falta. Devuelve la Y a la que sigue el documento.
+ * SIN rótulo dentro. Lo llevaba, y encima de la caja ya está el de sección:
+ * el documento decía "CALENTAMIENTO" y justo debajo "ANTES DE EMPEZAR", dos
+ * etiquetas para la misma cosa. La caja gris ya se lee como una unidad.
  */
-function drawAppendix(
-    doc: jsPDF,
-    label: string,
-    body: string,
-    y: number
-): number {
-    const padding = 3.5;
-    const innerW = CONTENT_W - padding * 2;
+function drawAppendix(ctx: Ctx, body: string, y: number): number {
+    const { doc, grid, theme } = ctx;
+    const pad = grid.u;
+    const { lines, height } = measureAppendix(ctx, body);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    const lines = doc.splitTextToSize(body.trim(), innerW) as string[];
+    fill(ctx, theme.palette.panel);
+    doc.roundedRect(grid.margin.left, y, grid.content, height, 1.5, 1.5, 'F');
 
-    const boxH = padding * 2 + 4.5 + lines.length * 4.2;
-
-    doc.setFillColor(INK.zebra[0], INK.zebra[1], INK.zebra[2]);
-    doc.roundedRect(MARGIN.left, y, CONTENT_W, boxH, 1.5, 1.5, 'F');
-
-    // Filete de color a la izquierda: distingue el apéndice de la tabla de un
-    // vistazo sin necesidad de leer el rótulo.
-    doc.setFillColor(INK.brand[0], INK.brand[1], INK.brand[2]);
-    doc.rect(MARGIN.left, y, 1.1, boxH, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    setInk(doc, INK.brand);
-    doc.text(label.toUpperCase(), MARGIN.left + padding, y + padding + 2);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    setInk(doc, INK.strong);
+    font(ctx, 'normal', 9);
+    ink(ctx, theme.palette.ink);
     lines.forEach((line, i) => {
-        doc.text(line, MARGIN.left + padding, y + padding + 6.8 + i * 4.2);
+        doc.text(line, grid.margin.left + pad, y + pad + grid.u * 0.8 + i * grid.u * 1.1);
     });
 
-    return y + boxH + 5;
+    return y + height + grid.u * 2;
 }
 
-/**
- * Construye el documento.
- *
- * El salto de página se decide midiendo cada fila ANTES de pintarla: una fila
- * con nota de coach puede ocupar el doble, y cortarla a mitad de renglón es el
- * defecto clásico de estas exportaciones.
- */
+// ---------------------------------------------------------------------
+// PIE
+// ---------------------------------------------------------------------
+
+function drawFooter(ctx: Ctx, page: number, total: number) {
+    const { doc, grid, theme, week } = ctx;
+    const y = grid.page.h - grid.margin.bottom + grid.u * 2;
+
+    stroke(ctx, theme.palette.line, 0.2);
+    doc.line(grid.margin.left, y - grid.u * 1.2, grid.page.w - grid.margin.right, y - grid.u * 1.2);
+
+    font(ctx, 'bold', 6.5);
+    ink(ctx, theme.palette.muted);
+    const sign = theme.footer.text?.trim() || theme.header.title?.trim() || 'ANVIL STRENGTH';
+    doc.text(headingCase(ctx, sign), grid.margin.left, y);
+
+    font(ctx, 'normal', 6.5);
+    if (week.dateRange) {
+        doc.text(week.dateRange, grid.page.w / 2, y, { align: 'center' });
+    }
+    if (theme.footer.showPageNumbers) {
+        doc.text(`${page} / ${total}`, grid.page.w - grid.margin.right, y, { align: 'right' });
+    }
+}
+
+// =====================================================================
+// DOCUMENTO
+// =====================================================================
+
 export function buildWeekPdf(week: PrintWeek): jsPDF {
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const theme = resolveTheme(week.theme);
+    const grid = buildGrid(theme);
+
+    const doc = new jsPDF({
+        unit: 'mm',
+        format: [grid.page.w, grid.page.h],
+        orientation: 'portrait',
+    });
+
+    const ctx: Ctx = {
+        doc,
+        theme,
+        grid,
+        week,
+        size: (base: number) => base * theme.typography.scale,
+    };
 
     const days = week.days.length > 0 ? week.days : [{ title: 'Sin días', exercises: [] }];
-    const bottomLimit = PAGE.h - MARGIN.bottom - 4;
 
     days.forEach((day, dayIndex) => {
-        if (dayIndex > 0) doc.addPage();
+        if (dayIndex > 0) doc.addPage([grid.page.w, grid.page.h], 'portrait');
 
+        paintSurface(ctx);
         let continued = false;
-        let y = drawHeader(doc, week, day, continued);
+        let y = drawDayTitle(ctx, day, drawBrandHeader(ctx), continued);
 
-        const newPage = () => {
-            doc.addPage();
+        /** Cambia de hoja conservando la identidad: marca y día. */
+        const nextPage = () => {
+            doc.addPage([grid.page.w, grid.page.h], 'portrait');
+            paintSurface(ctx);
             continued = true;
-            y = drawHeader(doc, week, day, continued);
+            y = drawDayTitle(ctx, day, drawBrandHeader(ctx), continued);
         };
 
-        // ---- Calentamiento (antes de la tabla: es lo primero que se hace) ----
+        // Calentamiento ANTES de los ejercicios: es lo primero que se hace, y
+        // al final de la hoja no lo lee nadie.
         if (day.warmup?.trim()) {
-            y = drawAppendix(doc, 'Calentamiento', day.warmup, y);
+            const { height } = measureAppendix(ctx, day.warmup);
+            if (y + height > grid.bottom) nextPage();
+            y = drawSectionLabel(ctx, 'Calentamiento', y);
+            y = drawAppendix(ctx, day.warmup, y);
         }
 
         if (day.exercises.length === 0) {
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(11);
-            setInk(doc, INK.faint);
-            doc.text('Día de descanso', PAGE.w / 2, y + 14, { align: 'center' });
-            y += 24;
+            font(ctx, 'italic', 11);
+            ink(ctx, theme.palette.muted);
+            doc.text('Día de descanso', grid.page.w / 2, y + grid.u * 4, { align: 'center' });
+            y += grid.u * 8;
         } else {
-            y = drawTableHead(doc, y);
+            y = drawSectionLabel(ctx, 'Entrenamiento', y);
 
-            day.exercises.forEach((ex, rowIndex) => {
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(9.5);
-                const nameLines = doc.splitTextToSize(ex.name, COL.name - 4) as string[];
-
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(8);
-                const noteLines = ex.notes?.trim()
-                    ? (doc.splitTextToSize(ex.notes.trim(), COL.name - 4) as string[])
-                    : [];
-
-                const rowH = Math.max(
-                    9,
-                    nameLines.length * 4.4 + noteLines.length * 3.6 + 4.4
-                );
-
-                if (y + rowH > bottomLimit) {
-                    newPage();
-                    y = drawTableHead(doc, y);
-                }
-
-                if (rowIndex % 2 === 1) {
-                    doc.setFillColor(INK.zebra[0], INK.zebra[1], INK.zebra[2]);
-                    doc.rect(MARGIN.left, y - 4.2, CONTENT_W, rowH, 'F');
-                }
-
-                // Nombre (+ nota debajo, en gris y más pequeña)
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(9.5);
-                setInk(doc, INK.strong);
-                nameLines.forEach((line, i) => doc.text(line, X.name, y + i * 4.4));
-
-                if (noteLines.length > 0) {
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(8);
-                    setInk(doc, INK.muted);
-                    noteLines.forEach((line, i) =>
-                        doc.text(line, X.name, y + nameLines.length * 4.4 + i * 3.6)
-                    );
-                }
-
-                // Cifras. Centradas y en la línea del NOMBRE, no del bloque
-                // entero: si la nota ocupa tres renglones, el "4" tiene que
-                // seguir al lado del ejercicio y no flotando en medio.
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(9.5);
-                setInk(doc, INK.strong);
-                doc.text(ex.series || '-', X.series + COL.series / 2, y, { align: 'center' });
-                doc.text(ex.reps || '-', X.reps + COL.reps / 2, y, { align: 'center' });
-                doc.text(ex.rest || '-', X.rest + COL.rest / 2, y, { align: 'center' });
-                doc.text(
-                    ellipsize(doc, ex.intensity || '-', 9.5, COL.intensity - 2),
-                    X.intensity + COL.intensity / 2,
-                    y,
-                    { align: 'center' }
-                );
-
-                y += rowH;
-
-                doc.setDrawColor(INK.rule[0], INK.rule[1], INK.rule[2]);
-                doc.setLineWidth(0.15);
-                doc.line(MARGIN.left, y - 4.2, PAGE.w - MARGIN.right, y - 4.2);
+            day.exercises.forEach((ex, i) => {
+                const measured = measureExercise(ctx, ex);
+                if (y + measured.height > grid.bottom) nextPage();
+                y = drawExercise(ctx, ex, i, y, measured);
             });
 
-            y += 4;
+            y += grid.u;
         }
 
-        // ---- Extras (al final: es trabajo de después de la sesión) ----
         if (day.extras?.trim()) {
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            const probe = doc.splitTextToSize(day.extras.trim(), CONTENT_W - 7) as string[];
-            const needed = 7 + 4.5 + probe.length * 4.2;
-            if (y + needed > bottomLimit) newPage();
-            y = drawAppendix(doc, 'Extras', day.extras, y);
+            const { height } = measureAppendix(ctx, day.extras);
+            if (y + height + grid.u * 2 > grid.bottom) nextPage();
+            y = drawSectionLabel(ctx, 'Extras', y);
+            y = drawAppendix(ctx, day.extras, y);
         }
     });
 
-    // Los pies se pintan al final porque hasta aquí no se sabe el total de
-    // páginas: los días largos añaden hojas sobre la marcha.
+    // Los pies van al final: hasta aquí no se sabe cuántas hojas hay, porque
+    // los días largos añaden páginas sobre la marcha.
     const total = doc.getNumberOfPages();
     for (let page = 1; page <= total; page++) {
         doc.setPage(page);
-        drawFooter(doc, week, page, total);
+        drawFooter(ctx, page, total);
     }
 
     return doc;
@@ -401,9 +655,9 @@ function slug(value: string): string {
 /**
  * Genera el PDF y lo descarga.
  *
- * Devuelve el nombre del archivo para poder decirlo en el aviso: en escritorio
- * la descarga es un renglón discreto abajo del navegador y sin el nombre el
- * coach no sabe si ha pasado algo.
+ * Devuelve el nombre del archivo para poder decirlo en el aviso: en
+ * escritorio la descarga es un renglón discreto abajo del navegador, y sin
+ * el nombre el coach no sabe si ha pasado algo.
  */
 export function downloadWeekPdf(week: PrintWeek): string {
     const doc = buildWeekPdf(week);
@@ -411,6 +665,13 @@ export function downloadWeekPdf(week: PrintWeek): string {
     doc.save(filename);
     return filename;
 }
+
+/** El documento como URL de datos. Para la vista previa de los ajustes. */
+export function weekPdfDataUrl(week: PrintWeek): string {
+    return buildWeekPdf(week).output('datauristring');
+}
+
+export { DEFAULT_THEME };
 
 // =====================================================================
 // DE LOS DATOS DE LA APP A LAS FILAS DE LA HOJA
@@ -475,10 +736,10 @@ function intensityOf(set: TrainingSet): string {
 /**
  * Convierte una sesión en una página de la hoja.
  *
- * UNA fila por ejercicio: las series de un mismo ejercicio se agregan en vez
+ * UN bloque por ejercicio: las series de un mismo ejercicio se agregan en vez
  * de ocupar una fila cada una. Cuando todas coinciden se escribe el valor una
- * vez ("4" series de "6"); cuando no —una pirámide, por ejemplo— se listan en
- * orden ("6, 5, 4"), que es como lo lee un atleta.
+ * vez ("4" series de "6"); cuando no —una pirámide— se listan en orden
+ * ("6, 5, 4"), que es como lo lee un atleta.
  */
 export function sessionToPrintDay(session: PrintableSession): PrintDay {
     const weekday = weekdayLabel(session.day_of_week);
@@ -498,12 +759,12 @@ export function sessionToPrintDay(session: PrintableSession): PrintDay {
             // El descanso puede estar en el ejercicio o en cada serie.
             const rest = ex.rest_seconds ?? sets.find(s => s.rest_seconds)?.rest_seconds ?? null;
 
-            const name = [ex.exercise?.name ?? 'Ejercicio', ex.variant_name]
-                .filter(Boolean)
-                .join(' - ');
-
             return {
-                name,
+                // La variante deja de ir pegada al nombre con un guion y pasa a
+                // su propio renglón en color: se veía como parte del ejercicio
+                // y es lo que lo CAMBIA.
+                name: ex.exercise?.name ?? 'Ejercicio',
+                variant: ex.variant_name ?? null,
                 series: totalSeries > 0 ? String(totalSeries) : '',
                 reps,
                 rest: formatRest(rest),

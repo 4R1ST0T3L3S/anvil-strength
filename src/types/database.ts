@@ -74,6 +74,8 @@ export interface ChatMessage {
     created_at: string;
 }
 
+export type AccountStatus = 'managed' | 'invited' | 'active';
+
 export interface Profile {
     id: string;
     email: string;
@@ -94,8 +96,20 @@ export interface Profile {
     created_at: string;
     coach_id?: string | null; // For athletes linked to a coach
     nutritionist_id?: string | null; // For athletes linked to a nutritionist
+    /**
+     * En qué punto está la CUENTA (no la relación con nadie).
+     * Ver src/services/athletesService.ts y database/athlete_lifecycle.sql.
+     */
+    account_status?: AccountStatus;
+    /** Quién creó la ficha, cuando la creó un entrenador. */
+    managed_by?: string | null;
+    /** Correo real del atleta. NULL mientras no se tenga ninguno. */
+    contact_email?: string | null;
+    claimed_at?: string | null;
     brand_color?: string | null;
     logo_url?: string | null;
+    /** Aspecto de sus PDF de entrenamiento. Tipado real en src/lib/export/pdfTheme.ts. */
+    pdf_theme?: Record<string, unknown> | null;
     max_sushi_pieces?: number;
     is_developer?: boolean;
     is_club_member?: boolean;

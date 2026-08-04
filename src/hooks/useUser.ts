@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
-import { Profile, Role } from '../types/database';
+import { AccountStatus, Profile, Role } from '../types/database';
 
 export interface UserProfile {
     id: string;
@@ -21,12 +21,19 @@ export interface UserProfile {
     user_metadata?: Record<string, unknown>;
     brand_color?: string | null;
     logo_url?: string | null;
+    /** Aspecto de sus PDF de entrenamiento. Tipado real en src/lib/export/pdfTheme.ts. */
+    pdf_theme?: Record<string, unknown> | null;
     coach_id?: string | null;
     coach_name?: string | null;
     coach_brand_color?: string | null;
     coach_logo_url?: string | null;
     nutritionist_id?: string | null;
     nutritionist_name?: string | null;
+    /**
+     * En qué punto está la cuenta: creada por el coach, invitada o activa.
+     * Ver src/services/athletesService.ts.
+     */
+    account_status?: AccountStatus;
     max_sushi_pieces?: number;
     is_developer?: boolean;
     // Backward compatibility aliases (deprecated)
@@ -151,12 +158,16 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     deadlift_pr: profile.deadlift_pr,
                     brand_color: profile.brand_color,
                     logo_url: profile.logo_url,
+                    pdf_theme: (profile as { pdf_theme?: Record<string, unknown> | null }).pdf_theme ?? null,
                     coach_id: profile.coach_id ?? null,
                     coach_name: coachName,
                     coach_brand_color: coachBrandColor,
                     coach_logo_url: coachLogoUrl,
                     nutritionist_id: profile.nutritionist_id ?? null,
                     nutritionist_name: nutritionistName,
+                    // Las cuentas anteriores a la migración no traen columna:
+                    // son cuentas que se registraron solas, o sea, activas.
+                    account_status: profile.account_status ?? 'active',
                     max_sushi_pieces: profile.max_sushi_pieces || 0,
                     is_developer: profile.is_developer ?? false,
                     // Backward compatibility

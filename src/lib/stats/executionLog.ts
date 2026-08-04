@@ -246,6 +246,45 @@ export function summarizeSession(session: LoggedSession): SessionSummary {
 // AGREGADO POR EJERCICIO
 // =====================================================================
 
+/**
+ * Todos los ejercicios que aparecen en el registro, en orden alfabético.
+ *
+ * Por NOMBRE y no por `exerciseId`: el mismo movimiento puede venir de filas
+ * distintas de la biblioteca según quién lo diera de alta, y al coach le
+ * interesa "sentadilla", no tres sentadillas separadas por un identificador
+ * que nunca ve.
+ */
+export function exerciseNames(sessions: LoggedSession[]): string[] {
+    const names = new Set<string>();
+    for (const session of sessions) {
+        for (const ex of session.exercises) names.add(ex.name);
+    }
+    return [...names].sort((a, b) => a.localeCompare(b, 'es'));
+}
+
+/**
+ * Deja EN LAS SESIONES solo un ejercicio.
+ *
+ * Es lo que hace que "Sentadilla" signifique sentadilla en toda la pantalla y
+ * no solo en la tabla por ejercicio: filtrando aquí, arriba del todo, el
+ * tonelaje semanal, la carga interna, las desviaciones, los avisos y las
+ * tarjetas de sesión salen ya acotados sin tener que reescribir ninguna de
+ * esas cuentas. Mezclar press banca con peso muerto en una gráfica de
+ * tonelaje no dice nada de ninguno de los dos.
+ *
+ * Las sesiones que se quedan sin ejercicios se descartan: contarlas como
+ * "programadas" inflaría el denominador de cumplimiento con días en los que
+ * ese movimiento ni siquiera tocaba.
+ */
+export function scopeToExercise(sessions: LoggedSession[], name: string): LoggedSession[] {
+    return sessions
+        .map(session => ({
+            ...session,
+            exercises: session.exercises.filter(ex => ex.name === name),
+        }))
+        .filter(session => session.exercises.length > 0);
+}
+
 export interface ExerciseAdherence {
     name: string;
     plannedSets: number;
