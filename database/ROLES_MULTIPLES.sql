@@ -40,12 +40,16 @@
 --   athlete      — recibe entrenamiento y nutrición.
 --   coach        — planifica bloques a otros.
 --   nutritionist — pauta nutrición a otros.
---   member       — miembro del club. Hoy hace lo mismo que `athlete`;
---                  existe desde ya para que las ventajas de socio se
---                  puedan colgar de algo sin volver a migrar a nadie.
 --
--- Esos cuatro, y solo esos, se los pone cada uno. Los otros dos NO:
+-- Esos tres, y solo esos, se los pone cada uno. Los otros tres NO:
 --
+--   member       — miembro del club. Hoy hace lo mismo que `athlete`, pero
+--                  ser socio de Anvil no es algo que uno se declare: lo
+--                  designa un desarrollador. Existe desde ya para que las
+--                  ventajas de socio se puedan colgar de algo sin volver a
+--                  migrar a nadie. Sigue siendo un rol válido (el CHECK lo
+--                  admite) y `set_my_roles()` lo conserva si ya lo tienes;
+--                  lo que NO deja es autoasignárselo.
 --   developer    — lo ve todo, incluida la trastienda (Arena, banderas de
 --                  funciones en pruebas).
 --   admin        — administra usuarios.
@@ -299,7 +303,11 @@ SET search_path = public, pg_temp
 AS $$
 DECLARE
     me            UUID := auth.uid();
-    autogestion   TEXT[] := ARRAY['athlete','coach','nutritionist','member'];
+    -- `member` NO está: ser socio lo concede un desarrollador, no uno mismo.
+    -- Al quedar fuera de la lista blanca, cae en la rama de "concedidos" de
+    -- más abajo, así que a quien ya sea socio se le CONSERVA; lo que se
+    -- impide es autoasignárselo.
+    autogestion   TEXT[] := ARRAY['athlete','coach','nutritionist'];
     pedidos       TEXT[];
     concedidos    TEXT[];
     finales       TEXT[];
@@ -374,7 +382,7 @@ BEGIN
     -- nada, porque `RAISE EXCEPTION` usa el mismo SQLSTATE (P0001) que la
     -- excepción que estamos capturando y se la tragaría el propio EXCEPTION.
     BEGIN
-        prueba := public.set_my_roles(ARRAY['admin','developer']);
+        prueba := public.set_my_roles(ARRAY['admin','developer','member']);
     EXCEPTION
         WHEN sqlstate 'P0001' THEN sin_sesion := TRUE; -- 'Sin sesión.' — lo esperado.
     END;

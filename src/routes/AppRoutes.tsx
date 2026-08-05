@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { UserProfile } from '../hooks/useUser';
-import { isStaff, isAdmin, isAthlete } from '../lib/roles';
+import { isStaff, isAdmin, isAthlete, puede } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
@@ -234,7 +234,12 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
                     <DashboardSkeleton />
-                ) : !['coach', 'nutritionist'].includes(user?.role || '') && !isAdmin(user) ? (
+                ) : !puede(user, 'pautar_nutricion') ? (
+                    // El panel de pautar comidas es de quien pauta nutrición:
+                    // nutricionistas (y por herencia, desarrollo/administración).
+                    // Se pregunta por la CAPACIDAD y no por `user.role`, que es
+                    // el reflejo de un solo rol y dejaba fuera a quien es
+                    // nutricionista además de otra cosa.
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>

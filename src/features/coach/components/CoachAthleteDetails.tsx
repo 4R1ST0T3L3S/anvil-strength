@@ -13,6 +13,7 @@ import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEdi
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
+import { puede, type Capacidad } from '../../../lib/roles';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
@@ -30,13 +31,23 @@ type Tab = 'planning' | 'log' | 'competitions' | 'vbt' | 'nutrition' | 'checkins
  * semana siguiente —"¿qué hizo?" precede a "¿qué le pongo?"— y enterrarla
  * entre nutrición y competiciones garantizaba que nadie la usara.
  */
-const TABS: { key: Tab; label: string; icon: LucideIcon }[] = [
-    { key: 'planning', label: 'Planning', icon: FileText },
-    { key: 'log', label: 'Registro', icon: ClipboardList },
-    { key: 'vbt', label: 'VBT', icon: Activity },
-    { key: 'nutrition', label: 'Nutrición', icon: Apple },
-    { key: 'checkins', label: 'Check-ins', icon: ClipboardCheck },
-    { key: 'competitions', label: 'Competición', icon: Trophy },
+/**
+ * Cada pestaña declara QUÉ hace falta poder hacer para verla, no QUIÉN eres.
+ * Así el mismo panel se recorta solo: un entrenador ve la parte de
+ * entrenamiento, un nutricionista la de nutrición, y quien es las dos cosas
+ * las ve todas —que es el caso que motivó los roles múltiples—.
+ *
+ * `caps` es un O: basta con una de las capacidades. Los check-ins los miran
+ * los dos —peso y adherencia le importan tanto a quien programa como a quien
+ * pauta—, así que llevan las dos.
+ */
+const TABS: { key: Tab; label: string; icon: LucideIcon; caps: Capacidad[] }[] = [
+    { key: 'planning', label: 'Planning', icon: FileText, caps: ['planificar_entrenamiento'] },
+    { key: 'log', label: 'Registro', icon: ClipboardList, caps: ['planificar_entrenamiento'] },
+    { key: 'vbt', label: 'VBT', icon: Activity, caps: ['planificar_entrenamiento'] },
+    { key: 'nutrition', label: 'Nutrición', icon: Apple, caps: ['pautar_nutricion'] },
+    { key: 'checkins', label: 'Check-ins', icon: ClipboardCheck, caps: ['planificar_entrenamiento', 'pautar_nutricion'] },
+    { key: 'competitions', label: 'Competición', icon: Trophy, caps: ['planificar_entrenamiento'] },
 ];
 
 /**
@@ -130,6 +141,15 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
     if (!athlete) return <div className="p-8 text-center text-danger">Atleta no encontrado</div>;
 
+    // El panel se recorta a lo que ESTE profesional puede hacer con el
+    // atleta. `activeTab` arranca en 'planning', que un nutricionista puro no
+    // ve; `shownTab` cae a la primera pestaña visible en vez de dejar la
+    // ficha en blanco.
+    const visibleTabs = TABS.filter(t => t.caps.some(c => puede(currentUser, c)));
+    const shownTab: Tab | undefined = visibleTabs.some(t => t.key === activeTab)
+        ? activeTab
+        : visibleTabs[0]?.key;
+
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
@@ -199,8 +219,8 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         aria-label="Secciones del atleta"
                         className="flex min-w-max gap-0.5 rounded-field bg-surface-sunken p-1"
                     >
-                        {TABS.map(({ key, label, icon: Icon }) => {
-                            const active = activeTab === key;
+                        {visibleTabs.map(({ key, label, icon: Icon }) => {
+                            const active = shownTab === key;
                             return (
                                 <button
                                     key={key}
@@ -234,7 +254,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
             <div className="flex-1 overflow-y-auto overflow-x-hidden bg-surface-sunken p-3 md:p-6">
 
                 {/* 1. PLANIFICACIÓN */}
-                {activeTab === 'planning' && (
+                {shownTab === 'planning' && (
                     <div className={selectedBlockId ? BUILDER_WIDTH : TAB_WIDTH}>
                         {selectedBlockId ? (
                             <div className="h-full flex flex-col">
@@ -260,14 +280,14 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 )}
 
                 {/* 2. REGISTRO: lo que el atleta hizo de verdad */}
-                {activeTab === 'log' && (
+                {shownTab === 'log' && (
                     <div className={TAB_WIDTH}>
                         <AthleteLogTab athleteId={athleteId} />
                     </div>
                 )}
 
                 {/* 3. COMPETICIONES */}
-                {activeTab === 'competitions' && (
+                {shownTab === 'competitions' && (
                     <div className={`${TAB_WIDTH} space-y-6`}>
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
@@ -345,21 +365,21 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 )}
 
                 {/* 4. VBT (Velocity Based Training) */}
-                {activeTab === 'vbt' && (
+                {shownTab === 'vbt' && (
                     <div className={TAB_WIDTH}>
                         <CoachVbtTab athleteId={athleteId} />
                     </div>
                 )}
 
                 {/* 5. CHECK-INS (el coach los consulta y también los rellena o corrige) */}
-                {activeTab === 'checkins' && currentUser && (
+                {shownTab === 'checkins' && currentUser && (
                     <div className={TAB_WIDTH}>
                         <CoachCheckInsTab athleteId={athleteId} coachId={currentUser.id} />
                     </div>
                 )}
 
                 {/* 6. NUTRICIÓN */}
-                {activeTab === 'nutrition' && (
+                {shownTab === 'nutrition' && (
                     <div className={TAB_WIDTH}>
                         <NutritionPlanEditor athleteId={athleteId} />
                     </div>

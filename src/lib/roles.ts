@@ -56,11 +56,16 @@ export type Rol = (typeof ROLES)[number];
 /**
  * Los que cada uno se pone y se quita solo, en este orden en pantalla.
  *
- * `developer` y `admin` NO están, y esa ausencia es de seguridad, no de
- * diseño: `set_my_roles()` los descarta en el servidor. La lista de aquí
- * solo decide qué casillas se pintan.
+ * `member`, `developer` y `admin` NO están, y esa ausencia es de seguridad,
+ * no de diseño: `set_my_roles()` los descarta en el servidor. La lista de
+ * aquí solo decide qué casillas se pintan.
+ *
+ * `member` (ser socio de Anvil Strength Club) se saca de la libre elección a
+ * propósito: no queremos que cualquiera se declare socio, solo quien designe
+ * un desarrollador. El rol sigue existiendo en `ROLES` y lo concede la
+ * administración; quien lo tenga lo ve como concedido, no como casilla.
  */
-export const ROLES_AUTOGESTIONABLES = ['athlete', 'coach', 'nutritionist', 'member'] as const;
+export const ROLES_AUTOGESTIONABLES = ['athlete', 'coach', 'nutritionist'] as const;
 export type RolAutogestionable = (typeof ROLES_AUTOGESTIONABLES)[number];
 
 export const ROL_INFO: Record<Rol, { nombre: string; descripcion: string }> = {
