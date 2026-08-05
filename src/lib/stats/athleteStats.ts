@@ -387,6 +387,236 @@ export function velocityProfile(
 }
 
 // =====================================================================
+// ADHERENCIA: LO PAUTADO CONTRA LO HECHO
+// =====================================================================
+
+/**
+ * Kilos PRESCRITOS de una serie, o null si no se pautó en kilos.
+ *
+ * Gemelo de `kgOf` pero mirando SOLO el objetivo: para comparar plan y
+ * ejecución hacen falta las dos caras por separado, y `kgOf` ya mezcla —da
+ * prioridad a lo registrado— así que no sirve aquí.
+ */
+function targetKgOf(set: TrainingSet): number | null {
+    const metric = set.target_metric ?? 'kg';
+    if (metric !== 'kg') return null;
+    return set.target_load ?? null;
+}
+
+/** Repeticiones PRESCRITAS de una serie (extremo bajo del rango). */
+function targetRepsOf(set: TrainingSet): number | null {
+    const raw = set.target_reps;
+    if (!raw) return null;
+    const parts = raw.toLowerCase().split('x');
+    const repsPart = parts.length >= 2 ? parts.slice(1).join('x') : parts[0];
+    return parseNum(repsPart.split('-')[0]);
+}
+
+/** ¿Está hecha esta serie? La columna manda; si es antigua, se deduce. */
+function isSetDone(set: TrainingSet): boolean {
+    return set.is_completed ?? Boolean(set.actual_reps || set.actual_load);
+}
+
+export interface AdherencePoint {
+    sessionId: string;
+    label: string;
+    week: number;
+    day: number;
+    /** Tonelaje PRESCRITO en kilos (solo series pautadas en kg). */
+    plannedTonnage: number;
+    /** Tonelaje REALMENTE movido. */
+    actualTonnage: number;
+    setsPlanned: number;
+    setsDone: number;
+    /** Carga real / carga prescrita · 100. Null si nada estaba pautado en kg. */
+    loadPct: number | null;
+    /** Series hechas / series pautadas · 100. */
+    completionPct: number;
+}
+
+/**
+ * ADHERENCIA POR SESIÓN.
+ *
+ * La pregunta que el par `target_*` / `actual_*` existe para responder y que
+ * hasta ahora no pintaba nadie: ¿se hizo lo que ponía? Dos números por sesión
+ * —cuánto del tonelaje prescrito se movió y cuántas de las series pautadas se
+ * cerraron— dicen de un vistazo quién sigue el plan y quién lo reescribe sobre
+ * la marcha.
+ *
+ * Solo entran las sesiones que el atleta ha EMPEZADO (alguna serie hecha): las
+ * semanas futuras están pautadas pero sin tocar, y arrastrarían la media a
+ * cero por trabajo que todavía no tocaba hacer.
+ */
+export function adherenceSeries(history: ExerciseHistoryRow[]): AdherencePoint[] {
+    const bySession = new Map<string, AdherencePoint>();
+
+    for (const row of history) {
+        const point = bySession.get(row.sessionId) ?? {
+            sessionId: row.sessionId,
+            label: `S${row.weekNumber}·D${row.dayNumber}`,
+            week: row.weekNumber,
+            day: row.dayNumber,
+            plannedTonnage: 0,
+            actualTonnage: 0,
+            setsPlanned: 0,
+            setsDone: 0,
+            loadPct: null,
+            completionPct: 0,
+        };
+
+        for (const set of row.sets) {
+            point.setsPlanned += 1;
+
+            const tKg = targetKgOf(set);
+            const tReps = targetRepsOf(set);
+            if (tKg !== null && tReps !== null) point.plannedTonnage += tKg * tReps;
+
+            if (isSetDone(set)) {
+                point.setsDone += 1;
+                const aKg = set.actual_load ?? tKg;
+                const aReps = set.actual_reps ?? tReps;
+                if (aKg !== null && aReps !== null) point.actualTonnage += aKg * aReps;
+            }
+        }
+
+        bySession.set(row.sessionId, point);
+    }
+
+    return [...bySession.values()]
+        .filter(p => p.setsDone > 0)
+        .sort((a, b) => a.week - b.week || a.day - b.day)
+        .map(p => ({
+            ...p,
+            plannedTonnage: Math.round(p.plannedTonnage),
+            actualTonnage: Math.round(p.actualTonnage),
+            loadPct: p.plannedTonnage > 0
+                ? Math.round((p.actualTonnage / p.plannedTonnage) * 100)
+                : null,
+            completionPct: p.setsPlanned > 0
+                ? Math.round((p.setsDone / p.setsPlanned) * 100)
+                : 0,
+        }));
+}
+
+// =====================================================================
+// DISTRIBUCIÓN DE INTENSIDAD (ZONAS DE %1RM)
+// =====================================================================
+
+export interface IntensityBucket {
+    key: string;
+    label: string;
+    /** Límite inferior de la zona, en % del 1RM estimado. */
+    min: number;
+    /** Límite superior, o null en la zona abierta (≥100 %). */
+    max: number | null;
+    sets: number;
+    tonnage: number;
+}
+
+const INTENSITY_ZONES: { key: string; label: string; min: number; max: number | null }[] = [
+    { key: 'z1', label: '<60%',   min: 0,   max: 60 },
+    { key: 'z2', label: '60–70%', min: 60,  max: 70 },
+    { key: 'z3', label: '70–80%', min: 70,  max: 80 },
+    { key: 'z4', label: '80–90%', min: 80,  max: 90 },
+    { key: 'z5', label: '90–100%',min: 90,  max: 100 },
+    { key: 'z6', label: '≥100%',  min: 100, max: null },
+];
+
+/**
+ * Reparto de las series por zona de intensidad relativa.
+ *
+ * La intensidad de cada serie es su carga sobre el mejor 1RM estimado de ESE
+ * ejercicio —igual que en `summarize`—, no sobre un máximo global: comparar
+ * los kilos de una sentadilla con los de un curl no significaría nada. El
+ * histograma que sale es el clásico de la periodización: dice si el bloque
+ * vive en fuerza (80–90+), en hipertrofia (70–80) o repartido.
+ */
+export function intensityDistribution(history: ExerciseHistoryRow[]): IntensityBucket[] {
+    const bestByExercise = new Map<string, number>();
+    for (const row of history) {
+        for (const set of row.sets) {
+            const kg = kgOf(set);
+            const reps = repsOf(set);
+            if (kg === null || reps === null) continue;
+            const oneRm = estimate1RM(kg, reps);
+            if (oneRm !== null) {
+                const prev = bestByExercise.get(row.exerciseName) ?? 0;
+                if (oneRm > prev) bestByExercise.set(row.exerciseName, oneRm);
+            }
+        }
+    }
+
+    const buckets: IntensityBucket[] = INTENSITY_ZONES.map(z => ({ ...z, sets: 0, tonnage: 0 }));
+
+    for (const row of history) {
+        const best = bestByExercise.get(row.exerciseName);
+        if (!best || best <= 0) continue;
+
+        for (const set of row.sets) {
+            const kg = kgOf(set);
+            const reps = repsOf(set);
+            if (kg === null || reps === null) continue;
+
+            const pct = (kg / best) * 100;
+            const bucket = buckets.find(b => pct >= b.min && (b.max === null || pct < b.max));
+            if (bucket) {
+                bucket.sets += 1;
+                bucket.tonnage += Math.round(kg * reps);
+            }
+        }
+    }
+
+    return buckets;
+}
+
+// =====================================================================
+// CONSTANCIA: ACTIVIDAD POR DÍA DE CALENDARIO
+// =====================================================================
+
+export interface ConsistencyDay {
+    /** YYYY-MM-DD. */
+    date: string;
+    sessions: number;
+    sets: number;
+    completedSets: number;
+}
+
+/**
+ * Actividad agregada por día de calendario, para el mapa de constancia.
+ *
+ * Cuenta series hechas por fecha; el componente lo pinta como una rejilla de
+ * intensidad tipo GitHub. Las filas sin `date` —bloques a los que el coach no
+ * les puso fechas— se quedan fuera: no se pueden situar en un calendario, y
+ * meterlas en "hoy" mentiría sobre cuándo se entrenó.
+ */
+export function consistencyByDay(history: ExerciseHistoryRow[]): ConsistencyDay[] {
+    const byDate = new Map<string, { sessions: Set<string>; sets: number; completed: number }>();
+
+    for (const row of history) {
+        if (!row.date) continue;
+        const day = row.date.slice(0, 10);
+        const bucket = byDate.get(day) ?? { sessions: new Set<string>(), sets: 0, completed: 0 };
+
+        bucket.sessions.add(row.sessionId);
+        for (const set of row.sets) {
+            bucket.sets += 1;
+            if (isSetDone(set)) bucket.completed += 1;
+        }
+
+        byDate.set(day, bucket);
+    }
+
+    return [...byDate.entries()]
+        .map(([date, b]) => ({
+            date,
+            sessions: b.sessions.size,
+            sets: b.sets,
+            completedSets: b.completed,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// =====================================================================
 // CUESTIONARIOS
 // =====================================================================
 

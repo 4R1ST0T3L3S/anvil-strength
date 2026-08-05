@@ -124,18 +124,20 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 isActive: slug === 'pwr',
                 hideOnMobileBar: true,
             }]),
-        // CONMUTADOR DE PANEL. La otra mitad del de UserDashboard: quien
-        // entrena a gente y además se entrena necesita ir y volver.
-        ...(tieneAmbosPaneles(user)
-            ? [{
-                icon: <Dumbbell size={20} />,
-                label: 'Cambiar a atleta',
-                onClick: () => navigate('/dashboard'),
-                isActive: false,
-                hideOnMobileBar: true,
-            }]
-            : []),
     ];
+
+    // CONMUTADOR DE PANEL. La otra mitad del de UserDashboard: quien entrena a
+    // gente y además se entrena necesita ir y volver. Es un control propio
+    // (cabecera en móvil, pie de barra lateral en escritorio) para que en el
+    // móvil no quede escondido en el menú de la ⋮.
+    const panelSwitch = tieneAmbosPaneles(user)
+        ? {
+            icon: <Dumbbell size={20} />,
+            label: 'Cambiar a atleta',
+            shortLabel: 'Atleta',
+            onClick: () => navigate('/dashboard'),
+        }
+        : undefined;
 
     const renderContent = () => {
         // La ficha de un atleta es su propia ruta (`/coach-dashboard/atletas/<id>`),
@@ -180,6 +182,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             userId={user.id}
             userName={user.full_name}
             onLogout={onLogout}
+            panelSwitch={panelSwitch}
             title={athleteId ? undefined : TITLES[slug]}
             onBack={slug === '' && !athleteId ? undefined : () => go(athleteId ? 'atletas' : '')}
         >

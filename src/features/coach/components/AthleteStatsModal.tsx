@@ -3,18 +3,21 @@ import { X, TrendingUp, Loader, Search, Check } from 'lucide-react';
 import {
     LineChart, Line, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
     Tooltip, Legend, ResponsiveContainer, ReferenceLine,
+    ComposedChart, Bar, BarChart, Cell,
 } from 'recharts';
 import { trainingService, ExerciseHistoryRow } from '../../../services/trainingService';
 import { formsService, FormResponse } from '../../../services/formsService';
 import { Macrocycle } from '../../../types/training';
 import { AthleteVolumeTab } from './AthleteVolumeTab';
+import { ConsistencyCalendar } from './ConsistencyCalendar';
 import { cn } from '../../../lib/utils';
 import {
     summarize, weeklySeries, compareExercises, velocityProfile, summarizeCheckIns,
+    adherenceSeries, intensityDistribution, consistencyByDay,
     kgOf, repsOf, rpeOf, repsKey, parseNum,
 } from '../../../lib/stats/athleteStats';
 
-type StatsTab = 'general' | 'exercises' | 'compare' | 'velocity' | 'volume';
+type StatsTab = 'general' | 'adherence' | 'exercises' | 'compare' | 'velocity' | 'volume';
 
 interface AthleteStatsModalProps {
     isOpen: boolean;
@@ -132,6 +135,27 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: A
     const summary = useMemo(() => summarize(history), [history]);
     const weekly = useMemo(() => weeklySeries(history), [history]);
     const checkInData = useMemo(() => summarizeCheckIns(checkIns), [checkIns]);
+    const adherence = useMemo(() => adherenceSeries(history), [history]);
+    const intensity = useMemo(() => intensityDistribution(history), [history]);
+    const consistency = useMemo(() => consistencyByDay(history), [history]);
+
+    // Media de adherencia sobre las sesiones ya entrenadas: el titular de la
+    // pestaña, para no obligar a leerlo de la gráfica.
+    const adherenceAvg = useMemo(() => {
+        const withLoad = adherence.filter(a => a.loadPct !== null);
+        const load = withLoad.length
+            ? Math.round(withLoad.reduce((s, a) => s + (a.loadPct ?? 0), 0) / withLoad.length)
+            : null;
+        const completion = adherence.length
+            ? Math.round(adherence.reduce((s, a) => s + a.completionPct, 0) / adherence.length)
+            : null;
+        return { load, completion };
+    }, [adherence]);
+
+    const intensityTotalSets = useMemo(
+        () => intensity.reduce((s, b) => s + b.sets, 0),
+        [intensity]
+    );
 
     const rankedNames = useMemo(() => {
         const counts = new Map<string, number>();
@@ -213,10 +237,18 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: A
 
     const TABS: [StatsTab, string][] = [
         ['general', 'General'],
+        ['adherence', 'Adherencia'],
         ['exercises', 'Por ejercicio'],
         ['compare', 'Comparar'],
         ['velocity', 'Carga-velocidad'],
         ['volume', 'Volumen'],
+    ];
+
+    // Color de cada zona de intensidad: de frío (trabajo ligero) a caliente
+    // (cerca del máximo). Reutiliza los tokens de esfuerzo del sistema.
+    const ZONE_COLORS = [
+        'var(--info)', 'var(--success)', 'var(--brand)',
+        'var(--warning)', 'var(--effort-high)', 'var(--danger)',
     ];
 
     return (
@@ -362,6 +394,13 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: A
                                 </div>
 
                                 <ChartCard
+                                    title="Constancia"
+                                    subtitle="Cada casilla es un día; cuanto más intensa, más series se hicieron. Los huecos cuentan lo que ninguna media mensual llega a contar."
+                                >
+                                    <ConsistencyCalendar days={consistency} />
+                                </ChartCard>
+
+                                <ChartCard
                                     title="Carga y esfuerzo por semana"
                                     subtitle="El tonelaje dice cuánto trabajo hay; el RPE, cuánto cuesta. Se leen juntos: subir los dos a la vez es lo que acaba en lesión."
                                 >
@@ -460,6 +499,91 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: A
                                                 </div>
                                             )}
                                         </>
+                                    )}
+                                </ChartCard>
+                            </div>
+                        )}
+
+                        {/* =========================================
+                            ADHERENCIA — lo pautado contra lo hecho
+                            ========================================= */}
+                        {tab === 'adherence' && (
+                            <div className="mx-auto max-w-5xl space-y-6">
+                                <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+                                    <Metric
+                                        label="Series completadas"
+                                        value={adherenceAvg.completion !== null ? `${adherenceAvg.completion}%` : '—'}
+                                        hint="De lo pautado, cuánto se cierra de media"
+                                    />
+                                    <Metric
+                                        label="Carga cumplida"
+                                        value={adherenceAvg.load !== null ? `${adherenceAvg.load}%` : '—'}
+                                        hint="Tonelaje real sobre el prescrito"
+                                    />
+                                    <Metric
+                                        label="Sesiones"
+                                        value={String(adherence.length)}
+                                        hint="Entrenadas, de las que hay registro"
+                                    />
+                                </div>
+
+                                <ChartCard
+                                    title="Pautado contra hecho, por sesión"
+                                    subtitle="La barra clara es lo prescrito; la de marca, lo que de verdad se movió. La línea es el % de series cerradas. Cuando la carga real supera a la prescrita de forma sistemática, el plan se le queda corto."
+                                >
+                                    {adherence.length < 2 ? (
+                                        <Empty>Hacen falta al menos dos sesiones registradas.</Empty>
+                                    ) : (
+                                        <div className="h-80">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <ComposedChart data={adherence} margin={{ top: 5, right: 8, left: -12, bottom: 5 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                                                    <XAxis dataKey="label" tick={AXIS} />
+                                                    <YAxis yAxisId="kg" tick={AXIS} unit="kg" />
+                                                    <YAxis yAxisId="pct" orientation="right" domain={[0, 110]} tick={AXIS} unit="%" />
+                                                    <Tooltip contentStyle={TOOLTIP_STYLE} />
+                                                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                                                    <Bar yAxisId="kg" dataKey="plannedTonnage" name="Pautado (kg)" fill="var(--border-strong)" radius={[3, 3, 0, 0]} maxBarSize={26} />
+                                                    <Bar yAxisId="kg" dataKey="actualTonnage" name="Hecho (kg)" fill={SERIES_COLORS[0]} radius={[3, 3, 0, 0]} maxBarSize={26} />
+                                                    <Line yAxisId="pct" type="monotone" dataKey="completionPct" name="Series cerradas (%)" stroke={SERIES_COLORS[2]} strokeWidth={2} dot={{ r: 2.5 }} connectNulls />
+                                                </ComposedChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    )}
+                                </ChartCard>
+
+                                <ChartCard
+                                    title="Distribución de intensidad"
+                                    subtitle={
+                                        intensityTotalSets === 0
+                                            ? 'Sin series con carga y 1RM estimado todavía.'
+                                            : `${intensityTotalSets} series repartidas por zona de %1RM. Dice en qué vive el bloque: fuerza (90%+), básicos pesados (80–90), hipertrofia (70–80) o técnico.`
+                                    }
+                                >
+                                    {intensityTotalSets === 0 ? (
+                                        <Empty>Hacen falta series con carga registrada para estimar la intensidad.</Empty>
+                                    ) : (
+                                        <div className="h-72">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={intensity} margin={{ top: 5, right: 8, left: -12, bottom: 5 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                                                    <XAxis dataKey="label" tick={AXIS} />
+                                                    <YAxis tick={AXIS} allowDecimals={false} />
+                                                    <Tooltip
+                                                        contentStyle={TOOLTIP_STYLE}
+                                                        formatter={(value, _n, item) => {
+                                                            const t = (item?.payload as { tonnage?: number })?.tonnage ?? 0;
+                                                            return [`${Number(value)} series · ${(t / 1000).toFixed(1)} t`, 'Trabajo'];
+                                                        }}
+                                                    />
+                                                    <Bar dataKey="sets" name="Series" radius={[4, 4, 0, 0]}>
+                                                        {intensity.map((_, i) => (
+                                                            <Cell key={i} fill={ZONE_COLORS[i % ZONE_COLORS.length]} />
+                                                        ))}
+                                                    </Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
                                     )}
                                 </ChartCard>
                             </div>

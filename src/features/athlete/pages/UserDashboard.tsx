@@ -26,7 +26,7 @@ import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
 import { AnvilRanking } from '../components/AnvilRanking';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
-import { isAthlete, tieneAmbosPaneles } from '../../../lib/roles';
+import { isAthlete, isCoach, tieneAmbosPaneles } from '../../../lib/roles';
 import { FEATURES } from '../../../lib/features';
 
 interface UserDashboardProps {
@@ -171,22 +171,23 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 hideOnMobileBar: true,
             }]
             : []),
-        // CONMUTADOR DE PANEL.
-        // Solo para quien tiene los dos: entrena a gente y además le
-        // entrenan. Sin esto, esa persona entra en el panel que decida
-        // `homeRouteFor` y no tiene ninguna forma visible de llegar al otro
-        // —tendría que escribir la URL a mano—, que era exactamente lo que
-        // hacía imposible el caso de los roles múltiples.
-        ...(tieneAmbosPaneles(user)
-            ? [{
-                icon: <Users size={20} />,
-                label: 'Cambiar a entrenador',
-                onClick: () => navigate('/coach-dashboard'),
-                isActive: false,
-                hideOnMobileBar: true,
-            }]
-            : []),
     ];
+
+    // CONMUTADOR DE PANEL.
+    // Solo para quien tiene los dos: entrena/pauta a gente y además le
+    // entrenan. Sin esto, esa persona entra en el panel que decida
+    // `homeRouteFor` y no tiene ninguna forma visible de llegar al otro
+    // —tendría que escribir la URL a mano—, que era exactamente lo que hacía
+    // imposible el caso de los roles múltiples. La etiqueta se ajusta a lo que
+    // es: un nutricionista va a "nutrición", no a "entrenador".
+    const panelSwitch = tieneAmbosPaneles(user)
+        ? {
+            icon: <Users size={20} />,
+            label: isCoach(user) ? 'Cambiar a entrenador' : 'Cambiar a nutrición',
+            shortLabel: isCoach(user) ? 'Entrenador' : 'Nutrición',
+            onClick: () => navigate('/coach-dashboard'),
+        }
+        : undefined;
 
     const renderContent = () => {
         switch (VIEWS[slug]) {
@@ -227,6 +228,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 userId={user.id}
                 userName={user.full_name}
                 onLogout={onLogout}
+                panelSwitch={panelSwitch}
                 title={TITLES[slug]}
                 onBack={slug === '' ? undefined : () => go('')}
             >

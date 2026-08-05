@@ -31,6 +31,25 @@ interface MenuItem {
     hideOnMobileBar?: boolean;
 }
 
+/**
+ * CONMUTADOR DE PANEL.
+ *
+ * Quien tiene los dos paneles —entrena a gente y además le entrenan— necesita
+ * ir y volver. Antes esto era un `menuItem` con `hideOnMobileBar`, así que en
+ * el móvil se hundía en el menú de la ⋮ y no había forma evidente de cambiar
+ * de panel. Como es un cambio de CONTEXTO y no una pestaña más, sube a un
+ * control propio: un botón fijo en la cabecera del móvil y en el pie de la
+ * barra lateral de escritorio. Siempre visible, nunca escondido.
+ */
+interface PanelSwitch {
+    /** Texto completo (escritorio y etiqueta accesible). */
+    label: string;
+    /** Versión corta para la píldora del móvil, donde no cabe todo. */
+    shortLabel?: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+}
+
 interface DashboardLayoutProps {
     menuItems: MenuItem[];
     children: ReactNode;
@@ -44,6 +63,8 @@ interface DashboardLayoutProps {
     onLogout?: () => void | Promise<void>;
     /** Nombre a mostrar en el pie de la barra lateral. */
     userName?: string | null;
+    /** Conmutador entre panel de gestión y panel de atleta. Ver `PanelSwitch`. */
+    panelSwitch?: PanelSwitch;
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
@@ -54,6 +75,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     onBack,
     onLogout,
     userName,
+    panelSwitch,
 }) => {
     const visibleItems = menuItems.filter(item => item.label !== 'QA: Test DB');
     const barItems = visibleItems.filter(item => !item.hideOnMobileBar);
@@ -99,6 +121,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     porque hasta ahora NO existía ninguna forma de cerrar sesión
                     ni de volver a la web desde dentro del panel. */}
                 <div className="border-t border-subtle p-3 shrink-0 space-y-0.5">
+                    {/* Conmutador de panel: acento de marca porque cambia TODO
+                        el contexto, no una vista dentro del mismo. */}
+                    {panelSwitch && (
+                        <button
+                            onClick={panelSwitch.onClick}
+                            className="mb-1 flex w-full items-center gap-3 rounded-xl border border-anvil-red/20 bg-anvil-red/10 px-3 py-2.5 text-sm font-bold text-anvil-red transition-colors duration-fast hover:bg-anvil-red/[0.16] active:scale-[0.98]"
+                        >
+                            <span className="shrink-0 [&>svg]:h-[17px] [&>svg]:w-[17px]" aria-hidden="true">{panelSwitch.icon}</span>
+                            <span className="truncate">{panelSwitch.label}</span>
+                        </button>
+                    )}
                     <Link
                         to="/inicio"
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-white/[0.04] hover:text-white"
@@ -153,6 +186,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
+                        {/* Conmutador de panel en móvil: píldora fija en la
+                            cabecera, visible siempre, en vez de enterrada en el
+                            menú de la ⋮. Solo móvil: en escritorio vive en el
+                            pie de la barra lateral. */}
+                        {panelSwitch && (
+                            <button
+                                onClick={panelSwitch.onClick}
+                                aria-label={panelSwitch.label}
+                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97] md:hidden"
+                            >
+                                <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
+                                <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
+                            </button>
+                        )}
                         {userId && <NotificationBell userId={userId} />}
                         {/* En móvil la barra inferior ya va llena de pestañas, así
                             que la salida vive aquí arriba en vez de robarle un

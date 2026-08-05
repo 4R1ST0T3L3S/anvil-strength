@@ -32,6 +32,8 @@ export interface ExerciseHistoryRow {
     sessionId: string;
     weekNumber: number;
     dayNumber: number;
+    /** Fecha de calendario de la sesión (YYYY-MM-DD), o null si no está fijada. */
+    date: string | null;
     rpeGlobal: string | null;
     velocityAvg: string | null;
     /**
@@ -1697,7 +1699,7 @@ export const trainingService = {
                 exercise:exercise_library (id, name, primary_muscles, secondary_muscles),
                 training_sets (*),
                 session:training_sessions!inner (
-                    id, week_number, day_number,
+                    id, week_number, day_number, date,
                     block:training_blocks!inner (id, name, athlete_id, created_at, macro_id)
                 )
             `)
@@ -1723,6 +1725,7 @@ export const trainingService = {
                 id: string;
                 week_number: number;
                 day_number: number;
+                date: string | null;
                 block: { id: string; name: string; athlete_id: string; created_at: string; macro_id: string | null };
             };
         };
@@ -1742,6 +1745,7 @@ export const trainingService = {
                 sessionId: r.session.id,
                 weekNumber: r.session.week_number,
                 dayNumber: r.session.day_number,
+                date: r.session.date ?? null,
                 rpeGlobal: r.rpe,
                 velocityAvg: r.velocity_avg,
                 // La de la prescripción manda; si no la hay, la de la

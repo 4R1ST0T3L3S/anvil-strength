@@ -273,7 +273,17 @@ async function createManagedAthlete(caller: Caller, body: Record<string, unknown
     // OJO: aquí NO va ninguna columna `email`. `profiles` no la tiene, y
     // escribirla es lo que rompía el alta entera. El correo de inicio de
     // sesión ya está en `auth.users`; el de contacto, en `contact_email`.
-    const { error: profileError } = await admin.from('profiles').insert({
+    //
+    // UPSERT y no INSERT, y esto es lo que arregla el
+    // "duplicate key value violates unique constraint profiles_pkey": el
+    // proyecto tiene un disparador `handle_new_user` (de la plantilla de
+    // Supabase) que crea la fila de `profiles` en el MISMO instante en que
+    // `createUser` mete la de `auth.users`. Cuando esta función llegaba a
+    // insertar, la fila ya existía y el alta reventaba. Con `upsert` sobre
+    // `id`, exista o no ese disparador, la ficha queda con NUESTROS campos
+    // (gestionada, vinculada, con `managed_by`) en vez de con los del
+    // disparador. Es idempotente: da igual quién llegue primero.
+    const { error: profileError } = await admin.from('profiles').upsert({
         id: athleteId,
         contact_email: email,
         full_name: fullName,
@@ -285,7 +295,7 @@ async function createManagedAthlete(caller: Caller, body: Record<string, unknown
         gender: body.gender === 'male' || body.gender === 'female' ? body.gender : null,
         weight_category: typeof body.weight_category === 'string' ? body.weight_category : null,
         age_category: typeof body.age_category === 'string' ? body.age_category : null,
-    });
+    }, { onConflict: 'id' });
 
     if (profileError) {
         // Si el perfil no entra, la cuenta latente se queda huérfana y su
