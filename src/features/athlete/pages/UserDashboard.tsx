@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
     LayoutDashboard,
     FileText,
@@ -13,7 +12,6 @@ import {
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { ViewTransition } from '../../../components/layout/ViewTransition';
-import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
 
 import { WorkoutLogger } from '../../training/components/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
@@ -80,8 +78,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const navigate = useNavigate();
     const { view } = useParams<{ view: string }>();
     const { refetch } = useUser();
-
-    const [showTour, setShowTour] = useTourFlag(user.id);
 
     // Una ruta inventada (`/dashboard/loquesea`) no puede dejar la pantalla en
     // blanco: se corrige a la de inicio antes de renderizar nada.
@@ -217,8 +213,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                     parece haberse recargado entera. */}
                 <ViewTransition transitionKey={slug}>{renderContent()}</ViewTransition>
             </DashboardLayout>
-
-            <WelcomeTourModal isOpen={showTour} onClose={() => setShowTour(false)} />
         </>
     );
 }
@@ -231,24 +225,4 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 function viewToSlug(view: string): Slug {
     const entry = (Object.entries(VIEWS) as [Slug, string][]).find(([, name]) => name === view);
     return entry ? entry[0] : '';
-}
-
-/**
- * El tour de bienvenida se enseña una sola vez por usuario.
- *
- * El estado arranca leyendo `localStorage` en el inicializador y no en un
- * efecto: hacerlo en un efecto pintaba el modal durante un frame a quien ya
- * lo había visto.
- */
-function useTourFlag(userId: string): [boolean, (value: boolean) => void] {
-    const key = `has_seen_tour_${userId}`;
-    const [open, setOpen] = useState(() => localStorage.getItem(key) !== 'true');
-
-    // Se marca como visto en cuanto se abre, no al cerrarlo: si el usuario
-    // recarga con el modal abierto, no quiere volver a verlo.
-    useEffect(() => {
-        if (open) localStorage.setItem(key, 'true');
-    }, [key, open]);
-
-    return [open, (value: boolean) => setOpen(value)];
 }

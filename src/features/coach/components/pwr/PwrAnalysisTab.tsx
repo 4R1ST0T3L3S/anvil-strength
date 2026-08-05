@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Activity, ArrowLeft, Save } from 'lucide-react';
+import { Activity, ArrowLeft, Link2, Save } from 'lucide-react';
 import { VideoTracker } from './VideoTracker';
 import { MetricsDashboard, type PwrResult } from './MetricsDashboard';
 import { TrackingPoint } from '../../../../lib/cv/tracker';
@@ -41,7 +41,16 @@ export function PwrAnalysisTab({
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
   const [trackerVersion, setTrackerVersion] = useState(0);
   const [result, setResult] = useState<PwrResult | null>(null);
-  const [saveOpen, setSaveOpen] = useState(false);
+  /**
+   * Qué diálogo está abierto, y con qué intención.
+   *
+   *   'assign' — "Asociar serie": cascada por el plan, serie obligatoria.
+   *   'quick'  — "Guardar suelto": lista rápida, enlazar es opcional.
+   *
+   * Un solo estado y no dos booleanos: los dos diálogos son el mismo
+   * componente y no pueden estar abiertos a la vez.
+   */
+  const [saveMode, setSaveMode] = useState<'assign' | 'quick' | null>(null);
 
   const handleTrackingComplete = (path: TrackingPoint[], ratio: number) => {
      setTrackingData({ path, ratio });
@@ -79,17 +88,27 @@ export function PwrAnalysisTab({
 
           {trackingData && (
               <div className="flex items-center gap-2">
-                  {/* GUARDAR va antes que "analizar otro vídeo" y con el color
-                      de marca: es la acción que cierra la tarea. Descartar el
-                      análisis para empezar otro es secundario, y ponerlo
-                      primero invitaba a perder lo que se acababa de medir. */}
+                  {/* ASOCIAR SERIE es la acción principal, y va primero.
+                      Un análisis que acaba dentro de la serie que lo generó
+                      es lo que convierte esto en seguimiento; guardarlo
+                      suelto en el historial es el caso de rescate, no el
+                      normal. Descartar para analizar otro vídeo queda el
+                      último: ponerlo primero invitaba a perder lo medido. */}
                   <button
-                    onClick={() => setSaveOpen(true)}
+                    onClick={() => setSaveMode('assign')}
                     disabled={!result}
-                    title={result ? 'Guardar en la ficha de un atleta' : 'Todavía no hay métricas que guardar'}
+                    title={result ? 'Guardar las métricas dentro de una serie del plan' : 'Todavía no hay métricas que guardar'}
                     className="flex items-center gap-2 rounded-lg bg-anvil-red px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                     <Save size={16} /> Guardar en atleta
+                     <Link2 size={16} /> Asociar serie
+                  </button>
+                  <button
+                    onClick={() => setSaveMode('quick')}
+                    disabled={!result}
+                    title={result ? 'Guardar en el historial del atleta, sin enlazar con ninguna serie' : 'Todavía no hay métricas que guardar'}
+                    className="flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                     <Save size={16} /> Guardar suelto
                   </button>
                   <button
                     onClick={handleReset}
@@ -138,13 +157,15 @@ export function PwrAnalysisTab({
           )}
       </div>
 
-      {result && (
+      {result && saveMode && (
         <SavePwrResultModal
-          open={saveOpen}
-          onClose={() => setSaveOpen(false)}
+          open
+          mode={saveMode}
+          onClose={() => setSaveMode(null)}
           coachId={session?.user.id ?? null}
           fixedAthleteId={fixedAthleteId}
           metrics={result.metrics}
+          extraMetrics={result.extraMetrics}
           loadKg={result.loadKg}
           reps={result.reps}
           defaultExerciseName={EXERCISE_NAME[result.exerciseType]}

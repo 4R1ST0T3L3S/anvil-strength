@@ -308,7 +308,18 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                                 axisLine={false}
                                 tickLine={false}
                             />
+                            {/* Series y tonelaje van en ejes separados: una cuenta
+                                decenas y la otra toneladas, y compartir un solo eje
+                                aplastaba la que tuviera el rango más pequeño. */}
                             <YAxis
+                                yAxisId="series"
+                                tick={{ fill: 'var(--ink-subtle)', fontSize: 11 }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+                            <YAxis
+                                yAxisId="tonelaje"
+                                orientation="right"
                                 tick={{ fill: 'var(--ink-subtle)', fontSize: 11 }}
                                 axisLine={false}
                                 tickLine={false}
@@ -323,6 +334,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                                 labelStyle={{ color: 'var(--ink)' }}
                             />
                             <Line
+                                yAxisId="series"
                                 type="monotone"
                                 dataKey="series"
                                 name="Series"
@@ -331,6 +343,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                                 dot={{ r: 2.5 }}
                             />
                             <Line
+                                yAxisId="tonelaje"
                                 type="monotone"
                                 dataKey="tonelaje"
                                 name="Tonelaje (t)"

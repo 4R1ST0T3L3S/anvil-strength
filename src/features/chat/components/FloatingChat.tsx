@@ -105,12 +105,13 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                 {/* Chat Body */}
                 {!isMinimized && (
                     <div className="flex-1 overflow-hidden relative">
-                        <AthleteChatView 
+                        <AthleteChatView
                             user={{
                                 ...coach,
                                 coach_id: athlete.id,
                                 coach_name: athlete.full_name
-                            }} 
+                            }}
+                            onBack={onClose}
                         />
                     </div>
                 )}

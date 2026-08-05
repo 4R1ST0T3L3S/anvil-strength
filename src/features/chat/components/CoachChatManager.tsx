@@ -76,7 +76,10 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                 >
                     <ChevronLeft size={24} />
                 </button>
-                <AthleteChatView user={{ ...coach, coach_id: selectedAthlete.id, coach_name: selectedAthlete.full_name }} />
+                <AthleteChatView
+                    user={{ ...coach, coach_id: selectedAthlete.id, coach_name: selectedAthlete.full_name }}
+                    onBack={() => { setSelectedAthlete(null); fetchAthletes(); }}
+                />
             </div>
         );
     }

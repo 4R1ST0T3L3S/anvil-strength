@@ -26,6 +26,9 @@
 
 import { supabase } from '../lib/supabase';
 import type { VbtMeasurement, VbtMetrics, VbtSource } from '../types/training';
+import {
+    legacyMetricsToBag, sanitizeMetricBag, type MetricBag,
+} from '../lib/vbt/metricRegistry';
 
 /** Lo que hace falta para registrar una medición. */
 export interface NewMeasurement {
@@ -41,6 +44,18 @@ export interface NewMeasurement {
     reps?: number | null;
     loadKg?: number | null;
     metrics: VbtMetrics;
+    /**
+     * MÉTRICAS SIN COLUMNA PROPIA.
+     *
+     * Aquí va todo lo que el analizador sepa medir y no quepa en las siete
+     * de `VbtMetrics`: fuerza media, RFD, desviación horizontal de la
+     * barra, duración de cada fase… Se guardan en la bolsa JSONB, así que
+     * añadir una métrica nueva NO exige tocar este archivo ni migrar nada
+     * (ver database/metrics_catalog.sql y src/lib/vbt/metricRegistry.ts).
+     *
+     * Las siete de `metrics` se mezclan aquí solas: no hay que repetirlas.
+     */
+    extraMetrics?: Record<string, number | null | undefined>;
     /** Velocidad de cada repetición, en orden. Dibuja la caída de la serie. */
     repVelocities?: number[] | null;
     fileUrl?: string | null;
@@ -93,7 +108,12 @@ function metricsToRow(m: VbtMetrics) {
 }
 
 /** Las mismas métricas con el prefijo que usan las columnas de la serie. */
-function metricsToSetRow(m: VbtMetrics, source: VbtSource, fileUrl?: string | null) {
+function metricsToSetRow(
+    m: VbtMetrics,
+    source: VbtSource,
+    fileUrl?: string | null,
+    bag?: MetricBag
+) {
     const row: Record<string, unknown> = {
         vbt_mean_velocity: round(m.meanVelocity, 3),
         vbt_peak_velocity: round(m.peakVelocity, 3),
@@ -103,11 +123,79 @@ function metricsToSetRow(m: VbtMetrics, source: VbtSource, fileUrl?: string | nu
         vbt_rom: round(m.rom, 3),
         vbt_est_1rm: round(m.est1RM, 2),
         vbt_source: source,
+        // La bolsa completa, con las siete de arriba y todo lo demás. Las
+        // columnas se siguen escribiendo para no romper lo que ya consulta
+        // por ellas; lo nuevo se lee de aquí.
+        vbt_metrics: bag ?? legacyMetricsToBag(m),
     };
     // Solo se pisa el archivo si viene uno: una medición manual sobre una
     // serie que ya tenía su CSV no debe borrar el CSV.
     if (fileUrl) row.vbt_file_url = fileUrl;
     return row;
+}
+
+/**
+ * La bolsa definitiva de una medición.
+ *
+ * Las siete con columna propia y las que no la tienen, en un solo objeto ya
+ * saneado (sin NaN, sin valores imposibles, redondeado). El orden importa:
+ * lo que venga en `extraMetrics` con una de las siete claves canónicas gana,
+ * porque es lo más específico que ha dicho quien llama.
+ */
+function buildBag(m: VbtMetrics, extra?: Record<string, number | null | undefined>): MetricBag {
+    return { ...legacyMetricsToBag(m), ...sanitizeMetricBag(extra ?? {}) };
+}
+
+/**
+ * Reintento sin la bolsa cuando la columna todavía no existe.
+ *
+ * PGRST204 es "esa columna no está en el esquema". Es EXACTAMENTE lo que
+ * devuelve PostgREST si `database/metrics_catalog.sql` no se ha ejecutado
+ * aún, y hace que se rechace el lote entero: sin este reintento, desplegar
+ * el código antes que la migración dejaría de guardar TODA medición, no
+ * solo las métricas nuevas.
+ *
+ * El proyecto ya se ha comido este fallo antes (ver la nota de PGRST204 en
+ * database/MIGRACION_PENDIENTE.sql). Aquí se degrada en vez de romper.
+ */
+function isMissingColumn(error: unknown, column: string): boolean {
+    const e = (error ?? {}) as { code?: string; message?: string };
+    return e.code === 'PGRST204' && Boolean(e.message?.includes(column));
+}
+
+/**
+ * Copia el resumen de métricas a una serie.
+ *
+ * Devuelve el error en vez de lanzarlo: quien llama decide si es fatal.
+ * Al guardar una medición NO lo es —el dato ya está a salvo en
+ * `vbt_measurements`—, y al escribir directamente sobre la serie SÍ.
+ */
+async function writeSetSummary(
+    setId: string,
+    metrics: VbtMetrics,
+    source: VbtSource,
+    fileUrl: string | null | undefined,
+    bag: MetricBag
+): Promise<unknown | null> {
+    const row = metricsToSetRow(metrics, source, fileUrl, bag);
+
+    const { error } = await supabase.from('training_sets').update(row).eq('id', setId);
+    if (!error) return null;
+
+    // Sin la columna `vbt_metrics`, PostgREST tumba el UPDATE COMPLETO: la
+    // serie se quedaría sin ninguna métrica, ni siquiera las siete de
+    // siempre. Se reintenta sin la bolsa.
+    if (isMissingColumn(error, 'vbt_metrics')) {
+        console.warn(
+            'training_sets.vbt_metrics no existe: la serie se actualiza solo con las métricas ' +
+            'clásicas. Ejecuta database/metrics_catalog.sql en el editor SQL de Supabase.'
+        );
+        const { vbt_metrics: _omit, ...legacyRow } = row;
+        const retry = await supabase.from('training_sets').update(legacyRow).eq('id', setId);
+        return retry.error ?? null;
+    }
+
+    return error;
 }
 
 export const vbtService = {
@@ -120,6 +208,8 @@ export const vbtService = {
      * falla, se avisa pero no se pierde la medición.
      */
     async saveMeasurement(input: NewMeasurement): Promise<VbtMeasurement> {
+        const bag = buildBag(input.metrics, input.extraMetrics);
+
         const payload = {
             athlete_id: input.athleteId,
             created_by: input.createdBy ?? null,
@@ -132,6 +222,7 @@ export const vbtService = {
             reps: input.reps ?? null,
             load_kg: input.loadKg ?? null,
             ...metricsToRow(input.metrics),
+            metrics: bag,
             rep_velocities: input.repVelocities?.length
                 ? input.repVelocities.map(v => round(v, 3))
                 : null,
@@ -140,26 +231,40 @@ export const vbtService = {
             notes: input.notes?.trim() || null,
         };
 
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('vbt_measurements')
             .insert(payload)
             .select()
             .single();
 
+        // Migración sin ejecutar: se guarda igual, con las siete de siempre.
+        // Perder la medición entera por no poder guardar las métricas nuevas
+        // sería el peor de los dos resultados.
+        if (error && isMissingColumn(error, 'metrics')) {
+            console.warn(
+                'vbt_measurements.metrics no existe: se guarda sin las métricas ampliadas. ' +
+                'Ejecuta database/metrics_catalog.sql en el editor SQL de Supabase.'
+            );
+            const { metrics: _omit, ...legacyPayload } = payload;
+            ({ data, error } = await supabase
+                .from('vbt_measurements')
+                .insert(legacyPayload)
+                .select()
+                .single());
+        }
+
         if (error) throw explainVbtError(error);
 
         if (input.trainingSetId) {
-            const { error: setError } = await supabase
-                .from('training_sets')
-                .update(metricsToSetRow(input.metrics, input.source, input.fileUrl))
-                .eq('id', input.trainingSetId);
-
+            const setError = await writeSetSummary(
+                input.trainingSetId, input.metrics, input.source, input.fileUrl, bag
+            );
             // No se propaga: la medición ya está guardada y perderla por no
             // poder copiar el resumen sería el peor de los dos resultados.
             if (setError) {
                 console.warn(
                     'Medición guardada, pero no se pudo copiar el resumen a la serie:',
-                    setError.message
+                    (setError as { message?: string }).message
                 );
             }
         }
@@ -172,13 +277,12 @@ export const vbtService = {
         setId: string,
         metrics: VbtMetrics,
         source: VbtSource,
-        fileUrl?: string | null
+        fileUrl?: string | null,
+        extraMetrics?: Record<string, number | null | undefined>
     ): Promise<void> {
-        const { error } = await supabase
-            .from('training_sets')
-            .update(metricsToSetRow(metrics, source, fileUrl))
-            .eq('id', setId);
-
+        const error = await writeSetSummary(
+            setId, metrics, source, fileUrl, buildBag(metrics, extraMetrics)
+        );
         if (error) throw explainVbtError(error);
     },
 
@@ -195,6 +299,7 @@ export const vbtService = {
                 vbt_rom: null,
                 vbt_est_1rm: null,
                 vbt_source: null,
+                vbt_metrics: null,
             })
             .eq('id', setId);
 
@@ -341,6 +446,208 @@ export const vbtService = {
         return out;
     },
 };
+
+// =====================================================================
+// EL ÁRBOL DE PROGRAMACIÓN, PARA ELEGIR SERIE EN CASCADA
+// =====================================================================
+/**
+ * POR QUÉ HAY DOS FORMAS DE ELEGIR SERIE
+ *
+ * `getAttachableSets` devuelve una LISTA PLANA de las series recientes, y
+ * sirve para el caso rápido: el coach acaba de analizar un vídeo de
+ * sentadilla y la serie que busca está entre las diez primeras.
+ *
+ * Esto de aquí devuelve el ÁRBOL: macro → bloque → semana → día →
+ * ejercicio → serie. Es lo que hace falta cuando la serie NO es reciente
+ * —un vídeo de hace tres semanas, un bloque anterior— o cuando el atleta
+ * tiene varios macrociclos abiertos y la lista plana no distingue cuál es
+ * cuál. Buscar "la tercera de press del jueves de la semana 2 del bloque de
+ * fuerza" en una lista de cuatrocientas series es inviable.
+ *
+ * Se carga en DOS pasos y no en uno: los bloques de un atleta son media
+ * docena, pero traerse las sesiones, ejercicios y series de TODOS ellos de
+ * golpe son miles de filas para acabar usando cuatro. El segundo paso solo
+ * baja el bloque elegido.
+ */
+
+/** Un macrociclo con los bloques que cuelgan de él. */
+export interface TrainingTreeMacro {
+    id: string | null;
+    name: string;
+    competitionDate: string | null;
+    blocks: TrainingTreeBlock[];
+}
+
+export interface TrainingTreeBlock {
+    id: string;
+    name: string;
+    isActive: boolean;
+    startWeek: number | null;
+    endWeek: number | null;
+    createdAt: string;
+}
+
+/** Nivel 1: macrociclos y bloques del atleta. Consulta barata. */
+export async function getAthleteTrainingTree(athleteId: string): Promise<TrainingTreeMacro[]> {
+    const [{ data: macros }, { data: blocks, error }] = await Promise.all([
+        supabase
+            .from('macrocycles')
+            .select('id, name, competition_date')
+            .eq('athlete_id', athleteId)
+            .order('competition_date', { ascending: false }),
+        supabase
+            .from('training_blocks')
+            .select('id, name, is_active, start_week, end_week, macro_id, created_at')
+            .eq('athlete_id', athleteId)
+            .order('is_active', { ascending: false })
+            .order('created_at', { ascending: false }),
+    ]);
+
+    if (error) throw error;
+
+    type BlockRow = {
+        id: string; name: string; is_active: boolean;
+        start_week: number | null; end_week: number | null;
+        macro_id: string | null; created_at: string;
+    };
+
+    const toTreeBlock = (b: BlockRow): TrainingTreeBlock => ({
+        id: b.id,
+        name: b.name,
+        isActive: b.is_active,
+        startWeek: b.start_week,
+        endWeek: b.end_week,
+        createdAt: b.created_at,
+    });
+
+    const rows = (blocks ?? []) as BlockRow[];
+    const out: TrainingTreeMacro[] = [];
+
+    for (const m of (macros ?? []) as { id: string; name: string; competition_date: string | null }[]) {
+        const own = rows.filter(b => b.macro_id === m.id);
+        // Un macrociclo sin bloques no se ofrece: sería un callejón sin
+        // salida en mitad de la cascada.
+        if (own.length === 0) continue;
+        out.push({
+            id: m.id,
+            name: m.name,
+            competitionDate: m.competition_date,
+            blocks: own.map(toTreeBlock),
+        });
+    }
+
+    // Los bloques sueltos van juntos al final. No todo bloque pertenece a un
+    // macrociclo, y esconderlos los haría inalcanzables desde aquí.
+    const orphans = rows.filter(b => !b.macro_id || !out.some(m => m.id === b.macro_id));
+    if (orphans.length > 0) {
+        out.push({
+            id: null,
+            name: 'Sin macrociclo',
+            competitionDate: null,
+            blocks: orphans.map(toTreeBlock),
+        });
+    }
+
+    return out;
+}
+
+/** Un día con sus ejercicios y series, ya ordenados. */
+export interface TrainingTreeSession {
+    id: string;
+    weekNumber: number;
+    dayNumber: number;
+    name: string | null;
+    dayOfWeek: string | null;
+    date: string | null;
+    exercises: TrainingTreeExercise[];
+}
+
+export interface TrainingTreeExercise {
+    id: string;
+    name: string;
+    variantName: string | null;
+    exerciseId: string | null;
+    sets: TrainingTreeSet[];
+}
+
+export interface TrainingTreeSet {
+    id: string;
+    setNumber: number;
+    targetReps: string | null;
+    loadKg: number | null;
+    reps: number | null;
+    /** Ya tiene métricas: se avisa antes de pisarlas. */
+    hasMetrics: boolean;
+}
+
+/** Nivel 2: todo el contenido de UN bloque. */
+export async function getBlockTree(blockId: string): Promise<TrainingTreeSession[]> {
+    const { data, error } = await supabase
+        .from('training_sessions')
+        .select(`
+            id, week_number, day_number, name, day_of_week, date,
+            session_exercises (
+                id, order_index, variant_name,
+                exercise:exercise_library (id, name),
+                training_sets (
+                    id, order_index, target_reps, target_load, target_metric,
+                    actual_load, actual_reps, vbt_mean_velocity
+                )
+            )
+        `)
+        .eq('block_id', blockId)
+        .order('week_number')
+        .order('day_number');
+
+    if (error) throw error;
+
+    type Row = {
+        id: string; week_number: number; day_number: number;
+        name: string | null; day_of_week: string | null; date: string | null;
+        session_exercises: {
+            id: string; order_index: number; variant_name: string | null;
+            exercise: { id: string; name: string } | null;
+            training_sets: {
+                id: string; order_index: number;
+                target_reps: string | null; target_load: number | null;
+                target_metric: string | null;
+                actual_load: number | null; actual_reps: number | null;
+                vbt_mean_velocity: number | null;
+            }[];
+        }[];
+    };
+
+    return ((data as unknown as Row[] | null) ?? []).map(s => ({
+        id: s.id,
+        weekNumber: s.week_number,
+        dayNumber: s.day_number,
+        name: s.name,
+        dayOfWeek: s.day_of_week,
+        date: s.date,
+        exercises: [...(s.session_exercises ?? [])]
+            .sort((a, b) => a.order_index - b.order_index)
+            .map(ex => ({
+                id: ex.id,
+                name: ex.exercise?.name ?? 'Ejercicio',
+                variantName: ex.variant_name,
+                exerciseId: ex.exercise?.id ?? null,
+                sets: [...(ex.training_sets ?? [])]
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map((set, i) => ({
+                        id: set.id,
+                        setNumber: i + 1,
+                        targetReps: set.target_reps,
+                        // La carga movida manda sobre la pautada, y solo son
+                        // kilos si la prescripción iba en kilos: un objetivo
+                        // de 0,45 m/s no son 0,45 kg.
+                        loadKg: set.actual_load
+                            ?? ((set.target_metric ?? 'kg') === 'kg' ? set.target_load : null),
+                        reps: set.actual_reps,
+                        hasMetrics: set.vbt_mean_velocity !== null,
+                    })),
+            })),
+    }));
+}
 
 /** Una serie del plan, descrita lo justo para poder elegirla en una lista. */
 export interface AttachableSet {

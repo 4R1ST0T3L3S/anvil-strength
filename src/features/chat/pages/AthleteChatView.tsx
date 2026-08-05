@@ -5,7 +5,7 @@ import { ChatBubble, ChatInput } from '../components/ChatComponents';
 import { ChevronLeft, ShieldCheck, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export function AthleteChatView({ user }: { user: UserProfile }) {
+export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: () => void }) {
     const navigate = useNavigate();
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const { messages, loading, sendMessage, markAsRead } = useChat(user.id, user.coach_id || null);
@@ -37,7 +37,12 @@ export function AthleteChatView({ user }: { user: UserProfile }) {
         <div className="fixed inset-0 z-[60] bg-[#0a0a0a] flex flex-col">
             {/* Header */}
             <header className="p-6 bg-black/60 backdrop-blur-xl border-b border-white/5 flex items-center gap-4">
-                <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full text-gray-500 hover:text-white transition-colors">
+                {/* `navigate(-1)` se quedaba sin sitio al que volver cuando no
+                    había una entrada previa en el historial (recarga, enlace
+                    directo, o embebido dentro de otra vista) y dejaba al
+                    usuario atrapado en el chat. Con destino explícito, como
+                    hace el resto de la app. */}
+                <button onClick={() => (onBack ? onBack() : navigate('/dashboard'))} className="p-2 hover:bg-white/10 rounded-full text-gray-500 hover:text-white transition-colors">
                     <ChevronLeft size={24} />
                 </button>
                 <div className="flex-1">

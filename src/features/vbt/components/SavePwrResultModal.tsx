@@ -8,6 +8,7 @@ import { velocityZone } from '../../../lib/vbt/analysis';
 import type { VbtMetrics } from '../../../types/training';
 import { transition, DURATION } from '../../../lib/motion';
 import { cn } from '../../../lib/utils';
+import { AssignSetPicker, type AssignSetSelection } from './AssignSetPicker';
 
 /**
  * GUARDAR UN ANÁLISIS DE VÍDEO EN UN ATLETA
@@ -45,8 +46,26 @@ export interface SavePwrResultModalProps {
     reps: number | null;
     /** Velocidad de cada repetición, si el analizador separó varias. */
     repVelocities?: number[] | null;
+    /**
+     * Todo lo que el analizador mide y no cabe en las siete de `VbtMetrics`.
+     * Se guarda tal cual en la bolsa JSONB. Ver src/lib/vbt/metricRegistry.ts.
+     */
+    extraMetrics?: Record<string, number | null | undefined>;
     /** Nombre por defecto del ejercicio, deducido del tipo elegido. */
     defaultExerciseName: string;
+    /**
+     * CÓMO SE ELIGE LA SERIE.
+     *
+     *   'quick'  — lista plana de series recientes, y enlazar es OPCIONAL.
+     *              Para "guarda esto en la ficha y ya veré dónde va".
+     *   'assign' — cascada macro → bloque → semana → día → ejercicio → serie,
+     *              y la serie es OBLIGATORIA. Es el flujo "Asociar serie".
+     *
+     * Son dos intenciones distintas, no dos aspectos de la misma pantalla:
+     * quien pulsa "Asociar serie" ya sabe a qué serie va, y ofrecerle
+     * "guardar sin enlazar" solo le da la oportunidad de equivocarse.
+     */
+    mode?: 'quick' | 'assign';
     /**
      * Atleta fijo. Cuando lo usa el propio atleta desde su panel no hay nada
      * que elegir: es él, y enseñarle una lista de una persona sería absurdo.
@@ -62,8 +81,10 @@ export function SavePwrResultModal({
     loadKg,
     reps,
     repVelocities,
+    extraMetrics,
     defaultExerciseName,
     fixedAthleteId,
+    mode = 'quick',
 }: SavePwrResultModalProps) {
     const [athletes, setAthletes] = useState<AthleteOption[]>([]);
     const [athleteId, setAthleteId] = useState<string | null>(fixedAthleteId ?? null);
@@ -74,6 +95,10 @@ export function SavePwrResultModal({
     const [setId, setSetId] = useState<string | null>(null);
     const [loadingSets, setLoadingSets] = useState(false);
     const [saving, setSaving] = useState(false);
+    /** Lo elegido en la cascada. Solo en modo 'assign'. */
+    const [assigned, setAssigned] = useState<AssignSetSelection | null>(null);
+
+    const isAssign = mode === 'assign';
 
     // Atletas del entrenador. Solo se piden si hay que elegir.
     useEffect(() => {
@@ -104,7 +129,10 @@ export function SavePwrResultModal({
     // vacía al cambiar de atleta desde el propio manejador, no aquí: tocar el
     // estado en el cuerpo del efecto provoca un render en cascada.
     useEffect(() => {
-        if (!open || !athleteId) return;
+        // En modo 'assign' la elección la lleva la cascada, que se trae sus
+        // propios datos por niveles: pedir además la lista plana serían dos
+        // consultas para pintar una sola pantalla.
+        if (!open || !athleteId || isAssign) return;
 
         let alive = true;
         vbtService.getAttachableSets(athleteId)
@@ -113,7 +141,7 @@ export function SavePwrResultModal({
             .finally(() => { if (alive) setLoadingSets(false); });
 
         return () => { alive = false; };
-    }, [open, athleteId]);
+    }, [open, athleteId, isAssign]);
 
     /**
      * Series que se ofrecen: las del ejercicio que se está guardando.
@@ -146,10 +174,27 @@ export function SavePwrResultModal({
             toast.error('Escribe de qué ejercicio es');
             return;
         }
+        if (isAssign && !assigned) {
+            toast.error('Elige la serie a la que asociar el análisis');
+            return;
+        }
 
         setSaving(true);
         try {
-            const chosen = candidateSets.find(s => s.setId === setId) ?? null;
+            // Las dos formas de elegir acaban en la misma forma de dato: el
+            // servicio no sabe —ni tiene por qué— por cuál de las dos se ha
+            // llegado hasta aquí.
+            const chosen: Pick<AttachableSet,
+                'setId' | 'sessionExerciseId' | 'exerciseId' | 'exerciseName' | 'setNumber'
+            > | null = isAssign
+                ? (assigned && {
+                    setId: assigned.setId,
+                    sessionExerciseId: assigned.sessionExerciseId,
+                    exerciseId: assigned.exerciseId,
+                    exerciseName: assigned.exerciseName,
+                    setNumber: assigned.setNumber,
+                }) || null
+                : candidateSets.find(s => s.setId === setId) ?? null;
 
             await vbtService.saveMeasurement({
                 athleteId,
@@ -162,6 +207,7 @@ export function SavePwrResultModal({
                 reps,
                 loadKg,
                 metrics,
+                extraMetrics,
                 repVelocities,
                 // 'video' y no 'encoder': un análisis por visión artificial
                 // sobre un vídeo de móvil no merece la misma confianza que una
@@ -207,7 +253,9 @@ export function SavePwrResultModal({
                 >
                     <header className="flex shrink-0 items-start justify-between gap-3 border-b border-subtle px-4 py-3">
                         <div>
-                            <h3 className="text-t-sm font-bold text-ink">Guardar este análisis</h3>
+                                <h3 className="text-t-sm font-bold text-ink">
+                                {isAssign ? 'Asociar a una serie' : 'Guardar este análisis'}
+                            </h3>
                             <p className="mt-0.5 text-t-2xs text-ink-subtle">
                                 {metrics.meanVelocity?.toFixed(2)} m/s
                                 {loadKg ? ` · ${loadKg} kg` : ''}
@@ -285,8 +333,28 @@ export function SavePwrResultModal({
                             />
                         </div>
 
-                        {/* 3. A qué serie (opcional) */}
-                        {athleteId && (
+                        {/* 3. A qué serie */}
+                        {athleteId && isAssign && (
+                            <div>
+                                <p className="mb-1 flex items-center gap-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                    <Link2 size={12} aria-hidden="true" />
+                                    Serie a la que se asocia
+                                </p>
+                                <p className="mb-2 text-t-2xs leading-relaxed text-ink-faint">
+                                    Baja por el plan hasta la serie exacta. Las métricas quedarán
+                                    guardadas dentro de ella.
+                                </p>
+
+                                <AssignSetPicker
+                                    athleteId={athleteId}
+                                    exerciseHint={exerciseName}
+                                    value={assigned}
+                                    onChange={setAssigned}
+                                />
+                            </div>
+                        )}
+
+                        {athleteId && !isAssign && (
                             <div>
                                 <p className="mb-1 flex items-center gap-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                                     <Link2 size={12} aria-hidden="true" />
@@ -368,7 +436,7 @@ export function SavePwrResultModal({
                         </button>
                         <button
                             onClick={save}
-                            disabled={saving || !athleteId}
+                            disabled={saving || !athleteId || (isAssign && !assigned)}
                             className="flex items-center gap-1.5 rounded-field bg-brand px-4 py-2 text-t-2xs font-bold text-brand-ink transition-colors duration-fast hover:opacity-90 disabled:opacity-50"
                         >
                             {saving ? <Loader size={13} className="animate-spin" /> : <Check size={13} />}

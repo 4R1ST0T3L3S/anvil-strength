@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil, TrendingUp, Layers, Trophy, X, Folder, Copy } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil, TrendingUp, Layers, Trophy, Folder, Copy } from 'lucide-react';
 import { DuplicateBlockModal } from './DuplicateBlockModal';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, Macrocycle } from '../../../types/training';
@@ -10,6 +10,36 @@ import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils'
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'sonner';
+import { EmptyState } from '../../../components/ui/EmptyState';
+import { Modal } from '../../../components/ui/Modal';
+
+/** Un botón de icono de 36px, en las cuatro variantes que usa la tarjeta. */
+function IconAction({
+    icon: Icon, label, onClick, active, danger,
+}: {
+    icon: typeof Folder;
+    label: string;
+    onClick: (e: React.MouseEvent) => void;
+    active?: boolean;
+    danger?: boolean;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            aria-label={label}
+            title={label}
+            className={`rounded-field p-2 transition-colors duration-fast ease-snap ${
+                active
+                    ? 'bg-brand-quiet text-brand'
+                    : danger
+                        ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger'
+                        : 'text-ink-subtle hover:bg-surface-sunken hover:text-ink'
+            }`}
+        >
+            <Icon size={16} aria-hidden="true" />
+        </button>
+    );
+}
 
 interface TrainingBlockListProps {
     athleteId: string;
@@ -104,43 +134,56 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
 
 
 
+    /**
+     * LA TARJETA DE UN BLOQUE.
+     * ==================================================================
+     * Antes era italic uppercase tracking-tighter en rojo neón, con un
+     * halo (`ring`) alrededor de los bloques activos, botones en cinco
+     * grises distintos (`bg-white/10`, `bg-white/5`, `text-white`…) y un
+     * popover con su propia paleta. Nada de eso viene del sistema de
+     * diseño que usan ya el resto de pantallas del panel.
+     *
+     * Ahora: sin cursiva, jerarquía por PESO y TAMAÑO en vez de por color
+     * —el nombre del bloque es lo único en `t-lg/font-bold`—, un único
+     * estado "activo" que se lee por el borde y la insignia, y los cinco
+     * botones de acción con el mismo tratamiento que usa toda la app
+     * (`rounded-field`, `text-ink-subtle` → `text-ink` al pasar por
+     * encima). El rojo queda para la insignia ACTIVO y nada más: es lo
+     * que hace que de verdad destaque entre los históricos.
+     */
     const renderBlockCard = (block: TrainingBlock) => {
         const isActive = block.is_active;
         return (
             <div
                 key={block.id}
-                className={`group relative bg-surface-canvas border border-subtle rounded-card transition-all duration-base hover:border-anvil-red/30 cursor-pointer ${isActive ? 'ring-1 ring-anvil-red/30' : ''}`}
+                className="group relative cursor-pointer rounded-card border border-[var(--border-default)] bg-surface-raised transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay"
                 onClick={() => onSelectBlock(block)}
             >
-                {/* En movil la tarjeta es de DOS filas y no de una.
-                    Con una sola, el titulo, el estado y los cinco controles
-                    competian por 375px: los botones se salian de la pantalla y
-                    el nombre del bloque se quedaba en tres letras. */}
-                <div className="flex flex-col gap-3 rounded-card px-4 py-4 transition-all duration-base group-hover:bg-white/5 md:flex-row md:items-center md:justify-between md:gap-4 md:px-6 md:py-5">
-                    <div className="flex min-w-0 items-center gap-3 md:gap-6">
-                        {/* Status Badge */}
-                        <div className={`px-2.5 py-1 rounded-md text-[10px] font-black tracking-wider border shrink-0 ${isActive
-                            ? "bg-anvil-red/10 text-anvil-red border-anvil-red/20"
-                            : "bg-gray-500/10 text-ink-subtle border-gray-500/20"
-                            }`}>
-                            {isActive ? 'ACTIVO' : 'HISTÓRICO'}
-                        </div>
+                {/* En móvil la tarjeta es de DOS filas y no de una: con una
+                    sola, el título, el estado y los cinco controles competían
+                    por 375px y los botones se salían de la pantalla. */}
+                <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:gap-4 md:px-5 md:py-4">
+                    <div className="flex min-w-0 items-center gap-3 md:gap-4">
+                        {isActive && (
+                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-[10px] font-black uppercase tracking-wider text-brand">
+                                Activo
+                            </span>
+                        )}
 
-                        {/* Title & info */}
-                        <div className="flex min-w-0 flex-col gap-1">
-                            <h4 className="truncate text-lg font-black uppercase italic tracking-tighter text-white transition-colors group-hover:text-anvil-red md:text-2xl">
+                        <div className="flex min-w-0 flex-col gap-0.5">
+                            <h4 className="truncate text-t-base font-bold text-ink transition-colors duration-fast group-hover:text-brand md:text-t-lg">
                                 {block.name}
                             </h4>
 
-                            <div className="flex items-center gap-2 truncate text-xs font-medium uppercase tracking-wider text-ink-subtle md:gap-4">
-                                <span className="flex shrink-0 items-center gap-2">
-                                    <Calendar size={12} />
-                                    Semana {block.start_week || '?'} - {block.end_week || '?'}
+                            <div className="flex items-center gap-2 truncate text-t-xs text-ink-subtle md:gap-3">
+                                <span className="flex shrink-0 items-center gap-1.5">
+                                    <Calendar size={12} aria-hidden="true" />
+                                    Semana {block.start_week || '?'}–{block.end_week || '?'}
                                 </span>
                                 {block.start_week && block.end_week && (
                                     <>
-                                        <span className="hidden h-1 w-1 shrink-0 rounded-full bg-gray-700 sm:block" />
-                                        <span className="hidden truncate normal-case text-ink-subtle sm:block">
+                                        <span className="hidden h-1 w-1 shrink-0 rounded-pill bg-[var(--border-strong)] sm:block" aria-hidden="true" />
+                                        <span className="hidden truncate sm:block">
                                             {formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)}
                                         </span>
                                     </>
@@ -149,71 +192,54 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         </div>
                     </div>
 
-                    <div className="relative flex shrink-0 items-center justify-end gap-1 md:gap-2">
-                        {/* Asignar a macro */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setMacroPickerBlockId(macroPickerBlockId === block.id ? null : block.id);
-                            }}
-                            className={`p-2 rounded-lg transition-colors ${macroPickerBlockId === block.id ? 'text-anvil-red bg-anvil-red/10' : 'text-ink-subtle hover:text-white hover:bg-white/10'}`}
-                            title="Asignar a un macro"
-                        >
-                            <Folder size={18} />
-                        </button>
-                        {/* Copiar a otros atletas. Es la acción que más
-                            tiempo ahorra de toda la pantalla: un club
-                            programa por grupos y sin esto el mismo bloque se
-                            construye a mano una vez por atleta. */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setBlockToDuplicate(block);
-                            }}
-                            className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink active:scale-95"
-                            title="Copiar este bloque a otros atletas"
-                        >
-                            <Copy size={18} />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setBlockToEdit(block);
-                            }}
-                            className="p-2 text-ink-subtle hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                            title="Editar bloque"
-                        >
-                            <Pencil size={18} />
-                        </button>
-                        <button
+                    <div className="relative flex shrink-0 items-center justify-end gap-0.5 md:gap-1">
+                        <IconAction
+                            icon={Folder}
+                            label="Asignar a un macro"
+                            active={macroPickerBlockId === block.id}
+                            onClick={(e) => { e.stopPropagation(); setMacroPickerBlockId(macroPickerBlockId === block.id ? null : block.id); }}
+                        />
+                        {/* Copiar a otros atletas. Es la acción que más tiempo
+                            ahorra de toda la pantalla: un club programa por
+                            grupos y sin esto el mismo bloque se construye a
+                            mano una vez por atleta. */}
+                        <IconAction
+                            icon={Copy}
+                            label="Copiar este bloque a otros atletas"
+                            onClick={(e) => { e.stopPropagation(); setBlockToDuplicate(block); }}
+                        />
+                        <IconAction
+                            icon={Pencil}
+                            label="Editar bloque"
+                            onClick={(e) => { e.stopPropagation(); setBlockToEdit(block); }}
+                        />
+                        <IconAction
+                            icon={Trash2}
+                            label="Eliminar bloque"
+                            danger
                             onClick={(e) => handleDeleteClick(e, block.id)}
-                            className="p-2 text-ink-subtle hover:text-danger hover:bg-[var(--danger-quiet)] rounded-lg transition-colors"
-                            title="Eliminar bloque"
-                        >
-                            <Trash2 size={18} />
-                        </button>
-                        {/* La flecha sobra en movil: la tarjeta entera ya es
-                            pulsable y ahi cada pixel de ancho cuenta. */}
-                        <div className="ml-1 hidden text-ink-subtle transition-colors group-hover:text-white md:block">
-                            <ChevronRight size={20} />
-                        </div>
+                        />
+                        {/* La flecha sobra en móvil: la tarjeta entera ya es
+                            pulsable y ahí cada píxel de ancho cuenta. */}
+                        <ChevronRight size={18} aria-hidden="true" className="ml-1 hidden shrink-0 text-ink-faint transition-colors duration-fast group-hover:text-ink-muted md:block" />
 
-                        {/* Popover: elegir macro */}
                         {macroPickerBlockId === block.id && (
                             <div
-                                className="absolute right-0 top-full mt-2 z-30 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-2xl p-3 w-60"
+                                className="absolute right-0 top-full z-dropdown mt-2 w-60 rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <p className="text-[10px] font-black uppercase tracking-wider text-ink-subtle mb-2">Mover a macro...</p>
-                                <div className="space-y-1 max-h-48 overflow-y-auto">
+                                <p className="px-2.5 py-1.5 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Mover a macro</p>
+                                <div className="max-h-48 space-y-0.5 overflow-y-auto">
                                     {macros.length === 0 && (
-                                        <p className="text-xs text-ink-subtle italic px-2 py-1">No hay macros. Crea uno con "Nuevo Macro".</p>
+                                        <p className="px-2.5 py-2 text-t-xs text-ink-subtle">Sin macros. Crea uno con "Nuevo macro".</p>
                                     )}
                                     {macros.map(m => (
                                         <button
                                             key={m.id}
                                             onClick={() => handleAssignMacro(block.id, m.id)}
-                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-colors ${block.macro_id === m.id ? 'bg-anvil-red/20 text-anvil-red' : 'text-ink-muted hover:bg-anvil-red hover:text-white'}`}
+                                            className={`w-full rounded-field px-2.5 py-2 text-left text-t-sm font-semibold transition-colors duration-fast ${
+                                                block.macro_id === m.id ? 'bg-brand-quiet text-brand' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
+                                            }`}
                                         >
                                             {m.name}
                                         </button>
@@ -221,7 +247,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                     {block.macro_id && (
                                         <button
                                             onClick={() => handleAssignMacro(block.id, null)}
-                                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold text-ink-subtle hover:bg-white/5 hover:text-white transition-colors"
+                                            className="w-full rounded-field px-2.5 py-2 text-left text-t-xs font-semibold text-ink-subtle transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
                                         >
                                             Quitar del macro
                                         </button>
@@ -238,44 +264,38 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
     if (loading) {
         return (
             <div className="flex justify-center p-12">
-                <Loader className="text-anvil-red animate-spin" />
+                <Loader className="animate-spin text-ink-faint" size={22} />
             </div>
         );
     }
 
     return (
         <div className="space-y-6">
-            <div className="px-1 py-6 md:px-6 md:py-8">
-                <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end md:gap-6">
-                    <div>
-                        <h2 className="text-4xl font-black uppercase italic leading-[0.9] tracking-tighter text-white md:text-6xl">
-                            Bloques
-                        </h2>
-                        <div className="mt-3 h-1.5 w-20 rounded-full bg-anvil-red md:mt-4 md:h-2 md:w-24" />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <button
-                            onClick={() => setIsStatsOpen(true)}
-                            className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-[var(--border-default)] text-ink-muted hover:text-white hover:border-anvil-red/40 rounded-lg text-sm font-black uppercase tracking-wider transition-all"
-                        >
-                            <TrendingUp size={16} className="text-anvil-red" />
-                            Estadísticas
-                        </button>
-                        <button
-                            onClick={() => setIsCreateMacroOpen(true)}
-                            className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-[var(--border-default)] text-ink-muted hover:text-white hover:border-anvil-red/40 rounded-lg text-sm font-black uppercase tracking-wider transition-all"
-                        >
-                            <Layers size={16} className="text-anvil-red" />
-                            Nuevo Macro
-                        </button>
-                        <button
-                            onClick={() => setIsCreateModalOpen(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg text-sm font-black uppercase tracking-wider hover:bg-gray-200 transition-all hover:scale-105"
-                        >
-                            <Plus size={18} />
-                            Nuevo Bloque
-                        </button>
-                    </div>
+            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                <h2 className="text-t-2xl font-black uppercase tracking-display text-ink">Bloques</h2>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        onClick={() => setIsStatsOpen(true)}
+                        className="flex items-center gap-2 rounded-field border border-[var(--border-default)] px-3.5 py-2.5 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                    >
+                        <TrendingUp size={15} aria-hidden="true" />
+                        Estadísticas
+                    </button>
+                    <button
+                        onClick={() => setIsCreateMacroOpen(true)}
+                        className="flex items-center gap-2 rounded-field border border-[var(--border-default)] px-3.5 py-2.5 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                    >
+                        <Layers size={15} aria-hidden="true" />
+                        Nuevo macro
+                    </button>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                    >
+                        <Plus size={16} aria-hidden="true" />
+                        Nuevo bloque
+                    </button>
                 </div>
             </div>
 
@@ -285,38 +305,38 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 dentro un bloque: existía en la base, pero la rama del estado
                 vacío se comía todo el listado. */}
             {blocks.length === 0 && macros.length === 0 ? (
-                <div className="bg-surface-raised border border-subtle rounded-xl p-12 text-center">
-                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FolderOpen className="text-ink-subtle" size={32} />
-                    </div>
-                    <h4 className="text-white font-bold mb-2">No hay planificaciones</h4>
-                    <p className="text-ink-muted text-sm mb-6">
-                        Comienza creando el primer bloque de entrenamiento para este atleta.
-                    </p>
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="text-anvil-red text-sm font-bold uppercase tracking-widest hover:text-red-400 transition-colors"
-                    >
-                        Crear ahora &rarr;
-                    </button>
+                <div className="rounded-card border border-[var(--border-default)] bg-surface-raised">
+                    <EmptyState
+                        icon={<FolderOpen size={20} aria-hidden="true" />}
+                        title="No hay planificaciones todavía"
+                        body="Crea el primer bloque de entrenamiento para este atleta."
+                        action={
+                            <button
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                            >
+                                Crear bloque
+                            </button>
+                        }
+                    />
                 </div>
             ) : (
-                <div className="space-y-8">
+                <div className="space-y-6">
                     {/* Macros con sus bloques */}
                     {macros.map(macro => {
                         const macroBlocks = blocks.filter(b => b.macro_id === macro.id);
                         return (
-                            <div key={macro.id} className="border border-[var(--border-default)] rounded-3xl p-4 md:p-5 bg-white/[0.02]">
-                                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-1">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="p-2 bg-anvil-red/10 border border-anvil-red/30 rounded-xl text-anvil-red shrink-0">
-                                            <Layers size={16} />
-                                        </div>
+                            <div key={macro.id} className="rounded-card border border-[var(--border-default)] bg-surface-sunken p-3.5 md:p-4">
+                                <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand">
+                                            <Layers size={16} aria-hidden="true" />
+                                        </span>
                                         <div className="min-w-0">
-                                            <h3 className="text-lg font-black text-white uppercase italic tracking-tight truncate">{macro.name}</h3>
+                                            <h3 className="truncate text-t-base font-bold text-ink">{macro.name}</h3>
                                             {macro.competition_name && (
-                                                <p className="text-[11px] font-bold text-yellow-500 uppercase tracking-wider flex items-center gap-1.5">
-                                                    <Trophy size={11} />
+                                                <p className="flex items-center gap-1.5 text-t-xs font-semibold text-warning">
+                                                    <Trophy size={11} aria-hidden="true" />
                                                     {macro.competition_name}
                                                     {macro.competition_date && (
                                                         <span className="text-ink-subtle">
@@ -327,18 +347,19 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                             )}
                                         </div>
                                     </div>
-                                    <button
+                                    <IconAction
+                                        icon={Trash2}
+                                        label="Eliminar macro (los bloques se conservan)"
+                                        danger
                                         onClick={() => handleDeleteMacro(macro.id)}
-                                        className="p-2 text-ink-subtle hover:text-danger hover:bg-[var(--danger-quiet)] rounded-lg transition-colors"
-                                        title="Eliminar macro (los bloques se conservan)"
-                                    >
-                                        <Trash2 size={15} />
-                                    </button>
+                                    />
                                 </div>
                                 {macroBlocks.length === 0 ? (
-                                    <p className="text-xs text-ink-subtle italic px-1 pb-2">Sin bloques. Usa el icono de carpeta de un bloque para añadirlo aquí.</p>
+                                    <p className="px-1 pb-1 text-t-xs text-ink-subtle">
+                                        Sin bloques. Usa el icono de carpeta de un bloque para añadirlo aquí.
+                                    </p>
                                 ) : (
-                                    <div className="grid gap-3">
+                                    <div className="grid gap-2.5">
                                         {macroBlocks.map(block => renderBlockCard(block))}
                                     </div>
                                 )}
@@ -353,9 +374,9 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         return (
                             <div>
                                 {macros.length > 0 && (
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-ink-subtle mb-3 px-1">Sin macro</p>
+                                    <p className="mb-2.5 px-1 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Sin macro</p>
                                 )}
-                                <div className="grid gap-4">
+                                <div className="grid gap-2.5">
                                     {ungrouped.map(block => renderBlockCard(block))}
                                 </div>
                             </div>
@@ -406,37 +427,39 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 />
             )}
 
-            {/* DELETE CONFIRMATION MODAL */}
-            {blockToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-surface-canvas border border-[var(--border-default)] rounded-xl max-w-sm w-full p-6 shadow-2xl">
-                        <div className="flex flex-col items-center text-center mb-6">
-                            <div className="w-12 h-12 bg-[var(--danger-quiet)] text-danger rounded-full flex items-center justify-center mb-4">
-                                <AlertTriangle size={24} />
-                            </div>
-                            <h3 className="text-lg font-black uppercase text-white mb-2">¿Eliminar Bloque?</h3>
-                            <p className="text-ink-muted text-sm">
-                                Esta acción eliminará permanentemente el bloque y <span className="text-white font-bold">todas sus sesiones y registros</span>. No se puede deshacer.
-                            </p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setBlockToDelete(null)}
-                                className="flex-1 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-ink-muted font-bold uppercase text-xs tracking-wider transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                disabled={isDeleting}
-                                className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-white font-bold uppercase text-xs tracking-wider transition-colors flex items-center justify-center gap-2"
-                            >
-                                {isDeleting ? <Loader size={14} className="animate-spin" /> : 'Eliminar'}
-                            </button>
-                        </div>
+            <Modal
+                open={blockToDelete !== null}
+                onClose={() => setBlockToDelete(null)}
+                title="¿Eliminar bloque?"
+                size="sm"
+                dismissible={!isDeleting}
+            >
+                <div className="space-y-5">
+                    <div className="flex items-start gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-[var(--danger-quiet)] text-danger">
+                            <AlertTriangle size={17} aria-hidden="true" />
+                        </span>
+                        <p className="text-t-sm leading-relaxed text-ink-muted">
+                            Esta acción eliminará el bloque y <strong className="font-bold text-ink">todas sus sesiones y registros</strong>. No se puede deshacer.
+                        </p>
+                    </div>
+                    <div className="flex gap-2.5">
+                        <button
+                            onClick={() => setBlockToDelete(null)}
+                            className="flex-1 rounded-field px-4 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            disabled={isDeleting}
+                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                        >
+                            {isDeleting ? <Loader size={15} className="animate-spin" /> : 'Eliminar'}
+                        </button>
                     </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 }
@@ -489,20 +512,10 @@ function CreateMacroModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[170] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-surface-canvas w-full max-w-md rounded-card border border-[var(--border-default)] shadow-2xl p-6 space-y-5">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-black uppercase text-white flex items-center gap-2">
-                        <Layers className="text-anvil-red" size={20} /> Nuevo Macro
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
-                        <X size={18} />
-                    </button>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-ink-subtle block">Nombre</label>
+        <Modal open onClose={onClose} title="Nuevo macro" size="md">
+            <div className="space-y-5">
+                <label className="block space-y-1.5">
+                    <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Nombre</span>
                     <input
                         type="text"
                         value={name}
@@ -510,19 +523,19 @@ function CreateMacroModal({
                         maxLength={120}
                         autoFocus
                         placeholder="Ej: Preparación Nacional 2027"
-                        className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl py-3 px-4 text-white text-sm font-bold focus:outline-none focus:border-anvil-red/50 transition-colors"
+                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm font-semibold text-ink outline-none transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle focus:border-brand"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
                     />
-                </div>
+                </label>
 
-                <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-ink-subtle block">
-                        Competición objetivo <span className="text-ink-subtle normal-case font-medium">(opcional, de las asignadas al atleta)</span>
-                    </label>
+                <label className="block space-y-1.5">
+                    <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        Competición objetivo <span className="font-medium normal-case tracking-normal text-ink-faint">· opcional</span>
+                    </span>
                     <select
                         value={selectedCompId}
                         onChange={(e) => setSelectedCompId(e.target.value)}
-                        className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand"
                     >
                         <option value="">Sin competición</option>
                         {competitions.map(c => (
@@ -531,25 +544,25 @@ function CreateMacroModal({
                             </option>
                         ))}
                     </select>
-                </div>
+                </label>
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="flex justify-end gap-2.5 pt-1">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-ink-muted font-bold uppercase tracking-wider text-xs transition-colors"
+                        className="rounded-field px-4 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleCreate}
                         disabled={!name.trim() || saving}
-                        className="px-6 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-white font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
+                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                     >
-                        {saving ? <Loader className="animate-spin" size={14} /> : <Plus size={14} />}
-                        Crear Macro
+                        {saving ? <Loader size={15} className="animate-spin" /> : <Plus size={15} />}
+                        Crear macro
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 }

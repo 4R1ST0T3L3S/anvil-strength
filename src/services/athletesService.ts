@@ -101,7 +101,22 @@ async function callAthletesFunction<T>(payload: Record<string, unknown>): Promis
         // a secas solo dice "Edge Function returned a non-2xx status code",
         // que no le sirve de nada a quien está mirando la pantalla.
         const detail = await readFunctionError(error);
-        throw new Error(detail ?? error.message);
+        if (detail) throw new Error(detail);
+
+        // Sin `context.json` no hubo respuesta HTTP que leer: es un
+        // `FunctionsFetchError`, el fetch a la función ni siquiera volvió.
+        // El motivo casi siempre es que `athletes` no está desplegada
+        // todavía (el despliegue de funciones es manual, a diferencia del
+        // resto del código — ver supabase/functions/athletes/index.ts). Un
+        // "algo salió mal" genérico no le dice al coach qué hacer.
+        if (error.name === 'FunctionsFetchError') {
+            throw new Error(
+                'No se pudo contactar con el servidor. Si esto persiste, la función "athletes" ' +
+                'puede no estar desplegada en Supabase (supabase functions deploy athletes).'
+            );
+        }
+
+        throw new Error(error.message);
     }
 
     if (data && typeof data === 'object' && 'error' in data) {
@@ -111,18 +126,63 @@ async function callAthletesFunction<T>(payload: Record<string, unknown>): Promis
     return data as T;
 }
 
+/**
+ * El motivo REAL de un fallo de la función, sacado de la respuesta HTTP.
+ *
+ * `error.message` a secas solo dice "Edge Function returned a non-2xx status
+ * code", que no le sirve de nada ni a quien mira la pantalla ni a quien
+ * depura. Aquí se abre la respuesta y se saca lo que haya dentro.
+ *
+ * Se lee con `text()` y NO con `json()` a propósito: cuando el fallo ocurre
+ * ANTES de entrar en nuestro código —el JWT no valida, la función no existe,
+ * la plataforma devuelve su propia página de error— el cuerpo no es JSON, y
+ * un `json()` que revienta se tragaba justo el caso que más falta hacía
+ * explicar. Además `context` solo se puede consumir UNA vez.
+ *
+ * El código de estado se incluye siempre que se conozca: distingue de un
+ * vistazo un 401 (sesión) de un 404 (no desplegada) de un 500 (dentro).
+ */
 async function readFunctionError(error: unknown): Promise<string | null> {
-    const response = (error as { context?: { json?: () => Promise<unknown> } })?.context;
-    if (!response?.json) return null;
+    const context = (error as { context?: Response })?.context;
+    if (!context) return null;
+
+    const status = typeof context.status === 'number' ? context.status : null;
+
+    let raw = '';
     try {
-        const body = await response.json();
-        if (body && typeof body === 'object' && 'error' in body) {
-            return String((body as { error: unknown }).error);
-        }
+        raw = typeof context.text === 'function' ? (await context.text()).trim() : '';
     } catch {
-        // La respuesta no era JSON. Nos quedamos con el mensaje genérico.
+        // El cuerpo ya se había consumido o no se puede leer. Nos queda el
+        // código de estado, que por sí solo ya orienta.
     }
-    return null;
+
+    // El caso normal: nuestra propia función respondiendo `{ error: "..." }`.
+    if (raw.startsWith('{')) {
+        try {
+            const body = JSON.parse(raw) as { error?: unknown; message?: unknown };
+            const detail = body.error ?? body.message;
+            if (detail) return String(detail);
+        } catch {
+            // JSON mal formado. Sigue el camino de abajo.
+        }
+    }
+
+    // Errores de la PLATAFORMA, que no pasan por nuestro código. Se traducen
+    // porque el texto original ("Invalid JWT", un 404 vacío) no le dice a
+    // nadie qué hacer a continuación.
+    if (status === 401 || status === 403) {
+        return 'Tu sesión no es válida para esta operación. Cierra sesión, vuelve a entrar e inténtalo otra vez.';
+    }
+    if (status === 404) {
+        return 'La función "athletes" no existe en este proyecto de Supabase. Despliégala con: ' +
+               'npx supabase functions deploy athletes --project-ref <tu-project-ref>';
+    }
+    if (status === 546 || status === 504) {
+        return 'La función tardó demasiado y se cortó. Vuelve a intentarlo; si se repite, revisa sus logs en Supabase.';
+    }
+
+    if (raw) return status ? `[${status}] ${raw.slice(0, 300)}` : raw.slice(0, 300);
+    return status ? `La función respondió ${status} sin dar detalles.` : null;
 }
 
 // =====================================================================

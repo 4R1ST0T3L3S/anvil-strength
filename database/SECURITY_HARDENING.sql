@@ -201,7 +201,7 @@ DECLARE
         'weight_category','age_category',
         'squat_pr','bench_pr','deadlift_pr','total_pr',
         'biography','brand_color','logo_url','instagram_url','bio',
-        'max_sushi_pieces'
+        'max_sushi_pieces','pdf_theme'
     ];
     present TEXT[];
     col_list TEXT;
@@ -233,6 +233,13 @@ DROP POLICY IF EXISTS "Users can update own profile"                ON public.pr
 DROP POLICY IF EXISTS "Athletes can view all athletes for ranking"  ON public.profiles;  -- C3: filtraba emails
 DROP POLICY IF EXISTS "Profiles are viewable by everyone"           ON public.profiles;
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone"    ON public.profiles;
+-- Los tres nombres de abajo son los que pone ESTE script. Sin dropearlos
+-- antes de recrearlos, volver a ejecutar el archivo —como hace falta cada
+-- vez que se añade una columna a `editable`, arriba— fallaba con
+-- "policy ... already exists" y dejaba el resto del script sin correr.
+DROP POLICY IF EXISTS "profiles_select_self_or_linked"               ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_self"                         ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_self"                         ON public.profiles;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -344,6 +351,10 @@ DROP POLICY IF EXISTS "Coaches write exercises"                    ON public.exe
 DROP POLICY IF EXISTS "Public read exercises"                      ON public.exercise_library;
 DROP POLICY IF EXISTS "Public Read Exercises"                      ON public.exercise_library;
 DROP POLICY IF EXISTS "Athletes view public and designated exercises" ON public.exercise_library;
+DROP POLICY IF EXISTS "exlib_select"                                ON public.exercise_library;
+DROP POLICY IF EXISTS "exlib_insert_own"                            ON public.exercise_library;
+DROP POLICY IF EXISTS "exlib_update_own"                            ON public.exercise_library;
+DROP POLICY IF EXISTS "exlib_delete_own"                            ON public.exercise_library;
 
 ALTER TABLE public.exercise_library ENABLE ROW LEVEL SECURITY;
 
@@ -383,9 +394,11 @@ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables
                WHERE table_schema='public' AND table_name='messages') THEN
 
-        EXECUTE 'DROP POLICY IF EXISTS "messages_select_own"   ON public.messages';
-        EXECUTE 'DROP POLICY IF EXISTS "messages_insert_own"   ON public.messages';
-        EXECUTE 'DROP POLICY IF EXISTS "messages_update_read"  ON public.messages';
+        EXECUTE 'DROP POLICY IF EXISTS "messages_select_own"         ON public.messages';
+        EXECUTE 'DROP POLICY IF EXISTS "messages_insert_own"         ON public.messages';
+        EXECUTE 'DROP POLICY IF EXISTS "messages_update_read"        ON public.messages';
+        EXECUTE 'DROP POLICY IF EXISTS "messages_select_participant" ON public.messages';
+        EXECUTE 'DROP POLICY IF EXISTS "messages_insert_linked"      ON public.messages';
 
         EXECUTE 'ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY';
 

@@ -15,6 +15,20 @@ import type { VbtMetrics } from '../../../../types/training';
  */
 export interface PwrResult {
   metrics: VbtMetrics;
+  /**
+   * TODO LO DEMÁS QUE ESTE PANEL YA CALCULA.
+   *
+   * Fuerza media y máxima, RFD, desviación horizontal de la barra, punto de
+   * estancamiento, duración de cada fase… Se pintaba en las tarjetas y se
+   * TIRABA al guardar, porque `VbtMetrics` solo tiene siete campos y ampliarlo
+   * exigía una migración por métrica.
+   *
+   * Va en una bolsa abierta `{clave: número}` que se guarda tal cual: añadir
+   * una métrica nueva es añadir una clave aquí y una fila al catálogo
+   * (`database/metrics_catalog.sql`). Ni migración, ni cambio de tipos, ni
+   * tocar el servicio. Ver src/lib/vbt/metricRegistry.ts.
+   */
+  extraMetrics: Record<string, number | null | undefined>;
   loadKg: number;
   reps: number;
   exerciseType: 'squat' | 'bench' | 'deadlift';
@@ -27,11 +41,26 @@ interface MetricsDashboardProps {
   currentVideoTime?: number;
   /** Se llama cada vez que cambia el resultado (carga o ejercicio incluidos). */
   onResult?: (result: PwrResult | null) => void;
+  /**
+   * Carga de partida, cuando ya se sabe.
+   *
+   * Al analizar desde una serie del plan, los kilos ya están registrados: la
+   * potencia y la fuerza se calculan CON la masa, así que arrancar en los 100
+   * por defecto daría cifras equivocadas hasta que alguien se acuerde de
+   * corregirlas — y nadie se acuerda.
+   */
+  initialLoadKg?: number | null;
+  /** Movimiento de partida, deducido del nombre del ejercicio de la serie. */
+  initialExerciseType?: 'squat' | 'bench' | 'deadlift';
 }
 
-export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, currentVideoTime, onResult }: MetricsDashboardProps) {
-  const [loadKg, setLoadKg] = useState<number>(100);
-  const [exerciseType, setExerciseType] = useState<'squat'|'bench'|'deadlift'>('squat');
+export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, currentVideoTime, onResult, initialLoadKg, initialExerciseType }: MetricsDashboardProps) {
+  const [loadKg, setLoadKg] = useState<number>(
+    initialLoadKg && initialLoadKg > 0 ? initialLoadKg : 100
+  );
+  const [exerciseType, setExerciseType] = useState<'squat'|'bench'|'deadlift'>(
+    initialExerciseType ?? 'squat'
+  );
   const [isHovering, setIsHovering] = useState(false);
 
   const metricsData = useMemo(() => {
@@ -96,6 +125,21 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
         peakPower: advMetrics.dynamics.peakPower,
         rom: advMetrics.concentric.rom,
         est1RM: advMetrics.rm.rm,
+      },
+      // Las claves son las del catálogo de métricas. Lo que no exista en él
+      // se sigue guardando y se enseña con la clave por etiqueta, así que
+      // añadir una aquí nunca puede romper una pantalla.
+      extraMetrics: {
+        min_velocity: advMetrics.concentric.minVelocity,
+        mean_force: advMetrics.dynamics.meanForce,
+        peak_force: advMetrics.dynamics.peakForce,
+        rfd: advMetrics.dynamics.rfd,
+        horizontal_deviation: advMetrics.concentric.horizontalDeviationCm,
+        sticking_height: advMetrics.concentric.stickingHeight,
+        concentric_duration: advMetrics.concentric.duration,
+        eccentric_duration: advMetrics.eccentric?.duration,
+        est_1rm_percent: advMetrics.rm.percent,
+        total_reps: advMetrics.totalReps,
       },
       loadKg,
       reps: advMetrics.totalReps,

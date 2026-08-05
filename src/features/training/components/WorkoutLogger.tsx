@@ -436,34 +436,15 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         { completedSets: 0, totalSets: 0 }
     );
 
-    // FIX: Handle case where activeSession is undefined (e.g. empty week)
-    if (!activeSession && sessions.length === 0) {
-        return (
-            <div className="flex flex-col h-full bg-transparent text-white max-w-md mx-auto overflow-hidden relative">
-                <div className="bg-surface-canvas border-b border-subtle pb-2">
-                    <div className="p-4">
-                        <h1 className="text-sm text-anvil-red font-bold tracking-wider uppercase mb-1">{block.name}</h1>
-                        <h2 className="text-2xl font-black italic">Sin Sesiones</h2>
-                    </div>
-                </div>
-                <div className="h-full flex flex-col items-center justify-center text-ink-muted p-8 text-center space-y-6">
-                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-faint">
-                        <Check size={32} />
-                    </div>
-                    <div className="max-w-xs">
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">
-                            {availableWeeks.length === 0 ? 'Aún no disponible' : 'Semana Completada'}
-                        </h3>
-                        <p className="text-sm leading-relaxed">
-                            {availableWeeks.length === 0
-                                ? 'Tu entrenador todavía no ha abierto ninguna semana de este bloque. Aparecerá aquí en cuanto la publique.'
-                                : 'No hay sesiones programadas para esta semana. Si crees que es un error, contacta a tu entrenador.'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // La semana puede no tener sesiones (aún no publicada, o ya completada
+    // por otro bloque). ANTES esto cortaba con un `return` que sustituía toda
+    // la pantalla —cabecera y selector de semana incluidos— por un aviso sin
+    // ningún control. Cambiar a esa semana dejaba al atleta sin forma de
+    // volver a cambiar de semana: tenía que salir de Entrenamiento y volver a
+    // entrar para que el efecto de inicialización eligiera otra. Ahora la
+    // cabecera (con el selector) se queda siempre montada y es solo el
+    // CONTENIDO el que cambia por el aviso.
+    const emptyWeek = sessions.length === 0;
 
     return (
         /**
@@ -734,41 +715,59 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 hueco de gestos del iPhone. En escritorio esa barra no existe
                 y basta con un margen normal. */}
             <div className="space-y-5 p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] md:pb-8">
-                {/* Calentamiento ANTES de la primera serie: si va al final o
-                    escondido en un desplegable, nadie lo lee y el coach lo
-                    escribe para nada. */}
-                <AppendixBlock
-                    label="Calentamiento"
-                    accent="warm"
-                    body={activeSession?.warmup}
-                    onPlayVideo={playVideo}
-                />
-
-                {activeSession?.exercises.map((ex, i) => (
-                    <LoggerExerciseCard
-                        key={ex.id}
-                        sessionExercise={ex}
-                        athleteId={athleteId}
-                        position={i + 1}
-                        chain={chains.get(ex.id) ?? null}
-                        onStartTimer={handleStartTimer}
-                        onExpandSet={handleExpandSet}
-                        onSetChange={handleSetChange}
-                    />
-                ))}
-
-                {activeSession?.exercises.length === 0 && !activeSession?.warmup && !activeSession?.extras && (
-                    <div className="py-12 text-center text-t-sm italic text-ink-subtle">
-                        Día de descanso o sin ejercicios programados.
+                {emptyWeek ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center text-ink-muted">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-faint mb-4">
+                            <Check size={32} />
+                        </div>
+                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">
+                            {availableWeeks.length === 0 ? 'Aún no disponible' : 'Semana sin sesiones'}
+                        </h3>
+                        <p className="max-w-xs text-sm leading-relaxed">
+                            {availableWeeks.length === 0
+                                ? 'Tu entrenador todavía no ha abierto ninguna semana de este bloque. Aparecerá aquí en cuanto la publique.'
+                                : 'No hay sesiones programadas para esta semana. Elige otra semana arriba, o contacta a tu entrenador si crees que es un error.'}
+                        </p>
                     </div>
-                )}
+                ) : (
+                    <>
+                        {/* Calentamiento ANTES de la primera serie: si va al final o
+                            escondido en un desplegable, nadie lo lee y el coach lo
+                            escribe para nada. */}
+                        <AppendixBlock
+                            label="Calentamiento"
+                            accent="warm"
+                            body={activeSession?.warmup}
+                            onPlayVideo={playVideo}
+                        />
 
-                <AppendixBlock
-                    label="Extras"
-                    accent="cool"
-                    body={activeSession?.extras}
-                    onPlayVideo={playVideo}
-                />
+                        {activeSession?.exercises.map((ex, i) => (
+                            <LoggerExerciseCard
+                                key={ex.id}
+                                sessionExercise={ex}
+                                athleteId={athleteId}
+                                position={i + 1}
+                                chain={chains.get(ex.id) ?? null}
+                                onStartTimer={handleStartTimer}
+                                onExpandSet={handleExpandSet}
+                                onSetChange={handleSetChange}
+                            />
+                        ))}
+
+                        {activeSession?.exercises.length === 0 && !activeSession?.warmup && !activeSession?.extras && (
+                            <div className="py-12 text-center text-t-sm italic text-ink-subtle">
+                                Día de descanso o sin ejercicios programados.
+                            </div>
+                        )}
+
+                        <AppendixBlock
+                            label="Extras"
+                            accent="cool"
+                            body={activeSession?.extras}
+                            onPlayVideo={playVideo}
+                        />
+                    </>
+                )}
             </div>
 
             {/* Overlay Timer */}

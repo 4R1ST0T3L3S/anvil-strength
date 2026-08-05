@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     LayoutDashboard,
     Users,
@@ -14,7 +14,6 @@ import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { ViewTransition } from '../../../components/layout/ViewTransition';
-import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { UserProfile, useUser } from '../../../hooks/useUser';
@@ -61,13 +60,6 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const { view, athleteId } = useParams<{ view: string; athleteId: string }>();
     const { refetch } = useUser();
     const [chatAthlete, setChatAthlete] = useState<{ id: string; full_name: string; avatar_url?: string } | null>(null);
-    const [showTour, setShowTour] = useState(
-        () => localStorage.getItem(`has_seen_tour_${user.id}`) !== 'true'
-    );
-
-    useEffect(() => {
-        if (showTour) localStorage.setItem(`has_seen_tour_${user.id}`, 'true');
-    }, [user.id, showTour]);
 
     const slug: Slug = isSlug(view) ? ((view ?? '') as Slug) : '';
 
@@ -187,8 +179,6 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 athlete={chatAthlete}
                 coach={user}
             />
-
-            <WelcomeTourModal isOpen={showTour} onClose={() => setShowTour(false)} />
         </DashboardLayout>
     );
 }

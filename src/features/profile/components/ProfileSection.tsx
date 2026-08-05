@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut, FileText, ChevronRight } from 'lucide-react';
@@ -32,32 +32,36 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
     const [imagePreview, setImagePreview] = useState<string | null>(user.avatar_url || user.profile_image || null);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-    const [formData, setFormData] = useState({
-        name: user.full_name || user.name || '',
-        nickname: user.nickname || '',
-        gender: user.gender || '',
-        weight_category: user.weight_category || '',
-        age_category: user.age_category || '',
-        squat_pr: user.squat_pr?.toString() || '',
-        bench_pr: user.bench_pr?.toString() || '',
-        deadlift_pr: user.deadlift_pr?.toString() || '',
-        biography: user.biography || ''
+    const fieldsFrom = (u: UserProfile) => ({
+        name: u.full_name || u.name || '',
+        nickname: u.nickname || '',
+        gender: u.gender || '',
+        weight_category: u.weight_category || '',
+        age_category: u.age_category || '',
+        squat_pr: u.squat_pr?.toString() || '',
+        bench_pr: u.bench_pr?.toString() || '',
+        deadlift_pr: u.deadlift_pr?.toString() || '',
+        biography: u.biography || ''
     });
 
-    useEffect(() => {
-        setFormData({
-            name: user.full_name || user.name || '',
-            nickname: user.nickname || '',
-            gender: user.gender || '',
-            weight_category: user.weight_category || '',
-            age_category: user.age_category || '',
-            squat_pr: user.squat_pr?.toString() || '',
-            bench_pr: user.bench_pr?.toString() || '',
-            deadlift_pr: user.deadlift_pr?.toString() || '',
-            biography: user.biography || ''
-        });
+    const [formData, setFormData] = useState(() => fieldsFrom(user));
+
+    /**
+     * El formulario se resincroniza cuando llega un `user` distinto de
+     * verdad —tras guardar, o al terminar de cargar el perfil detrás del
+     * usuario optimista— y NO en un efecto que dispararía un render de más
+     * en cada paso. Se AJUSTA el estado durante el propio render, comparando
+     * una foto de los campos contra la última que se sincronizó: es el
+     * patrón que React recomienda para derivar estado de una prop que
+     * cambia.
+     */
+    const snapshot = JSON.stringify(fieldsFrom(user));
+    const [syncedSnapshot, setSyncedSnapshot] = useState(snapshot);
+    if (snapshot !== syncedSnapshot) {
+        setSyncedSnapshot(snapshot);
+        setFormData(fieldsFrom(user));
         setImagePreview(user.avatar_url || user.profile_image || null);
-    }, [user]);
+    }
 
     if (screen === 'pdf') {
         return <PdfThemeSettings user={user} onBack={() => setScreen('profile')} />;

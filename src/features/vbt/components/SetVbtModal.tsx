@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Check, Loader, Trash2, UploadCloud, X } from 'lucide-react';
+import { Activity, Check, Loader, Trash2, UploadCloud, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { vbtService } from '../../../services/vbtService';
+import { SetVideoAnalysisModal } from './SetVideoAnalysisModal';
 import { parseVbtFile } from '../../../lib/vbt/csv';
 import { mvtForExercise, rirFromVelocityLoss, velocityZone } from '../../../lib/vbt/analysis';
 import type { TrainingSet, VbtMetrics, VbtSource } from '../../../types/training';
@@ -77,6 +78,8 @@ export function SetVbtModal({
     const [fileUrl, setFileUrl] = useState<string | null>(set.vbt_file_url ?? null);
     const [repVelocities, setRepVelocities] = useState<number[] | null>(null);
     const [busy, setBusy] = useState(false);
+    /** El analizador de vídeo, abierto sobre ESTA serie. */
+    const [videoOpen, setVideoOpen] = useState(false);
 
     /**
      * La carga con la que se asocia la medición.
@@ -251,6 +254,21 @@ export function SetVbtModal({
                     </header>
 
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+                        {/* ANALIZAR UN VÍDEO va el primero de todo.
+                            Es el camino que más da por menos trabajo: de un
+                            vídeo salen quince métricas, frente a las cinco que
+                            se teclean a mano aquí abajo — y sin margen de error
+                            al copiarlas. El CSV del encoder es mejor dato, pero
+                            hay que tener encoder; un móvil lo tiene cualquiera. */}
+                        <button
+                            type="button"
+                            onClick={() => setVideoOpen(true)}
+                            className="flex w-full items-center justify-center gap-2 rounded-field bg-brand px-3 py-3 text-t-xs font-bold text-brand-ink transition-colors duration-fast ease-snap hover:opacity-90"
+                        >
+                            <Video size={14} aria-hidden="true" />
+                            Analizar un vídeo de esta serie
+                        </button>
+
                         {/* Subir el archivo va PRIMERO: cuando existe, es la vía
                             buena, y rellenar a mano lo que un fichero ya trae es
                             trabajo repetido con margen de error. */}
@@ -399,6 +417,26 @@ export function SetVbtModal({
                     </footer>
                 </motion.div>
             </motion.div>
+
+            {/* El analizador guarda por su cuenta directamente en la serie, así
+                que al volver ya no hay nada que teclear aquí: se cierran los
+                dos. Dejar este diálogo abierto con las casillas vacías haría
+                pensar que el análisis no se ha guardado. */}
+            <SetVideoAnalysisModal
+                open={videoOpen}
+                onClose={() => setVideoOpen(false)}
+                athleteId={athleteId}
+                createdBy={createdBy}
+                exerciseName={exerciseName}
+                exerciseId={exerciseId}
+                sessionExerciseId={sessionExerciseId}
+                set={set}
+                setNumber={setNumber}
+                onSaved={(saved, savedSource) => {
+                    onSaved?.(saved, savedSource, null);
+                    onClose();
+                }}
+            />
         </AnimatePresence>
     );
 }

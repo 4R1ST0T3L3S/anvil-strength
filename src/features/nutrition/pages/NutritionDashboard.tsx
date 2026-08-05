@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LayoutDashboard, Users, Apple, User, LogOut, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -6,7 +6,6 @@ import { UserProfile, useUser } from '../../../hooks/useUser';
 import { NutritionAthletes } from '../components/NutritionAthletes';
 import { NutritionAnalytics } from '../components/NutritionAnalytics';
 import { ProfileSection } from '../../profile/components/ProfileSection';
-import { WelcomeTourModal } from '../../onboarding/components/WelcomeTourModal';
 
 interface NutritionDashboardProps {
     user: UserProfile;
@@ -19,15 +18,6 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
     const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<ViewState>('home');
     const { refetch } = useUser();
-    const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
-
-    useEffect(() => {
-        const hasSeenTour = localStorage.getItem(`has_seen_tour_${user.id}`);
-        if (!hasSeenTour) {
-            setIsWelcomeModalOpen(true);
-            localStorage.setItem(`has_seen_tour_${user.id}`, 'true');
-        }
-    }, [user.id]);
 
     // CONFIGURACIÓN DEL MENÚ LATERAL
     const menuItems = [
@@ -112,11 +102,6 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
     return (
         <DashboardLayout menuItems={menuItems}>
             {renderContent()}
-            
-            <WelcomeTourModal 
-                isOpen={isWelcomeModalOpen} 
-                onClose={() => setIsWelcomeModalOpen(false)} 
-            />
         </DashboardLayout>
     );
 }

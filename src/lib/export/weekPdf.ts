@@ -458,8 +458,20 @@ function drawExercise(
     // Siempre las cuatro, aunque alguna esté vacía: el hueco dice "aquí no
     // hay descanso pautado", y mover las columnas según lo que haya
     // obligaría a releer los rótulos en cada ejercicio.
+    //
+    // `grid.colX` arranca en `grid.margin.left`, que es justo donde se pinta
+    // el filete de acento (más abajo, `doc.rect(grid.margin.left, …)`). Con
+    // él activado, la columna "Series" caía encima del filete y el número
+    // salía tapado. El resto del bloque —nombre, variante, nota— ya vive
+    // desplazado por `indent`; las cifras usaban `grid.colX` a secas y se
+    // quedaban las únicas sin desplazar. La cuadrícula se recalcula sobre el
+    // ancho que queda tras el desplazamiento, igual que `textW` más arriba.
+    const metricGutter = grid.gutter;
+    const metricCol = (grid.content - indent - metricGutter * 3) / 4;
+    const metricColX = (i: number) => x + i * (metricCol + metricGutter);
+
     METRICS.forEach((metric, i) => {
-        const cx = grid.colX(i);
+        const cx = metricColX(i);
 
         font(ctx, 'normal', 6.5);
         ink(ctx, palette.muted);
@@ -468,7 +480,7 @@ function drawExercise(
         font(ctx, 'bold', 12);
         ink(ctx, palette.ink);
         const value = (ex[metric.key] as string) || '–';
-        doc.text(ellipsize(doc, value, ctx.size(12), grid.col), cx, y + grid.u * 1.5);
+        doc.text(ellipsize(doc, value, ctx.size(12), metricCol), cx, y + grid.u * 1.5);
     });
     y += grid.u * 2.4;
 
