@@ -78,7 +78,7 @@ export default function Predictions({ user }: PredictionsProps) {
         </header>
 
         {/* CONTENIDO PRINCIPAL */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* TARJETA DE ESTADO (MONEDERO) */}
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">

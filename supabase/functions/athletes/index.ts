@@ -107,6 +107,64 @@ const normalizeEmail = (value: unknown): string | null => {
     return clean.length > 3 && clean.includes('@') ? clean : null;
 };
 
+/**
+ * DÓNDE VIVE EL CORREO DE UN ATLETA
+ *
+ * En DOS sitios, y cada uno significa una cosa distinta:
+ *
+ *   auth.users.email     — con qué correo INICIA SESIÓN. Obligatorio para
+ *                          Supabase, así que un atleta sin correo lleva ahí
+ *                          uno de marcador que no sirve para escribirle.
+ *   profiles.contact_email — el correo REAL, el que se puede usar. NULL
+ *                          mientras no lo haya.
+ *
+ * `profiles` NO tiene columna `email`. La tuvo en los borradores del esquema
+ * y por eso el alta reventaba con "Could not find the 'email' column of
+ * 'profiles' in the schema cache": la función escribía una columna que en la
+ * base no existe. Se ha quitado en vez de crearla porque una tercera copia
+ * del mismo dato solo añade una forma más de que se desincronicen.
+ *
+ * Consecuencia: para buscar por correo de INICIO DE SESIÓN hay que preguntar
+ * a la API de administración de auth, no a `profiles`.
+ */
+
+/**
+ * Busca una cuenta por su correo de inicio de sesión.
+ *
+ * Va contra el endpoint de administración de GoTrue porque el cliente de JS
+ * no expone "dame el usuario de este correo": `listUsers()` solo pagina, y
+ * recorrer la tabla entera de usuarios en cada alta no es una opción.
+ *
+ * `filter` hace una búsqueda PARCIAL, así que el resultado se compara aquí de
+ * forma exacta: sin eso, dar de alta a "ana@club.es" encontraría a
+ * "mariana@club.es" y bloquearía el alta por un duplicado que no existe.
+ *
+ * Si el endpoint falla, devuelve `null` en vez de reventar: el alta sigue
+ * adelante y, si de verdad había un duplicado, `createUser` lo rechazará
+ * después. Perder la comprobación degrada el mensaje de error, no la
+ * integridad.
+ */
+async function findAuthUserByEmail(email: string): Promise<{ id: string } | null> {
+    try {
+        const res = await fetch(
+            `${SUPABASE_URL}/auth/v1/admin/users?per_page=50&filter=${encodeURIComponent(email)}`,
+            {
+                headers: {
+                    apikey: SERVICE_ROLE,
+                    Authorization: `Bearer ${SERVICE_ROLE}`,
+                },
+            },
+        );
+        if (!res.ok) return null;
+
+        const body = await res.json() as { users?: Array<{ id: string; email?: string }> };
+        const match = (body.users ?? []).find(u => (u.email ?? '').toLowerCase() === email);
+        return match ? { id: match.id } : null;
+    } catch {
+        return null;
+    }
+}
+
 // =====================================================================
 // ACCIÓN: crear un atleta gestionado
 // =====================================================================
@@ -133,17 +191,24 @@ async function createManagedAthlete(caller: Caller, body: Record<string, unknown
 
     // --- ¿Ya existe? -------------------------------------------------
     if (email) {
-        // Dos consultas y no un `.or(...)`: en PostgREST el `or` se compone
-        // metiendo el valor dentro de una cadena de filtro, así que una coma
-        // o un paréntesis en el correo cambiaría el significado de la
-        // consulta. Con `.eq()` el valor viaja como parámetro.
-        const byLogin = await admin
-            .from('profiles').select('id, full_name, account_status')
-            .eq('email', email).limit(1).maybeSingle();
+        // Se mira en los DOS sitios donde puede estar ese correo, porque
+        // responden a preguntas distintas (ver la nota de arriba):
+        //
+        //   auth.users     — "esta persona ya se registró por su cuenta".
+        //   contact_email  — "otro entrenador ya le dio de alta y anotó su
+        //                     correo, pero todavía no ha entrado nunca".
+        //
+        // Mirar solo uno deja fuera la mitad de los duplicados, que es
+        // justo el problema que esta comprobación existe para evitar.
+        const authUser = await findAuthUserByEmail(email);
 
-        const found = byLogin.data ?? (await admin
-            .from('profiles').select('id, full_name, account_status')
-            .eq('contact_email', email).limit(1).maybeSingle()).data;
+        const found = authUser
+            ? (await admin
+                .from('profiles').select('id, full_name, account_status')
+                .eq('id', authUser.id).maybeSingle()).data
+            : (await admin
+                .from('profiles').select('id, full_name, account_status')
+                .eq('contact_email', email).limit(1).maybeSingle()).data;
 
         if (found) {
             const { data: link } = await admin
@@ -188,6 +253,16 @@ async function createManagedAthlete(caller: Caller, body: Record<string, unknown
     });
 
     if (createError || !created?.user) {
+        // Red de seguridad de la comprobación de duplicados: si `filter` no
+        // encontró a esa persona pero Supabase sí la tiene, se traduce a algo
+        // accionable en vez de soltar el error en inglés de la plataforma.
+        const yaExiste = /already|registered|duplicate/i.test(createError?.message ?? '');
+        if (yaExiste) {
+            return json({
+                error: 'Ya hay una cuenta con ese correo. Déjalo en blanco para crear la ficha ' +
+                       'igualmente, o pídele a esa persona que acepte tu invitación.',
+            }, 409);
+        }
         return json({ error: `No se pudo crear la cuenta: ${createError?.message ?? 'desconocido'}` }, 500);
     }
 
@@ -195,9 +270,11 @@ async function createManagedAthlete(caller: Caller, body: Record<string, unknown
 
     // El perfil se crea aquí y no se deja al cliente: `useUser` solo lo crea
     // para la sesión que está abierta, y esta cuenta no va a abrir ninguna.
+    // OJO: aquí NO va ninguna columna `email`. `profiles` no la tiene, y
+    // escribirla es lo que rompía el alta entera. El correo de inicio de
+    // sesión ya está en `auth.users`; el de contacto, en `contact_email`.
     const { error: profileError } = await admin.from('profiles').insert({
         id: athleteId,
-        email: authEmail,
         contact_email: email,
         full_name: fullName,
         nickname: fullName.split(' ')[0],
@@ -265,7 +342,7 @@ async function inviteManagedAthlete(caller: Caller, body: Record<string, unknown
 
     const { data: profile } = await admin
         .from('profiles')
-        .select('id, email, contact_email, account_status')
+        .select('id, contact_email, account_status')
         .eq('id', athleteId)
         .single();
 
@@ -280,11 +357,18 @@ async function inviteManagedAthlete(caller: Caller, body: Record<string, unknown
         return json({ error: 'Hace falta un correo para poder mandarle el acceso.' }, 400);
     }
 
-    // Correo nuevo (o el que sustituye al de marcador): se cambia en los dos
-    // sitios. `email_confirm` lo da por bueno sin pedir confirmación previa
-    // porque quien lo aporta es su entrenador y el enlace mágico que va justo
-    // después ya comprueba que la dirección existe de verdad.
-    if (email !== profile.email) {
+    // El correo de INICIO DE SESIÓN se lee de `auth.users`, que es donde vive
+    // (ver la nota de arriba). Si el atleta se dio de alta sin correo, aquí
+    // hay todavía uno de marcador y hay que sustituirlo: el enlace mágico se
+    // manda a la dirección de auth, así que sin cambiarla el acceso saldría
+    // hacia un dominio que no existe.
+    const { data: authUser } = await admin.auth.admin.getUserById(athleteId);
+    const loginEmail = (authUser?.user?.email ?? '').toLowerCase();
+
+    // `email_confirm` da la dirección por buena sin pedir confirmación previa
+    // porque quien la aporta es su entrenador y el enlace mágico que va justo
+    // después ya comprueba que existe de verdad.
+    if (email !== loginEmail) {
         const { error: updateError } = await admin.auth.admin.updateUserById(athleteId, {
             email,
             email_confirm: true,
@@ -292,7 +376,13 @@ async function inviteManagedAthlete(caller: Caller, body: Record<string, unknown
         if (updateError) {
             return json({ error: `No se pudo asignar ese correo: ${updateError.message}` }, 409);
         }
-        await admin.from('profiles').update({ email, contact_email: email }).eq('id', athleteId);
+    }
+
+    // `contact_email` se escribe siempre, no solo cuando cambia el de auth:
+    // puede estar en NULL aunque la dirección de inicio de sesión ya sea la
+    // correcta, y es la columna por la que se buscan los duplicados.
+    if (email !== profile.contact_email) {
+        await admin.from('profiles').update({ contact_email: email }).eq('id', athleteId);
     }
 
     /**

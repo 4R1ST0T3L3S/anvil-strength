@@ -543,10 +543,14 @@ BEGIN
         RETURN NEW;
     END IF;
 
+    -- SIN `NEW.email`: `profiles` no tiene esa columna en la base real, y
+    -- plpgsql no resuelve los nombres hasta la primera ejecución. Estaba
+    -- aquí, y hacía fallar TODA edición de la ficha de un atleta gestionado
+    -- con «record "new" has no field "email"». Ver database/FIX_ATLETA_SIN_EMAIL.sql,
+    -- que además hace opcional `is_developer` por el mismo motivo.
     IF (NEW.role           IS DISTINCT FROM OLD.role)
     OR (NEW.has_access     IS DISTINCT FROM OLD.has_access)
     OR (NEW.account_status IS DISTINCT FROM OLD.account_status)
-    OR (NEW.email          IS DISTINCT FROM OLD.email)
     OR (NEW.is_developer   IS DISTINCT FROM OLD.is_developer) THEN
         RAISE EXCEPTION 'Acceso Denegado: no puedes cambiar el rol, el acceso ni el estado de cuenta de otro usuario.';
     END IF;
@@ -733,8 +737,12 @@ BEGIN
                 WHERE ca.athlete_id = p.id AND ca.coach_id = me AND ca.status = 'active'
            )
       FROM public.profiles p
-     WHERE lower(p.email) = correo
-        OR lower(p.contact_email) = correo
+      -- `auth.users` y NO `p.email`: esa columna no existe en la base real.
+      -- Aquí está el correo de INICIO DE SESIÓN, que es la otra mitad de los
+      -- duplicados. Ver database/FIX_ATLETA_SIN_EMAIL.sql.
+      LEFT JOIN auth.users u ON u.id = p.id
+     WHERE lower(p.contact_email) = correo
+        OR lower(u.email) = correo
      LIMIT 1;
 END;
 $$;

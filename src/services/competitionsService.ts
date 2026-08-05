@@ -273,6 +273,29 @@ export const competitionsService = {
      * enseñar ninguna, y así la página aguanta aunque la base todavía no
      * tenga aplicado database/FIX_INCONSISTENCIAS.sql.
      */
+    /**
+     * OJO — HOY NO LA LLAMA NADIE, Y YA NO DEVUELVE LO QUE SU NOMBRE DICE.
+     *
+     * Se escribió para una página pública que listara las competiciones del
+     * club con el nombre de cada atleta, y esa página nunca llegó a
+     * existir: esta función no tiene ni un solo llamador en la aplicación.
+     *
+     * Mientras tanto, la política que la habilitaba —`Competitions Public`,
+     * un `FOR SELECT USING (TRUE)`— dejaba la tabla entera legible SIN
+     * SESIÓN, incluidas las filas con `athlete_id`. Es decir, en qué
+     * competición está inscrita cada persona, en qué fecha y en qué
+     * localidad, servido a cualquiera con la clave anónima (que va en el
+     * bundle). Se ha cerrado en database/FIX_RLS_COMPETICIONES.sql.
+     *
+     * A partir de ahí, esta función devuelve SOLO el calendario oficial de
+     * la federación (`athlete_id IS NULL`) cuando se llama sin sesión.
+     *
+     * Si algún día se quiere de verdad la página pública, no se hace
+     * reabriendo la tabla: se hace con una vista o una función
+     * `SECURITY DEFINER` que exponga las columnas justas de los atletas que
+     * hayan dicho que sí. Aparecer en público tiene que ser una decisión de
+     * cada atleta, no el estado por defecto de una tabla.
+     */
     async getPublicCompetitions() {
         const today = new Date().toISOString().split('T')[0];
         const range = `date.gte.${today},end_date.gte.${today}`; // futura o en curso

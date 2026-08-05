@@ -25,6 +25,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Detector de desbordes horizontales. El `import()` va dentro del `if` para
+// que ni el módulo ni su coste entren en el bundle de producción.
+if (import.meta.env.DEV) {
+  import('./lib/overflowGuard').then(m => m.instalarDetectorDeDesbordes())
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

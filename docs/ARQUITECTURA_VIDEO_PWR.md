@@ -9,13 +9,24 @@ Fecha: 5 de agosto de 2026.
 >
 > **Dos cosas de este documento estaban mal, y las dos importan.**
 >
-> **1. La calibración NO es un bloqueante. Ya estaba resuelta.**
-> La §7.1 decía que era "EL problema de verdad". Es falso:
+> > ### ⛔ La primera corrección era, a su vez, FALSA. Ver §11.
+> >
+> > Decía que `VideoTracker.tsx` ya detectaba el disco automáticamente. No lo
+> > hacía: el componente saltaba directo al modo "toca el disco" y colocaba un
+> > aro de radio `alto_del_vídeo × 0,10` —una constante— que se ajustaba a ojo
+> > con botones de ±5 px. La detección existía en `cv.worker.js` pero **no la
+> > llamaba nadie** desde el commit `c98564dc` ("remove broken auto-detection").
+> >
+> > Es decir: la §7.1 original tenía razón en que la calibración era el
+> > problema, y se tachó por error. Se resolvió de verdad en la Fase B (§11).
+>
+> **1. ~~La calibración NO es un bloqueante. Ya estaba resuelta.~~**
+> ~~La §7.1 decía que era "EL problema de verdad". Es falso:
 > `VideoTracker.tsx` ya detecta el disco automáticamente
 > (`STANDARD_PLATE_METERS = 0.45`), lo enseña para confirmar y ofrece un
-> respaldo manual de dos clics. Escribí esa sección sin leer `VideoTracker.tsx`,
+> respaldo manual de dos clics.~~ Escribí esa sección sin leer `VideoTracker.tsx`,
 > deduciendo de que `pixelToMeterRatio` llegara como parámetro que la
-> calibración era manual. No lo es.
+> calibración era manual. **Lo era.**
 >
 > **2. Casi toda la arquitectura de aquí abajo sobra.**
 > Partía de que había que subir los vídeos a un servidor. Pero el vídeo es
@@ -462,13 +473,25 @@ Esa es la razón de hacer la tabla de trabajos ahora aunque todavía no haya
 trabajador: es lo que convierte la parte cara en algo *opcional y aplazable*
 en vez de en una reescritura.
 
-### Fase B — Cuando la calibración esté resuelta (~2 semanas)
+### Fase B — **HECHA en su parte útil. Detalle en §11.**
 
-- [ ] Calibración automática por detección de disco (§7.1). **Primero esto.**
-- [ ] Puntuación de calidad con umbral de rechazo (§7.2).
-- [ ] Contenedor trabajador (ffmpeg + pipeline CV) en Cloud Run o Fly.
-- [ ] Realtime sobre la fila del trabajo para enriquecer la serie en vivo.
-- [ ] Reproceso del histórico cuando el algoritmo mejore.
+- [x] Calibración automática por detección de disco (§7.1). **Ajuste de ELIPSE**,
+      no de círculo, y la escala se toma de la ALTURA. Ver §11.1.
+- [x] Puntuación de calidad con umbral de rechazo (§7.2). Bloquea de verdad:
+      por debajo de 50, o con cualquier dimensión en fallo crítico, no se
+      guarda. Ver §11.2.
+- [x] Trazabilidad de la medición: cinco métricas nuevas, sin migración de
+      esquema. *No estaba en el plan original y es lo que hace auditable el
+      histórico.* Ver §11.3.
+- [ ] ~~Contenedor trabajador (ffmpeg + pipeline CV) en Cloud Run o Fly.~~
+- [ ] ~~Realtime sobre la fila del trabajo para enriquecer la serie en vivo.~~
+- [ ] ~~Reproceso del histórico cuando el algoritmo mejore.~~
+
+> Los tres últimos quedan **descartados por ahora**, no aplazados por falta de
+> tiempo: la corrección de cabecera ya decidió que el vídeo no se sube, y sin
+> subida no hay nada que procesar en servidor. Se conservan tachados —y las
+> §3–§6 enteras— para el día que la espera de 10–30 s con la pantalla encendida
+> moleste lo bastante como para pagar la infraestructura.
 
 ### Lo que NO hay que hacer
 
@@ -586,3 +609,180 @@ vídeo nunca.
 
 **Verificado en el build:** el bundle `UserDashboard` sigue en 95,62 kB,
 idéntico a antes del cambio.
+
+---
+
+## 11. Fase B — LO QUE SE HA IMPLEMENTADO
+
+*(5 de agosto de 2026, tras leer el código en vez de deducirlo.)*
+
+### 11.0. Lo primero: la corrección de la corrección
+
+La nota de cabecera daba la calibración por resuelta. **No lo estaba.** Lo que
+había en `VideoTracker.tsx` era esto:
+
+```js
+// Go directly to tap mode - no auto-detection
+setState('assist_detect');
+...
+// INSTANT: Place circle at tap point with default radius (no processing)
+const defaultRadius = Math.round(canvas.height * 0.10);
+```
+
+Un radio constante, ajustable a ojo con botones de ±5 px. El worker sí tenía
+`AUTO_CALIBRATE` y `ASSIST_CALIBRATE` con `HoughCircles`, y `tracker.ts`
+exportaba `sendAutoCalibrate` / `sendAssistCalibrate`, pero **ningún componente
+los llamaba**: código muerto desde `c98564dc`, "remove broken auto-detection".
+
+Por qué importa, en números:
+
+| Error en el radio | Velocidad y ROM | Potencia | %1RM estimado |
+|---|---|---|---|
+| 10% | 10% | ~21% | ~5 puntos |
+| 20% | 20% | ~44% | ~10 puntos |
+
+`pixelToMeterRatio` multiplica todo el análisis. La aplicación producía cifras
+con una barra de error que nadie veía y que nadie declaraba.
+
+### 11.1. Calibración automática — resuelta, y por qué el intento anterior falló
+
+**Se buscan elipses, no círculos.** Un disco solo sale redondo si la cámara
+está exactamente perpendicular a la barra, y ninguna lo está. `HoughCircles`
+no puede encontrar una elipse por definición.
+
+Y hay una decisión que importa más que el detector: **qué eje se mide.**
+
+Con la cámara girada un ángulo θ respecto de la perpendicular, lo vertical se
+proyecta a escala completa y lo horizontal se comprime por cos θ. Como el
+levantamiento se mide en vertical, **la ALTURA de la elipse da la escala
+correcta sea cual sea θ**. Si además la cámara está alta o baja (ángulo φ), la
+altura del disco se comprime por cos φ… pero el recorrido de la barra se
+comprime igual, y el cociente vuelve a salir bien.
+
+> **La altura del disco se auto-corrige. El diámetro no.** Medir un radio solo
+> acierta con la cámara perfectamente perpendicular.
+
+Lo que sí se estropea con θ grande es la desviación horizontal de la barra,
+porque se mide sobre el eje comprimido. Por eso el ángulo se estima
+(razón entre ejes = cos θ) y se guarda: no hace falta para la escala, hace
+falta para saber de qué métricas fiarse.
+
+El detector: Canny con umbrales derivados de la mediana → cierre morfológico →
+contornos → `fitEllipse` → y entonces **se comprueba si el contorno es de
+verdad una elipse**, con dos números que sustituyen al "el más grande gana" de
+la versión anterior:
+
+- **residuo** — distancia media de los puntos a la elipse ajustada.
+- **cobertura angular** — qué fracción de la vuelta recorre el contorno.
+
+Un disco medio tapado por la pierna del atleta da residuo bajo y cobertura de
+0,6: se acepta. Un listón recto da cobertura alta y residuo pésimo: se
+rechaza. De entre los candidatos concéntricos se toma **el exterior**, porque
+los 45 cm son el diámetro exterior y quedarse con el aro de color interior
+sobrestimaría la velocidad un 50%.
+
+**Medido sobre imágenes sintéticas** (elipse de tamaño conocido, 1280×720):
+
+| Caso | Resultado |
+|---|---|
+| Disco a ~45° con aro interior de color | elipse, 292,3 px medidos vs 300 reales (−2,6%), 60 ms |
+| Disco inclinado 30° | elipse, 265,7 px vs 258,7 teóricos (+2,7%) |
+| Dos discos, con el usuario señalando el pequeño | acierta el señalado |
+| **Escena sin ningún disco** | `null` — no se inventa nada |
+
+Ese último caso costó una corrección: el respaldo de `HoughCircles` devolvía
+un círculo de 787 px en un fotograma de 720 de alto. Dos arreglos: los límites
+de tamaño se miden contra el **lado menor** del fotograma (antes contra el
+ancho, que en vertical no significa nada), y **Hough solo entra cuando el
+usuario ha señalado el disco** — sin pista no valida nada y su trabajo es
+inventarse círculos.
+
+Tres escalones, y se dice en cuál se está: automático → asistido (el usuario
+toca el disco) → aro a mano, marcado como tal.
+
+Además: **selector de diámetro real** (45 / 40 / 35 / 32 cm). Suponer 45 cm en
+un disco de hierro de 32 es un 40% de error en la velocidad, y los números
+seguirían pareciendo razonables.
+
+### 11.2. Puntuación de calidad con umbral duro
+
+`src/lib/cv/quality.ts`. Cinco dimensiones, con peso:
+
+| Dimensión | Peso | Qué mira |
+|---|---|---|
+| Escala | 0,35 | Cómo se calibró y con qué confianza |
+| Seguimiento | 0,25 | Fotogramas perdidos y saltos de la marca |
+| Ángulo de cámara | 0,20 | Achatamiento del disco |
+| Muestreo | 0,12 | Muestras dentro de la concéntrica |
+| Plausibilidad | 0,08 | ROM y velocidad en rango físico |
+
+Cualquier dimensión en **fallo crítico bloquea por sí sola**, sin importar la
+nota global: una media aritmética esconde un cero, y un 25% de seguimiento
+perdido con todo lo demás perfecto seguiría aprobando.
+
+- **< 50 o algún crítico → BLOQUEADO.** No se puede guardar, ni en una serie ni
+  "suelto" (que acaba en el mismo perfil carga-velocidad).
+- **50–75 → aviso**, con el motivo escrito y guardado.
+- **≥ 75 → correcto.**
+
+Las métricas se siguen viendo, atenuadas, cuando está bloqueado: esconderlas
+dejaría al usuario sin saber qué corregir para volver a grabar.
+
+Verificado con casos límite: aro manual solo → 69, avisa; cámara a 71° →
+bloquea; 30% de fotogramas perdidos → bloquea; salto de la marca de 200 px en
+un vídeo de 1080 → bloquea; 4 muestras en la concéntrica → bloquea; ROM de
+2,4 m → bloquea. Automático + vídeo bueno → 97.
+
+> **Salvedad, escrita también en el código:** los pesos y los cortes son
+> criterio razonado, **no calibración empírica**. Nadie ha comprobado contra un
+> encoder que un 82 signifique ±3% de error real. Lo que sí hace es ordenar
+> correctamente: una medición de 40 es peor que una de 85.
+
+### 11.3. Trazabilidad: cómo se midió, junto a lo medido
+
+Cinco claves nuevas en la bolsa de métricas —`measurement_quality`,
+`camera_obliquity`, `tracking_loss`, `sample_rate`, `plate_px`—, categoría
+`quality`. **Sin `ALTER TABLE`:** un INSERT en `metric_definitions`
+(`database/metrics_catalog_quality.sql`), que es exactamente para lo que se
+montó el modelo de bolsa JSONB.
+
+Sin esto, dentro de seis meses "0,71 m/s" es indistinguible tanto si salió del
+disco detectado como de un aro puesto a ojo. Con `plate_px` guardado, además,
+una medición antigua se puede **recalcular** si se descubre que el disco no era
+del diámetro supuesto.
+
+### 11.4. Lo que NO se ha hecho, y por qué
+
+- **Contenedor trabajador, Realtime y reproceso** (§3–§6): la corrección de
+  cabecera ya los había descartado —el vídeo no se sube— y esta fase no los
+  recupera. Siguen documentados para el día que la espera de 10–30 s moleste de
+  verdad.
+- **Perfil carga-velocidad individual.** `estimate1RM` sigue usando constantes
+  genéricas por levantamiento (`mvt`, `slope`) en vez del histórico del propio
+  atleta. Es el siguiente paso obvio y no depende de nada de aquí.
+
+### 11.5. Pendiente de decidir — "Fuerza Suelo"
+
+`pwrMath.ts` calcula `f = massKg * (g + a)` usando **solo la masa de la
+barra**, y la tarjeta se titula *"Fuerza Suelo"*. La fuerza de reacción del
+suelo en una sentadilla incluye la masa corporal en movimiento: lo que se
+calcula es la fuerza sobre la barra, no contra el suelo.
+
+O se corrige el modelo —haría falta el peso del atleta y una fracción de masa
+corporal movilizada por ejercicio— o se corrige la etiqueta. **No se ha tocado
+a la espera de decisión**, porque cambiar el modelo altera todas las cifras de
+fuerza y potencia ya guardadas.
+
+### 11.6. Ficheros
+
+| Fichero | Qué hace |
+|---|---|
+| `src/lib/cv/plateGeometry.ts` | **Nuevo.** La escala del vídeo: altura de la elipse, ángulo de cámara, los cuatro métodos de calibración. Sin dependencias de OpenCV, así que se comprueba a mano. |
+| `src/lib/cv/quality.ts` | **Nuevo.** Las cinco dimensiones, los umbrales y la conversión a claves del catálogo. |
+| `src/lib/cv/cv.worker.js` | `DETECT_PLATE` por ajuste de elipse; `AUTO_CALIBRATE` y `ASSIST_CALIBRATE` retirados. |
+| `src/lib/cv/tracker.ts` | `sendDetectPlate` sustituye a las dos funciones muertas. |
+| `src/features/coach/components/pwr/VideoTracker.tsx` | Calibración de tres escalones, selector de diámetro, escala visible, contadores de seguimiento. Cromo migrado a los tokens de diseño. |
+| `src/features/coach/components/pwr/MetricsDashboard.tsx` | Recibe `calibration` y `trackingStats` en vez de `pixelToMeterRatio`; calcula y enseña la calidad; la mete en la bolsa. |
+| `src/features/vbt/components/SetVideoAnalysisModal.tsx` | No deja guardar una medición bloqueada. |
+| `src/features/coach/components/pwr/PwrAnalysisTab.tsx` | Lo mismo, en los dos botones de guardado. |
+| `database/metrics_catalog_quality.sql` | **Nuevo.** Las cinco métricas de calidad en el catálogo. **Migración pendiente de ejecutar a mano.** |

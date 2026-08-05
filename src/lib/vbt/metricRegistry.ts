@@ -103,6 +103,23 @@ const FALLBACK_DEFINITIONS: MetricDefinition[] = [
     d('concentric_duration', 'Duración concéntrica', 'T. con', 's', 2, 'tempo', 'neutral', 510, 0, 60),
     d('eccentric_duration', 'Duración excéntrica', 'T. exc', 's', 2, 'tempo', 'neutral', 520, 0, 60),
     d('total_reps', 'Repeticiones detectadas', 'Reps', null, 0, 'quality', 'neutral', 610, 0, 100),
+
+    // CÓMO se midió, no qué se midió.
+    //
+    // Están aquí porque una velocidad sin saber cómo se obtuvo no se puede
+    // auditar: dentro de seis meses, "0,71 m/s" es indistinguible tanto si
+    // salió del disco detectado como de un aro puesto a ojo con un 20% de
+    // error. Estas cinco claves son lo que permite volver atrás y decidir si
+    // una medición entra o no en el perfil carga-velocidad.
+    //
+    // Las escribe el analizador de vídeo; una medición de encoder o a mano
+    // simplemente no las trae, y la bolsa admite eso sin más. Ver
+    // src/lib/cv/quality.ts.
+    d('measurement_quality', 'Fiabilidad de la medición', 'Fiab.', '/100', 0, 'quality', 'up', 600, 0, 100),
+    d('camera_obliquity', 'Ángulo de cámara', 'Áng.', '°', 0, 'quality', 'down', 620, 0, 90),
+    d('tracking_loss', 'Fotogramas perdidos', 'Pérd.', '%', 1, 'quality', 'down', 630, 0, 100),
+    d('sample_rate', 'Frecuencia de muestreo', 'Muestreo', 'Hz', 0, 'quality', 'up', 640, 0, 1000),
+    d('plate_px', 'Disco medido', 'Disco', 'px', 0, 'quality', 'neutral', 650, 0, 10000),
 ];
 
 /** Atajo para que la lista de arriba se lea como una tabla y no como ruido. */

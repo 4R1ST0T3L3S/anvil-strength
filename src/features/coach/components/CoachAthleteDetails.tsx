@@ -282,7 +282,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                 <p className="text-ink-muted font-medium">No hay competiciones asignadas.</p>
                             </div>
                         ) : (
-                            <div className="grid gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                 {competitions.map((comp) => {
                                     const level = comp.level || 'COMPETICIÓN';
                                     let meta: { color: string; border: string; bg: string };

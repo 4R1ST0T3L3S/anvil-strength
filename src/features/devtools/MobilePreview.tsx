@@ -3,6 +3,9 @@ import {
     LayoutDashboard, FileText, Utensils, Trophy, User, Calendar, Medal, ShoppingBag,
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { TeamCard, NextCompCard, NoCompCard } from '../coach/components/CoachHomeCards';
+import { RolesSection } from '../profile/components/RolesSection';
+import type { UserProfile } from '../../hooks/useUser';
 import { LoggerSetRow } from '../training/components/LoggerSetRow';
 import { SaveIndicator } from '../../components/ui/SaveIndicator';
 import { DangerConfirmModal } from '../../components/modals/DangerConfirmModal';
@@ -78,6 +81,56 @@ export function MobilePreview() {
             {/* Mismo armazón que WorkoutLogger: UN solo scroll —el de `main`—
                 y la cabecera pegada arriba. Si esto diverge, el banco deja de
                 medir lo que se envía. */}
+            {/* CABECERA DEL PANEL DEL ENTRENADOR.
+                Se mide aquí con los CASOS LÍMITE, no con los bonitos: el
+                nombre de competición más largo del calendario real, tres
+                dígitos de cuenta atrás y el contador a cero. Con "Nacional ·
+                Madrid" y 12 días todo cabe siempre y no se ve nada. */}
+            <div className="mx-auto w-full max-w-6xl space-y-3 p-4">
+                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                    Panel del entrenador · cabecera
+                </p>
+                <div data-probe="home-cards" className="grid gap-3 md:grid-cols-2">
+                    <TeamCard athleteCount={14} onClick={() => {}} />
+                    <NextCompCard
+                        comp={{
+                            name: 'Campeonato de España Absoluto de Powerlifting Clásico',
+                            date: '2026-11-14',
+                            days: 340,
+                            level: 'Nacional',
+                            location: 'Alcobendas (Madrid)',
+                        }}
+                        onClick={() => {}}
+                    />
+                    <TeamCard athleteCount={0} onClick={() => {}} />
+                    <NextCompCard
+                        comp={{ name: 'Open Anvil', date: '2026-08-06', days: 1, level: '', location: '' }}
+                        onClick={() => {}}
+                    />
+                    <NoCompCard />
+                </div>
+
+                {/* AUTOGESTIÓN DE ROLES.
+                    Se monta con el caso que motivó la funcionalidad: alguien
+                    que entrena a gente, pauta nutrición Y además tiene su
+                    propio entrenador, con un rol concedido (desarrollador)
+                    que no puede tocarse. Guardar aquí falla a propósito —no
+                    hay sesión— y eso también se quiere ver: el mensaje de
+                    error tiene que caber y leerse. */}
+                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                    Perfil · qué eres en Anvil
+                </p>
+                <RolesSection
+                    user={{
+                        id: 'demo',
+                        full_name: 'Marc Alonso',
+                        role: 'coach',
+                        roles: ['athlete', 'coach', 'nutritionist', 'developer'],
+                        has_access: true,
+                    } as UserProfile}
+                />
+            </div>
+
             <div className="mx-auto w-full max-w-md">
                 <div data-probe="cabecera" className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 pb-2 backdrop-blur">
                     <div className="p-4">

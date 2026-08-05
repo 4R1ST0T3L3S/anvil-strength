@@ -8,6 +8,7 @@ import {
     ShoppingBag,
     Medal,
     Activity,
+    Users,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -25,7 +26,7 @@ import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
 import { AnvilRanking } from '../components/AnvilRanking';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
-import { isStaff } from '../../../lib/roles';
+import { isAthlete, tieneAmbosPaneles } from '../../../lib/roles';
 import { FEATURES } from '../../../lib/features';
 
 interface UserDashboardProps {
@@ -88,11 +89,17 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     if (!isSlug(view)) return <Navigate to="/dashboard" replace />;
 
     /**
-     * El panel de atleta rechazaba a los entrenadores con un cartel de
-     * "Acceso Denegado" sin salida. Un rol que no pinta aquí no es un error
-     * del usuario: es una redirección.
+     * Quien no tiene entrenamiento propio no pinta nada aquí. Un rol que no
+     * encaja no es un error del usuario: es una redirección.
+     *
+     * La condición es `!isAthlete` y NO `isStaff`, y ese cambio es el que
+     * hace posible el caso de los roles múltiples. Antes se echaba a
+     * cualquiera que gestionara atletas, así que una persona que entrena a
+     * gente Y tiene su propio entrenador no podía llegar a su plan: entraba
+     * en /dashboard y salía rebotada a /coach-dashboard cada vez, sin
+     * ninguna forma de ver sus propias series.
      */
-    if (isStaff(user)) return <Navigate to="/coach-dashboard" replace />;
+    if (!isAthlete(user)) return <Navigate to="/coach-dashboard" replace />;
 
     const menuItems = [
         {
@@ -161,6 +168,21 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 label: 'Tienda Anvil',
                 onClick: () => go('tienda'),
                 isActive: slug === 'tienda',
+                hideOnMobileBar: true,
+            }]
+            : []),
+        // CONMUTADOR DE PANEL.
+        // Solo para quien tiene los dos: entrena a gente y además le
+        // entrenan. Sin esto, esa persona entra en el panel que decida
+        // `homeRouteFor` y no tiene ninguna forma visible de llegar al otro
+        // —tendría que escribir la URL a mano—, que era exactamente lo que
+        // hacía imposible el caso de los roles múltiples.
+        ...(tieneAmbosPaneles(user)
+            ? [{
+                icon: <Users size={20} />,
+                label: 'Cambiar a entrenador',
+                onClick: () => navigate('/coach-dashboard'),
+                isActive: false,
                 hideOnMobileBar: true,
             }]
             : []),

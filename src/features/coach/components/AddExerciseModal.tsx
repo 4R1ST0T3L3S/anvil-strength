@@ -115,7 +115,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                 No se encontraron ejercicios.
                             </div>
                         ) : (
-                            <div className="grid gap-2">
+                            <div className="grid grid-cols-1 gap-2">
                                 {filteredExercises.map((ex) => (
                                     <div
                                         key={ex.id}

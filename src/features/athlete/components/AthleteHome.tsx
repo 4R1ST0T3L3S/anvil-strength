@@ -274,7 +274,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                     PANEL DE CONTROL                                      */}
                 <section>
                     <SectionLabel icon={FileText}>Tu carrera</SectionLabel>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         <NavTile area="train" icon={FileText} title="Planificación" hint="Bloques y sesiones" onClick={() => onNavigate('planning')} />
                         <NavTile area="club" icon={Trophy} title="Competiciones" hint="Marcas y eventos" onClick={() => onNavigate('competitions')} />
                         <NavTile area="train" icon={Calendar} title="Calendario" hint="Tu año de un vistazo" onClick={() => onNavigate('calendar')} />

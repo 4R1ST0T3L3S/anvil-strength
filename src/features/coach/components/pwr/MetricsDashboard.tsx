@@ -2,8 +2,24 @@ import { useState, useMemo, useEffect } from 'react';
 import { TrackingPoint, calculateVelocityMetrics } from '../../../../lib/cv/tracker';
 import { extractLiftingPhases, calculateDynamics, estimate1RM } from '../../../../lib/cv/pwrMath';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ReferenceLine } from 'recharts';
-import { Activity, Gauge, ArrowDownUp, Target, Zap, Flame, TrendingUp, AlertTriangle, MoveHorizontal, Clock, Percent, Award, Dumbbell } from 'lucide-react';
+import { Activity, Gauge, ArrowDownUp, Target, Zap, Flame, TrendingUp, AlertTriangle, MoveHorizontal, Clock, Percent, Award, Dumbbell, ShieldCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import type { VbtMetrics } from '../../../../types/training';
+import type { Calibration } from '../../../../lib/cv/plateGeometry';
+import { CALIBRATION_METHOD_LABEL } from '../../../../lib/cv/plateGeometry';
+import { assessQuality, qualityToMetricBag, type QualityReport, type TrackingStats } from '../../../../lib/cv/quality';
+
+/**
+ * Nombres legibles de las métricas que la calidad marca como poco fiables.
+ *
+ * En claves del catálogo para que coincidan con lo que se guarda, y con
+ * etiqueta propia porque "horizontal_deviation" no le dice nada a nadie.
+ */
+const UNRELIABLE_LABEL: Record<string, string> = {
+  horizontal_deviation: 'la desviación horizontal',
+  peak_velocity: 'la velocidad máxima',
+  peak_power: 'la potencia máxima',
+  rfd: 'la tasa de desarrollo de fuerza',
+};
 
 /**
  * Lo que este panel calcula y otro puede querer guardar.
@@ -32,11 +48,22 @@ export interface PwrResult {
   loadKg: number;
   reps: number;
   exerciseType: 'squat' | 'bench' | 'deadlift';
+  /**
+   * De cuánto fiarse, y por qué.
+   *
+   * Va DENTRO del resultado y no al lado porque quien guarde esto tiene que
+   * poder negarse: con `verdict === 'blocked'` la medición no debe llegar al
+   * perfil carga-velocidad del atleta. Ver quality.ts.
+   */
+  quality: QualityReport;
 }
 
 interface MetricsDashboardProps {
   path: TrackingPoint[];
-  pixelToMeterRatio: number;
+  /** De dónde sale la escala del vídeo. Contiene `pixelToMeterRatio`. */
+  calibration: Calibration;
+  /** Cómo fue el seguimiento: fotogramas perdidos, saltos, duración. */
+  trackingStats: TrackingStats;
   onTimeHover?: (time: number) => void;
   currentVideoTime?: number;
   /** Se llama cada vez que cambia el resultado (carga o ejercicio incluidos). */
@@ -54,7 +81,8 @@ interface MetricsDashboardProps {
   initialExerciseType?: 'squat' | 'bench' | 'deadlift';
 }
 
-export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, currentVideoTime, onResult, initialLoadKg, initialExerciseType }: MetricsDashboardProps) {
+export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover, currentVideoTime, onResult, initialLoadKg, initialExerciseType }: MetricsDashboardProps) {
+  const pixelToMeterRatio = calibration.pixelToMeterRatio;
   const [loadKg, setLoadKg] = useState<number>(
     initialLoadKg && initialLoadKg > 0 ? initialLoadKg : 100
   );
@@ -100,6 +128,26 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
   }, [metricsData, pixelToMeterRatio, loadKg, exerciseType]);
 
   /**
+   * ¿Me puedo fiar de esto?
+   *
+   * Se calcula ANTES de enseñar nada y viaja con el resultado. No depende de
+   * la carga ni del ejercicio elegidos —esos no cambian la fiabilidad de la
+   * medición, solo su interpretación— así que no se recalcula al toquetear los
+   * controles de arriba.
+   */
+  const quality = useMemo<QualityReport | null>(() => {
+    if (!advMetrics) return null;
+    return assessQuality({
+      calibration,
+      tracking: trackingStats,
+      concentricSamples: advMetrics.concentric.dataPoints.length,
+      concentricDurationS: advMetrics.concentric.duration,
+      romM: advMetrics.concentric.rom,
+      meanVelocityMs: advMetrics.concentric.meanVelocity,
+    });
+  }, [advMetrics, calibration, trackingStats]);
+
+  /**
    * El resultado, en el mismo vocabulario que usa el resto de la aplicación.
    *
    * Se publica hacia arriba en un efecto y no durante el render porque quien
@@ -108,7 +156,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
   useEffect(() => {
     if (!onResult) return;
 
-    if (!advMetrics) {
+    if (!advMetrics || !quality) {
       onResult(null);
       return;
     }
@@ -140,12 +188,23 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
         eccentric_duration: advMetrics.eccentric?.duration,
         est_1rm_percent: advMetrics.rm.percent,
         total_reps: advMetrics.totalReps,
+        // CÓMO se midió, junto a lo medido.
+        //
+        // Sin estas cinco claves, dentro de seis meses no hay forma de saber
+        // si aquel 0,71 m/s de marzo se midió con el disco detectado o con un
+        // aro puesto a ojo, ni con cuántos fotogramas perdidos. Con ellas, una
+        // medición se puede auditar o expulsar del perfil a posteriori.
+        //
+        // Que quepan sin migración es justamente para lo que se montó la
+        // bolsa JSONB: son cinco filas en `metric_definitions` y nada más.
+        ...qualityToMetricBag(quality, calibration, trackingStats),
       },
       loadKg,
       reps: advMetrics.totalReps,
       exerciseType,
+      quality,
     });
-  }, [advMetrics, loadKg, exerciseType, onResult]);
+  }, [advMetrics, loadKg, exerciseType, onResult, quality, calibration, trackingStats]);
 
   // Format data for Scatter Chart (Bar Path)
   const barPathData = useMemo(() => {
@@ -205,11 +264,64 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
       return minDiff < 0.2 ? closest : null; // Si nos salimos del data range por mucho, ocultamos.
   }, [currentVideoTime, chartData]);
 
-  if (path.length === 0 || !advMetrics) return null;
+  if (path.length === 0 || !advMetrics || !quality) return null;
+
+  /**
+   * LO PRIMERO QUE SE VE ES SI ESTO VALE.
+   *
+   * Va arriba del todo, antes que ninguna cifra, porque el orden de lectura es
+   * el orden en que se forma la confianza: quien ve "0,58 m/s · 740 W" y
+   * DESPUÉS un aviso, ya se ha creído el número.
+   *
+   * Cuando está bloqueado las métricas siguen viéndose, atenuadas. Ocultarlas
+   * dejaría al usuario sin saber qué ha fallado ni cómo repetir la grabación
+   * mejor; lo que no puede hacer es guardarlas.
+   */
+  const tone =
+    quality.verdict === 'ok'
+      ? { border: 'border-success/25', bg: 'bg-success/10', text: 'text-success', Icon: ShieldCheck, title: 'Medición fiable' }
+      : quality.verdict === 'warn'
+        ? { border: 'border-warning/25', bg: 'bg-warning/10', text: 'text-warning', Icon: ShieldAlert, title: 'Medición con salvedades' }
+        : { border: 'border-danger/30', bg: 'bg-danger/10', text: 'text-danger', Icon: ShieldX, title: 'Medición no fiable — no se puede guardar' };
+
+  /** Atenuar es la señal de "esto no te lo creas", sin llegar a esconderlo. */
+  const dimmed = quality.verdict === 'blocked' ? 'opacity-50' : '';
 
   return (
     <div className="flex flex-col h-full gap-3 pb-2 w-full">
-      
+
+      <div className={`shrink-0 rounded-card border ${tone.border} ${tone.bg} p-3`}>
+        <div className="flex items-start gap-2.5">
+          <tone.Icon size={18} className={`mt-0.5 shrink-0 ${tone.text}`} aria-hidden="true" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className={`text-t-xs font-bold ${tone.text}`}>{tone.title}</span>
+              <span className="text-t-2xs text-ink-subtle">
+                {quality.score}/100 · {CALIBRATION_METHOD_LABEL[calibration.method]}
+              </span>
+            </div>
+
+            {quality.reasons.length > 0 && (
+              <ul className="mt-1.5 space-y-0.5">
+                {quality.reasons.map(r => (
+                  <li key={r} className="text-t-2xs leading-relaxed text-ink-subtle">· {r}</li>
+                ))}
+              </ul>
+            )}
+
+            {/* Una medición puede ser buena EN CONJUNTO y aun así tener
+                métricas concretas que no aguantan. Decirlo aquí evita que
+                alguien compare desviaciones horizontales entre dos vídeos
+                grabados desde ángulos distintos. */}
+            {quality.unreliableMetrics.length > 0 && quality.verdict !== 'blocked' && (
+              <p className="mt-1.5 text-t-2xs leading-relaxed text-ink-faint">
+                Interpretar con cuidado: {quality.unreliableMetrics.map(k => UNRELIABLE_LABEL[k] ?? k).join(', ')}.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Controles Dinámicos Superiores */}
       <div className="bg-[#0a0a0a] border border-white/5 p-2 px-4 rounded-xl flex items-center justify-between gap-4 shrink-0">
           <div className="flex flex-wrap items-center gap-3">
@@ -248,7 +360,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3 shrink-0">
+      <div className={`grid grid-cols-3 gap-3 shrink-0 ${dimmed}`}>
          <div className="bg-[#241b1b] border border-[#ff3333]/10 p-3 rounded-xl flex items-center gap-2 overflow-hidden shadow-[0_4px_20px_rgba(255,51,51,0.05)]">
              <div className="p-2 bg-anvil-red/10 rounded-lg text-anvil-red shrink-0">
                  <Activity size={18} />
@@ -280,7 +392,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
          </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 flex-1 min-h-0">
+      <div className={`grid grid-cols-2 gap-3 flex-1 min-h-0 ${dimmed}`}>
           {/* Velocity Line Chart */}
           <div className="bg-[#0a0a0a] border border-white/5 p-3 rounded-xl flex flex-col h-full overflow-hidden">
               <h3 className="text-white text-xs font-bold mb-2 flex items-center gap-1 shrink-0">
@@ -361,7 +473,7 @@ export function MetricsDashboard({ path, pixelToMeterRatio, onTimeHover, current
       </div>
 
       {/* Grid de Métricas Avanzadas (La "Magia Físico-Matemática") */}
-      <div className="grid grid-cols-4 gap-2 shrink-0">
+      <div className={`grid grid-cols-4 gap-2 shrink-0 ${dimmed}`}>
           {/* Potencia */}
           <div className="bg-[#0a0a0a] border border-yellow-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
               <div className="flex items-center gap-1 mb-1">

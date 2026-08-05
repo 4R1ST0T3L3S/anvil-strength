@@ -6,6 +6,7 @@ import {
     Calendar,
     User,
     Activity,
+    Dumbbell,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
@@ -19,7 +20,7 @@ import { ProfileSection } from '../../profile/components/ProfileSection';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 import { FloatingChat } from '../../chat/components/FloatingChat';
-import { isStaff, isNutritionist } from '../../../lib/roles';
+import { isStaff, isNutritionist, tieneAmbosPaneles } from '../../../lib/roles';
 
 interface CoachDashboardProps {
     user: UserProfile;
@@ -123,6 +124,17 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 isActive: slug === 'pwr',
                 hideOnMobileBar: true,
             }]),
+        // CONMUTADOR DE PANEL. La otra mitad del de UserDashboard: quien
+        // entrena a gente y además se entrena necesita ir y volver.
+        ...(tieneAmbosPaneles(user)
+            ? [{
+                icon: <Dumbbell size={20} />,
+                label: 'Cambiar a atleta',
+                onClick: () => navigate('/dashboard'),
+                isActive: false,
+                hideOnMobileBar: true,
+            }]
+            : []),
     ];
 
     const renderContent = () => {

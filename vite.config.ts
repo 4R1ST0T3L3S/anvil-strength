@@ -45,6 +45,30 @@ export default defineConfig({
         importScripts: ['push-sw.js'], // manejadores de Web Push
 
         /**
+         * QUÉ NO SE PRECACHEA, Y POR QUÉ IMPORTA TANTO.
+         *
+         * El precache no es una caché: es una DESCARGA OBLIGATORIA. El
+         * service worker se baja todo lo que hay en esta lista en la primera
+         * visita, de golpe y en segundo plano, lo abra el usuario o no.
+         *
+         * `opencv.js` son 10,6 MB — el 74% de los 14,3 MB que se precacheaban
+         * antes de esta línea. Está en `public/`, así que entraba por el
+         * patrón `**\/*.js` de vite-plugin-pwa sin que nadie lo decidiera.
+         *
+         * Y no hace falta ahí: lo carga `src/lib/cv/cv.worker.js` con
+         * `importScripts('/opencv.js')`, dentro de un worker, y solo cuando
+         * alguien abre el análisis de vídeo de una serie. O sea que la
+         * inmensa mayoría de las visitas se bajaban diez megas de visión por
+         * computador para no usarlos ni una vez.
+         *
+         * Excluirlo NO lo rompe: se sigue sirviendo desde `/opencv.js` y el
+         * worker se lo pide cuando le toca. Lo único que cambia es CUÁNDO.
+         * A cambio se pierde el análisis de vídeo sin conexión, que tampoco
+         * funcionaba: necesita subir el vídeo.
+         */
+        globIgnores: ['**/opencv.js'],
+
+        /**
          * SIN ESTO, LA PWA SOLO ERA INSTALABLE, NO USABLE SIN CONEXIÓN.
          *
          * El service worker guardaba el HTML, el JS y el CSS, así que la app

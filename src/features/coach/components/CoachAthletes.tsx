@@ -394,7 +394,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                     onInvite={() => setIsInviteOpen(true)}
                 />
             ) : (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {visible.map((athlete, index) => (
                         <AthleteCard
                             key={athlete.id}
@@ -660,7 +660,7 @@ function AthletesSkeleton() {
             <Skeleton className="h-9 w-48" />
             <Skeleton className="mt-2 h-4 w-32" />
             <Skeleton className="mt-6 h-10 w-full rounded-field" />
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }, (_, i) => (
                     <div key={i} className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
                         <div className="flex items-center gap-3">

@@ -3,6 +3,8 @@ import { Activity, ArrowLeft, Link2, Save } from 'lucide-react';
 import { VideoTracker } from './VideoTracker';
 import { MetricsDashboard, type PwrResult } from './MetricsDashboard';
 import { TrackingPoint } from '../../../../lib/cv/tracker';
+import type { Calibration } from '../../../../lib/cv/plateGeometry';
+import type { TrackingStats } from '../../../../lib/cv/quality';
 import { SavePwrResultModal } from '../../../vbt/components/SavePwrResultModal';
 import { useAuth } from '../../../../context/AuthContext';
 
@@ -36,7 +38,11 @@ export function PwrAnalysisTab({
   fixedAthleteId?: string | null;
 }) {
   const { session } = useAuth();
-  const [trackingData, setTrackingData] = useState<{ path: TrackingPoint[], ratio: number } | null>(null);
+  const [trackingData, setTrackingData] = useState<{
+    path: TrackingPoint[];
+    calibration: Calibration;
+    stats: TrackingStats;
+  } | null>(null);
   const [seekTime, setSeekTime] = useState<number | undefined>();
   const [currentVideoTime, setCurrentVideoTime] = useState<number>(0);
   const [trackerVersion, setTrackerVersion] = useState(0);
@@ -52,9 +58,17 @@ export function PwrAnalysisTab({
    */
   const [saveMode, setSaveMode] = useState<'assign' | 'quick' | null>(null);
 
-  const handleTrackingComplete = (path: TrackingPoint[], ratio: number) => {
-     setTrackingData({ path, ratio });
+  const handleTrackingComplete = (path: TrackingPoint[], calibration: Calibration, stats: TrackingStats) => {
+     setTrackingData({ path, calibration, stats });
   };
+
+  /**
+   * Con la medición bloqueada no se guarda, ni en una serie ni suelto.
+   *
+   * Guardar "suelto" no es una vía de escape: acaba en el historial del
+   * atleta y de ahí en el perfil carga-velocidad igual que lo demás.
+   */
+  const blocked = result?.quality.verdict === 'blocked';
 
   const handleReset = () => {
      setTrackingData(null);
@@ -96,16 +110,24 @@ export function PwrAnalysisTab({
                       último: ponerlo primero invitaba a perder lo medido. */}
                   <button
                     onClick={() => setSaveMode('assign')}
-                    disabled={!result}
-                    title={result ? 'Guardar las métricas dentro de una serie del plan' : 'Todavía no hay métricas que guardar'}
+                    disabled={!result || blocked}
+                    title={
+                      !result ? 'Todavía no hay métricas que guardar'
+                        : blocked ? 'La medición no alcanza la fiabilidad mínima'
+                          : 'Guardar las métricas dentro de una serie del plan'
+                    }
                     className="flex items-center gap-2 rounded-lg bg-anvil-red px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                      <Link2 size={16} /> Asociar serie
                   </button>
                   <button
                     onClick={() => setSaveMode('quick')}
-                    disabled={!result}
-                    title={result ? 'Guardar en el historial del atleta, sin enlazar con ninguna serie' : 'Todavía no hay métricas que guardar'}
+                    disabled={!result || blocked}
+                    title={
+                      !result ? 'Todavía no hay métricas que guardar'
+                        : blocked ? 'La medición no alcanza la fiabilidad mínima'
+                          : 'Guardar en el historial del atleta, sin enlazar con ninguna serie'
+                    }
                     className="flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
                      <Save size={16} /> Guardar suelto
@@ -147,7 +169,8 @@ export function PwrAnalysisTab({
                   <div className="animate-in slide-in-from-right-8 duration-500 h-full">
                       <MetricsDashboard
                           path={trackingData.path}
-                          pixelToMeterRatio={trackingData.ratio}
+                          calibration={trackingData.calibration}
+                          trackingStats={trackingData.stats}
                           onTimeHover={setSeekTime}
                           currentVideoTime={currentVideoTime}
                           onResult={handleResult}

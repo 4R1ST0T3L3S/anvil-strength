@@ -37,7 +37,7 @@ export function HowItWorksSection() {
                 Tres pasos. Sin letra pequeña y sin nivel mínimo.
             </p>
 
-            <StaggerList className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
+            <StaggerList className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
                 {steps.map((step, i) => (
                     <StaggerItem key={step.title}>
                         {/* El número va ENORME y en el color de fondo del propio

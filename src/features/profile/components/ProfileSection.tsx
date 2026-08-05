@@ -4,6 +4,7 @@ import { UserProfile } from '../../../hooks/useUser';
 import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut, FileText, ChevronRight } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 import { isStaff } from '../../../lib/roles';
+import { RolesSection } from './RolesSection';
 import { PdfThemeSettings } from './PdfThemeSettings';
 
 interface ProfileSectionProps {
@@ -192,6 +193,14 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                     <p className="text-t-sm font-bold">{message.text}</p>
                 </div>
             )}
+
+            {/* Qué eres en Anvil. Va lo PRIMERO porque de esto cuelga todo
+                lo demás: qué paneles ves, qué entradas de menú tienes y qué
+                secciones aparecen debajo —el propio bloque de PDF de aquí
+                abajo, sin ir más lejos, solo sale si gestionas atletas—. */}
+            <div className="mb-6">
+                <RolesSection user={user} />
+            </div>
 
             {/* Documento PDF. Solo staff: es el atleta quien lo RECIBE, no
                 quien lo diseña. Va arriba del formulario y no al final: es la

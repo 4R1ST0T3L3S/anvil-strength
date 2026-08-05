@@ -186,7 +186,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                     </Section>
 
                     <Section title="Marca">
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Field label="Color de acento">
                                 <ColorInput value={brandColor} onChange={setBrandColor} />
                             </Field>
@@ -223,7 +223,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                     </Section>
 
                     <Section title="Cabecera">
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Field label="Estilo">
                                 <SegmentedControl
                                     value={resolved.header.style}
@@ -263,7 +263,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                     </Section>
 
                     <Section title="Tipografía">
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Field label="Familia">
                                 <select
                                     value={resolved.typography.family}
@@ -297,7 +297,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                     </Section>
 
                     <Section title="Composición">
-                        <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                             <Field label="Formato de página">
                                 <SegmentedControl
                                     value={resolved.page}

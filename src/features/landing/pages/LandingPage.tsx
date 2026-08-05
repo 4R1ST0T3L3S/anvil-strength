@@ -344,7 +344,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     </p>
                 </div>
 
-                <StaggerList className="mt-14 grid gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
+                <StaggerList className="mt-14 grid grid-cols-1 gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
                     {[
                         ['Programación semanal', 'Tu entrenador publica la semana y la ves con sus series, kilos y RPE. Registras desde el móvil entre series.'],
                         ['Vídeo y VBT', 'Subes la serie, tu entrenador la corrige. Si usas encoder, el archivo se asocia a la serie que toca.'],
@@ -545,7 +545,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     </button>
                 </div>
 
-                <StaggerList className="mt-14 grid gap-4 md:grid-cols-3">
+                <StaggerList className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
                     {featuredAchievements.slice(0, 3).map((item) => (
                         <StaggerItem key={item.id}>
                             <button
@@ -640,7 +640,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <Fold id="contacto" tone="dark" className="border-t border-subtle py-20">
                 <h2 className="text-d-sm font-black uppercase leading-none text-ink">Hablamos</h2>
 
-                <div className="mt-10 grid gap-px overflow-hidden rounded-sheet bg-[var(--border-subtle)] sm:grid-cols-3">
+                <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-sheet bg-[var(--border-subtle)] sm:grid-cols-3">
                     {[
                         { icon: Instagram, label: 'Instagram', value: '@anvilstrength_', href: 'https://www.instagram.com/anvilstrength_', external: true },
                         { icon: Mail, label: 'Email', value: 'anvilstrengthclub@gmail.com', href: 'mailto:anvilstrengthclub@gmail.com', external: false },

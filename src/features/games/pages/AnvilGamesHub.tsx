@@ -7,6 +7,7 @@ import { AnvilCounterGame } from '../components/AnvilCounterGame';
 import { AnvilHuntGame } from '../components/AnvilHuntGame';
 import { gamesService } from '../../../services/gamesService';
 import { toast } from 'sonner';
+import { puede } from '../../../lib/roles';
 
 interface AnvilGamesHubProps {
     user: UserProfile;
@@ -63,7 +64,10 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
     const gameOfTheDayIndex = dateHash % GAMES.length;
     const gameOfTheDay = GAMES[gameOfTheDayIndex];
 
-    const isDev = (user.role as string) === 'admin' || (user as any).is_developer === true;
+    // Una sola pregunta en vez de un OR entre el rol y una marca suelta:
+    // esa expresión se escribió antes de que existiera el modelo de roles y
+    // ya no coincidía con lo que decide el resto de la aplicación.
+    const isDev = puede(user, 'ver_trastienda');
 
     // Load best scores for the day
     useEffect(() => {

@@ -4,6 +4,8 @@ import { Check, Loader, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { vbtService } from '../../../services/vbtService';
 import type { TrackingPoint } from '../../../lib/cv/tracker';
+import type { Calibration } from '../../../lib/cv/plateGeometry';
+import type { TrackingStats } from '../../../lib/cv/quality';
 import type { PwrResult } from '../../../features/coach/components/pwr/MetricsDashboard';
 import type { TrainingSet, VbtMetrics, VbtSource } from '../../../types/training';
 import { transition, DURATION } from '../../../lib/motion';
@@ -107,9 +109,24 @@ export function SetVideoAnalysisModal({
     setNumber,
     onSaved,
 }: SetVideoAnalysisModalProps) {
-    const [tracking, setTracking] = useState<{ path: TrackingPoint[]; ratio: number } | null>(null);
+    const [tracking, setTracking] = useState<{
+        path: TrackingPoint[];
+        calibration: Calibration;
+        stats: TrackingStats;
+    } | null>(null);
     const [result, setResult] = useState<PwrResult | null>(null);
     const [saving, setSaving] = useState(false);
+
+    /**
+     * Una medición mala no se guarda, aunque el usuario insista.
+     *
+     * No es paternalismo: el destino de estos números es el perfil
+     * carga-velocidad del atleta, que se lee durante meses y del que sale la
+     * prescripción. Un dato malo no molesta hoy, contamina la serie. El motivo
+     * concreto se enseña arriba, en el panel de métricas, para que se pueda
+     * volver a grabar sabiendo qué corregir.
+     */
+    const blocked = result?.quality.verdict === 'blocked';
 
     // Estable entre renders: el panel de métricas la tiene como dependencia de
     // un efecto y recrearla en cada render lo dispararía en bucle.
@@ -130,7 +147,7 @@ export function SetVideoAnalysisModal({
     if (!open) return null;
 
     const save = async () => {
-        if (!result) return;
+        if (!result || blocked) return;
 
         setSaving(true);
         try {
@@ -236,14 +253,15 @@ export function SetVideoAnalysisModal({
                             }
                         >
                             <VideoTracker
-                                onTrackingComplete={(path, ratio) => setTracking({ path, ratio })}
+                                onTrackingComplete={(path, calibration, stats) => setTracking({ path, calibration, stats })}
                                 isResultMode={Boolean(tracking)}
                             />
 
                             {tracking && (
                                 <MetricsDashboard
                                     path={tracking.path}
-                                    pixelToMeterRatio={tracking.ratio}
+                                    calibration={tracking.calibration}
+                                    trackingStats={tracking.stats}
                                     onResult={handleResult}
                                     initialLoadKg={loadKg}
                                     initialExerciseType={guessExerciseType(exerciseName)}
@@ -254,14 +272,22 @@ export function SetVideoAnalysisModal({
                         {previewBag && (
                             <div>
                                 <p className="mb-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
-                                    Se guardará en la serie
+                                    {blocked ? 'No se guardará nada de esto' : 'Se guardará en la serie'}
                                 </p>
-                                <MetricBagView bag={previewBag} />
+                                <div className={blocked ? 'opacity-50' : undefined}>
+                                    <MetricBagView bag={previewBag} />
+                                </div>
                             </div>
                         )}
                     </div>
 
-                    <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-subtle px-4 py-3">
+                    <footer className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-subtle px-4 py-3">
+                        {blocked && (
+                            <p className="mr-auto max-w-[22rem] text-t-2xs leading-relaxed text-danger">
+                                Vuelve a grabar corrigiendo lo que indica el aviso de arriba. Un número
+                                mal medido hace más daño que ninguno.
+                            </p>
+                        )}
                         <button
                             onClick={onClose}
                             className="rounded-field px-3 py-2 text-t-2xs font-semibold text-ink-muted transition-colors duration-fast hover:bg-surface-overlay hover:text-ink"
@@ -270,8 +296,12 @@ export function SetVideoAnalysisModal({
                         </button>
                         <button
                             onClick={save}
-                            disabled={saving || !result}
-                            title={result ? undefined : 'Analiza primero el vídeo'}
+                            disabled={saving || !result || blocked}
+                            title={
+                                !result ? 'Analiza primero el vídeo'
+                                    : blocked ? 'La medición no alcanza la fiabilidad mínima'
+                                        : undefined
+                            }
                             className="flex items-center gap-1.5 rounded-field bg-brand px-4 py-2 text-t-2xs font-bold text-brand-ink transition-colors duration-fast hover:opacity-90 disabled:opacity-50"
                         >
                             {saving ? <Loader size={13} className="animate-spin" /> : <Check size={13} />}

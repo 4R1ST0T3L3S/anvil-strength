@@ -359,7 +359,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                         Sin bloques. Usa el icono de carpeta de un bloque para añadirlo aquí.
                                     </p>
                                 ) : (
-                                    <div className="grid gap-2.5">
+                                    <div className="grid grid-cols-1 gap-2.5">
                                         {macroBlocks.map(block => renderBlockCard(block))}
                                     </div>
                                 )}
@@ -376,7 +376,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                 {macros.length > 0 && (
                                     <p className="mb-2.5 px-1 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Sin macro</p>
                                 )}
-                                <div className="grid gap-2.5">
+                                <div className="grid grid-cols-1 gap-2.5">
                                     {ungrouped.map(block => renderBlockCard(block))}
                                 </div>
                             </div>

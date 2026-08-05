@@ -4,10 +4,11 @@ import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, Calendar, User, Weight, List, Calculator,
-    ChevronRight, Swords, Activity, Fish, CalendarDays, Loader,
+    ChevronRight, Swords, Activity, Fish, Loader,
     BookOpen, Quote, LayoutDashboard, AlertTriangle,
 } from 'lucide-react';
 import { AttentionPanel } from './AttentionPanel';
+import { TeamCard, NextCompCard, NoCompCard, type NextComp } from './CoachHomeCards';
 import type { LucideIcon } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
@@ -15,14 +16,6 @@ import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
 import { PlateCalculator } from '../../athlete/components/PlateCalculator';
 import { SushiCounter } from '../../athlete/components/SushiCounter';
 import { AnvilRanking } from '../../athlete/components/AnvilRanking';
-
-interface NextComp {
-    name: string;
-    date: string;
-    days: number;
-    level: string;
-    location: string;
-}
 
 /**
  * Acento por AREA, no por boton. Mismo criterio que en el inicio del atleta:
@@ -203,59 +196,12 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
                     siguiente tarima.                                    */}
                 <section>
                     <SectionLabel icon={Users}>Tu equipo</SectionLabel>
-                    <div className="grid gap-3 md:grid-cols-2">
-                        <button
-                            onClick={() => onNavigate('athletes')}
-                            className="group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active"
-                        >
-                            <Users
-                                size={128}
-                                aria-hidden="true"
-                                className="pointer-events-none absolute -right-6 -top-4 text-brand-ink opacity-[0.12] transition-transform duration-base ease-snap group-hover:scale-105"
-                            />
-                            <Users size={26} className="relative text-brand-ink" aria-hidden="true" />
-                            <span className="relative">
-                                <span className="block text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
-                                    Mis atletas
-                                </span>
-                                <span className="mt-1.5 block text-t-sm text-brand-ink/80">
-                                    {athleteCount === null
-                                        ? 'Programación y seguimiento'
-                                        : athleteCount === 0
-                                            ? 'Todavía no tienes ninguno asignado'
-                                            : `${athleteCount} ${athleteCount === 1 ? 'atleta asignado' : 'atletas asignados'}`}
-                                </span>
-                            </span>
-                        </button>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
 
-                        {nextComp ? (
-                            <button
-                                onClick={() => onNavigate('calendar')}
-                                className="group flex min-h-[132px] items-center gap-5 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay"
-                            >
-                                <span className="shrink-0 text-center">
-                                    <span className="block text-metric font-black leading-none text-brand">
-                                        {Math.max(nextComp.days, 0)}
-                                    </span>
-                                    <span className="mt-1 block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                                        {nextComp.days === 1 ? 'día' : 'días'}
-                                    </span>
-                                </span>
-                                <span className="min-w-0">
-                                    <span className="block truncate text-t-base font-bold text-ink">{nextComp.name}</span>
-                                    <span className="mt-0.5 block truncate text-t-xs text-ink-subtle">
-                                        {[nextComp.location, nextComp.level].filter(Boolean).join(' · ') || 'Próxima competición'}
-                                    </span>
-                                </span>
-                            </button>
-                        ) : (
-                            <div className="flex min-h-[132px] items-center gap-4 rounded-card border border-dashed border-[var(--border-default)] p-5">
-                                <CalendarDays size={22} className="shrink-0 text-ink-faint" aria-hidden="true" />
-                                <p className="text-t-sm text-ink-subtle">
-                                    Ninguno de tus atletas tiene competición asignada todavía.
-                                </p>
-                            </div>
-                        )}
+                        {nextComp
+                            ? <NextCompCard comp={nextComp} onClick={() => onNavigate('calendar')} />
+                            : <NoCompCard />}
                     </div>
                 </section>
 
@@ -272,7 +218,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
                 {/* ----------------------------------------------------- */}
                 <section>
                     <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
-                    <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                         <NavTile area="coach" icon={Calendar} title="Horario semanal" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
                         <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
                         {!isNutritionist && (

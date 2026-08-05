@@ -4,6 +4,7 @@ import { UserProfile } from '../../../hooks/useUser';
 import { Search, MessageSquare, Loader, ChevronLeft } from 'lucide-react';
 import { AthleteChatView } from '../pages/AthleteChatView';
 import { useNavigate } from 'react-router-dom';
+import { puede } from '../../../lib/roles';
 
 export function CoachChatManager({ coach }: { coach: UserProfile }) {
     const navigate = useNavigate();
@@ -100,7 +101,9 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                     </div>
                 </div>
                 
-                {(coach as any).is_developer && (
+                {/* "Ver todos los atletas", no solo los míos. Es trastienda:
+                    enseña gente que no es tuya. */}
+                {puede(coach, 'ver_trastienda') && (
                     <button 
                         onClick={() => setShowAll(!showAll)}
                         className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${

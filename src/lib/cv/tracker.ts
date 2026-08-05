@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { PlateEllipse } from './plateGeometry';
 
 // Augmented Window interface for OpenCV
 declare global {
@@ -8,10 +9,24 @@ declare global {
   }
 }
 
+/**
+ * Lo que devuelve el detector de disco.
+ *
+ * `method` importa tanto como la elipse: `'ellipse'` es el ajuste bueno,
+ * `'hough'` es el respaldo que solo acierta con la cámara perpendicular, y
+ * `null` es que no se ha encontrado nada. La puntuación de calidad lo usa.
+ */
+export interface PlateDetection {
+  ellipse: PlateEllipse | null;
+  /** Confianza, 0–1. */
+  score: number;
+  method: 'ellipse' | 'hough' | null;
+}
+
 let cvWorker: Worker | null = null;
 let initDoneCallback: ((snappedX?: number, snappedY?: number) => void) | null = null;
 let trackDoneCallback: ((status: number, x: number, y: number) => void) | null = null;
-let autoCalibrateDoneCallback: ((circle: {x: number, y: number, r: number} | null) => void) | null = null;
+let detectPlateCallback: ((result: PlateDetection) => void) | null = null;
 
 export const useOpenCV = () => {
   const [cvReady, setCvReady] = useState<boolean>(() => !!cvWorker);
@@ -42,9 +57,13 @@ export const useOpenCV = () => {
             } else if (data.type === 'TRACK_DONE' && trackDoneCallback) {
                 trackDoneCallback(data.status, data.x, data.y);
                 trackDoneCallback = null; // Unregister for next frame
-            } else if (data.type === 'AUTO_CALIBRATE_DONE' && autoCalibrateDoneCallback) {
-                autoCalibrateDoneCallback(data.circle);
-                autoCalibrateDoneCallback = null;
+            } else if (data.type === 'DETECT_PLATE_DONE' && detectPlateCallback) {
+                detectPlateCallback({
+                    ellipse: data.ellipse ?? null,
+                    score: data.score ?? 0,
+                    method: data.method ?? null,
+                });
+                detectPlateCallback = null;
             }
         };
 
@@ -74,16 +93,28 @@ export const sendProcessFrame = (worker: Worker, buffer: ArrayBuffer, width: num
     worker.postMessage({ type: 'TRACK', buffer: bufCopy, width, height, lastX, lastY }, [bufCopy]);
 }
 
-export const sendAutoCalibrate = (worker: Worker, buffer: ArrayBuffer, width: number, height: number, onDone: (circle: {x: number, y: number, r: number} | null) => void) => {
-    autoCalibrateDoneCallback = onDone;
+/**
+ * Buscar el disco en un fotograma.
+ *
+ * `hint` es opcional. Sin él busca en toda la imagen; con él —cuando el
+ * usuario ha tocado el disco— exige que el candidato caiga ahí, que es lo que
+ * convierte la detección en un problema tratable cuando el gimnasio está lleno
+ * de cosas redondas.
+ */
+export const sendDetectPlate = (
+    worker: Worker,
+    buffer: ArrayBuffer,
+    width: number,
+    height: number,
+    hint: { x: number; y: number } | null,
+    onDone: (result: PlateDetection) => void
+) => {
+    detectPlateCallback = onDone;
     const bufCopy = buffer.slice(0);
-    worker.postMessage({ type: 'AUTO_CALIBRATE', buffer: bufCopy, width, height }, [bufCopy]);
-}
-
-export const sendAssistCalibrate = (worker: Worker, buffer: ArrayBuffer, width: number, height: number, x: number, y: number, onDone: (circle: {x: number, y: number, r: number} | null) => void) => {
-    autoCalibrateDoneCallback = onDone;
-    const bufCopy = buffer.slice(0);
-    worker.postMessage({ type: 'ASSIST_CALIBRATE', buffer: bufCopy, width, height, x, y }, [bufCopy]);
+    worker.postMessage(
+        { type: 'DETECT_PLATE', buffer: bufCopy, width, height, hintX: hint?.x, hintY: hint?.y },
+        [bufCopy]
+    );
 }
 
 // Types for tracking

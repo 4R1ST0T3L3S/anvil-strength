@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { UserProfile } from '../hooks/useUser';
-import { isStaff, isAdmin } from '../lib/roles';
+import { isStaff, isAdmin, isAthlete } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
@@ -67,10 +67,12 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         onSignupClick={onSignupClick}
                         user={user}
                     />
+                ) : isAthlete(user) ? (
+                    <Navigate to="/dashboard" replace />
                 ) : isStaff(user) ? (
                     <Navigate to="/coach-dashboard" replace />
                 ) : (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                 )
             } />
 
@@ -150,10 +152,14 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             <Route path="/dashboard/chat" element={
                 hasActiveSession && user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
-                        {isStaff(user) ? (
-                            <CoachChatManager coach={user} />
-                        ) : (
+                        {/* Quien llega a /dashboard/chat PUEDE gestionar
+                            atletas (es entrenador o nutricionista) pero quiso
+                            entrar por /dashboard: quiere su panel de atleta. El
+                            chat también. */}
+                        {isAthlete(user) ? (
                             <AthleteChatView user={user} />
+                        ) : (
+                            <CoachChatManager coach={user} />
                         )}
                     </Suspense>
                 ) : (
@@ -185,7 +191,11 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         <Navigate to="/" replace />
                     ) : !user && hasActiveSession ? (
                         <DashboardSkeleton />
-                    ) : isStaff(user) ? (
+                    ) : !isAthlete(user) ? (
+                        // Sin panel de atleta —ni siquiera como secundario—.
+                        // Redirige al de entrenador. Así un entrenador que
+                        // ADEMÁS se entrena puede conmutar con el botón "Cambiar
+                        // a atleta" que pone la otra rama.
                         <Navigate to="/coach-dashboard" replace />
                     ) : user ? (
                         <Suspense fallback={<DashboardSkeleton />}>

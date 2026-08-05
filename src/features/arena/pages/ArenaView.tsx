@@ -10,6 +10,7 @@ import { ArenaBetCard } from '../components/ArenaBetCard';
 import { ArenaBettingModal } from '../components/ArenaBettingModal';
 import { ArenaAdminPanel } from '../components/ArenaAdminPanel';
 import { motion, AnimatePresence } from 'framer-motion';
+import { puede } from '../../../lib/roles';
 
 interface ExtendedProfile extends UserProfile {
     is_developer?: boolean;
@@ -280,8 +281,14 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest italic">Anvil Coins</span>
                         </div>
 
-                        {/* Admin Panel */}
-                        {user.is_developer && (
+                        {/* Trastienda de la Arena: crear, resolver y borrar
+                            apuestas. `puede(..., 'ver_trastienda')` y no
+                            `user.is_developer`: la marca sigue existiendo
+                            como columna, pero desde los roles múltiples la
+                            respuesta correcta la da el modelo de capacidades
+                            —que además incluye a administración, que antes
+                            se quedaba fuera sin ninguna razón—. */}
+                        {puede(user, 'ver_trastienda') && (
                             <ArenaAdminPanel 
                                 bets={bets}
                                 onCreateBet={handleCreateBet}

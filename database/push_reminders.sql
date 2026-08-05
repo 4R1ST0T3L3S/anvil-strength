@@ -3,6 +3,30 @@
 -- Ejecutar DESPUÉS de desplegar la edge function send-push.
 -- Requiere extensiones: pg_net (webhooks) y pg_cron (programación).
 -- =====================================================
+--
+-- ANTES DE EJECUTAR ESTE ARCHIVO
+-- -----------------------------------------------------
+-- `send-push` se despliega con `--no-verify-jwt` porque quien la llama es
+-- este disparador, que no tiene ninguna sesión de usuario que presentar. Eso
+-- deja la función abierta a cualquiera que sepa su URL —y la URL lleva el
+-- project-ref, que va dentro del bundle del navegador—, así que la puerta la
+-- cierra un secreto compartido que solo conocen la función y este archivo.
+--
+-- Sin él, un POST desde cualquier sitio le mete a cualquier usuario un aviso
+-- con el nombre y el icono de Anvil y un enlace elegido por quien lo manda.
+--
+-- El secreto se guarda en Vault y NO en este archivo, que está en el
+-- repositorio. Crearlo una vez, con el MISMO valor en los dos sitios:
+--
+--   -- en el SQL Editor:
+--   SELECT vault.create_secret('<cadena larga y aleatoria>', 'push_hook_secret');
+--
+--   # en la terminal:
+--   supabase secrets set PUSH_HOOK_SECRET='<la misma cadena>'
+--
+-- Para rotarlo: `SELECT vault.update_secret(id, '<nueva>')` y volver a
+-- lanzar el `secrets set`. Entre las dos órdenes los avisos fallan con 401,
+-- que es lo correcto: mejor sin avisos que sin autenticación.
 
 CREATE EXTENSION IF NOT EXISTS pg_net;
 CREATE EXTENSION IF NOT EXISTS pg_cron;
@@ -12,7 +36,20 @@ CREATE OR REPLACE FUNCTION notify_push()
 RETURNS TRIGGER
 SECURITY DEFINER SET search_path = public
 AS $$
+DECLARE
+    secreto TEXT;
 BEGIN
+    SELECT decrypted_secret INTO secreto
+      FROM vault.decrypted_secrets
+     WHERE name = 'push_hook_secret';
+
+    -- Sin secreto no se llama. Mandar la petición igualmente solo serviría
+    -- para que la función la rechace con un 401 en cada inserción.
+    IF secreto IS NULL THEN
+        RAISE WARNING 'push_hook_secret no está en Vault: no se envía el aviso. Ver la cabecera de database/push_reminders.sql.';
+        RETURN NEW;
+    END IF;
+
     PERFORM net.http_post(
         url := 'https://ihcyuoczbmjxfinxvzra.supabase.co/functions/v1/send-push',
         body := jsonb_build_object('record', jsonb_build_object(
@@ -21,7 +58,10 @@ BEGIN
             'message', NEW.message,
             'link', NEW.link
         )),
-        headers := '{"Content-Type": "application/json"}'::jsonb
+        headers := jsonb_build_object(
+            'Content-Type', 'application/json',
+            'x-push-secret', secreto
+        )
     );
     RETURN NEW;
 END;

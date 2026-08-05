@@ -9,7 +9,22 @@ export interface UserProfile {
     full_name: string; // Changed from 'name' to match database schema
     nickname?: string;
     avatar_url?: string; // Changed from 'profile_image' to match database schema
+    /**
+     * El rol de MAYOR ALCANCE de los que tiene. Es un REFLEJO de `roles`,
+     * mantenido por un disparador (database/ROLES_MULTIPLES.sql).
+     *
+     * Se conserva porque lo leen 39 políticas RLS y bastantes pantallas.
+     * Para decidir permisos usa `puede()` de src/lib/roles.ts: preguntando
+     * por `role` a secas, un atleta que además entrena parece solo
+     * entrenador y se queda sin su propio panel.
+     */
     role: Role;
+    /**
+     * Todos sus roles. La verdad, frente a `role`, que es el reflejo.
+     * Opcional porque la migración es manual: entre el despliegue y el SQL,
+     * `rolesDe()` lo reconstruye desde `role` e `is_developer`.
+     */
+    roles?: string[];
     has_access: boolean;
     gender?: 'male' | 'female';
     age_category?: string;
@@ -147,6 +162,12 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     full_name: profile.full_name || optimisticUser.full_name,
                     nickname: profile.nickname || optimisticUser.nickname,
                     role: profile.role || optimisticUser.role,
+                    // Sin la migración aplicada la columna no viene, y aquí
+                    // se deja en `undefined` a propósito: `rolesDe()` lo
+                    // toma como "todavía no hay array" y lo reconstruye
+                    // desde `role`. Poner `[]` diría "no tiene ningún rol",
+                    // que es lo contrario y dejaría a todos sin panel.
+                    roles: (profile as { roles?: string[] | null }).roles ?? undefined,
                     has_access: profile.has_access ?? false,
                     avatar_url: profile.avatar_url || optimisticUser.avatar_url,
                     gender: profile.gender || optimisticUser.gender,

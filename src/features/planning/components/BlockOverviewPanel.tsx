@@ -150,7 +150,7 @@ export function BlockOverviewPanel({
             <IssuePanel issues={analytics.issues} />
             <WeeklyChart analytics={analytics} weekNames={weekNames} />
 
-            <div className="grid gap-8 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 <IntensityBreakdown analytics={analytics} />
                 <FrequencyBreakdown analytics={analytics} />
             </div>
@@ -571,7 +571,7 @@ function MuscleSummary({
             </h3>
 
             <div className="overflow-x-auto">
-                <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
                     {rows.map((r, i) => {
                         const ref = WEEKLY_SET_REFERENCE[r.muscle];
                         const scale = Math.max(ref.max * 1.35, r.perWeek);

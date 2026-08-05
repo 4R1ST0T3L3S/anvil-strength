@@ -46,3 +46,8 @@ server/database.db-journal
 # diff enorme sin relación con el código.
 .agents/
 skills-lock.json
+
+# Originales de las imagenes antes de optimizar (scripts/optimizar-imagenes.mjs).
+# No se versionan: siguen en el historial de git, que es de donde se recuperan
+# de verdad. Esta carpeta es solo la comodidad de un "--restaurar" inmediato.
+assets-originales/
