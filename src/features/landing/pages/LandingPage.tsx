@@ -14,8 +14,9 @@ import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../../../data/athletes';
 import { coaches, Coach } from '../../../data/coaches';
 import { nutritionists } from '../../../data/nutritionists';
-import { achievements as allAchievements } from '../../../data/achievements';
+import { achievements as allAchievements, Achievement } from '../../../data/achievements';
 import { SafeImage } from '../../../components/ui/SafeImage';
+import { Modal } from '../../../components/ui/Modal';
 
 import { useSeo } from '../../../hooks/useSeo';
 import { UserProfile } from '../../../hooks/useUser';
@@ -73,7 +74,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
     const [isManualMode, setIsManualMode] = useState(false);
     const [lastInteraction, setLastInteraction] = useState(() => Date.now());
         // Dentro de la función LandingPage, junto a los otros useState:
-    const [selectedAchievement, setSelectedAchievement] = useState<any | null>(null);
+    const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
     const [isAllAchievementsModalOpen, setIsAllAchievementsModalOpen] = useState(false);
 
 
@@ -740,105 +741,173 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
 
 
 
-function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean, onClose: () => void, achievement: any }) {
+/**
+ * FICHA DE UN LOGRO
+ *
+ * Antes era un lightbox propio: fondo negro al 90% con desenfoque, `z-[300]`
+ * a mano (que es la capa del BACKDROP, no la del modal), sin trampa de foco,
+ * sin Escape y sin bloqueo de scroll. Y dentro, el registro visual de otra
+ * página — `bg-[#1c1c1c]`, `text-gray-400`, cursiva, `tracking-tighter` y un
+ * trofeo de 48px de adorno. Ahora usa el `Modal` del sistema, que ya trae los
+ * tres comportamientos, y el color sale de los tokens.
+ *
+ * El trofeo se ha ido: la tarjeta desde la que se abre ya lleva uno, así que
+ * repetirlo aquí a tamaño grande no informa de nada. Lo que sí necesita sitio
+ * es la foto — un podio se enseña, no se ilustra.
+ */
+function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; onClose: () => void; achievement: Achievement | null }) {
     const [imgIndex, setImgIndex] = useState(0);
-    // Fotos que el navegador no ha podido decodificar. Ver SafeImage: el
-    // rewrite de SPA devuelve 200 con HTML cuando el archivo no existe.
-    const [brokenImgs, setBrokenImgs] = useState<Record<number, boolean>>({});
+    const reduce = useReducedMotion();
 
-    // Reiniciar índice al abrir nuevo logro
-    useEffect(() => { setImgIndex(0); setBrokenImgs({}); }, [achievement]);
+    // Se retiene el último logro para que el modal siga teniendo contenido
+    // durante su animación de salida. Al cerrar, el estado del padre pasa a
+    // `null` en el mismo instante: sin esto el panel se queda vacío y la
+    // salida se ve como un parpadeo en vez de como un cierre.
+    const [shown, setShown] = useState<Achievement | null>(achievement);
+    useEffect(() => {
+        if (achievement) { setShown(achievement); setImgIndex(0); }
+    }, [achievement]);
 
-    if (!isOpen || !achievement) return null;
-
-    const nextImg = () => setImgIndex((prev) => (prev + 1) % achievement.images.length);
-    const prevImg = () => setImgIndex((prev) => (prev - 1 + achievement.images.length) % achievement.images.length);
+    const images = shown?.images ?? [];
+    const many = images.length > 1;
+    const go = (dir: 1 | -1) => setImgIndex((i) => (i + dir + images.length) % images.length);
 
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/90 backdrop-blur-sm" />
-                
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative bg-[#1c1c1c] w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
-                    
-                    {/* Botón Cerrar (X) */}
-                    <button onClick={onClose} className="absolute top-4 right-4 z-[310] text-white/50 hover:text-white p-2 bg-black/20 rounded-full"><ChevronLeft className="rotate-180" /></button>
+        <Modal open={isOpen} onClose={onClose} title={shown?.title} size="xl">
+            {shown && (
+                <>
+                    <figure className="group/img relative aspect-[16/10] overflow-hidden rounded-card bg-surface-sunken">
+                        <AnimatePresence initial={false} mode="popLayout">
+                            <motion.div
+                                key={imgIndex}
+                                className="absolute inset-0"
+                                initial={reduce ? false : { opacity: 0, x: 40 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={reduce ? { opacity: 0 } : { opacity: 0, x: -40 }}
+                                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                                drag={many ? 'x' : false}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={0.12}
+                                onDragEnd={(_, info) => {
+                                    if (info.offset.x < -50) go(1);
+                                    if (info.offset.x > 50) go(-1);
+                                }}
+                            >
+                                <SafeImage
+                                    src={images[imgIndex]}
+                                    alt={`${shown.title} — ${shown.result}`}
+                                    className={`h-full w-full object-cover ${many ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                                    fallbackClassName="bg-surface-sunken"
+                                    draggable={false}
+                                />
+                            </motion.div>
+                        </AnimatePresence>
 
-                    {/* Lado Izquierdo: Carrusel con Swipe */}
-                    <div className="w-full md:w-3/5 bg-black relative aspect-video md:aspect-auto overflow-hidden group/img">
-                        {brokenImgs[imgIndex] && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-600">
-                                <Trophy size={32} />
-                                <p className="text-[11px] font-bold uppercase tracking-widest">Foto no disponible</p>
-                            </div>
-                        )}
-                        <motion.img 
-                            key={imgIndex}
-                            src={achievement.images[imgIndex]} 
-                            alt={achievement.title}
-                            onError={() => setBrokenImgs(prev => ({ ...prev, [imgIndex]: true }))}
-                            style={{ display: brokenImgs[imgIndex] ? 'none' : undefined }}
-                            className="w-full h-full object-cover cursor-grab active:cursor-grabbing"
-                            initial={{ x: 100, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -100, opacity: 0 }}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            onDragEnd={(_, info) => {
-                                if (info.offset.x < -50) nextImg();
-                                if (info.offset.x > 50) prevImg();
-                            }}
-                        />
-                        
-                        {/* Botones de navegación (Flechas) */}
-                        {achievement.images.length > 1 && (
+                        {/* Flechas solo en escritorio: en móvil se arrastra. */}
+                        {many && (
                             <>
-                                <button onClick={prevImg} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"><ChevronLeft size={24} /></button>
-                                <button onClick={nextImg} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-opacity"><ChevronRight size={24} /></button>
+                                <button
+                                    type="button"
+                                    onClick={() => go(-1)}
+                                    aria-label="Foto anterior"
+                                    className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill bg-surface-sunken/70 text-ink opacity-0 transition-opacity duration-fast ease-snap hover:bg-brand group-hover/img:opacity-100 focus-visible:opacity-100 sm:flex"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => go(1)}
+                                    aria-label="Foto siguiente"
+                                    className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill bg-surface-sunken/70 text-ink opacity-0 transition-opacity duration-fast ease-snap hover:bg-brand group-hover/img:opacity-100 focus-visible:opacity-100 sm:flex"
+                                >
+                                    <ChevronRight size={20} />
+                                </button>
                             </>
                         )}
-                    </div>
+                    </figure>
 
-                    {/* Lado Derecho: Info */}
-                    <div className="w-full md:w-2/5 p-8 md:p-12 overflow-y-auto">
-                        <Trophy className="text-anvil-red mb-6" size={48} />
-                        <h2 className="text-3xl font-black text-white uppercase italic leading-[0.9] mb-4">{achievement.title}</h2>
-                        <p className="text-xl text-anvil-red font-black italic mb-8 uppercase tracking-tighter">{achievement.result}</p>
-                        <div className="h-px bg-white/10 w-full mb-8" />
-                        <p className="text-gray-400 leading-relaxed text-lg">{achievement.desc}</p>
-                    </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+                    {/* Indicadores fuera de la foto: sobre la superficie tienen
+                        contraste garantizado, y encima de la imagen dependían
+                        de que esa esquina saliera oscura. Barras y no puntos —
+                        el mismo lenguaje que el resto de la página.
+                        La zona pulsable mide 44px aunque la barra mida 3. */}
+                    {many && (
+                        <div className="mt-1 flex justify-center gap-1">
+                            {images.map((src, i) => (
+                                <button
+                                    key={src}
+                                    type="button"
+                                    onClick={() => setImgIndex(i)}
+                                    aria-label={`Ver foto ${i + 1} de ${images.length}`}
+                                    aria-current={i === imgIndex}
+                                    className="flex h-11 w-8 items-center justify-center"
+                                >
+                                    <span
+                                        className={`h-[3px] w-full rounded-pill transition-colors duration-fast ease-snap ${i === imgIndex ? 'bg-brand' : 'bg-[var(--border-strong)]'}`}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    <p className={`text-t-lg font-black uppercase tracking-display text-brand ${many ? 'mt-4' : 'mt-6'}`}>
+                        {shown.result}
+                    </p>
+                    <p className="mt-3 max-w-[62ch] text-t-base leading-relaxed text-ink-muted">
+                        {shown.desc}
+                    </p>
+                </>
+            )}
+        </Modal>
     );
 }
 
-function AllAchievementsModal({ isOpen, onClose, achievements, onSelect }: { isOpen: boolean, onClose: () => void, achievements: any[], onSelect: (a: any) => void }) {
-    if (!isOpen) return null;
+/**
+ * HISTORIAL COMPLETO
+ *
+ * Era una capa a pantalla completa con un titular de 6rem en cursiva
+ * ("Historial de Gloria") y una rejilla de tarjetas con borde, cada una con su
+ * trofeo. Diez tarjetas idénticas para diez líneas de texto.
+ *
+ * Ahora es una lista con separadores, que es la misma forma que ya usan las
+ * preguntas frecuentes y el bloque de contacto de esta página: si el contenido
+ * es una lista, se pinta como una lista. Se lee de un vistazo y el trofeo
+ * repetido diez veces deja de ser ruido.
+ */
+function AllAchievementsModal({ isOpen, onClose, achievements, onSelect }: { isOpen: boolean; onClose: () => void; achievements: Achievement[]; onSelect: (a: Achievement) => void }) {
     return (
-        <AnimatePresence>
-            <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[250] bg-black/95 backdrop-blur-md flex flex-col p-6 md:p-20 overflow-y-auto"
-            >
-                <div className="flex justify-between items-center mb-12">
-                    <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic">Historial de <span className="text-anvil-red">Gloria</span></h2>
-                    <button onClick={onClose} className="p-4 bg-white/10 hover:bg-anvil-red rounded-full transition-colors"><ChevronRight className="rotate-180" /></button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {achievements.map((item) => (
-                        <div 
-                            key={item.id} 
+        <Modal
+            open={isOpen}
+            onClose={onClose}
+            title="Historial del club"
+            description={`${achievements.length} resultados en competición oficial.`}
+            size="lg"
+        >
+            <ul className="divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">
+                {achievements.map((item) => (
+                    <li key={item.id}>
+                        <button
+                            type="button"
                             onClick={() => { onSelect(item); onClose(); }}
-                            className="bg-[#1a1a1a] p-6 rounded-xl border border-white/5 hover:border-anvil-red/50 cursor-pointer transition-all group"
+                            className="group flex w-full items-center gap-4 py-4 text-left"
                         >
-                            <Trophy className="text-anvil-red mb-4 group-hover:scale-110 transition-transform" />
-                            <h3 className="text-xl font-bold text-white uppercase">{item.title}</h3>
-                            <p className="text-anvil-red text-sm font-black italic">{item.result}</p>
-                        </div>
-                    ))}
-                </div>
-            </motion.div>
-        </AnimatePresence>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-t-base font-bold leading-snug text-ink">
+                                    {item.title}
+                                </span>
+                                <span className="mt-1 block text-t-sm font-black uppercase tracking-display text-brand">
+                                    {item.result}
+                                </span>
+                            </span>
+                            <ChevronRight
+                                size={18}
+                                aria-hidden="true"
+                                className="shrink-0 text-ink-faint transition-[transform,color] duration-fast ease-snap group-hover:translate-x-0.5 group-hover:text-ink"
+                            />
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </Modal>
     );
 }
