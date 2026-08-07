@@ -206,9 +206,9 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2 md:gap-4 bg-black/40 p-1.5 md:p-3 rounded-xl md:rounded-2xl border border-white/5">
-                                    <button 
+                                    <button
                                         onClick={() => handleSubtract(type.id)}
-                                        className="w-8 h-8 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-white rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-all"
+                                        className="w-11 h-11 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-white rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-all"
                                     >
                                         <Minus size={16} className="md:w-5 md:h-5" />
                                     </button>
@@ -225,9 +225,9 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                             </motion.span>
                                         </AnimatePresence>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => handleAdd(type.id)}
-                                        className="w-8 h-8 md:w-12 md:h-12 text-black rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-lg"
+                                        className="w-11 h-11 md:w-12 md:h-12 text-black rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-lg"
                                         style={{ backgroundColor: type.color }}
                                     >
                                         <Plus size={16} className="md:w-5 md:h-5" />

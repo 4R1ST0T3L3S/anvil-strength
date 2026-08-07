@@ -83,8 +83,8 @@ export function PwrAnalysisTab({
 
   return (
     <div className={`mx-auto px-2 sm:px-4 py-4 animate-in fade-in duration-300 w-full ${trackingData ? 'max-w-[1800px] h-[calc(100vh-32px)] min-h-[600px] flex flex-col' : 'max-w-5xl space-y-6'}`}>
-      <div className="flex items-center justify-between shrink-0 mb-6">
-          <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shrink-0 mb-6">
+          <div className="flex items-center gap-3 min-w-0">
               {onBack && (
                   <button
                       onClick={onBack}
@@ -101,7 +101,7 @@ export function PwrAnalysisTab({
           </div>
 
           {trackingData && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                   {/* ASOCIAR SERIE es la acción principal, y va primero.
                       Un análisis que acaba dentro de la serie que lo generó
                       es lo que convierte esto en seguimiento; guardarlo

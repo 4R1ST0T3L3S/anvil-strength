@@ -473,7 +473,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
       </div>
 
       {/* Grid de Métricas Avanzadas (La "Magia Físico-Matemática") */}
-      <div className={`grid grid-cols-4 gap-2 shrink-0 ${dimmed}`}>
+      <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0 ${dimmed}`}>
           {/* Potencia */}
           <div className="bg-[#0a0a0a] border border-yellow-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
               <div className="flex items-center gap-1 mb-1">

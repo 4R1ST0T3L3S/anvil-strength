@@ -160,7 +160,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col 2xl:hidden"
+                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col overflow-y-auto 2xl:hidden"
                     >
                         <div className="flex items-center justify-between px-6 py-8 border-b border-white/5">
                             <img src="/logo-dark-removebg-preview.png" className="h-8 w-auto" alt="Logo" />

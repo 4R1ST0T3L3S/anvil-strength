@@ -272,7 +272,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                 <input
                                     type="email"
                                     placeholder="TU EMAIL"
-                                    className="bg-transparent border-0 text-black placeholder-gray-400 px-6 sm:px-8 py-4 sm:py-5 font-bold uppercase outline-none flex-1 text-sm sm:text-base focus:ring-0"
+                                    className="bg-transparent border-0 text-black placeholder-gray-400 px-6 sm:px-8 py-4 sm:py-5 font-bold uppercase outline-none flex-1 min-w-0 text-sm sm:text-base focus:ring-0"
                                 />
                                 <button className="bg-transparent text-black px-6 sm:px-10 py-4 sm:py-5 font-black uppercase transition-all flex items-center justify-center gap-3 whitespace-nowrap text-sm sm:text-base hover:opacity-60">
                                     UNIRME <ArrowRight size={22} strokeWidth={3} />

@@ -1913,12 +1913,12 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
                                     <div className="min-w-0">
                                         {editingWeek === week ? (
-                                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                            <div className="flex items-center gap-2 min-w-0" onClick={e => e.stopPropagation()}>
                                                 <input
                                                     type="text"
                                                     value={weekNameInput}
                                                     onChange={(e) => setWeekNameInput(e.target.value)}
-                                                    className="w-56 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-base text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand focus:outline-none"
+                                                    className="flex-1 min-w-0 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-base text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand focus:outline-none"
                                                     placeholder="Nombre de la semana"
                                                     autoFocus
                                                     onKeyDown={(e) => {
@@ -3077,7 +3077,7 @@ function DayEditorModal({
                             <LayoutTemplate size={14} /> <span className="hidden md:inline">Plantillas</span>
                         </button>
                         {openMenu === 'templates' && (
-                            <div className="absolute right-0 top-full mt-2 z-40 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-2xl p-3 w-72">
+                            <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 z-40 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-2xl p-3 w-[calc(100vw-2rem)] md:w-72 mx-4 md:mx-0">
                                 {session.exercises.length > 0 && (
                                     <div className="mb-3 pb-3 border-b border-subtle">
                                         <p className="text-[10px] font-black uppercase tracking-wider text-ink-subtle mb-2">Guardar este día como plantilla</p>
