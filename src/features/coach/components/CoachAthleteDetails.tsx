@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare, ClipboardCheck, ClipboardList } from 'lucide-react';
+import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Activity, Apple, MessageSquare, ClipboardCheck, ClipboardList, IdCard } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useUser } from '../../../hooks/useUser';
 import { CoachCheckInsTab } from '../../forms/CoachCheckInsTab';
@@ -10,6 +10,7 @@ import { TrainingBlockList } from './TrainingBlockList';
 import { AthleteLogTab } from './AthleteLogTab';
 import CoachVbtTab from './CoachVbtTab';
 import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEditor';
+import { PersonalInfoSection } from '../../profile/components/PersonalInfoSection';
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -21,7 +22,7 @@ interface CoachAthleteDetailsProps {
     onBack: () => void;
 }
 
-type Tab = 'planning' | 'log' | 'competitions' | 'vbt' | 'nutrition' | 'checkins';
+type Tab = 'planning' | 'log' | 'competitions' | 'vbt' | 'nutrition' | 'checkins' | 'personal';
 
 /**
  * Las pestañas, como DATOS.
@@ -48,6 +49,9 @@ const TABS: { key: Tab; label: string; icon: LucideIcon; caps: Capacidad[] }[] =
     { key: 'nutrition', label: 'Nutrición', icon: Apple, caps: ['pautar_nutricion'] },
     { key: 'checkins', label: 'Check-ins', icon: ClipboardCheck, caps: ['planificar_entrenamiento', 'pautar_nutricion'] },
     { key: 'competitions', label: 'Competición', icon: Trophy, caps: ['planificar_entrenamiento'] },
+    // Los datos personales —altura, peso, envergadura, lesiones— los mira
+    // tanto quien programa como quien pauta comidas: las dos capacidades.
+    { key: 'personal', label: 'Datos', icon: IdCard, caps: ['planificar_entrenamiento', 'pautar_nutricion'] },
 ];
 
 /**
@@ -382,6 +386,21 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 {shownTab === 'nutrition' && (
                     <div className={TAB_WIDTH}>
                         <NutritionPlanEditor athleteId={athleteId} />
+                    </div>
+                )}
+
+                {/* 7. DATOS PERSONALES.
+                    El MISMO componente que el atleta ve en su perfil, en modo
+                    entrenador: aquí se puede escribir todo y además elegir qué
+                    campos se le piden. */}
+                {shownTab === 'personal' && currentUser && (
+                    <div className={TAB_WIDTH}>
+                        <PersonalInfoSection
+                            athleteId={athleteId}
+                            mode="coach"
+                            coachId={currentUser.id}
+                            editorId={currentUser.id}
+                        />
                     </div>
                 )}
 

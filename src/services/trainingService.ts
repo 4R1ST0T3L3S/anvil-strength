@@ -1,18 +1,51 @@
 import { supabase } from '../lib/supabase';
-import { TrainingBlock, TrainingSession, ExerciseLibrary, SessionExercise, TrainingSet, Macrocycle, DayTemplate, DayTemplateExercise, WeekMeta, Weekday, weekdayIndex, weekdayLabel } from '../types/training';
+import { TrainingBlock, TrainingSession, ExerciseLibrary, SessionExercise, TrainingSet, Macrocycle, DayTemplate, DayTemplateExercise, WeekMeta, Weekday, weekdayIndex, weekdayLabel, countsForVolume } from '../types/training';
+import type { ExerciseSection } from '../types/training';
 import { getWeekNumber } from '../utils/dateUtils';
+
+/**
+ * POR QUÉ NO HAY NADA QUE HACER HOY.
+ *
+ * "No hay sesión" tenía cuatro causas distintas y la pantalla de inicio las
+ * contaba todas igual: "tu entrenador aún no te ha pautado nada". Eso es
+ * mentira en tres de los cuatro casos y, en el peor —la semana existe pero el
+ * coach todavía no la ha abierto—, hace que el atleta escriba a su entrenador
+ * para preguntar por un plan que ya está escrito.
+ */
+export type NoSessionReason =
+    | 'rest'          // hoy toca descansar: la semana está abierta y no hay día
+    | 'not-released'  // la semana existe pero el coach aún no la ha publicado
+    | 'not-started'   // el bloque empieza más adelante
+    | 'finished'      // el bloque ya terminó
+    | 'empty';        // el bloque no tiene nada programado
 
 /** Lo que le toca hoy a un atleta, resumido para la pantalla de inicio. */
 export interface TodayTraining {
     blockName: string;
-    /** No hay sesión agendada para hoy en la semana en curso. */
-    isRestDay: boolean;
+    /**
+     * Ordinal de la semana DENTRO del bloque, que es como la nombra el atleta
+     * ("semana 6"). `training_sessions.week_number` es la semana ISO del AÑO,
+     * un número entre 1 y 53 que no significa nada para quien entrena.
+     * Null si el bloque no declara `start_week`.
+     */
+    programWeek: number | null;
+    totalWeeks: number | null;
+    /** Informado solo cuando `session` es null. */
+    reason: NoSessionReason | null;
     session: {
         id: string;
         title: string;
+        /** Día dentro de la semana, tal y como lo numeró el coach. */
+        dayNumber: number;
+        /** "Viernes", o null si el día no está agendado a un día concreto. */
+        weekday: string | null;
         completed: boolean;
         hasWarmup: boolean;
-        hasExtras: boolean;
+        /**
+         * Consideraciones del entrenamiento. Viven en la columna `extras`:
+         * ver la nota de `TrainingSession.extras` en src/types/training.ts.
+         */
+        considerations: string | null;
         exerciseNames: string[];
         totalSets: number;
         completedSets: number;
@@ -400,6 +433,14 @@ export const trainingService = {
 
         const week = getWeekNumber();
 
+        // La semana del bloque, que es como la nombra el atleta. Un bloque sin
+        // `start_week` es anterior a que existieran: se deja en null y la
+        // pantalla no promete un ordinal que no puede calcular.
+        const programWeek = block.start_week ? week - block.start_week + 1 : null;
+        const totalWeeks = block.start_week && block.end_week
+            ? block.end_week - block.start_week + 1
+            : null;
+
         const { data, error } = await supabase
             .from('training_sessions')
             .select(`
@@ -433,7 +474,31 @@ export const trainingService = {
         };
 
         const sessions = (data as unknown as Row[] | null) ?? [];
-        if (sessions.length === 0) return null;
+
+        /**
+         * Sin filas para la semana en curso hay que decir POR QUÉ.
+         *
+         * La consulta devuelve lo que la RLS deja ver, así que cero filas
+         * puede significar cosas muy distintas: que el bloque aún no ha
+         * empezado, que ya terminó, o —el caso que más confunde— que la semana
+         * está escrita pero el coach todavía no la ha abierto. Todas se
+         * contaban como "no te han pautado nada", que es lo único que NO era.
+         */
+        if (sessions.length === 0) {
+            const reason: NoSessionReason =
+                block.start_week && week < block.start_week ? 'not-started'
+                    : block.end_week && week > block.end_week ? 'finished'
+                        : block.start_week ? 'not-released'
+                            : 'empty';
+
+            return {
+                blockName: block.name,
+                programWeek,
+                totalWeeks,
+                reason,
+                session: null,
+            };
+        }
 
         // Hoy es, por este orden: la sesión con la fecha exacta de hoy, o la
         // agendada en este día de la semana. Si no hay ninguna, hoy toca
@@ -448,7 +513,13 @@ export const trainingService = {
             ?? null;
 
         if (!session) {
-            return { blockName: block.name, session: null, isRestDay: true };
+            return {
+                blockName: block.name,
+                programWeek,
+                totalWeeks,
+                reason: 'rest',
+                session: null,
+            };
         }
 
         const exercises = [...(session.session_exercises ?? [])]
@@ -458,13 +529,17 @@ export const trainingService = {
 
         return {
             blockName: block.name,
-            isRestDay: false,
+            programWeek,
+            totalWeeks,
+            reason: null,
             session: {
                 id: session.id,
                 title: session.name || weekdayLabel(session.day_of_week) || `Día ${session.day_number}`,
+                dayNumber: session.day_number,
+                weekday: weekdayLabel(session.day_of_week),
                 completed: Boolean(session.completed_at),
                 hasWarmup: Boolean(session.warmup?.trim()),
-                hasExtras: Boolean(session.extras?.trim()),
+                considerations: session.extras?.trim() || null,
                 exerciseNames: exercises.map(e => e.exercise?.name ?? 'Ejercicio'),
                 totalSets: allSets.length,
                 completedSets: allSets.filter(s => s.is_completed).length,
@@ -526,7 +601,7 @@ export const trainingService = {
                 id, block_id, week_number, day_number, name, date, day_of_week,
                 completed_at, athlete_notes, warmup, extras,
                 session_exercises (
-                    id, exercise_id, order_index, notes, variant_name, rest_seconds,
+                    id, exercise_id, order_index, notes, variant_name, rest_seconds, section,
                     exercise:exercise_library (name),
                     training_sets (*)
                 )
@@ -546,6 +621,7 @@ export const trainingService = {
                 id: string; exercise_id: string; order_index: number;
                 notes: string | null; variant_name: string | null;
                 rest_seconds: number | null;
+                section: string | null;
                 exercise: { name: string } | null;
                 training_sets: TrainingSet[];
             }[];
@@ -565,6 +641,11 @@ export const trainingService = {
             warmup: session.warmup,
             extras: session.extras,
             exercises: [...(session.session_exercises ?? [])]
+                // Fuera el calentamiento: de este registro salen el
+                // cumplimiento, el tonelaje y la comparación de RPE pautado
+                // contra real. Las aproximaciones no son series que cumplir —
+                // ni el atleta las registra ni el entrenador las revisa.
+                .filter(ex => countsForVolume(ex.section))
                 .sort((a, b) => a.order_index - b.order_index)
                 .map(ex => ({
                     id: ex.id,
@@ -689,6 +770,31 @@ export const trainingService = {
         return data;
     },
 
+    /**
+     * Enlace de vídeo de un ejercicio de la BIBLIOTECA.
+     *
+     * `exercise_library.video_url` existía desde el esquema original, el
+     * constructor pintaba un icono cuando estaba informada y el registro la
+     * traía en la consulta — pero NINGUNA pantalla la dejaba escribir. Era una
+     * columna que solo se podía rellenar a mano desde el editor SQL.
+     *
+     * Afecta a TODOS los atletas que tengan ese ejercicio, porque es la ficha
+     * del movimiento y no de una prescripción. Cuando el vídeo es para un
+     * atleta concreto o refleja la técnica preferida de un coach, eso ya tiene
+     * su sitio: `exercise_videos` (ver database/exercise_videos.sql), que gana
+     * sobre este enlace.
+     */
+    async setExerciseVideoUrl(exerciseId: string, videoUrl: string | null): Promise<void> {
+        const url = videoUrl?.trim() || null;
+
+        const { error } = await supabase
+            .from('exercise_library')
+            .update({ video_url: url })
+            .eq('id', exerciseId);
+
+        if (error) throw error;
+    },
+
     async getSessionExercises(sessionId: string): Promise<SessionExercise[]> {
         const { data, error } = await supabase
             .from('session_exercises')
@@ -703,17 +809,30 @@ export const trainingService = {
         return data || [];
     },
 
+    /**
+     * `section` solo viaja cuando NO es 'main'.
+     *
+     * Es lo que permite desplegar esto antes de ejecutar
+     * database/CALENTAMIENTO_ESTRUCTURADO.sql: supabase-js arma el parámetro
+     * `columns` con las CLAVES del objeto, así que mandar `section: 'main'`
+     * contra una base sin la columna haría que PostgREST rechazara el INSERT
+     * entero con PGRST204 — y añadir un ejercicio dejaría de funcionar para
+     * todo el mundo. Omitirla da exactamente el mismo resultado, porque el
+     * valor por defecto de la columna ES 'main'.
+     */
     async addSessionExercise(
         sessionId: string,
         exerciseId: string,
-        orderIndex: number
+        orderIndex: number,
+        section: ExerciseSection = 'main'
     ): Promise<SessionExercise> {
         const { data, error } = await supabase
             .from('session_exercises')
             .insert({
                 session_id: sessionId,
                 exercise_id: exerciseId,
-                order_index: orderIndex
+                order_index: orderIndex,
+                ...(section !== 'main' ? { section } : {}),
             })
             .select(`
                 *,
@@ -721,8 +840,80 @@ export const trainingService = {
             `)
             .single();
 
-        if (error) throw error;
+        if (error) {
+            if (section !== 'main' && (error as { code?: string }).code === 'PGRST204') {
+                throw new Error(
+                    'La base de datos todavía no distingue secciones del día. Ejecuta ' +
+                    'database/CALENTAMIENTO_ESTRUCTURADO.sql para poder programar el ' +
+                    'calentamiento con ejercicios.'
+                );
+            }
+            throw error;
+        }
         return data;
+    },
+
+    /**
+     * Materializa un calentamiento estructurado a partir de una propuesta.
+     *
+     * Se llama SOLO cuando el entrenador ha confirmado lo que ha visto: la
+     * conversión del texto libre nunca se aplica sola (ver
+     * src/lib/planning/warmupParser.ts).
+     *
+     * El texto original NO se toca aquí. Borrarlo sería la única parte
+     * irreversible de la operación, y no tiene por qué ir en el mismo gesto:
+     * el entrenador compara las dos versiones en la vista previa y quita el
+     * texto cuando le convence.
+     */
+    async createWarmupExercises(
+        sessionId: string,
+        coachId: string,
+        items: {
+            name: string;
+            notes: string | null;
+            groupTag: string | null;
+            rounds: number | null;
+            sets: { reps: string; load: number | null }[];
+        }[],
+        startOrder: number
+    ): Promise<void> {
+        if (items.length === 0) return;
+
+        for (const [i, item] of items.entries()) {
+            // Reutiliza la biblioteca: si el ejercicio ya existe se enlaza, y
+            // si no se crea. Es lo que hace que un "Band pull apart" convertido
+            // hoy comparta ficha —y vídeo— con el que se pautó a mano ayer.
+            const exerciseId = await this.findOrCreateExercise(item.name, coachId);
+
+            const exercise = await this.addSessionExercise(
+                sessionId,
+                exerciseId,
+                startOrder + i,
+                'warmup'
+            );
+
+            const updates: Partial<SessionExercise> = {};
+            if (item.notes) updates.notes = item.notes;
+            if (item.rounds) updates.round_count = item.rounds;
+            if (Object.keys(updates).length > 0) {
+                await this.updateSessionExercise(exercise.id, updates);
+            }
+
+            if (item.sets.length === 0) continue;
+
+            await this.addSets(item.sets.map((set, j) => ({
+                session_exercise_id: exercise.id,
+                order_index: j,
+                target_reps: set.reps,
+                target_load: set.load,
+                target_metric: 'kg' as const,
+                is_video_required: false,
+                // La etiqueta del circuito vive en las SERIES, igual que en las
+                // superseries del trabajo principal: es lo que hace que la
+                // pantalla del atleta sepa con qué se encadena cada ejercicio.
+                ...(item.groupTag ? { group_tag: item.groupTag } : {}),
+            })));
+        }
     },
 
     async updateSessionExercise(id: string, updates: Partial<SessionExercise>): Promise<void> {
@@ -731,7 +922,22 @@ export const trainingService = {
             .update(updates)
             .eq('id', id);
 
-        if (error) throw error;
+        if (!error) return;
+
+        // Mismo caso que arriba: sin la migración, `section` y `round_count`
+        // no existen. Se traduce a un mensaje con instrucciones en vez de
+        // propagar un código que no dice qué hacer.
+        if (
+            (error as { code?: string }).code === 'PGRST204' &&
+            ('section' in updates || 'round_count' in updates)
+        ) {
+            throw new Error(
+                'La base de datos todavía no distingue secciones del día. Ejecuta ' +
+                'database/CALENTAMIENTO_ESTRUCTURADO.sql.'
+            );
+        }
+
+        throw error;
     },
 
     /**
@@ -1020,6 +1226,18 @@ export const trainingService = {
                                 modifiers: exercise.modifiers,
                                 primary_muscles: exercise.primary_muscles,
                                 secondary_muscles: exercise.secondary_muscles,
+                                // Igual que al copiar una semana: sin esto el
+                                // calentamiento del bloque original llegaría al
+                                // atleta nuevo como trabajo principal.
+                                //
+                                // Solo se manda cuando NO es 'main', para que
+                                // duplicar un bloque siga funcionando contra
+                                // una base sin CALENTAMIENTO_ESTRUCTURADO.sql
+                                // aplicado — un PGRST204 aquí abortaría la copia
+                                // del atleta entero.
+                                ...(exercise.section && exercise.section !== 'main'
+                                    ? { section: exercise.section, round_count: exercise.round_count ?? null }
+                                    : {}),
                             })
                             .select()
                             .single();
@@ -1186,6 +1404,46 @@ export const trainingService = {
                     .from('training_sessions')
                     .update({ week_number: s.week_number - 1 })
                     .eq('id', s.id);
+            }
+        }
+
+        /**
+         * 3b. DESPLAZAR TAMBIÉN EL NOMBRE Y LA VISIBILIDAD DE LAS SEMANAS.
+         *
+         * Faltaba esto. `training_weeks` guarda nombre y publicación por
+         * (block_id, week_number), y el paso de arriba mueve las SESIONES un
+         * número hacia atrás sin tocarla: al borrar la semana 32, las sesiones
+         * de la 33 pasan a llamarse 32, pero el nombre "Semana de descarga" o
+         * el candado de visibilidad seguían enganchados al número 33 —que ya
+         * no tiene sesiones— y la semana 32 heredaba el nombre de la semana
+         * BORRADA o se quedaba sin ninguno. Un bloque con una semana oculta a
+         * propósito podía acabar publicándola sin que nadie lo pidiera.
+         *
+         * Primero se borra la fila de la semana eliminada —su nombre y su
+         * candado desaparecen con ella, que es lo correcto—, y LUEGO se
+         * desplazan las siguientes en orden ASCENDENTE: así cada `week_number`
+         * queda libre justo antes de que la semana de detrás lo ocupe, y el
+         * UNIQUE(block_id, week_number) no choca en ningún paso.
+         */
+        await supabase
+            .from('training_weeks')
+            .delete()
+            .eq('block_id', blockId)
+            .eq('week_number', weekNumber);
+
+        const { data: weekMetaToShift } = await supabase
+            .from('training_weeks')
+            .select('id, week_number')
+            .eq('block_id', blockId)
+            .gt('week_number', weekNumber)
+            .order('week_number', { ascending: true });
+
+        if (weekMetaToShift && weekMetaToShift.length > 0) {
+            for (const w of weekMetaToShift) {
+                await supabase
+                    .from('training_weeks')
+                    .update({ week_number: w.week_number - 1 })
+                    .eq('id', w.id);
             }
         }
 
@@ -1453,6 +1711,12 @@ export const trainingService = {
                     // semana copiada no coincidiría con el de la original.
                     primary_muscles: ex.primary_muscles ?? null,
                     secondary_muscles: ex.secondary_muscles ?? null,
+                    // La sección y las rondas viajan también. Sin esto, copiar
+                    // una semana convertiría su calentamiento en trabajo
+                    // principal: aparecería entre los ejercicios del día y
+                    // empezaría a contar para el tonelaje de la copia.
+                    section: ex.section ?? 'main',
+                    round_count: ex.round_count ?? null,
                 });
             }
         }
@@ -1462,7 +1726,11 @@ export const trainingService = {
         const { data: newExercisesRaw } = await insertWithOptionalColumns(
             'session_exercises',
             exercisePayload,
-            ['rest_seconds', 'rpe', 'velocity_avg', 'modifiers', 'primary_muscles', 'secondary_muscles'],
+            [
+                'rest_seconds', 'rpe', 'velocity_avg', 'modifiers',
+                'primary_muscles', 'secondary_muscles',
+                'section', 'round_count',
+            ],
             'id, session_id, order_index'
         );
 
@@ -1579,9 +1847,17 @@ export const trainingService = {
             template.payload.map(ex => this.findOrCreateExercise(ex.name, coachId))
         );
 
-        const { data: newExercises, error } = await supabase
-            .from('session_exercises')
-            .insert(template.payload.map((ex, i) => ({
+        // `section`/`round_count` solo viajan cuando NO son el valor por
+        // defecto, igual que en `addSessionExercise`: así una plantilla sin
+        // calentamiento estructurado se sigue aplicando contra una base sin
+        // database/CALENTAMIENTO_ESTRUCTURADO.sql ejecutado.
+        const needsOptionalColumns = template.payload.some(
+            ex => (ex.section && ex.section !== 'main') || ex.round_count
+        );
+
+        const { data: newExercisesRaw } = await insertWithOptionalColumns(
+            'session_exercises',
+            template.payload.map((ex, i) => ({
                 session_id: sessionId,
                 exercise_id: exerciseIds[i],
                 order_index: startOrder + i,
@@ -1590,10 +1866,15 @@ export const trainingService = {
                 rpe: ex.rpe || null,
                 velocity_avg: ex.velocity_avg || null,
                 rest_seconds: ex.rest_seconds || null,
-            })))
-            .select('id');
+                ...(needsOptionalColumns
+                    ? { section: ex.section ?? 'main', round_count: ex.round_count ?? null }
+                    : {}),
+            })),
+            ['section', 'round_count'],
+            'id'
+        );
 
-        if (error) throw error;
+        const newExercises = newExercisesRaw as { id: string }[] | null;
         if (!newExercises) return;
 
         const setsPayload = template.payload.flatMap((ex, i) => {
@@ -1695,7 +1976,7 @@ export const trainingService = {
             .from('session_exercises')
             .select(`
                 id, exercise_id, variant_name, rpe, velocity_avg,
-                primary_muscles, secondary_muscles,
+                primary_muscles, secondary_muscles, section,
                 exercise:exercise_library (id, name, primary_muscles, secondary_muscles),
                 training_sets (*),
                 session:training_sessions!inner (
@@ -1715,6 +1996,7 @@ export const trainingService = {
             velocity_avg: string | null;
             primary_muscles: string[] | null;
             secondary_muscles: string[] | null;
+            section: string | null;
             exercise: {
                 id: string; name: string;
                 primary_muscles: string[] | null;
@@ -1734,6 +2016,11 @@ export const trainingService = {
 
         return rows
             .filter(r => r.exercise && r.session?.block)
+            // EL CALENTAMIENTO NO ES HISTORIAL DE RENDIMIENTO. De aquí salen el
+            // tonelaje, el 1RM estimado, el reparto muscular y las tendencias:
+            // dejar entrar las aproximaciones y la movilidad inflaría todas
+            // esas cifras. Ver `countsForVolume` en src/types/training.ts.
+            .filter(r => countsForVolume(r.section))
             .map(r => ({
                 sessionExerciseId: r.id,
                 exerciseId: r.exercise_id,

@@ -609,6 +609,17 @@ export function buildWeekPdf(week: PrintWeek): jsPDF {
             y = drawDayTitle(ctx, day, drawBrandHeader(ctx), continued);
         };
 
+        // CONSIDERACIONES lo primero de la hoja. Son las indicaciones del día
+        // y solo sirven leídas antes de empezar; como apéndice final quedaban
+        // detrás de la tabla de ejercicios, donde nadie vuelve. La columna
+        // sigue llamándose `extras`: ver src/types/training.ts.
+        if (day.extras?.trim()) {
+            const { height } = measureAppendix(ctx, day.extras);
+            if (y + height > grid.bottom) nextPage();
+            y = drawSectionLabel(ctx, 'Consideraciones', y);
+            y = drawAppendix(ctx, day.extras, y);
+        }
+
         // Calentamiento ANTES de los ejercicios: es lo primero que se hace, y
         // al final de la hoja no lo lee nadie.
         if (day.warmup?.trim()) {
@@ -635,12 +646,6 @@ export function buildWeekPdf(week: PrintWeek): jsPDF {
             y += grid.u;
         }
 
-        if (day.extras?.trim()) {
-            const { height } = measureAppendix(ctx, day.extras);
-            if (y + height + grid.u * 2 > grid.bottom) nextPage();
-            y = drawSectionLabel(ctx, 'Extras', y);
-            y = drawAppendix(ctx, day.extras, y);
-        }
     });
 
     // Los pies van al final: hasta aquí no se sabe cuántas hojas hay, porque

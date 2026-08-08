@@ -55,23 +55,45 @@ export function prescribedReps(set: LoggedSet): number | null {
     return parseNum(repsPart.split('-')[0]);
 }
 
-/** Cuántas series REALES representa una fila: un "4x8" son cuatro. */
-export function prescribedSetCount(set: LoggedSet): number {
-    if (!set.targetReps) return 1;
-    const [head, ...rest] = set.targetReps.toLowerCase().split('x');
+/**
+ * Cuántas series REALES representa un `target_reps`: un "4x8" son cuatro.
+ *
+ * Trabaja sobre el TEXTO y no sobre una fila para que puedan usarlo tanto el
+ * registro (`LoggedSet`, en camelCase) como la pantalla de entrenamiento
+ * (`TrainingSet`, en snake_case). Sin esta separación la misma cuenta acabaría
+ * escrita dos veces y una de las dos se quedaría atrás.
+ */
+export function setCountFromTargetReps(raw: string | null | undefined): number {
+    if (!raw) return 1;
+    const [head, ...rest] = raw.toLowerCase().split('x');
     if (rest.length === 0) return 1;
     const n = Number.parseInt(head.trim(), 10);
     return Number.isFinite(n) && n > 1 ? n : 1;
 }
 
+/**
+ * RPE prescrito a partir del texto. Un rango "7-8" se lee por su extremo ALTO.
+ *
+ * El extremo alto y no el bajo: "7-8" significa "hasta 8", y comparar lo
+ * ejecutado contra el 7 marcaría como excedido lo que estaba dentro de lo
+ * pedido. Es una decisión metodológica, y por eso vive en UN solo sitio: si la
+ * pantalla de fin de sesión la resolviera por su cuenta, el atleta y el
+ * entrenador podrían ver desviaciones distintas del mismo día.
+ */
+export function rpeFromTarget(raw: string | null | undefined): number | null {
+    if (!raw) return null;
+    const parts = raw.replace(/[@\s]/g, '').split('-');
+    return parseNum(parts[parts.length - 1]);
+}
+
+/** Cuántas series REALES representa una fila: un "4x8" son cuatro. */
+export function prescribedSetCount(set: LoggedSet): number {
+    return setCountFromTargetReps(set.targetReps);
+}
+
 /** RPE prescrito. Un rango "7-8" se lee por su extremo ALTO. */
 export function prescribedRpe(set: LoggedSet): number | null {
-    if (!set.targetRpe) return null;
-    const parts = set.targetRpe.replace(/[@\s]/g, '').split('-');
-    // El extremo alto y no el bajo: "7-8" significa "hasta 8", y comparar lo
-    // ejecutado contra el 7 marcaría como excedido lo que estaba dentro de lo
-    // pedido.
-    return parseNum(parts[parts.length - 1]);
+    return rpeFromTarget(set.targetRpe);
 }
 
 // =====================================================================

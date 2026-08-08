@@ -6,6 +6,7 @@ import { ConfirmationModal } from '../../../components/modals/ConfirmationModal'
 import { isStaff } from '../../../lib/roles';
 import { RolesSection } from './RolesSection';
 import { PdfThemeSettings } from './PdfThemeSettings';
+import { PersonalInfoSection } from './PersonalInfoSection';
 
 interface ProfileSectionProps {
     user: UserProfile;
@@ -395,6 +396,24 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                     </button>
                 </div>
             </form>
+
+            {/* INFORMACIÓN PERSONAL.
+                Fuera del formulario de arriba a propósito: no son columnas de
+                `profiles` sino un catálogo que decide el entrenador, con su
+                propio guardado y su propio historial de fechas. Meterla dentro
+                obligaría a que el botón "Guardar cambios" hablase con dos
+                tablas que no tienen nada que ver.
+
+                El atleta ve y rellena lo que su entrenador le pide; quien no
+                tiene entrenador ve el juego predefinido. */}
+            <div className="mt-6">
+                <PersonalInfoSection
+                    athleteId={user.id}
+                    mode="athlete"
+                    coachId={user.coach_id ?? null}
+                    editorId={user.id}
+                />
+            </div>
 
             <div className="mt-8 border-t border-subtle pt-6">
                 <button

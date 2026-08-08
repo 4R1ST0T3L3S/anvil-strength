@@ -84,6 +84,17 @@ export interface DayTemplateExercise {
     velocity_avg?: string | null;
     rest_seconds?: number | null;
     sets: DayTemplateSet[];
+    /**
+     * Parte del día. Ausente en plantillas guardadas antes de
+     * database/CALENTAMIENTO_ESTRUCTURADO.sql: equivale a 'main', que es lo
+     * que eran todas antes de que existiera la sección de calentamiento.
+     *
+     * Sin este campo, guardar como plantilla un día con calentamiento
+     * estructurado y volver a aplicarla convertía la movilidad en trabajo
+     * principal — la contaminación de métricas que la sección vino a evitar.
+     */
+    section?: ExerciseSection | null;
+    round_count?: number | null;
 }
 
 export interface DayTemplate {
@@ -155,10 +166,63 @@ export interface TrainingSession {
      * database/session_warmup_extras.sql aplicado.
      */
     warmup?: string | null;
+    /**
+     * CONSIDERACIONES DEL ENTRENAMIENTO. En la interfaz se llaman así; la
+     * columna sigue llamándose `extras`.
+     *
+     * El desfase es deliberado. Nacieron como "trabajo opcional al terminar"
+     * (core, movilidad, cardio) y se pintaban al FINAL del día. Lo que de
+     * verdad se escribía en ellas eran indicaciones para la sesión —"prioriza
+     * velocidad", "RPE 7 máximo", "cinturón desde la segunda serie"—, que solo
+     * sirven si se leen ANTES de empezar. Así que cambia el nombre y el sitio,
+     * no el modelo.
+     *
+     * Renombrar la columna obligaría a tocar el constructor, el registro, el
+     * PDF, la pantalla de inicio y la propia base a cambio de nada: el texto
+     * que ya hay dentro es exactamente el mismo texto, esté como esté escrito
+     * el nombre de la columna.
+     */
     extras?: string | null;
     created_at: string;
     // Relations (Optional for UI rendering)
     exercises?: SessionExercise[];
+}
+
+/**
+ * Parte del día a la que pertenece un ejercicio.
+ *
+ * Ver database/CALENTAMIENTO_ESTRUCTURADO.sql. Las filas anteriores a esa
+ * migración no traen el campo y valen como 'main': era lo único que había.
+ */
+export type ExerciseSection = 'warmup' | 'main' | 'accessory';
+
+export const EXERCISE_SECTIONS: { key: ExerciseSection; label: string; hint: string }[] = [
+    { key: 'warmup', label: 'Calentamiento', hint: 'No cuenta para el volumen ni el tonelaje' },
+    { key: 'main', label: 'Principal', hint: 'El trabajo del día' },
+    { key: 'accessory', label: 'Accesorio', hint: 'Complementario, sí cuenta para el volumen' },
+];
+
+/**
+ * ¿Este ejercicio cuenta para el volumen, el tonelaje y el reparto por patrón?
+ *
+ * ES LA FUNCIÓN MÁS IMPORTANTE DE ESTE ARCHIVO, y existe como UNA sola función
+ * a propósito.
+ *
+ * El calentamiento pasó a ser texto libre (database/session_warmup_extras.sql)
+ * precisamente porque el entrenador lo metía como ejercicios de mentira y eso
+ * inflaba el tonelaje y desviaba el reparto muscular de todos los paneles.
+ * Volver a admitir calentamiento como `session_exercises` reabre esa puerta, y
+ * lo único que la mantiene cerrada es este filtro.
+ *
+ * Se aplica en el ORIGEN de los datos —`getExerciseHistoryByAthlete`,
+ * `getExecutionLog` y `toVolumeInput`— y no en cada pantalla: cinco
+ * condiciones repartidas por la aplicación es una que alguien se dejará.
+ *
+ * Los ACCESORIOS sí cuentan: son entrenamiento de verdad. Lo que no cuenta es
+ * la movilidad y las aproximaciones.
+ */
+export function countsForVolume(section?: string | null): boolean {
+    return (section ?? 'main') !== 'warmup';
 }
 
 // 4. SESSION EXERCISES (Ejercicios en la sesión)
@@ -167,6 +231,21 @@ export interface SessionExercise {
     session_id: string;
     exercise_id: string;
     order_index: number;
+    /**
+     * Parte del día. Ausente en filas anteriores a la migración: equivale a
+     * 'main'. No se lee nunca a pelo para decidir si cuenta para las métricas
+     * — para eso está `countsForVolume()`.
+     */
+    section?: ExerciseSection | null;
+    /**
+     * Vueltas del circuito que forman los ejercicios con el mismo `group_tag`.
+     * NULL = no es un circuito.
+     *
+     * Va en el ejercicio y no en la serie porque son las mismas rondas para
+     * todo el grupo: por serie se podría escribir un circuito de 3 rondas cuyo
+     * segundo ejercicio dijera 4, que no significa nada.
+     */
+    round_count?: number | null;
     notes?: string | null;
     variant_name?: string | null; // For specific variations
     rpe?: string | null; // Moved from Set level

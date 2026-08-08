@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Video, AlertTriangle, CheckCircle2, User } from 'lucide-react';
+import { Video, AlertTriangle, CheckCircle2, User, PlayCircle } from 'lucide-react';
+import { VideoModal } from '../../../components/ui/VideoModal';
 import {
     exerciseVideoService,
     type ResolvedVideo,
@@ -31,6 +32,14 @@ export interface ExerciseVideoPanelProps {
     coachNotes?: string | null;
     /** Últimas cargas top del atleta en este ejercicio, en orden cronológico. */
     history?: number[];
+    /**
+     * Enlace externo de la ficha del ejercicio (`exercise_library.video_url`).
+     *
+     * Es el RESPALDO del vídeo interno, no una alternativa: solo se enseña
+     * cuando no hay ninguno subido a R2 para este atleta, para su coach ni por
+     * defecto. La columna existía desde el esquema original y no la leía nadie.
+     */
+    externalVideoUrl?: string | null;
     className?: string;
 }
 
@@ -53,10 +62,14 @@ export function ExerciseVideoPanel({
     prescription,
     coachNotes,
     history = [],
+    externalVideoUrl,
     className,
 }: ExerciseVideoPanelProps) {
     const [video, setVideo] = useState<ResolvedVideo | null>(null);
     const [loading, setLoading] = useState(true);
+    const [externalOpen, setExternalOpen] = useState(false);
+
+    const externalUrl = externalVideoUrl?.trim() || null;
 
     useEffect(() => {
         let cancelled = false;
@@ -102,6 +115,26 @@ export function ExerciseVideoPanel({
                             preload="none"
                             className="h-full w-full object-contain"
                         />
+                    ) : externalUrl ? (
+                        /* RESPALDO: el enlace que el coach guardó en la ficha
+                           del ejercicio. Se abre en `VideoModal`, que sabe
+                           incrustar YouTube y Vimeo, en vez de sacar al atleta
+                           de la aplicación a mitad de sesión.
+
+                           Va DESPUÉS del vídeo interno y nunca antes: el
+                           interno lo ha grabado el coach a propósito, está
+                           comprimido, no lleva anuncios y no desaparece porque
+                           alguien borre un vídeo de YouTube. */
+                        <button
+                            type="button"
+                            onClick={() => setExternalOpen(true)}
+                            className="group flex h-full w-full flex-col items-center justify-center gap-2 text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
+                        >
+                            <PlayCircle className="h-9 w-9 text-brand" />
+                            <p className="text-xs font-semibold uppercase tracking-wide">
+                                Ver vídeo de técnica
+                            </p>
+                        </button>
                     ) : (
                         <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-faint">
                             <Video className="h-7 w-7" />
@@ -112,17 +145,24 @@ export function ExerciseVideoPanel({
                     )}
                 </div>
 
-                {video && (
+                {(video || (!loading && externalUrl)) && (
                     <span
                         className={cn(
                             'mt-2 inline-flex items-center gap-1.5 rounded-chip px-2 py-1 text-xs font-medium',
-                            SCOPE_LABEL[video.scope].className
+                            video ? SCOPE_LABEL[video.scope].className : 'bg-surface-overlay text-ink-muted'
                         )}
                     >
                         <User className="h-3 w-3" />
-                        {SCOPE_LABEL[video.scope].text}
+                        {video ? SCOPE_LABEL[video.scope].text : 'Enlace de tu entrenador'}
                     </span>
                 )}
+
+                <VideoModal
+                    open={externalOpen}
+                    onClose={() => setExternalOpen(false)}
+                    url={externalUrl ?? null}
+                    title={exerciseName}
+                />
             </div>
 
             {/* ---------------- DERECHA: información ---------------- */}

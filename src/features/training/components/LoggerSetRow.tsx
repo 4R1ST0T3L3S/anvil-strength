@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { TrainingSet, TargetMetric, SET_TYPES } from '../../../types/training';
 import { writeQueue } from '../../../lib/offlineQueue';
+import { rpeFromTarget } from '../../../lib/stats/executionLog';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -262,6 +263,38 @@ export function LoggerSetRow({
     // las casillas de la misma fila quedarían a distinta altura.
     const hasTargets = Boolean(targetReps || loadTarget || rpeTarget);
 
+    /**
+     * DESVIACIÓN DEL RPE, en el momento de escribirlo.
+     *
+     * Es la comparación con la que el entrenador decide la semana siguiente, y
+     * hasta ahora solo existía en su panel: el atleta escribía un 7 donde
+     * ponía 8 sin que nada se lo señalara, y por tanto sin motivo para pararse
+     * a pensar si el número que acababa de poner era el que quería poner.
+     *
+     * Se lee del BORRADOR (`rpe`) y no de la fila guardada: el guardado va con
+     * retardo, y esperar a que confirme dejaría el dato medio segundo por
+     * detrás de lo que se está tecleando.
+     *
+     * Un rango pautado ("7-8") se compara por su extremo ALTO, igual que en el
+     * análisis del entrenador — de ahí que la regla se importe de allí en vez
+     * de reescribirse aquí (ver src/lib/stats/executionLog.ts).
+     */
+    const rpeDelta = (() => {
+        const target = rpeFromTarget(rpeTarget);
+        const actual = toNumber(rpe);
+        if (target === null || actual === null) return null;
+
+        const delta = Math.round((actual - target) * 10) / 10;
+        // Medio punto es la resolución real del RPE: marcar 0,5 como
+        // desviación llenaría la columna de avisos que no significan nada.
+        if (Math.abs(delta) < 0.75) return null;
+
+        return {
+            text: `${delta > 0 ? '+' : '−'}${Math.abs(delta)}`,
+            tone: delta > 0 ? ('over' as const) : ('under' as const),
+        };
+    })();
+
     const hasNote = note.trim().length > 0;
     const setType = SET_TYPES.find(t => t.key === set.set_type) ?? null;
 
@@ -324,9 +357,18 @@ export function LoggerSetRow({
                     />
                 </div>
 
-                {/* RPE real */}
+                {/* RPE real, con la DESVIACIÓN sobre lo pautado.
+                    Es la comparación con la que se decide la semana siguiente,
+                    y hasta ahora había que hacerla de cabeza serie a serie. El
+                    delta sustituye al objetivo en el mismo renglón en cuanto
+                    hay con qué compararlo: en 44px de ancho no caben los dos, y
+                    "8 →" ya no aporta nada cuando debajo pone 7 y al lado −1. */}
                 <div>
-                    <TargetLabel value={rpeTarget} show={hasTargets} />
+                    <TargetLabel
+                        value={rpeDelta ? rpeDelta.text : rpeTarget}
+                        show={hasTargets}
+                        tone={rpeDelta?.tone}
+                    />
                     <SetInput
                         value={rpe}
                         onChange={(value) => {
@@ -485,12 +527,24 @@ export function LoggerSetRow({
  * la misma altura. Es información de solo lectura, así que va en gris y a 9px:
  * tiene que poder consultarse sin competir con el número que se escribe.
  */
-function TargetLabel({ value, show }: { value?: string | null; show: boolean }) {
+function TargetLabel({
+    value,
+    show,
+    tone,
+}: {
+    value?: string | null;
+    show: boolean;
+    /** Color cuando el renglón deja de decir lo pautado y pasa a decir la desviación. */
+    tone?: 'over' | 'under';
+}) {
     if (!show) return null;
     return (
         <span
             aria-hidden="true"
-            className="mb-1 block truncate text-center text-[9px] font-bold uppercase leading-none tracking-wide text-ink-subtle"
+            className={cn(
+                'mb-1 block truncate text-center text-[9px] font-bold uppercase leading-none tracking-wide tabular-nums',
+                tone === 'over' ? 'text-warning' : tone === 'under' ? 'text-success' : 'text-ink-subtle'
+            )}
         >
             {value || ' '}
         </span>

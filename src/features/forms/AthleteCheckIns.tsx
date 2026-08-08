@@ -78,7 +78,14 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
 
 // ============ Modal de formulario ============
 
-function CheckInFormModal({
+/**
+ * Se exporta para que el cierre del entrenamiento pueda abrir EL MISMO
+ * formulario (ver `SessionFinish`). Duplicarlo allí habría significado dos
+ * sitios donde se resuelve la plantilla del coach y se fusionan las preguntas
+ * antiguas, y basta con que uno se quede atrás para que el atleta conteste un
+ * cuestionario distinto según por dónde entre.
+ */
+export function CheckInFormModal({
     athleteId,
     type,
     onClose,
@@ -102,8 +109,25 @@ function CheckInFormModal({
                 const coach = await chatService.getMyCoach(athleteId).catch(() => null);
                 const qs = await formsService.getTemplate(coach?.id || null, type);
 
-                // Precargar respuesta existente del periodo (permite editar)
-                const existing = await formsService.getResponse(athleteId, type, getPeriodKey(type));
+                /**
+                 * Las preguntas se fijan ANTES de intentar leer lo ya
+                 * contestado, y la lectura va en su propio `catch`.
+                 *
+                 * Antes las dos cosas estaban en el mismo `try`: si
+                 * `getResponse` fallaba —sin red, con la tabla sin migrar, o
+                 * con la RLS diciendo que no— se saltaba a `catch` y
+                 * `setQuestions` no llegaba a ejecutarse. El atleta veía el
+                 * formulario VACÍO con el botón de enviar activo, y enviarlo
+                 * guardaba una lista de respuestas vacía ENCIMA de la que ya
+                 * hubiera de ese día.
+                 */
+                let existing = null;
+                try {
+                    existing = await formsService.getResponse(athleteId, type, getPeriodKey(type));
+                } catch (e) {
+                    console.error('No se pudo leer el check-in de este periodo:', e);
+                }
+
                 // El coach puede haber añadido preguntas que ya no están en la
                 // plantilla; se conservan para no perder lo respondido.
                 setQuestions(mergeQuestions(qs, existing?.answers));
@@ -123,6 +147,12 @@ function CheckInFormModal({
     }, [athleteId, type]);
 
     const handleSubmit = async () => {
+        // Sin preguntas no hay nada que enviar, y enviarlo BORRARÍA lo
+        // contestado antes: `submitResponse` hace un upsert de la fila entera.
+        if (questions.length === 0) {
+            toast.error('No se pudo cargar el cuestionario. Vuelve a intentarlo.');
+            return;
+        }
         setSaving(true);
         try {
             const answers: FormAnswer[] = questions.map(q => ({
@@ -184,7 +214,7 @@ function CheckInFormModal({
                     <div className="p-5 border-t border-white/5 shrink-0">
                         <button
                             onClick={handleSubmit}
-                            disabled={saving || loading}
+                            disabled={saving || loading || questions.length === 0}
                             className="w-full py-3.5 rounded-xl bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                         >
                             {saving ? <Loader className="animate-spin" size={16} /> : <Check size={16} />}

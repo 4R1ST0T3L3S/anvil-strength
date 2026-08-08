@@ -24,6 +24,7 @@
  */
 
 import type { TrainingSet, SessionExercise, ExerciseLibrary } from '../../types/training';
+import { countsForVolume } from '../../types/training';
 import {
     classifyExercise,
     MUSCLE_GROUPS,
@@ -377,7 +378,19 @@ function round1(n: number): number {
     return Math.round(n * 10) / 10;
 }
 
-/** Adaptador desde el tipo que ya usan el builder y trainingService. */
+/**
+ * Adaptador desde el tipo que ya usan el builder y trainingService.
+ *
+ * AQUÍ SE CAE EL CALENTAMIENTO, y es deliberado que se caiga en el adaptador y
+ * no en `computeVolume`: este es el único sitio por el que los ejercicios
+ * entran al motor de volumen, así que filtrar aquí cubre a todos sus
+ * consumidores presentes y futuros sin que ninguno tenga que acordarse.
+ *
+ * Movilidad y aproximaciones no son volumen. Si contaran, el tonelaje de un
+ * día subiría por calentar y el reparto muscular se llenaría de rotadores
+ * externos — que es exactamente el problema que llevó a sacar el
+ * calentamiento de `session_exercises` en su día.
+ */
 export function toVolumeInput(
     session: { id: string; week_number: number; day_number: number },
     exercises: (SessionExercise & { sets?: TrainingSet[] })[]
@@ -386,7 +399,7 @@ export function toVolumeInput(
         id: session.id,
         week_number: session.week_number,
         day_number: session.day_number,
-        exercises: exercises.map((ex) => ({
+        exercises: exercises.filter(ex => countsForVolume(ex.section)).map((ex) => ({
             id: ex.id,
             exercise: ex.exercise,
             variant_name: ex.variant_name,

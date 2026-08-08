@@ -1,14 +1,15 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary, TARGET_METRICS, WEEKDAYS, weekdayIndex, weekdayLabel, SET_TYPES, GROUP_TAGS } from '../../../types/training';
-import type { TargetMetric, WeekMeta, Weekday } from '../../../types/training';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, ExerciseLibrary, TARGET_METRICS, WEEKDAYS, weekdayIndex, weekdayLabel, SET_TYPES, GROUP_TAGS, EXERCISE_SECTIONS, countsForVolume } from '../../../types/training';
+import type { TargetMetric, WeekMeta, Weekday, ExerciseSection } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
-import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, CalendarPlus, Activity, X, Dumbbell, ArrowRightLeft, FileText, BarChart3, Flame, Timer, Eye, EyeOff, LayoutTemplate, CopyPlus, GripVertical, ChevronDown, TrendingUp, Send, Check, Download, Flame as FlameIcon, MoreVertical, Sparkles, Target } from 'lucide-react';
+import { Loader, Plus, Save, Trash2, Video, Copy, Calendar, CalendarPlus, Activity, X, Dumbbell, ArrowRightLeft, FileText, BarChart3, Flame, Timer, Eye, EyeOff, LayoutTemplate, CopyPlus, GripVertical, ChevronDown, TrendingUp, Send, Check, Download, Flame as FlameIcon, MoreVertical, Sparkles, Target, Wand2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { DayTemplate, DayTemplateExercise } from '../../../types/training';
+import { parseWarmupText, type ParsedWarmupExercise } from '../../../lib/planning/warmupParser';
 import { toast } from 'sonner';
 import {
     getWeekNumber, getDateRangeFromWeek, formatDateRange,
@@ -302,6 +303,20 @@ interface FullBlockData extends TrainingBlock {
     sessions: ExtendedSession[];
 }
 
+/**
+ * Cambios que acepta `updateSessionExercise`.
+ *
+ * `exercise` se saca de `Partial<SessionExercise>` con `Omit` a propósito. En
+ * `SessionExercise` esa clave es la ficha ENTERA de la biblioteca, así que la
+ * intersección con `{ exercise?: Partial<ExerciseLibrary> }` daba
+ * `ExerciseLibrary & Partial<ExerciseLibrary>` — es decir, seguía exigiendo la
+ * ficha entera y hacía imposible mandar solo el campo que cambia. La
+ * implementación SÍ fusiona parciales (`{ ...ex.exercise, ...updates.exercise }`);
+ * lo que no encajaba era el tipo.
+ */
+type ExerciseCardUpdates =
+    Omit<Partial<SessionExercise>, 'exercise'> & { exercise?: Partial<ExerciseLibrary> };
+
 // ==========================================
 // COMPONENT: WORKOUT BUILDER
 // ==========================================
@@ -549,6 +564,12 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             rpe: ex.rpe,
             velocity_avg: ex.velocity_avg,
             rest_seconds: ex.rest_seconds,
+            // Sin esto, guardar como plantilla un día con calentamiento
+            // estructurado y volver a aplicarla convertía la movilidad en
+            // trabajo principal: exactamente la contaminación de métricas que
+            // `section` existe para evitar.
+            section: ex.section ?? 'main',
+            round_count: ex.round_count ?? null,
             sets: ex.sets.map(s => ({
                 target_reps: s.target_reps,
                 target_rpe: s.target_rpe,
@@ -578,6 +599,42 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         } catch (e) {
             console.error(e);
             toast.error('Error aplicando la plantilla');
+        }
+    };
+
+    /**
+     * Convierte el calentamiento en texto de un día a ejercicios de verdad.
+     *
+     * Nunca se dispara solo: llega de un botón que ha enseñado antes la
+     * propuesta. Y NO borra el texto original — el entrenador compara las dos
+     * versiones en la vista previa y lo quita cuando le convence, que es la
+     * única parte irreversible de todo esto.
+     */
+    const convertWarmup = async (sessionId: string, items: ParsedWarmupExercise[]) => {
+        if (!coachId) return;
+        const session = blockData?.sessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        try {
+            await trainingService.createWarmupExercises(
+                sessionId,
+                coachId,
+                items.map(i => ({
+                    name: i.name,
+                    notes: i.notes,
+                    groupTag: i.groupTag,
+                    rounds: i.rounds,
+                    sets: i.sets,
+                })),
+                session.exercises.length
+            );
+            await loadData();
+            toast.success(
+                `${items.length} ejercicios de calentamiento creados. El texto sigue ahí: bórralo cuando lo hayas repasado.`
+            );
+        } catch (e) {
+            console.error(e);
+            toast.error(e instanceof Error ? e.message : 'No se pudo convertir el calentamiento');
         }
     };
 
@@ -1094,6 +1151,13 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
             for (const ex of session.exercises) {
                 if (exerciseKey(ex.exercise?.name) !== targetKey) continue;
+                // Una progresión describe el TRABAJO, no la escalera de
+                // aproximación. "Sentadilla" puede aparecer con el mismo
+                // nombre en el calentamiento —1x5 al 40%, 1x3 al 60%— y en el
+                // trabajo principal del mismo día; sin este filtro, aplicar
+                // una progresión a "Sentadilla" sobrescribía también las
+                // series de calentamiento con la prescripción del bloque.
+                if (!countsForVolume(ex.section)) continue;
 
                 const resolved = resolveStep(step, referenceMax);
                 if (resolved.unresolved) unresolvedDays += 1;
@@ -1377,15 +1441,20 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         });
     };
 
-    const updateSessionExercise = (sessionExerciseId: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => {
+    const updateSessionExercise = (sessionExerciseId: string, updates: ExerciseCardUpdates) => {
         setBlockData(prev => {
             if (!prev) return null;
             return {
                 ...prev,
                 sessions: mapExercise(prev.sessions, sessionExerciseId, ex => {
-                    const newEx: ExtendedSessionExercise = { ...ex, ...updates };
-                    if (updates.exercise && ex.exercise) {
-                        newEx.exercise = { ...ex.exercise, ...updates.exercise };
+                    // La ficha de la biblioteca se separa del resto: es lo
+                    // único que llega en trozos, y esparcirla junto a las demás
+                    // claves metía un `Partial<ExerciseLibrary>` donde hace
+                    // falta la ficha entera.
+                    const { exercise: exercisePatch, ...rest } = updates;
+                    const newEx: ExtendedSessionExercise = { ...ex, ...rest };
+                    if (exercisePatch && ex.exercise) {
+                        newEx.exercise = { ...ex.exercise, ...exercisePatch };
                     }
                     return newEx;
                 }),
@@ -2111,6 +2180,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                         onClose={() => setEditingSessionId(null)}
                         onUpdateName={updateSessionName}
                         onUpdateAppendix={updateSessionAppendix}
+                        onConvertWarmup={convertWarmup}
                         onAddExercise={addExercise}
                         onUpdateExercise={updateSessionExercise}
                         onRemoveExercise={removeExercise}
@@ -2496,7 +2566,105 @@ function MenuItem({
 }
 
 /**
- * APÉNDICE DEL DÍA: calentamiento o extras.
+ * PROPUESTA DE CALENTAMIENTO ESTRUCTURADO.
+ *
+ * Enseña lo que se va a crear ANTES de crearlo. La conversión del texto libre
+ * no puede ser automática —el texto no tiene formato garantizado y un
+ * analizador aplicado a ciegas acabaría inventando series de una movilidad—,
+ * así que la decisión es del entrenador y esto es lo que la sostiene.
+ *
+ * Las líneas que el analizador NO ha entendido se marcan: son las que van a
+ * quedar como ejercicio sin series, y verlo aquí evita la sorpresa.
+ */
+/** Exportado solo para el banco de pruebas de maquetación (`/dev/movil`). */
+export function WarmupConversionPanel({
+    text,
+    onConvert,
+    onCancel,
+}: {
+    text: string;
+    onConvert: (items: ParsedWarmupExercise[]) => void;
+    onCancel: () => void;
+}) {
+    const items = parseWarmupText(text);
+    const unrecognised = items.filter(i => !i.recognised).length;
+
+    return (
+        <div className="rounded-card border border-[var(--brand-line)] bg-surface-raised p-3">
+            <h4 className="text-t-2xs font-bold uppercase tracking-widest text-brand">
+                Se crearán {items.length} ejercicios
+            </h4>
+
+            {items.length === 0 ? (
+                <p className="mt-2 text-t-xs text-ink-subtle">
+                    No se ha reconocido nada convertible en este texto.
+                </p>
+            ) : (
+                <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto">
+                    {items.map((item, i) => (
+                        <li
+                            key={i}
+                            className="flex flex-wrap items-baseline gap-x-2 rounded-field bg-surface-sunken px-2.5 py-1.5"
+                        >
+                            {item.groupTag && (
+                                <span className="text-t-2xs font-black uppercase tracking-wide text-info">
+                                    {item.groupTag}
+                                    {item.rounds ? `·${item.rounds}` : ''}
+                                </span>
+                            )}
+                            <span className="min-w-0 flex-1 truncate text-t-sm text-ink">{item.name}</span>
+                            <span className="shrink-0 text-t-xs tabular-nums text-ink-subtle">
+                                {item.sets.length > 0
+                                    ? `${item.sets.length}×${item.sets[0].reps}${item.sets[0].load ? ` · ${item.sets[0].load}kg` : ''}`
+                                    : 'sin series'}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {unrecognised > 0 && (
+                <p className="mt-2 text-t-2xs text-ink-faint">
+                    {unrecognised} {unrecognised === 1 ? 'línea queda' : 'líneas quedan'} sin series. Se
+                    crean igual y puedes prescribirlas después.
+                </p>
+            )}
+
+            <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                    onClick={() => onConvert(items)}
+                    disabled={items.length === 0}
+                    className="flex h-10 items-center rounded-field bg-brand px-3 text-t-xs font-black uppercase tracking-wide text-brand-ink transition-colors duration-fast hover:bg-brand-hover disabled:opacity-40"
+                >
+                    Crear ejercicios
+                </button>
+                <button
+                    onClick={onCancel}
+                    className="flex h-10 items-center rounded-field px-3 text-t-xs font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:bg-surface-overlay hover:text-ink"
+                >
+                    Cancelar
+                </button>
+            </div>
+
+            <p className="mt-2 text-t-2xs text-ink-faint">
+                El texto no se borra. Compáralo con el resultado y quítalo tú cuando te convenza.
+            </p>
+        </div>
+    );
+}
+
+/**
+ * Ejemplo de lo que son las consideraciones.
+ *
+ * El marcador de posición no es decoración: era `'Core 3x15\nBici suave 10\''`,
+ * o sea una lista de EJERCICIOS, y eso es exactamente lo que el coach escribía
+ * en el campo. Con un ejemplo de indicaciones, el campo pide lo que es.
+ */
+const CONSIDERATIONS_HINT =
+    'Prioriza velocidad hoy\nRPE 7 como máximo\nDescansa 4\' entre series pesadas\nSi aparece dolor, para el ejercicio';
+
+/**
+ * APÉNDICE DEL DÍA: consideraciones o calentamiento.
  *
  * Texto libre a propósito. Un calentamiento son aproximaciones, movilidad y
  * activación, y forzarlo a la rejilla de series/reps/kg obligaba al coach a
@@ -2862,8 +3030,10 @@ interface DayEditorModalProps {
     onUpdateName: (id: string, name: string) => void;
     /** Guarda el calentamiento o los extras del día (texto libre). */
     onUpdateAppendix: (sessionId: string, field: 'warmup' | 'extras', value: string) => void;
+    /** Convierte el calentamiento en texto a ejercicios de verdad. */
+    onConvertWarmup: (sessionId: string, items: ParsedWarmupExercise[]) => void;
     onAddExercise: (sessionId: string, name: string) => void;
-    onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
+    onUpdateExercise: (id: string, updates: ExerciseCardUpdates) => void;
     onRemoveExercise: (id: string, sessionId: string) => void;
     onAddSet: (sessionExerciseId: string) => void;
     onDuplicateSet: (setId: string) => void;
@@ -2878,12 +3048,14 @@ interface DayEditorModalProps {
 function DayEditorModal({
     session, allSessions, athleteId, coachId, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
     onSaveTemplate, onApplyTemplate, onDeleteTemplate, onCopyExercise, onReorder,
-    onClose, onUpdateName, onUpdateAppendix, onAddExercise, onUpdateExercise,
+    onClose, onUpdateName, onUpdateAppendix, onConvertWarmup, onAddExercise, onUpdateExercise,
     onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onOpenVbtChart,
     hasUnsavedChanges, onSave, isSaving
 }: DayEditorModalProps) {
     const [isAddingEx, setIsAddingEx] = useState(false);
     const [selectedExId, setSelectedExId] = useState<string | null>(session.exercises[0]?.id ?? null);
+    /** Propuesta de conversión del calentamiento en texto, abierta. */
+    const [converting, setConverting] = useState(false);
     // Menús del header: null | 'templates' | 'copy' | 'preview'
     const [openMenu, setOpenMenu] = useState<'templates' | 'copy' | 'preview' | null>(null);
     const [templateName, setTemplateName] = useState('');
@@ -3220,18 +3392,18 @@ function DayEditorModal({
                             ejercicio para poder escribirlo en alguna parte. */}
                         <div className="mt-4 space-y-2 text-left">
                             <AppendixEditor
+                                label="Consideraciones"
+                                icon={Sparkles}
+                                placeholder={CONSIDERATIONS_HINT}
+                                value={session.extras}
+                                onCommit={(v) => onUpdateAppendix(session.id, 'extras', v)}
+                            />
+                            <AppendixEditor
                                 label="Calentamiento"
                                 icon={FlameIcon}
                                 placeholder={'Movilidad de cadera 5\'\nBarra 20kg x10, 60x5, 80x3...'}
                                 value={session.warmup}
                                 onCommit={(v) => onUpdateAppendix(session.id, 'warmup', v)}
-                            />
-                            <AppendixEditor
-                                label="Extras"
-                                icon={Sparkles}
-                                placeholder={'Core 3x15\nBici suave 10\'\nEstiramiento de psoas'}
-                                value={session.extras}
-                                onCommit={(v) => onUpdateAppendix(session.id, 'extras', v)}
                             />
                         </div>
                     </div>
@@ -3305,9 +3477,17 @@ function DayEditorModal({
                         exactamente el ancho de la pantalla. En `lg` la cinta
                         vuelve a medir 100% y mandan las anchuras de siempre. */}
                     <div className="flex w-1/3 shrink-0 flex-col gap-2 overflow-y-auto border-subtle bg-surface-canvas p-3 scrollbar-hide min-h-0 lg:w-80 lg:border-r xl:w-96">
-                        {/* El calentamiento va ARRIBA y los extras ABAJO porque
-                            ese es el orden real de la sesión: la columna se lee
-                            de principio a fin como se entrena el día. */}
+                        {/* La columna se lee de principio a fin como se entrena
+                            el día: primero lo que hay que tener en cuenta,
+                            luego el calentamiento y luego los ejercicios. */}
+                        <AppendixEditor
+                            label="Consideraciones"
+                            icon={Sparkles}
+                            placeholder={CONSIDERATIONS_HINT}
+                            value={session.extras}
+                            onCommit={(v) => onUpdateAppendix(session.id, 'extras', v)}
+                        />
+
                         <AppendixEditor
                             label="Calentamiento"
                             icon={FlameIcon}
@@ -3315,6 +3495,33 @@ function DayEditorModal({
                             value={session.warmup}
                             onCommit={(v) => onUpdateAppendix(session.id, 'warmup', v)}
                         />
+
+                        {/* CONVERTIR EL TEXTO A EJERCICIOS.
+                            Solo aparece cuando hay texto que convertir, y no
+                            convierte nada hasta que se ve la propuesta: el
+                            texto libre no tiene formato garantizado y aplicar
+                            un analizador a ciegas acabaría inventando series
+                            de una movilidad. */}
+                        {session.warmup?.trim() && !converting && (
+                            <button
+                                onClick={() => setConverting(true)}
+                                className="flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-field border border-dashed border-[var(--border-default)] px-3 py-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast hover:border-[var(--brand-line)] hover:text-brand"
+                            >
+                                <Wand2 size={13} aria-hidden="true" />
+                                Convertir a ejercicios
+                            </button>
+                        )}
+
+                        {converting && session.warmup && (
+                            <WarmupConversionPanel
+                                text={session.warmup}
+                                onCancel={() => setConverting(false)}
+                                onConvert={(items) => {
+                                    setConverting(false);
+                                    onConvertWarmup(session.id, items);
+                                }}
+                            />
+                        )}
 
                         <Reorder.Group
                             axis="y"
@@ -3394,13 +3601,6 @@ function DayEditorModal({
                             )}
                         </div>
 
-                        <AppendixEditor
-                            label="Extras"
-                            icon={Sparkles}
-                            placeholder={'Core 3x15\nBici suave 10\'\nEstiramiento de psoas'}
-                            value={session.extras}
-                            onCommit={(v) => onUpdateAppendix(session.id, 'extras', v)}
-                        />
                     </div>
 
                     {/* CENTRO: detalle del ejercicio seleccionado (pop-up animado) */}
@@ -3605,8 +3805,10 @@ function AthletePreview({ session, onClose }: { session: ExtendedSession; onClos
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {/* El espejo tiene que enseñar TODO lo que ve el atleta,
-                        apéndices incluidos: si el calentamiento no sale aquí,
-                        el coach no puede comprobar cómo le queda. */}
+                        apéndices incluidos y EN SU ORDEN: si aquí salieran en
+                        otro sitio, el coach no estaría comprobando la pantalla
+                        que va a ver su atleta. */}
+                    <PreviewAppendix label="Consideraciones" body={session.extras} />
                     <PreviewAppendix label="Calentamiento" body={session.warmup} />
 
                     {session.exercises.length === 0 && !session.warmup && !session.extras ? (
@@ -3640,8 +3842,6 @@ function AthletePreview({ session, onClose }: { session: ExtendedSession; onClos
                             </div>
                         ))
                     )}
-
-                    <PreviewAppendix label="Extras" body={session.extras} />
                 </div>
             </motion.div>
         </motion.div>
@@ -3681,7 +3881,7 @@ interface ExerciseCardProps {
     /** Abre el editor de progresión de este ejercicio. */
     onOpenProgression: () => void;
     sessionExercise: ExtendedSessionExercise;
-    onUpdateExercise: (id: string, updates: Partial<SessionExercise> & { exercise?: Partial<ExerciseLibrary> }) => void;
+    onUpdateExercise: (id: string, updates: ExerciseCardUpdates) => void;
     onAddSet: (sessionExerciseId: string) => void;
     onDuplicateSet: (setId: string) => void;
     onUpdateSet: (setId: string, field: keyof TrainingSet, value: TrainingSet[keyof TrainingSet]) => void;
@@ -3706,6 +3906,79 @@ function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax, recen
     const [musclesOpen, setMusclesOpen] = useState(false);
     /** Serie cuya ficha de velocidad está abierta. */
     const [vbtSet, setVbtSet] = useState<{ set: TrainingSet; number: number } | null>(null);
+    /** Campo del enlace de vídeo de la ficha del ejercicio, plegado. */
+    const [editingVideo, setEditingVideo] = useState(false);
+
+    /**
+     * ¿Está encadenado con otro ejercicio?
+     *
+     * La etiqueta vive en las SERIES —basta con que una la lleve—, igual que
+     * en la pantalla del atleta. Es lo que decide si tiene sentido preguntar
+     * por las rondas: un circuito de un solo ejercicio no es un circuito.
+     */
+    const isChained = sessionExercise.sets.some(s => s.group_tag);
+
+    /** Cambia la parte del día a la que pertenece el ejercicio. */
+    const commitSection = async (section: ExerciseSection) => {
+        if (section === (sessionExercise.section ?? 'main')) return;
+
+        // Optimista: el panel de volumen recalcula con el estado local, y el
+        // efecto de marcar algo como calentamiento —que desaparezca del
+        // reparto muscular— es justo lo que el coach está mirando al pulsarlo.
+        onUpdateExercise(sessionExercise.id, { section });
+
+        try {
+            await trainingService.updateSessionExercise(sessionExercise.id, { section });
+        } catch (err) {
+            console.error(err);
+            onUpdateExercise(sessionExercise.id, { section: sessionExercise.section ?? 'main' });
+            toast.error(err instanceof Error ? err.message : 'No se pudo cambiar la sección');
+        }
+    };
+
+    /** Rondas del circuito. Vacío = no es un circuito con vueltas contadas. */
+    const commitRounds = async (raw: string) => {
+        const n = raw.trim() === '' ? null : Number.parseInt(raw, 10);
+        const rounds = n !== null && Number.isFinite(n) && n >= 1 && n <= 20 ? n : null;
+        if (rounds === (sessionExercise.round_count ?? null)) return;
+
+        onUpdateExercise(sessionExercise.id, { round_count: rounds });
+
+        try {
+            await trainingService.updateSessionExercise(sessionExercise.id, { round_count: rounds });
+        } catch (err) {
+            console.error(err);
+            onUpdateExercise(sessionExercise.id, { round_count: sessionExercise.round_count ?? null });
+            toast.error(err instanceof Error ? err.message : 'No se pudieron guardar las rondas');
+        }
+    };
+
+    /**
+     * Guarda el enlace de vídeo en la BIBLIOTECA.
+     *
+     * Escribe en `exercise_library`, no en la prescripción: es la ficha del
+     * movimiento y la comparten todos los atletas que lo tengan pautado. Si
+     * no ha cambiado, no se escribe — abrir el campo y cerrarlo sin tocar nada
+     * no tiene por qué generar una escritura.
+     */
+    const commitVideoUrl = async (raw: string) => {
+        const url = raw.trim() || null;
+        setEditingVideo(false);
+
+        if (url === (sessionExercise.exercise?.video_url ?? null)) return;
+
+        try {
+            await trainingService.setExerciseVideoUrl(sessionExercise.exercise_id, url);
+            // Al vuelo en el estado local: recargar la semana entera para dos
+            // caracteres de una URL dejaría el editor en blanco un instante.
+            // `updateSessionExercise` ya sabe fusionar un `exercise` parcial.
+            onUpdateExercise(sessionExercise.id, { exercise: { video_url: url } });
+            toast.success(url ? 'Enlace de vídeo guardado' : 'Enlace de vídeo quitado');
+        } catch (err) {
+            console.error(err);
+            toast.error('No se pudo guardar el enlace de vídeo');
+        }
+    };
 
     // Hay anulación cuando `primary_muscles` es un array, aunque esté vacío:
     // "ninguno" es una respuesta, y distinguirla de "no opino" es justo lo que
@@ -3868,20 +4141,119 @@ function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax, recen
                     )}
                 </div>
 
+                {/* `min-w-0 flex-1 truncate` en el nombre y `shrink-0` en el
+                    resto: con la etiqueta de sección nueva, esta fila reúne
+                    hasta cuatro elementos (nombre, vídeo, VBT, sección), y sin
+                    esto un nombre largo ("Peso muerto rumano con mancuernas")
+                    empujaba a la etiqueta de sección fuera de la tarjeta en un
+                    móvil de 320px en vez de que fuera el nombre el que cediera. */}
                 <div className="flex items-center gap-2 mb-3">
-                    <h4 className="font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
-                    {hasVideo && <Video size={14} className="text-blue-500" />}
+                    <h4 className="min-w-0 flex-1 truncate font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
+
+                    {/* ENLACE DE VÍDEO DE LA FICHA DEL EJERCICIO.
+                        Era un icono azul y nada más: la columna existía, el
+                        icono la delataba, y no había ninguna pantalla donde
+                        escribirla. Ahora el icono ES el botón. */}
+                    <button
+                        type="button"
+                        onClick={() => setEditingVideo(v => !v)}
+                        aria-expanded={editingVideo}
+                        title={hasVideo ? 'Cambiar el enlace de vídeo' : 'Añadir un enlace de vídeo'}
+                        className={cn(
+                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-field transition-colors duration-fast',
+                            hasVideo
+                                ? 'text-info hover:bg-[var(--info-quiet)]'
+                                : 'text-ink-faint hover:bg-surface-overlay hover:text-ink-muted'
+                        )}
+                    >
+                        <Video size={14} />
+                    </button>
                     {sessionExercise.vbt_file_url && (
-                        <button 
+                        <button
                             onClick={() => onOpenVbtChart(sessionExercise.vbt_file_url!, exerciseName)}
-                            className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
+                            className="shrink-0 bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
                             title="Ver Gráfica VBT"
                         >
                             <Activity size={12} />
                             VBT
                         </button>
                     )}
+
+                    {/* PARTE DEL DÍA.
+                        Marcar un ejercicio como calentamiento es lo que hace
+                        que NO cuente para el tonelaje ni para el reparto
+                        muscular. Antes, meter una movilidad aquí ensuciaba
+                        todas las métricas del bloque, y por eso el
+                        calentamiento se había sacado a un campo de texto.
+
+                        Va en la cabecera y no escondido en un desplegable
+                        porque cambia lo que el ejercicio SIGNIFICA, y eso
+                        tiene que verse de un vistazo al repasar el día. */}
+                    <select
+                        value={sessionExercise.section ?? 'main'}
+                        onChange={(e) => commitSection(e.target.value as ExerciseSection)}
+                        aria-label="Parte del día"
+                        title={EXERCISE_SECTIONS.find(x => x.key === (sessionExercise.section ?? 'main'))?.hint}
+                        className={cn(
+                            'ml-auto shrink-0 cursor-pointer rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide outline-none transition-colors duration-fast',
+                            (sessionExercise.section ?? 'main') === 'warmup'
+                                ? 'border-[var(--brand-line)] bg-brand-quiet text-brand'
+                                : 'border-transparent bg-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
+                        )}
+                    >
+                        {EXERCISE_SECTIONS.map(x => (
+                            <option key={x.key} value={x.key}>{x.label}</option>
+                        ))}
+                    </select>
                 </div>
+
+                {/* RONDAS DEL CIRCUITO.
+                    Solo cuando el ejercicio es calentamiento Y está encadenado
+                    con otro: las rondas son una propiedad del circuito, y sin
+                    circuito el campo no significaría nada. Se pregunta en el
+                    primero del grupo y vale para todos, que es como se escribe
+                    "Circuito A · 3 rondas" en una hoja de papel. */}
+                {(sessionExercise.section ?? 'main') === 'warmup' && isChained && (
+                    <label className="mb-3 flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                        Rondas del circuito
+                        <input
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            max={20}
+                            value={sessionExercise.round_count ?? ''}
+                            onChange={(e) => commitRounds(e.target.value)}
+                            placeholder="3"
+                            className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                        />
+                    </label>
+                )}
+
+                {/* Campo del enlace, plegado.
+                    Se guarda al salir del campo y no en cada tecla: escribir
+                    una URL de YouTube son 40 pulsaciones y serían 40
+                    escrituras contra la biblioteca. Afecta al EJERCICIO, o sea
+                    a todos los atletas que lo tengan, y por eso lo dice. */}
+                {editingVideo && (
+                    <div className="mb-3 w-full">
+                        <input
+                            type="url"
+                            inputMode="url"
+                            autoFocus
+                            defaultValue={sessionExercise.exercise?.video_url ?? ''}
+                            onBlur={(e) => commitVideoUrl(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') e.currentTarget.blur();
+                                if (e.key === 'Escape') setEditingVideo(false);
+                            }}
+                            placeholder="https://youtube.com/watch?v=..."
+                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                        />
+                        <p className="mt-1 text-t-2xs text-ink-faint">
+                            Vídeo de técnica del ejercicio. Lo verán todos tus atletas que lo tengan pautado.
+                        </p>
+                    </div>
+                )}
 
                 {/* Global Fields Container */}
                 <div className="w-full space-y-3">

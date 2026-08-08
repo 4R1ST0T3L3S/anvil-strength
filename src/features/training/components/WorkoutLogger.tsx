@@ -5,7 +5,7 @@ import { trainingService, parseGroupedReps } from '../../../services/trainingSer
 import { LoggerSetRow } from './LoggerSetRow';
 import { SaveIndicator } from '../../../components/ui/SaveIndicator';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
-import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS, groupLabel } from '../../../types/training';
+import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS, groupLabel, countsForVolume } from '../../../types/training';
 import type { TargetMetric } from '../../../types/training';
 import { RichText } from '../../../components/ui/RichText';
 import { VideoModal } from '../../../components/ui/VideoModal';
@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { RestTimerOverlay } from './RestTimerOverlay';
+import { SessionFinish } from './SessionFinish';
 import { vbtService } from '../../../services/vbtService';
 import { parseVbtFile, type ParsedVbtFile } from '../../../lib/vbt/csv';
 import { SetVbtModal } from '../../vbt/components/SetVbtModal';
@@ -374,6 +375,23 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         }
     }, []);
 
+    /**
+     * Aplica a UNA sesión los campos que cambia el cierre del día.
+     *
+     * Va contra el estado local y no recarga: `setSessionCompleted` ya ha
+     * escrito en el servidor, y volver a pedir la semana entera para enterarse
+     * de dos columnas dejaría la pantalla en blanco un instante justo después
+     * de pulsar "Terminar".
+     */
+    const handleSessionPatch = useCallback((
+        sessionId: string,
+        patch: { completed_at?: string | null; athlete_notes?: string | null }
+    ) => {
+        setAllSessions(prev => prev.map(session =>
+            session.id === sessionId ? { ...session, ...patch } : session
+        ));
+    }, []);
+
     /** Refleja al instante en el contador del pie lo que se marca arriba. */
     const handleSetChange = useCallback((setId: string, completed: boolean) => {
         setAllSessions(prev => prev.map(session => ({
@@ -419,12 +437,32 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 
     const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
 
+    /**
+     * El día, partido en sus dos mitades.
+     *
+     * El calentamiento va aparte y ANTES, con su propio rótulo. Es la razón de
+     * ser de `section`: hasta ahora, un ejercicio de movilidad programado por
+     * el entrenador aparecía como el ejercicio número 1 del día, con su ficha,
+     * su número y su peso visual — indistinguible de una sentadilla pesada.
+     */
+    const warmupExercises = (activeSession?.exercises ?? [])
+        .filter(e => !countsForVolume(e.section));
+    const mainExercises = (activeSession?.exercises ?? [])
+        .filter(e => countsForVolume(e.section));
+
+    // Los encadenados se calculan sobre el día ENTERO: un circuito de
+    // calentamiento y una superserie del trabajo principal comparten el
+    // espacio de etiquetas, y calcularlos por separado haría que la "A" de un
+    // circuito de tres se cruzara con la "A" de una superserie.
     const chains = computeChains(activeSession?.exercises ?? []);
 
     // Progreso del día. Una serie agrupada ("4x8") cuenta como cuatro: es lo
     // que el atleta ve en pantalla, y contar uno haría que la barra saltara
     // del 20 al 100% de golpe.
-    const { completedSets, totalSets } = (activeSession?.exercises ?? []).reduce(
+    //
+    // El calentamiento NO entra en el contador: la barra mide el trabajo del
+    // día, y una sesión que empieza al 30% por haber calentado no dice nada.
+    const { completedSets, totalSets } = mainExercises.reduce(
         (acc, exercise) => {
             exercise.sets.forEach(set => {
                 const count = parseGroupedReps(set.target_reps)?.count ?? 1;
@@ -632,7 +670,13 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         // Cuántas series lleva hechas de ese día. Un punto en
                         // la ficha responde a "¿me quedó algo del lunes?" sin
                         // tener que entrar a mirar.
-                        const daySets = s.exercises.flatMap(e => e.sets);
+                        //
+                        // Sin el calentamiento, igual que la barra de progreso:
+                        // si no, un día quedaría "sin terminar" para siempre
+                        // por no haber marcado una movilidad.
+                        const daySets = s.exercises
+                            .filter(e => countsForVolume(e.section))
+                            .flatMap(e => e.sets);
                         const dayDone = daySets.length > 0 && daySets.every(x => x.is_completed);
 
                         return (
@@ -731,9 +775,31 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     </div>
                 ) : (
                     <>
+                        {/* CONSIDERACIONES antes que nada.
+                            Son las indicaciones del día —"prioriza velocidad",
+                            "RPE 7 máximo", "para si aparece dolor"— y solo
+                            sirven si se leen ANTES de la primera serie. Iban al
+                            final del todo, debajo del último ejercicio, donde
+                            solo llega quien ya ha terminado de entrenar.
+                            Viven en la columna `extras`: ver la nota de
+                            `TrainingSession.extras` en src/types/training.ts. */}
+                        <AppendixBlock
+                            label="Consideraciones"
+                            accent="cool"
+                            body={activeSession?.extras}
+                            onPlayVideo={playVideo}
+                        />
+
                         {/* Calentamiento ANTES de la primera serie: si va al final o
                             escondido en un desplegable, nadie lo lee y el coach lo
-                            escribe para nada. */}
+                            escribe para nada.
+
+                            CONVIVEN las dos formas. El texto libre es como se
+                            ha escrito siempre y sigue valiendo; los ejercicios
+                            con `section = 'warmup'` son la forma nueva, que
+                            además trae vídeo de técnica y series que marcar. Un
+                            día puede tener las dos: no hay ninguna migración
+                            que obligue a elegir. */}
                         <AppendixBlock
                             label="Calentamiento"
                             accent="warm"
@@ -741,7 +807,35 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             onPlayVideo={playVideo}
                         />
 
-                        {activeSession?.exercises.map((ex, i) => (
+                        {warmupExercises.length > 0 && (
+                            <div className="space-y-3">
+                                {/* Rótulo propio solo cuando no lo puso ya el
+                                    texto libre de arriba: dos veces "Calentamiento"
+                                    seguidas sobran. */}
+                                {!activeSession?.warmup?.trim() && (
+                                    <h3 className="text-t-2xs font-bold uppercase tracking-widest text-brand">
+                                        Calentamiento
+                                    </h3>
+                                )}
+                                {warmupExercises.map((ex, i) => (
+                                    <LoggerExerciseCard
+                                        key={ex.id}
+                                        sessionExercise={ex}
+                                        athleteId={athleteId}
+                                        position={i + 1}
+                                        chain={chains.get(ex.id) ?? null}
+                                        onStartTimer={handleStartTimer}
+                                        onExpandSet={handleExpandSet}
+                                        onSetChange={handleSetChange}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* El trabajo del día. La numeración arranca en 1 aquí y
+                            no cuenta el calentamiento: "ejercicio 1" es la
+                            sentadilla, no la rotación externa. */}
+                        {mainExercises.map((ex, i) => (
                             <LoggerExerciseCard
                                 key={ex.id}
                                 sessionExercise={ex}
@@ -760,12 +854,27 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             </div>
                         )}
 
-                        <AppendixBlock
-                            label="Extras"
-                            accent="cool"
-                            body={activeSession?.extras}
-                            onPlayVideo={playVideo}
-                        />
+                        {/* CIERRE DEL DÍA.
+                            Contenido normal al final del scroll, no una barra
+                            flotante: el atleta llega aquí después de la última
+                            serie, que es justo donde tiene que estar el botón.
+                            Recupera `completed_at` —y con él la adherencia que
+                            ve el entrenador— y ofrece el check-in en el único
+                            momento en que sus preguntas tienen respuesta. */}
+                        {activeSession && (
+                            <SessionFinish
+                                key={activeSession.id}
+                                sessionId={activeSession.id}
+                                athleteId={athleteId}
+                                // Sin el calentamiento: el resumen del día son
+                                // las series y el tonelaje del TRABAJO, y las
+                                // aproximaciones no son ninguna de las dos.
+                                exercises={mainExercises}
+                                completedAt={activeSession.completed_at ?? null}
+                                athleteNotes={activeSession.athlete_notes ?? null}
+                                onChange={patch => handleSessionPatch(activeSession.id, patch)}
+                            />
+                        )}
                     </>
                 )}
             </div>
@@ -1135,6 +1244,10 @@ function LoggerExerciseCard({
                     athleteId={athleteId}
                     prescription={sessionExercise.sets.map(s => s.target_reps).filter(Boolean).join(' · ')}
                     coachNotes={sessionExercise.notes}
+                    // El enlace de la ficha del ejercicio ya venía en la
+                    // consulta (`exercise:exercise_library (name, video_url,
+                    // muscle_group)`) y no lo leía nadie.
+                    externalVideoUrl={sessionExercise.exercise?.video_url}
                 />
             </Modal>
 
@@ -1144,15 +1257,22 @@ function LoggerExerciseCard({
                 ejercicio en vez de descansar—. Dentro de la cabecera, entre
                 el nombre y las notas, se leía como una etiqueta más. */}
             {chain && (
-                <div className="flex items-center gap-2 bg-[var(--info-quiet)] px-4 py-1.5">
+                <div className="flex flex-wrap items-center gap-x-2 bg-[var(--info-quiet)] px-4 py-1.5">
                     <span className="text-t-2xs font-black uppercase tracking-widest text-info">
-                        {groupLabel(chain.size)} {chain.tag}
+                        {/* Un encadenado de calentamiento es un CIRCUITO, no
+                            una superserie: se llama así en el gimnasio y las
+                            rondas solo tienen sentido con ese nombre. */}
+                        {sessionExercise.section === 'warmup'
+                            ? `Circuito ${chain.tag}`
+                            : `${groupLabel(chain.size)} ${chain.tag}`}
                     </span>
                     <span className="text-t-2xs text-info/70">
                         · {chain.position} de {chain.size}
-                        {chain.position < chain.size
-                            ? ' · sin descanso, sigue al siguiente'
-                            : ' · ahora sí, descansa'}
+                        {sessionExercise.round_count
+                            ? ` · ${sessionExercise.round_count} rondas`
+                            : chain.position < chain.size
+                                ? ' · sin descanso, sigue al siguiente'
+                                : ' · ahora sí, descansa'}
                     </span>
                 </div>
             )}

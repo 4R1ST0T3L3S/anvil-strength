@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, Dumbbell, Utensils, Check, Flame, Sparkles, Moon } from 'lucide-react';
-import { trainingService, type TodayTraining } from '../../../services/trainingService';
+import { trainingService, type TodayTraining, type NoSessionReason } from '../../../services/trainingService';
 import { nutritionService } from '../../../services/nutritionService';
 import type { NutritionPlan } from '../../../types/nutrition';
 
@@ -79,7 +79,54 @@ export function TodayPanel({ athleteId, onOpenTraining, onOpenNutrition, locked 
 // ENTRENAMIENTO
 // =====================================================================
 
-function TrainingCard({
+/** Lo que se le dice al atleta cuando hoy no hay sesión. */
+const NO_SESSION_TEXT: Record<NoSessionReason, { title: string; hint: string }> = {
+    rest: { title: 'Descanso', hint: 'Hoy no hay sesión pautada' },
+    // El caso que más confusión generaba: el plan EXISTE, solo que su
+    // entrenador todavía no lo ha abierto. Decir "no te han pautado nada" hacía
+    // que el atleta escribiera para preguntar por algo que ya estaba escrito.
+    'not-released': { title: 'Aún no disponible', hint: 'Tu entrenador todavía no ha abierto esta semana' },
+    'not-started': { title: 'Sin empezar', hint: 'Tu bloque empieza más adelante' },
+    finished: { title: 'Bloque terminado', hint: 'Has llegado al final de este bloque' },
+    empty: { title: 'Entrenar', hint: 'Tu entrenador aún no te ha pautado nada' },
+};
+
+/**
+ * Cabecera de contexto: "Viernes · Semana 6 de 12 · Día 3".
+ *
+ * Es la respuesta a "¿dónde estoy?", que hasta ahora había que deducir
+ * entrando en la planificación y mirando el selector de semana. Cada pieza se
+ * omite si no se puede afirmar: un bloque sin `start_week` no tiene ordinal de
+ * semana, y un día sin agendar no tiene día de la semana.
+ */
+function contextLine(training: TodayTraining): string | null {
+    const parts: string[] = [];
+
+    if (training.session?.weekday) parts.push(training.session.weekday);
+
+    if (training.programWeek !== null && training.programWeek >= 1) {
+        parts.push(
+            training.totalWeeks
+                ? `Semana ${training.programWeek} de ${training.totalWeeks}`
+                : `Semana ${training.programWeek}`
+        );
+    }
+
+    if (training.session) parts.push(`Día ${training.session.dayNumber}`);
+
+    return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+/**
+ * Se exporta para el banco de pruebas de maquetación (`/dev/movil`).
+ *
+ * Es la tarjeta con más estados de toda la aplicación —sesión a medias,
+ * terminada, día de descanso, semana sin abrir, bloque terminado, sin
+ * acceso— y todos viven detrás del login y de tener un bloque activo con los
+ * datos justos. Sin poder montarla con datos de mentira, revisar cómo le
+ * queda a 375px es adivinar.
+ */
+export function TrainingCard({
     training,
     loading,
     locked,
@@ -92,9 +139,25 @@ function TrainingCard({
 }) {
     const session = training?.session ?? null;
     const done = session?.completed ?? false;
+    const started = (session?.completedSets ?? 0) > 0;
     const progress = session && session.totalSets > 0
         ? Math.round((session.completedSets / session.totalSets) * 100)
         : 0;
+    const noSession = training && !session ? NO_SESSION_TEXT[training.reason ?? 'empty'] : null;
+    const context = training && !loading ? contextLine(training) : null;
+
+    /**
+     * El botón dice lo que va a pasar al pulsarlo.
+     *
+     * "Entrenar" valía para las tres situaciones y no distinguía ninguna:
+     * empezar de cero, retomar un día a medias y volver a mirar uno cerrado no
+     * son la misma acción.
+     */
+    const action = done
+        ? 'Ver entrenamiento'
+        : started
+            ? 'Continuar entrenamiento'
+            : 'Empezar entrenamiento';
 
     return (
         <button
@@ -118,10 +181,19 @@ function TrainingCard({
                     )}
                 </div>
 
+                {/* DÓNDE ESTÁ EL ATLETA, en un renglón.
+                    Antes había que entrar en la planificación y leer el
+                    selector de semana para saberlo. */}
+                {context && (
+                    <p className="mt-2 truncate text-t-2xs font-bold uppercase tracking-widest text-brand-ink/70">
+                        {context}
+                    </p>
+                )}
+
                 {/* La lista de ejercicios es LO IMPORTANTE de esta tarjeta:
                     responde a "¿qué toca hoy?" sin abrir nada. */}
                 {!loading && session && session.exerciseNames.length > 0 && (
-                    <ul className="mt-3 space-y-0.5">
+                    <ul className="mt-2 space-y-0.5">
                         {session.exerciseNames.slice(0, 3).map((name, i) => (
                             <li key={i} className="truncate text-t-sm font-medium text-brand-ink/90">
                                 {name}
@@ -135,10 +207,10 @@ function TrainingCard({
                     </ul>
                 )}
 
-                {!loading && session && (session.hasWarmup || session.hasExtras) && (
+                {!loading && session && (session.hasWarmup || session.considerations) && (
                     <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                        {session.considerations && <Tag icon={Sparkles}>Consideraciones</Tag>}
                         {session.hasWarmup && <Tag icon={Flame}>Calentamiento</Tag>}
-                        {session.hasExtras && <Tag icon={Sparkles}>Extras</Tag>}
                     </div>
                 )}
             </div>
@@ -147,39 +219,57 @@ function TrainingCard({
                 <span className="block truncate text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
                     {loading
                         ? 'Cargando…'
-                        : training?.isRestDay
-                            ? 'Descanso'
+                        : noSession
+                            ? noSession.title
                             : session?.title ?? 'Entrenar'}
                 </span>
 
                 <span className="mt-1.5 flex items-center gap-1 text-t-sm text-brand-ink/80">
-                    {loading
-                        ? 'Tu sesión de hoy'
-                        : locked
-                            ? 'Necesitas acceso completo'
-                            : training?.isRestDay
-                                ? 'Hoy no hay sesión pautada'
-                                : session
-                                    ? `${session.completedSets} de ${session.totalSets} series · ${training?.blockName}`
-                                    : 'Tu entrenador aún no te ha pautado nada'}
-                    {!locked && (
+                    <span className="truncate">
+                        {loading
+                            ? 'Tu sesión de hoy'
+                            : locked
+                                ? 'Necesitas acceso completo'
+                                : noSession
+                                    ? noSession.hint
+                                    : session
+                                        ? `${session.completedSets} de ${session.totalSets} series · ${training?.blockName}`
+                                        : 'Tu entrenador aún no te ha pautado nada'}
+                    </span>
+                    {/* La flecha solo cuando NO hay botón: con los dos, la
+                        tarjeta señala dos veces al mismo sitio. */}
+                    {!locked && !session && (
                         <ChevronRight size={14} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
                     )}
                 </span>
 
-                {/* Barra de progreso. Solo cuando hay algo que medir: en un día
-                    de descanso una barra al 0% se lee como trabajo pendiente. */}
+                {/* Barra de progreso, PEGADA al renglón de series que mide.
+                    Solo cuando hay algo que medir: en un día de descanso una
+                    barra al 0% se lee como trabajo pendiente. */}
                 {!loading && session && session.totalSets > 0 && (
-                    <div className="mt-3 h-1 overflow-hidden rounded-pill bg-brand-ink/20">
+                    <div className="mt-2 h-1 overflow-hidden rounded-pill bg-brand-ink/20">
                         <div
                             className="h-full rounded-pill bg-brand-ink transition-[width] duration-base ease-snap"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
                 )}
+
+                {/* LLAMADA A LA ACCIÓN.
+                    La tarjeta entera ya era pulsable, pero nada lo decía: era
+                    un bloque de información con aspecto de bloque de
+                    información. Un botón dentro de un botón no es válido, así
+                    que esto es un `span` con aspecto de botón — el clic lo
+                    sigue recogiendo la tarjeta. */}
+                {!loading && !locked && session && (
+                    <span className="mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-field bg-brand-ink/15 text-t-sm font-black uppercase tracking-wider text-brand-ink transition-colors duration-fast ease-snap group-hover:bg-brand-ink/25">
+                        {action}
+                        <ChevronRight size={15} aria-hidden="true" />
+                    </span>
+                )}
             </div>
 
-            {training?.isRestDay && (
+            {training?.reason === 'rest' && (
                 <Moon
                     size={112}
                     aria-hidden="true"
