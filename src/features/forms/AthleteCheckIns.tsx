@@ -97,6 +97,7 @@ export function CheckInFormModal({
     onSubmitted: () => void;
 }) {
     const [questions, setQuestions] = useState<FormQuestion[]>([]);
+    const [intro, setIntro] = useState<string | null>(null);
     const [values, setValues] = useState<AnswerValues>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -108,6 +109,7 @@ export function CheckInFormModal({
                 // Plantilla del coach del atleta (o predefinida)
                 const coach = await chatService.getMyCoach(athleteId).catch(() => null);
                 const qs = await formsService.getTemplate(coach?.id || null, type);
+                formsService.getIntro(coach?.id || null, type).then(setIntro).catch(() => { });
 
                 /**
                  * Las preguntas se fijan ANTES de intentar leer lo ya
@@ -203,11 +205,18 @@ export function CheckInFormModal({
                         {loading ? (
                             <div className="flex justify-center py-10"><Loader className="animate-spin text-anvil-red" size={24} /></div>
                         ) : (
-                            <CheckInAnswerFields
-                                questions={questions}
-                                values={values}
-                                onChange={(id, value) => setValues(v => ({ ...v, [id]: value }))}
-                            />
+                            <>
+                                {intro && (
+                                    <p className="rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-xs leading-relaxed text-gray-400">
+                                        {intro}
+                                    </p>
+                                )}
+                                <CheckInAnswerFields
+                                    questions={questions}
+                                    values={values}
+                                    onChange={(id, value) => setValues(v => ({ ...v, [id]: value }))}
+                                />
+                            </>
                         )}
                     </div>
 

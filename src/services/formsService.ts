@@ -7,6 +7,15 @@ export interface FormQuestion {
     id: string;
     label: string;
     qtype: QuestionType;
+    /** Cómo se responde ESTA pregunta. Bajo la etiqueta, en letra pequeña. */
+    help?: string;
+    /** Solo para qtype 'scale': qué significa cada extremo (1 = ..., 10 = ...). */
+    scale?: {
+        min: number;
+        max: number;
+        minLabel?: string;
+        maxLabel?: string;
+    };
 }
 
 export interface FormAnswer extends FormQuestion {
@@ -77,7 +86,7 @@ export function mergeQuestions(template: FormQuestion[], answers: FormAnswer[] =
     const inTemplate = new Set(template.map(q => q.id));
     const legacy = answers
         .filter(a => !inTemplate.has(a.id))
-        .map(({ id, label, qtype }) => ({ id, label, qtype }));
+        .map(({ id, label, qtype, help, scale }) => ({ id, label, qtype, help, scale }));
     return [...template, ...legacy];
 }
 
@@ -105,6 +114,41 @@ export const formsService = {
             .from('form_templates')
             .upsert(
                 { coach_id: coachId, type, questions, updated_at: new Date().toISOString() },
+                { onConflict: 'coach_id, type' }
+            );
+        if (error) throw error;
+    },
+
+    /**
+     * Indicación general del check-in ("rellénalo la noche anterior...").
+     * No es de una pregunta: es del formulario entero, así que va en su
+     * propia columna (`form_templates.intro`) y no dentro de `questions`.
+     */
+    async getIntro(coachId: string | null, type: FormType): Promise<string | null> {
+        if (!coachId) return null;
+        const { data, error } = await supabase
+            .from('form_templates')
+            .select('intro')
+            .eq('coach_id', coachId)
+            .eq('type', type)
+            .maybeSingle();
+        if (error) return null;
+        return data?.intro ?? null;
+    },
+
+    /**
+     * `questions` es NOT NULL en `form_templates`: si el coach nunca ha
+     * tocado sus preguntas, no hay fila todavía, y guardar SOLO la intro
+     * mediante un upsert intentaría un INSERT sin esa columna. Se manda la
+     * plantilla efectiva de siempre junto con la intro para que la primera
+     * vez cree la fila entera.
+     */
+    async saveIntro(coachId: string, type: FormType, intro: string): Promise<void> {
+        const questions = await this.getTemplate(coachId, type);
+        const { error } = await supabase
+            .from('form_templates')
+            .upsert(
+                { coach_id: coachId, type, questions, intro: intro.trim() || null, updated_at: new Date().toISOString() },
                 { onConflict: 'coach_id, type' }
             );
         if (error) throw error;

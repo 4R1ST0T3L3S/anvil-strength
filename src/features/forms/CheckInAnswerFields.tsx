@@ -20,25 +20,34 @@ export function CheckInAnswerFields({
         <>
             {questions.map(q => (
                 <div key={q.id}>
-                    <label className="block text-sm font-bold text-white mb-3">{q.label}</label>
+                    <label className={`block text-sm font-bold text-white ${q.help ? 'mb-1' : 'mb-3'}`}>{q.label}</label>
+                    {q.help && <p className="mb-3 text-xs text-gray-500">{q.help}</p>}
 
                     {q.qtype === 'scale' && (
-                        <div className="grid grid-cols-11 gap-1">
-                            {Array.from({ length: 11 }, (_, i) => (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
-                                    className={`aspect-square rounded-lg text-xs font-black transition-all ${
-                                        values[q.id] === i
-                                            ? 'bg-anvil-red text-white scale-110 shadow-lg shadow-anvil-red/30'
-                                            : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'
-                                    }`}
-                                >
-                                    {i}
-                                </button>
-                            ))}
-                        </div>
+                        <>
+                            <div className="grid grid-cols-11 gap-1">
+                                {Array.from({ length: 11 }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
+                                        className={`aspect-square rounded-lg text-xs font-black transition-all ${
+                                            values[q.id] === i
+                                                ? 'bg-anvil-red text-white scale-110 shadow-lg shadow-anvil-red/30'
+                                                : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'
+                                        }`}
+                                    >
+                                        {i}
+                                    </button>
+                                ))}
+                            </div>
+                            {(q.scale?.minLabel || q.scale?.maxLabel) && (
+                                <div className="mt-1.5 flex justify-between text-[10px] text-gray-600">
+                                    <span>{q.scale?.minLabel}</span>
+                                    <span>{q.scale?.maxLabel}</span>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {q.qtype === 'number' && (

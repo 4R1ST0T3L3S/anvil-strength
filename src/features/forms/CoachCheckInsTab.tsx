@@ -345,12 +345,16 @@ function CoachResponseEditorModal({
 
 function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type: FormType; onClose: () => void }) {
     const [questions, setQuestions] = useState<FormQuestion[]>([]);
+    const [intro, setIntro] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        formsService.getTemplate(coachId, type)
-            .then(setQuestions)
+        Promise.all([
+            formsService.getTemplate(coachId, type),
+            formsService.getIntro(coachId, type),
+        ])
+            .then(([qs, i]) => { setQuestions(qs); setIntro(i ?? ''); })
             .catch(() => setQuestions(type === 'daily' ? DEFAULT_DAILY_QUESTIONS : DEFAULT_WEEKLY_QUESTIONS))
             .finally(() => setLoading(false));
     }, [coachId, type]);
@@ -376,6 +380,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
         setSaving(true);
         try {
             await formsService.saveTemplate(coachId, type, valid);
+            await formsService.saveIntro(coachId, type, intro);
             toast.success('Formulario guardado. Se aplicará a todos tus atletas.');
             onClose();
         } catch (e) {
@@ -418,32 +423,77 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                         <div className="flex justify-center py-10"><Loader className="animate-spin text-anvil-red" size={24} /></div>
                     ) : (
                         <>
+                            <div>
+                                <label className="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                    Indicación general (opcional)
+                                </label>
+                                <textarea
+                                    value={intro}
+                                    onChange={(e) => setIntro(e.target.value)}
+                                    placeholder='Ej: "Rellénalo la noche anterior. La escala es de 1 a 10."'
+                                    rows={2}
+                                    maxLength={500}
+                                    className="w-full resize-y bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                                />
+                                <p className="mt-1 text-[10px] text-gray-600">Aparece arriba del todo, antes de la primera pregunta.</p>
+                            </div>
+
                             {questions.map((q, i) => (
-                                <div key={i} className="flex items-center gap-2 bg-[#252525] border border-white/5 rounded-xl p-3">
+                                <div key={i} className="space-y-2 bg-[#252525] border border-white/5 rounded-xl p-3">
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            value={q.label}
+                                            onChange={(e) => updateQuestion(i, { label: e.target.value })}
+                                            placeholder="Texto de la pregunta..."
+                                            maxLength={120}
+                                            className="flex-1 bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors min-w-0"
+                                        />
+                                        <select
+                                            value={q.qtype}
+                                            onChange={(e) => updateQuestion(i, { qtype: e.target.value as QuestionType })}
+                                            className="bg-black/30 border border-white/5 rounded-lg py-2 px-2 text-gray-300 text-xs focus:outline-none focus:border-anvil-red/50 shrink-0"
+                                        >
+                                            {(Object.keys(QTYPE_LABELS) as QuestionType[]).map(t => (
+                                                <option key={t} value={t}>{QTYPE_LABELS[t]}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            onClick={() => removeQuestion(i)}
+                                            className="p-2 text-gray-600 hover:text-red-500 transition-colors shrink-0"
+                                            title="Eliminar pregunta"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                    </div>
                                     <input
                                         type="text"
-                                        value={q.label}
-                                        onChange={(e) => updateQuestion(i, { label: e.target.value })}
-                                        placeholder="Texto de la pregunta..."
-                                        maxLength={120}
-                                        className="flex-1 bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors min-w-0"
+                                        value={q.help ?? ''}
+                                        onChange={(e) => updateQuestion(i, { help: e.target.value || undefined })}
+                                        placeholder="Ayuda bajo la pregunta (opcional): cómo se responde, qué escala usar..."
+                                        maxLength={160}
+                                        className="w-full bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50 transition-colors"
                                     />
-                                    <select
-                                        value={q.qtype}
-                                        onChange={(e) => updateQuestion(i, { qtype: e.target.value as QuestionType })}
-                                        className="bg-black/30 border border-white/5 rounded-lg py-2 px-2 text-gray-300 text-xs focus:outline-none focus:border-anvil-red/50 shrink-0"
-                                    >
-                                        {(Object.keys(QTYPE_LABELS) as QuestionType[]).map(t => (
-                                            <option key={t} value={t}>{QTYPE_LABELS[t]}</option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        onClick={() => removeQuestion(i)}
-                                        className="p-2 text-gray-600 hover:text-red-500 transition-colors shrink-0"
-                                        title="Eliminar pregunta"
-                                    >
-                                        <Trash2 size={15} />
-                                    </button>
+                                    {q.qtype === 'scale' && (
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={q.scale?.minLabel ?? ''}
+                                                onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, minLabel: e.target.value || undefined } })}
+                                                placeholder="Extremo bajo (1)"
+                                                maxLength={40}
+                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={q.scale?.maxLabel ?? ''}
+                                                onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, maxLabel: e.target.value || undefined } })}
+                                                placeholder="Extremo alto (10)"
+                                                maxLength={40}
+                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             <button
