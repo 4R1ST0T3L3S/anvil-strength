@@ -272,7 +272,8 @@ export function SessionFinish({
                                 rows={3}
                                 maxLength={1000}
                                 placeholder="Molestia en el hombro, la última serie se fue lenta…"
-                                className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                                // text-t-base (16px): por debajo, iOS hace zoom al enfocar.
+                                className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-base text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
                             />
                             {done && (
                                 <Button

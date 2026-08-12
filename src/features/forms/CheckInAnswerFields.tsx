@@ -57,7 +57,7 @@ export function CheckInAnswerFields({
                             value={values[q.id] ?? ''}
                             onChange={(e) => onChange(q.id, e.target.value === '' ? null : Number(e.target.value))}
                             placeholder="0"
-                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:outline-none focus:border-anvil-red/50 transition-colors"
                         />
                     )}
 
@@ -68,7 +68,7 @@ export function CheckInAnswerFields({
                             rows={3}
                             maxLength={1000}
                             placeholder="Escribe aquí..."
-                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors resize-none"
+                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:outline-none focus:border-anvil-red/50 transition-colors resize-none"
                         />
                     )}
                 </div>
