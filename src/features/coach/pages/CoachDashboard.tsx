@@ -7,6 +7,7 @@ import {
     User,
     Activity,
     Dumbbell,
+    SlidersHorizontal,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
@@ -17,6 +18,7 @@ import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { ViewTransition } from '../../../components/layout/ViewTransition';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
+import { PreferencesPage } from './PreferencesPage';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 import { FloatingChat } from '../../chat/components/FloatingChat';
@@ -39,6 +41,7 @@ const VIEWS = {
     agenda: 'schedule',
     calendario: 'calendar',
     pwr: 'pwr_analysis',
+    preferencias: 'preferences',
     perfil: 'profile',
 } as const;
 
@@ -53,6 +56,7 @@ const TITLES: Record<Slug, string | undefined> = {
     agenda: 'Agenda del equipo',
     calendario: 'Calendario AEP',
     pwr: 'Análisis PWR',
+    preferencias: 'Preferencias',
     perfil: 'Mi perfil',
 };
 
@@ -124,6 +128,13 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 isActive: slug === 'pwr',
                 hideOnMobileBar: true,
             }]),
+        {
+            icon: <SlidersHorizontal size={20} />,
+            label: 'Preferencias',
+            onClick: () => go('preferencias'),
+            isActive: slug === 'preferencias',
+            hideOnMobileBar: true,
+        },
     ];
 
     // CONMUTADOR DE PANEL. La otra mitad del de UserDashboard: quien entrena a
@@ -170,6 +181,8 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => go('')} />;
             case 'pwr_analysis':
                 return <PwrAnalysisTab />;
+            case 'preferences':
+                return <PreferencesPage coachId={user.id} />;
             case 'home':
             default:
                 return <CoachHome user={user} onNavigate={(v) => go(viewToSlug(v))} />;
