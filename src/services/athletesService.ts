@@ -322,6 +322,36 @@ export const athletesService = {
         if (error) throw error;
         return Boolean(data);
     },
+
+    /**
+     * NOTAS PRIVADAS DEL ENTRENADOR SOBRE ESTE ATLETA.
+     *
+     * Viven en `coach_athletes.notes`, no en `profiles`: son de la RELACIÓN.
+     * Un atleta con entrenador de fuerza Y nutricionista tiene una nota
+     * distinta para cada uno; si vivieran en el perfil del atleta, el
+     * segundo en guardar pisaría la del primero. El atleta NO las ve.
+     */
+    async getCoachNotes(coachId: string, athleteId: string): Promise<string | null> {
+        const { data, error } = await supabase
+            .from('coach_athletes')
+            .select('notes')
+            .eq('coach_id', coachId)
+            .eq('athlete_id', athleteId)
+            .maybeSingle();
+
+        if (error) return null;
+        return data?.notes ?? null;
+    },
+
+    async saveCoachNotes(coachId: string, athleteId: string, notes: string): Promise<void> {
+        const { error } = await supabase
+            .from('coach_athletes')
+            .update({ notes: notes.trim() || null })
+            .eq('coach_id', coachId)
+            .eq('athlete_id', athleteId);
+
+        if (error) throw error;
+    },
 };
 
 // =====================================================================

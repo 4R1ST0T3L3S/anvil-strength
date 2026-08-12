@@ -338,5 +338,51 @@ export const competitionsService = {
 
         if (plainError) throw plainError;
         return dedupeCompetitions((plain ?? []) as CompetitionAssignment[]);
-    }
+    },
+
+    /**
+     * RESULTADOS DE COMPETICIÓN.
+     *
+     * Tabla propia (`competition_results`), no columnas en `competitions`:
+     * esa tabla también guarda el calendario oficial de la AEP, que no
+     * disputa nada. Ver database/REESTRUCTURACION_2026-08.sql.
+     */
+    async getResults(athleteId: string): Promise<CompetitionResult[]> {
+        const { data, error } = await supabase
+            .from('competition_results')
+            .select('*')
+            .eq('athlete_id', athleteId);
+
+        if (error) {
+            // 42P01 = la tabla no existe todavía (migración sin ejecutar).
+            if (error.code === '42P01') return [];
+            throw error;
+        }
+        return data || [];
+    },
+
+    async upsertResult(result: Omit<CompetitionResult, 'id' | 'created_at' | 'updated_at'>): Promise<void> {
+        const { error } = await supabase
+            .from('competition_results')
+            .upsert(result, { onConflict: 'competition_id, athlete_id' });
+
+        if (error) throw error;
+    },
 };
+
+export interface CompetitionResult {
+    id?: string;
+    competition_id: string;
+    athlete_id: string;
+    bodyweight_kg?: number | null;
+    squat_kg?: number | null;
+    bench_kg?: number | null;
+    deadlift_kg?: number | null;
+    total_kg?: number | null;
+    dots?: number | null;
+    place?: string | null;
+    notes?: string | null;
+    created_by?: string;
+    created_at?: string;
+    updated_at?: string;
+}

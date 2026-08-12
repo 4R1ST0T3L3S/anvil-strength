@@ -24,6 +24,13 @@ interface AthleteStatsModalProps {
     onClose: () => void;
     athleteId: string;
     athleteName: string;
+    /**
+     * En la ficha del atleta (pestaña Estadísticas > Resumen) esto vive
+     * EMBEBIDO, no como modal a pantalla completa: sin fondo fijo, sin
+     * cabecera propia ni botón de cerrar — la cabecera y las pestañas de la
+     * ficha ya cumplen ese papel. `isOpen`/`onClose` se ignoran en este modo.
+     */
+    embedded?: boolean;
 }
 
 // Paleta de las gráficas. Sale de los tokens para que no haya un segundo
@@ -85,7 +92,7 @@ function Empty({ children }: { children: React.ReactNode }) {
  *
  * Todo el cálculo vive en src/lib/stats/athleteStats.ts.
  */
-export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: AthleteStatsModalProps) {
+export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, embedded = false }: AthleteStatsModalProps) {
     const [history, setHistory] = useState<ExerciseHistoryRow[]>([]);
     const [checkIns, setCheckIns] = useState<FormResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -233,7 +240,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: A
         );
     };
 
-    if (!isOpen) return null;
+    if (!embedded && !isOpen) return null;
 
     const TABS: [StatsTab, string][] = [
         ['general', 'General'],
@@ -252,24 +259,29 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName }: A
     ];
 
     return (
-        <div className="fixed inset-0 z-modal flex flex-col bg-surface-canvas animate-in fade-in duration-200">
+        <div className={embedded
+            ? 'flex min-h-[60vh] flex-col'
+            : 'fixed inset-0 z-modal flex flex-col bg-surface-canvas animate-in fade-in duration-200'
+        }>
             {/* ----------------------------------------------------- */}
-            <header className="shrink-0 border-b border-subtle bg-surface-raised">
-                <div className="flex items-center justify-between gap-4 px-4 py-4 md:px-8">
-                    <h2 className="flex min-w-0 items-center gap-2.5 text-t-lg font-black uppercase tracking-display text-ink md:text-t-2xl">
-                        <TrendingUp className="shrink-0 text-brand" size={20} aria-hidden="true" />
-                        <span className="truncate">{athleteName}</span>
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="shrink-0 rounded-field p-2.5 text-ink-muted transition-colors duration-fast hover:bg-surface-overlay hover:text-ink"
-                        aria-label="Cerrar estadísticas"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
+            <header className={embedded ? 'shrink-0' : 'shrink-0 border-b border-subtle bg-surface-raised'}>
+                {!embedded && (
+                    <div className="flex items-center justify-between gap-4 px-4 py-4 md:px-8">
+                        <h2 className="flex min-w-0 items-center gap-2.5 text-t-lg font-black uppercase tracking-display text-ink md:text-t-2xl">
+                            <TrendingUp className="shrink-0 text-brand" size={20} aria-hidden="true" />
+                            <span className="truncate">{athleteName}</span>
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className="shrink-0 rounded-field p-2.5 text-ink-muted transition-colors duration-fast hover:bg-surface-overlay hover:text-ink"
+                            aria-label="Cerrar estadísticas"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                )}
 
-                <div role="tablist" aria-label="Vista de estadísticas" className="flex gap-1 overflow-x-auto px-4 pb-2 md:px-8">
+                <div role="tablist" aria-label="Vista de estadísticas" className={embedded ? 'flex gap-1 overflow-x-auto pb-2' : 'flex gap-1 overflow-x-auto px-4 pb-2 md:px-8'}>
                     {TABS.map(([value, label]) => (
                         <button
                             key={value}
