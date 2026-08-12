@@ -11,7 +11,7 @@ import { SessionFinish } from '../training/components/SessionFinish';
 import { TrainingCard } from '../athlete/components/TodayPanel';
 import { ExerciseVideoPanel } from '../training/components/ExerciseVideoPanel';
 import { PersonalInfoSection } from '../profile/components/PersonalInfoSection';
-import { WarmupConversionPanel } from '../planning/components/WorkoutBuilder';
+import { WarmupConversionPanel } from '../planning/components/builder/WarmupConversionPanel';
 import { SaveIndicator } from '../../components/ui/SaveIndicator';
 import { DangerConfirmModal } from '../../components/modals/DangerConfirmModal';
 import { AnchoredMenu } from '../../components/ui/AnchoredMenu';
