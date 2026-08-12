@@ -80,6 +80,17 @@ export interface ExerciseHistoryRow {
     sets: TrainingSet[];
 }
 
+/** Referencia a la última vez que el atleta hizo un ejercicio, en una sesión ya cerrada. */
+export interface LastSessionSetReference {
+    sessionId: string;
+    /** Cuándo cerró esa sesión. De aquí sale el "hace N días". */
+    completedAt: string;
+    reps: number;
+    /** Null en ejercicios corporales, donde no se pauta ni se registra peso. */
+    weight: number | null;
+    rpe: number | null;
+}
+
 /**
  * REGISTRO DE EJECUCIÓN
  * =====================================================================
@@ -1801,6 +1812,159 @@ export const trainingService = {
     },
 
     /**
+     * COPIAR UN DÍA ENTERO A UNO O VARIOS DÍAS.
+     * =====================================================================
+     *
+     * `cloneWeekContents` copia una semana completa CREANDO las sesiones de
+     * destino. Aquí los días de destino YA EXISTEN — son días del propio
+     * bloque, o de otra semana, elegidos uno a uno desde el constructor — así
+     * que la copia es de ejercicios y series hacia una sesión que ya tiene
+     * fila propia.
+     *
+     * Los mismos campos que en `cloneWeekContents` viajan (prescripción
+     * completa: notas, variante, descanso, RPE, velocidad, modificadores,
+     * músculos, sección, rondas, técnicas de intensidad) y los mismos NO
+     * viajan (ejecución: `actual_*`, `is_completed`, vídeos, VBT). El nombre
+     * del día y los apéndices (calentamiento/consideraciones) son opcionales
+     * y por defecto NO se copian: la mayoría de veces se pega el contenido de
+     * un día sobre uno que ya tiene su propio nombre y sus propias notas.
+     *
+     * `mode: 'replace'` borra los ejercicios que el día de destino ya tuviera
+     * antes de copiar; `'append'` los deja y añade los nuevos detrás,
+     * continuando el `order_index`.
+     */
+    async copyDayInto(
+        sourceSessionId: string,
+        targetSessionIds: string[],
+        mode: 'replace' | 'append',
+        opts?: { copyName?: boolean; copyAppendices?: boolean }
+    ): Promise<void> {
+        const targets = targetSessionIds.filter(id => id !== sourceSessionId);
+        if (targets.length === 0) return;
+
+        const { data: source, error: sourceError } = await supabase
+            .from('training_sessions')
+            .select(`
+                *,
+                session_exercises (
+                    *,
+                    training_sets (*)
+                )
+            `)
+            .eq('id', sourceSessionId)
+            .single();
+
+        if (sourceError) throw sourceError;
+        const sourceExercises = (source.session_exercises ?? []) as (SessionExercise & { training_sets?: TrainingSet[] })[];
+
+        for (const targetSessionId of targets) {
+            if (mode === 'replace') {
+                // Cascada hasta `training_sets`: es el mismo borrado que usa
+                // "Eliminar ejercicio" en el constructor, aquí para todos los
+                // ejercicios del día de destino de golpe.
+                const { error: clearError } = await supabase
+                    .from('session_exercises')
+                    .delete()
+                    .eq('session_id', targetSessionId);
+                if (clearError) throw clearError;
+            }
+
+            // El punto de partida del `order_index`: 0 si se ha vaciado el
+            // día, o justo detrás de lo último que ya tenía si se añade.
+            let startOrder = 0;
+            if (mode === 'append') {
+                const { data: existing } = await supabase
+                    .from('session_exercises')
+                    .select('order_index')
+                    .eq('session_id', targetSessionId)
+                    .order('order_index', { ascending: false })
+                    .limit(1);
+                startOrder = existing?.[0] ? existing[0].order_index + 1 : 0;
+            }
+
+            if (sourceExercises.length === 0) continue;
+
+            const exercisePayload = sourceExercises.map((ex, i) => ({
+                session_id: targetSessionId,
+                exercise_id: ex.exercise_id,
+                order_index: startOrder + i,
+                notes: ex.notes,
+                variant_name: ex.variant_name,
+                rest_seconds: ex.rest_seconds ?? null,
+                rpe: ex.rpe ?? null,
+                velocity_avg: ex.velocity_avg ?? null,
+                modifiers: ex.modifiers ?? null,
+                primary_muscles: ex.primary_muscles ?? null,
+                secondary_muscles: ex.secondary_muscles ?? null,
+                section: ex.section ?? 'main',
+                round_count: ex.round_count ?? null,
+            }));
+
+            const { data: newExercisesRaw } = await insertWithOptionalColumns(
+                'session_exercises',
+                exercisePayload,
+                [
+                    'rest_seconds', 'rpe', 'velocity_avg', 'modifiers',
+                    'primary_muscles', 'secondary_muscles',
+                    'section', 'round_count',
+                ],
+                'id, order_index'
+            );
+            const newExercises = newExercisesRaw as { id: string; order_index: number }[] | null;
+            if (!newExercises) continue;
+
+            // Emparejados por posición dentro de ESTE lote (todos comparten
+            // `session_id`), con lista para el caso de `order_index` repetido
+            // — mismo motivo que en `cloneWeekContents`.
+            const idsByOrder = new Map<number, string[]>();
+            for (const e of newExercises) {
+                const list = idsByOrder.get(e.order_index);
+                if (list) list.push(e.id);
+                else idsByOrder.set(e.order_index, [e.id]);
+            }
+
+            const setsPayload = sourceExercises.flatMap((ex, i) => {
+                const targetExerciseId = idsByOrder.get(startOrder + i)?.shift();
+                if (!targetExerciseId) return [];
+
+                return (ex.training_sets ?? []).map((set: TrainingSet) => ({
+                    session_exercise_id: targetExerciseId,
+                    order_index: set.order_index,
+                    target_reps: set.target_reps,
+                    target_rpe: set.target_rpe,
+                    target_load: set.target_load,
+                    target_metric: set.target_metric ?? 'kg',
+                    rest_seconds: set.rest_seconds,
+                    is_video_required: set.is_video_required,
+                    notes: set.notes,
+                    set_type: set.set_type ?? null,
+                    set_detail: set.set_detail ?? null,
+                    group_tag: set.group_tag ?? null,
+                }));
+            });
+
+            if (setsPayload.length > 0) {
+                await insertWithOptionalColumns(
+                    'training_sets',
+                    setsPayload,
+                    ['set_type', 'set_detail', 'group_tag', 'target_metric', 'notes'],
+                    'id'
+                );
+            }
+
+            if (opts?.copyName || opts?.copyAppendices) {
+                const updates: Record<string, unknown> = {};
+                if (opts.copyName) updates.name = source.name;
+                if (opts.copyAppendices) {
+                    updates.warmup = source.warmup ?? null;
+                    updates.extras = source.extras ?? null;
+                }
+                await supabase.from('training_sessions').update(updates).eq('id', targetSessionId);
+            }
+        }
+    },
+
+    /**
      * PLANTILLAS DE DÍA
      */
     async getDayTemplates(coachId: string): Promise<DayTemplate[]> {
@@ -2042,6 +2206,109 @@ export const trainingService = {
                 sets: (r.training_sets || []).sort((a, b) => a.order_index - b.order_index)
             }))
             .sort((a, b) => a.weekNumber - b.weekNumber || a.dayNumber - b.dayNumber);
+    },
+
+    /**
+     * Última sesión CERRADA en la que el atleta hizo cada uno de estos
+     * ejercicios — la referencia que se enseña durante el entrenamiento
+     * cuando el coach no ha pautado un peso explícito.
+     *
+     * Va por `exercise_id`, no por nombre: dos ejercicios con el mismo
+     * nombre visible (uno del coach, otro global, o uno renombrado) no son
+     * el mismo ejercicio, y mezclarlos daría una referencia que no
+     * corresponde a lo que el atleta hizo.
+     *
+     * Un solo batch por TODOS los ejercicios de la sesión — nunca uno por
+     * tarjeta — por la misma razón de siempre: N consultas por pantalla no
+     * escala y en móvil se nota.
+     *
+     * Limita a los últimos 2 bloques, igual que `getExerciseHistoryByAthlete`:
+     * cubre el mesociclo en curso y el anterior, que es donde de verdad se
+     * busca "la última vez". Un ejercicio que no aparece ahí simplemente no
+     * devuelve referencia — no hay error, no hay tarjeta vacía.
+     */
+    async getLastSessionSetsForExercises(
+        athleteId: string,
+        exerciseIds: string[],
+        excludeSessionId?: string | null
+    ): Promise<Map<string, LastSessionSetReference>> {
+        const result = new Map<string, LastSessionSetReference>();
+        if (exerciseIds.length === 0) return result;
+
+        const { data: blocks, error: blocksError } = await supabase
+            .from('training_blocks')
+            .select('id')
+            .eq('athlete_id', athleteId)
+            .order('created_at', { ascending: false })
+            .limit(2);
+
+        if (blocksError) throw blocksError;
+        if (!blocks || blocks.length === 0) return result;
+
+        const blockIds = blocks.map(b => b.id);
+
+        const { data, error } = await supabase
+            .from('session_exercises')
+            .select(`
+                id, exercise_id,
+                training_sets (*),
+                session:training_sessions!inner (id, completed_at, block_id)
+            `)
+            .in('exercise_id', exerciseIds)
+            .in('session.block_id', blockIds)
+            .not('session.completed_at', 'is', null);
+
+        if (error) throw error;
+
+        type RawRow = {
+            id: string;
+            exercise_id: string;
+            training_sets: TrainingSet[];
+            session: { id: string; completed_at: string | null; block_id: string };
+        };
+
+        const rows = (data as unknown as RawRow[] | null) || [];
+
+        // Para cada ejercicio, la sesión cerrada más reciente por fecha de
+        // cierre real — no por semana/día del programa, que es orden de
+        // plan y no de calendario.
+        const latestByExercise = new Map<string, RawRow>();
+        for (const row of rows) {
+            if (excludeSessionId && row.session.id === excludeSessionId) continue;
+            if (!row.session.completed_at) continue;
+            const current = latestByExercise.get(row.exercise_id);
+            if (!current || row.session.completed_at > current.session.completed_at!) {
+                latestByExercise.set(row.exercise_id, row);
+            }
+        }
+
+        for (const [exerciseId, row] of latestByExercise) {
+            const doneSets = (row.training_sets || [])
+                .filter(s => s.is_completed && s.actual_reps != null);
+            if (doneSets.length === 0) continue;
+
+            // La serie principal de esa sesión: la de más peso movido: y si
+            // dos empatan, la primera de las dos — la de antes de que la
+            // fatiga bajara las repeticiones en la siguiente.
+            let best = doneSets[0];
+            for (const s of doneSets) {
+                const bestLoad = best.actual_load ?? -Infinity;
+                const load = s.actual_load ?? -Infinity;
+                if (load > bestLoad || (load === bestLoad && s.order_index < best.order_index)) {
+                    best = s;
+                }
+            }
+
+            result.set(exerciseId, {
+                sessionId: row.session.id,
+                completedAt: row.session.completed_at!,
+                reps: best.actual_reps!,
+                weight: best.actual_load ?? null,
+                rpe: best.actual_rpe ?? null,
+            });
+        }
+
+        return result;
     },
 
     /**

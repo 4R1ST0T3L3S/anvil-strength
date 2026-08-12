@@ -4,6 +4,7 @@ import { WEEKDAYS, weekdayLabel, type Weekday, type TrainingSet } from '../../..
 import { AnchoredMenu } from '../../../../components/ui/AnchoredMenu';
 import type { ExtendedSession, ExtendedSessionExercise } from './types';
 import { getSeriesCount, getRepsCount } from './helpers';
+import { CopyDayMenu, type DayOption } from './CopyDayMenu';
 
 /**
  * Tarjeta de día dentro de una semana.
@@ -18,6 +19,12 @@ export const DayCard = memo(function DayCard({
     onOpen,
     onRemove,
     onChangeWeekday,
+    copiedDay,
+    dayOptions,
+    weekLabelFor,
+    onCopyDay,
+    onPasteDay,
+    onCopyDayToMany,
 }: {
     session: ExtendedSession;
     // Reciben el id en vez de venir ya cerrados sobre él. Con una lambda por
@@ -26,6 +33,16 @@ export const DayCard = memo(function DayCard({
     onOpen: (sessionId: string) => void;
     onRemove: (sessionId: string) => void;
     onChangeWeekday: (sessionId: string, day: Weekday | null) => void;
+    /** Día copiado al portapapeles interno del constructor. null = vacío. */
+    copiedDay: { sessionId: string; label: string } | null;
+    /** Lista ESTRUCTURAL de todos los días del bloque, para "copiar a varios".
+        Estable entre pulsaciones de kilos y reps: solo cambia si se añade,
+        renombra o reagenda un día — ver `dayOptionsSignature` en el padre. */
+    dayOptions: DayOption[];
+    weekLabelFor: (weekNumber: number) => string;
+    onCopyDay: (sessionId: string) => void;
+    onPasteDay: (sessionId: string) => void;
+    onCopyDayToMany: (sessionId: string, targetIds: string[], mode: 'replace' | 'append') => void;
 }) {
     const metrics = useMemo(() => computeDayMetrics(session.exercises), [session.exercises]);
     const names = session.exercises
@@ -37,19 +54,34 @@ export const DayCard = memo(function DayCard({
     const [pickerOpen, setPickerOpen] = useState(false);
     const pickerAnchor = useRef<HTMLButtonElement>(null);
     const scheduled = weekdayLabel(session.day_of_week);
+    const dayLabel = session.name || scheduled || `Día ${session.day_number}`;
 
     return (
         <div className="group/day relative rounded-card border border-[var(--border-default)] bg-surface-canvas transition-colors duration-fast ease-snap hover:border-[var(--border-strong)]">
-            {/* Eliminar va fuera del botón principal: un <button> dentro de otro
-                <button> es HTML inválido y el navegador lo reestructura. */}
-            <button
-                onClick={() => onRemove(session.id)}
-                title="Eliminar día"
-                aria-label={`Eliminar ${session.name || `día ${session.day_number}`}`}
-                className="absolute right-2 top-2 z-10 rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
-            >
-                <Trash2 size={14} aria-hidden="true" />
-            </button>
+            {/* Copiar y eliminar van fuera del botón principal: un <button>
+                dentro de otro <button> es HTML inválido y el navegador lo
+                reestructura. */}
+            <div className="absolute right-2 top-2 z-10 flex items-center gap-0.5">
+                <CopyDayMenu
+                    sessionId={session.id}
+                    sessionLabel={dayLabel}
+                    hasExercises={session.exercises.length > 0}
+                    copiedDay={copiedDay}
+                    dayOptions={dayOptions}
+                    weekLabelFor={weekLabelFor}
+                    onCopy={() => onCopyDay(session.id)}
+                    onPasteHere={() => onPasteDay(session.id)}
+                    onCopyToMany={(targets, mode) => onCopyDayToMany(session.id, targets, mode)}
+                />
+                <button
+                    onClick={() => onRemove(session.id)}
+                    title="Eliminar día"
+                    aria-label={`Eliminar ${dayLabel}`}
+                    className="rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
+                >
+                    <Trash2 size={14} aria-hidden="true" />
+                </button>
+            </div>
 
             {/* Agenda. Va fuera del botón principal por lo mismo. */}
             <div className="absolute left-3 top-3 z-10">

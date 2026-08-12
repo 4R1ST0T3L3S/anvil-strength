@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
     SessionExercise, TrainingSet, ExerciseLibrary, countsForVolume, DayTemplate, DayTemplateExercise,
+    weekdayLabel,
 } from '../../../types/training';
 import type { WeekMeta, Weekday } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
@@ -32,6 +33,7 @@ import { Button } from '../../../components/ui/Button';
 import { transition, DURATION } from '../../../lib/motion';
 
 import { DayCard } from './builder/DayCard';
+import type { DayOption } from './builder/CopyDayMenu';
 import { IconAction, WeekMenu } from './builder/WeekMenu';
 import { DayEditorModal } from './builder/DayEditorModal';
 import type { ExtendedSession, ExtendedSessionExercise, FullBlockData, ExerciseCardUpdates } from './builder/types';
@@ -1307,6 +1309,118 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     }, []);
 
     /**
+     * COPIAR UN DÍA ENTERO.
+     * =====================================================================
+     * Portapapeles interno: estado del constructor, no `navigator.clipboard`.
+     * Así "Pegar aquí" aparece en el resto de tarjetas en cuanto se copia una,
+     * sin pedir permiso al navegador ni depender de que el sitio esté servido
+     * por HTTPS.
+     */
+    const [copiedDay, setCopiedDay] = useState<{ sessionId: string; label: string } | null>(null);
+
+    const dayLabelFor = useCallback((session: ExtendedSession) =>
+        session.name || weekdayLabel(session.day_of_week) || `Día ${session.day_number}`,
+    []);
+
+    const handleCopyDay = useCallback((sessionId: string) => {
+        setBlockData(prev => {
+            const session = prev?.sessions.find(s => s.id === sessionId);
+            if (session) setCopiedDay({ sessionId, label: dayLabelFor(session) });
+            return prev;
+        });
+    }, [dayLabelFor]);
+
+    /**
+     * Copia `sourceSessionId` SOBRE `targetSessionId`, sustituyendo lo que
+     * tuviera. Un solo punto para las dos entradas de "pegar un día completo":
+     * el portapapeles de la tarjeta y "Traer el día entero" del editor.
+     */
+    const copyDayWithConfirm = useCallback((sourceSessionId: string, targetSessionId: string) => {
+        setBlockData(prev => {
+            if (!prev) return prev;
+            const source = prev.sessions.find(s => s.id === sourceSessionId);
+            const target = prev.sessions.find(s => s.id === targetSessionId);
+            if (!source) return prev;
+            const sourceLabel = dayLabelFor(source);
+
+            const doPaste = async () => {
+                try {
+                    setLoading(true);
+                    await trainingService.copyDayInto(sourceSessionId, [targetSessionId], 'replace');
+                    await loadData();
+                    toast.success(`«${sourceLabel}» copiado`);
+                } catch (err) {
+                    console.error(err);
+                    toast.error(`Error copiando el día: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (target && target.exercises.length > 0) {
+                setConfirmModal({
+                    isOpen: true,
+                    title: `Pegar «${sourceLabel}» sobre ${dayLabelFor(target)}`,
+                    description: `Los ejercicios de ${dayLabelFor(target)} se sustituyen por una copia de «${sourceLabel}». Lo que hubiera programado se pierde.`,
+                    confirmText: 'Pegar',
+                    variant: 'info',
+                    onConfirm: doPaste,
+                });
+            } else {
+                doPaste();
+            }
+            return prev;
+        });
+    }, [dayLabelFor, loadData]);
+
+    /** Pega el día copiado (portapapeles) SOBRE `targetSessionId`. */
+    const handlePasteDay = useCallback((targetSessionId: string) => {
+        if (!copiedDay) return;
+        copyDayWithConfirm(copiedDay.sessionId, targetSessionId);
+    }, [copiedDay, copyDayWithConfirm]);
+
+    /** "Traer el día entero" desde el editor de día: `sourceSessionId` → el día abierto. */
+    const handleCopyWholeDayInto = useCallback((sourceSessionId: string) => {
+        if (!editingSessionId) return;
+        copyDayWithConfirm(sourceSessionId, editingSessionId);
+    }, [editingSessionId, copyDayWithConfirm]);
+
+    /** Copia `sourceSessionId` sobre varios días de golpe, con confirmación previa. */
+    const handleCopyDayToMany = useCallback((sourceSessionId: string, targetIds: string[], mode: 'replace' | 'append') => {
+        if (targetIds.length === 0) return;
+        setBlockData(prev => {
+            const source = prev?.sessions.find(s => s.id === sourceSessionId);
+            const label = source ? dayLabelFor(source) : 'este día';
+
+            setConfirmModal({
+                isOpen: true,
+                title: mode === 'replace'
+                    ? `Copiar «${label}» a ${targetIds.length} ${targetIds.length === 1 ? 'día' : 'días'}`
+                    : `Añadir «${label}» a ${targetIds.length} ${targetIds.length === 1 ? 'día' : 'días'}`,
+                description: mode === 'replace'
+                    ? 'Los ejercicios que ya tuvieran esos días se sustituyen por una copia. No se puede deshacer.'
+                    : 'Los ejercicios de esos días se conservan; los de este día se añaden detrás.',
+                confirmText: mode === 'replace' ? 'Sustituir y copiar' : 'Copiar',
+                variant: mode === 'replace' ? 'danger' : 'info',
+                onConfirm: async () => {
+                    try {
+                        setLoading(true);
+                        await trainingService.copyDayInto(sourceSessionId, targetIds, mode);
+                        await loadData();
+                        toast.success(`Copiado a ${targetIds.length} ${targetIds.length === 1 ? 'día' : 'días'}`);
+                    } catch (err) {
+                        console.error(err);
+                        toast.error(`Error copiando el día: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
+                    } finally {
+                        setLoading(false);
+                    }
+                },
+            });
+            return prev;
+        });
+    }, [dayLabelFor, loadData]);
+
+    /**
      * Descarga la semana en PDF: una página por día, una fila por ejercicio,
      * con el calentamiento y los extras como apéndices.
      *
@@ -1393,6 +1507,34 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         [blockAnalytics]
     );
     const deloadWeeks = blockAnalytics.deloadWeeks;
+
+    /**
+     * Lista estructural de días para el menú "copiar a varios días".
+     *
+     * La FIRMA se recalcula en cada render (es barato: son cadenas cortas),
+     * pero el array `dayOptions` en sí —lo que de verdad le llega a cada
+     * `DayCard`— solo cambia de identidad cuando la firma cambia. Escribir
+     * un peso no toca ni el id, ni la semana, ni el nombre, ni el día de la
+     * semana de ninguna sesión, así que la firma se mantiene igual y las
+     * treinta y dos tarjetas de un bloque de ocho semanas no repintan por
+     * cada tecla — el mismo problema, y la misma solución, que documenta
+     * `mapSets`/`mapExercise` en builder/helpers.ts.
+     */
+    const dayOptionsSignature = blockData
+        ? blockData.sessions.map(s => `${s.id}:${s.week_number}:${s.day_number}:${s.name ?? ''}:${s.day_of_week ?? ''}`).join('|')
+        : '';
+    const dayOptions: DayOption[] = useMemo(
+        () => (blockData?.sessions ?? []).map(s => ({
+            id: s.id, week_number: s.week_number, day_number: s.day_number,
+            name: s.name ?? null, day_of_week: s.day_of_week ?? null,
+        })),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [dayOptionsSignature]
+    );
+    const weekLabelFor = useCallback(
+        (weekNumber: number) => `Semana ${weeks.indexOf(weekNumber) + 1}`,
+        [weeks]
+    );
 
     if (loading) {
         return (
@@ -1858,6 +2000,12 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                                     onOpen={setEditingSessionId}
                                                     onRemove={removeSession}
                                                     onChangeWeekday={changeSessionWeekday}
+                                                    copiedDay={copiedDay}
+                                                    dayOptions={dayOptions}
+                                                    weekLabelFor={weekLabelFor}
+                                                    onCopyDay={handleCopyDay}
+                                                    onPasteDay={handlePasteDay}
+                                                    onCopyDayToMany={handleCopyDayToMany}
                                                 />
                                             ))}
 
@@ -1908,6 +2056,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                         onApplyTemplate={(tpl) => applyTemplate(session.id, tpl)}
                         onDeleteTemplate={deleteTemplate}
                         onCopyExercise={(sourceEx) => copyExerciseInto(session.id, sourceEx)}
+                        onCopyWholeDay={handleCopyWholeDayInto}
                         onReorder={(ids) => reorderExercises(session.id, ids)}
                         onClose={() => setEditingSessionId(null)}
                         onUpdateName={updateSessionName}

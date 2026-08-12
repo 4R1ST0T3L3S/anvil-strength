@@ -61,6 +61,8 @@ interface DayEditorModalProps {
     onApplyTemplate: (tpl: DayTemplate) => void;
     onDeleteTemplate: (id: string) => void;
     onCopyExercise: (source: ExtendedSessionExercise) => void;
+    /** Trae TODOS los ejercicios de `sourceSessionId` a este día, sustituyendo lo que hubiera. */
+    onCopyWholeDay: (sourceSessionId: string) => void;
     onReorder: (orderedIds: string[]) => void;
     onClose: () => void;
     onUpdateName: (id: string, name: string) => void;
@@ -83,7 +85,7 @@ interface DayEditorModalProps {
 
 export function DayEditorModal({
     session, allSessions, athleteId, coachId, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
-    onSaveTemplate, onApplyTemplate, onDeleteTemplate, onCopyExercise, onReorder,
+    onSaveTemplate, onApplyTemplate, onDeleteTemplate, onCopyExercise, onCopyWholeDay, onReorder,
     onClose, onUpdateName, onUpdateAppendix, onConvertWarmup, onAddExercise, onUpdateExercise,
     onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onOpenVbtChart,
     hasUnsavedChanges, onSave, isSaving
@@ -257,6 +259,13 @@ export function DayEditorModal({
                                 ) : (
                                     <>
                                         <button onClick={() => setCopySourceId(null)} className="text-[10px] font-black uppercase text-ink-subtle hover:text-white mb-2 transition-colors">← Otro día</button>
+                                        <button
+                                            onClick={() => { onCopyWholeDay(copySourceId); setOpenMenu(null); setCopySourceId(null); }}
+                                            className="mb-2 flex w-full items-center gap-2 rounded-lg border border-anvil-red/30 bg-anvil-red/10 px-3 py-2 text-left text-xs font-black uppercase tracking-wide text-anvil-red transition-colors hover:bg-anvil-red/20"
+                                        >
+                                            <CopyPlus size={13} /> Traer el día entero (sustituye este)
+                                        </button>
+                                        <p className="mb-1 text-[10px] font-black uppercase tracking-wider text-ink-subtle">O un solo ejercicio</p>
                                         <div className="space-y-1">
                                             {allSessions.find(s => s.id === copySourceId)?.exercises.map(ex => (
                                                 <button
