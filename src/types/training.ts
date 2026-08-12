@@ -68,6 +68,18 @@ export const weekdayLabel = (day?: string | null): string | null =>
 export const weekdayIndex = (day?: string | null): number | null =>
     WEEKDAYS.find(d => d.key === day)?.index ?? null;
 
+/**
+ * `WEEKDAYS` es la verdad ISO (lunes = 1) y NO se toca: es lo que ordena
+ * `sortSessions` y de lo que depende `weekdayIndex`. Esto solo reordena la
+ * PRESENTACIÓN — la lista de arriba, empezando por domingo, para quien lo
+ * prefiera así (ver preferencias del atleta, src/lib/prefs/contract.ts).
+ */
+export function orderedWeekdays(firstWeekday: 'monday' | 'sunday' = 'monday') {
+    if (firstWeekday === 'monday') return WEEKDAYS;
+    const sunday = WEEKDAYS.find(d => d.key === 'sunday')!;
+    return [sunday, ...WEEKDAYS.filter(d => d.key !== 'sunday')];
+}
+
 // 1a. DAY TEMPLATES (días reutilizables entre atletas)
 export interface DayTemplateSet {
     target_reps?: string | null;

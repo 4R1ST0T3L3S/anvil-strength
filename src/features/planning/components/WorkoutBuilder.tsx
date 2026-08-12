@@ -34,6 +34,7 @@ import { transition, DURATION } from '../../../lib/motion';
 
 import { DayCard } from './builder/DayCard';
 import type { DayOption } from './builder/CopyDayMenu';
+import { useCoachPrefs } from '../../../hooks/useCoachPrefs';
 import { IconAction, WeekMenu } from './builder/WeekMenu';
 import { DayEditorModal } from './builder/DayEditorModal';
 import type { ExtendedSession, ExtendedSessionExercise, FullBlockData, ExerciseCardUpdates } from './builder/types';
@@ -132,6 +133,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
     const { session: authSession } = useAuth();
     const coachId = authSession?.user.id || null;
+    const { prefs: coachPrefs } = useCoachPrefs(coachId);
 
     // Máximos del atleta, para resolver los porcentajes al prescribir. Se
     // cargan con el bloque y no al abrir cada día: son pocos y hacen falta en
@@ -2006,6 +2008,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                                     onCopyDay={handleCopyDay}
                                                     onPasteDay={handlePasteDay}
                                                     onCopyDayToMany={handleCopyDayToMany}
+                                                    firstWeekday={coachPrefs.defaultFirstWeekday}
                                                 />
                                             ))}
 

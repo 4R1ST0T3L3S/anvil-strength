@@ -1,6 +1,7 @@
 import { memo, useMemo, useState, useRef } from 'react';
 import { Trash2, Check } from 'lucide-react';
-import { WEEKDAYS, weekdayLabel, type Weekday, type TrainingSet } from '../../../../types/training';
+import { orderedWeekdays, weekdayLabel, type Weekday, type TrainingSet } from '../../../../types/training';
+import type { FirstWeekday } from '../../../../lib/prefs/contract';
 import { AnchoredMenu } from '../../../../components/ui/AnchoredMenu';
 import type { ExtendedSession, ExtendedSessionExercise } from './types';
 import { getSeriesCount, getRepsCount } from './helpers';
@@ -25,6 +26,7 @@ export const DayCard = memo(function DayCard({
     onCopyDay,
     onPasteDay,
     onCopyDayToMany,
+    firstWeekday = 'monday',
 }: {
     session: ExtendedSession;
     // Reciben el id en vez de venir ya cerrados sobre él. Con una lambda por
@@ -43,6 +45,8 @@ export const DayCard = memo(function DayCard({
     onCopyDay: (sessionId: string) => void;
     onPasteDay: (sessionId: string) => void;
     onCopyDayToMany: (sessionId: string, targetIds: string[], mode: 'replace' | 'append') => void;
+    /** Preferencia del entrenador (src/lib/prefs/contract.ts). Solo cambia el ORDEN del menú "Agendar en", nunca el índice ISO real. */
+    firstWeekday?: FirstWeekday;
 }) {
     const metrics = useMemo(() => computeDayMetrics(session.exercises), [session.exercises]);
     const names = session.exercises
@@ -114,7 +118,7 @@ export const DayCard = memo(function DayCard({
                     <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                         Agendar en
                     </p>
-                    {WEEKDAYS.map(d => (
+                    {orderedWeekdays(firstWeekday).map(d => (
                         <button
                             key={d.key}
                             role="menuitem"
