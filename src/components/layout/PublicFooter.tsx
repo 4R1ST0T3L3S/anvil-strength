@@ -1,4 +1,5 @@
 import { Instagram, Mail, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function PublicFooter() {
     return (
@@ -78,15 +79,18 @@ export function PublicFooter() {
 
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600 mb-3">Legal</p>
                         <div className="flex flex-col gap-2">
-                            <a href="/legal/aviso-legal" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            <Link to="/legal/aviso-legal" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
                                 Aviso Legal
-                            </a>
-                            <a href="/legal/privacidad" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            </Link>
+                            <Link to="/legal/privacidad" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
                                 Política de Privacidad
-                            </a>
-                            <a href="/legal/cookies" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            </Link>
+                            <Link to="/legal/cookies" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
                                 Política de Cookies
-                            </a>
+                            </Link>
+                            <Link to="/legal/terminos" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                                Términos y Condiciones
+                            </Link>
                             <a href="/normativa_equipo.pdf" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
                                 Normativa del Equipo
                             </a>

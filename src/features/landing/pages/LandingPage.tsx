@@ -219,14 +219,19 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         Anvil Strength
                     </motion.h1>
 
+                    {/* LEMA, en la fuente display — el único contraste
+                        tipográfico deliberado de toda la portada. La frase
+                        descriptiva ("club de powerlifting digital...") no
+                        desaparece: vive en el fold siguiente, que es donde
+                        de verdad se explica qué es el club. Aquí solo hace
+                        falta una idea, no un resumen. */}
                     <motion.p
                         initial={{ opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                        className="mx-auto mt-6 max-w-xl text-t-lg font-medium leading-relaxed text-white/85 md:text-t-xl"
+                        className="mt-5 font-display text-[clamp(1.75rem,5vw,3rem)] uppercase leading-[0.95] tracking-[0.01em] text-white/90"
                     >
-                        El club de powerlifting digital de España. Entrenas en tu gimnasio,
-                        compites con nuestro nombre y no pagas cuota.
+                        Where champions are forged
                     </motion.p>
 
                     <motion.div
@@ -372,6 +377,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     </h2>
                     <p className="mt-5 max-w-[52ch] text-t-lg leading-relaxed text-fold-light-ink-muted">
                         Personas concretas, con nombre y con historial. Pulsa para ver el suyo.
+                    </p>
+                    <p className="mt-3 max-w-[52ch] text-t-sm text-fold-light-ink-muted/70">
+                        El club no cobra cuota. El entrenamiento personalizado con cualquiera de
+                        ellos es un servicio de pago que se acuerda directamente con el entrenador.
                     </p>
                 </Reveal>
 
@@ -587,6 +596,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         <p className="mx-auto mt-6 max-w-[48ch] text-t-lg leading-relaxed text-brand-ink/85">
                             Créate la cuenta y entra a ver la app. Si luego quieres competir con
                             nosotros, rellenas la ficha de inscripción y listo.
+                        </p>
+                        <p className="mx-auto mt-4 max-w-[48ch] text-t-xs text-brand-ink/60">
+                            El club es gratis. El entrenamiento con tu entrenador se paga aparte,
+                            directamente con él.
                         </p>
                     </Reveal>
 

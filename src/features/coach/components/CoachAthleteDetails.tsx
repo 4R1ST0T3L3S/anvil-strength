@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { ArrowLeft, FileText, Trophy, Trash2, Calendar, MapPin, Apple, MessageSquare, BarChart3, IdCard, Plus } from 'lucide-react';
+import { ArrowLeft, ChevronDown, FileText, Trophy, Trash2, Calendar, MapPin, Apple, MessageSquare, BarChart3, IdCard, Plus, Search } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUser } from '../../../hooks/useUser';
@@ -16,6 +17,9 @@ import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment, CompetitionResult } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
 import { Button } from '../../../components/ui/Button';
+import { AnchoredMenu } from '../../../components/ui/AnchoredMenu';
+import { SafeImage } from '../../../components/ui/SafeImage';
+import { useCoachAthleteRoster } from '../hooks/useCoachAthleteRoster';
 import { puede, type Capacidad } from '../../../lib/roles';
 
 interface CoachAthleteDetailsProps {
@@ -73,10 +77,21 @@ const TAB_WIDTH = 'mx-auto w-full max-w-6xl pb-6';
 const BUILDER_WIDTH = 'mx-auto w-full max-w-7xl pb-6';
 
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
+    const navigate = useNavigate();
     const { data: currentUser } = useUser();
     const [athlete, setAthlete] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
+
+    // NAVEGACIÓN RÁPIDA ENTRE ATLETAS. El nombre de la cabecera se convierte
+    // en el disparador de un desplegable con el resto del equipo: antes,
+    // saltar a otro atleta obligaba a volver a la lista, buscarlo y volver a
+    // entrar. `useCoachAthleteRoster` es una consulta ligera y con caché —no
+    // repite lo que ya pidió la pestaña "Atletas" si el coach vino de ahí.
+    const { athletes: roster, loading: rosterLoading } = useCoachAthleteRoster(currentUser?.id);
+    const [rosterOpen, setRosterOpen] = useState(false);
+    const [rosterSearch, setRosterSearch] = useState('');
+    const rosterAnchorRef = useRef<HTMLButtonElement>(null);
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
     const [results, setResults] = useState<Record<string, CompetitionResult>>({});
@@ -201,22 +216,38 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         ? activeTab
         : visibleTabs[0]?.key;
 
+    const athleteTotal = (athlete.squat_pr || 0) + (athlete.bench_pr || 0) + (athlete.deadlift_pr || 0);
+    const filteredRoster = rosterSearch.trim()
+        ? roster.filter(a => (a.full_name ?? '').toLowerCase().includes(rosterSearch.trim().toLowerCase()))
+        : roster;
+
     return (
         <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 gap-4 border-b border-subtle bg-surface-sunken shrink-0">
-                {/* `min-w-0` en la fila Y en el bloque del nombre.
-                    Sin ellos, el nombre del atleta no encoge —un elemento
-                    flex se niega a bajar del ancho de su contenido salvo que
-                    se le diga— y empuja el botón de mensaje fuera del
-                    contenedor: en móvil se veía cortado por la derecha.
-                    Con esto, lo que cede es el nombre (que ya trunca) y el
-                    botón conserva siempre su sitio. */}
-                <div className="flex min-w-0 items-center gap-3 md:gap-4">
+            {/* Header.
+                Solo la identidad del atleta y el acceso al chat: las
+                pestañas se sacaron a su propia fila (ver más abajo), así que
+                aquí ya no hace falta apilar en móvil — cabecera y contenido
+                dejan de competir por la misma línea. */}
+            <div className="flex items-center justify-between gap-3 p-4 md:p-6 border-b border-subtle bg-surface-sunken shrink-0">
+                <div className="flex min-w-0 items-center gap-2 md:gap-3">
                     <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-white transition-colors shrink-0">
                         <ArrowLeft size={20} />
                     </button>
-                    <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-4">
+
+                    {/* NOMBRE COMO DESPLEGABLE.
+                        Antes era un bloque de solo lectura; saltar a otro
+                        atleta obligaba a volver a la lista, buscarlo y volver
+                        a entrar. Ahora es el disparador de un desplegable con
+                        el resto del equipo — misma información en pantalla,
+                        y además navegable. */}
+                    <button
+                        ref={rosterAnchorRef}
+                        onClick={() => setRosterOpen(v => !v)}
+                        aria-haspopup="menu"
+                        aria-expanded={rosterOpen}
+                        aria-label={`${athlete.full_name ?? 'Atleta'}. Abrir para cambiar de atleta`}
+                        className="group flex min-w-0 flex-1 items-center gap-3 rounded-field px-1.5 py-1 -ml-1.5 text-left transition-colors duration-fast ease-snap hover:bg-surface-raised md:gap-4"
+                    >
                         {athlete.avatar_url ? (
                             <img src={athlete.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                         ) : (
@@ -225,50 +256,122 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                             </div>
                         )}
                         <div className="min-w-0">
-                            <h2 className="text-lg md:text-xl font-black uppercase tracking-tight truncate">{athlete.full_name}</h2>
+                            <span className="flex items-center gap-1.5">
+                                <h2 className="text-lg md:text-xl font-black uppercase tracking-tight truncate">{athlete.full_name}</h2>
+                                <ChevronDown
+                                    size={16}
+                                    aria-hidden="true"
+                                    className={`shrink-0 text-ink-faint transition-transform duration-fast ease-snap group-hover:text-ink ${rosterOpen ? 'rotate-180' : ''}`}
+                                />
+                            </span>
                             <p className="text-xs md:text-sm text-ink-muted flex flex-wrap items-center gap-2">
                                 <span className="whitespace-nowrap">{athlete.weight_category || '-'}</span>
                                 <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
                                 <span className="whitespace-nowrap">{athlete.age_category || '-'}</span>
                                 <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                                <span className="whitespace-nowrap">Total: {((athlete.squat_pr || 0) + (athlete.bench_pr || 0) + (athlete.deadlift_pr || 0))}kg</span>
+                                <span className="whitespace-nowrap">Total: {athleteTotal}kg</span>
                             </p>
                         </div>
-                    </div>
-                    
-                    <button
-                        onClick={() => athlete && onOpenChat({ id: athlete.id, full_name: athlete.full_name || '', avatar_url: athlete.avatar_url })}
-                        aria-label={`Mensaje directo con ${athlete.full_name ?? 'el atleta'}`}
-                        // Azul suelto con sombra de color propia: era el único elemento
-                        // del panel con ese tratamiento. Pasa a acción secundaria
-                        // del sistema —la primaria de esta pantalla es programar,
-                        // no escribir— y deja de competir con las pestañas.
-                        className="flex h-11 shrink-0 items-center gap-2 rounded-field border border-[var(--border-default)] px-3 text-t-sm font-semibold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-raised hover:text-ink"
-                    >
-                        <MessageSquare size={16} className="shrink-0" />
-                        <span className="hidden lg:inline">Mensaje Directo</span>
                     </button>
                 </div>
 
-                {/* PESTAÑAS DE LA FICHA.
-                    ==================================================
-                    Antes eran seis bloques de código idénticos salvo por el
-                    color: rojo, cian, verde, morado, ámbar… un tono distinto
-                    por pestaña, cada uno con su resplandor de 10px y texto
-                    NEGRO encima. Seis acentos compitiendo es lo mismo que
-                    ninguno: el color dejaba de significar "estás aquí" para
-                    ser decoración, y el conjunto se leía como una barra de
-                    herramientas de los 2000.
+                <button
+                    onClick={() => athlete && onOpenChat({ id: athlete.id, full_name: athlete.full_name || '', avatar_url: athlete.avatar_url })}
+                    aria-label={`Mensaje directo con ${athlete.full_name ?? 'el atleta'}`}
+                    // Azul suelto con sombra de color propia: era el único elemento
+                    // del panel con ese tratamiento. Pasa a acción secundaria
+                    // del sistema —la primaria de esta pantalla es programar,
+                    // no escribir— y deja de competir con las pestañas.
+                    className="flex h-11 shrink-0 items-center gap-2 rounded-field border border-[var(--border-default)] px-3 text-t-sm font-semibold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-raised hover:text-ink"
+                >
+                    <MessageSquare size={16} className="shrink-0" />
+                    <span className="hidden lg:inline">Mensaje Directo</span>
+                </button>
+            </div>
 
-                    Ahora hay un solo acento —el de marca, el mismo que en
-                    todo el panel— y la pestaña activa se distingue por
-                    CONTRASTE y no por matiz. Y son datos, no marcado: añadir
-                    una pestaña es una línea en la lista de abajo. */}
-                <div className="-mx-1 w-full overflow-x-auto px-1 pb-1 scrollbar-hide md:w-auto md:pb-0">
+            <AnchoredMenu
+                open={rosterOpen}
+                onClose={() => setRosterOpen(false)}
+                anchorRef={rosterAnchorRef}
+                align="start"
+                width={320}
+                role="menu"
+            >
+                <div className="flex flex-col">
+                    {roster.length > 6 && (
+                        <div className="relative border-b border-[var(--border-subtle)] p-2">
+                            <Search size={14} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+                            <input
+                                autoFocus
+                                type="text"
+                                value={rosterSearch}
+                                onChange={(e) => setRosterSearch(e.target.value)}
+                                placeholder="Buscar atleta…"
+                                className="w-full rounded-field bg-surface-sunken py-2 pl-8 pr-2 text-t-sm text-ink outline-none placeholder:text-ink-faint"
+                            />
+                        </div>
+                    )}
+                    <div className="max-h-[min(50vh,22rem)] overflow-y-auto p-1">
+                        {rosterLoading ? (
+                            <p className="px-3 py-4 text-center text-t-sm text-ink-subtle">Cargando atletas…</p>
+                        ) : filteredRoster.length === 0 ? (
+                            <p className="px-3 py-4 text-center text-t-sm text-ink-subtle">Sin resultados.</p>
+                        ) : (
+                            filteredRoster.map((a) => {
+                                const isCurrent = a.id === athleteId;
+                                return (
+                                    <button
+                                        key={a.id}
+                                        role="menuitem"
+                                        onClick={() => {
+                                            setRosterOpen(false);
+                                            if (!isCurrent) navigate(`/coach-dashboard/atletas/${a.id}`);
+                                        }}
+                                        className={`flex w-full items-center gap-3 rounded-field px-2.5 py-2 text-left transition-colors duration-fast ease-snap ${
+                                            isCurrent ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-raised'
+                                        }`}
+                                    >
+                                        <SafeImage
+                                            src={a.avatar_url ?? undefined}
+                                            alt=""
+                                            className="h-8 w-8 shrink-0 rounded-full object-cover"
+                                            fallback={
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-t-xs font-bold text-ink-faint">
+                                                    {a.full_name?.[0] ?? '?'}
+                                                </div>
+                                            }
+                                        />
+                                        <div className="min-w-0 flex-1">
+                                            <p className={`truncate text-t-sm font-semibold ${isCurrent ? 'text-brand' : 'text-ink'}`}>
+                                                {a.full_name ?? 'Sin nombre'}
+                                            </p>
+                                            <p className="truncate text-t-2xs text-ink-subtle">
+                                                {[a.weight_category, a.age_category].filter(Boolean).join(' · ') || '—'}
+                                            </p>
+                                        </div>
+                                    </button>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            </AnchoredMenu>
+
+            {/* PESTAÑAS DE LA FICHA — fila propia, ancho completo.
+                ==================================================
+                Antes vivían apretadas en la misma línea que la cabecera,
+                empujadas a la derecha y en texto pequeño (11px): la
+                navegación principal de la ficha quedaba semi-escondida.
+                Ahora tienen su propia franja, controles de tamaño real
+                (44px) y se centran en escritorio — en móvil siguen
+                deslizándose en horizontal, pero ya no comparten sitio con
+                nada más. */}
+            <div className="border-b border-subtle bg-surface-sunken px-3 pb-3 shrink-0 md:px-6">
+                <div className="-mx-1 overflow-x-auto px-1 scrollbar-hide">
                     <div
                         role="tablist"
                         aria-label="Secciones del atleta"
-                        className="flex min-w-max gap-0.5 rounded-field bg-surface-sunken p-1"
+                        className="mx-auto flex w-full max-w-2xl min-w-max items-stretch justify-center gap-1 rounded-field bg-surface-canvas p-1"
                     >
                         {visibleTabs.map(({ key, label, icon: Icon }) => {
                             const active = shownTab === key;
@@ -278,13 +381,13 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     role="tab"
                                     aria-selected={active}
                                     onClick={() => setActiveTab(key)}
-                                    className={`flex items-center justify-center gap-1.5 rounded-chip px-2.5 py-2 text-t-xs font-semibold transition-colors duration-fast ease-snap md:px-3.5 md:text-t-sm ${
+                                    className={`flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-field px-4 text-t-sm font-bold transition-colors duration-fast ease-snap md:px-6 ${
                                         active
                                             ? 'bg-brand text-brand-ink'
                                             : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
                                     }`}
                                 >
-                                    <Icon size={15} aria-hidden="true" className="shrink-0" />
+                                    <Icon size={17} aria-hidden="true" className="shrink-0" />
                                     {label}
                                 </button>
                             );

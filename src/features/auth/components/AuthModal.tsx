@@ -19,6 +19,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   const [notice, setNotice] = useState('');
   const [isCheckingConnectivity, setIsCheckingConnectivity] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<'unknown' | 'online' | 'offline'>('unknown');
+  /** Sin marcar por defecto: el consentimiento tiene que ser un acto positivo del usuario. */
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Verificar conectividad con Supabase cuando hay error de red
   const checkSupabaseConnectivity = async () => {
@@ -46,6 +48,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setError('');
       setNotice('');
       setSupabaseStatus('unknown');
+      setAcceptedTerms(false);
     }
   }, [isOpen, initialMode]);
 
@@ -66,6 +69,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   if (!isOpen) return null;
 
   const handleGoogleLogin = async () => {
+    if (!isLogin && !acceptedTerms) {
+      setError('Tienes que aceptar los Términos y la Política de Privacidad para crear una cuenta.');
+      return;
+    }
     setError('');
     setIsGoogleLoading(true);
 
@@ -315,9 +322,35 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           </div>
 
           {!isLogin && (
-            <p className="text-center text-xs leading-relaxed text-gray-500">
-              Tus marcas, categoría y foto se añaden luego desde tu perfil, y solo si quieres.
-            </p>
+            <>
+              <p className="text-center text-xs leading-relaxed text-gray-500">
+                Tus marcas, categoría y foto se añaden luego desde tu perfil, y solo si quieres.
+              </p>
+
+              {/* Sin premarcar: el RGPD exige un acto positivo, no una casilla
+                  que el usuario tenga que desmarcar. `required` bloquea el
+                  envío del formulario de forma nativa si no se marca. */}
+              <label className="flex items-start gap-2.5 text-xs leading-relaxed text-gray-400">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  required
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-anvil-red"
+                />
+                <span>
+                  He leído y acepto los{' '}
+                  <a href="/legal/terminos" target="_blank" rel="noopener noreferrer" className="text-anvil-red hover:underline">
+                    Términos y Condiciones
+                  </a>{' '}
+                  y la{' '}
+                  <a href="/legal/privacidad" target="_blank" rel="noopener noreferrer" className="text-anvil-red hover:underline">
+                    Política de Privacidad
+                  </a>
+                  .
+                </span>
+              </label>
+            </>
           )}
 
           <button

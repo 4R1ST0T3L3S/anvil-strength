@@ -109,10 +109,15 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
 
         const fetchStats = async () => {
             try {
+                // Solo relaciones VIVAS, igual que CoachAthletes.tsx. Sin este
+                // filtro, un atleta desvinculado (`ended`) o archivado seguía
+                // sumando aquí aunque ya hubiera desaparecido de la lista: el
+                // contador de inicio y la lista de abajo se contradecían.
                 const { data: links, error } = await supabase
                     .from('coach_athletes')
                     .select('athlete_id')
-                    .eq('coach_id', user.id);
+                    .eq('coach_id', user.id)
+                    .eq('status', 'active');
 
                 if (error) throw error;
                 const athleteIds = (links ?? []).map((l: { athlete_id: string }) => l.athlete_id);
@@ -219,7 +224,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
                 <section>
                     <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
                     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                        <NavTile area="coach" icon={Calendar} title="Horario semanal" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
+                        <NavTile area="coach" icon={Calendar} title="Mis competiciones" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
                         <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
                         {!isNutritionist && (
                             <NavTile area="coach" icon={Activity} title="Análisis PWR" hint="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />

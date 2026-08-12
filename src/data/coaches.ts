@@ -33,5 +33,13 @@ export const coaches: Coach[] = [
     contactForm: "https://docs.google.com/forms/d/e/1FAIpQLSfACXcjom-FbRi1a-PNyrJdvY_wAO9Hpa3_hktaNY82QDx4tg/viewform",
     bio: "Apasionado del powerlifting y cansado de un mundo donde a todo el mundo le dan una programación de copiar y pegar, donde todo se basa en una escala de RPE del 1 al 10 sin baremos intermedios y sin datos confiables. Por ello, implemento las técnicas más avanzadas con tal de recopilar todos los datos posibles de ti y tus levantamientos, convirtiendo una sensación en números que se pueden tratar para conocerte mejor como atleta. No dejes ningún entrenamiento al azar. En un deporte con normas de competición, entrena con ellas."
   },
+  {
+    id: 3,
+    name: "Marc Alonso",
+    role: "ENTRENADOR DE POWERLIFTING",
+    image: "/athletes/marc.png",
+    instagram: "https://www.instagram.com/marc_alonsoo_",
+    bio: "Campeón de España Junior de powerlifting.\n\nCompetir al máximo nivel me enseñó lo que separa una marca de otra: no es la genética ni la suerte, son los datos. Ahora llevo a mis atletas a su máximo nivel real basándome en lo que su propio entrenamiento demuestra, no en lo que parece que están haciendo.\n\nSer objetivo no es opcional en este deporte. Cada serie cuenta algo, y mi trabajo es escucharlo."
+  },
 ];
 

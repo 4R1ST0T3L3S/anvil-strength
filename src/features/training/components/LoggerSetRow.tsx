@@ -347,68 +347,60 @@ export function LoggerSetRow({
                     {displayIndex}
                 </span>
 
-                {/* REPETICIONES REALES — editable, con lo pautado encima. */}
-                <div>
-                    <TargetLabel value={targetReps} show={hasTargets} />
-                    <SetInput
-                        value={reps}
-                        onChange={(value) => {
-                            setReps(value);
-                            commitDebounced('reps', { actual_reps: toNumber(value) });
-                        }}
-                        placeholder="reps"
-                        ariaLabel={`Repeticiones hechas en la serie ${displayIndex}${targetReps ? ` (pautadas: ${targetReps})` : ''}`}
-                        filled={Boolean(reps)}
-                        step="1"
-                    />
-                </div>
+                {/* REPETICIONES REALES — editable. Lo pautado es el placeholder:
+                    grande y translúcido dentro de la propia casilla, no un
+                    renglón aparte. Desaparece solo en cuanto se escribe. */}
+                <SetInput
+                    value={reps}
+                    onChange={(value) => {
+                        setReps(value);
+                        commitDebounced('reps', { actual_reps: toNumber(value) });
+                    }}
+                    placeholder={targetReps || 'reps'}
+                    bigPlaceholder={hasTargets && Boolean(targetReps)}
+                    ariaLabel={`Repeticiones hechas en la serie ${displayIndex}${targetReps ? ` (pautadas: ${targetReps})` : ''}`}
+                    filled={Boolean(reps)}
+                    step="1"
+                />
 
                 {/* PESO MOVIDO — siempre kilos, lo escribe el atleta. Cuando la
                     prescripción no va en kilos (RPE, RIR, velocidad), lo que se
-                    enseña encima es ese objetivo y la casilla queda libre para
+                    enseña de fondo es ese objetivo y la casilla queda libre para
                     los kilos de verdad. */}
-                <div>
-                    <TargetLabel value={loadTarget} show={hasTargets} />
-                    <SetInput
-                        value={load}
-                        onChange={(value) => {
-                            setLoad(value);
-                            // Lo que escribe el atleta está en SU unidad;
-                            // se convierte a kg justo antes de encolar el guardado.
-                            commitDebounced('load', { actual_load: fromInput(toNumber(value), unit) });
-                        }}
-                        placeholder={unit}
-                        ariaLabel={`Peso movido en la serie ${displayIndex}${loadTarget ? ` (pautado: ${loadTarget})` : ''}`}
-                        filled={Boolean(load)}
-                        step={unit === 'lb' ? '1' : '0.5'}
-                    />
-                </div>
+                <SetInput
+                    value={load}
+                    onChange={(value) => {
+                        setLoad(value);
+                        // Lo que escribe el atleta está en SU unidad;
+                        // se convierte a kg justo antes de encolar el guardado.
+                        commitDebounced('load', { actual_load: fromInput(toNumber(value), unit) });
+                    }}
+                    placeholder={loadTarget || unit}
+                    bigPlaceholder={hasTargets && Boolean(loadTarget)}
+                    ariaLabel={`Peso movido en la serie ${displayIndex}${loadTarget ? ` (pautado: ${loadTarget})` : ''}`}
+                    filled={Boolean(load)}
+                    step={unit === 'lb' ? '1' : '0.5'}
+                />
 
-                {/* RPE real, con la DESVIACIÓN sobre lo pautado.
+                {/* RPE real, con la DESVIACIÓN sobre lo pautado de fondo.
                     Es la comparación con la que se decide la semana siguiente,
                     y hasta ahora había que hacerla de cabeza serie a serie. El
-                    delta sustituye al objetivo en el mismo renglón en cuanto
-                    hay con qué compararlo: en 44px de ancho no caben los dos, y
-                    "8 →" ya no aporta nada cuando debajo pone 7 y al lado −1. */}
-                <div>
-                    <TargetLabel
-                        value={rpeDelta ? rpeDelta.text : rpeTarget}
-                        show={hasTargets}
-                        tone={rpeDelta?.tone}
-                    />
-                    <SetInput
-                        value={rpe}
-                        onChange={(value) => {
-                            setRpe(value);
-                            commitDebounced('rpe', { actual_rpe: toNumber(value) });
-                        }}
-                        placeholder="–"
-                        ariaLabel={`RPE de la serie ${displayIndex}${rpeTarget ? ` (pautado: ${rpeTarget})` : ''}`}
-                        filled={Boolean(rpe)}
-                        step="0.5"
-                        tone="brand"
-                    />
-                </div>
+                    delta sustituye al objetivo pautado en cuanto hay con qué
+                    compararlo — "8" pasa a "+1" en rojo/verde de fondo. */}
+                <SetInput
+                    value={rpe}
+                    onChange={(value) => {
+                        setRpe(value);
+                        commitDebounced('rpe', { actual_rpe: toNumber(value) });
+                    }}
+                    placeholder={(rpeDelta ? rpeDelta.text : rpeTarget) || '–'}
+                    bigPlaceholder={hasTargets && Boolean(rpeDelta ? rpeDelta.text : rpeTarget)}
+                    placeholderTone={rpeDelta?.tone}
+                    ariaLabel={`RPE de la serie ${displayIndex}${rpeTarget ? ` (pautado: ${rpeTarget})` : ''}`}
+                    filled={Boolean(rpe)}
+                    step="0.5"
+                    tone="brand"
+                />
 
                 {/* NOTA DE LA SERIE.
                     Un icono y no una columna de texto: la nota es la excepción
@@ -548,44 +540,22 @@ export function LoggerSetRow({
 }
 
 /**
- * Lo que pautó el coach para ESTA casilla.
- *
- * Se pinta aunque no haya valor —con un espacio duro— siempre que alguna
- * columna de la fila tenga objetivo: es lo que mantiene las tres casillas a
- * la misma altura. Es información de solo lectura, así que va en gris y a 9px:
- * tiene que poder consultarse sin competir con el número que se escribe.
- */
-function TargetLabel({
-    value,
-    show,
-    tone,
-}: {
-    value?: string | null;
-    show: boolean;
-    /** Color cuando el renglón deja de decir lo pautado y pasa a decir la desviación. */
-    tone?: 'over' | 'under';
-}) {
-    if (!show) return null;
-    return (
-        <span
-            aria-hidden="true"
-            className={cn(
-                'mb-1 block truncate text-center text-t-2xs font-bold uppercase leading-none tracking-wide tabular-nums',
-                tone === 'over' ? 'text-warning' : tone === 'under' ? 'text-success' : 'text-ink-subtle'
-            )}
-        >
-            {value || ' '}
-        </span>
-    );
-}
-
-/**
  * Casilla numérica de una serie.
  *
  * `inputMode="decimal"` para que el móvil abra el teclado numérico: sin él
  * el atleta tiene que cambiar de teclado en cada serie. `type="number"` y no
  * `text` para las flechas de escritorio, pero sin spinner visible, que en
  * una fila de 60px de alto no cabe y se pulsa sin querer.
+ *
+ * EL OBJETIVO VIVE DENTRO DE LA CASILLA, NO ENCIMA.
+ *
+ * Antes lo pautado se pintaba en un renglón (`TargetLabel`) por encima de
+ * cada casilla, chico y siempre presente. Ahora es el `placeholder` del
+ * propio campo — grande y translúcido — que es lo que hace que DESAPAREZCA
+ * en cuanto el atleta escribe encima: el placeholder de un input nunca
+ * convive con un valor. Es el mismo comportamiento de siempre (mostrar el
+ * plan hasta que hay algo real que enseñar), con menos elementos en pantalla
+ * y el número donde se escribe, no en una fila aparte.
  */
 function SetInput({
     value,
@@ -595,6 +565,8 @@ function SetInput({
     filled,
     step,
     tone = 'neutral',
+    bigPlaceholder = false,
+    placeholderTone,
 }: {
     value: string;
     onChange: (value: string) => void;
@@ -603,6 +575,10 @@ function SetInput({
     filled: boolean;
     step: string;
     tone?: 'neutral' | 'brand';
+    /** El placeholder es el OBJETIVO pautado, no una pista de unidad: se pinta grande y translúcido. */
+    bigPlaceholder?: boolean;
+    /** Color del placeholder grande cuando es una desviación de RPE. */
+    placeholderTone?: 'over' | 'under';
 }) {
     return (
         <input
@@ -633,7 +609,17 @@ function SetInput({
                     ? tone === 'brand'
                         ? 'border-[var(--brand-line)] text-brand'
                         : 'border-[var(--border-strong)] text-ink'
-                    : 'border-subtle text-ink-muted placeholder:font-semibold placeholder:text-ink-subtle'
+                    : 'border-subtle text-ink-muted',
+                !filled && bigPlaceholder
+                    ? cn(
+                        'placeholder:text-t-2xl placeholder:font-black placeholder:tabular-nums',
+                        placeholderTone === 'over'
+                            ? 'placeholder:text-warning/45'
+                            : placeholderTone === 'under'
+                                ? 'placeholder:text-success/45'
+                                : 'placeholder:text-ink/25'
+                    )
+                    : 'placeholder:font-semibold placeholder:text-ink-subtle'
             )}
         />
     );

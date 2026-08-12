@@ -17,6 +17,11 @@ const CoachChatManager = lazy(() => import('../features/chat/components/CoachCha
 const AuthCallback = lazy(() => import('../features/auth/pages/AuthCallback').then(module => ({ default: module.AuthCallback })));
 const AnvilGamesHub = lazy(() => import('../features/games/pages/AnvilGamesHub').then(module => ({ default: module.AnvilGamesHub })));
 const InvitePage = lazy(() => import('../features/auth/pages/InvitePage').then(module => ({ default: module.InvitePage })));
+const ClaimAthletePage = lazy(() => import('../features/auth/pages/ClaimAthletePage').then(module => ({ default: module.ClaimAthletePage })));
+const AvisoLegal = lazy(() => import('../features/legal/pages/AvisoLegal').then(module => ({ default: module.AvisoLegal })));
+const PoliticaPrivacidad = lazy(() => import('../features/legal/pages/PoliticaPrivacidad').then(module => ({ default: module.PoliticaPrivacidad })));
+const PoliticaCookies = lazy(() => import('../features/legal/pages/PoliticaCookies').then(module => ({ default: module.PoliticaCookies })));
+const Terminos = lazy(() => import('../features/legal/pages/Terminos').then(module => ({ default: module.Terminos })));
 /**
  * Banco de pruebas de maquetación. Solo en desarrollo.
  *
@@ -94,6 +99,16 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 </Suspense>
             } />
 
+            {/* --- RECLAMACIÓN DE UN ATLETA FICTICIO ---
+                También SIN sesión: es la alternativa al enlace mágico por
+                correo (/invitacion) para quien un entrenador dio de alta a
+                mano. Ver ClaimAthletePage. */}
+            <Route path="/reclamar/:token" element={
+                <Suspense fallback={<DashboardSkeleton />}>
+                    <ClaimAthletePage />
+                </Suspense>
+            } />
+
             {/* --- VUELTA DE UN LOGIN EXTERNO ---
                 Google y los enlaces de confirmación de email vuelven aquí.
                 Ver src/lib/authRedirect.ts. */}
@@ -107,6 +122,26 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     onSignupClick={onSignupClick}
                     user={user}
                 />
+            } />
+
+            {/* --- PÁGINAS LEGALES ---
+                Accesibles SIN sesión a propósito: son documentos que hay que
+                poder leer antes de registrarse, no solo después. Estaban
+                escritas desde hace tiempo pero nunca se habían enrutado —
+                el enlace del pie de página caía siempre en el comodín "*" y
+                volvía a la portada, que es el fallo que se estaba pidiendo
+                arreglar. */}
+            <Route path="/legal/aviso-legal" element={
+                <Suspense fallback={<DashboardSkeleton />}><AvisoLegal onLoginClick={onLoginClick} /></Suspense>
+            } />
+            <Route path="/legal/privacidad" element={
+                <Suspense fallback={<DashboardSkeleton />}><PoliticaPrivacidad onLoginClick={onLoginClick} /></Suspense>
+            } />
+            <Route path="/legal/cookies" element={
+                <Suspense fallback={<DashboardSkeleton />}><PoliticaCookies onLoginClick={onLoginClick} /></Suspense>
+            } />
+            <Route path="/legal/terminos" element={
+                <Suspense fallback={<DashboardSkeleton />}><Terminos onLoginClick={onLoginClick} /></Suspense>
             } />
 
             {/* --- PERFIL PAGE (For pending users) --- */}

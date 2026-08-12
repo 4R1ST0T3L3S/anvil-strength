@@ -15,6 +15,7 @@ import { Toaster } from 'sonner';
 import { AppRoutes } from './routes/AppRoutes';
 import { CountdownPage } from './features/landing/pages/CountdownPage';
 import { NotificationProvider } from './components/ui/NotificationProvider';
+import { CookieNotice } from './components/ui/CookieNotice';
 
 
 function App() {
@@ -95,6 +96,12 @@ function App() {
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authMode}
       />
+
+      {/* Solo fuera del panel: dentro, la barra de pestañas móvil ya vive en
+          el mismo borde inferior (ver DashboardLayout.tsx) y las dos
+          encimadas serían ilegibles. Quien ya ha entrado ya ha usado la
+          cookie de sesión que este aviso explica. */}
+      {!user && <CookieNotice />}
     </div>
   );
 }

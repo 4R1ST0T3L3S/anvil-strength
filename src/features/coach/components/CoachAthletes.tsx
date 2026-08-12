@@ -74,6 +74,27 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
     const [athleteToRemove, setAthleteToRemove] = useState<AthleteWithPlan | null>(null);
     const [athleteToInvite, setAthleteToInvite] = useState<AthleteWithPlan | null>(null);
     const [removing, setRemoving] = useState(false);
+    const [copyingLinkFor, setCopyingLinkFor] = useState<string | null>(null);
+
+    /**
+     * ALTERNATIVA AL CORREO: un enlace que se copia y se manda por donde
+     * quiera. `onInvite` (el sobre) sigue existiendo para quien prefiere
+     * mandarlo por email; esto es para cuando el atleta no va a mirar el
+     * correo, o el coach prefiere pasárselo en persona o por WhatsApp.
+     */
+    const handleCopyClaimLink = async (athlete: AthleteWithPlan) => {
+        setCopyingLinkFor(athlete.id);
+        try {
+            const { url } = await athletesService.createClaimLink(athlete.id);
+            await navigator.clipboard.writeText(url);
+            toast.success(`Enlace de acceso de ${athlete.full_name} copiado`);
+        } catch (err) {
+            console.error(err);
+            toast.error(err instanceof Error ? err.message : 'No se pudo crear el enlace.');
+        } finally {
+            setCopyingLinkFor(null);
+        }
+    };
 
     const handleRemove = async () => {
         if (!athleteToRemove) return;
@@ -408,6 +429,8 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                             })}
                             onRemove={() => setAthleteToRemove(athlete)}
                             onInvite={() => setAthleteToInvite(athlete)}
+                            onCopyClaimLink={() => handleCopyClaimLink(athlete)}
+                            copyingClaimLink={copyingLinkFor === athlete.id}
                         />
                     ))}
                 </div>
@@ -432,6 +455,8 @@ function AthleteCard({
     onChat,
     onRemove,
     onInvite,
+    onCopyClaimLink,
+    copyingClaimLink,
 }: {
     athlete: AthleteWithPlan;
     index: number;
@@ -440,6 +465,9 @@ function AthleteCard({
     onRemove: () => void;
     /** Pide mandarle el acceso a la app. El diálogo lo abre la lista. */
     onInvite: () => void;
+    /** Copia un enlace de reclamación (email + contraseña) al portapapeles. */
+    onCopyClaimLink: () => void;
+    copyingClaimLink: boolean;
 }) {
     const days = daysSince(athlete.adherence?.lastCompletedAt);
     /**
@@ -530,14 +558,31 @@ function AthleteCard({
                                 <MessageSquare size={16} aria-hidden="true" />
                             </button>
                         ) : (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onInvite(); }}
-                                aria-label={`Enviar el acceso a ${athlete.full_name}`}
-                                title="Enviarle el acceso a la app"
-                                className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand disabled:opacity-40"
-                            >
-                                <Mail size={16} aria-hidden="true" />
-                            </button>
+                            <>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onInvite(); }}
+                                    aria-label={`Enviar el acceso por correo a ${athlete.full_name}`}
+                                    title="Mandarle el acceso por correo"
+                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand disabled:opacity-40"
+                                >
+                                    <Mail size={16} aria-hidden="true" />
+                                </button>
+                                {/* Alternativa al correo: copia un enlace para
+                                    mandarlo por donde quiera (WhatsApp, en
+                                    persona). El atleta pone su propio email y
+                                    contraseña al abrirlo. */}
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onCopyClaimLink(); }}
+                                    disabled={copyingClaimLink}
+                                    aria-label={`Copiar enlace de acceso de ${athlete.full_name}`}
+                                    title="Copiar enlace de acceso"
+                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand disabled:opacity-40"
+                                >
+                                    {copyingClaimLink
+                                        ? <Loader size={16} className="animate-spin" aria-hidden="true" />
+                                        : <Link2 size={16} aria-hidden="true" />}
+                                </button>
+                            </>
                         )}
 
                         {/* Sacar del equipo. Aparece al pasar por encima de la

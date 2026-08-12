@@ -62,23 +62,34 @@ export function PoliticaPrivacidad({ onLoginClick }: LegalPageProps) {
                     </section>
 
                     <section>
-                        <h2 className="text-lg font-bold text-white uppercase mb-3">5. Destinatarios</h2>
+                        <h2 className="text-lg font-bold text-white uppercase mb-3">5. Datos de categoría especial</h2>
+                        <p>Las marcas, cargas de entrenamiento, vídeos de series y respuestas a cuestionarios de bienestar (check-ins) pueden constituir <strong className="text-white">datos relativos a la salud</strong> en el sentido del artículo 9 del RGPD. Su tratamiento se basa en el <strong className="text-white">consentimiento explícito</strong> del usuario, prestado al completar estos campos de forma voluntaria, y tiene como única finalidad la prestación del servicio de entrenamiento por parte del entrenador asignado. El usuario puede retirar este consentimiento en cualquier momento, lo que puede implicar que el entrenador deje de poder prestar el servicio de programación.</p>
+                    </section>
+
+                    <section>
+                        <h2 className="text-lg font-bold text-white uppercase mb-3">6. Destinatarios y transferencias internacionales</h2>
                         <p>Los datos personales podrán ser comunicados a:</p>
                         <ul className="mt-3 space-y-1 list-disc pl-5">
-                            <li><strong className="text-white">Supabase Inc.</strong> (proveedor de base de datos y autenticación, servidores en la UE).</li>
-                            <li><strong className="text-white">Vercel Inc.</strong> (proveedor de alojamiento web).</li>
+                            <li><strong className="text-white">Supabase Inc.</strong> (proveedor de base de datos y autenticación). Los datos se alojan en un centro de datos ubicado en la Unión Europea.</li>
+                            <li><strong className="text-white">Vercel Inc.</strong> (proveedor de alojamiento web, con sede en EE. UU.). La transferencia de datos fuera del Espacio Económico Europeo que esto pueda implicar se ampara en las Cláusulas Contractuales Tipo de la Comisión Europea suscritas por el proveedor.</li>
+                            <li><strong className="text-white">Google LLC</strong>, únicamente si el usuario elige iniciar sesión con su cuenta de Google (autenticación OAuth).</li>
                             <li><strong className="text-white">Asociación Española de Powerlifting (AEP)</strong> para la tramitación de licencias federativas, previa autorización del usuario.</li>
                         </ul>
-                        <p className="mt-3">No se cederán datos a terceros salvo obligación legal.</p>
+                        <p className="mt-3">No se venden ni se ceden datos a terceros con fines publicitarios. Solo se comunican los estrictamente necesarios para prestar el servicio.</p>
                     </section>
 
                     <section>
-                        <h2 className="text-lg font-bold text-white uppercase mb-3">6. Conservación de los datos</h2>
-                        <p>Los datos se conservarán mientras el usuario mantenga su cuenta activa en la plataforma y, una vez eliminada, durante los plazos legalmente previstos. Los datos de entrenamiento se conservarán mientras dure la relación con el club.</p>
+                        <h2 className="text-lg font-bold text-white uppercase mb-3">7. Conservación de los datos</h2>
+                        <ul className="space-y-1 list-disc pl-5">
+                            <li><strong className="text-white">Datos de cuenta y entrenamiento:</strong> mientras el usuario mantenga su cuenta activa y, una vez solicitada la baja, hasta 6 meses adicionales por si se solicita su recuperación, salvo que la ley exija un plazo distinto.</li>
+                            <li><strong className="text-white">Reseñas públicas:</strong> hasta que el usuario solicite su eliminación.</li>
+                            <li><strong className="text-white">Datos fiscales o de facturación</strong> (si los hubiera): 5 años, conforme a la normativa tributaria.</li>
+                        </ul>
+                        <p className="mt-3">Transcurridos los plazos, los datos se eliminan o se anonimizan de forma irreversible.</p>
                     </section>
 
                     <section>
-                        <h2 className="text-lg font-bold text-white uppercase mb-3">7. Derechos del usuario</h2>
+                        <h2 className="text-lg font-bold text-white uppercase mb-3">8. Derechos del usuario</h2>
                         <p>El usuario puede ejercer los siguientes derechos en cualquier momento, dirigiendo su solicitud a <a href="mailto:anvilstrengthclub@gmail.com" className="text-anvil-red hover:underline">anvilstrengthclub@gmail.com</a>:</p>
                         <ul className="mt-3 space-y-1 list-disc pl-5">
                             <li><strong className="text-white">Acceso:</strong> conocer qué datos personales tratamos.</li>
@@ -92,11 +103,11 @@ export function PoliticaPrivacidad({ onLoginClick }: LegalPageProps) {
                     </section>
 
                     <section>
-                        <h2 className="text-lg font-bold text-white uppercase mb-3">8. Seguridad</h2>
+                        <h2 className="text-lg font-bold text-white uppercase mb-3">9. Seguridad</h2>
                         <p>Aplicamos medidas técnicas y organizativas para proteger los datos personales: cifrado en tránsito (HTTPS/TLS), autenticación segura, control de acceso basado en roles (entrenador, atleta, administrador) y almacenamiento en servidores de Supabase con cifrado en reposo.</p>
                     </section>
 
-                    <p className="text-gray-600 text-xs mt-12">Última actualización: julio 2026</p>
+                    <p className="text-gray-600 text-xs mt-12">Última actualización: agosto 2026</p>
                 </div>
             </div>
             <PublicFooter />

@@ -427,6 +427,166 @@ async function inviteManagedAthlete(caller: Caller, body: Record<string, unknown
 }
 
 // =====================================================================
+// ACCIÓN: crear un enlace de reclamación (email + contraseña)
+// =====================================================================
+/**
+ * La alternativa al correo: un enlace que el entrenador puede copiar y
+ * mandar por donde quiera (WhatsApp, en persona) para que el atleta ponga
+ * su propio email y contraseña sobre la cuenta latente que ya tiene la
+ * ficha dentro.
+ *
+ * 30 días de caducidad, igual que `coach_invites` — ver la nota de
+ * `invitesService.create` sobre por qué un enlace nunca es eterno.
+ */
+async function createClaimLink(caller: Caller, body: Record<string, unknown>) {
+    const profileId = typeof body.profile_id === 'string' ? body.profile_id : '';
+    if (!profileId) return json({ error: 'Falta el atleta.' }, 400);
+
+    const { data: link } = await admin
+        .from('coach_athletes')
+        .select('id')
+        .eq('coach_id', caller.id)
+        .eq('athlete_id', profileId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+    if (!link) return json({ error: 'Ese atleta no está en tu equipo.' }, 403);
+
+    const { data: profile } = await admin
+        .from('profiles')
+        .select('id, account_status')
+        .eq('id', profileId)
+        .single();
+
+    if (!profile) return json({ error: 'No se encontró la ficha.' }, 404);
+    if (profile.account_status === 'active') {
+        return json({ error: 'Ese atleta ya tiene su cuenta activa.' }, 409);
+    }
+
+    const token = crypto.randomUUID().replace(/-/g, '');
+    const expiresAt = new Date(Date.now() + 30 * 86_400_000).toISOString();
+
+    const { error: insertError } = await admin.from('athlete_claim_links').insert({
+        token,
+        profile_id: profileId,
+        coach_id: caller.id,
+        expires_at: expiresAt,
+    });
+
+    if (insertError) {
+        return json({ error: `No se pudo crear el enlace: ${insertError.message}` }, 500);
+    }
+
+    return json({ outcome: 'claim_link_created', token });
+}
+
+// =====================================================================
+// ACCIONES PÚBLICAS: previsualizar y canjear un enlace de reclamación
+// =====================================================================
+/**
+ * SIN `resolveCaller`: quien reclama todavía no tiene sesión — es
+ * literalmente el problema que este enlace resuelve. La validez del token
+ * (existe, no caducó, no se usó) es la única puerta.
+ */
+async function peekClaimLink(body: Record<string, unknown>) {
+    const token = typeof body.token === 'string' ? body.token : '';
+    if (!token) return json({ valid: false, reason: 'no_existe' });
+
+    const { data: claim } = await admin
+        .from('athlete_claim_links')
+        .select('profile_id, coach_id, expires_at, used_at')
+        .eq('token', token)
+        .maybeSingle();
+
+    if (!claim) return json({ valid: false, reason: 'no_existe' });
+    if (claim.used_at) return json({ valid: false, reason: 'usado' });
+    if (new Date(claim.expires_at).getTime() < Date.now()) return json({ valid: false, reason: 'caducado' });
+
+    const [{ data: athlete }, { data: coach }] = await Promise.all([
+        admin.from('profiles').select('full_name, account_status').eq('id', claim.profile_id).single(),
+        admin.from('profiles').select('full_name').eq('id', claim.coach_id).single(),
+    ]);
+
+    if (!athlete) return json({ valid: false, reason: 'no_existe' });
+    if (athlete.account_status === 'active') return json({ valid: false, reason: 'ya_reclamado' });
+
+    return json({
+        valid: true,
+        athleteName: athlete.full_name ?? null,
+        coachName: coach?.full_name ?? null,
+    });
+}
+
+/**
+ * Pone email + contraseña sobre la cuenta latente y la activa.
+ *
+ * `updateUserById` sobre el `profile_id` DEL ENLACE, no sobre uno que venga
+ * suelto en el cuerpo: el token es lo único que demuestra "este enlace es
+ * para ESTA ficha en concreto". Sin esa comprobación, cualquiera con
+ * conocimientos mínimos podría intentar reclamar la ficha de otro atleta
+ * cambiando un id en la petición.
+ */
+async function claimViaLink(body: Record<string, unknown>) {
+    const token = typeof body.token === 'string' ? body.token : '';
+    const email = normalizeEmail(body.email);
+    const password = typeof body.password === 'string' ? body.password : '';
+
+    if (!token) return json({ error: 'Enlace no válido.' }, 400);
+    if (!email) return json({ error: 'Escribe un correo válido.' }, 400);
+    if (password.length < 8) return json({ error: 'La contraseña necesita al menos 8 caracteres.' }, 400);
+
+    const { data: claim } = await admin
+        .from('athlete_claim_links')
+        .select('profile_id, expires_at, used_at')
+        .eq('token', token)
+        .maybeSingle();
+
+    if (!claim) return json({ error: 'Este enlace no existe o ya no es válido.' }, 404);
+    if (claim.used_at) return json({ error: 'Este enlace ya se usó. Inicia sesión con tu correo y contraseña.' }, 409);
+    if (new Date(claim.expires_at).getTime() < Date.now()) {
+        return json({ error: 'Este enlace ha caducado. Pide a tu entrenador uno nuevo.' }, 410);
+    }
+
+    const { data: profile } = await admin
+        .from('profiles')
+        .select('id, account_status')
+        .eq('id', claim.profile_id)
+        .single();
+
+    if (!profile) return json({ error: 'No se encontró la ficha.' }, 404);
+    if (profile.account_status === 'active') {
+        return json({ error: 'Esta ficha ya tiene cuenta activa. Inicia sesión normalmente.' }, 409);
+    }
+
+    const existing = await findAuthUserByEmail(email);
+    if (existing && existing.id !== profile.id) {
+        return json({ error: 'Ya hay una cuenta con ese correo. Usa otro o inicia sesión con ese.' }, 409);
+    }
+
+    const { error: updateError } = await admin.auth.admin.updateUserById(profile.id, {
+        email,
+        password,
+        email_confirm: true,
+    });
+
+    if (updateError) {
+        return json({ error: `No se pudo activar la cuenta: ${updateError.message}` }, 500);
+    }
+
+    await admin.from('profiles').update({
+        account_status: 'active',
+        contact_email: email,
+    }).eq('id', profile.id);
+
+    await admin.from('athlete_claim_links').update({ used_at: new Date().toISOString() }).eq('token', token);
+
+    return json({ outcome: 'claimed', email });
+}
+
+// =====================================================================
+
+/** Acciones que no requieren sesión: las usa quien todavía no tiene cuenta. */
+const PUBLIC_ACTIONS = new Set(['peek_claim', 'claim']);
 
 Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -436,9 +596,6 @@ Deno.serve(async (req) => {
         return json({ error: 'La función no está configurada.' }, 500);
     }
 
-    const caller = await resolveCaller(req);
-    if (!caller) return json({ error: 'No autorizado.' }, 401);
-
     let body: Record<string, unknown>;
     try {
         body = await req.json();
@@ -446,9 +603,20 @@ Deno.serve(async (req) => {
         return json({ error: 'Cuerpo no válido.' }, 400);
     }
 
+    if (PUBLIC_ACTIONS.has(String(body.action))) {
+        switch (body.action) {
+            case 'peek_claim': return await peekClaimLink(body);
+            case 'claim': return await claimViaLink(body);
+        }
+    }
+
+    const caller = await resolveCaller(req);
+    if (!caller) return json({ error: 'No autorizado.' }, 401);
+
     switch (body.action) {
         case 'create': return await createManagedAthlete(caller, body);
         case 'invite': return await inviteManagedAthlete(caller, body);
+        case 'create_claim_link': return await createClaimLink(caller, body);
         default: return json({ error: `Acción desconocida: ${String(body.action)}` }, 400);
     }
 });

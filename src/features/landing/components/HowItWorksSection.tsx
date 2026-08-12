@@ -20,7 +20,7 @@ export function HowItWorksSection() {
         },
         {
             title: 'Te asignamos entrenador',
-            desc: 'Rellenas la ficha de inscripción y revisamos tu caso. Te asignamos entrenador y, si lo necesitas, nutricionista.',
+            desc: 'Rellenas la ficha de inscripción y revisamos tu caso. Te asignamos entrenador y, si lo necesitas, nutricionista: el entrenamiento personalizado es un servicio de pago que acuerdas directamente con él.',
         },
         {
             title: 'Compites con Anvil',

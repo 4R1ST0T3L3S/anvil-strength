@@ -60,6 +60,16 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                     const email = profile.email?.toLowerCase() || '';
                     if (email.includes('anvilstrength')) return false;
 
+                    // Un atleta ficticio (dado de alta por su entrenador, sin
+                    // cuenta propia todavía) es una ficha de `profiles` como
+                    // cualquier otra: sin este filtro seguía en el ranking
+                    // aunque el entrenador ya lo hubiera borrado del equipo,
+                    // porque desvincular NO borra el perfil (ver
+                    // invitesService.unlinkAthlete). El ranking es una
+                    // clasificación de PERSONAS que compiten con Anvil, no de
+                    // fichas latentes.
+                    if (profile.account_status === 'managed') return false;
+
                     const hasWeightCategory = profile.weight_category && profile.weight_category !== 'N/A';
                     const hasAnyPR = (profile.squat_pr || 0) > 0 || (profile.bench_pr || 0) > 0 || (profile.deadlift_pr || 0) > 0;
 

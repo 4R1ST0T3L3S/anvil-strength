@@ -69,6 +69,24 @@ export default defineConfig({
         globIgnores: ['**/opencv.js'],
 
         /**
+         * SIN ESTO, EL PDF DE LA NORMATIVA "RECARGABA LA WEB" AL ABRIRLO.
+         *
+         * `navigateFallback` (activado por defecto por vite-plugin-pwa) hace
+         * que el service worker responda CUALQUIER navegación con fallo de
+         * red devolviendo `index.html` — es lo que permite que las rutas de
+         * React Router funcionen sin conexión. El problema es que un enlace
+         * con `target="_blank"` a un PDF también es una "navegación", y sin
+         * lista de exclusión el service worker la interceptaba igual: sacaba
+         * `index.html` en vez del PDF, React Router no reconocía
+         * `/normativa_equipo.pdf` como ruta propia y el comodín `*` mandaba
+         * de vuelta a "/". Por fuera, parecía que el botón "recargaba la web".
+         *
+         * `opencv.js` entra por la misma razón que arriba: ni es una ruta de
+         * la app ni debe servirse como una.
+         */
+        navigateFallbackDenylist: [/\.pdf$/, /^\/opencv\.js$/, /^\/api\//],
+
+        /**
          * SIN ESTO, LA PWA SOLO ERA INSTALABLE, NO USABLE SIN CONEXIÓN.
          *
          * El service worker guardaba el HTML, el JS y el CSS, así que la app

@@ -31,9 +31,18 @@
        `display=swap` para que el texto se lea desde el primer frame. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Anton — la fuente DISPLAY de la portada.
+       `font-bebas` en tailwind.config.js apuntaba a la misma variable que
+       `font-sans`: no había ninguna tipografía secundaria en el proyecto, así
+       que cualquier intento de dar un contraste tipográfico al titular caía
+       en Plus Jakarta otra vez. Anton es condensada y de trazo muy grueso —
+       el contraste de eje que le falta a un texto puesto solo en mayúsculas
+       y peso 800 de la misma fuente de cuerpo. Un solo peso (400, que en
+       Anton ya es el más negro que existe) porque es de uso exclusivo para
+       titulares cortos. -->
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
   />
 
   <!-- SEO Primary -->
@@ -107,7 +116,6 @@
   <!-- La portada es el elemento LCP. `fetchpriority` la saca de la cola de
        prioridad baja en la que el navegador mete las imágenes por defecto. -->
   <link rel="preload" href="/portadaanvil2.jpg" as="image" fetchpriority="high" />
-  <link rel="prefetch" href="/normativa.pdf" />
   <!-- La primera consulta a Supabase sale en cuanto monta la app; abrir la
        conexión TLS en paralelo con el JS ahorra el ida y vuelta del handshake. -->
   <link rel="preconnect" href="https://ihcyuoczbmjxfinxvzra.supabase.co" crossorigin />

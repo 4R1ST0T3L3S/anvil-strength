@@ -224,7 +224,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 </button>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form id="profile-form" onSubmit={handleSubmit} className="space-y-5">
                 {/* Avatar */}
                 <div className="flex flex-col items-center gap-6 rounded-card border border-[var(--border-default)] bg-surface-raised p-6 md:flex-row md:p-8">
                     <div className="relative shrink-0">
@@ -384,17 +384,6 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                         className={`${INPUT} h-auto resize-none py-3`}
                     />
                 </section>
-
-                <div className="flex justify-end pt-1">
-                    <button
-                        type="submit"
-                        disabled={isSaving}
-                        className="flex w-full items-center justify-center gap-2 rounded-field bg-brand px-8 py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40 md:w-auto"
-                    >
-                        {isSaving ? <Loader size={17} className="animate-spin" /> : <Save size={17} />}
-                        {isSaving ? 'Guardando…' : 'Guardar cambios'}
-                    </button>
-                </div>
             </form>
 
             {/* INFORMACIÓN PERSONAL.
@@ -402,7 +391,13 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 `profiles` sino un catálogo que decide el entrenador, con su
                 propio guardado y su propio historial de fechas. Meterla dentro
                 obligaría a que el botón "Guardar cambios" hablase con dos
-                tablas que no tienen nada que ver.
+                tablas que no tienen nada que ver — y sus botones internos,
+                sin `type="button"` explícito, harían un submit accidental del
+                formulario de arriba si vivieran anidados dentro de él.
+
+                Va ANTES del botón "Guardar cambios" y no después: es la
+                pantalla de perfil, y quien la abre debía desplazarse más allá
+                del botón grande para encontrar la mitad de sus datos.
 
                 El atleta ve y rellena lo que su entrenador le pide; quien no
                 tiene entrenador ve el juego predefinido. */}
@@ -413,6 +408,22 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                     coachId={user.coach_id ?? null}
                     editorId={user.id}
                 />
+            </div>
+
+            {/* `form="profile-form"` liga este botón al formulario de arriba
+                sin tener que anidarlo dentro: el atributo `form` en HTML5
+                asocia un control con un `<form>` por id sin importar dónde
+                viva en el árbol. */}
+            <div className="mt-6 flex justify-end">
+                <button
+                    type="submit"
+                    form="profile-form"
+                    disabled={isSaving}
+                    className="flex w-full items-center justify-center gap-2 rounded-field bg-brand px-8 py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40 md:w-auto"
+                >
+                    {isSaving ? <Loader size={17} className="animate-spin" /> : <Save size={17} />}
+                    {isSaving ? 'Guardando…' : 'Guardar cambios'}
+                </button>
             </div>
 
             <div className="mt-8 border-t border-subtle pt-6">

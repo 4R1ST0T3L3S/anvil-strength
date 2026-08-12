@@ -107,14 +107,21 @@ export default {
          PISA a propósito: es el único cambio que hace que `font-sans` y la
          fuente heredada por defecto sean la misma cosa.
 
-         `bebas` no es una segunda familia: apunta al mismo sitio. Había 5
-         ficheros usando `font-bebas` contra una clave que nunca existió en
-         esta config, así que la utilidad no se generaba y el texto caía a la
-         fuente del sistema. Se mapea en vez de borrarse para que esos
-         ficheros hereden la familia real sin tocarlos uno a uno. */
+         `bebas` YA NO apunta a `--font-sans`.
+         Antes sí, como parche: 5 ficheros usaban `font-bebas` contra una
+         clave que nunca existió en esta config, así que la utilidad no se
+         generaba y el texto caía a la fuente del sistema. El parche cerraba
+         eso, pero dejaba sin resolver la intención original — el propio
+         nombre `bebas` (por Bebas Neue) y el uso siempre en mayúsculas,
+         itálica y muy trackeado en esos 5 sitios) era claramente un guiño a
+         una tipografía DISPLAY que nunca llegó a cargarse. Ahora que
+         `--font-display` existe (Anton, ver tokens.css), `bebas` apunta ahí:
+         los 5 ficheros pasan a tener la fuente de trazo grueso que su propio
+         marcado llevaba pidiendo desde el principio, sin tocarlos uno a uno. */
       fontFamily: {
         sans: "var(--font-sans)",
-        bebas: "var(--font-sans)",
+        display: "var(--font-display)",
+        bebas: "var(--font-display)",
       },
 
       /* ZONA SEGURA DEL DISPOSITIVO.

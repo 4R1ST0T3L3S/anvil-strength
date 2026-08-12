@@ -201,7 +201,7 @@ DECLARE
         'weight_category','age_category',
         'squat_pr','bench_pr','deadlift_pr','total_pr',
         'biography','brand_color','logo_url','instagram_url','bio',
-        'max_sushi_pieces','pdf_theme'
+        'max_sushi_pieces','pdf_theme','coach_prefs','athlete_prefs'
     ];
     present TEXT[];
     col_list TEXT;
@@ -707,13 +707,18 @@ BEGIN
     END LOOP;
 END $$;
 
--- Las competiciones y reseñas sí son públicas por diseño, pero solo
--- para usuarios autenticados (antes también para `anon`).
+-- Las reseñas SÍ son públicas de lectura por diseño: la portada las enseña
+-- a cualquiera, con o sin sesión (ver ReviewsSection.tsx). Lo que no es
+-- público es ESCRIBIRLAS ni ver `user_id` — de ahí el GRANT por columnas
+-- en vez de un `GRANT ALL`. Ver database/FIX_RESENAS_PUBLICAS.sql, que es
+-- donde se corrigió el `REVOKE ALL` que había aquí antes y que dejaba a
+-- `anon` sin poder leer nada (42501 en cualquier visita sin sesión).
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables
                WHERE table_schema='public' AND table_name='athlete_reviews') THEN
         EXECUTE 'REVOKE ALL ON public.athlete_reviews FROM anon';
+        EXECUTE 'GRANT SELECT (id, athlete_name, rating, review_text, created_at, updated_at) ON public.athlete_reviews TO anon';
     END IF;
 END $$;
 

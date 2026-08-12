@@ -5,9 +5,10 @@ import {
 } from 'recharts';
 import {
     AlertTriangle, Check, ChevronDown, ClipboardList, Loader, MessageSquareText,
-    Minus, TrendingDown, TrendingUp,
+    Minus, Pencil, TrendingDown, TrendingUp, X,
 } from 'lucide-react';
-import { trainingService, type LoggedSession } from '../../../services/trainingService';
+import { toast } from 'sonner';
+import { trainingService, type LoggedSession, type LoggedSet } from '../../../services/trainingService';
 import {
     adherenceByExercise, buildFlags, collectDeviations, exerciseNames, prescribedKg,
     prescribedReps, prescribedRpe, scopeToExercise, summarizeSession, weeklyExecution,
@@ -65,6 +66,29 @@ const TOOLTIP = {
 
 export function AthleteLogTab({ athleteId }: { athleteId: string }) {
     const [sessions, setSessions] = useState<LoggedSession[]>([]);
+    /**
+     * EL ENTRENADOR PUEDE CORREGIR LO QUE EL ATLETA REGISTRÓ.
+     *
+     * `sets_coach_all` (database/FIX_TIMEOUT_SERIES.sql) ya le da al coach
+     * dueño del bloque permiso de UPDATE sobre `training_sets` — no hacía
+     * falta ninguna migración nueva, solo la interfaz para usarlo. Esto NO
+     * toca el plan: solo `actual_reps`/`actual_load`/`actual_rpe`, exactamente
+     * los mismos campos que escribe el atleta desde el registro. Sirve para
+     * el caso que motivó el pedido: el atleta se equivoca al anotar y el
+     * coach lo arregla sin tener que pedirle que vuelva a entrar.
+     */
+    const applySetPatch = (sessionId: string, exerciseId: string, setId: string, patch: Partial<LoggedSet>) => {
+        setSessions(prev => prev.map(session => {
+            if (session.id !== sessionId) return session;
+            return {
+                ...session,
+                exercises: session.exercises.map(ex => {
+                    if (ex.id !== exerciseId) return ex;
+                    return { ...ex, sets: ex.sets.map(s => (s.id === setId ? { ...s, ...patch } : s)) };
+                }),
+            };
+        }));
+    };
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tab, setTab] = useState<LogTab>('sesiones');
@@ -306,7 +330,9 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
                     {logged.length === 0 ? (
                         <Empty>Este atleta todavía no ha registrado ninguna sesión de este bloque.</Empty>
                     ) : (
-                        logged.map(session => <SessionCard key={session.id} session={session} />)
+                        logged.map(session => (
+                            <SessionCard key={session.id} session={session} onSetPatched={applySetPatch} />
+                        ))
                     )}
                 </section>
             )}
@@ -508,7 +534,9 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
  * series, cuánto tonelaje, cuántas desviaciones— basta para decidir en cuál
  * merece la pena entrar.
  */
-function SessionCard({ session }: { session: LoggedSession }) {
+type SetPatchHandler = (sessionId: string, exerciseId: string, setId: string, patch: Partial<LoggedSet>) => void;
+
+function SessionCard({ session, onSetPatched }: { session: LoggedSession; onSetPatched: SetPatchHandler }) {
     const [open, setOpen] = useState(false);
     const summary = useMemo(() => summarizeSession(session), [session]);
 
@@ -576,7 +604,11 @@ function SessionCard({ session }: { session: LoggedSession }) {
                     )}
 
                     {session.exercises.map(ex => (
-                        <ExerciseLog key={ex.id} exercise={ex} />
+                        <ExerciseLog
+                            key={ex.id}
+                            exercise={ex}
+                            onSetPatched={(setId, patch) => onSetPatched(session.id, ex.id, setId, patch)}
+                        />
                     ))}
 
                     {session.exercises.length === 0 && (
@@ -588,7 +620,13 @@ function SessionCard({ session }: { session: LoggedSession }) {
     );
 }
 
-function ExerciseLog({ exercise }: { exercise: LoggedSession['exercises'][number] }) {
+function ExerciseLog({
+    exercise,
+    onSetPatched,
+}: {
+    exercise: LoggedSession['exercises'][number];
+    onSetPatched: (setId: string, patch: Partial<LoggedSet>) => void;
+}) {
     const anyLogged = exercise.sets.some(
         s => s.isCompleted || s.actualReps != null || s.actualLoad != null
     );
@@ -610,71 +648,20 @@ function ExerciseLog({ exercise }: { exercise: LoggedSession['exercises'][number
             )}
 
             <div className="mt-2 -mx-1 overflow-x-auto">
-                <table className="w-full min-w-[22rem] border-collapse text-t-2xs tabular-nums">
+                <table className="w-full min-w-[24rem] border-collapse text-t-2xs tabular-nums">
                     <thead>
                         <tr className="text-ink-faint">
                             <th className="px-1 py-1 text-left font-medium">#</th>
                             <th className="px-1 py-1 text-left font-medium">Pautado</th>
                             <th className="px-1 py-1 text-left font-medium">Hecho</th>
                             <th className="px-1 py-1 text-right font-medium">Δ</th>
+                            <th className="px-1 py-1 text-right font-medium sr-only">Corregir</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {exercise.sets.map((set, i) => {
-                            const kg = prescribedKg(set);
-                            const reps = prescribedReps(set);
-                            const rpe = prescribedRpe(set);
-                            const hasData = set.isCompleted || set.actualReps != null || set.actualLoad != null;
-
-                            const loadDelta =
-                                kg != null && kg > 0 && set.actualLoad != null
-                                    ? Math.round(((set.actualLoad - kg) / kg) * 1000) / 10
-                                    : null;
-                            const rpeDelta =
-                                rpe != null && set.actualRpe != null
-                                    ? Math.round((set.actualRpe - rpe) * 10) / 10
-                                    : null;
-
-                            return (
-                                <tr key={set.id} className="border-t border-[var(--border-subtle)]">
-                                    <td className="px-1 py-1 text-ink-faint">{i + 1}</td>
-                                    <td className="px-1 py-1 text-ink-subtle">
-                                        {set.targetReps ?? '—'}
-                                        {kg != null && ` × ${kg} kg`}
-                                        {set.targetRpe && ` @${set.targetRpe}`}
-                                        {reps == null && kg == null && !set.targetRpe && '—'}
-                                    </td>
-                                    <td className={cn('px-1 py-1', hasData ? 'font-semibold text-ink' : 'text-ink-faint')}>
-                                        {hasData ? (
-                                            <>
-                                                {set.actualReps ?? '—'}
-                                                {set.actualLoad != null && ` × ${set.actualLoad} kg`}
-                                                {set.actualRpe != null && ` @${set.actualRpe}`}
-                                                {set.vbtMeanVelocity != null && (
-                                                    <span className="ml-1 font-normal text-ink-subtle">
-                                                        {set.vbtMeanVelocity} m/s
-                                                    </span>
-                                                )}
-                                            </>
-                                        ) : '—'}
-                                    </td>
-                                    <td className="px-1 py-1 text-right">
-                                        <span className="inline-flex items-center gap-1.5">
-                                            {loadDelta != null && Math.abs(loadDelta) >= 2 && (
-                                                <span className={loadDelta < 0 ? 'text-warning' : 'text-success'}>
-                                                    {loadDelta > 0 ? '+' : ''}{loadDelta}%
-                                                </span>
-                                            )}
-                                            {rpeDelta != null && Math.abs(rpeDelta) >= 1 && (
-                                                <span className={rpeDelta > 0 ? 'text-warning' : 'text-info'}>
-                                                    RPE {rpeDelta > 0 ? '+' : ''}{rpeDelta}
-                                                </span>
-                                            )}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                        {exercise.sets.map((set, i) => (
+                            <SetRow key={set.id} set={set} index={i} onSaved={(patch) => onSetPatched(set.id, patch)} />
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -695,6 +682,192 @@ function ExerciseLog({ exercise }: { exercise: LoggedSession['exercises'][number
                 </ul>
             )}
         </div>
+    );
+}
+
+/**
+ * UNA FILA DEL REGISTRO, CON CORRECCIÓN INLINE.
+ * =====================================================================
+ * Solo toca `actual_reps`/`actual_load`/`actual_rpe` — los mismos tres
+ * campos que escribe el atleta desde WorkoutLogger. El plan (`target_*`)
+ * no es editable desde aquí; para eso está la pestaña de Programación.
+ */
+function SetRow({
+    set,
+    index,
+    onSaved,
+}: {
+    set: LoggedSet;
+    index: number;
+    onSaved: (patch: Partial<LoggedSet>) => void;
+}) {
+    const [editing, setEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [draftReps, setDraftReps] = useState('');
+    const [draftLoad, setDraftLoad] = useState('');
+    const [draftRpe, setDraftRpe] = useState('');
+
+    const kg = prescribedKg(set);
+    const reps = prescribedReps(set);
+    const rpe = prescribedRpe(set);
+    const hasData = set.isCompleted || set.actualReps != null || set.actualLoad != null;
+
+    const loadDelta =
+        kg != null && kg > 0 && set.actualLoad != null
+            ? Math.round(((set.actualLoad - kg) / kg) * 1000) / 10
+            : null;
+    const rpeDelta =
+        rpe != null && set.actualRpe != null
+            ? Math.round((set.actualRpe - rpe) * 10) / 10
+            : null;
+
+    const startEditing = () => {
+        setDraftReps(set.actualReps != null ? String(set.actualReps) : '');
+        setDraftLoad(set.actualLoad != null ? String(set.actualLoad) : '');
+        setDraftRpe(set.actualRpe != null ? String(set.actualRpe) : '');
+        setEditing(true);
+    };
+
+    const parse = (v: string): number | null => {
+        if (v.trim() === '') return null;
+        const n = Number.parseFloat(v.replace(',', '.'));
+        return Number.isFinite(n) ? n : null;
+    };
+
+    const handleSave = async () => {
+        const patch = {
+            actual_reps: parse(draftReps),
+            actual_load: parse(draftLoad),
+            actual_rpe: parse(draftRpe),
+        };
+        setSaving(true);
+        try {
+            await trainingService.updateSet(set.id, patch);
+            onSaved({
+                actualReps: patch.actual_reps,
+                actualLoad: patch.actual_load,
+                actualRpe: patch.actual_rpe,
+                isCompleted: true,
+            });
+            setEditing(false);
+            toast.success('Serie corregida');
+        } catch (err) {
+            console.error(err);
+            toast.error(err instanceof Error ? err.message : 'No se pudo guardar la corrección');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (editing) {
+        return (
+            <tr className="border-t border-[var(--border-subtle)] bg-[var(--brand-quiet)]">
+                <td className="px-1 py-1.5 text-ink-faint">{index + 1}</td>
+                <td colSpan={3} className="px-1 py-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        <input
+                            type="number"
+                            inputMode="decimal"
+                            value={draftReps}
+                            onChange={(e) => setDraftReps(e.target.value)}
+                            placeholder="reps"
+                            aria-label={`Repeticiones corregidas, serie ${index + 1}`}
+                            className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink outline-none focus:border-brand"
+                        />
+                        <span className="text-ink-faint">×</span>
+                        <input
+                            type="number"
+                            inputMode="decimal"
+                            step="0.5"
+                            value={draftLoad}
+                            onChange={(e) => setDraftLoad(e.target.value)}
+                            placeholder="kg"
+                            aria-label={`Kilos corregidos, serie ${index + 1}`}
+                            className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink outline-none focus:border-brand"
+                        />
+                        <span className="text-ink-faint">@</span>
+                        <input
+                            type="number"
+                            inputMode="decimal"
+                            step="0.5"
+                            value={draftRpe}
+                            onChange={(e) => setDraftRpe(e.target.value)}
+                            placeholder="RPE"
+                            aria-label={`RPE corregido, serie ${index + 1}`}
+                            className="w-14 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink outline-none focus:border-brand"
+                        />
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            aria-label="Guardar corrección"
+                            className="flex h-7 w-7 items-center justify-center rounded-chip bg-success text-[var(--surface-sunken)] transition-colors duration-fast ease-snap hover:opacity-90 disabled:opacity-50"
+                        >
+                            <Check size={13} strokeWidth={3} />
+                        </button>
+                        <button
+                            onClick={() => setEditing(false)}
+                            disabled={saving}
+                            aria-label="Cancelar"
+                            className="flex h-7 w-7 items-center justify-center rounded-chip text-ink-faint transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
+                        >
+                            <X size={13} strokeWidth={3} />
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        );
+    }
+
+    return (
+        <tr className="border-t border-[var(--border-subtle)]">
+            <td className="px-1 py-1 text-ink-faint">{index + 1}</td>
+            <td className="px-1 py-1 text-ink-subtle">
+                {set.targetReps ?? '—'}
+                {kg != null && ` × ${kg} kg`}
+                {set.targetRpe && ` @${set.targetRpe}`}
+                {reps == null && kg == null && !set.targetRpe && '—'}
+            </td>
+            <td className={cn('px-1 py-1', hasData ? 'font-semibold text-ink' : 'text-ink-faint')}>
+                {hasData ? (
+                    <>
+                        {set.actualReps ?? '—'}
+                        {set.actualLoad != null && ` × ${set.actualLoad} kg`}
+                        {set.actualRpe != null && ` @${set.actualRpe}`}
+                        {set.vbtMeanVelocity != null && (
+                            <span className="ml-1 font-normal text-ink-subtle">
+                                {set.vbtMeanVelocity} m/s
+                            </span>
+                        )}
+                    </>
+                ) : '—'}
+            </td>
+            <td className="px-1 py-1 text-right">
+                <span className="inline-flex items-center gap-1.5">
+                    {loadDelta != null && Math.abs(loadDelta) >= 2 && (
+                        <span className={loadDelta < 0 ? 'text-warning' : 'text-success'}>
+                            {loadDelta > 0 ? '+' : ''}{loadDelta}%
+                        </span>
+                    )}
+                    {rpeDelta != null && Math.abs(rpeDelta) >= 1 && (
+                        <span className={rpeDelta > 0 ? 'text-warning' : 'text-info'}>
+                            RPE {rpeDelta > 0 ? '+' : ''}{rpeDelta}
+                        </span>
+                    )}
+                </span>
+            </td>
+            <td className="w-6 px-0.5 py-1 text-right">
+                <button
+                    onClick={startEditing}
+                    aria-label={`Corregir la serie ${index + 1}`}
+                    // Siempre presente y a baja opacidad —no solo al pasar el
+                    // ratón—: en un móvil no hay hover, y ocultarlo del todo
+                    // hasta ese gesto lo habría dejado indescubrible ahí.
+                    className="flex h-6 w-6 items-center justify-center rounded-chip text-ink-faint/40 transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
+                >
+                    <Pencil size={11} />
+                </button>
+            </td>
+        </tr>
     );
 }
 

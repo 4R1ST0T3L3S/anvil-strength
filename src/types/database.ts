@@ -153,7 +153,13 @@ export interface TrainingSession {
 
 export interface AthleteReview {
     id: string;
-    user_id: string;
+    /**
+     * Ausente en la lectura pública: el GRANT de `anon` sobre
+     * `athlete_reviews` es por columnas y deja fuera `user_id` a propósito
+     * (ver database/FIX_RESENAS_PUBLICAS.sql). Solo llega en las escrituras
+     * propias del usuario autenticado.
+     */
+    user_id?: string;
     athlete_name: string;
     rating: number; // 1-5 stars
     review_text: string;

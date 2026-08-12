@@ -278,6 +278,21 @@ export const athletesService = {
     },
 
     /**
+     * Alternativa al correo: un enlace que el entrenador copia y manda por
+     * donde quiera, para que el atleta ponga su propio email y contraseña
+     * sobre la ficha que ya tiene su historial dentro. Ver InvitePage /
+     * ClaimAthletePage y supabase/functions/athletes (acción
+     * `create_claim_link`).
+     */
+    async createClaimLink(profileId: string): Promise<{ token: string; url: string }> {
+        const raw = await callAthletesFunction<{ outcome: string; token: string }>({
+            action: 'create_claim_link',
+            profile_id: profileId,
+        });
+        return { token: raw.token, url: `${window.location.origin}/reclamar/${raw.token}` };
+    },
+
+    /**
      * Cambia el estado de la relación con un atleta.
      *
      * Sustituye al DELETE que hacía antes "sacar del equipo". Borrar la fila

@@ -64,6 +64,40 @@ export function rpeOf(set: TrainingSet): number | null {
     return target;
 }
 
+/**
+ * LO PAUTADO, sin mezclar con lo ejecutado — a diferencia de `kgOf`/`repsOf`,
+ * que dan lo registrado y solo caen a lo pautado si falta.
+ *
+ * Existen para poder dibujar el plan como una serie propia (ver
+ * `plannedVsActualWeekly`): un entrenador que programa la semana 6 antes de
+ * que nadie la entrene necesita ver esa progresión completa desde el primer
+ * momento, no una gráfica en blanco que se va rellenando a medida que llegan
+ * registros. `kgOf`/`repsOf` no sirven para eso porque devuelven null en
+ * cuanto hay un valor real, que es justo lo que hay que evitar aquí.
+ */
+export function plannedKgOf(set: TrainingSet): number | null {
+    const metric = set.target_metric ?? 'kg';
+    if (metric !== 'kg') return null;
+    return set.target_load ?? null;
+}
+
+export function plannedRepsOf(set: TrainingSet): number | null {
+    const raw = set.target_reps;
+    if (!raw) return null;
+    const parts = raw.toLowerCase().split('x');
+    const repsPart = parts.length >= 2 ? parts.slice(1).join('x') : parts[0];
+    return parseNum(repsPart.split('-')[0]);
+}
+
+/** LO EJECUTADO, sin caer al plan si falta — el complemento de las dos de arriba. */
+export function actualKgOf(set: TrainingSet): number | null {
+    return set.actual_load ?? null;
+}
+
+export function actualRepsOf(set: TrainingSet): number | null {
+    return set.actual_reps ?? null;
+}
+
 /** Parte de repeticiones de un `target_reps`, para agrupar series comparables. */
 export function repsKey(targetReps: string | null | undefined): string {
     if (!targetReps) return '';
@@ -234,6 +268,113 @@ export function weeklySeries(history: ExerciseHistoryRow[]): WeeklyPoint[] {
             avgIntensityPct: b.intensities.length
                 ? Math.round(b.intensities.reduce((a, c) => a + c, 0) / b.intensities.length)
                 : null,
+        }));
+}
+
+// =====================================================================
+// PAUTADO CONTRA REAL
+// =====================================================================
+
+export interface PlannedActualWeekPoint {
+    week: number;
+    label: string;
+    /**
+     * El tonelaje que dibujaba el plan al pautarlo — existe desde el
+     * momento en que el coach programa la semana, entrene o no el atleta
+     * todavía.
+     */
+    plannedTonnage: number | null;
+    /** Lo que el atleta ha registrado de verdad. Null en semanas sin ejecutar. */
+    actualTonnage: number | null;
+    plannedSets: number;
+    actualSets: number;
+    plannedAvgIntensityPct: number | null;
+    actualAvgIntensityPct: number | null;
+}
+
+/**
+ * LA MISMA PROGRESIÓN, EN DOS TRAZOS.
+ * =====================================================================
+ * `weeklySeries` mezcla lo pautado y lo ejecutado en una sola cifra por
+ * semana —lo registrado manda, y si falta, cae al plan—. Eso está bien para
+ * "cuánto se ha movido en total", pero no sirve para la pregunta que hace
+ * un entrenador al programar: "¿esto es lo que quiero que pase?", y luego,
+ * semana a semana: "¿se está cumpliendo?".
+ *
+ * Aquí cada semana lleva DOS series independientes, calculadas con
+ * `plannedKgOf`/`actualKgOf` (nunca con el `kgOf` que mezcla). El plan
+ * aparece completo desde el instante en que se programa, sin esperar a que
+ * el atleta registre nada; lo real se va rellenando serie a serie conforme
+ * llegan datos, y puede quedar por debajo, por encima o clavado al plan.
+ *
+ * La intensidad relativa (% del mejor 1RM estimado) usa el 1RM más alto
+ * visto entre plan Y real: comparar el % pautado contra el 1RM de lo
+ * ejecutado (o viceversa) daría una cifra que no significa nada.
+ */
+export function plannedVsActualWeekly(history: ExerciseHistoryRow[]): PlannedActualWeekPoint[] {
+    const bestByExercise = new Map<string, number>();
+    for (const row of history) {
+        for (const set of row.sets) {
+            for (const [kgFn, repsFn] of [[plannedKgOf, plannedRepsOf], [actualKgOf, actualRepsOf]] as const) {
+                const kg = kgFn(set);
+                const reps = repsFn(set);
+                if (kg === null || reps === null) continue;
+                const oneRm = estimate1RM(kg, reps);
+                if (oneRm !== null) {
+                    const prev = bestByExercise.get(row.exerciseName) ?? 0;
+                    if (oneRm > prev) bestByExercise.set(row.exerciseName, oneRm);
+                }
+            }
+        }
+    }
+
+    type Bucket = {
+        plannedTonnage: number; plannedSets: number; plannedIntensities: number[];
+        actualTonnage: number; actualSets: number; actualIntensities: number[];
+    };
+    const byWeek = new Map<number, Bucket>();
+
+    for (const row of history) {
+        const bucket = byWeek.get(row.weekNumber) ?? {
+            plannedTonnage: 0, plannedSets: 0, plannedIntensities: [],
+            actualTonnage: 0, actualSets: 0, actualIntensities: [],
+        };
+        const best = bestByExercise.get(row.exerciseName);
+
+        for (const set of row.sets) {
+            const pKg = plannedKgOf(set);
+            const pReps = plannedRepsOf(set);
+            if (pKg !== null && pReps !== null) {
+                bucket.plannedTonnage += pKg * pReps;
+                bucket.plannedSets += 1;
+                if (best && best > 0) bucket.plannedIntensities.push((pKg / best) * 100);
+            }
+
+            const aKg = actualKgOf(set);
+            const aReps = actualRepsOf(set);
+            if (aKg !== null && aReps !== null) {
+                bucket.actualTonnage += aKg * aReps;
+                bucket.actualSets += 1;
+                if (best && best > 0) bucket.actualIntensities.push((aKg / best) * 100);
+            }
+        }
+
+        byWeek.set(row.weekNumber, bucket);
+    }
+
+    const avg = (xs: number[]) => xs.length ? Math.round(xs.reduce((a, c) => a + c, 0) / xs.length) : null;
+
+    return [...byWeek.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([week, b]) => ({
+            week,
+            label: `S${week}`,
+            plannedTonnage: b.plannedSets > 0 ? Math.round(b.plannedTonnage) : null,
+            actualTonnage: b.actualSets > 0 ? Math.round(b.actualTonnage) : null,
+            plannedSets: b.plannedSets,
+            actualSets: b.actualSets,
+            plannedAvgIntensityPct: avg(b.plannedIntensities),
+            actualAvgIntensityPct: avg(b.actualIntensities),
         }));
 }
 

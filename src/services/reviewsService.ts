@@ -6,9 +6,13 @@ export const reviewsService = {
      * Get all reviews (public - no auth required)
      */
     async getAllReviews(): Promise<AthleteReview[]> {
+        // Columnas explícitas y NO `select('*')`: el GRANT de `anon` sobre
+        // esta tabla es por columnas (ver database/FIX_RESENAS_PUBLICAS.sql)
+        // y excluye `user_id` a propósito. Un `*` pediría una columna que un
+        // visitante sin sesión no tiene permiso de leer y fallaría igual.
         const { data, error } = await supabase
             .from('athlete_reviews')
-            .select('*')
+            .select('id, athlete_name, rating, review_text, created_at, updated_at')
             .order('created_at', { ascending: false });
 
         if (error) {

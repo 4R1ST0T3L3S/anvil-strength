@@ -13,7 +13,7 @@ import { ConsistencyCalendar } from './ConsistencyCalendar';
 import { cn } from '../../../lib/utils';
 import {
     summarize, weeklySeries, compareExercises, velocityProfile, summarizeCheckIns,
-    adherenceSeries, intensityDistribution, consistencyByDay,
+    adherenceSeries, intensityDistribution, consistencyByDay, plannedVsActualWeekly,
     kgOf, repsOf, rpeOf, repsKey, parseNum,
 } from '../../../lib/stats/athleteStats';
 
@@ -102,6 +102,15 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
     const [search, setSearch] = useState('');
     const [tab, setTab] = useState<StatsTab>('general');
     const [macros, setMacros] = useState<Macrocycle[]>([]);
+    /**
+     * Antes un fallo de red o de permisos (RLS) y "este atleta no tiene
+     * entrenamientos" se veían EXACTAMENTE IGUAL: el `.catch(console.error)`
+     * de abajo tragaba el error y la pantalla mostraba el mismo mensaje de
+     * "sin datos" para los dos casos. Un entrenador viendo "sin datos" no
+     * tiene ninguna pista de que el problema es un permiso mal concedido y
+     * no que el atleta de verdad no haya entrenado.
+     */
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -118,9 +127,11 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
         // `setLoading(true)` va dentro de la promesa y no en el cuerpo del
         // efecto: llamarlo de forma síncrona ahí provoca un render en cascada
         // (el estado ya arranca en `true`, así que además no cambiaba nada).
+        // `setLoadError(null)` sigue la misma regla, dentro del `.then`.
         trainingService.getExerciseHistoryByAthlete(athleteId)
             .then(rows => {
                 if (!alive) return;
+                setLoadError(null);
                 setHistory(rows);
                 const counts = new Map<string, number>();
                 rows.forEach(r => counts.set(r.exerciseName, (counts.get(r.exerciseName) || 0) + 1));
@@ -130,7 +141,21 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                 // abrir la pestaña en blanco obliga a adivinar qué hace.
                 setCompareWith(ranked.slice(0, 2).map(([name]) => name));
             })
-            .catch(console.error)
+            .catch((err: unknown) => {
+                if (!alive) return;
+                console.error('Error cargando el historial de entrenamiento:', err);
+                const code = (err as { code?: string })?.code;
+                const message = err instanceof Error ? err.message : String(err);
+                // 42501 (permiso denegado) y PGRST301/401 (JWT) son casi
+                // siempre una política RLS sin desplegar — el caso que se
+                // confundía con "el atleta no ha entrenado". El resto se
+                // enseña tal cual: es información real para depurar.
+                setLoadError(
+                    code === '42501' || message.includes('permission denied')
+                        ? 'Sin permiso para leer el entrenamiento de este atleta. Probablemente falta ejecutar una migración de la base de datos (revisa database/FIX_TIMEOUT_SERIES.sql y database/REESTRUCTURACION_2026-08.sql).'
+                        : `No se pudo cargar el historial: ${message}`
+                );
+            })
             .finally(() => { if (alive) setLoading(false); });
 
         return () => { alive = false; };
@@ -141,6 +166,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
     // ---------------------------------------------------------------
     const summary = useMemo(() => summarize(history), [history]);
     const weekly = useMemo(() => weeklySeries(history), [history]);
+    const plannedVsActual = useMemo(() => plannedVsActualWeekly(history), [history]);
     const checkInData = useMemo(() => summarizeCheckIns(checkIns), [checkIns]);
     const adherence = useMemo(() => adherenceSeries(history), [history]);
     const intensity = useMemo(() => intensityDistribution(history), [history]);
@@ -305,6 +331,11 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                 <div className="flex flex-1 items-center justify-center">
                     <Loader className="animate-spin text-brand" size={28} />
                 </div>
+            ) : loadError ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+                    <p className="text-t-sm font-bold text-danger">No se pudo cargar</p>
+                    <p className="max-w-md text-t-sm text-ink-subtle">{loadError}</p>
+                </div>
             ) : history.length === 0 ? (
                 <div className="flex flex-1 items-center justify-center px-6 text-center text-t-sm text-ink-subtle">
                     Este atleta todavía no tiene entrenamientos registrados.
@@ -410,6 +441,29 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                                     subtitle="Cada casilla es un día; cuanto más intensa, más series se hicieron. Los huecos cuentan lo que ninguna media mensual llega a contar."
                                 >
                                     <ConsistencyCalendar days={consistency} />
+                                </ChartCard>
+
+                                <ChartCard
+                                    title="Pautado contra real"
+                                    subtitle="Discontinua: lo que programaste, completo desde el primer día. Sólida: lo que el atleta ha registrado de verdad, semana a semana."
+                                >
+                                    {plannedVsActual.length === 0 ? (
+                                        <Empty>Programa la primera semana para ver aquí la progresión prevista.</Empty>
+                                    ) : (
+                                        <div className="h-72">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <LineChart data={plannedVsActual} margin={{ top: 5, right: 8, left: -12, bottom: 5 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                                                    <XAxis dataKey="label" tick={AXIS} />
+                                                    <YAxis tick={AXIS} />
+                                                    <Tooltip contentStyle={TOOLTIP_STYLE} />
+                                                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                                                    <Line type="monotone" dataKey="plannedTonnage" name="Tonelaje pautado (kg)" stroke={SERIES_COLORS[1]} strokeWidth={2} strokeDasharray="6 4" dot={{ r: 2.5 }} connectNulls />
+                                                    <Line type="monotone" dataKey="actualTonnage" name="Tonelaje real (kg)" stroke={SERIES_COLORS[0]} strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    )}
                                 </ChartCard>
 
                                 <ChartCard

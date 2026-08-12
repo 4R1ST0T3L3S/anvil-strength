@@ -11,7 +11,7 @@ const faqs = [
     },
     {
         q: '¿Cuánto cuesta unirse al club?',
-        a: 'Unirse es completamente gratuito. Los únicos costes que tendrás son las tasas oficiales de la AEP para federarte (una vez al año) y las inscripciones a competiciones, que van por tu cuenta. El club no cobra ninguna comisión.',
+        a: 'Unirse al club es completamente gratuito: no hay cuota. Los costes que sí tendrás son las tasas oficiales de la AEP para federarte (una vez al año) y las inscripciones a competiciones, que van por tu cuenta. Aparte de eso, el entrenamiento personalizado con tu entrenador es un servicio de pago que acuerdas directamente con él — el club no cobra ninguna comisión sobre eso.',
     },
     {
         q: '¿Necesito entrenar en un gimnasio específico?',
