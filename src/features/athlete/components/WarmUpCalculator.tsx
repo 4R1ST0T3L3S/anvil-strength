@@ -3,6 +3,9 @@ import { createPortal } from 'react-dom';
 import { X, TrendingUp, Dumbbell, List, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
+import { useUser } from '../../../hooks/useUser';
+import { useAthletePrefs } from '../../../hooks/useAthletePrefs';
+import { toDisplay, fromInput } from '../../../lib/units';
 
 interface WarmUpCalculatorProps {
     isOpen: boolean;
@@ -17,14 +20,21 @@ interface WarmUpSet {
 }
 
 export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
+    const { data: user } = useUser();
+    const { prefs: athletePrefs } = useAthletePrefs(user?.id);
+    const unit = athletePrefs.unit;
+
     const [oneRM, setOneRM] = useState<string>('');
     const [targetWeight, setTargetWeight] = useState<string>('');
     const [warmUpSets, setWarmUpSets] = useState<WarmUpSet[]>([]);
     const resultsRef = useRef<HTMLDivElement>(null);
 
     const calculateWarmUp = () => {
-        const target = parseFloat(targetWeight);
-        const maxRM = parseFloat(oneRM) || target;
+        // Lo que se teclea está en la unidad del atleta; TODO el cálculo de
+        // aquí en adelante trabaja en kg — la barra vacía (20) y los saltos
+        // de 2,5 son constantes FÍSICAS del gimnasio, no de la pantalla.
+        const target = fromInput(parseFloat(targetWeight), unit) ?? NaN;
+        const maxRM = fromInput(parseFloat(oneRM), unit) || target;
 
         if (isNaN(target) || target <= 20) {
             setWarmUpSets([]);
@@ -141,7 +151,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                         </div>
                         <div>
                             <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Aproximaciones</h2>
-                            <p className="text-[10px] md:text-[12px] font-black text-blue-500 uppercase tracking-[0.3em]">Anvil Lab Tools</p>
+                            <p className="text-t-2xs md:text-t-xs font-black text-blue-500 uppercase tracking-[0.3em]">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <button
@@ -160,7 +170,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                         <div className="col-span-12 md:col-span-6 flex flex-col justify-center h-full pt-4 md:pt-0 shrink-0">
                             <div className="flex flex-col md:grid md:grid-rows-3 gap-6 h-auto md:h-[75%] w-full">
                                 <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
-                                    <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Tu 1RM Actual (Opcional)</label>
+                                    <label className="block text-t-2xs md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Tu 1RM Actual (Opcional)</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
@@ -171,12 +181,12 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                             placeholder="0"
                                             className="w-full bg-transparent text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic"
                                         />
-                                        <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">kg</span>
+                                        <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">{unit}</span>
                                     </div>
                                 </div>
 
                                 <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
-                                    <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Peso Objetivo Hoy</label>
+                                    <label className="block text-t-2xs md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Peso Objetivo Hoy</label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
@@ -187,7 +197,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                             placeholder="0"
                                             className="w-full bg-transparent text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic"
                                         />
-                                        <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">kg</span>
+                                        <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">{unit}</span>
                                     </div>
                                 </div>
 
@@ -239,17 +249,17 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                                     {i + 1}
                                                 </div>
                                                 <div>
-                                                    <p className={`text-[10px] font-black uppercase tracking-widest ${set.percentage === 100 ? 'text-blue-400' : 'text-gray-600'}`}>
+                                                    <p className={`text-t-2xs font-black uppercase tracking-widest ${set.percentage === 100 ? 'text-blue-400' : 'text-gray-600'}`}>
                                                         {set.label} {set.percentage > 0 && `(${set.percentage}%)`}
                                                     </p>
                                                     <p className="text-xl md:text-3xl font-black text-white italic">
-                                                        {set.weight}
-                                                        <span className="text-xs ml-1 text-gray-500">kg</span>
+                                                        {Math.round((toDisplay(set.weight, unit) ?? 0) * 10) / 10}
+                                                        <span className="text-xs ml-1 text-gray-500">{unit}</span>
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Reps</p>
+                                                <p className="text-t-2xs font-black text-gray-600 uppercase tracking-widest mb-1">Reps</p>
                                                 <p className={`text-xl md:text-3xl font-black italic ${set.percentage === 100 ? 'text-blue-400' : 'text-white'}`}>
                                                     {set.reps}
                                                 </p>

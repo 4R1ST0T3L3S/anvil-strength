@@ -73,7 +73,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                         </div>
                         <div>
                             <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Carga de Barra</h2>
-                            <p className="text-[10px] md:text-[12px] font-black text-anvil-red uppercase tracking-[0.3em]">Anvil Lab Tools</p>
+                            <p className="text-t-2xs md:text-t-xs font-black text-anvil-red uppercase tracking-[0.3em]">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <button
@@ -158,7 +158,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                         <div className="flex flex-col gap-4 pt-2 shrink-0 md:h-full">
                             {/* Input Section */}
                             <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 flex flex-col justify-center min-h-[120px] md:flex-1 md:min-h-0">
-                                <label className="block text-[10px] md:text-xs font-black text-gray-600 mb-1 uppercase tracking-widest text-center">Peso Total Objetivo</label>
+                                <label className="block text-t-2xs md:text-xs font-black text-gray-600 mb-1 uppercase tracking-widest text-center">Peso Total Objetivo</label>
                                 <div className="flex items-center justify-center gap-2">
                                     <input
                                         type="number"
@@ -198,13 +198,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                 <div className="flex bg-black/60 p-1 rounded-lg border border-white/5 shrink-0">
                                     <button
                                         onClick={() => setHasCollars(true)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-[10px] md:text-xs transition-all ${hasCollars ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-all ${hasCollars ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
                                     >
                                         SÍ
                                     </button>
                                     <button
                                         onClick={() => setHasCollars(false)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-[10px] md:text-xs transition-all ${!hasCollars ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-all ${!hasCollars ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
                                     >
                                         NO
                                     </button>
@@ -218,7 +218,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                 <div className="flex items-center justify-between mb-4 md:mb-8 shrink-0">
                                     <h3 className="text-sm md:text-base font-black text-white uppercase tracking-widest italic">Discos (Por lado)</h3>
                                     <div className="px-3 py-1 bg-anvil-red/10 rounded-full border border-anvil-red/20">
-                                        <span className="text-[10px] md:text-xs font-black text-anvil-red uppercase italic">IPF Standard</span>
+                                        <span className="text-t-2xs md:text-xs font-black text-anvil-red uppercase italic">IPF Standard</span>
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap content-start gap-3 flex-1 overflow-y-auto custom-scrollbar md:pr-2">
@@ -245,7 +245,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                         </div>
                                                         <div className="flex flex-col leading-none">
                                                             <span className="text-lg md:text-2xl font-black text-white italic">x{count}</span>
-                                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{weight} kg</span>
+                                                            <span className="text-t-2xs font-bold text-gray-500 uppercase tracking-wider">{weight} kg</span>
                                                         </div>
                                                     </motion.div>
                                                 );
@@ -261,7 +261,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                 </div>
                                                 <div className="flex flex-col leading-none">
                                                     <span className="text-lg md:text-2xl font-black text-white italic">x1</span>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Cierre</span>
+                                                    <span className="text-t-2xs font-bold text-gray-400 uppercase tracking-wider">Cierre</span>
                                                 </div>
                                             </motion.div>
                                         )}
@@ -282,7 +282,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
 
                 {/* Footer */}
                 <div className="p-4 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-white/5 shrink-0 text-center flex items-center justify-center gap-3 h-16 md:h-20">
-                    <p className="text-[10px] md:text-xs font-black text-gray-500 uppercase tracking-[0.3em] italic">
+                    <p className="text-t-2xs md:text-xs font-black text-gray-500 uppercase tracking-[0.3em] italic">
                         TOTAL EN BARRA:
                     </p>
                     <span className="text-3xl md:text-5xl font-black text-white italic tracking-tighter">

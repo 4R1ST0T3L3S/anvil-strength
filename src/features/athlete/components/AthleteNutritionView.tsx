@@ -56,7 +56,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                         </p>
                     </div>
                     <div className="pt-4 flex justify-center gap-4">
-                        <div className="px-6 py-3 bg-white/5 border border-[var(--border-default)] rounded-xl text-[10px] font-black uppercase tracking-widest text-ink-subtle flex items-center gap-2">
+                        <div className="px-6 py-3 bg-white/5 border border-[var(--border-default)] rounded-xl text-t-2xs font-black uppercase tracking-widest text-ink-subtle flex items-center gap-2">
                             <Clock size={14} /> Esperando nutricionista...
                         </div>
                     </div>
@@ -125,7 +125,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                     <p className="text-ink-muted text-lg">Objetivos diarios y planificación.</p>
                 </div>
                 <div className="hidden md:block text-right">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-subtle mb-1">Total Calorías</p>
+                    <p className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle mb-1">Total Calorías</p>
                     <p className="text-3xl font-black text-white italic">
                         {Math.round(currentMacros.kcal).toLocaleString()} <span className="text-xs not-italic text-ink-subtle">/ {plan.calories_target} kcal</span>
                     </p>
@@ -157,7 +157,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                             <div className={`p-1.5 rounded-lg bg-white/5 ${macro.textColor}`}>
                                 {macro.icon}
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-ink-subtle">{macro.label}</span>
+                            <span className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle">{macro.label}</span>
                         </div>
                         <div>
                             <div className="flex items-baseline gap-1 mb-2">
@@ -282,11 +282,11 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                                                 <div className="flex items-center gap-2 mt-0.5">
                                                                     <span className="text-xs text-ink-subtle font-bold">{mf.amount_g}g</span>
                                                                     {mf.food.brands && (
-                                                                        <span className="text-[10px] text-ink-subtle">({mf.food.brands})</span>
+                                                                        <span className="text-t-2xs text-ink-subtle">({mf.food.brands})</span>
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            <div className="flex gap-3 text-[10px] font-bold shrink-0">
+                                                            <div className="flex gap-3 text-t-2xs font-bold shrink-0">
                                                                 <span className="text-ink-muted">{Math.round(mf.food['energy-kcal_100g'] * mult)}</span>
                                                                 <span className="text-blue-400/80">{Math.round(mf.food.proteins_100g * mult)}P</span>
                                                                 <span className="text-yellow-400/80">{Math.round(mf.food.carbohydrates_100g * mult)}C</span>
@@ -302,7 +302,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                                 <div className="mt-3 pt-3 border-t border-subtle">
                                                     <div className="flex flex-wrap gap-2">
                                                         {meal.meal_supplements.map((s, idx) => (
-                                                            <span key={idx} className="bg-blue-500/10 text-blue-300 text-[10px] px-2 py-1 rounded border border-blue-500/20 flex items-center gap-1">
+                                                            <span key={idx} className="bg-blue-500/10 text-blue-300 text-t-2xs px-2 py-1 rounded border border-blue-500/20 flex items-center gap-1">
                                                                 <Pill size={10} /> {s}
                                                             </span>
                                                         ))}

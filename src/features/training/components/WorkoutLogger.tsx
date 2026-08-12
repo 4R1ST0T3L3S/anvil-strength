@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { trainingService, parseGroupedReps } from '../../../services/trainingService';
+import type { LastSessionSetReference } from '../../../services/trainingService';
 import { LoggerSetRow } from './LoggerSetRow';
+import { LastSessionReference } from './LastSessionReference';
 import { SaveIndicator } from '../../../components/ui/SaveIndicator';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
 import { TrainingBlock, TrainingSession, SessionExercise, TrainingSet, TARGET_METRICS, weekdayIndex, weekdayLabel, WEEKDAYS, groupLabel, countsForVolume } from '../../../types/training';
@@ -16,6 +18,8 @@ import {
 import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download, Info } from 'lucide-react';
 import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
 import { useCoachPdfTheme } from '../../../hooks/useCoachPdfTheme';
+import { useAthletePrefs } from '../../../hooks/useAthletePrefs';
+import type { WeightUnit } from '../../../lib/prefs/contract';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -107,6 +111,12 @@ function pickSessionForToday<T extends { id: string; date?: string | null; day_o
 // COMPONENT: WORKOUT LOGGER
 // ==========================================
 export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
+    // Unidad del propio atleta (o la que le haya fijado su coach por
+    // defecto). Solo afecta a lo que se enseña/escribe; se sigue guardando
+    // siempre en kg. Ver src/lib/units.ts.
+    const { prefs: athletePrefs } = useAthletePrefs(athleteId);
+    const unit = athletePrefs.unit;
+
     const [loading, setLoading] = useState(true);
     const [block, setBlock] = useState<TrainingBlock | null>(null);
     /**
@@ -125,6 +135,51 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     // vuelven a mirarse: van plegados y no ocupan alto de cabecera.
     const [objectivesOpen, setObjectivesOpen] = useState(false);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+
+    /**
+     * Última sesión cerrada de cada ejercicio del día activo, para la
+     * referencia que se enseña cuando el coach no pautó peso.
+     *
+     * Un solo batch por TODOS los ejercicios del día, no uno por tarjeta —
+     * ver `getLastSessionSetsForExercises`. Si falla, el mapa se queda vacío
+     * y ninguna tarjeta muestra referencia: el entrenamiento en sí no
+     * depende de esto.
+     */
+    const [lastSessionByExercise, setLastSessionByExercise] = useState<Map<string, LastSessionSetReference>>(new Map());
+
+    // Clave de contenido y no de referencia: `allSessions` cambia de
+    // identidad cada vez que se marca una serie (handleSetChange copia el
+    // array), pero los EJERCICIOS del día no cambian al entrenar. Sin esta
+    // clave, cada tick del registro relanzaría la consulta de historial.
+    const activeExerciseIdsKey = useMemo(() => {
+        const activeSess = allSessions.find(s => s.id === activeSessionId);
+        if (!activeSess) return '';
+        return [...new Set(
+            activeSess.exercises
+                .filter(e => countsForVolume(e.section))
+                .map(e => e.exercise_id)
+        )].join(',');
+    }, [allSessions, activeSessionId]);
+
+    useEffect(() => {
+        if (!activeSessionId || !activeExerciseIdsKey) {
+            setLastSessionByExercise(new Map());
+            return;
+        }
+        const exerciseIds = activeExerciseIdsKey.split(',');
+
+        let cancelled = false;
+        trainingService.getLastSessionSetsForExercises(athleteId, exerciseIds, activeSessionId)
+            .then(map => { if (!cancelled) setLastSessionByExercise(map); })
+            .catch(err => {
+                // Referencia informativa, no crítica: si falla, la sesión
+                // sigue funcionando sin ella.
+                console.error('Error cargando última sesión:', err);
+                if (!cancelled) setLastSessionByExercise(new Map());
+            });
+
+        return () => { cancelled = true; };
+    }, [athleteId, activeSessionId, activeExerciseIdsKey]);
 
     // Vídeo enlazado desde el calentamiento o los extras. Se reproduce dentro
     // de la app para no sacar al atleta de la sesión a medio registrar.
@@ -541,7 +596,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 <span className="flex min-w-0 items-center gap-2">
                                     <CalendarDays size={14} className="shrink-0 text-anvil-red" aria-hidden="true" />
                                     <span className="min-w-0">
-                                        <span className="block truncate text-[9px] font-bold uppercase leading-tight tracking-widest text-anvil-red">
+                                        <span className="block truncate text-t-2xs font-bold uppercase leading-tight tracking-widest text-anvil-red">
                                             {block.name}
                                         </span>
                                         <span className="block truncate text-t-sm font-bold leading-tight">
@@ -626,7 +681,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                                 Semana {i + 1}
                                                 {weekNames[w] && <span className="ml-1.5 font-normal opacity-70">{weekNames[w]}</span>}
                                             </span>
-                                            <span className="block text-[10px] text-ink-subtle">
+                                            <span className="block text-t-2xs text-ink-subtle">
                                                 {formatDateRange(
                                                     getDateRangeFromWeek(w, blockYear).start,
                                                     getDateRangeFromWeek(w, blockYear).end
@@ -634,7 +689,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                             </span>
                                         </span>
                                         {w === getWeekNumber() && (
-                                            <span className="ml-2 shrink-0 rounded-full bg-anvil-red/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-anvil-red">
+                                            <span className="ml-2 shrink-0 rounded-full bg-anvil-red/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-anvil-red">
                                                 Ahora
                                             </span>
                                         )}
@@ -694,7 +749,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             >
                                 {label ? (
                                     <>
-                                        <span className="text-[9px] uppercase tracking-widest opacity-60">
+                                        <span className="text-t-2xs uppercase tracking-widest opacity-60">
                                             {WEEKDAYS.find(d => d.key === s.day_of_week)?.short}
                                         </span>
                                         <span className="mt-0.5 text-t-sm font-bold">{date?.getDate()}</span>
@@ -705,7 +760,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     </span>
                                 ) : (
                                     <>
-                                        <span className="text-[9px] uppercase tracking-widest opacity-60">Día</span>
+                                        <span className="text-t-2xs uppercase tracking-widest opacity-60">Día</span>
                                         <span className="mt-0.5 text-t-sm font-bold">{s.day_number}</span>
                                     </>
                                 )}
@@ -745,7 +800,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 transition={{ duration: prefersReducedMotion() ? 0 : DURATION.base, ease: EASE_OUT }}
                             />
                         </div>
-                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-widest tabular-nums text-ink-subtle">
+                        <span className="shrink-0 text-t-2xs font-bold uppercase tracking-widest tabular-nums text-ink-subtle">
                             {completedSets}/{totalSets}
                         </span>
                         <SaveIndicator />
@@ -824,9 +879,11 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                         athleteId={athleteId}
                                         position={i + 1}
                                         chain={chains.get(ex.id) ?? null}
+                                        lastSession={lastSessionByExercise.get(ex.exercise_id)}
                                         onStartTimer={handleStartTimer}
                                         onExpandSet={handleExpandSet}
                                         onSetChange={handleSetChange}
+                                        unit={unit}
                                     />
                                 ))}
                             </div>
@@ -842,9 +899,11 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 athleteId={athleteId}
                                 position={i + 1}
                                 chain={chains.get(ex.id) ?? null}
+                                lastSession={lastSessionByExercise.get(ex.exercise_id)}
                                 onStartTimer={handleStartTimer}
                                 onExpandSet={handleExpandSet}
                                 onSetChange={handleSetChange}
+                                unit={unit}
                             />
                         ))}
 
@@ -1017,9 +1076,11 @@ function LoggerExerciseCard({
     athleteId,
     position,
     chain,
+    lastSession,
     onStartTimer,
     onExpandSet,
     onSetChange,
+    unit = 'kg',
 }: {
     sessionExercise: ExtendedSessionExercise;
     athleteId: string;
@@ -1027,9 +1088,12 @@ function LoggerExerciseCard({
     position: number;
     /** Encadenado al que pertenece, si lo hay. */
     chain: ChainInfo | null;
+    /** Última vez que se hizo este ejercicio, si hay y el peso no está pautado. */
+    lastSession?: LastSessionSetReference;
     onStartTimer: (s: number) => void;
     onExpandSet: (setId: string, baseOrderIndex: number, groupIndex: number) => Promise<string | null>;
     onSetChange: (setId: string, completed: boolean) => void;
+    unit?: WeightUnit;
 }) {
     /**
      * Renglones a pintar.
@@ -1074,6 +1138,19 @@ function LoggerExerciseCard({
         sessionExercise.sets?.[0]?.target_metric ?? 'kg';
     const prescriptionLabel =
         TARGET_METRICS.find(m => m.key === prescriptionMetric)?.label ?? 'Kg';
+
+    /**
+     * ¿Pautó el coach un peso literal para alguna serie de este ejercicio?
+     *
+     * No basta con mirar la primera serie: un ejercicio puede tener una
+     * rampa con la primera serie en RPE y el resto en kilos. Si CUALQUIER
+     * serie trae un kilo explícito, el atleta ya tiene la cifra del coach
+     * delante y la referencia histórica sobra — mostrarla igual sería decir
+     * "la vez pasada" encima de un número que ya no es una decisión suya.
+     */
+    const hasExplicitWeight = sessionExercise.sets.some(
+        s => (s.target_metric ?? 'kg') === 'kg' && s.target_load != null
+    );
 
     // Si la biblioteca no devolvió el ejercicio (RLS), la sesión se sigue
     // pudiendo registrar: series, kilos y vídeos no dependen de él.
@@ -1336,7 +1413,7 @@ function LoggerExerciseCard({
                         accept=".csv,.xlsx,.txt,.vbt"
                     />
                     {vbtUrl ? (
-                         <div className="flex items-center gap-1 text-[10px] text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
+                         <div className="flex items-center gap-1 text-t-2xs text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
                             <FileCheck size={12} /> VBT SUBIDO
                             {taggedSetId && (
                                 <span className="text-green-300/70 normal-case font-medium">
@@ -1348,7 +1425,7 @@ function LoggerExerciseCard({
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading}
-                            className="flex items-center gap-1 text-[10px] text-ink-muted hover:text-white bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
+                            className="flex items-center gap-1 text-t-2xs text-ink-muted hover:text-white bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
                         >
                             {uploading ? <Loader size={12} className="animate-spin" /> : <UploadCloud size={12} />}
                             {uploading ? "SUBIENDO..." : "+ VBT"}
@@ -1360,7 +1437,7 @@ function LoggerExerciseCard({
             {/* Selector: ¿a qué serie corresponde el archivo VBT? */}
             {pendingSetTag && (
                 <div className="px-4 py-3 bg-anvil-red/5 border-b border-anvil-red/20 animate-in slide-in-from-top-2">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-anvil-red mb-2">
+                    <p className="text-t-2xs font-black uppercase tracking-wider text-anvil-red mb-2">
                         ¿A qué serie corresponde el archivo?
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1391,7 +1468,7 @@ function LoggerExerciseCard({
 
             {/* Prescription Summary Bar: vel_avg, rpe, rest */}
             {(sessionExercise.velocity_avg || sessionExercise.rpe || sessionExercise.rest_seconds) && (
-                <div className="flex items-center gap-4 px-4 py-2 bg-black/30 border-b border-subtle text-[11px] text-ink-subtle">
+                <div className="flex items-center gap-4 px-4 py-2 bg-black/30 border-b border-subtle text-t-2xs text-ink-subtle">
                     {sessionExercise.velocity_avg && (
                         <span>
                             <span className="font-bold text-ink-muted">{sessionExercise.velocity_avg}</span>
@@ -1413,6 +1490,17 @@ function LoggerExerciseCard({
                 </div>
             )}
 
+            {/* Referencia a la última sesión.
+                Solo cuando el coach NO pautó un kilo explícito — ver
+                `hasExplicitWeight` — y solo si hay historial: sin eso, el
+                componente no pinta nada (ni "sin datos", ni una tarjeta
+                vacía). Va DESPUÉS de la barra de prescripción y ANTES de las
+                series, para que sea lo último que se lee antes de escribir
+                el peso de hoy. */}
+            {!hasExplicitWeight && lastSession && (
+                <LastSessionReference reference={lastSession} unit={unit} />
+            )}
+
             {/* Cabecera de las columnas */}
             {/* Mismas columnas que LoggerSetRow. Si se cambian ahí, aquí
                 también: son la cabecera de esa rejilla. */}
@@ -1423,7 +1511,7 @@ function LoggerExerciseCard({
                     atleta. Cuando el coach pautó en otra unidad —RPE, RIR,
                     velocidad— su objetivo aparece encima de cada casilla, que
                     es donde no se confunde con lo que se ha levantado. */}
-                <span>Kg{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
+                <span>{unit === 'lb' ? 'Lb' : 'Kg'}{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
                 <span>RPE</span>
                 <span />
                 <span />
@@ -1456,6 +1544,7 @@ function LoggerExerciseCard({
                                 ? undefined
                                 : () => setVbtSet({ set: row.set, number: index + 1 })
                         }
+                        unit={unit}
                     />
                 ))}
             </div>

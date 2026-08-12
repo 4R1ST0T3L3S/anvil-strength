@@ -6,6 +6,8 @@ import { useUser } from '../../../hooks/useUser';
 import { supabase } from '../../../lib/supabase';
 import { calcular1RMporVelocidad, Movimiento } from '../../../utils/vbtCalculator';
 import { lockBodyScroll } from '../../../lib/scrollLock';
+import { useAthletePrefs } from '../../../hooks/useAthletePrefs';
+import { toDisplay, fromInput, formatLoad } from '../../../lib/units';
 
 interface OneRMCalculatorProps {
     isOpen: boolean;
@@ -30,7 +32,7 @@ function CustomSelect({
 
     return (
         <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between overflow-hidden hover:border-white/10 ${className}`}>
-            <label className="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate text-center w-full">
+            <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate text-center w-full">
                 {label}
             </label>
             <button
@@ -131,7 +133,7 @@ function WheelSelector({
 
     return (
         <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between overflow-hidden hover:border-white/10 ${className}`}>
-            <label className="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate text-center w-full">
+            <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate text-center w-full">
                 {label}
             </label>
             <button
@@ -245,11 +247,17 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
     const [currentPct, setCurrentPct] = useState<number | null>(null);
 
     const { data: user, refetch } = useUser();
+    const { prefs: athletePrefs } = useAthletePrefs(user?.id);
+    const unit = athletePrefs.unit;
     const [isSaving, setIsSaving] = useState(false);
     const [celebration, setCelebration] = useState(false);
 
     const calculate1RM = () => {
-        const w = parseFloat(weight);
+        // Lo que se teclea está en la unidad del atleta; TODO el cálculo de
+        // aquí en adelante trabaja en kg — la fórmula de velocidad hace
+        // física real (fuerza = masa × aceleración) y mezclar unidades ahí
+        // daría una fuerza equivocada, no solo una etiqueta equivocada.
+        const w = fromInput(parseFloat(weight), unit) ?? NaN;
         const r = parseInt(reps);
 
         if (isNaN(w) || isNaN(r) || w <= 0 || r <= 0) {
@@ -354,7 +362,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                         </div>
                         <div>
                             <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Calculadora</h2>
-                            <p className="text-[10px] md:text-[12px] font-black text-anvil-red uppercase tracking-[0.3em]">Anvil Lab Tools</p>
+                            <p className="text-t-2xs md:text-t-xs font-black text-anvil-red uppercase tracking-[0.3em]">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -395,7 +403,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                 <div className="grid grid-cols-12 gap-3 md:gap-4">
                                     {/* Peso */}
                                     <div className="col-span-12 md:col-span-6 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between text-center hover:border-white/10">
-                                        <label className="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Peso (kg)</label>
+                                        <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Peso ({unit})</label>
                                         <input
                                             type="number"
                                             inputMode="decimal"
@@ -409,7 +417,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
                                     {/* Reps */}
                                     <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between text-center hover:border-white/10">
-                                        <label className="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
+                                        <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
                                         <input
                                             type="number"
                                             inputMode="numeric"
@@ -432,7 +440,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                         />
                                     ) : (
                                         <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between text-center hover:border-white/10">
-                                            <label className="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Velocidad (m/s)</label>
+                                            <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Velocidad (m/s)</label>
                                             <input
                                                 type="number"
                                                 inputMode="decimal"
@@ -467,16 +475,16 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                 <p className="text-gray-500 text-xs md:text-sm font-black uppercase tracking-[0.3em] mb-2 md:mb-4">1RM Estimado</p>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-7xl md:text-8xl lg:text-9xl font-black text-white italic tracking-tighter leading-none drop-shadow-lg">
-                                        {Math.floor(estimated1RM)}
+                                        {Math.floor(toDisplay(estimated1RM, unit) ?? 0)}
                                     </span>
-                                    <span className="text-2xl md:text-3xl font-black text-anvil-red uppercase italic">kg</span>
+                                    <span className="text-2xl md:text-3xl font-black text-anvil-red uppercase italic">{unit}</span>
                                 </div>
                                 <div className="mt-4 md:mt-6 opacity-60">
-                                    <p className="text-gray-600 text-[10px] font-bold uppercase tracking-widest">
+                                    <p className="text-gray-600 text-t-2xs font-bold uppercase tracking-widest">
                                         {exercise} • {method === 'rpe' ? 'Epley Base' : 'VBT Mixto'}
                                     </p>
                                     {currentPct && (
-                                        <p className="text-anvil-red text-[10px] font-bold uppercase tracking-widest mt-1">
+                                        <p className="text-anvil-red text-t-2xs font-bold uppercase tracking-widest mt-1">
                                             Intensidad: ~{currentPct}%
                                         </p>
                                     )}
@@ -486,7 +494,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                     <div className="mt-6 flex flex-col items-center gap-3 w-full h-[60px]">
                                         <div className="flex items-center gap-2 text-yellow-500 bg-yellow-500/10 px-4 py-1.5 rounded-full border border-yellow-500/20">
                                             <Trophy size={14} />
-                                            <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">PR Actual: {currentPR} kg</span>
+                                            <span className="text-t-2xs md:text-xs font-black uppercase tracking-widest">PR Actual: {formatLoad(currentPR, unit)}</span>
                                         </div>
                                         
                                         <AnimatePresence>

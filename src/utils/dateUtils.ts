@@ -125,6 +125,21 @@ export function formatShortDate(d: Date): string {
 }
 
 /**
+ * "Hace 7 días", a partir de un timestamp ISO. Cuenta días de calendario,
+ * no horas: una sesión cerrada ayer a las 23:00 y consultada hoy a las 07:00
+ * son "ayer", no "hace 8 horas".
+ */
+export function formatDaysAgo(isoTimestamp: string): string {
+    const then = new Date(isoTimestamp);
+    then.setHours(0, 0, 0, 0);
+    const days = Math.round((startOfToday().getTime() - then.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (days <= 0) return 'Hoy';
+    if (days === 1) return 'Ayer';
+    return `Hace ${days} días`;
+}
+
+/**
  * Returns the number of days remaining until a given date.
  */
 export function getDaysRemaining(targetDate: string | Date): number {

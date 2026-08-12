@@ -7,6 +7,8 @@ import { TrainingSet, TargetMetric, SET_TYPES } from '../../../types/training';
 import { writeQueue } from '../../../lib/offlineQueue';
 import { rpeFromTarget } from '../../../lib/stats/executionLog';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
+import { toDisplay, fromInput } from '../../../lib/units';
+import type { WeightUnit } from '../../../lib/prefs/contract';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
@@ -54,6 +56,15 @@ interface LoggerSetRowProps {
      * fila y la medición se asignaría a todos.
      */
     onOpenVbt?: () => void;
+    /**
+     * Unidad del atleta (src/lib/prefs/contract.ts). SOLO afecta a lo que se
+     * ENSEÑA y a lo que se ESCRIBE en esta casilla — `actual_load` y
+     * `target_load` siguen viajando y guardándose en kilos siempre; convertir
+     * el almacenamiento invalidaría el histórico y las métricas de VBT, que
+     * dependen de la masa en kg. Por defecto 'kg': el comportamiento de
+     * siempre para quien no ha tocado sus preferencias.
+     */
+    unit?: WeightUnit;
 }
 
 export function LoggerSetRow({
@@ -67,7 +78,13 @@ export function LoggerSetRow({
     groupIndex = 0,
     onChange,
     onOpenVbt,
+    unit = 'kg',
 }: LoggerSetRowProps) {
+    /** kg guardado → texto en la unidad del atleta, para pintar. */
+    const kgToDisplayText = (kg: number | null | undefined): string => {
+        const shown = toDisplay(kg, unit);
+        return shown != null ? String(Math.round(shown * 100) / 100) : '';
+    };
     /**
      * Las repeticiones REALES ahora se escriben.
      *
@@ -81,7 +98,8 @@ export function LoggerSetRow({
      * probablemente la más útil que genera una sesión— y no existían.
      */
     const [reps, setReps] = useState(set.actual_reps?.toString() ?? '');
-    const [load, setLoad] = useState(set.actual_load?.toString() ?? '');
+    // Guardado en kg siempre; se muestra en la unidad del atleta.
+    const [load, setLoad] = useState(() => kgToDisplayText(set.actual_load));
     const [rpe, setRpe] = useState(set.actual_rpe?.toString() ?? '');
     const [note, setNote] = useState(set.notes ?? '');
     const [noteOpen, setNoteOpen] = useState(false);
@@ -218,17 +236,19 @@ export function LoggerSetRow({
          */
         const metric: TargetMetric = set.target_metric ?? 'kg';
         const repsValue = toNumber(reps) ?? toNumber(targetReps ?? '');
-        const loadValue =
-            toNumber(load) ??
+        // `load` está en la unidad del atleta; se convierte a kg ANTES de
+        // mezclarlo con `target_load`, que siempre viaja en kg desde la base.
+        const loadValueKg =
+            fromInput(toNumber(load), unit) ??
             (metric === 'kg' && set.target_load != null ? Number(set.target_load) : null);
 
         if (repsValue !== null && !reps) setReps(String(repsValue));
-        if (loadValue !== null && !load) setLoad(String(loadValue));
+        if (loadValueKg !== null && !load) setLoad(kgToDisplayText(loadValueKg));
 
         void commit({
             is_completed: true,
             actual_reps: repsValue,
-            actual_load: loadValue,
+            actual_load: loadValueKg,
             actual_rpe: toNumber(rpe),
         }).then(settle(true));
 
@@ -250,7 +270,12 @@ export function LoggerSetRow({
      * misma columna: se leen los dos de un vistazo.
      */
     const metric: TargetMetric = set.target_metric ?? 'kg';
-    const targetLoadText = set.target_load != null ? String(set.target_load) : null;
+    // Solo se convierte cuando lo pautado es de verdad un peso: un target al
+    // 20% de pérdida de velocidad o en RPE no es una cifra en kg y no debe
+    // pasar por la conversión de unidad.
+    const targetLoadText = metric === 'kg'
+        ? (kgToDisplayText(set.target_load) || null)
+        : (set.target_load != null ? String(set.target_load) : null);
     // La columna de kilos enseña el objetivo del coach en SU unidad: si pautó
     // al 20% de pérdida de velocidad, ahí pone 20, no 20 kg.
     const loadTarget = metric === 'kg'
@@ -348,12 +373,14 @@ export function LoggerSetRow({
                         value={load}
                         onChange={(value) => {
                             setLoad(value);
-                            commitDebounced('load', { actual_load: toNumber(value) });
+                            // Lo que escribe el atleta está en SU unidad;
+                            // se convierte a kg justo antes de encolar el guardado.
+                            commitDebounced('load', { actual_load: fromInput(toNumber(value), unit) });
                         }}
-                        placeholder="kg"
+                        placeholder={unit}
                         ariaLabel={`Peso movido en la serie ${displayIndex}${loadTarget ? ` (pautado: ${loadTarget})` : ''}`}
                         filled={Boolean(load)}
-                        step="0.5"
+                        step={unit === 'lb' ? '1' : '0.5'}
                     />
                 </div>
 
@@ -446,7 +473,7 @@ export function LoggerSetRow({
                 lee como una nota al pie de ESA serie. */}
             {setType && (
                 <div className="flex items-baseline gap-2 px-2.5 pb-2 pl-[1.75rem] sm:px-3 sm:pl-[2rem]">
-                    <span className="shrink-0 rounded-chip bg-[var(--warning-quiet)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-warning">
+                    <span className="shrink-0 rounded-chip bg-[var(--warning-quiet)] px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wider text-warning">
                         {setType.short}
                     </span>
                     <span className="min-w-0 text-t-2xs leading-snug text-ink-subtle">
@@ -465,7 +492,7 @@ export function LoggerSetRow({
                     <button
                         onClick={onOpenVbt}
                         className={cn(
-                            'inline-flex items-center gap-1.5 rounded-chip px-1.5 py-0.5 text-[10px] font-semibold transition-colors duration-fast ease-snap',
+                            'inline-flex items-center gap-1.5 rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold transition-colors duration-fast ease-snap',
                             set.vbt_mean_velocity != null
                                 ? 'bg-[var(--info-quiet)] text-info'
                                 : 'text-ink-faint hover:bg-surface-overlay hover:text-ink-muted'
@@ -543,7 +570,7 @@ function TargetLabel({
         <span
             aria-hidden="true"
             className={cn(
-                'mb-1 block truncate text-center text-[9px] font-bold uppercase leading-none tracking-wide tabular-nums',
+                'mb-1 block truncate text-center text-t-2xs font-bold uppercase leading-none tracking-wide tabular-nums',
                 tone === 'over' ? 'text-warning' : tone === 'under' ? 'text-success' : 'text-ink-subtle'
             )}
         >

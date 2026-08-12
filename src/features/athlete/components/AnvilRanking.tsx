@@ -127,7 +127,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         </div>
                         <div>
                             <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Ranking Anvil</h2>
-                            <p className="hidden md:block text-[10px] md:text-[12px] font-black uppercase tracking-[0.3em]" style={{ color: rankingType === 'gl' ? '#ef4444' : '#22d3ee' }}>Donde se forjan las leyendas</p>
+                            <p className="hidden md:block text-t-2xs md:text-t-xs font-black uppercase tracking-[0.3em]" style={{ color: rankingType === 'gl' ? '#ef4444' : '#22d3ee' }}>Donde se forjan las leyendas</p>
                         </div>
                     </div>
                     
@@ -164,13 +164,13 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                     <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 shadow-inner">
                         <button 
                             onClick={() => setRankingType('gl')}
-                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                         >
                             <Trophy size={14} /> GL Points
                         </button>
                         <button 
                             onClick={() => setRankingType('sushi')}
-                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-all ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                         >
                             <Fish size={14} /> Sushi
                         </button>

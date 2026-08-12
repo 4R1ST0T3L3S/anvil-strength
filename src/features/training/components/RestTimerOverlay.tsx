@@ -53,7 +53,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                         <Timer size={20} className={isFinished ? "animate-bounce" : ""} />
                     </div>
                     <div>
-                        <p className="text-[10px] uppercase font-bold text-ink-subtle tracking-wider">
+                        <p className="text-t-2xs uppercase font-bold text-ink-subtle tracking-wider">
                             {isFinished ? "Tiempo Completado" : "Tiempo de Descanso"}
                         </p>
                         <p className={cn(

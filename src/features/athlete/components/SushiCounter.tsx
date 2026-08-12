@@ -128,7 +128,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                         </div>
                         <div>
                             <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Sushi Counter</h2>
-                            <p className="hidden md:block text-[10px] md:text-[12px] font-black text-cyan-400 uppercase tracking-[0.3em]">Anvil Lab Tools</p>
+                            <p className="hidden md:block text-t-2xs md:text-t-xs font-black text-cyan-400 uppercase tracking-[0.3em]">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3">
@@ -151,7 +151,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 {/* Centered Total Pieces Viewer */}
                 <div className="relative z-10 bg-[#0a0a0a]/50 border-b border-white/5 w-full shrink-0 flex items-center justify-center py-4 md:py-10">
                     <div className="flex flex-col items-center justify-center text-center">
-                        <p className="text-gray-500 text-[10px] md:text-sm font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Piezas Consumidas</p>
+                        <p className="text-gray-500 text-t-2xs md:text-sm font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Piezas Consumidas</p>
                         <motion.div 
                             key={totals.piezas}
                             initial={{ scale: 1.5, opacity: 0 }}
@@ -177,7 +177,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                 onClick={handleSaveRecord}
                                                 disabled={isSaving}
-                                                className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl font-black uppercase text-[10px] md:text-xs tracking-widest transition-all ${
+                                                className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl font-black uppercase text-t-2xs md:text-xs tracking-widest transition-all ${
                                                     celebration 
                                                         ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
                                                         : 'bg-white text-black hover:bg-gray-200 shadow-xl'
@@ -243,20 +243,20 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                     <div className="max-w-4xl mx-auto">
                         <div className="grid grid-cols-4 gap-1.5 md:gap-4">
                             <div className="bg-white/5 border border-white/10 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-[11px] font-black text-gray-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Cals</span>
+                                <span className="text-t-2xs md:text-t-2xs font-black text-gray-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Cals</span>
                                 <span className="text-sm md:text-3xl font-black text-white italic">{totals.kcal}</span>
                             </div>
                             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-[11px] font-black text-blue-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Protes</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.protein.toFixed(1)}<span className="text-[10px] md:text-base">g</span></span>
+                                <span className="text-t-2xs md:text-t-2xs font-black text-blue-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Protes</span>
+                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.protein.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
                             </div>
                             <div className="bg-green-500/10 border border-green-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-[11px] font-black text-green-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Carbos</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.carbs.toFixed(1)}<span className="text-[10px] md:text-base">g</span></span>
+                                <span className="text-t-2xs md:text-t-2xs font-black text-green-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Carbos</span>
+                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.carbs.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
                             </div>
                             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-[11px] font-black text-yellow-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Grasas</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.fat.toFixed(1)}<span className="text-[10px] md:text-base">g</span></span>
+                                <span className="text-t-2xs md:text-t-2xs font-black text-yellow-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Grasas</span>
+                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.fat.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
                             </div>
                         </div>
                     </div>
