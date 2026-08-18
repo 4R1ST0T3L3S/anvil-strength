@@ -2,37 +2,41 @@
  * EXPORTAR LA SEMANA DE ENTRENAMIENTO A PDF
  * =====================================================================
  *
- * QUÉ CAMBIA RESPECTO A LA VERSIÓN ANTERIOR
+ * DOS MAQUETAS, UN SOLO GENERADOR
  *
- * 1. FORMATO 9:16. El documento se lee en un móvil, entre series, con una
- *    mano. Una página con la proporción de la pantalla entra ENTERA sin
- *    pellizcar ni girar; un A4 obliga a hacer zoom para leer una cifra, que
- *    es justo el gesto que no se puede pedir ahí. El A4 sigue disponible
- *    para quien imprime (`theme.page`).
+ * 1. `table` — LA HOJA. Es la de por defecto y es, literalmente, la
+ *    plantilla que el club ya reparte en papel: el yunque centrado arriba,
+ *    los campos DÍA / NOMBRE / INFORMACIÓN BLOQUE con su línea, una rejilla
+ *    cerrada con una fila por ejercicio, la caja de indicaciones debajo y el
+ *    pie enmarcado. Se eligió porque el atleta la RECONOCE: es la hoja que
+ *    lleva un año viendo en la nevera, no un diseño nuevo que explicar.
  *
- * 2. SE ACABÓ LA TABLA. Antes era una rejilla de cinco columnas: el nombre
- *    del ejercicio en una celda de 78 mm que casi siempre partía en dos
- *    renglones, y cuatro cifras apretadas a su derecha. En un móvil eso son
- *    cinco columnas de dos centímetros. Ahora cada ejercicio es un BLOQUE:
- *    el nombre a ancho completo y sus cuatro cifras debajo, cada una con su
- *    rótulo. Se lee de arriba abajo, que es como se lee un teléfono.
+ *    Las filas son altas —dos centímetros y pico— aunque lleguen rellenas,
+ *    porque encima de esos datos se apunta a mano lo que salió de verdad.
  *
- * 3. TODO SALE DE UN TEMA. Ni un color, ni un tamaño, ni un margen están
- *    escritos aquí: vienen de `PdfTheme`, que vive en el perfil del
- *    entrenador. Cambiar el diseño no es tocar este archivo.
+ * 2. `blocks` — un bloque por ejercicio, el nombre a ancho completo y las
+ *    cifras debajo con su rótulo. Pensada para leer en el móvil entre
+ *    series, en formato 9:16: se lee de arriba abajo, que es como se lee un
+ *    teléfono, sin las cinco columnas de dos centímetros que salen al meter
+ *    una tabla en una pantalla estrecha. Vive en el preset «Móvil».
+ *
+ * TODO SALE DE UN TEMA. Ni un color, ni un tamaño, ni un margen, ni el
+ * rótulo de una columna están escritos aquí: vienen de `PdfTheme`, que vive
+ * en el perfil del entrenador y puede haberse deducido de un PDF suyo (ver
+ * `pdfTemplateScan.ts`). Cambiar el diseño no es tocar este archivo.
  *
  * LA CUADRÍCULA
  *
  * Una sola unidad —`u`, 4 mm por defecto— y TODAS las distancias verticales
- * son múltiplos suyos. Es lo que hace que los bloques se alineen entre sí
- * sin que nadie tenga que cuadrar números a mano, y lo que permite que la
+ * son múltiplos suyos. Es lo que hace que las piezas se alineen entre sí sin
+ * que nadie tenga que cuadrar números a mano, y lo que permite que la
  * densidad sea un ajuste: se cambia `u` y el documento entero respira más o
  * menos manteniendo las proporciones.
  *
- * Horizontalmente hay 4 columnas iguales con su medianil. Las cifras de un
- * ejercicio ocupan una cada una, así que caen siempre en el mismo sitio de
- * un bloque al siguiente: el ojo aprende dónde está el descanso y deja de
- * buscarlo.
+ * En la maqueta de bloques hay además 4 columnas iguales con su medianil, y
+ * las cifras de un ejercicio ocupan una cada una: caen siempre en el mismo
+ * sitio de un bloque al siguiente, así que el ojo aprende dónde está el
+ * descanso y deja de buscarlo. En la de tabla ese papel lo hace la rejilla.
  */
 
 import { jsPDF } from 'jspdf';
@@ -40,9 +44,10 @@ import type { TrainingSet, TargetMetric } from '../../types/training';
 import { TARGET_METRICS, weekdayLabel } from '../../types/training';
 import {
     DEFAULT_THEME,
-    PAGE_SIZES,
     hexToRgb,
+    pageDimensions,
     resolveTheme,
+    type PdfSheetColumn,
     type PdfTheme,
     type PdfThemeInput,
 } from './pdfTheme';
@@ -125,13 +130,26 @@ interface Grid {
 }
 
 function buildGrid(theme: PdfTheme): Grid {
-    const size = PAGE_SIZES[theme.page] ?? PAGE_SIZES.mobile;
+    const size = pageDimensions(theme);
     const u = UNIT[theme.layout.density] ?? UNIT.normal;
 
     // Los márgenes también salen de la unidad: así la densidad no solo
     // aprieta las filas, también acerca o aleja el texto del canto.
-    const side = u * 3.5;
-    const margin = { top: u * 3, right: side, bottom: u * 4, left: side };
+    //
+    // La hoja de tabla los quiere MÁS ESTRECHOS que la de bloques (2,5u
+    // frente a 3,5u, unos 10 mm en densidad normal). No es capricho: en la
+    // maqueta de bloques el margen es aire de lectura, mientras que en una
+    // rejilla de cinco columnas cada milímetro de margen se lo quita a la
+    // celda del descanso, que es la que primero se queda sin sitio. Es
+    // además lo que mide la plantilla que el club ya reparte.
+    const table = theme.layout.sheet === 'table';
+    const side = table ? u * 2.5 : u * 3.5;
+    const margin = {
+        top: table ? u * 2.5 : u * 3,
+        right: side,
+        bottom: table ? u * 2.5 : u * 4,
+        left: side,
+    };
     const content = size.w - margin.left - margin.right;
 
     const gutter = u * 1.5;
@@ -207,6 +225,61 @@ function ellipsize(doc: jsPDF, text: string, size: number, maxW: number): string
     while (cut.length > 1 && widthOf(doc, `${cut}…`, size) > maxW) cut = cut.slice(0, -1);
     return `${cut}…`;
 }
+
+/**
+ * EL YUNQUE, DIBUJADO.
+ *
+ * Es el mismo contorno que `public/logo.svg`, trazado a mano en vez de
+ * incrustado como imagen, y eso resuelve tres cosas de golpe:
+ *
+ *   · SE TIÑE. Una imagen va con sus píxeles: el yunque blanco de la marca
+ *     desaparece sobre el preset de papel. Un trazo se pinta con
+ *     `palette.ink`, así que funciona en negro y en blanco sin dos ficheros.
+ *
+ *   · NO PESA. Cero bytes en cada PDF, frente a los 20-30 KB de un PNG
+ *     decente incrustado en las cuatro o cinco hojas de cada semana.
+ *
+ *   · NO SE PIXELA. Se imprime a la resolución que dé la impresora.
+ *
+ * Solo sale cuando el entrenador NO ha subido logotipo. El suyo manda
+ * siempre: este es el sello de la casa para quien todavía no tiene el suyo.
+ *
+ * Las coordenadas son las del SVG (lienzo de 100 x 100, tinta entre y=25 e
+ * y=85) y se escalan para que el alto pedido sea el de la tinta, no el del
+ * lienzo: si no, el logotipo saldría un 40 % más pequeño de lo pedido con un
+ * margen fantasma alrededor.
+ */
+function drawAnvilMark(ctx: Ctx, centerX: number, top: number, height: number) {
+    const { doc } = ctx;
+    const s = height / 60;
+    const x = centerX - (80 * s) / 2 - 10 * s;
+    const y = top - 25 * s;
+
+    fill(ctx, ctx.theme.palette.ink);
+
+    // Yunque, parte de arriba: el tablero.
+    doc.lines([[80, 0], [-10, 20], [-60, 0]], x + 10 * s, y + 25 * s, [s, s], 'F', true);
+
+    // Y el cuerpo, con su cintura. Los tramos de seis números son curvas.
+    doc.lines(
+        [
+            [44, 0],
+            [-7, 15, -7, 15, 10, 35],
+            [-20, 0],
+            [0, 0, -12, -10, -24, 0],
+            [-20, 0],
+            [17, -20, 17, -20, 10, -35],
+        ],
+        x + 28 * s,
+        y + 50 * s,
+        [s, s],
+        'F',
+        true
+    );
+}
+
+/** Ancho que ocupa el yunque para un alto dado. */
+const anvilWidth = (height: number) => (height / 60) * 80;
 
 /** El fondo de la página. Se pinta ANTES que nada, en cada hoja. */
 function paintSurface(ctx: Ctx) {
@@ -571,6 +644,633 @@ function drawFooter(ctx: Ctx, page: number, total: number) {
 }
 
 // =====================================================================
+// LA HOJA: LA MAQUETA DE TABLA
+// =====================================================================
+//
+// Es la plantilla que el club ya reparte en papel, generada: el yunque
+// centrado arriba, DÍA / NOMBRE / INFORMACIÓN BLOQUE en campos con su
+// línea, una rejilla cerrada con una fila por ejercicio, la caja de
+// indicaciones debajo y el pie enmarcado al fondo.
+//
+// POR QUÉ ESTA Y NO LA DE BLOQUES
+//
+// Porque es la que el atleta reconoce. Un documento generado que se parece
+// a la hoja que lleva un año viendo en la nevera no hay que explicarlo; uno
+// que estrena diseño, sí. La maqueta de bloques sigue disponible
+// (`layout.sheet: 'blocks'`) para quien nunca imprime.
+//
+// LO QUE NO SE COPIA DE LA PLANTILLA DE PAPEL
+//
+// Las filas vacías. En papel están vacías porque se rellenan a mano; aquí
+// llegan con los datos. Lo que SÍ se conserva es su ALTURA —siguen siendo
+// filas de dos centímetros y pico— porque encima de esos datos el atleta
+// va a apuntar lo que le salió de verdad.
+
+/** Geometría de una columna ya resuelta sobre el ancho útil de la página. */
+interface SheetCol {
+    col: PdfSheetColumn;
+    /** X del canto izquierdo. */
+    x: number;
+    /** Ancho en mm. */
+    w: number;
+}
+
+/**
+ * Reparte el ancho útil entre las columnas.
+ *
+ * Los anchos del tema son PESOS, no milímetros: así una plantilla copiada de
+ * un A4 sigue cuadrando si el entrenador cambia luego el papel a 9:16, y una
+ * columna añadida a mano no obliga a recalcular las otras cuatro.
+ */
+function sheetGeometry(ctx: Ctx): SheetCol[] {
+    const { grid, theme } = ctx;
+    const columns = theme.sheet.columns;
+    const total = columns.reduce((sum, c) => sum + (c.width > 0 ? c.width : 1), 0) || 1;
+
+    let x = grid.margin.left;
+    return columns.map(col => {
+        const w = (grid.content * (col.width > 0 ? col.width : 1)) / total;
+        const out = { col, x, w };
+        x += w;
+        return out;
+    });
+}
+
+/** Qué texto va en una celda. `blank` se queda a propósito sin nada. */
+function cellValue(ex: PrintExerciseRow, key: PdfSheetColumn['key']): string {
+    switch (key) {
+        case 'name': return ex.name;
+        case 'series': return ex.series;
+        case 'reps': return ex.reps;
+        case 'rest': return ex.rest;
+        case 'intensity': return ex.intensity;
+        default: return '';
+    }
+}
+
+/**
+ * El cuerpo mayor que cabe en un ancho, buscando hacia abajo.
+ *
+ * Los rótulos de la tabla vienen del entrenador —"KG/INTENSIDAD" cabe,
+ * "PESO OBJETIVO DE LA SERIE" no— y en una celda de dos centímetros la
+ * diferencia entre recortar con puntos suspensivos y encoger medio punto es
+ * la diferencia entre poder leer la cabecera y no.
+ */
+function fitSize(ctx: Ctx, text: string, weight: 'normal' | 'bold', base: number, maxW: number, min = 5.5): number {
+    let pt = base;
+    while (pt > min) {
+        ctx.doc.setFont(ctx.theme.typography.family, weight);
+        ctx.doc.setFontSize(ctx.size(pt));
+        if (widthOf(ctx.doc, text, ctx.size(pt)) <= maxW) return pt;
+        pt -= 0.25;
+    }
+    return min;
+}
+
+/** Relleno interior de una celda. */
+const cellPad = (ctx: Ctx) => ctx.grid.u * 0.55;
+
+interface SheetRow {
+    ex: PrintExerciseRow;
+    index: number;
+    /** Alto natural: lo que pide su contenido, nunca menos que el mínimo. */
+    height: number;
+    nameLines: string[];
+    noteLines: string[];
+}
+
+function measureSheetRow(ctx: Ctx, ex: PrintExerciseRow, index: number, geom: SheetCol[]): SheetRow {
+    const { doc, grid, theme } = ctx;
+    const pad = cellPad(ctx);
+    const nameCol = geom.find(g => g.col.key === 'name') ?? geom[0];
+    const textW = Math.max(grid.u * 4, nameCol.w - pad * 2);
+
+    font(ctx, 'bold', 10.5);
+    const nameLines = doc.splitTextToSize(ex.name, textW) as string[];
+
+    font(ctx, 'normal', 7.5);
+    const noteLines = theme.layout.showNotes && ex.notes?.trim()
+        ? (doc.splitTextToSize(ex.notes.trim(), textW) as string[])
+        : [];
+
+    let h = pad * 2 + nameLines.length * grid.u * 1.15;
+    if (ex.variant?.trim()) h += grid.u * 1;
+    if (noteLines.length > 0) h += grid.u * 0.3 + noteLines.length * grid.u * 0.9;
+
+    return {
+        ex,
+        index,
+        height: Math.max(theme.sheet.rowUnits * grid.u, h),
+        nameLines,
+        noteLines,
+    };
+}
+
+/** La banda de rótulos de la tabla. Devuelve su alto. */
+function drawTableHead(ctx: Ctx, y: number, geom: SheetCol[]): number {
+    const { doc, grid, theme } = ctx;
+    const h = grid.u * 2.2;
+    const pad = cellPad(ctx);
+
+    geom.forEach(({ col, x, w }) => {
+        const label = headingCase(ctx, col.label?.trim() || '');
+        if (!label) return;
+        const maxW = Math.max(grid.u, w - pad * 2);
+        const pt = fitSize(ctx, label, 'bold', 10, maxW);
+        font(ctx, 'bold', pt);
+        ink(ctx, theme.palette.ink);
+        doc.text(
+            ellipsize(doc, label, ctx.size(pt), maxW),
+            x + w / 2,
+            y + h / 2 + grid.u * 0.35,
+            { align: 'center' }
+        );
+    });
+
+    return h;
+}
+
+/**
+ * Una fila.
+ *
+ * `height` no es el alto medido sino el ASIGNADO: cuando el día cabe en una
+ * hoja, todas las filas reciben el mismo y la tabla llena la página, que es
+ * como se ve la plantilla de papel. Ver `drawSheetDay`.
+ */
+function drawSheetRow(ctx: Ctx, row: SheetRow, y: number, height: number, geom: SheetCol[]) {
+    const { doc, grid, theme } = ctx;
+    const { palette } = theme;
+    const pad = cellPad(ctx);
+
+    if (theme.layout.zebra && row.index % 2 === 1) {
+        fill(ctx, palette.panel);
+        doc.rect(grid.margin.left, y, grid.content, height, 'F');
+    }
+
+    // La primera línea base de la fila. Todas las celdas comparten esta
+    // altura —el nombre y las cuatro cifras— para que la fila se lea como
+    // una sola línea y no como cinco textos sueltos que casualmente coinciden.
+    const baseline = y + pad + grid.u * 0.95;
+
+    geom.forEach(({ col, x, w }) => {
+        const maxW = Math.max(grid.u, w - pad * 2);
+
+        if (col.key === 'name') {
+            let ty = baseline;
+
+            font(ctx, 'bold', 10.5);
+            ink(ctx, palette.ink);
+            row.nameLines.forEach((line, i) => {
+                doc.text(line, x + pad, ty + i * grid.u * 1.15);
+            });
+            ty += row.nameLines.length * grid.u * 1.15;
+
+            // LA VARIANTE, en el acento. No es decoración: una banca con
+            // pausa de cuatro segundos NO es una banca, y confundirlas
+            // invalida la sesión.
+            if (row.ex.variant?.trim()) {
+                font(ctx, 'bold', 7.5);
+                ink(ctx, palette.accent);
+                doc.text(ellipsize(doc, row.ex.variant.trim(), ctx.size(7.5), maxW), x + pad, ty);
+                ty += grid.u * 1;
+            }
+
+            if (row.noteLines.length > 0) {
+                ty += grid.u * 0.3;
+                font(ctx, 'normal', 7.5);
+                ink(ctx, palette.muted);
+                row.noteLines.forEach((line, i) => {
+                    doc.text(line, x + pad, ty + i * grid.u * 0.9);
+                });
+            }
+            return;
+        }
+
+        const value = cellValue(row.ex, col.key);
+        if (!value) return;
+
+        const pt = fitSize(ctx, value, 'bold', 11, maxW);
+        font(ctx, 'bold', pt);
+        ink(ctx, palette.ink);
+        doc.text(ellipsize(doc, value, ctx.size(pt), maxW), x + w / 2, baseline, { align: 'center' });
+    });
+}
+
+/**
+ * Cierra la rejilla de la página: el marco y las líneas verticales.
+ *
+ * Se pinta AL FINAL y de un tirón, no celda a celda, porque una vertical
+ * dibujada por trozos —uno por fila— sale con costuras en pantalla: cada
+ * segmento redondea sus extremos a su manera y la línea tiembla. De paso,
+ * las horizontales interiores llegan aquí con su Y ya conocida.
+ */
+function closeTableFrame(
+    ctx: Ctx,
+    top: number,
+    bottom: number,
+    rules: number[],
+    geom: SheetCol[],
+    /** Hasta dónde llegan las verticales. Por defecto, hasta el fondo. */
+    verticalsTo = bottom,
+) {
+    const { doc, grid, theme } = ctx;
+    stroke(ctx, theme.palette.line, theme.sheet.rule);
+
+    doc.rect(grid.margin.left, top, grid.content, bottom - top, 'S');
+    rules.forEach(y => doc.line(grid.margin.left, y, grid.margin.left + grid.content, y));
+    geom.slice(1).forEach(({ x }) => doc.line(x, top, x, verticalsTo));
+}
+
+// ---------------------------------------------------------------------
+// LAS CAJAS DE ABAJO
+// ---------------------------------------------------------------------
+
+/**
+ * El texto libre del día, en el orden en que sirve.
+ *
+ * Consideraciones primero y calentamiento después: lo primero se lee antes
+ * de decidir nada, lo segundo se hace con el cronómetro ya en marcha.
+ */
+function notesBoxText(day: PrintDay): string {
+    return [day.extras?.trim(), day.warmup?.trim()].filter(Boolean).join('\n\n');
+}
+
+/** Alto que pide la caja de indicaciones para su contenido. */
+function measureNotesBox(ctx: Ctx, text: string): { lines: string[]; height: number } {
+    const { grid } = ctx;
+    const pad = grid.u * 0.8;
+    font(ctx, 'normal', 9);
+    const lines = text ? (ctx.doc.splitTextToSize(text, grid.content - pad * 2) as string[]) : [];
+    // El mínimo no es un capricho de maquetación: la caja se imprime y encima
+    // se escribe a mano. Una caja ajustada al texto no deja sitio para eso.
+    return { lines, height: Math.max(grid.u * 7, pad * 2 + lines.length * grid.u * 1.05) };
+}
+
+function drawNotesBox(ctx: Ctx, text: string, y: number, height: number): number {
+    const { doc, grid, theme } = ctx;
+    const pad = grid.u * 0.8;
+    const label = theme.sheet.notesBox.label?.trim();
+
+    let top = y;
+    if (label) {
+        font(ctx, 'bold', 8);
+        ink(ctx, theme.palette.ink);
+        doc.text(headingCase(ctx, label), grid.margin.left, top + grid.u * 0.8);
+        top += grid.u * 1.5;
+    }
+
+    stroke(ctx, theme.palette.line, theme.sheet.rule);
+    doc.rect(grid.margin.left, top, grid.content, height, 'S');
+
+    if (text) {
+        const { lines } = measureNotesBox(ctx, text);
+        font(ctx, 'normal', 9);
+        ink(ctx, theme.palette.ink);
+        lines.forEach((line, i) => {
+            doc.text(line, grid.margin.left + pad, top + pad + grid.u * 0.75 + i * grid.u * 1.05);
+        });
+    }
+
+    return top + height;
+}
+
+/** Alto del rótulo de la caja de indicaciones, si lo lleva. */
+const notesLabelHeight = (ctx: Ctx) =>
+    ctx.theme.sheet.notesBox.label?.trim() ? ctx.grid.u * 1.5 : 0;
+
+const footerBoxHeight = (ctx: Ctx) => ctx.grid.u * 3.6;
+
+/**
+ * El pie, enmarcado, al fondo de cada hoja.
+ *
+ * Va en TODAS las páginas, también en la segunda de un día largo: una hoja
+ * suelta encima del banco tiene que decir de quién es y de qué semana sin
+ * depender de ninguna otra.
+ */
+function drawSheetFooterBox(ctx: Ctx, page: number, total: number) {
+    const { doc, grid, theme, week } = ctx;
+    if (!theme.sheet.footerBox.show) return;
+
+    const h = footerBoxHeight(ctx);
+    const y = grid.page.h - grid.margin.bottom - h;
+    const pad = grid.u * 0.7;
+
+    stroke(ctx, theme.palette.line, theme.sheet.rule);
+    doc.rect(grid.margin.left, y, grid.content, h, 'S');
+
+    let textY = y + h / 2 + grid.u * 0.3;
+    const label = theme.sheet.footerBox.label?.trim();
+    if (label) {
+        font(ctx, 'bold', 7);
+        ink(ctx, theme.palette.muted);
+        doc.text(headingCase(ctx, label), grid.margin.left + pad, y + grid.u * 1);
+        textY = y + h - pad - grid.u * 0.2;
+    }
+
+    const sign = theme.footer.text?.trim() || theme.header.title?.trim() || 'ANVIL STRENGTH';
+    font(ctx, 'bold', 7.5);
+    ink(ctx, theme.palette.muted);
+    doc.text(headingCase(ctx, sign), grid.margin.left + pad, textY);
+
+    font(ctx, 'normal', 7.5);
+    if (week.dateRange) {
+        doc.text(week.dateRange, grid.page.w / 2, textY, { align: 'center' });
+    }
+    if (theme.footer.showPageNumbers) {
+        doc.text(
+            `${page} / ${total}`,
+            grid.margin.left + grid.content - pad,
+            textY,
+            { align: 'right' }
+        );
+    }
+}
+
+// ---------------------------------------------------------------------
+// CABECERA DE LA HOJA
+// ---------------------------------------------------------------------
+
+/**
+ * Un campo con su línea: "NOMBRE: ____________".
+ *
+ * La línea se dibuja SIEMPRE, aunque el valor ya venga escrito. Es lo que
+ * hace que el documento generado y el impreso en blanco sean el mismo
+ * documento, y deja sitio para tachar y corregir a boli, que es lo que
+ * termina pasando con el nombre de un bloque.
+ */
+function drawSheetField(ctx: Ctx, label: string, value: string, x: number, w: number, y: number) {
+    const { doc, grid, theme } = ctx;
+    const text = label?.trim() ? `${headingCase(ctx, label.trim())}:` : '';
+
+    font(ctx, 'bold', 9.5);
+    ink(ctx, theme.palette.ink);
+    let offset = 0;
+    if (text) {
+        doc.text(text, x, y + grid.u * 0.9);
+        offset = widthOf(doc, text, ctx.size(9.5)) + grid.u * 0.5;
+    }
+
+    if (value) {
+        // Encoger antes que recortar: "Bloque de fuerza · Semana 3 ·
+        // Acumulación" no cabe a 9,5 pt en media línea, y cortarlo en
+        // "Acumu…" deja al atleta sin saber en qué fase está. A 7 pt entra.
+        const pt = fitSize(ctx, value, 'normal', 9.5, w - offset, 7);
+        font(ctx, 'normal', pt);
+        doc.text(ellipsize(doc, value, ctx.size(pt), w - offset), x + offset, y + grid.u * 0.9);
+    }
+
+    stroke(ctx, theme.palette.line, ctx.theme.sheet.rule * 0.8);
+    doc.line(x + offset, y + grid.u * 1.3, x + w, y + grid.u * 1.3);
+}
+
+/** La marca arriba, y debajo los campos del día. Devuelve la Y de la tabla. */
+function drawSheetHeader(ctx: Ctx, day: PrintDay, continued: boolean): number {
+    const { doc, grid, theme, week } = ctx;
+    const { palette, header, sheet } = theme;
+    const title = header.title?.trim() || 'ANVIL STRENGTH';
+    const logo = header.showLogo ? header.logoDataUrl : null;
+    let y = grid.margin.top;
+
+    if (header.style === 'bar') {
+        const barH = grid.u * 3.5;
+        fill(ctx, palette.accent);
+        doc.rect(0, 0, grid.page.w, barH, 'F');
+
+        let x = grid.margin.left;
+        if (logo) {
+            const s = barH - grid.u * 1.4;
+            try {
+                doc.addImage(logo, 'PNG', x, (barH - s) / 2, s, s, undefined, 'FAST');
+                x += s + grid.u;
+            } catch { /* formato que jsPDF no traga: se sigue sin logotipo */ }
+        }
+
+        font(ctx, 'bold', 10);
+        ink(ctx, palette.onAccent ?? '#FFFFFF');
+        doc.text(headingCase(ctx, title), x, barH / 2 + grid.u * 0.35);
+
+        if (header.subtitle?.trim()) {
+            font(ctx, 'normal', 7.5);
+            doc.text(header.subtitle.trim(), grid.page.w - grid.margin.right, barH / 2 + grid.u * 0.35, { align: 'right' });
+        }
+        y = barH + grid.u * 1.8;
+    } else if (header.style === 'stacked') {
+        // El logotipo presidiendo la página, centrado. El ancho sale de la
+        // proporción REAL de la imagen: forzar un cuadrado deforma cualquier
+        // logotipo que no lo sea, y casi ninguno lo es.
+        const h = header.logoHeight && header.logoHeight > 0 ? header.logoHeight : grid.u * 4.6;
+        let drawn = false;
+        if (logo) {
+            try {
+                const props = doc.getImageProperties(logo);
+                const ratio = props.width && props.height ? props.width / props.height : 1;
+                const w = Math.min(grid.content * 0.6, h * ratio);
+                doc.addImage(logo, x0(grid.page.w, w), y, w, h, undefined, 'FAST');
+                y += h + grid.u * 0.9;
+                drawn = true;
+            } catch { /* ídem */ }
+        } else if (header.showLogo && anvilWidth(h) <= grid.content * 0.6) {
+            drawAnvilMark(ctx, grid.page.w / 2, y, h);
+            y += h + grid.u * 0.9;
+            drawn = true;
+        }
+        if (!drawn) {
+            font(ctx, 'bold', 13);
+            ink(ctx, palette.ink);
+            doc.text(headingCase(ctx, title), grid.page.w / 2, y + grid.u * 1.1, { align: 'center' });
+            y += grid.u * 2.2;
+        }
+        if (header.subtitle?.trim()) {
+            font(ctx, 'normal', 8);
+            ink(ctx, palette.muted);
+            doc.text(header.subtitle.trim(), grid.page.w / 2, y + grid.u * 0.5, { align: 'center' });
+            y += grid.u * 1.3;
+        }
+    } else {
+        font(ctx, 'bold', 8);
+        ink(ctx, palette.muted);
+        doc.text(headingCase(ctx, title), grid.margin.left, y + grid.u * 0.6);
+        if (header.subtitle?.trim()) {
+            font(ctx, 'normal', 7.5);
+            doc.text(header.subtitle.trim(), grid.page.w - grid.margin.right, y + grid.u * 0.6, { align: 'right' });
+        }
+        y += grid.u * 1.8;
+    }
+
+    // DÍA: LUNES
+    const dayName = continued ? `${day.title} (cont.)` : day.title;
+    const dayText = sheet.dayLabel?.trim()
+        ? `${headingCase(ctx, sheet.dayLabel.trim())}: ${headingCase(ctx, dayName)}`
+        : headingCase(ctx, dayName);
+
+    font(ctx, 'bold', 13);
+    ink(ctx, palette.ink);
+    doc.text(ellipsize(doc, dayText, ctx.size(13), grid.content * 0.7), grid.margin.left, y + grid.u * 1.1);
+
+    if (day.date) {
+        font(ctx, 'normal', 8.5);
+        ink(ctx, palette.muted);
+        doc.text(day.date, grid.margin.left + grid.content, y + grid.u * 1.1, { align: 'right' });
+    }
+    y += grid.u * 2.3;
+
+    // NOMBRE / INFORMACIÓN BLOQUE
+    const hasAthlete = !!sheet.athleteLabel?.trim() || !!week.athleteName;
+    const hasBlock = !!sheet.blockLabel?.trim() || !!week.blockName;
+    if (hasAthlete || hasBlock) {
+        const gap = grid.u * 2;
+        const blockInfo = [week.blockName, week.weekLabel].filter(Boolean).join(' · ');
+
+        if (hasAthlete && hasBlock) {
+            // El nombre se lleva algo menos de la mitad: "INFORMACIÓN BLOQUE"
+            // es un rótulo largo y, a partes iguales, su línea se quedaba en
+            // dos centímetros escasos.
+            const nameW = grid.content * 0.42;
+            drawSheetField(ctx, sheet.athleteLabel, week.athleteName, grid.margin.left, nameW, y);
+            drawSheetField(ctx, sheet.blockLabel, blockInfo, grid.margin.left + nameW + gap, grid.content - nameW - gap, y);
+        } else if (hasAthlete) {
+            drawSheetField(ctx, sheet.athleteLabel, week.athleteName, grid.margin.left, grid.content, y);
+        } else {
+            drawSheetField(ctx, sheet.blockLabel, blockInfo, grid.margin.left, grid.content, y);
+        }
+        y += grid.u * 2.4;
+    }
+
+    return y;
+}
+
+/** X para centrar algo de ancho `w` en una página de ancho `pageW`. */
+const x0 = (pageW: number, w: number) => (pageW - w) / 2;
+
+/**
+ * Holgura al decidir un salto de página, en milímetros.
+ *
+ * Cuando las filas se estiran, el alto que se les reparte es EXACTAMENTE el
+ * hueco que queda, así que la última pieza termina justo en el límite. En
+ * decimales binarios "justo" sale a veces un 10⁻¹³ por encima, y sin esta
+ * holgura la caja de indicaciones se iba sola a una segunda hoja vacía por
+ * una diezmilmillonésima de milímetro.
+ */
+const FIT_EPSILON = 0.01;
+
+/** Y por debajo de la cual ya no cabe nada: ahí empieza el recuadro del pie. */
+function sheetLimit(ctx: Ctx): number {
+    const reserved = ctx.theme.sheet.footerBox.show
+        ? footerBoxHeight(ctx) + ctx.grid.u * 1.2
+        : 0;
+    return ctx.grid.page.h - ctx.grid.margin.bottom - reserved;
+}
+
+/**
+ * UN DÍA, EN UNA HOJA.
+ *
+ * EL REPARTO DEL ALTO es lo único delicado de aquí. Una tabla que termina a
+ * media página deja la hoja con pinta de recortada, y una plantilla de papel
+ * no se ve nunca así: sus filas llegan hasta abajo. Así que cuando el día
+ * entero cabe en una página, las filas NO se quedan con su alto natural sino
+ * que se reparten el sitio disponible a partes iguales —con un tope, para
+ * que un día de un solo ejercicio no imprima una fila de veinte
+ * centímetros— y la caja de indicaciones se queda con TODO lo que sobre.
+ *
+ * Cuando no cabe, se acabaron los estiramientos: cada fila mide lo suyo y la
+ * tabla salta de página cerrando el marco donde toca.
+ */
+function drawSheetDay(ctx: Ctx, day: PrintDay) {
+    const { doc, grid, theme } = ctx;
+    const geom = sheetGeometry(ctx);
+    const limit = sheetLimit(ctx);
+
+    let y = drawSheetHeader(ctx, day, false);
+    let tableTop = y;
+    let rules: number[] = [];
+
+    const headH = drawTableHead(ctx, y, geom);
+    y += headH;
+    rules.push(y);
+
+    const rows = day.exercises.map((ex, i) => measureSheetRow(ctx, ex, i, geom));
+    const text = notesBoxText(day);
+    const showNotesBox = theme.sheet.notesBox.show;
+    const notesMin = showNotesBox ? measureNotesBox(ctx, text).height + notesLabelHeight(ctx) + grid.u * 1.4 : 0;
+
+    // ¿Cabe todo el día en esta hoja?
+    const natural = rows.reduce((sum, r) => sum + r.height, 0);
+    const capacity = limit - y;
+    const fits = natural + notesMin <= capacity;
+
+    /** El alto que se le asigna a cada fila. Ver el comentario de arriba. */
+    const heights = rows.map(r => r.height);
+    if (fits && theme.sheet.stretchRows && rows.length > 0) {
+        const target = (capacity - notesMin) / rows.length;
+        const cap = grid.u * 11;
+        for (let i = 0; i < heights.length; i++) {
+            heights[i] = Math.max(heights[i], Math.min(target, cap));
+        }
+    }
+
+    const nextPage = () => {
+        closeTableFrame(ctx, tableTop, y, rules.slice(0, -1), geom);
+        doc.addPage([grid.page.w, grid.page.h], 'portrait');
+        paintSurface(ctx);
+        y = drawSheetHeader(ctx, day, true);
+        tableTop = y;
+        rules = [];
+        y += drawTableHead(ctx, y, geom);
+        rules.push(y);
+    };
+
+    // Hasta dónde bajan las verticales. En un día de descanso se quedan en
+    // la cabecera: el aviso va CENTRADO en la tabla, y con las columnas
+    // dibujadas le caería un filete por encima justo a mitad de palabra.
+    let verticalsTo = 0;
+
+    if (rows.length === 0) {
+        // Día de descanso: la tabla existe igual, con una sola fila que lo
+        // dice. Quitarla dejaría la hoja sin su pieza principal y el atleta
+        // se preguntaría si falta algo.
+        verticalsTo = y;
+        const h = Math.max(theme.sheet.rowUnits * grid.u, grid.u * 6);
+        font(ctx, 'italic', 11);
+        ink(ctx, theme.palette.muted);
+        doc.text('Día de descanso', grid.page.w / 2, y + h / 2 + grid.u * 0.3, { align: 'center' });
+        y += h;
+        rules.push(y);
+    } else {
+        rows.forEach((row, i) => {
+            if (y + heights[i] > limit + FIT_EPSILON) nextPage();
+            drawSheetRow(ctx, row, y, heights[i], geom);
+            y += heights[i];
+            rules.push(y);
+        });
+    }
+
+    // La última horizontal es el canto inferior del marco: la dibuja
+    // `closeTableFrame` con el rectángulo, así que aquí sobra.
+    closeTableFrame(ctx, tableTop, y, rules.slice(0, -1), geom, verticalsTo || y);
+    y += grid.u * 1.4;
+
+    if (!showNotesBox) return;
+
+    const measured = measureNotesBox(ctx, text);
+    const labelH = notesLabelHeight(ctx);
+    if (y + labelH + measured.height > limit + FIT_EPSILON) {
+        doc.addPage([grid.page.w, grid.page.h], 'portrait');
+        paintSurface(ctx);
+        y = drawSheetHeader(ctx, day, true);
+    }
+
+    // La caja se queda con TODO el hueco que sobra hasta el pie. No es solo
+    // estética de página llena: es la caja que se rellena a mano, y en la
+    // última hoja de un día largo —donde suelen quedar dos filas y media
+    // página en blanco— es justo donde hay sitio para escribir.
+    const height = theme.sheet.stretchRows
+        ? Math.max(measured.height, limit - y - labelH)
+        : measured.height;
+
+    drawNotesBox(ctx, text, y, height);
+}
+
+// =====================================================================
 // DOCUMENTO
 // =====================================================================
 
@@ -593,6 +1293,22 @@ export function buildWeekPdf(week: PrintWeek): jsPDF {
     };
 
     const days = week.days.length > 0 ? week.days : [{ title: 'Sin días', exercises: [] }];
+
+    // LA HOJA DE TABLA. Un día por hoja, igual que la plantilla de papel.
+    if (theme.layout.sheet === 'table') {
+        days.forEach((day, dayIndex) => {
+            if (dayIndex > 0) doc.addPage([grid.page.w, grid.page.h], 'portrait');
+            paintSurface(ctx);
+            drawSheetDay(ctx, day);
+        });
+
+        const pages = doc.getNumberOfPages();
+        for (let page = 1; page <= pages; page++) {
+            doc.setPage(page);
+            drawSheetFooterBox(ctx, page, pages);
+        }
+        return doc;
+    }
 
     days.forEach((day, dayIndex) => {
         if (dayIndex > 0) doc.addPage([grid.page.w, grid.page.h], 'portrait');

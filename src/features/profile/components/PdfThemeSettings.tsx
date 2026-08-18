@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Loader, Save, Trash2, Upload } from 'lucide-react';
+import { FileUp, Loader, Plus, Save, Trash2, Undo2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import {
-    DEFAULT_THEME, FONT_FAMILIES, PAGE_SIZES, PDF_PRESETS,
-    resolveTheme, type FontFamily, type PageFormat, type PdfThemeInput,
+    DEFAULT_COLUMNS, DEFAULT_THEME, FONT_FAMILIES, PAGE_SIZES, PDF_PRESETS,
+    pageDimensions, resolveTheme,
+    type FontFamily, type PageFormat, type PdfSheetColumn, type PdfThemeInput,
 } from '../../../lib/export/pdfTheme';
+import type { TemplateScanReport } from '../../../lib/export/pdfTemplateScan';
 import { buildWeekPdf } from '../../../lib/export/weekPdf';
 
 /**
@@ -14,9 +16,15 @@ import { buildWeekPdf } from '../../../lib/export/weekPdf';
  * =====================================================================
  *
  * Todo lo que aquí se toca es DATO, no código: colores, tipografía,
- * logotipo, cabecera y estilo se guardan en `profiles` y los lee
- * `weekPdf.ts` (vía `useCoachPdfTheme`) al generar cualquier documento.
- * Cambiar el diseño del PDF de todo un equipo es rellenar un formulario.
+ * logotipo, cabecera, columnas de la tabla y estilo se guardan en `profiles`
+ * y los lee `weekPdf.ts` (vía `useCoachPdfTheme`) al generar cualquier
+ * documento. Cambiar el diseño del PDF de todo un equipo es rellenar un
+ * formulario.
+ *
+ * Y hay una puerta más corta todavía: subir el PDF que el entrenador YA
+ * reparte. `pdfTemplateScan.ts` lo mide y rellena este formulario entero de
+ * una vez —colores, letra, logotipo, columnas—, que es lo que hace que
+ * "quiero que salga como el mío" no sea un proyecto.
  *
  * LA VISTA PREVIA ES EL PDF DE VERDAD
  *
@@ -55,6 +63,9 @@ const SAMPLE_WEEK = {
     }],
 };
 
+/** Cuánto puede pesar el PDF de ejemplo. Por encima, ni se abre. */
+const MAX_TEMPLATE_BYTES = 15 * 1024 * 1024;
+
 export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: () => void }) {
     const initial = useMemo(() => (user.pdf_theme ?? {}) as PdfThemeInput, [user.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -64,12 +75,22 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [saving, setSaving] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // El escaneo de una plantilla ajena. `undo` guarda lo que había antes
+    // para que probar un PDF no sea una decisión irreversible. Va en estado
+    // y no en una `ref` porque el botón de deshacer SE PINTA a partir de él.
+    const [scanning, setScanning] = useState(false);
+    const [scanReport, setScanReport] = useState<TemplateScanReport | null>(null);
+    const [undo, setUndo] = useState<{ theme: PdfThemeInput; brandColor: string; logoUrl: string | null } | null>(null);
+
     const fileInput = useRef<HTMLInputElement>(null);
+    const templateInput = useRef<HTMLInputElement>(null);
 
     const resolved = useMemo(
         () => resolveTheme({ ...theme, palette: { accent: brandColor, ...theme.palette } }),
         [theme, brandColor]
     );
+    const isSheet = resolved.layout.sheet === 'table';
 
     // La vista previa se regenera con cada ajuste, pero no en cada tecla: el
     // logotipo puede pesar varios cientos de KB y jsPDF no es instantáneo.
@@ -90,7 +111,76 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
 
     const applyPreset = (key: string) => {
         const preset = PDF_PRESETS.find(p => p.key === key);
-        if (preset) setTheme(preset.theme);
+        if (!preset) return;
+        setTheme(preset.theme);
+        setScanReport(null);
+    };
+
+    // -----------------------------------------------------------------
+    // COPIAR UN PDF DE EJEMPLO
+    // -----------------------------------------------------------------
+
+    /**
+     * El escáner arrastra pdf.js —cerca de un mega— y solo lo usa quien
+     * sube una plantilla. Se carga al pulsar, no al abrir la pantalla.
+     */
+    const handleTemplate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (templateInput.current) templateInput.current.value = '';
+        if (!file) return;
+
+        if (file.size > MAX_TEMPLATE_BYTES) {
+            toast.error('El PDF pesa demasiado (máx. 15 MB)');
+            return;
+        }
+
+        setScanning(true);
+        try {
+            const { scanPdfTemplate } = await import('../../../lib/export/pdfTemplateScan');
+            const scan = await scanPdfTemplate(file);
+
+            setUndo({ theme, brandColor, logoUrl });
+
+            // El tema escaneado SUSTITUYE al anterior en vez de fundirse con
+            // él: mezclar dos diseños distintos no da un diseño, da un
+            // híbrido con la letra de uno y los colores del otro.
+            setTheme(scan.theme);
+            if (scan.theme.palette?.accent) setBrandColor(scan.theme.palette.accent);
+            if (scan.logoDataUrl) setLogoUrl(scan.logoDataUrl);
+            setScanReport(scan.report);
+
+            toast.success('Diseño copiado de tu PDF. Revísalo en la vista previa.');
+        } catch (err) {
+            console.error(err);
+            toast.error('No se pudo leer ese PDF. ¿Está protegido con contraseña?');
+        } finally {
+            setScanning(false);
+        }
+    };
+
+    const undoScan = () => {
+        if (!undo) return;
+        setTheme(undo.theme);
+        setBrandColor(undo.brandColor);
+        setLogoUrl(undo.logoUrl);
+        setScanReport(null);
+        setUndo(null);
+    };
+
+    // -----------------------------------------------------------------
+    // LOGOTIPO
+    // -----------------------------------------------------------------
+
+    /** Sube un archivo al bucket y devuelve su URL pública. */
+    const uploadLogo = async (blob: Blob, ext: string): Promise<string> => {
+        // El id del dueño va SIEMPRE al principio del nombre: es lo que
+        // comprueba la política del bucket (database/profiles_storage_policies.sql).
+        const path = `logos/${user.id}-${Date.now()}.${ext}`;
+        const { error } = await supabase.storage.from('profiles').upload(path, blob, {
+            contentType: blob.type || `image/${ext}`,
+        });
+        if (error) throw error;
+        return supabase.storage.from('profiles').getPublicUrl(path).data.publicUrl;
     };
 
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,13 +195,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
 
         setUploadingLogo(true);
         try {
-            const ext = file.name.split('.').pop();
-            const path = `logos/${user.id}-${Date.now()}.${ext}`;
-            const { error: uploadError } = await supabase.storage.from('profiles').upload(path, file);
-            if (uploadError) throw uploadError;
-
-            const { data } = supabase.storage.from('profiles').getPublicUrl(path);
-            setLogoUrl(data.publicUrl);
+            setLogoUrl(await uploadLogo(file, file.name.split('.').pop() || 'png'));
         } catch (err) {
             console.error(err);
             toast.error('No se pudo subir el logotipo');
@@ -123,11 +207,23 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
     const handleSave = async () => {
         setSaving(true);
         try {
+            // Un logotipo recortado de un PDF vive de momento como data URL,
+            // dentro del navegador. Al guardar sube al almacenamiento: en el
+            // perfil solo puede ir una dirección (`pdf_theme` tiene 8 KB de
+            // tope, ver database/pdf_theme.sql), y además el atleta también
+            // tiene que poder descargarlo desde su lado.
+            let url = logoUrl;
+            if (url?.startsWith('data:')) {
+                const blob = await (await fetch(url)).blob();
+                url = await uploadLogo(blob, 'png');
+                setLogoUrl(url);
+            }
+
             const { error } = await supabase
                 .from('profiles')
                 .update({
                     brand_color: brandColor,
-                    logo_url: logoUrl,
+                    logo_url: url,
                     pdf_theme: theme,
                 })
                 .eq('id', user.id);
@@ -141,6 +237,17 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
             setSaving(false);
         }
     };
+
+    // -----------------------------------------------------------------
+    // COLUMNAS
+    // -----------------------------------------------------------------
+
+    const columns = resolved.sheet.columns;
+
+    const setColumns = (next: PdfSheetColumn[]) => patch({ sheet: { columns: next } });
+
+    const editColumn = (index: number, change: Partial<PdfSheetColumn>) =>
+        setColumns(columns.map((c, i) => (i === index ? { ...c, ...change } : c)));
 
     return (
         <div className="mx-auto w-full max-w-6xl px-4 py-6 pb-24 md:px-8 md:py-10">
@@ -170,6 +277,51 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
             <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
                 {/* ------------------------------------------------- Ajustes */}
                 <div className="space-y-5 lg:order-1">
+                    <Section title="Copiar un PDF que ya usas">
+                        <p className="-mt-1 text-t-xs leading-relaxed text-ink-muted">
+                            Sube la hoja que ya le mandas a tus atletas y Anvil la mide: sus colores, su
+                            tipografía, su logotipo y las columnas de su tabla. A partir de ahí, cada semana
+                            que descargues sale con ese diseño.
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <button
+                                type="button"
+                                onClick={() => templateInput.current?.click()}
+                                disabled={scanning}
+                                className="flex items-center gap-2 rounded-field bg-surface-sunken px-4 py-2.5 text-t-xs font-bold text-ink transition-colors duration-fast ease-snap hover:bg-surface-raised disabled:opacity-40"
+                            >
+                                {scanning ? <Loader size={15} className="animate-spin" /> : <FileUp size={15} />}
+                                {scanning ? 'Leyendo el PDF…' : 'Subir un PDF de ejemplo'}
+                            </button>
+                            {undo && (
+                                <button
+                                    type="button"
+                                    onClick={undoScan}
+                                    className="flex items-center gap-2 rounded-field px-3 py-2.5 text-t-xs font-bold text-ink-muted transition-colors duration-fast hover:text-ink"
+                                >
+                                    <Undo2 size={15} />
+                                    Deshacer
+                                </button>
+                            )}
+                            <input
+                                ref={templateInput}
+                                type="file"
+                                accept="application/pdf,.pdf"
+                                className="hidden"
+                                onChange={handleTemplate}
+                            />
+                        </div>
+
+                        {scanReport && <ScanSummary report={scanReport} onClose={() => setScanReport(null)} />}
+
+                        <p className="text-t-2xs leading-relaxed text-ink-faint">
+                            El PDF no se guarda en ningún sitio: se lee en tu navegador, se copia el diseño y se
+                            descarta. La tipografía se sustituye por la más parecida de las tres que admite el
+                            formato.
+                        </p>
+                    </Section>
+
                     <Section title="Punto de partida">
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                             {PDF_PRESETS.map(preset => (
@@ -229,9 +381,9 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                     value={resolved.header.style}
                                     onChange={v => patch({ header: { style: v as typeof resolved.header.style } })}
                                     options={[
+                                        { value: 'stacked', label: 'Centrado' },
                                         { value: 'bar', label: 'Franja' },
                                         { value: 'minimal', label: 'Mínimo' },
-                                        { value: 'stacked', label: 'Centrado' },
                                     ]}
                                 />
                             </Field>
@@ -298,13 +450,29 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
 
                     <Section title="Composición">
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            <Field label="Maqueta" hint={isSheet ? 'Una fila por ejercicio, como la hoja de papel' : 'Un bloque por ejercicio, para leer en el móvil'}>
+                                <SegmentedControl
+                                    value={resolved.layout.sheet}
+                                    onChange={v => patch({ layout: { sheet: v as 'table' | 'blocks' } })}
+                                    options={[
+                                        { value: 'table', label: 'Tabla' },
+                                        { value: 'blocks', label: 'Bloques' },
+                                    ]}
+                                />
+                            </Field>
+
                             <Field label="Formato de página">
                                 <SegmentedControl
                                     value={resolved.page}
                                     onChange={v => patch({ page: v as PageFormat })}
-                                    options={(Object.keys(PAGE_SIZES) as PageFormat[]).map(k => ({
-                                        value: k, label: PAGE_SIZES[k].label,
-                                    }))}
+                                    options={[
+                                        ...(Object.keys(PAGE_SIZES) as ('mobile' | 'a4')[]).map(k => ({
+                                            value: k as PageFormat, label: PAGE_SIZES[k].label,
+                                        })),
+                                        ...(resolved.pageSize
+                                            ? [{ value: 'custom' as PageFormat, label: 'Del PDF' }]
+                                            : []),
+                                    ]}
                                 />
                             </Field>
 
@@ -322,15 +490,22 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                         </div>
 
                         <div className="mt-1 space-y-0.5">
-                            <Toggle
-                                label="Filete de color junto a cada ejercicio"
-                                checked={resolved.layout.accentBar}
-                                onChange={v => patch({ layout: { accentBar: v } })}
-                            />
+                            {!isSheet && (
+                                <Toggle
+                                    label="Filete de color junto a cada ejercicio"
+                                    checked={resolved.layout.accentBar}
+                                    onChange={v => patch({ layout: { accentBar: v } })}
+                                />
+                            )}
                             <Toggle
                                 label="Notas del entrenador bajo cada ejercicio"
                                 checked={resolved.layout.showNotes}
                                 onChange={v => patch({ layout: { showNotes: v } })}
+                            />
+                            <Toggle
+                                label="Fondo alterno en las filas"
+                                checked={resolved.layout.zebra}
+                                onChange={v => patch({ layout: { zebra: v } })}
                             />
                             <Toggle
                                 label="Número de página en el pie"
@@ -339,6 +514,159 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                             />
                         </div>
                     </Section>
+
+                    {isSheet && (
+                        <Section title="La hoja">
+                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                                <Field label="Rótulo del día">
+                                    <TextInput value={resolved.sheet.dayLabel} onChange={v => patch({ sheet: { dayLabel: v } })} placeholder="Día" />
+                                </Field>
+                                <Field label="Rótulo del atleta">
+                                    <TextInput value={resolved.sheet.athleteLabel} onChange={v => patch({ sheet: { athleteLabel: v } })} placeholder="Nombre" />
+                                </Field>
+                                <Field label="Rótulo del bloque">
+                                    <TextInput value={resolved.sheet.blockLabel} onChange={v => patch({ sheet: { blockLabel: v } })} placeholder="Información bloque" />
+                                </Field>
+                            </div>
+
+                            {/* ------------------------------------- Columnas */}
+                            <div className="space-y-2">
+                                <div className="flex items-end justify-between gap-3">
+                                    <div>
+                                        <span className="block text-t-xs font-semibold text-ink-muted">Columnas de la tabla</span>
+                                        <span className="block text-t-2xs text-ink-faint">
+                                            «Libre» dibuja la columna y la deja vacía para rellenar a mano.
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setColumns([...columns, { key: 'blank', label: 'Nueva', width: 15 }])}
+                                        disabled={columns.length >= 8}
+                                        className="flex items-center gap-1.5 rounded-field border border-[var(--border-default)] px-2.5 py-1.5 text-t-2xs font-bold text-ink-muted transition-colors duration-fast hover:text-ink disabled:opacity-40"
+                                    >
+                                        <Plus size={13} /> Añadir
+                                    </button>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    {columns.map((col, i) => (
+                                        <div key={i} className="flex items-center gap-2 rounded-field bg-surface-sunken p-1.5">
+                                            <input
+                                                type="text"
+                                                value={col.label}
+                                                maxLength={32}
+                                                onChange={e => editColumn(i, { label: e.target.value })}
+                                                className="h-9 min-w-0 flex-1 rounded-chip bg-transparent px-2 text-t-sm text-ink outline-none placeholder:text-ink-subtle"
+                                                placeholder="Rótulo"
+                                            />
+                                            <select
+                                                value={col.key}
+                                                onChange={e => editColumn(i, { key: e.target.value as PdfSheetColumn['key'] })}
+                                                className="h-9 shrink-0 rounded-chip border border-subtle bg-surface-raised px-1.5 text-t-2xs font-bold text-ink-muted outline-none"
+                                            >
+                                                <option value="name">Ejercicio</option>
+                                                <option value="series">Series</option>
+                                                <option value="reps">Reps</option>
+                                                <option value="rest">Descanso</option>
+                                                <option value="intensity">Carga</option>
+                                                <option value="blank">Libre</option>
+                                            </select>
+                                            <div className="flex h-9 w-16 shrink-0 items-center rounded-chip border border-subtle bg-surface-raised px-2">
+                                                <input
+                                                    type="number"
+                                                    min={4}
+                                                    max={80}
+                                                    value={Math.round(col.width)}
+                                                    onChange={e => editColumn(i, { width: Number(e.target.value) || 15 })}
+                                                    className="w-full bg-transparent text-t-2xs font-bold text-ink outline-none"
+                                                    aria-label="Ancho relativo"
+                                                />
+                                                <span className="text-t-2xs text-ink-faint">%</span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setColumns(columns.filter((_, j) => j !== i))}
+                                                disabled={columns.length <= 2}
+                                                aria-label={`Quitar la columna ${col.label}`}
+                                                className="shrink-0 rounded-chip p-2 text-ink-faint transition-colors duration-fast hover:text-danger disabled:opacity-30"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setColumns(DEFAULT_COLUMNS)}
+                                    className="text-t-2xs font-bold text-ink-subtle underline-offset-4 transition-colors hover:text-ink hover:underline"
+                                >
+                                    Volver a las cinco de siempre
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <Field label={`Alto de fila · ${(resolved.sheet.rowUnits * 4).toFixed(0)} mm`} hint="El sitio que queda para apuntar a mano">
+                                    <input
+                                        type="range"
+                                        min={26}
+                                        max={140}
+                                        step={2}
+                                        value={Math.round(resolved.sheet.rowUnits * 10)}
+                                        onChange={e => patch({ sheet: { rowUnits: Number(e.target.value) / 10 } })}
+                                        className="h-11 w-full accent-brand"
+                                    />
+                                </Field>
+
+                                <Field label={`Grosor de la rejilla · ${resolved.sheet.rule.toFixed(2)} mm`}>
+                                    <input
+                                        type="range"
+                                        min={10}
+                                        max={100}
+                                        step={5}
+                                        value={Math.round(resolved.sheet.rule * 100)}
+                                        onChange={e => patch({ sheet: { rule: Number(e.target.value) / 100 } })}
+                                        className="h-11 w-full accent-brand"
+                                    />
+                                </Field>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                <Field label="Rótulo de la caja de texto" hint="Vacío = la caja sin título">
+                                    <TextInput
+                                        value={resolved.sheet.notesBox.label}
+                                        onChange={v => patch({ sheet: { notesBox: { label: v } } })}
+                                        placeholder="Indicaciones y calentamiento"
+                                    />
+                                </Field>
+                                <Field label="Rótulo dentro del pie" hint="Vacío = solo la firma y la fecha">
+                                    <TextInput
+                                        value={resolved.sheet.footerBox.label}
+                                        onChange={v => patch({ sheet: { footerBox: { label: v } } })}
+                                        placeholder="Pie de página"
+                                    />
+                                </Field>
+                            </div>
+
+                            <div className="space-y-0.5">
+                                <Toggle
+                                    label="Caja de indicaciones y calentamiento"
+                                    checked={resolved.sheet.notesBox.show}
+                                    onChange={v => patch({ sheet: { notesBox: { show: v } } })}
+                                />
+                                <Toggle
+                                    label="Recuadro del pie"
+                                    checked={resolved.sheet.footerBox.show}
+                                    onChange={v => patch({ sheet: { footerBox: { show: v } } })}
+                                />
+                                <Toggle
+                                    label="Estirar las filas hasta llenar la hoja"
+                                    checked={resolved.sheet.stretchRows}
+                                    onChange={v => patch({ sheet: { stretchRows: v } })}
+                                />
+                            </div>
+                        </Section>
+                    )}
                 </div>
 
                 {/* ------------------------------------------------- Vista previa */}
@@ -349,7 +677,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                         </p>
                         <div
                             className="overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-sunken"
-                            style={{ aspectRatio: `${resolved.page === 'a4' ? 210 : 210} / ${PAGE_SIZES[resolved.page].h}` }}
+                            style={{ aspectRatio: `${pageDimensions(resolved).w} / ${pageDimensions(resolved).h}` }}
                         >
                             {previewUrl ? (
                                 <iframe
@@ -376,6 +704,54 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
 // =====================================================================
 // PIEZAS
 // =====================================================================
+
+/**
+ * Lo que se ha sacado del PDF del entrenador, en cristiano.
+ *
+ * Enseñarlo no es cortesía: el escaneo ACIERTA casi siempre y falla a veces,
+ * y la diferencia entre las dos cosas hay que poder verla antes de mandarle
+ * la hoja a treinta atletas. Cada línea de aquí es un sitio donde mirar en
+ * la vista previa.
+ */
+function ScanSummary({ report, onClose }: { report: TemplateScanReport; onClose: () => void }) {
+    const rows: [string, string][] = [
+        ['Página', report.pageLabel],
+        ['Tipografía', report.fontLabel],
+        ['Tabla', report.foundTable ? `${report.columns.length} columnas: ${report.columns.join(' · ')}` : 'no encontrada'],
+        ['Alto de fila', report.rowHeightMm ? `${report.rowHeightMm} mm` : '—'],
+        ['Logotipo', report.foundLogo ? 'recortado de la cabecera' : 'no encontrado'],
+    ];
+
+    return (
+        <div className="relative rounded-card border border-[var(--border-default)] bg-surface-sunken p-3.5">
+            <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar el resumen"
+                className="absolute right-2 top-2 rounded-chip p-1.5 text-ink-faint transition-colors hover:text-ink"
+            >
+                <X size={14} />
+            </button>
+
+            <dl className="space-y-1.5 pr-6">
+                {rows.map(([label, value]) => (
+                    <div key={label} className="flex gap-2 text-t-xs">
+                        <dt className="w-24 shrink-0 font-bold text-ink-subtle">{label}</dt>
+                        <dd className="min-w-0 flex-1 text-ink">{value}</dd>
+                    </div>
+                ))}
+            </dl>
+
+            {report.notes.length > 0 && (
+                <ul className="mt-3 space-y-1 border-t border-[var(--border-default)] pt-2.5">
+                    {report.notes.map((note, i) => (
+                        <li key={i} className="text-t-2xs leading-relaxed text-ink-muted">· {note}</li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (

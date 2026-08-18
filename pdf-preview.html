@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Anvil · banco de pruebas de la hoja de entrenamiento</title>
+</head>
+
+<body>
+  <!--
+    BANCO DE PRUEBAS, NO PARTE DE LA APLICACIÓN.
+
+    Los ajustes del PDF viven dentro del perfil de un entrenador, detrás del
+    inicio de sesión y de tener un bloque con una semana montada. Comprobar
+    que la rejilla cae donde tiene que caer no puede costar eso. Aquí se pinta
+    el documento que genera `buildWeekPdf` —el mismo de la descarga real— y,
+    al lado, el PDF que se le eche por encima para copiarle el diseño.
+
+    No entra en el bundle: Vite solo empaqueta `index.html`, que es su entrada
+    por defecto. Se sirve en desarrollo (/pdf-preview.html) y no existe en
+    producción.
+  -->
+  <div id="root"></div>
+  <script type="module" src="/src/dev/pdfPreview.tsx"></script>
+</body>
+
+</html>

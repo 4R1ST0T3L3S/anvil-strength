@@ -17,6 +17,10 @@
  * pudren estas cosas. Con un tema por entrenador, el generador no sabe ni
  * cuántos hay.
  *
+ * Y es lo que permite lo de `pdfTemplateScan.ts`: leer el PDF que el coach
+ * ya usaba, deducir sus colores, su tipografía y su rejilla, y volcarlo
+ * TODO aquí. Copiar una plantilla ajena es rellenar este objeto.
+ *
  * DÓNDE VIVE UN TEMA
  *
  * En el perfil del entrenador. Aquí solo están el contrato, los valores por
@@ -35,27 +39,44 @@
 // =====================================================================
 
 /**
- * `mobile` — 9:16, la proporción de la pantalla de un móvil.
+ * `a4`     — la hoja de siempre. Es el formato por defecto porque es el que
+ *            usan las plantillas que los entrenadores ya reparten: se
+ *            imprime, se cuelga del banco y se raya con boli.
  *
- * Es el formato por defecto porque es donde se lee: el atleta abre el PDF
- * en el teléfono, entre series, y una página 9:16 le entra ENTERA en
- * pantalla sin pellizcar ni girar. Un A4 en vertical obliga a hacer zoom
- * para leer una cifra, que es justo el gesto que no se puede pedir con las
- * manos ocupadas.
+ * `mobile` — 9:16, la proporción de la pantalla de un móvil. El atleta abre
+ *            el PDF en el teléfono, entre series, y una página 9:16 le entra
+ *            ENTERA sin pellizcar ni girar. Va con la maqueta de bloques.
  *
- * `a4` — para quien lo imprime y lo deja en el banco. Se conserva porque
- * una hoja 9:16 no sale de ninguna impresora doméstica sin recortes.
+ * `custom` — el tamaño exacto del PDF que el entrenador subió como modelo.
+ *            Cartas americanas, hojas cuadradas, lo que sea: copiar una
+ *            plantilla incluye copiar su papel.
  */
-export type PageFormat = 'mobile' | 'a4';
+export type PageFormat = 'mobile' | 'a4' | 'custom';
 
 /** Dimensiones en milímetros. jsPDF trabaja en mm en todo el generador. */
-export const PAGE_SIZES: Record<PageFormat, { w: number; h: number; label: string }> = {
+export const PAGE_SIZES: Record<'mobile' | 'a4', { w: number; h: number; label: string }> = {
+    a4: { w: 210, h: 297, label: 'A4' },
     // 210 x 373.3 = exactamente 9:16. Se mantiene el ancho del A4 para que
     // los cuerpos de texto midan lo mismo y la maqueta no haya que reajustarla
     // al cambiar de formato: lo único que cambia es cuánto cabe a lo largo.
     mobile: { w: 210, h: 373.3, label: 'Móvil (9:16)' },
-    a4: { w: 210, h: 297, label: 'A4 (imprimible)' },
 };
+
+/**
+ * El papel de un tema ya resuelto.
+ *
+ * Se pasa por aquí y no se lee `PAGE_SIZES[page]` a pelo porque `custom` no
+ * está en esa tabla: su tamaño viaja en el propio tema. Los topes evitan que
+ * un escaneo raro —una página de 3 metros— reviente la generación.
+ */
+export function pageDimensions(theme: { page: PageFormat; pageSize?: { w: number; h: number } | null }): { w: number; h: number } {
+    if (theme.page === 'custom' && theme.pageSize) {
+        const w = Math.min(600, Math.max(80, theme.pageSize.w));
+        const h = Math.min(900, Math.max(80, theme.pageSize.h));
+        return { w, h };
+    }
+    return PAGE_SIZES[theme.page as 'mobile' | 'a4'] ?? PAGE_SIZES.a4;
+}
 
 // =====================================================================
 // TIPOGRAFÍA
@@ -68,6 +89,10 @@ export const PAGE_SIZES: Record<PageFormat, { w: number; h: number; label: strin
  * suma entre 100 y 400 KB A CADA PDF y hay que licenciarla para incrustarla.
  * El día que haga falta, se añade aquí una clave nueva y el generador la
  * registra; el contrato no cambia.
+ *
+ * Cuando se copia un PDF ajeno, su fuente real se clasifica en una de estas
+ * tres (ver `classifyFont` en pdfTemplateScan.ts). No es la misma letra,
+ * pero sí el mismo GÉNERO de letra, que es lo que se nota de un vistazo.
  */
 export type FontFamily = 'helvetica' | 'times' | 'courier';
 
@@ -90,7 +115,7 @@ export interface PdfPalette {
     ink: string;
     /** Texto secundario: notas, etiquetas, metadatos. */
     muted: string;
-    /** Filetes y separadores. */
+    /** Filetes, separadores y la rejilla de la tabla. */
     line: string;
     /** El color de la marca del entrenador. Se usa CON CUENTA: ver abajo. */
     accent: string;
@@ -116,7 +141,8 @@ export interface PdfHeader {
     /**
      * `bar`      — franja de color con el nombre del club. La más contundente.
      * `minimal`  — solo un filete. La más sobria.
-     * `stacked`  — logotipo arriba y datos debajo, centrado. La más editorial.
+     * `stacked`  — logotipo arriba y datos debajo, centrado. La más editorial,
+     *              y la de la hoja de siempre: el yunque presidiendo la página.
      */
     style: 'bar' | 'minimal' | 'stacked';
     /** Nombre del club. Si está vacío se usa el del entrenador. */
@@ -132,17 +158,87 @@ export interface PdfHeader {
      * está esperando la descarga. Lo resuelve `loadLogo()` antes de empezar.
      */
     logoDataUrl?: string | null;
+    /**
+     * Alto del logotipo en milímetros, cuando la cabecera es `stacked`.
+     *
+     * Existe porque al copiar una plantilla se mide el logotipo REAL del
+     * entrenador en su hoja, y ahí un yunque de 19 mm y uno de 30 mm son dos
+     * documentos distintos. `null` = el alto que decida la maqueta.
+     */
+    logoHeight?: number | null;
 }
 
 export interface PdfLayout {
+    /**
+     * LA MAQUETA. Es la decisión más grande del documento.
+     *
+     * `table`  — la hoja de entrenamiento de toda la vida: una rejilla con
+     *            una fila por ejercicio y una columna por dato, la caja de
+     *            indicaciones debajo y el pie enmarcado. Es lo que el coach
+     *            ya reparte en papel y lo que el atleta reconoce, así que es
+     *            la de por defecto.
+     *
+     * `blocks` — un bloque por ejercicio, el nombre a ancho completo y las
+     *            cifras debajo con su rótulo. Se lee de arriba abajo, que es
+     *            como se lee un teléfono. Para quien no imprime nada.
+     */
+    sheet: 'table' | 'blocks';
     /** Cuánto aire. Afecta a márgenes, alto de fila y separaciones. */
     density: 'compact' | 'normal' | 'relaxed';
     /** Notas del entrenador bajo cada ejercicio. */
     showNotes: boolean;
-    /** Filete de acento a la izquierda de cada ejercicio. */
+    /** Filete de acento a la izquierda de cada ejercicio (maqueta `blocks`). */
     accentBar: boolean;
     /** Fondo alterno en las filas. Apagado por defecto: ver el generador. */
     zebra: boolean;
+}
+
+/**
+ * UNA COLUMNA DE LA HOJA.
+ *
+ * `key` dice QUÉ dato se imprime; `label` cómo se llama en la cabecera de la
+ * tabla. Van separados porque cada entrenador rotula a su manera —"CARGA",
+ * "KG/INTENSIDAD", "PESO"— y eso no puede obligar a tocar el generador.
+ *
+ * `blank` es la pieza que hace que copiar una plantilla ajena funcione de
+ * verdad: la columna existe, se dibuja, se rotula y se deja VACÍA. Si el
+ * coach tenía una columna de "RPE REAL" o de "✓" para marcar la serie hecha,
+ * su hoja la sigue teniendo aunque Anvil no sepa qué meter dentro.
+ */
+export interface PdfSheetColumn {
+    key: 'name' | 'series' | 'reps' | 'rest' | 'intensity' | 'blank';
+    label: string;
+    /** Peso relativo del ancho. Se normaliza sobre la suma de todas. */
+    width: number;
+}
+
+export interface PdfSheet {
+    /** Rótulos de los campos de la cabecera. Vacío = no se imprime el campo. */
+    dayLabel: string;
+    athleteLabel: string;
+    blockLabel: string;
+    columns: PdfSheetColumn[];
+    /**
+     * Alto mínimo de fila, en unidades de rejilla.
+     *
+     * En una plantilla de papel las filas son ENORMES —tres centímetros— y no
+     * es un descuido: ahí se apunta a mano el peso que salió. Se conserva.
+     */
+    rowUnits: number;
+    /**
+     * Estirar las filas hasta llenar la hoja cuando el día cabe entero.
+     *
+     * Sin esto, un día de tres ejercicios deja media página en blanco y la
+     * tabla parece cortada. Con esto, la hoja siempre se ve completa, igual
+     * que la plantilla impresa.
+     */
+    stretchRows: boolean;
+    /** La caja de texto libre bajo la tabla. */
+    notesBox: { show: boolean; label: string };
+    /** El recuadro del pie. */
+    footerBox: { show: boolean; label: string };
+    /** Grosor de la rejilla, en milímetros. */
+    rule: number;
 }
 
 export interface PdfFooter {
@@ -153,10 +249,13 @@ export interface PdfFooter {
 
 export interface PdfTheme {
     page: PageFormat;
+    /** Solo cuando `page` es `custom`. En milímetros. */
+    pageSize?: { w: number; h: number } | null;
     palette: PdfPalette;
     typography: PdfTypography;
     header: PdfHeader;
     layout: PdfLayout;
+    sheet: PdfSheet;
     footer: PdfFooter;
 }
 
@@ -164,38 +263,71 @@ export interface PdfTheme {
 export type PdfThemeInput = DeepPartial<PdfTheme>;
 
 type DeepPartial<T> = {
-    [K in keyof T]?: T[K] extends object | undefined ? DeepPartial<NonNullable<T[K]>> : T[K];
+    [K in keyof T]?: T[K] extends (infer U)[]
+        ? U[]
+        : T[K] extends object | undefined
+            ? DeepPartial<NonNullable<T[K]>>
+            : T[K];
 };
+
+// =====================================================================
+// LAS COLUMNAS DE SIEMPRE
+// =====================================================================
+
+/**
+ * Los rótulos de la hoja que el club ya reparte, literales.
+ *
+ * Los anchos no son redondos porque están MEDIDOS sobre esa hoja: el nombre
+ * del ejercicio se lleva casi un tercio y las cuatro cifras se reparten el
+ * resto sin que ninguna quede tan estrecha que "2'30\"" no le entre.
+ */
+export const DEFAULT_COLUMNS: PdfSheetColumn[] = [
+    { key: 'name', label: 'Nombre de ejercicio', width: 30.5 },
+    { key: 'series', label: 'Series', width: 14.5 },
+    { key: 'reps', label: 'Repeticiones', width: 19 },
+    { key: 'rest', label: 'Descanso', width: 17 },
+    { key: 'intensity', label: 'Kg/Intensidad', width: 19 },
+];
 
 // =====================================================================
 // EL TEMA POR DEFECTO
 // =====================================================================
 
 /**
- * Papel blanco, tinta casi negra, un solo acento.
+ * LA PIZARRA: fondo negro, rejilla blanca, el yunque arriba.
+ *
+ * Es la hoja que el club ya imprime y reparte, y por eso es la de por
+ * defecto: el atleta que recibe el PDF ve EL MISMO documento que tiene
+ * pegado en la nevera, no una versión "de la app". Que la aplicación no
+ * imponga su propio diseño encima del de nadie es la mitad de esto.
  *
  * Las decisiones que sostienen todo lo demás:
  *
- *   · FONDO BLANCO. Un PDF oscuro se ve espectacular en pantalla y es
- *     inservible en papel: vacía un cartucho por hoja y en la mayoría de
- *     impresoras sale gris sucio. Quien quiera oscuro lo tiene en el preset
- *     `carbon`, pero no puede ser lo que reciba todo el mundo por defecto.
+ *   · FONDO NEGRO. Se sabe lo que cuesta imprimirlo —vacía un cartucho por
+ *     hoja— y aun así manda, porque este documento se mira en el móvil
+ *     mucho más de lo que se imprime, y porque es la hoja de la casa. Quien
+ *     imprima tiene el preset `papel` a un clic, mismo diseño en blanco.
  *
- *   · TINTA #16181C Y NO NEGRO PURO. El negro absoluto sobre blanco vibra
- *     en pantalla; un gris muy oscuro se lee igual de firme y descansa.
+ *   · REJILLA BLANCA Y FINA. 0,35 mm: se ve como un filete, no como un
+ *     borde. Es lo que separa una hoja de entrenamiento de una tabla de
+ *     Excel.
  *
- *   · UN ACENTO Y NADA MÁS. El color señala tres cosas —la cabecera, el
- *     nombre de la variante y los rótulos de sección— y no aparece en
- *     ningún otro sitio. Es lo que hace que signifique algo.
+ *   · FILAS ALTAS. 5,5 unidades = 22 mm de mínimo. En la hoja de papel son
+ *     tres centímetros porque ahí se apunta a mano lo que salió; aquí se
+ *     conserva la proporción aunque la fila ya venga rellena.
+ *
+ *   · UN ACENTO Y NADA MÁS. El color de la marca señala la variante del
+ *     ejercicio y poco más. Es lo que hace que signifique algo.
  */
 export const DEFAULT_THEME: PdfTheme = {
-    page: 'mobile',
+    page: 'a4',
+    pageSize: null,
     palette: {
-        surface: '#FFFFFF',
-        panel: '#F4F5F7',
-        ink: '#16181C',
-        muted: '#6B7078',
-        line: '#DFE2E7',
+        surface: '#0F1012',
+        panel: '#191B1F',
+        ink: '#FFFFFF',
+        muted: '#A6ABB3',
+        line: '#FFFFFF',
         accent: '#C81E1E',
     },
     typography: {
@@ -204,20 +336,33 @@ export const DEFAULT_THEME: PdfTheme = {
         upperHeadings: true,
     },
     header: {
-        style: 'bar',
+        style: 'stacked',
         title: null,
         subtitle: null,
         showLogo: true,
         logoDataUrl: null,
+        logoHeight: null,
     },
     layout: {
+        sheet: 'table',
         density: 'normal',
         showNotes: true,
         accentBar: true,
         // Apagada: las bandas grises sirven para seguir una fila LARGA con la
-        // vista, y aquí cada ejercicio es un bloque separado por aire. Con
-        // zebra, el documento parece una hoja de cálculo.
+        // vista, y aquí la rejilla ya guía el ojo. Con zebra, el documento
+        // parece una hoja de cálculo.
         zebra: false,
+    },
+    sheet: {
+        dayLabel: 'Día',
+        athleteLabel: 'Nombre',
+        blockLabel: 'Información bloque',
+        columns: DEFAULT_COLUMNS,
+        rowUnits: 5.5,
+        stretchRows: true,
+        notesBox: { show: true, label: 'Indicaciones y calentamiento' },
+        footerBox: { show: true, label: '' },
+        rule: 0.35,
     },
     footer: {
         text: null,
@@ -242,44 +387,58 @@ export interface PdfPreset {
  */
 export const PDF_PRESETS: PdfPreset[] = [
     {
-        key: 'anvil',
-        label: 'Anvil',
-        hint: 'Papel blanco, acento rojo, cabecera con franja.',
+        key: 'pizarra',
+        label: 'Pizarra',
+        hint: 'La hoja de siempre: fondo negro, rejilla blanca, yunque arriba.',
         theme: {},
     },
     {
-        key: 'minimal',
-        label: 'Mínimo',
-        hint: 'Sin color. Solo tipografía y filetes.',
-        theme: {
-            palette: { accent: '#16181C', panel: '#F7F7F8', line: '#E4E4E7' },
-            header: { style: 'minimal' },
-            layout: { accentBar: false, density: 'relaxed' },
-        },
-    },
-    {
-        key: 'editorial',
-        label: 'Editorial',
-        hint: 'Tipografía con remates y cabecera centrada.',
-        theme: {
-            typography: { family: 'times', scale: 1.05 },
-            header: { style: 'stacked' },
-            layout: { density: 'relaxed', accentBar: false },
-        },
-    },
-    {
-        key: 'carbon',
-        label: 'Carbón',
-        hint: 'Fondo oscuro. Pensado para leer en pantalla, no para imprimir.',
+        key: 'papel',
+        label: 'Papel',
+        hint: 'La misma hoja en blanco, para imprimir sin vaciar el cartucho.',
         theme: {
             palette: {
-                surface: '#111317',
-                panel: '#1B1E24',
-                ink: '#F4F5F7',
-                muted: '#9BA1AC',
-                line: '#2C3038',
+                surface: '#FFFFFF',
+                panel: '#F4F5F7',
+                ink: '#16181C',
+                muted: '#6B7078',
+                line: '#16181C',
             },
-            layout: { zebra: false },
+        },
+    },
+    {
+        key: 'minimo',
+        label: 'Mínimo',
+        hint: 'Papel blanco, sin color y con la rejilla al mínimo.',
+        theme: {
+            palette: {
+                surface: '#FFFFFF',
+                panel: '#F7F7F8',
+                ink: '#16181C',
+                muted: '#6B7078',
+                line: '#C9CCD2',
+                accent: '#16181C',
+            },
+            header: { style: 'minimal' },
+            layout: { density: 'relaxed' },
+            sheet: { rule: 0.2, rowUnits: 4 },
+        },
+    },
+    {
+        key: 'movil',
+        label: 'Móvil',
+        hint: 'Un bloque por ejercicio en formato 9:16. Sin tabla, para leer en el gimnasio.',
+        theme: {
+            page: 'mobile',
+            palette: {
+                surface: '#FFFFFF',
+                panel: '#F4F5F7',
+                ink: '#16181C',
+                muted: '#6B7078',
+                line: '#DFE2E7',
+            },
+            header: { style: 'bar' },
+            layout: { sheet: 'blocks', accentBar: true },
         },
     },
 ];
@@ -297,6 +456,10 @@ function merge<T>(base: T, patch: unknown): T {
     const out = { ...(base as Record<string, unknown>) };
     for (const [key, value] of Object.entries(patch)) {
         if (value === undefined) continue;
+        // Las listas se sustituyen enteras, nunca se funden posición a
+        // posición: las columnas de una plantilla copiada no tienen nada que
+        // ver con las de por defecto, y mezclarlas daría una tabla híbrida
+        // que no es la de nadie.
         out[key] = isObject(value) && isObject(out[key])
             ? merge(out[key], value)
             : value;
@@ -318,6 +481,12 @@ export function hexToRgb(hex: string): [number, number, number] | null {
     ];
 }
 
+/** [r,g,b] a "#RRGGBB". El camino de vuelta, para lo que se deduce de un PDF. */
+export function rgbToHex(r: number, g: number, b: number): string {
+    const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
+    return `#${[r, g, b].map(v => clamp(v).toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+}
+
 /**
  * Qué color de texto va encima de un fondo.
  *
@@ -329,12 +498,48 @@ export function hexToRgb(hex: string): [number, number, number] | null {
 export function readableOn(hex: string): string {
     const rgb = hexToRgb(hex);
     if (!rgb) return '#FFFFFF';
-    const [r, g, b] = rgb.map(c => {
+    const luminance = relativeLuminance(rgb);
+    return luminance > 0.6 ? '#16181C' : '#FFFFFF';
+}
+
+/** Luminancia relativa W3C de un [r,g,b] de 0 a 255. */
+export function relativeLuminance([r, g, b]: [number, number, number]): number {
+    const [lr, lg, lb] = [r, g, b].map(c => {
         const s = c / 255;
         return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
     });
-    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return luminance > 0.6 ? '#16181C' : '#FFFFFF';
+    return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+}
+
+/** Interpola dos colores. `t` = 0 devuelve `a`; `t` = 1, `b`. */
+export function mixHex(a: string, b: string, t: number): string {
+    const ca = hexToRgb(a) ?? [0, 0, 0];
+    const cb = hexToRgb(b) ?? [255, 255, 255];
+    return rgbToHex(
+        ca[0] + (cb[0] - ca[0]) * t,
+        ca[1] + (cb[1] - ca[1]) * t,
+        ca[2] + (cb[2] - ca[2]) * t,
+    );
+}
+
+/** Saneado de una lista de columnas venida de fuera (un tema guardado, un escaneo). */
+function resolveColumns(input: unknown): PdfSheetColumn[] {
+    if (!Array.isArray(input) || input.length === 0) return DEFAULT_COLUMNS;
+
+    const valid: PdfSheetColumn['key'][] = ['name', 'series', 'reps', 'rest', 'intensity', 'blank'];
+    const columns = input
+        .filter(isObject)
+        .map(c => ({
+            key: valid.includes(c.key as PdfSheetColumn['key']) ? (c.key as PdfSheetColumn['key']) : 'blank',
+            label: typeof c.label === 'string' ? c.label.slice(0, 32) : '',
+            width: typeof c.width === 'number' && c.width > 0 ? Math.min(80, c.width) : 15,
+        }))
+        // Más de ocho columnas en 190 mm son celdas de dos centímetros donde
+        // no entra "2'30\"". Antes de dejar salir un documento ilegible se
+        // recorta: lo que sobra es siempre lo de más a la derecha.
+        .slice(0, 8);
+
+    return columns.length > 0 ? columns : DEFAULT_COLUMNS;
 }
 
 /**
@@ -369,6 +574,12 @@ export function resolveTheme(input?: PdfThemeInput | null): PdfTheme {
             // solapan o las cifras no caben en su celda.
             scale: Math.min(1.25, Math.max(0.85, theme.typography.scale || 1)),
         },
+        sheet: {
+            ...theme.sheet,
+            columns: resolveColumns(theme.sheet?.columns),
+            rowUnits: Math.min(14, Math.max(2.6, theme.sheet?.rowUnits || DEFAULT_THEME.sheet.rowUnits)),
+            rule: Math.min(1.2, Math.max(0.1, theme.sheet?.rule || DEFAULT_THEME.sheet.rule)),
+        },
     };
 }
 
@@ -391,6 +602,9 @@ export function themeFromPreset(key: string): PdfTheme {
  */
 export async function loadLogo(url?: string | null): Promise<string | null> {
     if (!url) return null;
+    // Un logotipo ya extraído de un PDF llega como data URL: ya son los
+    // bytes, no hay nada que descargar.
+    if (url.startsWith('data:')) return url;
     try {
         const response = await fetch(url, { mode: 'cors' });
         if (!response.ok) return null;
