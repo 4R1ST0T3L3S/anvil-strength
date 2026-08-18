@@ -8,6 +8,7 @@ import type { Calibration } from '../../../lib/cv/plateGeometry';
 import type { TrackingStats } from '../../../lib/cv/quality';
 import type { PwrResult } from '../../../features/coach/components/pwr/MetricsDashboard';
 import type { TrainingSet, VbtMetrics, VbtSource } from '../../../types/training';
+import type { PwrSetup } from '../../../lib/cv/pwrSetup';
 import { transition, DURATION } from '../../../lib/motion';
 import { MetricBagView } from './MetricBagView';
 import { sanitizeMetricBag, legacyMetricsToBag } from '../../../lib/vbt/metricRegistry';
@@ -68,6 +69,12 @@ const VideoTracker = lazy(() =>
 const MetricsDashboard = lazy(() =>
     import('../../coach/components/pwr/MetricsDashboard').then(m => ({ default: m.MetricsDashboard }))
 );
+const AnalysisSetup = lazy(() =>
+    import('../../coach/components/pwr/AnalysisSetup').then(m => ({ default: m.AnalysisSetup }))
+);
+const SetupSummary = lazy(() =>
+    import('../../coach/components/pwr/AnalysisSetup').then(m => ({ default: m.SetupSummary }))
+);
 
 /**
  * Qué movimiento es, a partir de cómo lo llamó el coach.
@@ -116,6 +123,17 @@ export function SetVideoAnalysisModal({
     } | null>(null);
     const [result, setResult] = useState<PwrResult | null>(null);
     const [saving, setSaving] = useState(false);
+    /**
+     * El ajuste previo (Fase 3).
+     *
+     * Aquí llega casi todo hecho —la serie ya sabe el movimiento y los kilos—,
+     * así que el paso se reduce a confirmar y a elegir barra. Aun así **se
+     * pasa por él**: la carga registrada puede ser la pautada y no la que de
+     * verdad había en la barra, y es el único momento en que alguien mira el
+     * vídeo y los kilos a la vez.
+     */
+    const [setup, setSetup] = useState<PwrSetup | null>(null);
+    const [editingSetup, setEditingSetup] = useState(false);
 
     /**
      * Una medición mala no se guarda, aunque el usuario insista.
@@ -252,20 +270,45 @@ export function SetVideoAnalysisModal({
                                 </div>
                             }
                         >
-                            <VideoTracker
-                                onTrackingComplete={(path, calibration, stats) => setTracking({ path, calibration, stats })}
-                                isResultMode={Boolean(tracking)}
-                            />
-
-                            {tracking && (
-                                <MetricsDashboard
-                                    path={tracking.path}
-                                    calibration={tracking.calibration}
-                                    trackingStats={tracking.stats}
-                                    onResult={handleResult}
-                                    initialLoadKg={loadKg}
-                                    initialExerciseType={guessExerciseType(exerciseName)}
+                            {/* Sin ajuste no se monta el analizador. Ver Fase 3. */}
+                            {(!setup || editingSetup) && (
+                                <AnalysisSetup
+                                    initial={{
+                                        exerciseType: guessExerciseType(exerciseName),
+                                        loadKg: loadKg ?? 0,
+                                        ...(setup ?? {}),
+                                    }}
+                                    prefillNote={
+                                        loadKg != null
+                                            ? `El movimiento y la carga vienen de la serie pautada (${exerciseName}, ${loadKg} kg). Corrígelos si en la barra había otra cosa.`
+                                            : `El movimiento viene de la serie pautada (${exerciseName}). La carga no está registrada, así que hay que ponerla.`
+                                    }
+                                    submitLabel={setup ? 'Guardar el cambio' : 'Continuar al vídeo'}
+                                    onCancel={setup ? () => setEditingSetup(false) : undefined}
+                                    onReady={value => { setSetup(value); setEditingSetup(false); }}
                                 />
+                            )}
+
+                            {setup && !editingSetup && (
+                                <>
+                                    <SetupSummary setup={setup} onEdit={() => setEditingSetup(true)} />
+
+                                    <VideoTracker
+                                        onTrackingComplete={(path, calibration, stats) => setTracking({ path, calibration, stats })}
+                                        isResultMode={Boolean(tracking)}
+                                    />
+
+                                    {tracking && (
+                                        <MetricsDashboard
+                                            path={tracking.path}
+                                            calibration={tracking.calibration}
+                                            trackingStats={tracking.stats}
+                                            onResult={handleResult}
+                                            setup={setup}
+                                            athleteId={athleteId}
+                                        />
+                                    )}
+                                </>
                             )}
                         </Suspense>
 

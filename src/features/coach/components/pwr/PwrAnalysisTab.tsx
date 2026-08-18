@@ -1,19 +1,15 @@
 import { useCallback, useState } from 'react';
-import { Activity, ArrowLeft, Link2, Save } from 'lucide-react';
+import { Activity, ArrowLeft, Link2, Ruler, Save } from 'lucide-react';
 import { VideoTracker } from './VideoTracker';
 import { MetricsDashboard, type PwrResult } from './MetricsDashboard';
+import { AnalysisSetup, SetupSummary } from './AnalysisSetup';
+import { CalibrationModal } from './CalibrationModal';
+import { EXERCISE_LABEL, type PwrSetup } from '../../../../lib/cv/pwrSetup';
 import { TrackingPoint } from '../../../../lib/cv/tracker';
 import type { Calibration } from '../../../../lib/cv/plateGeometry';
 import type { TrackingStats } from '../../../../lib/cv/quality';
 import { SavePwrResultModal } from '../../../vbt/components/SavePwrResultModal';
 import { useAuth } from '../../../../context/AuthContext';
-
-/** Nombre por defecto del ejercicio según lo elegido en el panel de métricas. */
-const EXERCISE_NAME: Record<PwrResult['exerciseType'], string> = {
-  squat: 'Sentadilla',
-  bench: 'Press banca',
-  deadlift: 'Peso muerto',
-};
 
 /**
  * PWR ANÁLISIS
@@ -57,6 +53,20 @@ export function PwrAnalysisTab({
    * componente y no pueden estar abiertos a la vez.
    */
   const [saveMode, setSaveMode] = useState<'assign' | 'quick' | null>(null);
+
+  /**
+   * CON QUÉ SE ANALIZA. Sin esto no se llega ni al vídeo (Fase 3).
+   *
+   * `null` significa «todavía no se ha contestado», y mientras lo sea el
+   * analizador no se monta. No es un tecnicismo: la carga que se declare aquí
+   * multiplica la fuerza, la potencia y el 1RM, y antes se preguntaba DESPUÉS
+   * con un 100 kg ya escrito en el campo.
+   */
+  const [setup, setSetup] = useState<PwrSetup | null>(null);
+  /** El formulario abierto otra vez para corregir algo ya contestado. */
+  const [editingSetup, setEditingSetup] = useState(false);
+  /** El diálogo de contraste contra un encoder (Fases 9 y 10). */
+  const [calibrating, setCalibrating] = useState(false);
 
   const handleTrackingComplete = (path: TrackingPoint[], calibration: Calibration, stats: TrackingStats) => {
      setTrackingData({ path, calibration, stats });
@@ -132,6 +142,20 @@ export function PwrAnalysisTab({
                   >
                      <Save size={16} /> Guardar suelto
                   </button>
+                  {/* CALIBRAR va aquí y no en un menú aparte porque solo se
+                      puede hacer con el análisis recién terminado delante: hay
+                      que contrastar ESTA serie con el fichero del encoder de
+                      esa misma serie. Sin bloqueo por calidad, y a propósito —
+                      una medición mala es justamente la que más interesa
+                      contrastar para saber si la nota acierta al descartarla. */}
+                  <button
+                    onClick={() => setCalibrating(true)}
+                    disabled={!result}
+                    title={!result ? 'Todavía no hay métricas que contrastar' : 'Contrastar esta serie con un encoder'}
+                    className="flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                     <Ruler size={16} /> Calibrar
+                  </button>
                   <button
                     onClick={handleReset}
                     className="flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider bg-white/5 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
@@ -149,7 +173,36 @@ export function PwrAnalysisTab({
           </div>
       )}
 
+      {/* LA PUERTA. Sin ajuste no hay analizador.
+          Va antes del vídeo y no al lado porque unos campos junto al botón de
+          subir son unos campos que se saltan, y saltárselos es volver a los
+          100 kg por defecto que esta fase existe para quitar. */}
+      {!setup && (
+          <AnalysisSetup onReady={value => { setSetup(value); setEditingSetup(false); }} />
+      )}
+
+      {setup && editingSetup && (
+          <div className="mb-6">
+              <AnalysisSetup
+                  initial={setup}
+                  submitLabel="Guardar el cambio"
+                  onCancel={() => setEditingSetup(false)}
+                  onReady={value => { setSetup(value); setEditingSetup(false); }}
+              />
+          </div>
+      )}
+
+      {/* Se recuerda con qué se está midiendo, porque el ajuste deja de estar a
+          la vista justo cuando una carga equivocada hace más daño. Editarlo NO
+          obliga a repetir el análisis: la cinemática no depende de la carga. */}
+      {setup && !editingSetup && (
+          <div className="mb-4 shrink-0">
+              <SetupSummary setup={setup} onEdit={() => setEditingSetup(true)} />
+          </div>
+      )}
+
       {/* Contenedor dinámico: se convierte en 2 columnas cuando hay resultados, pero mantiene el Video Tracker en el mismo nivel del DOM para no perder el estado. */}
+      {setup && (
       <div className={`flex flex-1 ${trackingData ? 'flex-col lg:flex-row gap-6 min-h-0 overflow-hidden' : 'flex-col'}`}>
 
           {/* Lado izquierdo (o Full width) */}
@@ -174,11 +227,24 @@ export function PwrAnalysisTab({
                           onTimeHover={setSeekTime}
                           currentVideoTime={currentVideoTime}
                           onResult={handleResult}
+                          setup={setup}
+                          athleteId={fixedAthleteId}
                       />
                   </div>
               </div>
           )}
       </div>
+      )}
+
+      {result && calibrating && (
+        <CalibrationModal
+          open
+          onClose={() => setCalibrating(false)}
+          result={result}
+          athleteId={fixedAthleteId}
+          coachId={session?.user.id ?? null}
+        />
+      )}
 
       {result && saveMode && (
         <SavePwrResultModal
@@ -191,7 +257,7 @@ export function PwrAnalysisTab({
           extraMetrics={result.extraMetrics}
           loadKg={result.loadKg}
           reps={result.reps}
-          defaultExerciseName={EXERCISE_NAME[result.exerciseType]}
+          defaultExerciseName={EXERCISE_LABEL[result.exerciseType]}
         />
       )}
     </div>

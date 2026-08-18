@@ -585,11 +585,11 @@ se entrega como `.sql` en `database/` para ejecutar a mano, como todo lo demás:
 | **5 · Gráficas** | ✅ | `SeriesReport.tsx` — las 6 pedidas + detalle de sticking, cada una exportable a PNG |
 | **6 · Sticking point** | ✅ | `StickingZone` — inicio, fin, mínimo, distancia, % de ROM, marcado sobre la gráfica |
 | **7 · Confidence score** | ✅ (ya existía) | `quality.ts` sin cambios |
-| **3 · Flujo previo** | ⬜ | Pendiente |
+| **3 · Flujo previo** | ✅ | `lib/cv/pwrSetup.ts` + `AnalysisSetup.tsx` — ejercicio, carga, barra y confirmación del vídeo ANTES de analizar, y sin ellos no se monta el analizador |
 | **8 · Rendimiento** | 🟡 | `frameSource.ts` — medido, reescrito por reproducción con contrapresión. **La vía rápida no se ha podido verificar aquí** (ver abajo) |
 | **12 · Exportación** | ✅ | `lib/export/pwrReport.ts` + `pwrExport.ts` + `xlsxWriter.ts` — CSV, Excel y PDF con gráficas, más PNG por gráfica |
-| **9 · Calibración con encoder** | ⬜ | Pendiente |
-| **10 · Comparación automática** | ⬜ | Pendiente |
+| **9 · Calibración con encoder** | ✅ | `database/pwr_calibration.sql` + `services/calibrationService.ts`. El importador de CSV **ya existía** (`lib/vbt/csv.ts` + `utils/vbtParser.ts`) y se reutiliza |
+| **10 · Comparación automática** | ✅ | `lib/calibration/agreement.ts` + `CalibrationModal.tsx` — sesgo, error absoluto, RMSE y límites de Bland-Altman, verificados contra dispersiones construidas |
 
 ### Lo verificado, y cómo
 
@@ -724,6 +724,15 @@ menor de 60×40 px por si aparece una tercera forma de colarse.
    barrió el canje y se resolvió con un **ajuste aparte, más estrecho (0,10 s),
    usado SOLO para el pico**: baja el sesgo a −9,7% y **no toca ni un decimal**
    de la fuerza, la potencia ni el RFD ya guardados.
+
+### El detector del disco, medido en la tercera tanda
+
+Se descubrió que OpenCV arranca en Node, así que `cv.worker.js` se puede medir
+sin navegador (`scripts/verify/deteccion-disco.mjs`, 52 casos). Salió un fallo
+grave: `pickOutermost` no podía ascender del BUJE al borde del disco porque el
+tope de crecimiento era 3× y el salto es 3,57×. Resultado: −71,5% en la altura,
+con confianza 0,85, en discos grandes de color oscuro. Error absoluto medio del
+detector: **16,0% → 4,0%**. Ver §12 del RECAP.
 
 ### Lo que sigue sin estar bien, dicho claramente
 

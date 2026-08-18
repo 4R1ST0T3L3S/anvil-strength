@@ -51,3 +51,8 @@ skills-lock.json
 # No se versionan: siguen en el historial de git, que es de donde se recuperan
 # de verdad. Esta carpeta es solo la comodidad de un "--restaurar" inmediato.
 assets-originales/
+
+# Basura de la CLI de Supabase. `project-ref` SÍ se versiona: es lo que hace
+# que `supabase functions deploy` funcione recién clonado, y no es un secreto
+# (el ref va en la URL del proyecto y en el bundle del cliente).
+supabase/.temp/cli-latest

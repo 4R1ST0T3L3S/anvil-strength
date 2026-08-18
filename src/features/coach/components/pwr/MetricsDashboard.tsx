@@ -1,7 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import type { TrackingPoint } from '../../../../lib/cv/tracker';
 import { computeKinematics } from '../../../../lib/cv/signal';
-import { extractLiftingPhases, calculateDynamics, estimate1RM, summariseSeries } from '../../../../lib/cv/pwrMath';
+import { extractLiftingPhases, calculateDynamics, estimate1RM, summariseSeries, type OneRmEstimate, type PhaseMetrics } from '../../../../lib/cv/pwrMath';
+import { EXERCISE_LABEL, barMassMetric, setupCaveats, type PwrSetup } from '../../../../lib/cv/pwrSetup';
+import { useAthleteVelocityProfile } from './useAthleteVelocityProfile';
 import { PWR_ENGINE_LABEL, PWR_ENGINE_VERSION_CODE } from '../../../../lib/cv/engineVersion';
 import { SeriesReport } from './SeriesReport';
 import { buildPwrReport } from '../../../../lib/export/pwrReport';
@@ -60,6 +62,22 @@ export interface PwrResult {
    * perfil carga-velocidad del atleta. Ver quality.ts.
    */
   quality: QualityReport;
+  /** Con qué se declaró que se analizaba. Ver `lib/cv/pwrSetup.ts`. */
+  setup: PwrSetup;
+  /** Si el 1RM salió de la recta del atleta o de la genérica, y por qué. */
+  oneRm: OneRmEstimate;
+  /**
+   * TODAS las repeticiones concéntricas, no solo la mejor.
+   *
+   * Lo que se guarda en la bolsa es el resumen, pero contrastar PWR contra un
+   * encoder se hace **repetición a repetición** (Fases 9 y 10): una serie
+   * donde la primera se mide 5 cm/s de más y la última 5 cm/s de menos tiene
+   * un resumen impecable y dos repeticiones mal medidas.
+   *
+   * `repDetails` y no `reps`: `reps` ya es el RECUENTO, y son dos cosas
+   * distintas que en una interfaz plana se pisarían en silencio.
+   */
+  repDetails: PhaseMetrics[];
 }
 
 interface MetricsDashboardProps {
@@ -73,27 +91,43 @@ interface MetricsDashboardProps {
   /** Se llama cada vez que cambia el resultado (carga o ejercicio incluidos). */
   onResult?: (result: PwrResult | null) => void;
   /**
-   * Carga de partida, cuando ya se sabe.
+   * CON QUÉ SE ESTÁ ANALIZANDO. Se pregunta antes, no aquí.
    *
-   * Al analizar desde una serie del plan, los kilos ya están registrados: la
-   * potencia y la fuerza se calculan CON la masa, así que arrancar en los 100
-   * por defecto daría cifras equivocadas hasta que alguien se acuerde de
-   * corregirlas — y nadie se acuerda.
+   * Antes este panel era dueño de la carga y del movimiento, con la carga
+   * arrancando en 100 kg. La cinemática no depende de ellos, pero la fuerza,
+   * la potencia y el 1RM sí, y analizar 60 kg con el campo en 100 los infla un
+   * 67% sin que nada lo delate. Ahora se contestan ANTES de ver el vídeo, en
+   * `AnalysisSetup`, y aquí solo se usan. Ver `lib/cv/pwrSetup.ts` (Fase 3).
    */
-  initialLoadKg?: number | null;
-  /** Movimiento de partida, deducido del nombre del ejercicio de la serie. */
-  initialExerciseType?: 'squat' | 'bench' | 'deadlift';
+  setup: PwrSetup;
+  /**
+   * De quién es este levantamiento, si se sabe.
+   *
+   * Solo para el 1RM: con él se usa la recta carga-velocidad DEL ATLETA en vez
+   * de la genérica. Desde el panel del entrenador, sin atleta elegido todavía,
+   * llega `null` y se cae al genérico diciéndolo.
+   */
+  athleteId?: string | null;
 }
 
-export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover, currentVideoTime, onResult, initialLoadKg, initialExerciseType }: MetricsDashboardProps) {
+export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover, currentVideoTime, onResult, setup, athleteId }: MetricsDashboardProps) {
   const pixelToMeterRatio = calibration.pixelToMeterRatio;
-  const [loadKg, setLoadKg] = useState<number>(
-    initialLoadKg && initialLoadKg > 0 ? initialLoadKg : 100
-  );
-  const [exerciseType, setExerciseType] = useState<'squat'|'bench'|'deadlift'>(
-    initialExerciseType ?? 'squat'
-  );
+  const loadKg = setup.loadKg;
+  const exerciseType = setup.exerciseType;
   const [isHovering, setIsHovering] = useState(false);
+
+  /**
+   * La recta del atleta, si la tiene.
+   *
+   * Se pide en cuanto se conoce el atleta y el movimiento, sin bloquear nada:
+   * mientras no llega, el 1RM sale del genérico y se recalcula solo cuando
+   * llega. Que el panel entero espere por una petición de red para enseñar una
+   * velocidad que ya está calculada no tendría ningún sentido.
+   */
+  const athleteProfile = useAthleteVelocityProfile(athleteId, exerciseType);
+
+  /** Lo que el ajuste obliga a advertir. Ver `setupCaveats`. */
+  const caveats = useMemo(() => setupCaveats(setup), [setup]);
 
   const metricsData = useMemo(() => {
     return computeKinematics(path, pixelToMeterRatio);
@@ -115,7 +149,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           [...eccentrics].reverse().find(e => e.endTime <= bestRep.startTime) ?? null;
 
       const dyn = calculateDynamics(bestRep.dataPoints, loadKg);
-      const oneRmObj = estimate1RM(loadKg, bestRep.meanVelocity, exerciseType);
+      const oneRmObj = estimate1RM(loadKg, bestRep.meanVelocity, exerciseType, athleteProfile.profile);
 
       // La pérdida de velocidad solo significa algo con más de una repetición y
       // con una primera repetición que se moviera de verdad: dividir por una
@@ -139,7 +173,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           concentrics,
           eccentrics,
       };
-  }, [metricsData, pixelToMeterRatio, loadKg, exerciseType]);
+  }, [metricsData, pixelToMeterRatio, loadKg, exerciseType, athleteProfile.profile]);
 
   /**
    * El resumen de la serie.
@@ -268,13 +302,27 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
         // Que quepan sin migración es justamente para lo que se montó la
         // bolsa JSONB: son cinco filas en `metric_definitions` y nada más.
         ...qualityToMetricBag(quality, calibration, trackingStats),
+
+        /**
+         * CON QUÉ BARRA se levantó, en kilos.
+         *
+         * Va como masa y no como código de barra porque un número con unidades
+         * sigue significando algo dentro de seis meses. Sirve para lo que hoy
+         * no se puede hacer: separar las mediciones hechas con barra de peso
+         * muerto —donde el disco arranca después que la barra— al leer un
+         * perfil, en vez de mezclarlas sin saberlo.
+         */
+        bar_mass_kg: barMassMetric(setup),
       },
       loadKg,
       reps: advMetrics.totalReps,
       exerciseType,
       quality,
+      setup,
+      oneRm: advMetrics.rm,
+      repDetails: advMetrics.concentrics,
     });
-  }, [advMetrics, series, loadKg, exerciseType, onResult, quality, calibration, trackingStats]);
+  }, [advMetrics, series, loadKg, exerciseType, onResult, quality, calibration, trackingStats, setup]);
 
   // Format data for Scatter Chart (Bar Path)
   const barPathData = useMemo(() => {
@@ -426,42 +474,52 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
         </div>
       </div>
 
-      {/* Controles Dinámicos Superiores */}
-      <div className="bg-[#0a0a0a] border border-white/5 p-2 px-4 rounded-xl flex items-center justify-between gap-4 shrink-0">
-          <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1">
-                  <Dumbbell size={16} className="text-gray-400" />
-                  <span className="text-xs font-bold text-gray-300">Carga:</span>
-              </div>
-              <div className="flex bg-white/5 rounded-md overflow-hidden">
-                  <button onClick={() => setLoadKg(v => Math.max(0, v - 5))} className="px-2 py-0.5 bg-white/5 hover:bg-white/10 text-white font-black transition">-</button>
-                  <input 
-                      type="number" 
-                      value={loadKg} 
-                      onChange={(e) => setLoadKg(Number(e.target.value))}
-                      className="w-12 bg-transparent text-center font-black text-white text-sm focus:outline-none" 
-                  />
-                  <button onClick={() => setLoadKg(v => v + 5)} className="px-2 py-0.5 bg-white/5 hover:bg-white/10 text-white font-black transition">+</button>
-              </div>
-
-              <div className="w-px h-4 bg-white/10 mx-1"></div>
-
-              <select 
-                  value={exerciseType}
-                  onChange={(e) => setExerciseType(e.target.value as 'squat'|'bench'|'deadlift')}
-                  className="bg-white/5 text-white font-bold text-xs px-2 py-1 rounded-md focus:outline-none focus:ring-1 ring-white/20 border-none appearance-none cursor-pointer"
-              >
-                  <option value="squat">Sentadilla (0.3m/s)</option>
-                  <option value="bench">Banca (0.15m/s)</option>
-                  <option value="deadlift">P.Muerto (0.2m/s)</option>
-              </select>
+      {/* CON QUÉ SE HA ANALIZADO.
+          La carga y el movimiento ya no se tocan aquí: se contestan antes de
+          ver el vídeo (ver `AnalysisSetup`). Lo que queda es enseñar con qué se
+          está midiendo y, sobre todo, de dónde sale el 1RM: la misma cifra
+          significa cosas muy distintas si viene de la recta del atleta o de la
+          media de todo el mundo. */}
+      <div className="shrink-0 rounded-card border border-subtle bg-surface-sunken px-3 py-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <Dumbbell size={14} className="text-ink-faint" aria-hidden="true" />
+              <span className="text-t-2xs font-bold text-ink">{EXERCISE_LABEL[exerciseType]}</span>
+              <span className="text-t-2xs font-bold tabular-nums text-brand">{loadKg} kg</span>
+              {advMetrics.totalReps > 1 && (
+                  <span className="text-t-2xs font-semibold text-ink-subtle">
+                      {advMetrics.totalReps} repeticiones
+                  </span>
+              )}
+              <span className="ml-auto text-t-2xs font-semibold text-ink-subtle">
+                  {advMetrics.rm.source === 'athlete'
+                      ? `1RM con su perfil (${athleteProfile.measurements} mediciones)`
+                      : '1RM con perfil genérico'}
+              </span>
           </div>
-          {advMetrics.totalReps > 1 && (
-             <div className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20">
-                 {advMetrics.totalReps} repeticiones
-             </div>
+
+          {/* Por qué NO se ha usado su perfil. Sin esto, "genérico" es un
+              adjetivo sin salida: con esto se sabe qué falta para dejar de
+              serlo —tres mediciones más, o cargas más separadas—. */}
+          {advMetrics.rm.source === 'generic' && advMetrics.rm.fallbackReason && athleteId && (
+              <p className="mt-1 text-t-2xs leading-relaxed text-ink-faint">
+                  Se usa el genérico porque {advMetrics.rm.fallbackReason}.
+              </p>
           )}
       </div>
+
+      {/* Las salvedades que trae el AJUSTE, no la medición.
+          Se conocen antes de analizar y viajan hasta aquí, porque el sitio
+          donde hacen falta es al lado de las cifras que invalidan. */}
+      {caveats.length > 0 && (
+          <div className="shrink-0 space-y-1.5 rounded-card border border-warning/25 bg-warning/10 p-3">
+              {caveats.map(text => (
+                  <p key={text} className="flex gap-2 text-t-2xs leading-relaxed text-ink-muted">
+                      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                      <span>{text}</span>
+                  </p>
+              ))}
+          </div>
+      )}
 
       {/* Summary Cards */}
       <div className={`grid grid-cols-3 gap-3 shrink-0 ${dimmed}`}>

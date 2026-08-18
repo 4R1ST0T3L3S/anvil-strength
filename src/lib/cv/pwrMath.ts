@@ -1,4 +1,17 @@
 import type { KinematicPoint } from './signal';
+/**
+ * La velocidad a la que se termina un máximo, de UNA sola tabla.
+ *
+ * `lib/vbt/analysis.ts` es cálculo puro —sin React y sin Supabase— así que
+ * traerlo aquí no arrastra nada. Ver `estimate1RM` para por qué había dos
+ * tablas y por qué ahora hay una.
+ *
+ * Este fichero se ejecuta también en Node, para medirlo contra repeticiones
+ * sintéticas (§13 de la auditoría). Node no resuelve imports sin extensión
+ * como lo hace Vite, y de eso se encarga `scripts/ts-resolver.mjs`: los bancos
+ * se lanzan con `--import ./scripts/ts-resolver.mjs`.
+ */
+import { MVT_BY_PATTERN } from '../vbt/analysis';
 
 /**
  * ANVIL STRENGTH — DE LA VELOCIDAD A LAS MÉTRICAS
@@ -1008,6 +1021,9 @@ export const calculateDynamics = (points: KinematicPoint[], massKg: number): Dyn
 // 1RM
 // =====================================================================
 
+/** De dónde ha salido la estimación. Se enseña: cambia cuánto vale. */
+export type OneRmSource = 'athlete' | 'generic';
+
 export interface OneRmEstimate {
     percent: number;
     rm: number;
@@ -1016,50 +1032,151 @@ export interface OneRmEstimate {
      * carga-velocidad es lineal y la extrapolación deja de significar nada.
      */
     reliable: boolean;
+    /** `'athlete'` si se ha usado su propia recta; `'generic'` si la de todos. */
+    source: OneRmSource;
+    /** Por qué no se ha podido usar la del atleta, cuando no se ha podido. */
+    fallbackReason?: string;
+    /** MVT con el que se ha extrapolado. Sin él la cifra no se puede leer. */
+    mvt: number;
 }
+
+/**
+ * La recta carga-velocidad DEL ATLETA, ya ajustada.
+ *
+ * Se recibe hecha en vez de calcularse aquí porque ajustarla exige leer el
+ * histórico de mediciones, y este fichero no toca ni la red ni la base de
+ * datos: es el que se ejecuta en Node contra repeticiones sintéticas. Lo
+ * ajusta `buildLoadVelocityProfile` en `lib/vbt/analysis.ts`, que es donde ya
+ * estaba, y que ahora tiene un segundo consumidor en vez de una copia.
+ */
+export interface AthleteVelocityProfile {
+    /** Pendiente de v = slope·kg + intercept. En m/s por kg, y NEGATIVA. */
+    slopePerKg: number;
+    /** Cuántas mediciones sostienen la recta. */
+    n: number;
+    r2: number;
+    /** Diferencia entre la carga más pesada y la más ligera del ajuste. */
+    loadRangeKg: number;
+}
+
+/**
+ * Lo que se le exige a la recta del atleta para preferirla a la genérica.
+ *
+ * Son cortes con nombre y no números sueltos por lo mismo que en `quality.ts`:
+ * están puestos por criterio y hay que poder moverlos cuando las Fases 9 y 10
+ * digan qué valor tenían de verdad.
+ *
+ * `loadRangeKg` es el que más se olvida y el que más daño hace. Tres
+ * mediciones a 100, 102 y 105 kg dan un R² excelente y una pendiente que es
+ * casi todo ruido; extrapolar con ella hasta el máximo multiplica ese ruido
+ * por veinte. Un perfil necesita cargas SEPARADAS, no solo muchas.
+ */
+export const ATHLETE_PROFILE_MIN = {
+    n: 4,
+    r2: 0.8,
+    loadRangeKg: 15,
+} as const;
+
+/** Si la recta del atleta se puede usar, y si no, por qué no. */
+export const athleteProfileUsable = (
+    profile: AthleteVelocityProfile | null | undefined
+): { ok: boolean; reason?: string } => {
+    if (!profile) return { ok: false, reason: 'todavía no hay mediciones suficientes de este movimiento' };
+    if (!(profile.slopePerKg < 0)) return { ok: false, reason: 'sus mediciones no describen una recta (más carga no da menos velocidad)' };
+    if (profile.n < ATHLETE_PROFILE_MIN.n) return { ok: false, reason: `hacen falta ${ATHLETE_PROFILE_MIN.n} mediciones y hay ${profile.n}` };
+    if (profile.r2 < ATHLETE_PROFILE_MIN.r2) return { ok: false, reason: `sus mediciones están dispersas (R² ${profile.r2.toFixed(2)})` };
+    if (profile.loadRangeKg < ATHLETE_PROFILE_MIN.loadRangeKg) {
+        return { ok: false, reason: `todas sus mediciones están en ${Math.round(profile.loadRangeKg)} kg de margen` };
+    }
+    return { ok: true };
+};
+
+/**
+ * Cuánto baja la velocidad por cada punto porcentual de 1RM, en el genérico.
+ *
+ * Es el complemento del MVT: con los dos se convierte una velocidad medida en
+ * un %1RM. Se mantienen aquí porque describen la PENDIENTE media del perfil, y
+ * eso no lo tiene `lib/vbt/analysis.ts`, que trabaja en kilos reales.
+ */
+const GENERIC_SLOPE_PER_PERCENT: Record<'squat' | 'bench' | 'deadlift', number> = {
+    squat: 0.0125,
+    bench: 0.0125,
+    deadlift: 0.0100,
+};
 
 /**
  * 1RM estimado a partir de la velocidad media de la mejor repetición.
  *
- * QUÉ ES ESTO Y QUÉ NO
+ * DOS CAMINOS, Y EL BUENO PRIMERO
  *
- * Es un perfil carga-velocidad GENÉRICO por levantamiento: se supone que todo
- * el mundo mueve su máximo a la misma velocidad (`mvt`) y que el %1RM baja de
- * forma lineal con la velocidad (`slope`). Las dos suposiciones son razonables
- * en promedio y falsas en un individuo concreto: la velocidad del máximo varía
- * bastante entre atletas.
+ * **Con el perfil del atleta**, la cuenta es directa: desde el punto medido
+ * hoy —esta carga, esta velocidad— se avanza por SU pendiente hasta la
+ * velocidad a la que se completa un máximo.
  *
- * Lo correcto sería usar el perfil DEL ATLETA cuando tiene mediciones
- * suficientes —la aplicación ya lo calcula en `lib/stats/athleteStats.ts`— y
- * caer a este genérico solo mientras no las tenga. Queda pendiente porque exige
- * pasar el atleta hasta aquí, que hoy no llega.
+ *     1RM = carga + (mvt − v) / pendiente
  *
- * Mientras tanto, lo que sí se arregla es no fingir precisión: fuera del tramo
- * lineal el resultado se marca como no fiable en vez de devolver una cifra
- * saturada con la misma pinta que una buena.
+ * Esto no es lo mismo que el 1RM que ya publica su perfil histórico. Aquel
+ * sale de la recta entera y describe el mes; este parte de lo que ha hecho
+ * HOY, que es justamente para lo que sirve medir la velocidad: la carga que
+ * toca hoy no la decide la media del mes.
+ *
+ * **Sin perfil**, se cae al genérico por levantamiento: todo el mundo termina
+ * su máximo a la misma velocidad y el %1RM baja de forma lineal. Las dos
+ * suposiciones son razonables en promedio y falsas en un individuo concreto
+ * —la velocidad del máximo varía bastante entre atletas—, así que el resultado
+ * viene marcado con `source: 'generic'` y la pantalla lo dice.
+ *
+ *
+ * EL MVT SALE DE UN SOLO SITIO, Y ANTES NO
+ *
+ * Los valores estaban escritos aquí Y en `lib/vbt/analysis.ts`, y **no
+ * coincidían**: banca 0,15 aquí contra 0,17 allí, peso muerto 0,20 aquí contra
+ * 0,15 allí. La misma aplicación estimaba dos 1RM distintos del mismo
+ * levantamiento según por qué pantalla se entrara, y la diferencia en peso
+ * muerto llega al 5%. Es el mismo fallo que `velocity_loss`, con el agravante
+ * de que aquel está decidido y documentado y este no lo sabía nadie.
+ *
+ * Ahora se toman de `MVT_BY_PATTERN`, que es la tabla que sí tiene la
+ * procedencia escrita (González-Badillo, Sánchez-Medina). Las cifras ya
+ * guardadas no se tocan; cambian las que se calculen a partir de ahora, y solo
+ * en banca y peso muerto.
  */
 export const estimate1RM = (
     massKg: number,
     currentVelocity: number,
-    testType: 'squat' | 'bench' | 'deadlift'
+    testType: 'squat' | 'bench' | 'deadlift',
+    athleteProfile?: AthleteVelocityProfile | null
 ): OneRmEstimate => {
-    const PROFILE = {
-        squat: { mvt: 0.30, slope: 0.0125 },
-        bench: { mvt: 0.15, slope: 0.0125 },
-        deadlift: { mvt: 0.20, slope: 0.0100 },
-    }[testType];
+    const mvt = MVT_BY_PATTERN[testType];
+    const usable = athleteProfileUsable(athleteProfile);
 
-    const raw = 100 - (currentVelocity - PROFILE.mvt) / PROFILE.slope;
+    if (usable.ok && athleteProfile && massKg > 0) {
+        // (mvt − v) es negativo —el máximo va más lento que lo que se acaba de
+        // levantar— y la pendiente también, así que el cociente suma kilos.
+        const rm = massKg + (mvt - currentVelocity) / athleteProfile.slopePerKg;
+        const percent = rm > 0 ? (massKg / rm) * 100 : 0;
+
+        return {
+            percent: Math.min(100, Math.max(15, percent)),
+            rm: Math.max(massKg, rm),
+            // Los mismos bordes que en el genérico: por debajo del 30% son
+            // velocidades de calentamiento y por encima del 100% se está
+            // extrapolando por detrás del máximo.
+            reliable: percent >= 30 && percent <= 100,
+            source: 'athlete',
+            mvt,
+        };
+    }
+
+    const raw = 100 - (currentVelocity - mvt) / GENERIC_SLOPE_PER_PERCENT[testType];
     const percent = Math.min(100, Math.max(15, raw));
-
-    // Por debajo del 30% la recta ya no describe nada: son velocidades de
-    // calentamiento, donde la relación se aplana. Y por encima del 100% se está
-    // extrapolando por detrás del máximo.
-    const reliable = raw >= 30 && raw <= 100 && massKg > 0;
 
     return {
         percent,
         rm: massKg > 0 ? massKg / (percent / 100) : 0,
-        reliable,
+        reliable: raw >= 30 && raw <= 100 && massKg > 0,
+        source: 'generic',
+        fallbackReason: usable.reason,
+        mvt,
     };
 };

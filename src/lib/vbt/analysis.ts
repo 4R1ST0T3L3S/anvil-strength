@@ -40,19 +40,38 @@ export const MVT_BY_PATTERN: Record<string, number> = {
     default: 0.25,
 };
 
-/** Reconoce el patrón por el nombre para elegir el MVT correcto. */
-export function mvtForExercise(name: string | null | undefined): number {
-    if (!name) return MVT_BY_PATTERN.default;
+export type ExercisePattern = keyof typeof MVT_BY_PATTERN | 'default';
+
+/**
+ * Clasifica un ejercicio por su nombre.
+ *
+ * Se saca a función propia porque tiene DOS consumidores y antes tenía una
+ * copia y media: elegir el MVT, y agrupar mediciones de ejercicios que se
+ * llaman distinto pero son el mismo movimiento. Un atleta que registra
+ * «Sentadilla trasera» un día y «Squat» otro tiene un solo perfil, no dos de
+ * la mitad de puntos cada uno — y con perfiles de tres puntos, partirlos en
+ * dos es la diferencia entre tener perfil y no tenerlo.
+ *
+ * El orden de las comprobaciones importa y no es alfabético: «press de banca»
+ * tiene que caer en banca y no en press militar, así que banca va antes.
+ */
+export function exercisePattern(name: string | null | undefined): ExercisePattern {
+    if (!name) return 'default';
     const n = name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-    if (/banca|bench|press de pecho/.test(n)) return MVT_BY_PATTERN.bench;
-    if (/peso muerto|deadlift/.test(n)) return MVT_BY_PATTERN.deadlift;
-    if (/sentadilla|squat/.test(n)) return MVT_BY_PATTERN.squat;
-    if (/militar|overhead|press/.test(n)) return MVT_BY_PATTERN.press;
-    if (/dominada|remo|jalon|row|pull/.test(n)) return MVT_BY_PATTERN.pull;
-    if (/rumano|hip thrust|buenos dias|rdl/.test(n)) return MVT_BY_PATTERN.hinge;
+    if (/banca|bench|press de pecho/.test(n)) return 'bench';
+    if (/peso muerto|deadlift/.test(n)) return 'deadlift';
+    if (/sentadilla|squat/.test(n)) return 'squat';
+    if (/militar|overhead|press/.test(n)) return 'press';
+    if (/dominada|remo|jalon|row|pull/.test(n)) return 'pull';
+    if (/rumano|hip thrust|buenos dias|rdl/.test(n)) return 'hinge';
 
-    return MVT_BY_PATTERN.default;
+    return 'default';
+}
+
+/** Reconoce el patrón por el nombre para elegir el MVT correcto. */
+export function mvtForExercise(name: string | null | undefined): number {
+    return MVT_BY_PATTERN[exercisePattern(name)];
 }
 
 /**
@@ -99,6 +118,8 @@ export interface LoadVelocityProfile {
     estimated1RM: number | null;
     /** MVT usado, para poder enseñarlo: la estimación depende de él. */
     mvt: number;
+    /** Cuánto separan la carga más pesada y la más ligera del ajuste. */
+    loadRangeKg: number;
     /**
      * Velocidad a la que se movería una carga dada, según la recta.
      * Es lo que convierte el perfil en una herramienta de prescripción.
@@ -122,9 +143,42 @@ export function buildLoadVelocityProfile(
     measurements: VbtMeasurement[],
     exerciseName: string
 ): LoadVelocityProfile | null {
-    const points: LoadVelocityPoint[] = measurements
+    return fitLoadVelocity(
+        toLoadVelocityPoints(
+            measurements,
+            m => m.exercise_name.trim().toLowerCase() === exerciseName.trim().toLowerCase()
+        ),
+        mvtForExercise(exerciseName)
+    );
+}
+
+/**
+ * El perfil de un PATRÓN de movimiento, no de un nombre concreto.
+ *
+ * Es lo que necesita PWR Análisis: allí se elige «sentadilla», no «Sentadilla
+ * trasera con pausa», y las mediciones del atleta están guardadas con el
+ * nombre que le puso su entrenador. Emparejar por nombre exacto dejaría casi
+ * siempre el perfil vacío, y un perfil vacío significa caer al genérico
+ * teniendo los datos delante.
+ */
+export function buildPatternVelocityProfile(
+    measurements: VbtMeasurement[],
+    pattern: ExercisePattern
+): LoadVelocityProfile | null {
+    return fitLoadVelocity(
+        toLoadVelocityPoints(measurements, m => exercisePattern(m.exercise_name) === pattern),
+        MVT_BY_PATTERN[pattern]
+    );
+}
+
+/** Mediciones utilizables como puntos del ajuste, ordenadas por carga. */
+function toLoadVelocityPoints(
+    measurements: VbtMeasurement[],
+    keep: (m: VbtMeasurement) => boolean
+): LoadVelocityPoint[] {
+    return measurements
         .filter(m =>
-            m.exercise_name.trim().toLowerCase() === exerciseName.trim().toLowerCase() &&
+            keep(m) &&
             m.load_kg != null && m.load_kg > 0 &&
             m.mean_velocity != null && m.mean_velocity > 0
         )
@@ -137,7 +191,10 @@ export function buildLoadVelocityProfile(
             source: m.source,
         }))
         .sort((a, b) => a.kg - b.kg);
+}
 
+/** La regresión en sí. Una sola vez, la usen quien la use. */
+function fitLoadVelocity(points: LoadVelocityPoint[], mvt: number): LoadVelocityProfile | null {
     if (points.length < 3) return null;
 
     const n = points.length;
@@ -158,8 +215,6 @@ export function buildLoadVelocityProfile(
     const ssRes = points.reduce((a, p) => a + (p.velocity - (slope * p.kg + intercept)) ** 2, 0);
     const r2 = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
 
-    const mvt = mvtForExercise(exerciseName);
-
     // La pendiente TIENE que ser negativa: más carga, menos velocidad. Si sale
     // positiva los datos no describen un perfil y extrapolar sería inventar.
     const raw1RM = slope < 0 ? (mvt - intercept) / slope : null;
@@ -171,6 +226,10 @@ export function buildLoadVelocityProfile(
         r2: Math.round(r2 * 1000) / 1000,
         estimated1RM: raw1RM !== null && raw1RM > 0 ? Math.round(raw1RM * 10) / 10 : null,
         mvt,
+        // Los puntos vienen ordenados por carga, así que el margen son los
+        // extremos. Se expone porque un R² alto sobre cargas casi iguales
+        // parece un ajuste excelente y no sostiene ninguna extrapolación.
+        loadRangeKg: points[points.length - 1].kg - points[0].kg,
         velocityAt: (kg: number) => slope * kg + intercept,
         loadAt: (velocity: number) => (slope < 0 ? (velocity - intercept) / slope : null),
     };

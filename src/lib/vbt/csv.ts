@@ -20,6 +20,25 @@ import { mapRowToVbt, isValidVbtRow, type VbtRow } from '../../features/coach/ut
 import { velocityLoss } from './analysis';
 import type { VbtMetrics } from '../../types/training';
 
+/**
+ * Una repetición suelta, con las tres magnitudes que se pueden contrastar.
+ *
+ * Existe para la calibración con encoder (Fases 9 y 10): comparar PWR con un
+ * aparato de referencia se hace **repetición a repetición**, y el resumen de
+ * la serie no sirve para eso. Una serie donde PWR mide la primera repetición
+ * 5 cm/s de más y la última 5 cm/s de menos tiene un resumen impecable y dos
+ * repeticiones mal medidas.
+ *
+ * Las unidades son las de la aplicación: m/s y METROS.
+ */
+export interface ParsedVbtRep {
+    /** Posición dentro de la serie, empezando en 1. */
+    index: number;
+    meanVelocity: number | null;
+    peakVelocity: number | null;
+    romM: number | null;
+}
+
 /** Una serie reconstruida a partir de las filas del fichero. */
 export interface ParsedVbtSet {
     /** Número de serie tal y como venía en el fichero. */
@@ -29,6 +48,8 @@ export interface ParsedVbtSet {
     loadKg: number | null;
     /** Velocidad media de cada repetición, en orden. */
     repVelocities: number[];
+    /** Cada repetición con su detalle. Para contrastar contra PWR. */
+    repDetails: ParsedVbtRep[];
     metrics: VbtMetrics;
 }
 
@@ -123,6 +144,17 @@ export function parseVbtText(text: string): ParsedVbtFile {
             reps: group.length,
             loadKg: max(group.map(r => r.Carga)),
             repVelocities: group.map(r => r.Vm || r.Vmp).filter(v => v > 0),
+            // El ROM se convierte a metros AQUÍ y no al compararlo: cada
+            // fabricante lo exporta en la unidad que le parece, y dejar la
+            // conversión aguas abajo es garantizar que un día se compare un
+            // recorrido en centímetros contra uno en metros y salga un error
+            // del 9.900% que parece un fallo del analizador.
+            repDetails: group.map((r, i) => ({
+                index: i + 1,
+                meanVelocity: (r.Vm || r.Vmp) > 0 ? (r.Vm || r.Vmp) : null,
+                peakVelocity: r.Vmax > 0 ? r.Vmax : null,
+                romM: romToMeters(r.ROM > 0 ? r.ROM : null),
+            })),
             metrics: summarize(group),
         }));
 

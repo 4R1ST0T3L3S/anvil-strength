@@ -276,7 +276,10 @@ cuando siete PNG a doble resolución son 420.
 
 ---
 
-## 6. Lo que sigue sin estar bien, dicho claramente
+## 6. Lo que seguía sin estar bien al cerrar la primera sesión
+
+> Actualizado en §11: el perfil de 1RM y las Fases 3, 9 y 10 ya están cerrados.
+> La vía rápida de vídeo sigue sin verificarse.
 
 - **La aceleración pico conserva un 17% de error absoluto.** Es la segunda
   derivada de una señal ruidosa y de un vídeo no sale mejor. Se enseña con el
@@ -305,7 +308,7 @@ cuando siete PNG a doble resolución son 420.
 | Orden de trabajo | Por impacto, no por el orden numérico del encargo |
 | **«Fuerza Suelo»** | Se corrige la ETIQUETA («Fuerza en barra»), no el modelo. No se toca ninguna cifra guardada |
 | **Velocity loss** | **Se dejan las DOS fórmulas** y se documenta. PWR usa primera-vs-última; VBT usa mejor-vs-última |
-| **Perfil 1RM** | Se conectará el perfil del atleta con caída al genérico |
+| **Perfil 1RM** | ✅ Hecho en la segunda sesión (§10): recta del atleta, caída al genérico **diciendo por qué** |
 
 Sobre «dejar las dos» en velocity loss: es una decisión consciente y por eso
 queda escrita en los dos ficheros. Lo que no puede pasar es que dentro de seis
@@ -331,6 +334,20 @@ meses alguien vea la discrepancia y la «arregle» sin saber que se decidió as�
 | `docs/AUDITORIA_PWR_2.0.md` | La auditoría y su seguimiento |
 | `pwr-preview.html` + `src/dev/pwrPreview.tsx` | Banco del informe (solo desarrollo) |
 | `pwr-bench.html` + `src/dev/pwrBench.tsx` | Banco de medición (solo desarrollo) |
+
+### Nuevos en la segunda sesión
+
+| Fichero | Qué es |
+|---|---|
+| `src/lib/cv/pwrSetup.ts` | Reglas del ajuste previo: barras, validación, salvedades (F3) |
+| `src/features/coach/components/pwr/AnalysisSetup.tsx` | La pantalla del ajuste previo y su resumen |
+| `src/features/coach/components/pwr/useAthleteVelocityProfile.ts` | Trae la recta del atleta para el 1RM |
+| `src/lib/calibration/agreement.ts` | Acuerdo con un encoder: sesgo, RMSE, Bland-Altman (F10) |
+| `src/services/calibrationService.ts` | Guardado y lectura de sesiones de calibración |
+| `src/features/coach/components/pwr/CalibrationModal.tsx` | Importar el CSV y ver la comparación |
+| `database/pwr_calibration.sql` | Tablas, vista del informe y `bar_mass_kg` (F9) |
+| `scripts/ts-resolver.mjs` | Deja ejecutar el código de `src/` en Node |
+| `scripts/verify/*` | Los tres bancos de verificación — `npm run verify` |
 
 ### Modificados
 
@@ -401,20 +418,261 @@ desde aquí si la tabla existe: hace falta `service_role`, y la RLS la cierra a
 
 ---
 
-## 10. Pendiente
+## 10. Segunda sesión — las tres fases que quedaban
 
-| Fase | Qué falta |
+**Fecha: 18 de agosto de 2026, continuación.** Cerradas las Fases 3, 9 y 10, y
+la decisión del perfil de 1RM que estaba tomada y sin implementar.
+
+### Fase 3 — Se pregunta ANTES, y sin contestar no se analiza ✅
+
+`src/lib/cv/pwrSetup.ts` (reglas) + `AnalysisSetup.tsx` (pantalla). Ejercicio,
+carga total, tipo de barra y confirmación de las condiciones del vídeo.
+
+**La carga arrancaba en 100 kg.** Analizar una serie de 60 con ese campo sin
+tocar infla fuerza, potencia y 1RM un 67%, y el número que sale ya parece
+bueno. Ahora arranca **vacía**: un valor por defecto es una respuesta ya
+escrita que se acepta sin leerla.
+
+Es una PUERTA, no unos campos al lado del botón de subir: sin ajuste válido el
+analizador no se monta. Lo que bloquea es solo lo que produciría un número
+falso en silencio —sin carga, carga menor que la barra sola, vídeo sin
+confirmar—; 700 kg avisa y deja pasar.
+
+El **tipo de barra** se gana el sitio por dos cosas y no por decorar: la masa
+con la que se comprueba que la carga sea posible, y `plateLagsBar` — una barra
+de peso muerto flexa antes de que el disco despegue, así que el arranque que se
+mide es el del DISCO, que va por detrás del de la barra. Esa salvedad viaja
+hasta el panel de métricas.
+
+### El 1RM ya usa la recta del atleta ✅
+
+Estaba decidido en §11 de la auditoría y sin hacer. `estimate1RM` acepta el
+perfil del atleta y, cuando lo hay, la cuenta es directa: desde el punto medido
+HOY se avanza por SU pendiente hasta la velocidad de un máximo.
+
+    1RM = carga + (mvt − v) / pendiente
+
+Verificado construyendo atletas de 1RM conocido: **recupera el valor exacto**,
+mientras el genérico se equivoca entre un 0,1% y un 3,5% en los mismos casos.
+
+Se niega a usarlo —y dice por qué— con menos de 4 mediciones, R² por debajo de
+0,8, pendiente positiva, o **todas las cargas dentro de 15 kg**. Este último es
+el que más se olvida: tres mediciones a 100, 102 y 105 kg dan un R² excelente y
+una pendiente que es casi todo ruido, y extrapolar con ella hasta el máximo
+multiplica ese ruido por veinte.
+
+### El MVT no coincidía entre dos módulos ⚠️
+
+Salió al conectar el perfil, y no lo sabía nadie:
+
+| | `pwrMath.ts` | `lib/vbt/analysis.ts` |
+|---|---|---|
+| banca | 0,15 | **0,17** |
+| peso muerto | 0,20 | **0,15** |
+
+La misma aplicación estimaba dos 1RM distintos del mismo levantamiento según
+por qué pantalla se entrara. Es el mismo fallo que `velocity_loss`, con el
+agravante de que aquel está decidido y documentado y este era un descuido.
+
+Ahora sale de `MVT_BY_PATTERN`, que es la tabla que tiene la procedencia escrita
+(González-Badillo, Sánchez-Medina). **Efecto medido sobre las cifras nuevas:**
+
+| | cambio en el 1RM estimado |
 |---|---|
-| **3** | Pedir ejercicio, carga, tipo de barra y confirmación de vídeo lateral ANTES de analizar |
-| **9** | Infraestructura de calibración con encoder ADR (entidad, importador CSV) |
-| **10** | Comparación automática encoder vs PWR: error absoluto, %, RMSE, informe de precisión |
+| sentadilla | 0,0% |
+| banca | −2,2% |
+| **peso muerto** | **+7,7%** |
 
-### ⚠️ SQL que hay que ejecutar a mano en Supabase
+Lo ya guardado no se toca.
 
-El push despliega el código, **no el SQL**. Pendientes:
+### Fases 9 y 10 — Calibración contra encoder ✅
 
-1. `database/metrics_catalog_quality.sql` — si no se ejecutó ya
-2. `database/metrics_catalog_pwr2.sql` — las 12 métricas nuevas de esta sesión
+`database/pwr_calibration.sql` · `lib/calibration/agreement.ts` ·
+`services/calibrationService.ts` · `CalibrationModal.tsx`.
 
-Sin ellos las métricas nuevas se guardan igual, pero se redondean a 2 decimales
-y se pintan con la clave por etiqueta en vez de con su nombre.
+Se graba la misma serie con vídeo y con encoder, se contrastan **repetición a
+repetición** y se guarda. Es lo único que puede convertir «un 82 de calidad» en
+«±3% de error», porque un sintético demuestra que las matemáticas son correctas
+pero no toca la cámara, el códec ni el gimnasio.
+
+**El importador de CSV ya existía** (`lib/vbt/csv.ts` + `utils/vbtParser.ts`,
+con los alias de columna de cada fabricante ya probados contra ficheros reales)
+y se reutiliza tal cual. Solo hizo falta exponer el detalle por repetición.
+
+**Lo que se calcula es acuerdo, no correlación.** La r de Pearson se enseña
+porque la busca todo el mundo, detrás y con la salvedad puesta: un método que
+devolviera siempre la mitad que el encoder correlaciona 1,00 con él y es
+inservible. Lo que contesta la pregunta son los límites de Bland-Altman —sesgo
+± 1,96·SD—, que dicen entre qué valores cae el 95% de las diferencias.
+
+Se guardan **las parejas**, no solo el resumen: la forma de resumir va a
+cambiar, y una sesión de calibración cuesta un atleta, un encoder y una tarde.
+
+Y **no cambia ni un peso de `quality.ts`**. Con dos o tres sesiones, corregir
+por el sesgo encontrado sería cambiar un sesgo conocido por otro desconocido.
+Aquí se recoge la evidencia.
+
+### La verificación ahora es reproducible ✅
+
+`npm run verify`. Tres bancos, 60 comprobaciones, contra verdades construidas.
+
+Antes no lo era: el barrido de 108 repeticiones de la primera sesión no quedó
+en el repositorio. Y además **ningún módulo con dependencias podía ejecutarse en
+Node**, porque Vite acepta imports sin extensión y Node no. Lo resuelve
+`scripts/ts-resolver.mjs`, del lado de las pruebas y para todo el proyecto, en
+vez de salpicar el código de producción con extensiones que alguien limpiaría
+un día.
+
+### Dos fallos corregidos en el camino
+
+1. **El perfil del atleta se quedaba en pie al cambiar de ejercicio.** Pasar de
+   sentadilla a banca estimaba el 1RM de banca con la pendiente de la
+   sentadilla durante lo que tardara la petición: una cifra plausible, en
+   pantalla, que luego cambiaba sola. Se compara la clave del resultado con la
+   pedida, y mientras no coincidan se usa el genérico diciéndolo.
+2. **Dos comprobaciones del banco de acuerdo fallaban, y el fallo estaba en el
+   banco.** Un `===` sobre coma flotante y una amplitud de ruido mal calculada:
+   con ocho muestras, la dispersión de un generador pseudoaleatorio se desvía
+   lo bastante de la teórica como para cruzar un corte. Se pasó a diferencias
+   deterministas, cuya desviación se calcula a mano.
+
+---
+
+## 11. Lo que sigue sin estar bien
+
+- **La vía rápida de lectura de vídeo SIGUE SIN VERIFICARSE.** Se intentó otra
+  vez, con un navegador real: el panel no compone fotogramas en este entorno,
+  así que `requestVideoFrameCallback` no dispara y la vía rápida no llega a
+  ejecutarse nunca. Sigue haciendo falta **un navegador de verdad, a la vista,
+  con un vídeo real**. El riesgo está acotado —si falla, son 3 s y se cae al
+  comportamiento de hoy— pero no está comprobado.
+- **La aceleración pico conserva un 17% de error absoluto.** Sin cambios.
+- **El tiempo hasta la velocidad máxima es ambiguo** en levantamientos con dos
+  picos. Sin cambios.
+- **Los pesos de `quality.ts` siguen sin validar.** Ya existe la
+  infraestructura para hacerlo; lo que falta ahora son **sesiones de
+  calibración de verdad**, que es trabajo de gimnasio y no de teclado.
+
+---
+
+## 12. Tercera tanda — el detector del disco, medido por fin
+
+**Lo que fallaba de verdad al usar la herramienta.**
+
+### Ahora el detector se puede MEDIR (`scripts/verify/deteccion-disco.mjs`)
+
+Era la única pieza del módulo que no se podía comprobar: necesita OpenCV, y
+OpenCV parecía cosa de navegador. **No lo es** — `@techstark/opencv-js` arranca
+en Node en ~900 ms. Con eso se ejecuta `cv.worker.js` TAL CUAL, sin tocarlo,
+sobre discos sintéticos de altura conocida, y se mide lo único que importa: el
+error en la ALTURA de la elipse, que es de donde sale la escala del vídeo.
+
+52 casos: 5 colores × 3 tamaños × 3 grados de giro, más gimnasio oscuro,
+oclusión, estorbos redondos y cámara inclinada.
+
+### El fallo: se enganchaba al BUJE y lo daba por bueno
+
+Primera medición, antes de tocar nada:
+
+```
+ MAL   rojo h=320 sq=1     altura -71.5% · ellipse 0.85
+ MAL   azul h=320 sq=1     altura -71.4% · ellipse 0.85
+ MAL   negro h=320 sq=1    altura -71.5% · ellipse 0.73
+```
+
+Medido/real = **0,285**, y el buje de un disco mide 0,28 del diámetro. El
+detector cogía el buje metálico en vez del borde, y lo reportaba **con una
+confianza de 0,85**. La escala salía casi cuatro veces pequeña y todas las
+velocidades cuatro veces grandes.
+
+La causa, en una constante: `pickOutermost` solo asciende al hermano mayor si
+mide **como mucho 3 veces** el candidato. Del buje al borde hay 1/0,28 = **3,57**.
+No podía ascender nunca.
+
+Solo se veía con el disco GRANDE en el encuadre —cámara cerca— porque con el
+disco pequeño el buje no llega ni a `MIN_AXIS_FRAC` ni a las 25 filas de
+contorno. Y solo en discos rojos, azules o negros, donde el buje gris contrasta
+en escala de grises; en un disco amarillo no contrasta y el fallo desaparecía.
+**Por eso no lo cazó nadie leyendo el código: hacía falta barrer tamaño Y color
+a la vez.**
+
+| | antes | después |
+|---|---|---|
+| altura dentro de ±5% | 29/52 | **38/52** |
+| altura dentro de ±12% | 41/52 | **50/52** |
+| error absoluto medio | 16,0% | **4,0%** |
+| sesgo | −9,8% | +2,9% |
+
+### La oclusión no se puede arreglar, pero sí decir
+
+Con una pierna o el rack tapando parte del disco, la altura sale **+18 a +20%**:
+ajustar una elipse a un arco parcial está mal condicionado por construcción, y
+de un fotograma tapado no se saca la información que no está.
+
+La confianza NO lo detecta —casos tapados puntúan 0,49 y casos perfectos de
+disco grande y girado puntúan 0,51, se solapan—. La **cobertura angular** sí. Se
+saca del worker hasta la pantalla, y por debajo del 80% la pantalla de confirmar
+dice qué porcentaje del borde se ve y qué hacer. No bloquea: avisa donde sirve,
+al lado del botón de aceptar.
+
+### La escala a mano: dos puntos en vez de un aro
+
+`calibrationFromTwoPoints` **ya existía** en `plateGeometry.ts`, con su método
+`two_points`, su etiqueta y su peso en `quality.ts` — y no estaba conectada a
+ninguna pantalla. Lo que había era un aro CIRCULAR con botones de ±2 px.
+
+El aro es peor por una razón de fondo: la escala sale de la ALTURA, así que con
+la cámara girada el usuario tiene que elegir entre ajustar el ancho o el alto, y
+acaba en un compromiso que falsea la escala sin que nada lo delate. Marcando el
+borde de arriba y el de abajo se mide directamente lo que se usa.
+
+Ahora se arrastran dos topes sobre el vídeo, con botones de ±1 px para afinar
+—en un disco de 120 px de alto, cada píxel es un 0,8% en todas las velocidades—.
+
+Y traía un fallo latente que nunca se había ejecutado: usaba `Math.hypot`, la
+distancia completa entre los dos puntos, en vez de |Δy|. Con 40 px de desvío
+horizontal eso sobrestima la escala un **2%**. Con |Δy| el método se vuelve
+además inmune a la precisión horizontal del usuario: solo tiene que acertar la
+altura.
+
+---
+
+## 13. Estado real del servidor, verificado
+
+No supuesto: sondeado contra producción el 18 de agosto de 2026.
+
+| | Estado |
+|---|---|
+| Función de borde `athletes` | ✅ **DESPLEGADA** (versión 7). `peek_claim` responde `{"valid":false,"reason":"no_existe"}`; antes daba 401 |
+| Secreto `APP_URL` | ✅ puesto |
+| Tabla `athlete_claim_links` | ✅ existe (42501 = la RLS la cierra a `anon`, que es lo correcto) |
+| `pwr_calibration_sessions` / `_reps` / vista | ✅ existen |
+| Filas del catálogo `metric_definitions` | ❓ **NO SE PUEDE SABER con la clave anónima**: su política es `TO authenticated`, así que se ven 0 filas exista o no contenido |
+
+### Por qué fallaba `supabase functions deploy athletes`
+
+```
+{"code":"LegacyProjectNotLinkedError","message":"Cannot find project ref. Have you run supabase link?"}
+```
+
+La CLI 2.115 busca `supabase/.temp/project-ref`, y en el repositorio solo estaba
+el formato antiguo `supabase/.temp/linked-project.json`. Un proyecto que SÍ
+estaba enlazado aparecía como no enlazado. **No era un problema de
+credenciales**: se resolvió pasando `--project-ref` y desplegó a la primera.
+
+Arreglado de raíz creando `supabase/.temp/project-ref`, así que
+`supabase functions deploy athletes` a secas ya funciona.
+
+### Lo único que queda por comprobar a mano
+
+En el editor SQL de Supabase, con sesión:
+
+```sql
+SELECT count(*) FROM public.metric_definitions;
+SELECT key FROM public.metric_definitions WHERE key = 'bar_mass_kg';
+```
+
+Si sale 0, hay que ejecutar `database/metrics_catalog.sql`,
+`metrics_catalog_quality.sql`, `metrics_catalog_pwr2.sql` y la sección 5 de
+`pwr_calibration.sql`. Sin ellos nada se rompe: las métricas se guardan igual y
+se pintan con la clave por etiqueta en vez de con su nombre y unidad.
