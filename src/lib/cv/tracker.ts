@@ -1,12 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import type { PlateEllipse } from './plateGeometry';
 
-// Augmented Window interface for OpenCV
+/**
+ * ANVIL STRENGTH — EL PUENTE CON EL HILO DE VISIÓN
+ * =====================================================================
+ *
+ * QUÉ ESTABA MAL
+ *
+ * Las respuestas del worker se resolvían con TRES variables sueltas de módulo
+ * —`initDoneCallback`, `trackDoneCallback`, `detectPlateCallback`—, una por
+ * tipo de mensaje. Cada petición nueva pisaba la anterior. Mientras todo fuera
+ * estrictamente secuencial no se notaba, pero bastaba con que el usuario tocara
+ * el disco durante la detección automática para que la promesa de la primera
+ * petición se quedara sin nadie que la resolviera: la interfaz se quedaba en
+ * "Buscando el disco…" para siempre, sin error y sin salida.
+ *
+ * Ahora cada petición lleva un identificador y se resuelve por ese
+ * identificador. Dos peticiones a la vez ya no se estorban, y una respuesta que
+ * llega tarde —de un análisis que se canceló— se descarta en vez de resolver la
+ * petición equivocada.
+ *
+ * El segundo fallo era `cvWorker.onmessage = …` dentro del efecto del hook:
+ * cada componente que llamaba a `useOpenCV()` se quedaba con el buzón, dejando
+ * mudo al anterior. El manejador se instala ahora UNA vez, junto al worker.
+ *
+ *
+ * QUÉ PASA CON EL VÍDEO
+ *
+ * Nada: no sale del dispositivo. Los fotogramas van del `<canvas>` al worker por
+ * memoria compartida y se descartan. Ver docs/ARQUITECTURA_VIDEO_PWR.md.
+ */
+
 declare global {
-  interface Window {
-    cv: Record<string, unknown>;
-    onOpenCvReady: () => void;
-  }
+    interface Window {
+        cv: Record<string, unknown>;
+        onOpenCvReady: () => void;
+    }
 }
 
 /**
@@ -17,199 +46,247 @@ declare global {
  * `null` es que no se ha encontrado nada. La puntuación de calidad lo usa.
  */
 export interface PlateDetection {
-  ellipse: PlateEllipse | null;
-  /** Confianza, 0–1. */
-  score: number;
-  method: 'ellipse' | 'hough' | null;
+    ellipse: PlateEllipse | null;
+    /** Confianza, 0–1. */
+    score: number;
+    method: 'ellipse' | 'hough' | null;
 }
+
+/** Resultado de sembrar la nube de puntos sobre el disco. */
+export interface TrackerInit {
+    x: number;
+    y: number;
+    /** Cuántos features se han podido fijar. */
+    features: number;
+    /** `false` si no hay textura suficiente para seguir nada. */
+    ok: boolean;
+}
+
+/** Resultado de un fotograma de seguimiento. */
+export interface TrackStep {
+    /** 1 = seguido; 0 = fotograma perdido, el centro no se ha movido. */
+    status: number;
+    x: number;
+    y: number;
+    /** Puntos de la nube que han sobrevivido a la validación en este paso. */
+    tracked: number;
+}
+
+export interface TrackingPoint {
+    x: number;
+    y: number;
+    /** Milisegundos dentro del vídeo. */
+    timestamp: number;
+}
+
+// =====================================================================
+// EL WORKER
+// =====================================================================
+
+type Pending = { resolve: (value: unknown) => void; reject: (reason: Error) => void };
 
 let cvWorker: Worker | null = null;
-let initDoneCallback: ((snappedX?: number, snappedY?: number) => void) | null = null;
-let trackDoneCallback: ((status: number, x: number, y: number) => void) | null = null;
-let detectPlateCallback: ((result: PlateDetection) => void) | null = null;
+let workerFailed: string | null = null;
+let workerReady = false;
+let nextRequestId = 1;
 
-export const useOpenCV = () => {
-  const [cvReady, setCvReady] = useState<boolean>(() => !!cvWorker);
-  const [cvError, setCvError] = useState<string | null>(null);
+const pending = new Map<number, Pending>();
+const readyListeners = new Set<() => void>();
 
-  useEffect(() => {
-    if (!cvWorker) {
-      try {
-        // Inicialización Clásica del Worker (imprescindible NO poner { type: 'module' } para que importScripts funcione)
-        cvWorker = new Worker(new URL('./cv.worker.js', import.meta.url));
-        
-        // Timeout robusto: Si a los 8 segundos la variable cvReady externa no está montada, forzamos error.
-        const failureTimeout = setTimeout(() => {
-             // Si pasados 8 seg no responde a nada, el worker murió o no carga el CDN local
-             setCvError("El worker de IA no responde. Revisa si /opencv.js está accesible.");
-        }, 8000);
+/**
+ * Estado del motor, como almacén externo.
+ *
+ * Se guarda un objeto CACHEADO y no se reconstruye en cada lectura porque
+ * `useSyncExternalStore` compara por identidad: devolver un objeto nuevo cada
+ * vez le haría creer que el estado cambia siempre y re-renderizaría sin parar.
+ */
+let snapshot: { ready: boolean; error: string | null } = { ready: false, error: null };
 
-        cvWorker.onmessage = (e) => {
-            const data = e.data;
-            if (data.type === 'READY') {
-                clearTimeout(failureTimeout);
-                setCvReady(true);
-            } else if (data.type === 'ERROR') {
-                setCvError(data.message);
-            } else if (data.type === 'INIT_DONE' && initDoneCallback) {
-                initDoneCallback(data.x, data.y);
-                initDoneCallback = null;
-            } else if (data.type === 'TRACK_DONE' && trackDoneCallback) {
-                trackDoneCallback(data.status, data.x, data.y);
-                trackDoneCallback = null; // Unregister for next frame
-            } else if (data.type === 'DETECT_PLATE_DONE' && detectPlateCallback) {
-                detectPlateCallback({
-                    ellipse: data.ellipse ?? null,
-                    score: data.score ?? 0,
-                    method: data.method ?? null,
-                });
-                detectPlateCallback = null;
-            }
-        };
-
-        // Pedir status inicial
-        cvWorker.postMessage({ type: 'PING' });
-        
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        queueMicrotask(() => setCvError("Fallo al inicializar Worker: " + message));
-      }
-    }
-  }, []);
-
-  return { cvReady, cvError, worker: cvWorker };
-};
-
-// ... Mantenemos calculateVelocityMetrics igual
-export const sendInitTracker = (worker: Worker, x: number, y: number, buffer: ArrayBuffer, width: number, height: number, onDone: (sx?: number, sy?: number) => void) => {
-    initDoneCallback = onDone;
-    worker.postMessage({ type: 'INIT', x, y, buffer, width, height }, [buffer]);
+function announce() {
+    snapshot = { ready: workerReady, error: workerFailed };
+    for (const listener of readyListeners) listener();
 }
 
-export const sendProcessFrame = (worker: Worker, buffer: ArrayBuffer, width: number, height: number, lastX: number, lastY: number, onDone: (status: number, x: number, y: number) => void) => {
-    trackDoneCallback = onDone;
-    // We send a copy so we do not detach the original buffer from the UI canvas
-    const bufCopy = buffer.slice(0);
-    worker.postMessage({ type: 'TRACK', buffer: bufCopy, width, height, lastX, lastY }, [bufCopy]);
+function subscribe(onChange: () => void) {
+    readyListeners.add(onChange);
+    return () => { readyListeners.delete(onChange); };
+}
+
+const getSnapshot = () => snapshot;
+
+/**
+ * Crea el worker la primera vez que hace falta y le instala UN manejador.
+ *
+ * Es un singleton a propósito: OpenCV son ~670 KB de WebAssembly que hay que
+ * compilar, y montar uno por componente costaría eso cada vez que se abre un
+ * diálogo de análisis.
+ */
+function ensureWorker(): Worker | null {
+    if (cvWorker || workerFailed) return cvWorker;
+
+    try {
+        // Worker clásico a propósito: `{ type: 'module' }` rompe
+        // `importScripts`, que es como se carga /opencv.js.
+        cvWorker = new Worker(new URL('./cv.worker.js', import.meta.url));
+    } catch (err) {
+        workerFailed = 'No se ha podido iniciar el motor de visión: ' +
+            (err instanceof Error ? err.message : String(err));
+        announce();
+        return null;
+    }
+
+    const failureTimer = setTimeout(() => {
+        if (workerReady) return;
+        workerFailed = 'El motor de visión no responde. Comprueba que /opencv.js está accesible.';
+        announce();
+    }, 12000);
+
+    cvWorker.onmessage = (e: MessageEvent) => {
+        const data = e.data as Record<string, unknown> & { type: string; id?: number };
+
+        if (data.type === 'READY') {
+            clearTimeout(failureTimer);
+            workerReady = true;
+            workerFailed = null;
+            announce();
+            return;
+        }
+
+        // Un error SIN identificador no pertenece a ninguna petición: es un
+        // fallo del motor y afecta a todo. Con identificador es el fallo de una
+        // petición concreta y se le devuelve solo a ella.
+        if (data.type === 'ERROR' && data.id === undefined) {
+            workerFailed = String(data.message ?? 'Error en el motor de visión');
+            announce();
+            return;
+        }
+
+        if (typeof data.id !== 'number') return;
+        const entry = pending.get(data.id);
+        // Respuesta de una petición ya cancelada: se descarta. Antes esto
+        // resolvía la petición que estuviera en curso, con datos de otro
+        // fotograma.
+        if (!entry) return;
+        pending.delete(data.id);
+
+        if (data.type === 'ERROR') entry.reject(new Error(String(data.message ?? 'Error en el motor de visión')));
+        else entry.resolve(data);
+    };
+
+    cvWorker.onerror = (event: ErrorEvent) => {
+        clearTimeout(failureTimer);
+        workerFailed = event.message || 'El motor de visión ha fallado.';
+        announce();
+        for (const [, entry] of pending) entry.reject(new Error(workerFailed));
+        pending.clear();
+    };
+
+    cvWorker.postMessage({ type: 'PING' });
+    return cvWorker;
 }
 
 /**
- * Buscar el disco en un fotograma.
+ * Manda una petición y espera su respuesta.
  *
- * `hint` es opcional. Sin él busca en toda la imagen; con él —cuando el
- * usuario ha tocado el disco— exige que el candidato caiga ahí, que es lo que
- * convierte la detección en un problema tratable cuando el gimnasio está lleno
- * de cosas redondas.
+ * `transfer` mueve el búfer del fotograma al worker en vez de copiarlo. Quien
+ * llame tiene que pasar un búfer del que pueda desprenderse: el de un
+ * `getImageData` recién hecho lo es, el de un `<canvas>` vivo no.
  */
-export const sendDetectPlate = (
-    worker: Worker,
-    buffer: ArrayBuffer,
-    width: number,
-    height: number,
-    hint: { x: number; y: number } | null,
-    onDone: (result: PlateDetection) => void
-) => {
-    detectPlateCallback = onDone;
-    const bufCopy = buffer.slice(0);
-    worker.postMessage(
-        { type: 'DETECT_PLATE', buffer: bufCopy, width, height, hintX: hint?.x, hintY: hint?.y },
-        [bufCopy]
+function request<T>(type: string, payload: Record<string, unknown>, transfer: Transferable[] = []): Promise<T> {
+    const worker = ensureWorker();
+    if (!worker) return Promise.reject(new Error(workerFailed ?? 'El motor de visión no está disponible.'));
+
+    const id = nextRequestId++;
+    return new Promise<T>((resolve, reject) => {
+        pending.set(id, { resolve: resolve as (value: unknown) => void, reject });
+        try {
+            worker.postMessage({ type, id, ...payload }, transfer);
+        } catch (err) {
+            pending.delete(id);
+            reject(err instanceof Error ? err : new Error(String(err)));
+        }
+    });
+}
+
+// =====================================================================
+// EL HOOK
+// =====================================================================
+
+/**
+ * Estado del motor de visión.
+ *
+ * `useSyncExternalStore` y no `useState` + efecto: el worker es un almacén
+ * EXTERNO y compartido, que puede haber quedado listo antes de que este
+ * componente se montara. Con el patrón anterior —un `setState` dentro del
+ * efecto para ponerse al día— el segundo análisis de la sesión se quedaba
+ * esperando un `READY` que ya había pasado, y además provocaba un render en
+ * cascada en cada montaje.
+ */
+export const useOpenCV = () => {
+    const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+    useEffect(() => { ensureWorker(); }, []);
+
+    return { cvReady: state.ready, cvError: state.error };
+};
+
+// =====================================================================
+// OPERACIONES
+// =====================================================================
+
+/**
+ * Busca el disco en un fotograma.
+ *
+ * `hint` es opcional. Sin él busca en toda la imagen; con él —cuando el usuario
+ * ha tocado el disco— exige que el candidato caiga ahí, que es lo que convierte
+ * la detección en un problema tratable cuando el gimnasio está lleno de cosas
+ * redondas.
+ */
+export function detectPlate(
+    image: ImageData,
+    hint: { x: number; y: number } | null
+): Promise<PlateDetection> {
+    const buffer = image.data.buffer.slice(0);
+    return request<{ ellipse: PlateEllipse | null; score: number; method: PlateDetection['method'] }>(
+        'DETECT_PLATE',
+        { buffer, width: image.width, height: image.height, hintX: hint?.x, hintY: hint?.y },
+        [buffer]
+    ).then(r => ({ ellipse: r.ellipse ?? null, score: r.score ?? 0, method: r.method ?? null }));
+}
+
+/**
+ * Siembra la nube de puntos sobre el disco.
+ *
+ * `radiusPx` y `ellipse` acotan dónde buscar textura. Pasarlos importa: sembrar
+ * dentro del disco detectado —y no en un cuadrado alrededor del dedo— es lo que
+ * garantiza que se sigue el disco y no lo que hubiera detrás.
+ */
+export function initTracker(
+    image: ImageData,
+    x: number,
+    y: number,
+    radiusPx: number,
+    ellipse: PlateEllipse | null
+): Promise<TrackerInit> {
+    const buffer = image.data.buffer.slice(0);
+    return request<TrackerInit>(
+        'INIT',
+        { buffer, width: image.width, height: image.height, x, y, radiusPx, ellipse },
+        [buffer]
     );
 }
 
-// Types for tracking
-export interface TrackingPoint {
-  x: number;
-  y: number;
-  timestamp: number;
+/** Un fotograma de seguimiento. */
+export function trackFrame(image: ImageData, ellipse: PlateEllipse | null): Promise<TrackStep> {
+    const buffer = image.data.buffer.slice(0);
+    return request<TrackStep>(
+        'TRACK',
+        { buffer, width: image.width, height: image.height, ellipse },
+        [buffer]
+    );
 }
 
-export interface TrackingResult {
-  path: TrackingPoint[];
-  fps: number;
-  pixelToMeterRatio: number; // e.g. 0.45 meters / 100 pixels
+/** Libera el estado del seguimiento sin matar el worker. */
+export function cleanupTracker() {
+    if (cvWorker) cvWorker.postMessage({ type: 'CLEANUP' });
 }
-
-// Utility to calculate velocity safely
-export const calculateVelocityMetrics = (path: TrackingPoint[], pixelToMeterRatio: number) => {
-  if (path.length < 3) return [];
-
-  // Paso 1: Suavizado posicional (Movil) para amortiguar la inestabilidad de píxeles estáticos del IA
-  const smoothedPath = [];
-  const posWindow = 5; 
-  const halfPos = Math.floor(posWindow / 2);
-  
-  for (let i = 0; i < path.length; i++) {
-     let sumY = 0;
-     let count = 0;
-     for (let j = Math.max(0, i - halfPos); j <= Math.min(path.length - 1, i + halfPos); j++) {
-         sumY += path[j].y;
-         count++;
-     }
-     smoothedPath.push({
-         ...path[i],
-         y: sumY / count
-     });
-  }
-
-  const rawVelocities = [];
-  // Paso 2: Calculo de Diferencia Central (Theorem limits: dx/dt | centered ~ no phase lag)
-  for (let i = 1; i < smoothedPath.length - 1; i++) {
-    const prev = smoothedPath[i - 1];
-    const next = smoothedPath[i + 1];
-    const curr = smoothedPath[i];
-    
-    // In Canvas: ir arriba (levantar) reduce Y (positivo en contexto físico)
-    const distanceYPx = prev.y - next.y; 
-    const distanceM = distanceYPx * pixelToMeterRatio;
-    const dt = (next.timestamp - prev.timestamp) / 1000; 
-    
-    let vel = 0;
-    if (dt > 0.001) vel = distanceM / dt;
-    
-    rawVelocities.push({
-      time: curr.timestamp,
-      rawVelocity: vel, 
-      x: curr.x,
-      y: curr.y 
-    });
-  }
-  
-  // Copiar contornos para evitar encogimiento del array temporal
-  if (rawVelocities.length > 0) {
-      rawVelocities.unshift({ ...rawVelocities[0], time: smoothedPath[0].timestamp });
-      rawVelocities.push({ ...rawVelocities[rawVelocities.length - 1], time: smoothedPath[smoothedPath.length - 1].timestamp });
-  }
-  
-  // Paso 3: Zero-Phase Exponential Moving Average (Filtro Bidireccional)
-  // Biomecánicamente retiene la altitud (pico max) eliminando saltos.
-  const smoothedVelocities = [];
-  let ema = rawVelocities[0]?.rawVelocity || 0;
-  const alpha = 0.35; // 35% de agilidad
-
-  // Pase Forward ->
-  for (let i = 0; i < rawVelocities.length; i++) {
-     const currRaw = rawVelocities[i].rawVelocity;
-     ema = (currRaw * alpha) + (ema * (1 - alpha));
-     let vel = ema;
-     
-     // Auto-cero físico si la barra casi no se mueve
-     if (Math.abs(vel) < 0.03 && Math.abs(currRaw) < 0.05) vel = 0;
-
-     smoothedVelocities.push({
-         time: rawVelocities[i].time,
-         velocity: vel, 
-         x: rawVelocities[i].x,
-         y: rawVelocities[i].y
-     });
-  }
-
-  // Pase Backward <- (Anula el desfase de tiempo - lag introducido en el forward)
-  let bEma = smoothedVelocities[smoothedVelocities.length - 1]?.velocity || 0;
-  for (let i = smoothedVelocities.length - 1; i >= 0; i--) {
-     bEma = (smoothedVelocities[i].velocity * alpha) + (bEma * (1 - alpha));
-     smoothedVelocities[i].velocity = bEma;
-  }
-
-  return smoothedVelocities;
-};

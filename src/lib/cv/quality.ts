@@ -50,12 +50,33 @@ export interface TrackingStats {
     framesProcessed: number;
     /** De esos, en cuántos dijo "he perdido el punto". */
     framesLost: number;
-    /** Mayor salto entre dos fotogramas seguidos, en píxeles. */
+    /** Mayor salto entre dos fotogramas seguidos, en píxeles, normalizado a 30 Hz. */
     maxJumpPx: number;
     /** Duración analizada, en segundos. */
     durationS: number;
     /** Alto del vídeo, para poder leer el salto en términos relativos. */
     frameHeightPx: number;
+    /**
+     * `true` si los instantes de cada fotograma vienen del descodificador
+     * (`requestVideoFrameCallback`) y no del reloj de reproducción.
+     *
+     * Importa porque `dt` está en el denominador de toda velocidad: con los
+     * instantes aproximados hay hasta medio fotograma de incertidumbre en cada
+     * muestra. Firefox todavía no ofrece la vía exacta, así que esto no es un
+     * fallo del usuario ni de su vídeo — pero tampoco se puede fingir que la
+     * medición es igual de buena.
+     */
+    exactTimestamps: boolean;
+    /**
+     * Mediana de puntos de la nube que sobrevivieron a la validación por
+     * fotograma.
+     *
+     * Es la medida de cuánto consenso hay detrás de cada posición. Con veinte
+     * puntos de acuerdo, la trayectoria es sólida; con cinco, el seguimiento va
+     * colgando de unos pocos píxeles con textura y basta que se tapen para que
+     * derive. Ver la sección SEGUIMIENTO de cv.worker.js.
+     */
+    medianTrackedPoints: number;
 }
 
 export interface QualityInput {
@@ -127,6 +148,14 @@ const JUMP_CRITICAL_FRAC = 0.10;
 
 /** Menos muestras que esto en la concéntrica y el pico de velocidad es ruido. */
 const CONCENTRIC_SAMPLES_CRITICAL = 6;
+
+/**
+ * Puntos de la nube de seguimiento por debajo de los cuales el consenso empieza
+ * a ser aparente. `MIN_CLOUD_POINTS` es el mínimo con el que el worker acepta
+ * dar una posición.
+ */
+const MIN_CLOUD_POINTS = 4;
+const THIN_CLOUD_POINTS = 10;
 
 /** Rango físicamente admisible de un levantamiento. Fuera de él, hay un fallo. */
 const ROM_MIN_M = 0.12;
@@ -261,13 +290,22 @@ export function assessQuality(input: QualityInput): QualityReport {
         const jumped = jumpFrac > JUMP_CRITICAL_FRAC;
         if (jumped) score = Math.min(score, 20);
 
+        // Cuánto consenso hay detrás de cada posición. Una nube que ha quedado
+        // reducida a cuatro o cinco puntos sigue dando coordenadas, pero ya no
+        // tiene con qué desmentirse a sí misma.
+        const cloud = tracking.medianTrackedPoints;
+        const thinCloud = cloud > 0 && cloud < THIN_CLOUD_POINTS;
+        if (thinCloud) score = Math.min(score, ramp(cloud, MIN_CLOUD_POINTS, THIN_CLOUD_POINTS, 40, 75));
+
         dimensions.push({
             key: 'tracking',
             label: 'Seguimiento',
             score: clamp(score, 0, 100),
             detail: jumped
                 ? `La marca ha dado un salto de ${Math.round(jumpFrac * 100)}% de la altura del vídeo entre dos fotogramas`
-                : `${lossPct.toFixed(1)}% de fotogramas perdidos`,
+                : thinCloud
+                    ? `${lossPct.toFixed(1)}% de fotogramas perdidos · solo ${cloud} puntos de referencia sobre el disco`
+                    : `${lossPct.toFixed(1)}% de fotogramas perdidos · ${cloud} puntos de referencia sobre el disco`,
             critical: lossPct > 25 || jumped,
             weight: 0.25,
         });
@@ -289,11 +327,21 @@ export function assessQuality(input: QualityInput): QualityReport {
 
         if (n < 12) unreliableMetrics.push('peak_velocity', 'peak_power', 'rfd');
 
+        // Sin instantes exactos, cada `dt` arrastra hasta medio fotograma de
+        // error. No invalida la medición —el error se promedia y no tiene
+        // sesgo— pero sí ensancha la barra: se descuenta y se dice.
+        const approximate = !tracking.exactTimestamps;
+        if (approximate) {
+            score *= 0.85;
+            unreliableMetrics.push('rfd');
+        }
+
         dimensions.push({
             key: 'sampling',
             label: 'Muestreo',
             score: clamp(score, 0, 100),
-            detail: `${n} muestras en la concéntrica${hz > 0 ? ` · ${hz.toFixed(0)} Hz` : ''}`,
+            detail: `${n} muestras en la concéntrica${hz > 0 ? ` · ${hz.toFixed(0)} Hz` : ''}` +
+                (approximate ? ' · instantes aproximados (este navegador no da el tiempo exacto de cada fotograma)' : ''),
             critical: n < CONCENTRIC_SAMPLES_CRITICAL,
             weight: 0.12,
         });

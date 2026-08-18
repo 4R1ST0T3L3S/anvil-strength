@@ -1,6 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
-import { TrackingPoint, calculateVelocityMetrics } from '../../../../lib/cv/tracker';
-import { extractLiftingPhases, calculateDynamics, estimate1RM } from '../../../../lib/cv/pwrMath';
+import type { TrackingPoint } from '../../../../lib/cv/tracker';
+import { computeKinematics } from '../../../../lib/cv/signal';
+import { extractLiftingPhases, calculateDynamics, estimate1RM, summariseSeries } from '../../../../lib/cv/pwrMath';
+import { PWR_ENGINE_LABEL, PWR_ENGINE_VERSION_CODE } from '../../../../lib/cv/engineVersion';
+import { SeriesReport } from './SeriesReport';
+import { buildPwrReport } from '../../../../lib/export/pwrReport';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ReferenceLine } from 'recharts';
 import { Activity, Gauge, ArrowDownUp, Target, Zap, Flame, TrendingUp, AlertTriangle, MoveHorizontal, Clock, Percent, Award, Dumbbell, ShieldCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import type { VbtMetrics } from '../../../../types/training';
@@ -92,29 +96,35 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
   const [isHovering, setIsHovering] = useState(false);
 
   const metricsData = useMemo(() => {
-    return calculateVelocityMetrics(path, pixelToMeterRatio);
+    return computeKinematics(path, pixelToMeterRatio);
   }, [path, pixelToMeterRatio]);
 
   const advMetrics = useMemo(() => {
       if (metricsData.length === 0) return null;
-      
+
       const { eccentrics, concentrics } = extractLiftingPhases(metricsData, pixelToMeterRatio, 0.15);
-      
+
       if (concentrics.length === 0) return null;
 
       // Calcular todo usando la mejor repetición (basado en Peak Velocity)
       const bestRep = concentrics.reduce((prev, current) => (prev.peakVelocity > current.peakVelocity) ? prev : current);
-      // Encontrar la excéntrica correspondiente (la que ocurrió justo antes)
-      const mainEccentric = eccentrics.find(e => e.endTime <= bestRep.startTime) || eccentrics[0];
+      // La excéntrica correspondiente es la ÚLTIMA que terminó antes de que
+      // empezara esta concéntrica, no la primera que se encuentre: con varias
+      // repeticiones, `find` devolvía la de la primera repetición para todas.
+      const mainEccentric =
+          [...eccentrics].reverse().find(e => e.endTime <= bestRep.startTime) ?? null;
 
       const dyn = calculateDynamics(bestRep.dataPoints, loadKg);
       const oneRmObj = estimate1RM(loadKg, bestRep.meanVelocity, exerciseType);
 
+      // La pérdida de velocidad solo significa algo con más de una repetición y
+      // con una primera repetición que se moviera de verdad: dividir por una
+      // velocidad de casi cero daba porcentajes de miles.
       let velLoss = 0;
       if (concentrics.length > 1) {
           const firstVel = concentrics[0].meanVelocity;
           const lastVel = concentrics[concentrics.length - 1].meanVelocity;
-          velLoss = ((firstVel - lastVel) / firstVel) * 100;
+          if (firstVel > 0.05) velLoss = ((firstVel - lastVel) / firstVel) * 100;
       }
 
       return {
@@ -123,9 +133,35 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           fatigue: velLoss,
           dynamics: dyn,
           rm: oneRmObj,
-          totalReps: concentrics.length
+          totalReps: concentrics.length,
+          // TODAS las repeticiones, no solo la mejor. Se calculaban ya y se
+          // tiraban aquí mismo: es lo que alimenta `SeriesReport`.
+          concentrics,
+          eccentrics,
       };
   }, [metricsData, pixelToMeterRatio, loadKg, exerciseType]);
+
+  /**
+   * El resumen de la serie.
+   *
+   * Va aparte del `useMemo` de arriba porque depende de la CARGA —la potencia
+   * se calcula con la masa— y no conviene recalcular la segmentación entera
+   * cada vez que alguien toca el campo de los kilos.
+   */
+  const series = useMemo(
+    () => (advMetrics ? summariseSeries(advMetrics.concentrics, loadKg) : null),
+    [advMetrics, loadKg]
+  );
+
+  /**
+   * El informe listo para CSV, Excel y PDF.
+   *
+   * `now` se pasa como argumento y no se lee dentro para que `buildPwrReport`
+   * sea pura y se pueda probar. Aquí se ancla al análisis —no al momento de
+   * pulsar «exportar»— para que los tres formatos lleven la misma fecha aunque
+   * se descarguen con minutos de diferencia.
+   */
+  const reportBuiltAt = useMemo(() => new Date(), [path]);
 
   /**
    * ¿Me puedo fiar de esto?
@@ -188,6 +224,40 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
         eccentric_duration: advMetrics.eccentric?.duration,
         est_1rm_percent: advMetrics.rm.percent,
         total_reps: advMetrics.totalReps,
+
+        // ---------------------------------------------------------------
+        // Nuevas en v2.0 — de la mejor repetición
+        // ---------------------------------------------------------------
+        propulsive_velocity: advMetrics.concentric.propulsiveVelocity,
+        propulsive_ratio: advMetrics.concentric.propulsiveRatio !== null
+            ? advMetrics.concentric.propulsiveRatio * 100
+            : null,
+        peak_acceleration: advMetrics.concentric.peakAcceleration,
+        time_to_peak_velocity: advMetrics.concentric.timeToPeakVelocityS,
+        sticking_rom_percent: advMetrics.concentric.sticking?.romPercent,
+        sticking_duration: advMetrics.concentric.sticking?.durationS,
+        sticking_distance: advMetrics.concentric.sticking?.distanceFromStartM,
+
+        // ---------------------------------------------------------------
+        // Nuevas en v2.0 — de la serie entera
+        // ---------------------------------------------------------------
+        series_mean_velocity: series?.meanVelocity,
+        series_mean_rom: series?.meanRom,
+        series_consistency_cv: series?.consistencyCv,
+        time_under_tension: series?.timeUnderTensionS,
+
+        /**
+         * QUÉ MOTOR PRODUJO ESTE NÚMERO.
+         *
+         * Sin esto, dos mediciones separadas seis meses son incomparables y
+         * nadie puede decir si mejoró el atleta o mejoró el algoritmo. Con
+         * esto se puede expulsar del perfil carga-velocidad lo que salió de un
+         * motor que luego se descubrió sesgado, sin tirar lo bueno.
+         *
+         * Viaja como entero porque la bolsa de métricas es numérica; se
+         * formatea al enseñarlo. Ver src/lib/cv/engineVersion.ts.
+         */
+        engine_version: PWR_ENGINE_VERSION_CODE,
         // CÓMO se midió, junto a lo medido.
         //
         // Sin estas cinco claves, dentro de seis meses no hay forma de saber
@@ -204,7 +274,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
       exerciseType,
       quality,
     });
-  }, [advMetrics, loadKg, exerciseType, onResult, quality, calibration, trackingStats]);
+  }, [advMetrics, series, loadKg, exerciseType, onResult, quality, calibration, trackingStats]);
 
   // Format data for Scatter Chart (Bar Path)
   const barPathData = useMemo(() => {
@@ -264,7 +334,41 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
       return minDiff < 0.2 ? closest : null; // Si nos salimos del data range por mucho, ocultamos.
   }, [currentVideoTime, chartData]);
 
-  if (path.length === 0 || !advMetrics || !quality) return null;
+  /**
+   * NO ENCONTRAR NINGUNA REPETICIÓN TIENE QUE DECIRSE.
+   *
+   * Antes, este caso era `return null`: el panel derecho aparecía en blanco, los
+   * botones de guardar salían desactivados con un "todavía no hay métricas" y no
+   * había ni una pista de qué había fallado ni de qué hacer distinto. Y es un
+   * caso frecuente —escala mal puesta, recorte que se queda corto, seguimiento
+   * perdido—, no una rareza.
+   */
+  if (path.length === 0 || !advMetrics || !quality) {
+    const romPx = path.length > 1
+      ? Math.max(...path.map(p => p.y)) - Math.min(...path.map(p => p.y))
+      : 0;
+    const romCm = romPx * pixelToMeterRatio * 100;
+
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 rounded-card border border-warning/25 bg-warning/5 p-6 text-center">
+        <AlertTriangle className="text-warning" size={26} aria-hidden="true" />
+        <p className="text-t-sm font-bold text-ink">No se ha reconocido ninguna repetición</p>
+        <p className="max-w-md text-t-xs leading-relaxed text-ink-subtle">
+          Se han seguido {path.length} fotogramas
+          {romPx > 0 && <> con un recorrido vertical de {romCm.toFixed(0)} cm</>}, y eso no llega a
+          una repetición completa (hacen falta al menos 15 cm de recorrido y 0,15 s de subida
+          continua).
+        </p>
+        <ul className="max-w-md space-y-1 text-left text-t-2xs leading-relaxed text-ink-subtle">
+          <li>· Comprueba que el recorte incluye la subida entera, de abajo del todo a arriba del todo.</li>
+          <li>· Comprueba la escala: {(pixelToMeterRatio * 1000).toFixed(2)} mm/px. Si el disco marcado
+            no era un disco, el recorrido sale en centímetros equivocados.</li>
+          <li>· Si la marca se ha ido del disco a mitad de la subida, vuelve a calibrar sobre un
+            punto con más contraste.</li>
+        </ul>
+      </div>
+    );
+  }
 
   /**
    * LO PRIMERO QUE SE VE ES SI ESTO VALE.
@@ -490,7 +594,13 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-[#0a0a0a] border border-orange-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(249,115,22,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Flame size={12} className="text-orange-500" />
-                 <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Fuerza Suelo</p>
+                 {/* "Fuerza en barra" y no "Fuerza suelo", que es lo que ponía.
+                     Esto es m·(g+a) con m la CARGA: la fuerza aplicada a la
+                     barra. La fuerza contra el suelo incluye además el peso del
+                     atleta y la aceleración de su centro de masas, que un vídeo
+                     de la barra no puede ver. Con el nombre anterior el número
+                     parecía comparable con una plataforma de fuerzas. */}
+                 <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate" title="m · (g + a) sobre la carga de la barra. No es la fuerza contra el suelo.">Fuerza en barra</p>
               </div>
               <div className="flex items-baseline gap-1">
                  <p className="text-lg xl:text-xl font-black text-white">{Math.round(advMetrics.dynamics.peakForce)}</p>
@@ -516,9 +626,24 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                  <AlertTriangle size={12} className="text-red-500" />
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Sticking Point</p>
               </div>
+              {/* `null` significa que la curva de velocidad tiene un solo
+                  máximo: la barra subió sin pararse. Es información, no un
+                  fallo — y no es lo mismo que la versión anterior, que en ese
+                  caso enseñaba la velocidad MÁXIMA como si fuera el punto malo. */}
               <div className="flex flex-col">
-                 <p className="text-lg xl:text-xl font-black text-white">{advMetrics.concentric.minVelocity.toFixed(2)}<span className="text-[10px] xl:text-xs font-bold text-gray-400 ml-1">m/s</span></p>
-                 <p className="text-[9px] font-bold text-red-500 mt-0.5 uppercase">A {advMetrics.concentric.stickingHeight.toFixed(2)}m</p>
+                 {advMetrics.concentric.minVelocity !== null ? (
+                   <>
+                     <p className="text-lg xl:text-xl font-black text-white">{advMetrics.concentric.minVelocity.toFixed(2)}<span className="text-[10px] xl:text-xs font-bold text-gray-400 ml-1">m/s</span></p>
+                     <p className="text-[9px] font-bold text-red-500 mt-0.5 uppercase">
+                       A {(advMetrics.concentric.stickingHeight ?? 0).toFixed(2)}m
+                     </p>
+                   </>
+                 ) : (
+                   <>
+                     <p className="text-lg xl:text-xl font-black text-white">—</p>
+                     <p className="text-[9px] font-bold text-gray-500 mt-0.5 uppercase">Sin estancamiento</p>
+                   </>
+                 )}
               </div>
           </div>
 
@@ -541,7 +666,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                  <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase truncate">Tiempo Exc / Con</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-white">{advMetrics.eccentric?.duration.toFixed(2)}<span className="text-[10px] text-gray-500 ml-0.5">s</span></p>
+                 <p className="text-lg xl:text-xl font-black text-white">{advMetrics.eccentric ? advMetrics.eccentric.duration.toFixed(2) : '—'}<span className="text-[10px] text-gray-500 ml-0.5">s</span></p>
                  <span className="text-[10px] xl:text-xs font-bold text-gray-500">/ {advMetrics.concentric.duration.toFixed(2)}s</span>
               </div>
           </div>
@@ -558,8 +683,13 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
               </div>
           </div>
 
-          {/* 1RM Estimado */}
-          <div className="bg-gradient-to-br from-anvil-red/20 to-orange-500/20 border-2 border-anvil-red/40 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_0_30px_rgba(220,38,38,0.1)]">
+          {/* 1RM Estimado.
+              `reliable === false` significa que la velocidad medida cae fuera
+              del tramo donde la relación carga-velocidad es lineal, así que la
+              extrapolación no significa nada. Antes se saturaba al 15% y salía
+              un 1RM de casi siete veces la carga con la misma tipografía que
+              uno bueno. */}
+          <div className={`bg-gradient-to-br from-anvil-red/20 to-orange-500/20 border-2 border-anvil-red/40 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_0_30px_rgba(220,38,38,0.1)] ${advMetrics.rm.reliable ? '' : 'opacity-60'}`}>
               <div className="flex items-center gap-1 mb-1">
                  <Award size={12} className="text-white" />
                  <p className="text-[10px] font-bold text-white tracking-widest uppercase truncate">1RM Est.</p>
@@ -568,8 +698,50 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                  <p className="text-xl xl:text-2xl font-black text-white drop-shadow-md">{Math.round(advMetrics.rm.rm)}</p>
                  <span className="text-[10px] xl:text-xs font-bold text-white/70">Kg ({Math.round(advMetrics.rm.percent)}%)</span>
               </div>
+              {!advMetrics.rm.reliable && (
+                 <p className="text-[9px] font-bold text-white/60 mt-0.5 uppercase leading-tight">
+                    Fuera del tramo lineal
+                 </p>
+              )}
           </div>
       </div>
+
+      {/* ---------------------------------------------------------------
+          LA SERIE ENTERA, REPETICIÓN A REPETICIÓN
+
+          Todo lo de arriba describe UNA repetición: la de mayor velocidad de
+          pico. Eso sirve para registrar la serie en el histórico, pero no para
+          entrenar: lo que dice si la serie fue buena es cómo se comportaron
+          todas, y eso ya estaba calculado y se tiraba.
+          --------------------------------------------------------------- */}
+      {series && (
+        <div className="shrink-0 border-t border-subtle pt-3">
+          <SeriesReport
+            concentrics={advMetrics.concentrics}
+            eccentrics={advMetrics.eccentrics}
+            series={series}
+            dimmed={quality.verdict === 'blocked'}
+            report={buildPwrReport({
+              concentrics: advMetrics.concentrics,
+              eccentrics: advMetrics.eccentrics,
+              series,
+              calibration,
+              quality,
+              loadKg,
+              exerciseType,
+              now: reportBuiltAt,
+            })}
+          />
+
+          {/* La versión del motor va con los datos, no en un «acerca de».
+              Cuando dentro de un año se compare esta medición con otra, lo
+              primero que hay que poder mirar es si las produjo el mismo
+              algoritmo. */}
+          <p className="mt-2 text-right text-t-2xs text-ink-faint">
+            {PWR_ENGINE_LABEL}
+          </p>
+        </div>
+      )}
 
     </div>
   );

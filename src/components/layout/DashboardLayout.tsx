@@ -133,7 +133,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         </button>
                     )}
                     <Link
-                        to="/inicio"
+                        to="/web"
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-white/[0.04] hover:text-white"
                     >
                         <Globe size={17} className="shrink-0" aria-hidden="true" />
@@ -348,7 +348,7 @@ function AccountMenu({
                         {items.length > 0 && <div className="my-1.5 h-px bg-[var(--border-subtle)]" />}
 
                         <Link
-                            to="/inicio"
+                            to="/web"
                             role="menuitem"
                             onClick={() => setOpen(false)}
                             className="flex items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-medium text-ink-muted transition-colors duration-fast ease-snap hover:bg-surface-raised hover:text-ink"

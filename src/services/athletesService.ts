@@ -101,7 +101,7 @@ async function callAthletesFunction<T>(payload: Record<string, unknown>): Promis
         // a secas solo dice "Edge Function returned a non-2xx status code",
         // que no le sirve de nada a quien está mirando la pantalla.
         const detail = await readFunctionError(error);
-        if (detail) throw new Error(detail);
+        if (detail) throw new Error(explainDeploymentGap(detail));
 
         // Sin `context.json` no hubo respuesta HTTP que leer: es un
         // `FunctionsFetchError`, el fetch a la función ni siquiera volvió.
@@ -124,6 +124,49 @@ async function callAthletesFunction<T>(payload: Record<string, unknown>): Promis
     }
 
     return data as T;
+}
+
+/**
+ * Traduce los fallos que en realidad son «esto no está desplegado».
+ *
+ * POR QUÉ HACE FALTA
+ *
+ * Un `git push` despliega el CÓDIGO DEL NAVEGADOR y nada más. Las funciones de
+ * borde se despliegan a mano (`supabase functions deploy athletes`) y el SQL de
+ * `database/` se ejecuta a mano. Así que hay una ventana —entre que una función
+ * nueva se sube al repositorio y alguien se acuerda de desplegarla— en la que la
+ * aplicación pide algo que el servidor todavía no sabe hacer.
+ *
+ * Eso ocurrió de verdad con los enlaces de acceso: el commit `bb440d6c` trajo
+ * `create_claim_link` y la tabla `athlete_claim_links`, y sin desplegar la
+ * función el botón del enlace respondía **«Acción desconocida:
+ * create_claim_link»** — un mensaje que, para el entrenador que está intentando
+ * dar de alta a alguien, no significa absolutamente nada y no sugiere ninguna
+ * salida.
+ *
+ * Los dos casos se distinguen solos y cada uno tiene UNA solución concreta:
+ * desplegar la función, o ejecutar el SQL. Decirlo es la diferencia entre un
+ * callejón sin salida y una tarea de un minuto.
+ */
+function explainDeploymentGap(detail: string): string {
+    if (/Acci[óo]n desconocida/i.test(detail)) {
+        return (
+            'Esta función del servidor está desactualizada y no reconoce la acción. ' +
+            'Hay que volver a desplegarla: «supabase functions deploy athletes». ' +
+            `(Detalle: ${detail})`
+        );
+    }
+
+    // Postgres dice `relation "public.x" does not exist` cuando falta la tabla.
+    if (/does not exist|no existe la relaci[óo]n/i.test(detail) && /athlete_claim_links/i.test(detail)) {
+        return (
+            'Falta la tabla de enlaces de acceso en la base de datos. ' +
+            'Hay que ejecutar «database/CLAIM_LINK.sql» en Supabase. ' +
+            `(Detalle: ${detail})`
+        );
+    }
+
+    return detail;
 }
 
 /**

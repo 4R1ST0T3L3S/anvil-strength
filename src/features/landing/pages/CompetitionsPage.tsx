@@ -63,9 +63,10 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                     date: string;
                     location?: string;
                     level?: string;
-                    athlete?: { full_name: string; avatar_url: string | null };
+                    athlete_full_name: string;
+                    athlete_avatar_url: string | null;
                 }) => {
-                    if (!assignment.athlete?.full_name) return;
+                    if (!assignment.athlete_full_name) return;
 
                     // Normalize key: only by name (case-insensitive, trimmed)
                     const key = assignment.name.trim().toLowerCase();
@@ -87,9 +88,11 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                         group.date = assignment.date;
                     }
 
+                    const athlete = { full_name: assignment.athlete_full_name, avatar_url: assignment.athlete_avatar_url };
+
                     // Add athlete if not already present
-                    if (!group.athletes.some(a => a.full_name === assignment.athlete!.full_name)) {
-                        group.athletes.push(assignment.athlete!);
+                    if (!group.athletes.some(a => a.full_name === athlete.full_name)) {
+                        group.athletes.push(athlete);
                     }
                 });
 
@@ -241,8 +244,14 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                             })}
                         </div>
                     ) : (
-                        <div className="text-center py-32 border border-dashed border-white/10 rounded-[2.5rem]">
-                            <p className="text-2xl font-bebas italic text-gray-600 uppercase tracking-widest">No hay competiciones programadas próximamente.</p>
+                        <div className="relative text-center py-32 px-6 border border-dashed border-white/10 rounded-[2.5rem] overflow-hidden">
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.05)_0%,transparent_70%)]" />
+                            <p className="relative text-4xl sm:text-6xl font-black font-bebas italic text-gray-700 uppercase tracking-wide mb-3">
+                                No Upcoming Meets
+                            </p>
+                            <p className="relative text-gray-600 text-xs sm:text-sm font-bold uppercase tracking-[0.25em]">
+                                El equipo está entrenando para la próxima convocatoria.
+                            </p>
                         </div>
                     )}
                 </div>

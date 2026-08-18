@@ -262,82 +262,38 @@ export const competitionsService = {
     /**
      * Competiciones para la página pública.
      *
-     * Se pide el perfil del atleta incrustado para poner su nombre junto a
-     * cada competición. Ese `embed` es la parte frágil: `profiles` no es
-     * legible sin sesión, y cuando el permiso falta PostgREST no devuelve la
-     * competición sin nombre — devuelve 401 y se cae la consulta ENTERA, así
-     * que la página se quedaba vacía para cualquier visitante.
+     * Va contra `get_public_upcoming_competitions()` (database/
+     * FIX_COMPETICIONES_CLUB.sql), no contra la tabla directamente: la RLS
+     * de `competitions` (database/FIX_RLS_COMPETICIONES.sql) solo deja leer
+     * sin sesión las filas con `athlete_id IS NULL` — el calendario oficial
+     * de la federación —, así que un `select` normal con `profiles`
+     * incrustado devolvía 401 y la página se quedaba vacía para cualquier
+     * visitante.
      *
-     * Por eso hay un segundo intento sin el `embed`. Enseñar las
-     * competiciones sin el nombre del atleta es infinitamente mejor que no
-     * enseñar ninguna, y así la página aguanta aunque la base todavía no
-     * tenga aplicado database/FIX_INCONSISTENCIAS.sql.
-     */
-    /**
-     * OJO — HOY NO LA LLAMA NADIE, Y YA NO DEVUELVE LO QUE SU NOMBRE DICE.
-     *
-     * Se escribió para una página pública que listara las competiciones del
-     * club con el nombre de cada atleta, y esa página nunca llegó a
-     * existir: esta función no tiene ni un solo llamador en la aplicación.
-     *
-     * Mientras tanto, la política que la habilitaba —`Competitions Public`,
-     * un `FOR SELECT USING (TRUE)`— dejaba la tabla entera legible SIN
-     * SESIÓN, incluidas las filas con `athlete_id`. Es decir, en qué
-     * competición está inscrita cada persona, en qué fecha y en qué
-     * localidad, servido a cualquiera con la clave anónima (que va en el
-     * bundle). Se ha cerrado en database/FIX_RLS_COMPETICIONES.sql.
-     *
-     * A partir de ahí, esta función devuelve SOLO el calendario oficial de
-     * la federación (`athlete_id IS NULL`) cuando se llama sin sesión.
-     *
-     * Si algún día se quiere de verdad la página pública, no se hace
-     * reabriendo la tabla: se hace con una vista o una función
-     * `SECURITY DEFINER` que exponga las columnas justas de los atletas que
-     * hayan dicho que sí. Aparecer en público tiene que ser una decisión de
-     * cada atleta, no el estado por defecto de una tabla.
+     * La función es `SECURITY DEFINER` y decide ella misma, en el servidor,
+     * qué enseña: solo competiciones de atletas con un vínculo
+     * `coach_athletes` ACTIVO, es decir miembros reales del club — no
+     * cualquier fila de `profiles` que exista. Así se evita tanto el 401
+     * como colar competiciones de gente que no entrena en Anvil.
      */
     async getPublicCompetitions() {
-        const today = new Date().toISOString().split('T')[0];
-        const range = `date.gte.${today},end_date.gte.${today}`; // futura o en curso
+        const { data, error } = await supabase.rpc('get_public_upcoming_competitions');
 
-        const { data, error } = await supabase
-            .from('competitions')
-            .select(`
-                *,
-                athlete:profiles!athlete_id (full_name, avatar_url)
-            `)
-            .or(range)
-            .order('date', { ascending: true });
-
-        // La página pública lista una tarjeta por atleta y competición. Un
-        // duplicado ahí sale al público, no solo al coach.
-        type PublicRow = CompetitionAssignment & {
-            athlete?: { full_name: string; avatar_url: string | null } | null;
-        };
-        if (!error) return dedupeCompetitions((data ?? []) as PublicRow[]);
-
-        // 42501 = permission denied. Cualquier otro error sí es un fallo real.
-        if (error.code !== '42501') {
+        if (error) {
             console.error(
-                'Error al leer las competiciones:',
+                'Error al leer las competiciones públicas:',
                 `${error.code ?? 'sin código'} — ${error.message}`
             );
             throw error;
         }
 
-        console.warn(
-            'Sin permiso para leer los perfiles de los atletas: se muestran las ' +
-            'competiciones sin nombre. Ejecuta database/FIX_INCONSISTENCIAS.sql.'
-        );
-
-        const { data: plain, error: plainError } = await supabase
-            .from('competitions')
-            .select('*')
-            .or(range)
-            .order('date', { ascending: true });
-
-        if (plainError) throw plainError;
-        return dedupeCompetitions((plain ?? []) as CompetitionAssignment[]);
+        // La página pública lista una tarjeta por atleta y competición. Un
+        // duplicado ahí sale al público, no solo al coach.
+        type PublicRow = CompetitionAssignment & {
+            athlete_full_name: string;
+            athlete_avatar_url: string | null;
+        };
+        return dedupeCompetitions((data ?? []) as PublicRow[]);
     },
 
     /**

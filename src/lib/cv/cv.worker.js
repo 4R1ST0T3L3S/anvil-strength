@@ -38,11 +38,25 @@
 self.importScripts('/opencv.js');
 
 let cvReady = false;
+
+/**
+ * ESTADO DEL SEGUIMIENTO
+ *
+ * `points` es una nube, no un punto. Ver la cabecera de la sección
+ * "SEGUIMIENTO" más abajo para el porqué.
+ */
 let oldGray = null;
-let p0 = null;
-let p1 = null;
-let st = null;
-let err = null;
+/** Coordenadas actuales de la nube: [x0,y0, x1,y1, …]. */
+let points = null;
+/** Cuántos puntos se sembraron al empezar. Referencia para saber si quedan pocos. */
+let seededCount = 0;
+/** Centro que se reporta hacia fuera. Se mueve con la traslación de la nube. */
+let centre = { x: 0, y: 0 };
+/** Radio de la zona donde se siembran features, para poder re-sembrar. */
+let seedRadius = 0;
+/** Fotogramas perdidos seguidos. Ver el manejador de TRACK. */
+let consecutiveLost = 0;
+
 let winSize = null;
 let maxLevel = null;
 let criteria = null;
@@ -66,10 +80,7 @@ function initCV() {
 
 function setupVariables() {
     cvReady = true;
-    p1 = new self.cv.Mat();
-    st = new self.cv.Mat();
-    err = new self.cv.Mat();
-    winSize = new self.cv.Size(31, 31);
+    winSize = new self.cv.Size(21, 21);
     maxLevel = 4;
     criteria = new self.cv.TermCriteria(self.cv.TERM_CRITERIA_EPS | self.cv.TERM_CRITERIA_COUNT, 30, 0.01);
     self.postMessage({ type: 'READY' });
@@ -402,6 +413,217 @@ function detectByHough(gray, hint) {
 }
 
 // =====================================================================
+// SEGUIMIENTO
+// =====================================================================
+
+/**
+ * POR QUÉ UNA NUBE DE PUNTOS Y NO UN PUNTO
+ *
+ * La versión anterior seguía UN punto: `goodFeaturesToTrack` con `maxCorners:1`
+ * dentro de un cuadrado de 60 px, y luego flujo óptico de ese único punto. Eso
+ * falla de una forma que no se ve:
+ *
+ *   · Si la esquina elegida cae en el fondo —el marco de un espejo detrás del
+ *     disco, la camiseta del atleta que pasa por delante— el análisis entero
+ *     mide otra cosa, y `status` sigue valiendo 1 todo el rato. El flujo óptico
+ *     no sabe que está siguiendo lo que no es.
+ *   · Un solo punto no tiene forma de detectar que se ha equivocado. No hay
+ *     nada con qué compararlo.
+ *
+ * Con veinte puntos repartidos por la cara del disco hay redundancia, y con
+ * redundancia se puede votar. La traslación del conjunto se toma como la
+ * MEDIANA de los desplazamientos individuales: para que la mediana se mueva
+ * harían falta más de diez puntos yéndose a la vez y en la misma dirección, que
+ * es justo lo que no pasa cuando un par de features se enganchan a otra cosa.
+ *
+ * La mediana tiene además una propiedad que viene regalada: si el disco GIRA
+ * —los de un peso muerto giran— los desplazamientos son tangenciales y
+ * simétricos respecto del centro, así que su mediana es cero. El centro sale
+ * bien sin tener que estimar la rotación.
+ *
+ *
+ * VALIDACIÓN ADELANTE-ATRÁS
+ *
+ * Cada fotograma se sigue dos veces: del anterior al actual, y del actual de
+ * vuelta al anterior. Un punto seguido correctamente vuelve a donde estaba; uno
+ * que ha derivado, no. La distancia entre el punto original y el que vuelve es
+ * el error adelante-atrás, y descarta los puntos malos ANTES de que voten.
+ *
+ * Cuesta el doble de flujo óptico. Es el mejor dinero que se gasta en todo el
+ * módulo: es lo único que distingue "seguido" de "seguido bien".
+ */
+
+/** Cuántos features se intentan sembrar sobre el disco. */
+const SEED_TARGET = 24;
+/** Por debajo de esto se intenta re-sembrar sobre la marcha. */
+const RESEED_BELOW = 10;
+/** Menos supervivientes que esto y el fotograma se declara perdido. */
+const MIN_SURVIVORS = 4;
+/**
+ * Fotogramas perdidos seguidos tras los cuales se renuncia a recuperar el hilo
+ * y se vuelve a sembrar. Medio segundo a 30 Hz: una oclusión más larga que eso
+ * ya no se recupera saltando desde la referencia vieja.
+ */
+const RESEED_AFTER_LOST = 15;
+/** Error adelante-atrás tolerado, en píxeles. */
+const FB_ERROR_PX = 1.5;
+
+/** Libera una lista de Mats sin protestar si alguno ya no está. */
+function freeAll(mats) {
+    for (const m of mats) {
+        try { if (m && !m.isDeleted?.()) m.delete(); } catch { /* ya liberado */ }
+    }
+}
+
+/** Mediana de un array de números. Modifica el array (lo ordena). */
+function median(values) {
+    if (values.length === 0) return 0;
+    values.sort((a, b) => a - b);
+    const mid = values.length >> 1;
+    return values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+}
+
+/**
+ * Máscara con la zona donde tiene sentido buscar features: la cara del disco.
+ *
+ * Se encoge al 85% del eje porque el borde exterior del disco es justo donde el
+ * fondo se cuela dentro de la ventana de 21×21 del flujo óptico, y un feature
+ * mitad disco mitad pared se va con el que se mueva.
+ */
+function plateMask(rows, cols, cx, cy, radius, ellipse) {
+    const mask = self.cv.Mat.zeros(rows, cols, self.cv.CV_8UC1);
+    const white = new self.cv.Scalar(255);
+    try {
+        if (ellipse && self.cv.ellipse) {
+            self.cv.ellipse(
+                mask,
+                new self.cv.Point(Math.round(cx), Math.round(cy)),
+                new self.cv.Size(
+                    Math.max(3, Math.round((ellipse.width / 2) * 0.85)),
+                    Math.max(3, Math.round((ellipse.height / 2) * 0.85))
+                ),
+                ellipse.angleDeg || 0,
+                0, 360, white, -1
+            );
+        } else {
+            self.cv.circle(mask, new self.cv.Point(Math.round(cx), Math.round(cy)), Math.max(3, Math.round(radius)), white, -1);
+        }
+    } catch {
+        // Si la máscara no se puede pintar, se busca en todo el fotograma: es
+        // peor, pero mejor que quedarse sin ningún punto.
+        freeAll([mask]);
+        return null;
+    }
+    return mask;
+}
+
+/**
+ * Siembra features dentro de la máscara y devuelve un array plano [x,y,…].
+ *
+ * `minDistance` escala con el tamaño del disco: repartir veinte puntos por un
+ * disco de 300 px pide más separación que por uno de 80, y sin eso se apelotonan
+ * todos en la esquina más contrastada —el logotipo— con lo que la redundancia
+ * es aparente: veinte puntos que ven el mismo trozo de imagen fallan juntos.
+ */
+function seedFeatures(gray, cx, cy, radius, ellipse) {
+    // `plateMask` devuelve null si no ha podido pintarse. Un Mat vacío significa
+    // "sin máscara" para OpenCV, y se crea aquí para poder liberarlo: creado en
+    // la lista de argumentos se quedaba sin dueño y se filtraba en cada
+    // re-siembra, que ocurre varias veces por análisis.
+    const mask = plateMask(gray.rows, gray.cols, cx, cy, radius, ellipse) ?? new self.cv.Mat();
+    const corners = new self.cv.Mat();
+    const found = [];
+
+    try {
+        const minDistance = Math.max(4, radius * 0.18);
+        self.cv.goodFeaturesToTrack(
+            gray, corners, SEED_TARGET, 0.01, minDistance,
+            mask, 3, false, 0.04
+        );
+        for (let i = 0; i < corners.rows; i++) {
+            found.push(corners.data32F[i * 2], corners.data32F[i * 2 + 1]);
+        }
+    } catch {
+        // Sin features no se puede seguir; quien llame lo verá en la longitud.
+    } finally {
+        freeAll([corners, mask]);
+    }
+
+    return found;
+}
+
+/**
+ * Un paso de seguimiento. Devuelve el desplazamiento del conjunto o `null` si
+ * el fotograma se considera perdido.
+ */
+function trackStep(prevGray, nextGray, flat) {
+    const n = flat.length / 2;
+    if (n === 0) return null;
+
+    const p0 = self.cv.matFromArray(n, 1, self.cv.CV_32FC2, flat);
+    const p1 = new self.cv.Mat();
+    const pBack = new self.cv.Mat();
+    const stFwd = new self.cv.Mat();
+    const stBack = new self.cv.Mat();
+    const errFwd = new self.cv.Mat();
+    const errBack = new self.cv.Mat();
+
+    try {
+        self.cv.calcOpticalFlowPyrLK(prevGray, nextGray, p0, p1, stFwd, errFwd, winSize, maxLevel, criteria);
+        self.cv.calcOpticalFlowPyrLK(nextGray, prevGray, p1, pBack, stBack, errBack, winSize, maxLevel, criteria);
+
+        const dxs = [];
+        const dys = [];
+        const survivors = [];
+
+        for (let i = 0; i < n; i++) {
+            if (stFwd.data[i] !== 1 || stBack.data[i] !== 1) continue;
+
+            const x0 = p0.data32F[i * 2];
+            const y0 = p0.data32F[i * 2 + 1];
+            const x1 = p1.data32F[i * 2];
+            const y1 = p1.data32F[i * 2 + 1];
+            const xb = pBack.data32F[i * 2];
+            const yb = pBack.data32F[i * 2 + 1];
+
+            // Fuera del fotograma: el flujo óptico extrapola sin quejarse.
+            if (x1 < 0 || y1 < 0 || x1 >= nextGray.cols || y1 >= nextGray.rows) continue;
+
+            const fbError = Math.hypot(xb - x0, yb - y0);
+            if (fbError > FB_ERROR_PX) continue;
+
+            survivors.push({ x: x1, y: y1 });
+            dxs.push(x1 - x0);
+            dys.push(y1 - y0);
+        }
+
+        if (survivors.length < MIN_SURVIVORS) return null;
+
+        const dx = median(dxs.slice());
+        const dy = median(dys.slice());
+
+        // Segundo filtro: un punto puede pasar el adelante-atrás y aun así
+        // moverse distinto del conjunto —el atleta cruzando por delante da
+        // exactamente eso—. Se descartan los que se separan más de 2,5 px de la
+        // traslación consensuada para que no contaminen la re-siembra.
+        const kept = [];
+        for (let i = 0; i < survivors.length; i++) {
+            if (Math.hypot(dxs[i] - dx, dys[i] - dy) <= 2.5) {
+                kept.push(survivors[i].x, survivors[i].y);
+            }
+        }
+
+        if (kept.length / 2 < MIN_SURVIVORS) return null;
+
+        return { dx, dy, points: kept, tracked: kept.length / 2 };
+    } catch {
+        return null;
+    } finally {
+        freeAll([p0, p1, pBack, stFwd, stBack, errFwd, errBack]);
+    }
+}
+
+// =====================================================================
 // MENSAJES
 // =====================================================================
 
@@ -414,83 +636,150 @@ self.onmessage = function (e) {
     }
 
     if (!cvReady) {
-        self.postMessage({ type: 'ERROR', message: 'OpenCV no está listo en el worker' });
+        self.postMessage({ type: 'ERROR', id: data.id, message: 'OpenCV no está listo en el worker' });
         return;
     }
 
+    /**
+     * Sembrar la nube sobre el disco y dejarla lista para el primer paso.
+     *
+     * `radiusPx` y `ellipse` los manda quien ya ha calibrado: sembrar dentro
+     * del disco DETECTADO en vez de en un cuadrado de 60 px alrededor del dedo
+     * del usuario es lo que hace que los features estén sobre el objeto que se
+     * quiere medir y no sobre lo que hubiera detrás.
+     */
     if (data.type === 'INIT') {
         try {
-            if (oldGray) oldGray.delete();
-            if (p0) p0.delete();
+            freeAll([oldGray]);
+            consecutiveLost = 0;
 
             const imgData = new ImageData(new Uint8ClampedArray(data.buffer), data.width, data.height);
             const frame = self.cv.matFromImageData(imgData);
-
             oldGray = new self.cv.Mat();
             self.cv.cvtColor(frame, oldGray, self.cv.COLOR_RGBA2GRAY);
             frame.delete();
 
-            const roiSize = 60;
-            let startX = Math.max(0, Math.round(data.x - roiSize / 2));
-            let startY = Math.max(0, Math.round(data.y - roiSize / 2));
-            let width = Math.min(oldGray.cols - startX, roiSize);
-            let height = Math.min(oldGray.rows - startY, roiSize);
+            seedRadius = data.radiusPx > 4 ? data.radiusPx : 30;
+            centre = { x: data.x, y: data.y };
 
-            const rect = new self.cv.Rect(startX, startY, width, height);
-            const roiGray = oldGray.roi(rect);
+            points = seedFeatures(oldGray, data.x, data.y, seedRadius, data.ellipse ?? null);
+            seededCount = points.length / 2;
 
-            const corners = new self.cv.Mat();
-            const mask = new self.cv.Mat();
-
-            self.cv.goodFeaturesToTrack(roiGray, corners, 1, 0.01, 10, mask, 3, false, 0.04);
-
-            if (corners.rows > 0) {
-                data.x = corners.data32F[0] + startX;
-                data.y = corners.data32F[1] + startY;
+            // Sin features no hay nada que seguir. Se dice, en vez de dejar que
+            // el primer TRACK devuelva "perdido" y parezca un problema del
+            // vídeo: aquí el problema es que el disco no tiene textura (bumper
+            // negro liso a contraluz) y la solución es señalar otro punto.
+            if (seededCount < MIN_SURVIVORS) {
+                self.postMessage({
+                    type: 'INIT_DONE',
+                    id: data.id,
+                    x: data.x,
+                    y: data.y,
+                    features: seededCount,
+                    ok: false,
+                });
+                return;
             }
 
-            roiGray.delete();
-            corners.delete();
-            mask.delete();
-
-            p0 = new self.cv.Mat(1, 1, self.cv.CV_32FC2);
-            p0.data32F[0] = data.x;
-            p0.data32F[1] = data.y;
-
-            self.postMessage({ type: 'INIT_DONE', x: data.x, y: data.y });
+            self.postMessage({
+                type: 'INIT_DONE',
+                id: data.id,
+                x: centre.x,
+                y: centre.y,
+                features: seededCount,
+                ok: true,
+            });
         } catch (error) {
-            self.postMessage({ type: 'ERROR', message: error.message });
+            self.postMessage({ type: 'ERROR', id: data.id, message: error.message });
         }
     }
     else if (data.type === 'TRACK') {
+        let frame = null;
+        let frameGray = null;
         try {
-            const imgData = new ImageData(new Uint8ClampedArray(data.buffer), data.width, data.height);
-            const frame = self.cv.matFromImageData(imgData);
-            const frameGray = new self.cv.Mat();
-            self.cv.cvtColor(frame, frameGray, self.cv.COLOR_RGBA2GRAY);
-
-            self.cv.calcOpticalFlowPyrLK(
-                oldGray, frameGray, p0, p1, st, err, winSize, maxLevel, criteria
-            );
-
-            let status = st.data[0];
-            let newX = data.lastX;
-            let newY = data.lastY;
-
-            if (status === 1) {
-                newX = p1.data32F[0];
-                newY = p1.data32F[1];
-                p0.data32F[0] = newX;
-                p0.data32F[1] = newY;
+            if (!oldGray || !points) {
+                self.postMessage({ type: 'TRACK_DONE', id: data.id, status: 0, x: centre.x, y: centre.y, tracked: 0 });
+                return;
             }
 
-            oldGray.delete();
-            oldGray = frameGray;
-            frame.delete();
+            const imgData = new ImageData(new Uint8ClampedArray(data.buffer), data.width, data.height);
+            frame = self.cv.matFromImageData(imgData);
+            frameGray = new self.cv.Mat();
+            self.cv.cvtColor(frame, frameGray, self.cv.COLOR_RGBA2GRAY);
 
-            self.postMessage({ type: 'TRACK_DONE', status: status, x: newX, y: newY });
+            const step = trackStep(oldGray, frameGray, points);
+
+            if (!step) {
+                /**
+                 * FOTOGRAMA PERDIDO: SE CONSERVA LA REFERENCIA ANTERIOR.
+                 *
+                 * La primera versión hacía lo contrario —adoptaba el fotograma
+                 * fallido como nueva referencia— y eso convertía cada pérdida en
+                 * un error PERMANENTE de posición: los puntos de la nube seguían
+                 * teniendo las coordenadas de donde estaba el disco antes, pero
+                 * la imagen de referencia ya era otra en la que el disco se
+                 * había movido. El desplazamiento de esos fotogramas no se
+                 * recuperaba nunca. Se midió con una oclusión de seis
+                 * fotogramas: dos perdidos dejaban 12 px de desfase que
+                 * arrastraba hasta el final, un 6% del recorrido.
+                 *
+                 * Conservando la referencia buena, el siguiente intento salta
+                 * directamente desde ella y recupera TODO el desplazamiento del
+                 * hueco. El salto es mayor, pero el flujo óptico con cuatro
+                 * niveles de pirámide y ventana de 21 px cubre bastante más de
+                 * lo que se mueve una barra en unos pocos fotogramas.
+                 */
+                consecutiveLost++;
+
+                // Con una oclusión larga la referencia deja de parecerse a lo
+                // que hay en pantalla y ya no se recupera nunca. Antes que
+                // seguir devolviendo "perdido" para siempre, se vuelve a sembrar
+                // donde se dejó de ver el disco.
+                if (consecutiveLost > RESEED_AFTER_LOST) {
+                    const fresh = seedFeatures(frameGray, centre.x, centre.y, seedRadius, data.ellipse ?? null);
+                    if (fresh.length / 2 >= MIN_SURVIVORS) {
+                        points = fresh;
+                        freeAll([oldGray]);
+                        oldGray = frameGray;
+                        frameGray = null;
+                        consecutiveLost = 0;
+                    }
+                }
+
+                self.postMessage({ type: 'TRACK_DONE', id: data.id, status: 0, x: centre.x, y: centre.y, tracked: 0 });
+                return;
+            }
+
+            consecutiveLost = 0;
+
+            centre = { x: centre.x + step.dx, y: centre.y + step.dy };
+            points = step.points;
+
+            // La nube se desgasta: cada fotograma pierde algún punto por
+            // oclusión o desenfoque de movimiento. Re-sembrar sobre el disco en
+            // su posición ACTUAL la repone sin arrastrar el error, porque el
+            // centro que se usa para la máscara ya viene de la mediana.
+            if (step.tracked < RESEED_BELOW) {
+                const fresh = seedFeatures(frameGray, centre.x, centre.y, seedRadius, data.ellipse ?? null);
+                if (fresh.length / 2 > step.tracked) points = fresh;
+            }
+
+            freeAll([oldGray]);
+            oldGray = frameGray;
+            frameGray = null;
+
+            self.postMessage({
+                type: 'TRACK_DONE',
+                id: data.id,
+                status: 1,
+                x: centre.x,
+                y: centre.y,
+                tracked: step.tracked,
+            });
         } catch (error) {
-            self.postMessage({ type: 'ERROR', message: error.message });
+            self.postMessage({ type: 'ERROR', id: data.id, message: error.message });
+        } finally {
+            freeAll([frame, frameGray]);
         }
     }
     /**
@@ -545,20 +834,24 @@ self.onmessage = function (e) {
 
             self.postMessage({
                 type: 'DETECT_PLATE_DONE',
+                id: data.id,
                 ellipse,
                 score: found ? found.score : 0,
                 method,
             });
         } catch (error) {
             if (gray) gray.delete();
-            self.postMessage({ type: 'DETECT_PLATE_DONE', ellipse: null, score: 0, method: null, error: error.message });
+            self.postMessage({ type: 'DETECT_PLATE_DONE', id: data.id, ellipse: null, score: 0, method: null, error: error.message });
         }
     }
     else if (data.type === 'CLEANUP') {
-        if (oldGray) oldGray.delete();
-        if (p0) p0.delete();
+        freeAll([oldGray]);
         oldGray = null;
-        p0 = null;
+        points = null;
+        seededCount = 0;
+        seedRadius = 0;
+        consecutiveLost = 0;
+        centre = { x: 0, y: 0 };
     }
 };
 
