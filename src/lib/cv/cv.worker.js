@@ -288,6 +288,25 @@ function detectByContours(gray, hint) {
                                     height: rr.size.height,
                                     angleDeg: rr.angle,
                                     score,
+                                    /**
+                                     * Qué fracción del contorno de la elipse se
+                                     * ve de verdad, de 0 a 1.
+                                     *
+                                     * Viaja hasta la pantalla porque es lo ÚNICO
+                                     * que distingue un disco tapado a medias de
+                                     * uno entero, y un disco tapado se mide mal
+                                     * por construcción: `fitEllipse` sobre un
+                                     * arco parcial está mal condicionado y
+                                     * sobrestima los ejes. Medido en el banco:
+                                     * con una pierna delante tapando el 25% del
+                                     * disco, la altura sale un +18%.
+                                     *
+                                     * La PUNTUACIÓN no sirve para detectarlo: en
+                                     * el barrido, casos tapados puntúan 0,49 y
+                                     * casos perfectos de disco grande y girado
+                                     * puntúan 0,51. Se solapan. La cobertura no.
+                                     */
+                                    coverage: fit.coverage,
                                 });
                             }
                         }
@@ -317,16 +336,46 @@ function detectByContours(gray, hint) {
 }
 
 /**
+ * Cuántas veces más grande puede ser el hermano mayor que se acepta.
+ *
+ * ESTE NÚMERO VALÍA 3 Y ERA EL FALLO MÁS GRAVE DEL DETECTOR.
+ *
+ * El buje metálico de un disco mide en torno a 0,28 del diámetro exterior, así
+ * que del buje al borde hay **1 / 0,28 = 3,57 veces**. Con el tope en 3, un
+ * buje que ganara la puntuación no podía ascender nunca al borde: se quedaba
+ * como disco. Consecuencia medida, no supuesta:
+ *
+ *     altura del disco: −71,5%, con una confianza de 0,85
+ *
+ * O sea, la escala del vídeo salía casi cuatro veces más pequeña de lo real y
+ * todas las velocidades cuatro veces más grandes, y el detector lo daba por
+ * bueno. Es exactamente el fallo silencioso que produce un resultado creíble.
+ *
+ * Solo pasaba con discos GRANDES en el encuadre (cámara cerca): con el disco
+ * pequeño, el buje no llega ni a `MIN_AXIS_FRAC` ni a las 25 filas de contorno
+ * y nunca entra como candidato. Y solo con discos rojos, azules o negros, donde
+ * el buje gris contrasta de verdad en escala de grises; en un disco amarillo no
+ * contrasta y el fallo no aparecía. Por eso no lo cazó nadie leyendo el código:
+ * hacía falta barrer tamaños Y colores.
+ *
+ * 5,0 deja margen sobre el 3,57 del buje sin abrir la puerta a cualquier cosa:
+ * el hermano mayor tiene que compartir centro con una tolerancia del 25% del
+ * candidato pequeño, que para un buje son unos doce píxeles. Que una elipse del
+ * fondo caiga concéntrica con el disco dentro de doce píxeles es mucho pedir.
+ */
+const MAX_SIBLING_GROWTH = 5.0;
+
+/**
  * De entre los candidatos concéntricos, quedarse con el de fuera.
  *
  * Un disco genera varias elipses casi iguales: los dos lados del trazo del
- * borde, el aro de color interior de un bumper, el logotipo. Los 45 cm son el
- * DIÁMETRO EXTERIOR, así que quedarse con el aro interior significaría creer
- * que 30 cm son 45 y sobrestimar la velocidad un 50%.
+ * borde, el aro de color interior de un bumper, el buje, el logotipo. Los 45 cm
+ * son el DIÁMETRO EXTERIOR, así que quedarse con uno de dentro es creer que 30
+ * cm son 45 —o que 13 lo son, si el que gana es el buje—.
  *
  * Se acepta un hermano mayor solo si comparte centro, si su ajuste no es mucho
- * peor y si no es desproporcionadamente grande: sin ese tope, un candidato
- * bueno arrastraría a cualquier elipse enorme que pase cerca.
+ * peor y si no es desproporcionadamente grande. Ver `MAX_SIBLING_GROWTH` para
+ * por qué ese tope tenía que subir.
  */
 function pickOutermost(sorted) {
     const best = sorted[0];
@@ -337,7 +386,7 @@ function pickOutermost(sorted) {
     for (const c of sorted) {
         const major = Math.max(c.width, c.height);
         const sameCentre = Math.hypot(c.cx - best.cx, c.cy - best.cy) < bestMajor * 0.25;
-        const notAbsurd = major <= bestMajor * 3;
+        const notAbsurd = major <= bestMajor * MAX_SIBLING_GROWTH;
         const decentFit = c.score >= best.score * 0.55;
         if (sameCentre && notAbsurd && decentFit && major > chosenMajor) {
             chosen = c;
@@ -838,6 +887,8 @@ self.onmessage = function (e) {
                 ellipse,
                 score: found ? found.score : 0,
                 method,
+                // `null` con Hough: ahí no hay contorno del que medir cobertura.
+                coverage: found && typeof found.coverage === 'number' ? found.coverage : null,
             });
         } catch (error) {
             if (gray) gray.delete();

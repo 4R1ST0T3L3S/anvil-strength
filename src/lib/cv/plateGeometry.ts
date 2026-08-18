@@ -72,13 +72,24 @@ export interface PlateEllipse {
 }
 
 /**
- * De dónde salió la escala. Ordenado de más a menos fiable, y esa fiabilidad
- * es lo que puntúa `quality.ts`.
+ * De dónde ha salido la escala. Ordenado de más a menos fiable, y esa
+ * fiabilidad es lo que puntúa `quality.ts`.
  *
- *   'auto'      — el detector encontró el disco solo.
- *   'assisted'  — el detector lo encontró donde el usuario le señaló.
- *   'ring'      — no se encontró: el usuario ajustó un aro a ojo.
- *   'two_points'— respaldo antiguo: dos clics en los bordes del disco.
+ *   'auto'       — el detector encontró el disco solo.
+ *   'assisted'   — el detector lo encontró donde el usuario le señaló.
+ *   'two_points' — el usuario marcó el borde de arriba y el de abajo.
+ *
+ * `'ring'` está RETIRADO: era un aro circular que el usuario ajustaba de radio,
+ * y lo sustituyó `'two_points'` porque la escala se toma de la ALTURA del disco
+ * y un círculo obliga a elegir entre ajustar el ancho o el alto — con la cámara
+ * girada no coinciden, así que se acababa en un compromiso que falseaba la
+ * escala sin que nada lo delatara. Ya no hay forma de producir una calibración
+ * `'ring'`.
+ *
+ * Se conserva en el tipo, con su etiqueta y su peso en `quality.ts`, para que
+ * `CALIBRATION_METHOD_LABEL` siga siendo un `Record` exhaustivo y para no dejar
+ * un hueco silencioso si algún día aparece un dato antiguo con ese método. No
+ * cuesta nada y evita que alguien se pregunte qué era.
  */
 export type CalibrationMethod = 'auto' | 'assisted' | 'ring' | 'two_points';
 
@@ -193,39 +204,38 @@ export function calibrationFromEllipse(
 }
 
 /**
- * La escala a partir de un aro puesto a mano.
+ * La escala a partir de dos clics: el borde de ARRIBA y el de ABAJO del disco.
  *
- * Se trata como un círculo perfecto porque no hay más información: el usuario
- * ha ajustado un radio, no una elipse. Eso significa que hereda el error del
- * ángulo de cámara que el método de la elipse evita, y por eso `quality.ts` lo
- * penaliza. No se elimina la opción: cuando la detección falla, un número con
- * su salvedad escrita vale más que ningún número.
+ * ES EL MEJOR MÉTODO MANUAL QUE HAY, y no por casualidad: mide directamente la
+ * única magnitud de la que sale la escala. Con un aro circular el usuario tiene
+ * que elegir entre ajustarlo al ancho o al alto —y con la cámara girada esas
+ * dos cosas no coinciden—, así que acaba en un compromiso que falsea la escala
+ * sin que nada lo delate. Aquí no hay compromiso posible: se marca arriba y
+ * abajo, y eso es exactamente lo que se usa.
+ *
+ *
+ * SE TOMA |Δy|, NO LA DISTANCIA ENTRE LOS DOS PUNTOS
+ *
+ * Esto estaba mal y no se había notado porque nadie llamaba a esta función.
+ * Usaba `Math.hypot`, o sea la distancia completa, y eso **sobrestima la
+ * extensión vertical siempre que los dos clics no queden perfectamente
+ * alineados**: 12 px de desvío horizontal sobre 200 de alto ya son un 0,2%, y
+ * con la elipse girada los extremos de arriba y de abajo NO están en la misma
+ * vertical, así que el desvío es inevitable y crece con el giro.
+ *
+ * Con |Δy| pasa algo mejor todavía: el método se vuelve inmune a la precisión
+ * horizontal del usuario. Da igual que pinche un poco a la izquierda o a la
+ * derecha; lo único que tiene que acertar es la altura.
  */
-export function calibrationFromRing(
-    cx: number,
-    cy: number,
-    radiusPx: number,
-    plateDiameterM: number
-): Calibration {
-    const extent = radiusPx * 2;
-    return {
-        method: 'ring',
-        plateDiameterM,
-        verticalExtentPx: extent,
-        pixelToMeterRatio: extent > 0 ? plateDiameterM / extent : 0,
-        obliquityDeg: null,
-        detectionScore: null,
-        ellipse: { cx, cy, width: extent, height: extent, angleDeg: 0 },
-    };
-}
-
-/** La escala a partir de dos clics en los bordes del disco. */
 export function calibrationFromTwoPoints(
     p1: { x: number; y: number },
     p2: { x: number; y: number },
     plateDiameterM: number
 ): Calibration {
-    const extent = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    const extent = Math.abs(p2.y - p1.y);
+    const cx = (p1.x + p2.x) / 2;
+    const cy = (p1.y + p2.y) / 2;
+
     return {
         method: 'two_points',
         plateDiameterM,
@@ -233,7 +243,18 @@ export function calibrationFromTwoPoints(
         pixelToMeterRatio: extent > 0 ? plateDiameterM / extent : 0,
         obliquityDeg: null,
         detectionScore: null,
-        ellipse: null,
+        /**
+         * La elipse que se deduce, para que el seguimiento tenga dónde sembrar.
+         *
+         * `width` sale al 55% de la altura y no igual a ella A PROPÓSITO. Esta
+         * elipse no se usa para la escala —esa ya está medida— sino como MÁSCARA
+         * donde el seguidor busca esquinas. Suponerla circular en un disco
+         * girado pondría parte de la nube de puntos fuera del disco, sobre el
+         * fondo, y esos puntos no se mueven con la barra: arrastrarían el
+         * recorrido hacia cero. Un 55% cabe dentro del disco hasta unos 57° de
+         * giro, que es más de lo que aguanta el resto del método.
+         */
+        ellipse: { cx, cy, width: extent * 0.55, height: extent, angleDeg: 0 },
     };
 }
 

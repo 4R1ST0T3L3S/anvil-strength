@@ -13,7 +13,7 @@ import {
     COMPETITION_PLATE_M,
     PLATE_PRESETS,
     calibrationFromEllipse,
-    calibrationFromRing,
+    calibrationFromTwoPoints,
     withPlateDiameter,
     obliquityDeg,
 } from '../../../../lib/cv/plateGeometry';
@@ -97,7 +97,7 @@ type TrackerState =
     | 'detecting'
     | 'confirm'
     | 'tap'
-    | 'ring'
+    | 'span'
     | 'select_point'
     | 'ready'
     | 'tracking'
@@ -135,7 +135,19 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
      * método es que se pueda auditar después.
      */
     const [wasHinted, setWasHinted] = useState(false);
-    const [ring, setRing] = useState<{ x: number; y: number; r: number } | null>(null);
+    /**
+     * LA ESCALA A MANO: el borde de ARRIBA y el de ABAJO del disco.
+     *
+     * Sustituye al aro circular que había antes, y no es un cambio de estilo.
+     * La escala sale de la ALTURA del disco, así que con un aro el usuario
+     * tenía que elegir entre ajustarlo al ancho o al alto —y con la cámara
+     * girada no coinciden—, acabando en un compromiso que falsea la escala sin
+     * que nada lo delate. Marcando arriba y abajo se mide directamente lo que
+     * se usa, y da igual la precisión horizontal: solo cuenta la altura.
+     */
+    const [span, setSpan] = useState<{ top: { x: number; y: number }; bottom: { x: number; y: number } } | null>(null);
+    /** Qué tirador se está arrastrando ahora mismo. */
+    const [dragHandle, setDragHandle] = useState<'top' | 'bottom' | null>(null);
     const [plateDiameterM, setPlateDiameterM] = useState<number>(COMPETITION_PLATE_M);
 
     const [anchorPoint, setAnchorPoint] = useState<{ x: number; y: number } | null>(null);
@@ -174,9 +186,9 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
             );
             return withPlateDiameter(base, plateDiameterM);
         }
-        if (ring) return calibrationFromRing(ring.x, ring.y, ring.r, plateDiameterM);
+        if (span) return calibrationFromTwoPoints(span.top, span.bottom, plateDiameterM);
         return null;
-    }, [detection, ring, plateDiameterM, wasHinted]);
+    }, [detection, span, plateDiameterM, wasHinted]);
 
     // =================================================================
     // CICLO DE VIDA
@@ -292,7 +304,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
         setState('detecting');
         setWasHinted(false);
 
-        let best: PlateDetection = { ellipse: null, score: 0, method: null };
+        let best: PlateDetection = { ellipse: null, score: 0, method: null, coverage: null };
         const span = Math.max(0, trim.to - trim.from);
 
         for (const f of DETECT_AT_FRACTIONS) {
@@ -370,6 +382,68 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
         }
     }, [scale, trim.from]);
 
+    /** El punto de un evento de puntero, en píxeles del lienzo. */
+    const pointerPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return null;
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (e.clientX - rect.left) * (canvas.width / rect.width),
+            y: (e.clientY - rect.top) * (canvas.height / rect.height),
+        };
+    };
+
+    /**
+     * Coger un tirador, o rehacer el tramo de cero.
+     *
+     * Se agarra el tirador MÁS CERCANO en vertical y no el que esté a menos
+     * distancia en línea recta: los dos están en la misma columna, así que la
+     * distancia horizontal es la misma para ambos y solo añade ruido a la
+     * decisión. Lejos de los dos se empieza un tramo nuevo, que es lo que se
+     * quiere cuando el primer intento quedó en otro sitio.
+     */
+    const onSpanPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        if (state !== 'span') return;
+        const p = pointerPoint(e);
+        if (!p) return;
+        e.currentTarget.setPointerCapture(e.pointerId);
+
+        if (span) {
+            const dTop = Math.abs(p.y - span.top.y);
+            const dBottom = Math.abs(p.y - span.bottom.y);
+            const GRAB_PX = 30;
+            if (Math.min(dTop, dBottom) <= GRAB_PX) {
+                setDragHandle(dTop <= dBottom ? 'top' : 'bottom');
+                return;
+            }
+        }
+
+        // Tramo nuevo: el primer punto queda fijo y se arrastra el segundo.
+        setSpan({ top: { x: p.x, y: p.y }, bottom: { x: p.x, y: p.y } });
+        setDragHandle('bottom');
+    };
+
+    const onSpanPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        if (state !== 'span' || !dragHandle) return;
+        const p = pointerPoint(e);
+        if (!p) return;
+        setSpan(prev => (prev ? { ...prev, [dragHandle]: { x: p.x, y: p.y } } : prev));
+    };
+
+    const onSpanPointerUp = () => {
+        if (!dragHandle) return;
+        setDragHandle(null);
+        // Se ordenan al soltar: arrastrando hacia arriba desde el primer punto,
+        // el tirador "de abajo" acaba por encima del "de arriba". Sin esto los
+        // botones de afinar moverían el tirador contrario al que dicen.
+        setSpan(prev => {
+            if (!prev) return prev;
+            return prev.top.y <= prev.bottom.y
+                ? prev
+                : { top: prev.bottom, bottom: prev.top };
+        });
+    };
+
     const handleCanvasClick = async (e: React.MouseEvent<HTMLCanvasElement>) => {
         const p = canvasPoint(e);
         const canvas = canvasRef.current;
@@ -396,13 +470,12 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
             }
             // Tercer escalón. El radio de partida sigue siendo una suposición,
             // pero ahora se dice y se puede ajustar viendo el número que produce.
-            setRing({ x: p.x, y: p.y, r: Math.round(canvas.height * 0.1) });
-            setState('ring');
-            return;
-        }
-
-        if (state === 'ring') {
-            setRing(prev => (prev ? { ...prev, x: p.x, y: p.y } : { x: p.x, y: p.y, r: Math.round(canvas.height * 0.1) }));
+            // Tercer escalón: lo marca el usuario. Se propone un tramo
+            // vertical centrado en donde ha tocado, para que tenga algo que
+            // arrastrar en vez de una pantalla en blanco.
+            const half = Math.round(canvas.height * 0.1);
+            setSpan({ top: { x: p.x, y: p.y - half }, bottom: { x: p.x, y: p.y + half } });
+            setState('span');
             return;
         }
 
@@ -565,6 +638,64 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
     // PINTADO
     // =================================================================
 
+    /**
+     * El tramo vertical marcado a mano.
+     *
+     * Se dibuja la LÍNEA y sus dos topes, no un aro, porque lo que se está
+     * midiendo es una altura. Enseñar un círculo invitaba a ajustarlo también
+     * de ancho, que es de donde salía el error. La elipse deducida se insinúa
+     * en tenue solo para que se vea qué zona va a seguir el análisis.
+     */
+    const drawSpan = (
+        ctx: CanvasRenderingContext2D,
+        sp: { top: { x: number; y: number }; bottom: { x: number; y: number } },
+        grabbedHandle: 'top' | 'bottom' | null,
+    ) => {
+        const midX = (sp.top.x + sp.bottom.x) / 2;
+        const midY = (sp.top.y + sp.bottom.y) / 2;
+        const height = Math.abs(sp.bottom.y - sp.top.y);
+
+        // La zona donde se sembrará la nube de puntos.
+        ctx.beginPath();
+        ctx.ellipse(midX, midY, (height * 0.55) / 2, height / 2, 0, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // LA MEDIDA: la línea vertical entre los dos bordes. Se traza en la
+        // vertical del punto medio y no de tirador a tirador, porque lo que
+        // cuenta es |Δy| y verla inclinada sugeriría que el desvío horizontal
+        // importa —y no importa—.
+        ctx.beginPath();
+        ctx.moveTo(midX, sp.top.y);
+        ctx.lineTo(midX, sp.bottom.y);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        for (const [key, pt] of [['top', sp.top], ['bottom', sp.bottom]] as const) {
+            const grabbed = grabbedHandle === key;
+            // Tope horizontal: marca la altura sin sugerir un punto exacto,
+            // que es lo que hay que acertar.
+            ctx.beginPath();
+            ctx.moveTo(midX - 26, pt.y);
+            ctx.lineTo(midX + 26, pt.y);
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = grabbed ? 5 : 3;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(midX, pt.y, grabbed ? 12 : 9, 0, 2 * Math.PI);
+            ctx.fillStyle = grabbed ? '#fbbf24' : 'rgba(251, 191, 36, 0.85)';
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    };
+
     const drawEllipse = (ctx: CanvasRenderingContext2D, e: PlateEllipse, colour: string) => {
         ctx.beginPath();
         ctx.ellipse(e.cx, e.cy, e.width / 2, e.height / 2, (e.angleDeg * Math.PI) / 180, 0, 2 * Math.PI);
@@ -608,8 +739,8 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                 drawEllipse(ctx, detection.ellipse, '#00ffaa');
             }
 
-            if (!isResultMode && (state === 'ring' || state === 'select_point' || state === 'ready') && ring) {
-                drawEllipse(ctx, { cx: ring.x, cy: ring.y, width: ring.r * 2, height: ring.r * 2, angleDeg: 0 }, '#fbbf24');
+            if (!isResultMode && (state === 'span' || state === 'select_point' || state === 'ready') && span) {
+                drawSpan(ctx, span, state === 'span' ? dragHandle : null);
             }
 
             if (anchorPoint && state !== 'done') {
@@ -661,7 +792,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
             video.removeEventListener('seeked', onTime);
             video.removeEventListener('timeupdate', onTime);
         };
-    }, [state, anchorPoint, ring, detection, path, onTimeUpdate, isResultMode]);
+    }, [state, anchorPoint, span, dragHandle, detection, path, onTimeUpdate, isResultMode]);
 
     useEffect(() => {
         if (seekTime !== undefined && seekTime >= 0 && videoRef.current) {
@@ -697,7 +828,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
         setVideoReady(false);
         setDetection(null);
         setWasHinted(false);
-        setRing(null);
+        setSpan(null);
         setAnchorPoint(null);
         setPath([]);
         livePath.current = [];
@@ -718,7 +849,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
     const restartCalibration = () => {
         setDetection(null);
         setWasHinted(false);
-        setRing(null);
+        setSpan(null);
         setAnchorPoint(null);
         setPath([]);
         livePath.current = [];
@@ -729,7 +860,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
     const backToTrim = () => {
         setDetection(null);
         setWasHinted(false);
-        setRing(null);
+        setSpan(null);
         setAnchorPoint(null);
         setPath([]);
         livePath.current = [];
@@ -739,25 +870,44 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
 
     const retryAutoDetect = () => {
         setDetection(null);
-        setRing(null);
+        setSpan(null);
         setAnchorPoint(null);
         setPath([]);
         livePath.current = [];
         void autoDetect();
     };
 
-    const nudgeRing = (delta: number) => {
-        setRing(prev => (prev ? { ...prev, r: Math.max(12, prev.r + delta) } : prev));
+    /**
+     * Mueve un tirador un píxel.
+     *
+     * Existe porque arrastrar con el dedo en un móvil tiene una precisión de
+     * varios píxeles, y sobre un disco de 120 px de alto cada píxel es un 0,8%
+     * de error en TODAS las velocidades. Con los botones se puede afinar
+     * mirando el número de escala, que está escrito justo encima.
+     */
+    const nudgeHandle = (which: 'top' | 'bottom', dy: number) => {
+        setSpan(prev => {
+            if (!prev) return prev;
+            const moved = { ...prev[which], y: prev[which].y + dy };
+            const next = { ...prev, [which]: moved };
+            // No se deja cruzar un tirador con el otro: un tramo invertido o de
+            // altura cero daría una escala infinita, y aguas abajo eso son
+            // velocidades de miles de metros por segundo.
+            if (Math.abs(next.bottom.y - next.top.y) < 8) return prev;
+            return next;
+        });
     };
 
     /** Aceptar la escala y sembrar la nube sobre el centro del disco. */
     const acceptCalibration = () => {
         if (detection?.ellipse) {
             void armTracker(detection.ellipse.cx, detection.ellipse.cy, detection.ellipse);
-        } else if (ring) {
-            void armTracker(ring.x, ring.y, {
-                cx: ring.x, cy: ring.y, width: ring.r * 2, height: ring.r * 2, angleDeg: 0,
-            });
+        } else if (span && calibration?.ellipse) {
+            // La elipse deducida la construye `calibrationFromTwoPoints`, que
+            // la estrecha a propósito para que la nube de puntos no se siembre
+            // fuera del disco. Duplicar ese cálculo aquí sería la forma de que
+            // un día dejaran de coincidir.
+            void armTracker(calibration.ellipse.cx, calibration.ellipse.cy, calibration.ellipse);
         }
     };
 
@@ -806,7 +956,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
         detecting: { icon: <ScanSearch size={16} className="shrink-0 animate-pulse text-info" />, text: 'Buscando el disco…' },
         confirm: { icon: <Check size={16} className="shrink-0 text-success" />, text: 'Disco encontrado. ¿El contorno encaja?' },
         tap: { icon: <Crosshair size={16} className="shrink-0 text-warning" />, text: 'No lo encuentro: toca el disco' },
-        ring: { icon: <Target size={16} className="shrink-0 text-warning" />, text: 'Ajusta el aro al borde del disco' },
+        span: { icon: <Target size={16} className="shrink-0 text-warning" />, text: 'Marca el borde de arriba y el de abajo del disco' },
         select_point: { icon: <Target size={16} className="shrink-0 text-brand" />, text: 'Toca el punto que quieres seguir' },
         ready: { icon: <Play size={16} className="shrink-0 text-success" />, text: 'Listo para analizar' },
         done: { icon: <Check size={16} className="shrink-0 text-success" />, text: 'Análisis terminado' },
@@ -859,7 +1009,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         depende todo lo demás, y porque un usuario que ve
                         "1,48 mm/px" con el aro mal puesto tiene alguna
                         posibilidad de notarlo. Con el aro solo, ninguna. */}
-                    {calibration && (state === 'confirm' || state === 'ring' || state === 'select_point' || state === 'ready') && (
+                    {calibration && (state === 'confirm' || state === 'span' || state === 'select_point' || state === 'ready') && (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-field bg-surface-sunken px-2.5 py-2">
                             <span className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">Escala</span>
                             <span className="font-mono text-t-xs font-bold text-ink">{ratioLabel}</span>
@@ -899,6 +1049,24 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         </button>
                     )}
 
+                    {/* EL DISCO ESTÁ TAPADO A MEDIAS.
+                        Ajustar una elipse a un arco parcial sobrestima los ejes:
+                        medido en el banco, con una pierna tapando el 25% del
+                        disco la altura sale un +18%, o sea un −18% en todas las
+                        velocidades. No se bloquea —el usuario puede tener razón—
+                        pero se dice justo al lado del botón de aceptar, que es
+                        donde sirve de algo. Y se dice qué hacer: mover el
+                        recorte a un instante donde el disco se vea entero. */}
+                    {state === 'confirm' && detection?.coverage !== null
+                        && detection?.coverage !== undefined && detection.coverage < 0.8 && (
+                        <p className="rounded-field bg-warning/10 px-2.5 py-2 text-t-2xs leading-relaxed text-warning">
+                            Solo se ve el {Math.round(detection.coverage * 100)}% del borde del disco: algo lo
+                            tapa. La altura medida así se va fácilmente un 15-20% de más, y con ella todas las
+                            velocidades. Comprueba que la línea de puntos llega a los bordes de verdad, o mueve
+                            el recorte a un instante donde el disco se vea entero.
+                        </p>
+                    )}
+
                     {state === 'confirm' && (
                         <div className="flex flex-wrap items-center gap-2">
                             <button
@@ -922,23 +1090,58 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         </div>
                     )}
 
-                    {state === 'ring' && (
+                    {state === 'span' && (
                         <div className="flex flex-col gap-2">
-                            {/* La salvedad se escribe donde se toma la decisión,
-                                no en un pie de página que nadie lee. */}
+                            {/* La instrucción y la salvedad, donde se toma la
+                                decisión y no en un pie que nadie lee. */}
                             <p className="rounded-field bg-warning/10 px-2.5 py-2 text-t-2xs leading-relaxed text-warning">
-                                Escala puesta a mano: el análisis se marcará con menor fiabilidad.
-                                Ajusta el aro hasta que toque los bordes del disco por arriba y por abajo.
+                                Arrastra los dos topes al <strong className="font-bold">borde de arriba</strong> y
+                                al <strong className="font-bold">borde de abajo</strong> del disco. Solo importa la
+                                altura, no si quedan centrados. La escala puesta a mano marca el análisis con
+                                menor fiabilidad.
                             </p>
+
                             <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex overflow-hidden rounded-field border border-subtle bg-surface-overlay">
-                                    <button onClick={() => nudgeRing(-2)} className="h-11 w-11 text-t-base font-bold text-ink transition-colors duration-fast hover:bg-surface-sunken" aria-label="Reducir el aro">−</button>
-                                    <div className="w-px bg-[var(--border-subtle)]" />
-                                    <button onClick={() => nudgeRing(2)} className="h-11 w-11 text-t-base font-bold text-ink transition-colors duration-fast hover:bg-surface-sunken" aria-label="Aumentar el aro">+</button>
-                                </div>
+                                {/* Un par de botones por tope: en un móvil el
+                                    dedo tiene una precisión de varios píxeles, y
+                                    sobre un disco de 120 px cada píxel es un
+                                    0,8% en todas las velocidades. */}
+                                {(['top', 'bottom'] as const).map(which => (
+                                    <div key={which} className="flex items-center gap-1">
+                                        <span className="text-t-2xs font-semibold text-ink-subtle">
+                                            {which === 'top' ? 'Arriba' : 'Abajo'}
+                                        </span>
+                                        <div className="flex overflow-hidden rounded-field border border-subtle bg-surface-overlay">
+                                            <button
+                                                onClick={() => nudgeHandle(which, -1)}
+                                                className="h-11 w-9 text-t-sm font-bold text-ink transition-colors duration-fast hover:bg-surface-sunken"
+                                                aria-label={`Subir el tope de ${which === 'top' ? 'arriba' : 'abajo'}`}
+                                            >
+                                                ↑
+                                            </button>
+                                            <div className="w-px bg-[var(--border-subtle)]" />
+                                            <button
+                                                onClick={() => nudgeHandle(which, 1)}
+                                                className="h-11 w-9 text-t-sm font-bold text-ink transition-colors duration-fast hover:bg-surface-sunken"
+                                                aria-label={`Bajar el tope de ${which === 'top' ? 'arriba' : 'abajo'}`}
+                                            >
+                                                ↓
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
                                 <button
                                     onClick={acceptCalibration}
-                                    className="flex-1 rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-ink transition-transform duration-fast active:scale-95"
+                                    disabled={!span || Math.abs(span.bottom.y - span.top.y) < 20}
+                                    title={
+                                        !span || Math.abs(span.bottom.y - span.top.y) < 20
+                                            ? 'Marca primero los dos bordes del disco'
+                                            : undefined
+                                    }
+                                    className="flex-1 rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-ink transition-transform duration-fast active:scale-95 disabled:opacity-40"
                                 >
                                     Usar esta escala
                                 </button>
@@ -1051,8 +1254,12 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         <video ref={videoRef} src={videoUrl || undefined} className="hidden" muted playsInline preload="auto" onLoadedMetadata={handleVideoLoad} />
                         <canvas
                             ref={canvasRef}
-                            className={`max-h-full max-w-full object-contain ${state === 'tap' || state === 'ring' || state === 'select_point' ? 'cursor-crosshair' : ''}`}
+                            className={`max-h-full max-w-full object-contain ${state === 'tap' || state === 'select_point' ? 'cursor-crosshair' : ''}${state === 'span' ? 'cursor-ns-resize touch-none' : ''}`}
                             onClick={handleCanvasClick}
+                            onPointerDown={onSpanPointerDown}
+                            onPointerMove={onSpanPointerMove}
+                            onPointerUp={onSpanPointerUp}
+                            onPointerCancel={onSpanPointerUp}
                         />
                     </div>
 

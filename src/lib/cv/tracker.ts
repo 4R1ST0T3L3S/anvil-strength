@@ -50,6 +50,20 @@ export interface PlateDetection {
     /** Confianza, 0–1. */
     score: number;
     method: 'ellipse' | 'hough' | null;
+    /**
+     * Qué fracción del borde del disco se ve, de 0 a 1. `null` con Hough.
+     *
+     * Es lo ÚNICO que distingue un disco tapado a medias de uno entero, y un
+     * disco tapado se mide mal por construcción: ajustar una elipse a un arco
+     * parcial está mal condicionado y sobrestima los ejes. Medido en
+     * `scripts/verify/deteccion-disco.mjs`: con una pierna tapando el 25% del
+     * disco, la altura sale un +18%, o sea un −18% en todas las velocidades.
+     *
+     * La confianza NO sirve para detectarlo: en el barrido, casos tapados
+     * puntúan 0,49 y casos perfectos de disco grande y girado puntúan 0,51. Se
+     * solapan. La cobertura no.
+     */
+    coverage: number | null;
 }
 
 /** Resultado de sembrar la nube de puntos sobre el disco. */
@@ -247,11 +261,21 @@ export function detectPlate(
     hint: { x: number; y: number } | null
 ): Promise<PlateDetection> {
     const buffer = image.data.buffer.slice(0);
-    return request<{ ellipse: PlateEllipse | null; score: number; method: PlateDetection['method'] }>(
+    return request<{
+        ellipse: PlateEllipse | null;
+        score: number;
+        method: PlateDetection['method'];
+        coverage: number | null;
+    }>(
         'DETECT_PLATE',
         { buffer, width: image.width, height: image.height, hintX: hint?.x, hintY: hint?.y },
         [buffer]
-    ).then(r => ({ ellipse: r.ellipse ?? null, score: r.score ?? 0, method: r.method ?? null }));
+    ).then(r => ({
+        ellipse: r.ellipse ?? null,
+        score: r.score ?? 0,
+        method: r.method ?? null,
+        coverage: typeof r.coverage === 'number' ? r.coverage : null,
+    }));
 }
 
 /**
