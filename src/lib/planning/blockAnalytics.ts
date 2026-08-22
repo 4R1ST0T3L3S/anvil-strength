@@ -333,9 +333,14 @@ export interface BlockAnalytics {
     /** Frecuencia media semanal de cada patrón (veces que se toca por semana). */
     frequencyPerWeek: Record<MovementPattern, number>;
     setsByZone: Record<IntensityZoneKey, number>;
+    /**
+     * El 1RM con el que se ha calculado cada %1RM, CON su procedencia.
+     *
+     * La interfaz nombra los que están estimados (`source: 'block'`): un
+     * porcentaje sobre un máximo declarado se puede comparar entre bloques
+     * y uno sobre un máximo derivado del propio bloque no.
+     */
     referenceMaxes: ExerciseMax[];
-    /** true si algún %1RM se calculó sobre una referencia derivada del bloque. */
-    usesBlockDerivedMaxes: boolean;
     issues: BlockIssue[];
     /** Semanas detectadas como descarga. Ver `detectDeloads`. */
     deloadWeeks: number[];
@@ -549,7 +554,6 @@ export function analyzeBlock(
         frequencyPerWeek,
         setsByZone: totalZones,
         referenceMaxes,
-        usesBlockDerivedMaxes: referenceMaxes.some((m) => m.source === 'block'),
         issues: dedupeIssues(issues),
         deloadWeeks,
     };

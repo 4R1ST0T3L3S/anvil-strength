@@ -464,21 +464,59 @@ function IntensityBreakdown({ analytics }: { analytics: BlockAnalytics }) {
                         })}
                     </ul>
 
-                    {/* La procedencia del %1RM cambia lo que la cifra significa, así
-                        que se declara siempre en vez de esconderse en una ayuda. */}
-                    {analytics.usesBlockDerivedMaxes && (
-                        <p className="mt-4 flex items-start gap-2 rounded-field bg-surface-sunken px-2.5 py-2 text-t-xs text-ink-subtle">
-                            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                            <span>
-                                Sin 1RM registrados, los porcentajes se calculan sobre la carga
-                                más alta del propio bloque. Sirven para leer la intensidad
-                                relativa dentro de este bloque, no para compararla con otro.
-                            </span>
-                        </p>
-                    )}
+                    <MaxProvenanceNote analytics={analytics} />
                 </>
             )}
         </section>
+    );
+}
+
+// ---------------------------------------------------------------------
+// Procedencia del 1RM de referencia
+// ---------------------------------------------------------------------
+
+/**
+ * DE DÓNDE SALE CADA %1RM, EJERCICIO POR EJERCICIO.
+ *
+ * Un porcentaje calculado sobre un 1RM DECLARADO por el atleta se puede
+ * comparar con el de cualquier otro bloque. Uno calculado sobre la carga más
+ * alta del propio bloque —porque no hay 1RM registrado— solo sirve para leer
+ * la forma de ESTE bloque: si el atleta mejora, la referencia sube con él y
+ * el porcentaje se queda clavado. Son dos cifras distintas con el mismo
+ * símbolo detrás, y el coach tiene que saber cuál está mirando antes de
+ * sacar conclusiones.
+ *
+ * Antes esto era un aviso de todo o nada: bastaba con que UN ejercicio del
+ * bloque no tuviera 1RM para que el panel pusiera en duda los porcentajes de
+ * los otros siete. Y como el planificador no le pasaba los máximos
+ * declarados al análisis, saltaba SIEMPRE — incluso con todos los 1RM del
+ * atleta registrados. Ahora se nombran los que de verdad están estimados.
+ */
+function MaxProvenanceNote({ analytics }: { analytics: BlockAnalytics }) {
+    const inferred = analytics.referenceMaxes
+        .filter((m) => m.source === 'block')
+        .map((m) => m.exercise)
+        .sort((a, b) => a.localeCompare(b, 'es'));
+
+    if (inferred.length === 0) return null;
+
+    // Una lista de veinte nombres deja de leerse. Se nombran los primeros y
+    // se cuenta el resto.
+    const MAX_NAMES = 6;
+    const shown = inferred.slice(0, MAX_NAMES);
+    const rest = inferred.length - shown.length;
+
+    return (
+        <p className="mt-4 flex items-start gap-2 rounded-field bg-surface-sunken px-2.5 py-2 text-t-xs text-ink-subtle">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>
+                <span className="text-ink">{shown.join(', ')}</span>
+                {rest > 0 && <> y {rest} más</>}
+                {inferred.length === 1 ? ' no tiene' : ' no tienen'} 1RM registrado: su
+                porcentaje sale de la carga más alta del propio bloque. Sirve para leer la
+                intensidad dentro de este bloque, no para compararla con otro.
+            </span>
+        </p>
     );
 }
 

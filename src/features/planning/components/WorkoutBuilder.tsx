@@ -1504,9 +1504,26 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     // Cifras por semana para la cabecera del acordeón. Se calculan aquí y no
     // dentro de cada fila para no repetir el recorrido completo del bloque por
     // cada semana pintada.
+    /**
+     * Los 1RM que el atleta tiene REGISTRADOS, en el formato que espera el
+     * análisis.
+     *
+     * Sin esto, `buildReferenceMaxes` no ve ni un solo máximo declarado y
+     * marca TODOS los porcentajes como derivados del bloque (`MaxSource`
+     * = 'block'): el resumen avisaba de que los %1RM eran orientativos
+     * incluso cuando el atleta tenía sus máximos puestos, y la distinción
+     * —que existe justo para que el coach sepa cuándo puede comparar entre
+     * bloques y cuándo no— no llegaba nunca a la pantalla.
+     */
+    const declaredMaxes = useMemo(() => {
+        const out: Record<string, number> = {};
+        for (const m of maxes.values()) out[m.exercise_name] = m.one_rm;
+        return out;
+    }, [maxes]);
+
     const blockAnalytics = useMemo(
-        () => analyzeBlock(blockVolumeSessions),
-        [blockVolumeSessions]
+        () => analyzeBlock(blockVolumeSessions, { declaredMaxes }),
+        [blockVolumeSessions, declaredMaxes]
     );
     const weekStats = useMemo(
         () => new Map(blockAnalytics.weeks.map(w => [w.week, w])),
@@ -1796,6 +1813,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                     <BlockOverviewPanel
                         sessions={blockVolumeSessions}
                         weekNames={weekNames}
+                        declaredMaxes={declaredMaxes}
                     />
                 </div>
             )}
