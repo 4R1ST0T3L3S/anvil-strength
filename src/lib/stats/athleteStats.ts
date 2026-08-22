@@ -19,7 +19,6 @@
 
 import type { ExerciseHistoryRow } from '../../services/trainingService';
 import type { TrainingSet } from '../../types/training';
-import type { FormResponse } from '../../services/formsService';
 import { estimate1RM } from '../training/oneRm';
 
 // =====================================================================
@@ -914,60 +913,11 @@ export function consistencyByDay(history: ExerciseHistoryRow[]): ConsistencyDay[
 // =====================================================================
 // CUESTIONARIOS
 // =====================================================================
-
-export interface CheckInPoint {
-    periodKey: string;
-    label: string;
-    [question: string]: number | string | null;
-}
-
-export interface CheckInSummary {
-    /** Serie temporal con una clave por pregunta de escala o numérica. */
-    points: CheckInPoint[];
-    /** Etiquetas de las preguntas representables, en orden de aparición. */
-    questions: { id: string; label: string }[];
-    /** Últimos comentarios en texto libre, del más reciente al más antiguo. */
-    comments: { periodKey: string; text: string }[];
-    responseCount: number;
-}
-
-/**
- * Convierte las respuestas de los cuestionarios en algo graficable.
- *
- * Solo se representan las preguntas de tipo `scale` y `number`: el texto
- * libre no va a una gráfica, pero tampoco se tira — se lista aparte, porque
- * suele ser donde el atleta cuenta lo que de verdad pasó esa semana.
- */
-export function summarizeCheckIns(responses: FormResponse[]): CheckInSummary {
-    const questions = new Map<string, string>();
-    const comments: { periodKey: string; text: string }[] = [];
-
-    const points = [...responses]
-        .sort((a, b) => a.period_key.localeCompare(b.period_key))
-        .map((r) => {
-            const point: CheckInPoint = { periodKey: r.period_key, label: r.period_key };
-
-            for (const answer of r.answers ?? []) {
-                if (answer.qtype === 'text') {
-                    const text = String(answer.value ?? '').trim();
-                    if (text) comments.push({ periodKey: r.period_key, text });
-                    continue;
-                }
-
-                const value = parseNum(answer.value);
-                if (value === null) continue;
-
-                questions.set(answer.id, answer.label);
-                point[answer.id] = value;
-            }
-
-            return point;
-        });
-
-    return {
-        points,
-        questions: [...questions.entries()].map(([id, label]) => ({ id, label })),
-        comments: comments.reverse().slice(0, 8),
-        responseCount: responses.length,
-    };
-}
+//
+// `summarizeCheckIns` vivía aquí y se ha mudado a
+// `src/lib/forms/checkInStats.ts` junto al registro de ejes.
+//
+// No es un movimiento de orden: la versión de aquí metía los cuestionarios
+// DIARIOS y los SEMANALES en la misma serie y les ponía un solo eje Y, así
+// que el eje X no significaba nada y "pasos" aplastaba a "sueño". Ver la
+// cabecera de ese fichero y la decisión K9.

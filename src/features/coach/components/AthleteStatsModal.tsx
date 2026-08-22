@@ -6,16 +6,18 @@ import {
     ComposedChart, Bar, BarChart, Cell,
 } from 'recharts';
 import { trainingService, ExerciseHistoryRow } from '../../../services/trainingService';
-import { formsService, FormResponse } from '../../../services/formsService';
+import { formsService, FormResponse, type FormType } from '../../../services/formsService';
 import { Macrocycle } from '../../../types/training';
 import { AthleteVolumeTab } from './AthleteVolumeTab';
 import { ConsistencyCalendar } from './ConsistencyCalendar';
 import { cn } from '../../../lib/utils';
+import { SERIES_COLORS } from '../../../lib/charts/palette';
 import {
-    summarize, weeklySeries, compareExercises, velocityProfile, summarizeCheckIns,
+    summarize, weeklySeries, compareExercises, velocityProfile,
     adherenceSeries, intensityDistribution, consistencyByDay, plannedVsActualWeekly,
     kgOf, repsOf, rpeOf, repsKey, parseNum,
 } from '../../../lib/stats/athleteStats';
+import { summarizeCheckIns, type CheckInSummary } from '../../../lib/forms/checkInStats';
 
 type StatsTab = 'general' | 'adherence' | 'exercises' | 'compare' | 'velocity' | 'volume';
 
@@ -33,15 +35,6 @@ interface AthleteStatsModalProps {
     embedded?: boolean;
 }
 
-// Paleta de las gráficas. Sale de los tokens para que no haya un segundo
-// juego de colores viviendo dentro de recharts. Ver src/styles/tokens.css.
-const SERIES_COLORS = [
-    'var(--brand)',
-    'var(--info)',
-    'var(--success)',
-    'var(--warning)',
-    'var(--effort-high)',
-];
 
 const AXIS = { fill: 'var(--ink-subtle)', fontSize: 11 };
 const GRID = 'var(--border-subtle)';
@@ -95,6 +88,8 @@ function Empty({ children }: { children: React.ReactNode }) {
 export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, embedded = false }: AthleteStatsModalProps) {
     const [history, setHistory] = useState<ExerciseHistoryRow[]>([]);
     const [checkIns, setCheckIns] = useState<FormResponse[]>([]);
+    /** Diario o semanal. Son dos granularidades y NO comparten gráfica (K9). */
+    const [checkInType, setCheckInType] = useState<FormType>('daily');
     const [loading, setLoading] = useState(true);
     const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
     const [compareWith, setCompareWith] = useState<string[]>([]);
@@ -117,7 +112,16 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
         // Los macrociclos y los cuestionarios son accesorios: si fallan, el
         // resto de las estadísticas siguen viéndose.
         trainingService.getMacrosByAthlete(athleteId).then(setMacros).catch(() => setMacros([]));
-        formsService.getResponsesByAthlete(athleteId).then(setCheckIns).catch(() => setCheckIns([]));
+        // Los DOS tipos, cada uno con su propio cupo. Pedirlos juntos con un
+        // solo `limit` hacía que un atleta que rellena el diario a diario se
+        // comiera las 60 respuestas con dos meses de diarios y sus
+        // cuestionarios SEMANALES no llegaran nunca a la gráfica.
+        Promise.all([
+            formsService.getResponsesByAthlete(athleteId, 'daily'),
+            formsService.getResponsesByAthlete(athleteId, 'weekly'),
+        ])
+            .then(([daily, weekly]) => setCheckIns([...daily, ...weekly]))
+            .catch(() => setCheckIns([]));
     }, [isOpen, athleteId]);
 
     useEffect(() => {
@@ -167,7 +171,12 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
     const summary = useMemo(() => summarize(history), [history]);
     const weekly = useMemo(() => weeklySeries(history), [history]);
     const plannedVsActual = useMemo(() => plannedVsActualWeekly(history), [history]);
-    const checkInData = useMemo(() => summarizeCheckIns(checkIns), [checkIns]);
+    const checkInData = useMemo(() => summarizeCheckIns(checkIns, checkInType), [checkIns, checkInType]);
+    /** Cuántas hay de cada tipo, para poder decirlo en el selector. */
+    const checkInCounts = useMemo(() => ({
+        daily: checkIns.filter(r => r.type === 'daily').length,
+        weekly: checkIns.filter(r => r.type === 'weekly').length,
+    }), [checkIns]);
     const adherence = useMemo(() => adherenceSeries(history), [history]);
     const intensity = useMemo(() => intensityDistribution(history), [history]);
     const consistency = useMemo(() => consistencyByDay(history), [history]);
@@ -515,58 +524,12 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                                 </ChartCard>
 
                                 {/* CUESTIONARIOS ------------------------------- */}
-                                <ChartCard
-                                    title="Cuestionarios"
-                                    subtitle={
-                                        checkInData.responseCount === 0
-                                            ? 'Todavía no ha respondido ninguno.'
-                                            : `${checkInData.responseCount} respuestas. Sueño, dolor, estrés y sensaciones puestos junto a la carga.`
-                                    }
-                                >
-                                    {checkInData.points.length < 2 ? (
-                                        <Empty>Hacen falta al menos dos cuestionarios respondidos.</Empty>
-                                    ) : (
-                                        <>
-                                            <div className="h-64">
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <LineChart data={checkInData.points} margin={{ top: 5, right: 8, left: -12, bottom: 5 }}>
-                                                        <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-                                                        <XAxis dataKey="label" tick={AXIS} />
-                                                        <YAxis tick={AXIS} />
-                                                        <Tooltip contentStyle={TOOLTIP_STYLE} />
-                                                        <Legend wrapperStyle={{ fontSize: 12 }} />
-                                                        {checkInData.questions.map((q, i) => (
-                                                            <Line
-                                                                key={q.id}
-                                                                type="monotone"
-                                                                dataKey={q.id}
-                                                                name={q.label}
-                                                                stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
-                                                                strokeWidth={2}
-                                                                dot={{ r: 2.5 }}
-                                                                connectNulls
-                                                            />
-                                                        ))}
-                                                    </LineChart>
-                                                </ResponsiveContainer>
-                                            </div>
-
-                                            {checkInData.comments.length > 0 && (
-                                                <div className="mt-6 space-y-3 border-t border-subtle pt-5">
-                                                    <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                                                        Lo que ha contado
-                                                    </p>
-                                                    {checkInData.comments.map((c, i) => (
-                                                        <p key={i} className="text-t-sm leading-relaxed text-ink-muted">
-                                                            <span className="mr-2 font-mono text-t-xs text-ink-faint">{c.periodKey}</span>
-                                                            {c.text}
-                                                        </p>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </ChartCard>
+                                <CheckInsCard
+                                    data={checkInData}
+                                    type={checkInType}
+                                    counts={checkInCounts}
+                                    onTypeChange={setCheckInType}
+                                />
                             </div>
                         )}
 
@@ -864,5 +827,144 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                 </div>
             )}
         </div>
+    );
+}
+
+// =====================================================================
+// CUESTIONARIOS
+// =====================================================================
+
+/**
+ * DOS GRANULARIDADES Y UNA GRÁFICA POR FAMILIA DE ESCALA (decisión K9).
+ *
+ * Antes esto era UNA sola gráfica con todo dentro, y fallaba por dos sitios
+ * a la vez:
+ *
+ *   · Diarios y semanales compartían serie. Como '2026-08-02' ordena antes
+ *     que '2026-W31' por orden alfabético, salían primero todos los días del
+ *     año y después todas las semanas, seguidos: el eje X no significaba
+ *     nada.
+ *   · Un solo eje Y. "Media de pasos" (~9.000) estiraba la escala y dejaba
+ *     el sueño, el dolor y el estrés aplastados contra el suelo.
+ *
+ * Ahora la granularidad la elige quien mira, y cada familia de escala tiene
+ * su propia gráfica con su propio eje. Ver `src/lib/forms/axes.ts`.
+ */
+function CheckInsCard({
+    data,
+    type,
+    counts,
+    onTypeChange,
+}: {
+    data: CheckInSummary;
+    type: FormType;
+    counts: { daily: number; weekly: number };
+    onTypeChange: (t: FormType) => void;
+}) {
+    const OPTIONS: { value: FormType; label: string }[] = [
+        { value: 'daily', label: 'Diario' },
+        { value: 'weekly', label: 'Semanal' },
+    ];
+
+    return (
+        <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <h3 className="text-t-base font-bold text-ink">Cuestionarios</h3>
+                    <p className="mt-1 text-t-xs text-ink-subtle">
+                        {data.responseCount === 0
+                            ? `Todavía no ha respondido ningún cuestionario ${type === 'daily' ? 'diario' : 'semanal'}.`
+                            : `${data.responseCount} respuestas. Cada familia de escala va en su propia gráfica: comparten eje solo las que se pueden comparar.`}
+                    </p>
+                </div>
+
+                {/* El selector se enseña SIEMPRE, aunque un tipo esté vacío:
+                    esconderlo dejaría al coach sin forma de descubrir que el
+                    otro cuestionario existe. */}
+                <div role="tablist" aria-label="Granularidad" className="flex shrink-0 gap-1 rounded-field bg-surface-sunken p-1">
+                    {OPTIONS.map(o => (
+                        <button
+                            key={o.value}
+                            role="tab"
+                            aria-selected={type === o.value}
+                            onClick={() => onTypeChange(o.value)}
+                            className={cn(
+                                'rounded-field px-3 py-1.5 text-t-xs font-semibold transition-colors duration-fast',
+                                type === o.value
+                                    ? 'bg-surface-raised text-ink shadow-sm'
+                                    : 'text-ink-subtle hover:text-ink'
+                            )}
+                        >
+                            {o.label}
+                            <span className="ml-1.5 tabular-nums text-ink-faint">{counts[o.value]}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="mt-5">
+                {data.points.length < 2 ? (
+                    <Empty>
+                        Hacen falta al menos dos cuestionarios {type === 'daily' ? 'diarios' : 'semanales'} respondidos.
+                    </Empty>
+                ) : (
+                    <div className="space-y-6">
+                        {data.groups.map(group => (
+                            <div key={group.key}>
+                                <p className="text-t-xs font-semibold text-ink">{group.label}</p>
+                                <p className="mt-0.5 text-t-2xs text-ink-faint">{group.description}</p>
+                                <div className="mt-3 h-56">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={data.points} margin={{ top: 5, right: 8, left: -12, bottom: 5 }}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                                            <XAxis dataKey="label" tick={AXIS} />
+                                            <YAxis
+                                                tick={AXIS}
+                                                domain={group.domain ?? ['auto', 'auto']}
+                                                unit={group.unit ?? undefined}
+                                                allowDecimals={group.axis !== 'count'}
+                                            />
+                                            <Tooltip
+                                                contentStyle={TOOLTIP_STYLE}
+                                                labelFormatter={(label, payload) =>
+                                                    (payload?.[0]?.payload?.fullLabel as string) ?? label
+                                                }
+                                            />
+                                            <Legend wrapperStyle={{ fontSize: 12 }} />
+                                            {group.series.map(serie => (
+                                                <Line
+                                                    key={serie.id}
+                                                    type="monotone"
+                                                    dataKey={serie.id}
+                                                    name={serie.label}
+                                                    stroke={serie.color}
+                                                    strokeWidth={2}
+                                                    dot={{ r: 2.5 }}
+                                                    connectNulls
+                                                />
+                                            ))}
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        ))}
+
+                        {data.comments.length > 0 && (
+                            <div className="space-y-3 border-t border-subtle pt-5">
+                                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                    Lo que ha contado
+                                </p>
+                                {data.comments.map((c, i) => (
+                                    <p key={`${c.periodKey}-${i}`} className="text-t-sm leading-relaxed text-ink-muted">
+                                        <span className="mr-2 font-mono text-t-xs text-ink-faint">{c.label}</span>
+                                        {c.text}
+                                    </p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </section>
     );
 }

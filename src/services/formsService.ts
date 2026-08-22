@@ -1,6 +1,12 @@
 import { supabase } from '../lib/supabase';
+import type { FormType } from '../lib/forms/period';
 
-export type FormType = 'daily' | 'weekly';
+// Las funciones de periodo son puras y viven en `src/lib/forms/period.ts`
+// para que el codigo de calculo pueda usarlas sin arrastrar el cliente de
+// Supabase. Se reexportan para no obligar a nadie a cambiar el import.
+export type { FormType } from '../lib/forms/period';
+export { getPeriodKey, periodLabel, shortPeriodLabel } from '../lib/forms/period';
+
 export type QuestionType = 'scale' | 'number' | 'text';
 
 export interface FormQuestion {
@@ -16,6 +22,35 @@ export interface FormQuestion {
         minLabel?: string;
         maxLabel?: string;
     };
+
+    // -----------------------------------------------------------------
+    // FAMILIA DE ESCALA (decisión K9)
+    // -----------------------------------------------------------------
+    // Todo esto vive en `form_templates.questions`, que ya es JSONB: NO hay
+    // migración. Una plantilla guardada antes de que existieran estos campos
+    // sigue funcionando — se clasifica con la heurística de
+    // `src/lib/forms/axes.ts` y el resultado se escribe la primera vez que el
+    // coach abre el editor.
+
+    /**
+     * A qué eje pertenece la respuesta. Determina en QUÉ gráfica se pinta.
+     *
+     * Sin esto, "pasos" (~9.000) y "sueño" (0-10) compartían eje Y y el
+     * segundo quedaba aplastado contra el suelo. Ver `FormAxis`.
+     */
+    axis?: 'scale10' | 'count' | 'mass' | 'duration' | 'percent' | 'custom';
+    /** Lo que se escribe detrás del número: 'kg', 'pasos', 'h', '%'. */
+    unit?: string;
+    /** Rango fijo del eje Y para ESTA pregunta. Gana al de su familia. */
+    domain?: [number, number];
+    /**
+     * "Más alto es peor" — dormir mal puntúa 3, no 8.
+     *
+     * COLOREA EL PUNTO, NO INVIERTE EL EJE. Invertir el eje haría que dos
+     * gráficas de la misma pantalla se leyeran en direcciones contrarias, que
+     * es peor que el problema que resuelve.
+     */
+    invertPolarity?: boolean;
 }
 
 export interface FormAnswer extends FormQuestion {
@@ -52,31 +87,6 @@ export const DEFAULT_WEEKLY_QUESTIONS: FormQuestion[] = [
     { id: 'comment', label: '¿Algo más que quieras comentar?', qtype: 'text' },
 ];
 
-/** Clave de periodo: diario = fecha de hoy, semanal = año-semana ISO. */
-export function getPeriodKey(type: FormType, date = new Date()): string {
-    if (type === 'daily') {
-        return date.toISOString().split('T')[0];
-    }
-    // Semana ISO
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const week = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-    return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
-}
-
-/** Texto legible de un periodo: '2026-08-02' → 'domingo, 2 de agosto'; '2026-W31' → 'Semana 31 · 2026'. */
-export function periodLabel(type: FormType, periodKey: string): string {
-    if (type === 'daily') {
-        const d = new Date(`${periodKey}T00:00:00`);
-        if (Number.isNaN(d.getTime())) return periodKey;
-        return d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-    }
-    const [year, week] = periodKey.split('-W');
-    return week ? `Semana ${week} · ${year}` : periodKey;
-}
-
 /**
  * Preguntas a mostrar al editar una respuesta: las de la plantilla actual del coach,
  * más las que solo existan en la respuesta guardada (preguntas antiguas ya retiradas
@@ -84,9 +94,13 @@ export function periodLabel(type: FormType, periodKey: string): string {
  */
 export function mergeQuestions(template: FormQuestion[], answers: FormAnswer[] = []): FormQuestion[] {
     const inTemplate = new Set(template.map(q => q.id));
+    // El `value` es lo ÚNICO que se quita: `FormAnswer` es una `FormQuestion`
+    // con la respuesta dentro, y enumerar campos a mano aquí significaba que
+    // cada campo nuevo de `FormQuestion` se perdía en silencio al reabrir una
+    // respuesta antigua. Pasó con `axis`, `unit` y `domain`.
     const legacy = answers
         .filter(a => !inTemplate.has(a.id))
-        .map(({ id, label, qtype, help, scale }) => ({ id, label, qtype, help, scale }));
+        .map(({ value: _value, ...question }) => question as FormQuestion);
     return [...template, ...legacy];
 }
 

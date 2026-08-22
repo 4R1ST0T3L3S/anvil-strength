@@ -6,6 +6,9 @@ import {
     DEFAULT_DAILY_QUESTIONS, DEFAULT_WEEKLY_QUESTIONS,
     getPeriodKey, periodLabel, mergeQuestions
 } from '../../services/formsService';
+import {
+    withResolvedAxes, resolveAxis, SELECTABLE_AXES, AXIS_DEFINITIONS, type FormAxis,
+} from '../../lib/forms/axes';
 import { CheckInAnswerFields, AnswerValues } from './CheckInAnswerFields';
 import { ConfirmationModal } from '../../components/modals/ConfirmationModal';
 
@@ -354,8 +357,13 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
             formsService.getTemplate(coachId, type),
             formsService.getIntro(coachId, type),
         ])
-            .then(([qs, i]) => { setQuestions(qs); setIntro(i ?? ''); })
-            .catch(() => setQuestions(type === 'daily' ? DEFAULT_DAILY_QUESTIONS : DEFAULT_WEEKLY_QUESTIONS))
+            // `withResolvedAxes` escribe el eje que la heurística deduce en las
+            // preguntas que todavía no lo llevan (decisión K9). A partir de
+            // aquí es un dato editable y no una adivinanza que se rehace en
+            // cada pintado: el coach lo ve, lo puede corregir, y su
+            // corrección no se la pisa nadie.
+            .then(([qs, i]) => { setQuestions(withResolvedAxes(qs)); setIntro(i ?? ''); })
+            .catch(() => setQuestions(withResolvedAxes(type === 'daily' ? DEFAULT_DAILY_QUESTIONS : DEFAULT_WEEKLY_QUESTIONS)))
             .finally(() => setLoading(false));
     }, [coachId, type]);
 
@@ -364,7 +372,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
     };
 
     const addQuestion = () => {
-        setQuestions(prev => [...prev, { id: `custom_${prev.length}_${prev.map(q => q.id).join('').length}`, label: '', qtype: 'scale' }]);
+        setQuestions(prev => [...prev, { id: `custom_${prev.length}_${prev.map(q => q.id).join('').length}`, label: '', qtype: 'scale', axis: 'scale10' }]);
     };
 
     const removeQuestion = (i: number) => {
@@ -474,6 +482,33 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         maxLength={160}
                                         className="w-full bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50 transition-colors"
                                     />
+                                    {/* EN QUÉ GRÁFICA SE PINTA (K9).
+                                        Dos preguntas solo comparten eje Y si
+                                        comparten familia de escala: sin esto,
+                                        "pasos" (~9.000) aplastaba a "sueño"
+                                        (0-10) contra el suelo. */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                            Gráfica
+                                        </span>
+                                        <select
+                                            value={q.axis ?? resolveAxis(q)}
+                                            onChange={(e) => updateQuestion(i, { axis: e.target.value as FormAxis })}
+                                            className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                        >
+                                            {SELECTABLE_AXES.map(a => (
+                                                <option key={a} value={a}>{AXIS_DEFINITIONS[a].label}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="text"
+                                            value={q.unit ?? ''}
+                                            onChange={(e) => updateQuestion(i, { unit: e.target.value || undefined })}
+                                            placeholder="Unidad"
+                                            maxLength={12}
+                                            className="w-24 shrink-0 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                        />
+                                    </div>
                                     {q.qtype === 'scale' && (
                                         <div className="flex gap-2">
                                             <input
