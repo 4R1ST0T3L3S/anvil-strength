@@ -125,51 +125,6 @@ export const invitesService = {
         return `${window.location.origin}/invitacion/${code}`;
     },
 
-    /**
-     * Saca a un atleta del equipo.
-     *
-     * NO BORRA NADA MÁS. Ni la cuenta del atleta, ni sus bloques, ni su
-     * historial: el entrenamiento que ha hecho es suyo, no del coach, y un
-     * "eliminar" que arrasara con años de registros sería catastrófico e
-     * irreparable. Lo único que se deshace es el VÍNCULO.
-     *
-     * Consecuencia práctica: el atleta deja de aparecer en la lista, en el
-     * chat y en el panel de atención del coach, y deja de ver a ese
-     * entrenador en su propio panel. Si vuelve a entrar por una invitación,
-     * recupera todo tal y como estaba.
-     *
-     * SOLO SE BORRA LA FILA DE `coach_athletes`. El otro lado del vínculo
-     * —`profiles.coach_id`— lo limpia un disparador en la base de datos
-     * (`clear_profile_on_unlink`, en database/fix_coach_athlete_link.sql).
-     *
-     * No es una cuestión de gusto: el coach NO PUEDE escribir en el perfil de
-     * su atleta. La única política de UPDATE sobre `profiles` es
-     * `profiles_update_self` (`id = auth.uid()`). Y cuando la RLS filtra un
-     * UPDATE, PostgREST no da error: devuelve cero filas. Hacerlo desde aquí
-     * habría dicho "sacado del equipo" mientras el atleta seguía viendo a ese
-     * entrenador en su panel.
-     *
-     * La alternativa era darle al coach permiso de escritura sobre los
-     * perfiles de sus atletas, pero eso abre el perfil ENTERO —marcas,
-     * categoría, biografía, acceso— para arreglar un solo campo.
-     */
-    async unlinkAthlete(coachId: string, athleteId: string): Promise<void> {
-        const { error, data } = await supabase
-            .from('coach_athletes')
-            .delete()
-            .eq('coach_id', coachId)
-            .eq('athlete_id', athleteId)
-            .select();
-
-        if (error) throw error;
-
-        // Cero filas con la RLS de por medio significa "no tenías permiso" o
-        // "ese vínculo ya no existía". En los dos casos hay que decirlo: si no,
-        // la tarjeta desaparece de la lista y vuelve en la siguiente carga.
-        if (!data || data.length === 0) {
-            throw new Error('No se pudo quitar el vínculo. Recarga la página e inténtalo otra vez.');
-        }
-    },
 
     // -----------------------------------------------------------------
     // Lado de quien recibe la invitación
