@@ -2321,10 +2321,20 @@ export const trainingService = {
      * tarjeta — por la misma razón de siempre: N consultas por pantalla no
      * escala y en móvil se nota.
      *
-     * Limita a los últimos 2 bloques, igual que `getExerciseHistoryByAthlete`:
-     * cubre el mesociclo en curso y el anterior, que es donde de verdad se
+     * VENTANA DE 2 BLOQUES, Y AQUÍ SÍ ES DELIBERADA.
+     *
+     * Cubre el mesociclo en curso y el anterior, que es donde de verdad se
      * busca "la última vez". Un ejercicio que no aparece ahí simplemente no
      * devuelve referencia — no hay error, no hay tarjeta vacía.
+     *
+     * No confundir con el límite que `getExerciseHistoryByAthlete` tenía y
+     * ya no tiene: aquel recortaba EL HISTORIAL de la pantalla de
+     * estadísticas sin que se viera. Este se ejecuta mientras el atleta
+     * entrena y acota una consulta cuyo resultado se descarta casi entero
+     * (de todas las veces que ha hecho sentadilla solo interesa la última).
+     * Quitarlo sin más traería cientos de filas para quedarse con una; lo
+     * que lo quitaría de verdad es un `DISTINCT ON` en el servidor, que es
+     * trabajo del bloque 6.
      */
     async getLastSessionSetsForExercises(
         athleteId: string,

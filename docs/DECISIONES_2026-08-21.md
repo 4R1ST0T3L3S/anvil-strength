@@ -559,3 +559,68 @@ Criterio de aceptación de los bloques 6 y 8, no aspiración:
 
 *Documento vivo. Cualquier cambio a una decisión se escribe AQUÍ primero, con
 fecha y motivo, y después en el código.*
+
+---
+
+## 5. Registro de ejecución
+
+Se añade una entrada al cerrar cada bloque. No es un resumen de lo hecho
+—eso está en los commits—: es lo que hay que **probar**, y las decisiones
+técnicas que se tomaron por el camino y que conviene poder discutir después.
+
+### Bloque 1 — Limpieza y verdad · 21/08/2026 ✅
+
+Commits `4298e7ed` (código muerto, K13) y `ca066bae` (el resto).
+
+SQL ejecutado por Marc: `database/migrations/0001_bloque1_integridad.sql` y
+`database/exercise_indications.sql`.
+
+### Bloque 2 — Cifras correctas · 22/08/2026 ✅
+
+Commits `aecab8e6` (1RM), `4fa7c2ef` (agregación semanal y `.limit(2)`),
+`cb2f2a63` (`MaxSource`).
+
+**No lleva SQL.** Todo es cálculo del cliente.
+
+**Los tres fallos que se corrigen, en una línea cada uno:**
+
+1. Un 1RM real de 100 kg salía como **103,3 kg** en toda la pantalla de
+   estadísticas: se le aplicaba Epley a un dato que ya era el máximo.
+2. La semana 1 de enero y la semana 1 de junio **se sumaban en el mismo
+   punto** de todas las gráficas, porque `week_number` se reinicia en cada
+   bloque.
+3. El resumen del bloque avisaba de que los %1RM eran orientativos
+   **siempre**, incluso con todos los 1RM del atleta registrados, porque el
+   planificador nunca le pasaba los máximos declarados al análisis.
+
+**Qué tiene que probar Marc:**
+
+- [ ] Estadísticas de un atleta con **más de dos bloques**: el eje ya no
+      repite semanas y las etiquetas dicen `B1·S3`, `B2·S1`… El tonelaje
+      total debería subir respecto a lo que se veía antes, porque antes solo
+      contaba dos bloques.
+- [ ] La tarjeta "Ejercicios" del resumen dice ahora *"12 semanas · 3
+      bloques"* en vez de *"Semanas 1–8"*.
+- [ ] Un atleta con un **1RM registrado a una repetición**: la cifra que sale
+      en estadísticas tiene que ser exactamente la que levantó.
+- [ ] Resumen del bloque en el planificador, con el atleta **con todos sus
+      1RM puestos**: el aviso de "porcentajes orientativos" ya no aparece.
+      Quitándole el 1RM a un ejercicio, el aviso vuelve **nombrando ese
+      ejercicio**.
+- [ ] Que el planificador siga yendo igual de rápido al abrir un día: sus
+      sparklines siguen pidiendo 2 bloques y no el historial entero.
+
+**Decisiones técnicas tomadas por el camino** (no son de producto; si alguna
+no convence, se cambia):
+
+| | Qué se decidió | Por qué |
+|---|---|---|
+| Pruebas | `node:test` + el `ts-resolver.mjs` que ya existía. **Cero dependencias nuevas** | El repositorio ya había decidido no tener runner de tests y montado el resolvedor para el banco de PWR. Node 24 trae `node:test` estable |
+| Etiquetas | `S3` con un bloque, `B2·S3` con varios | Un eje que diga "S1 S2 S1 S2" no se puede leer. El nombre real del bloque no cabe en un eje y viaja aparte para el tooltip |
+| Resumen | `firstWeek`/`lastWeek` → `weeksTracked`/`blocksTracked` | Eran el mínimo y el máximo de `week_number`: decían "Semanas 1–8" para alguien con dos años de entrenamiento |
+| `.limit(2)` | Fuera el de las estadísticas. **Se quedan** los de `getLastSessionSetsForExercises` y `getAttachableSets` | Aquellos dos no recortan lo que el usuario lee: acotan una consulta cuyo resultado se descarta casi entero. Quitarlos de verdad pide un `DISTINCT ON` en el servidor — bloque 6 |
+
+**Deuda que queda apuntada:** `estimate1RM` por VELOCIDAD sigue teniendo tres
+implementaciones (`utils/vbtCalculator.ts`, `lib/cv/pwrMath.ts`,
+`lib/vbt/analysis.ts`). **No se unifican con la de repeticiones** —son otro
+modelo físico— pero entre ellas sí se solapan, y eso está sin revisar.
