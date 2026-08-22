@@ -624,3 +624,55 @@ no convence, se cambia):
 implementaciones (`utils/vbtCalculator.ts`, `lib/cv/pwrMath.ts`,
 `lib/vbt/analysis.ts`). **No se unifican con la de repeticiones** —son otro
 modelo físico— pero entre ellas sí se solapan, y eso está sin revisar.
+
+### Bloque 3 — Cuestionarios · 22/08/2026 ✅
+
+Commit `d841e7bb`. Decisión K9 completa.
+
+**No lleva SQL.** El contrato nuevo (`axis`, `unit`, `domain`,
+`invertPolarity`) vive en `form_templates.questions`, que ya es JSONB.
+
+**Los dos fallos que se corrigen:**
+
+1. Los cuestionarios **diarios y semanales iban en la misma gráfica**.
+   `'2026-08-02'` ordena antes que `'2026-W31'` por orden alfabético, así que
+   salían primero todos los días del año y después todas las semanas. El eje X
+   no significaba nada.
+2. **Un solo eje Y para todo**: "pasos" (~9.000) aplastaba sueño, dolor y
+   estrés (0-10) contra el suelo.
+
+Y uno que no estaba escrito y apareció por el camino: la consulta pedía **60
+respuestas en total**, así que un atleta que rellena el diario a diario se las
+comía con dos meses de diarios y sus cuestionarios **semanales no llegaban
+nunca** a la gráfica.
+
+**Qué tiene que probar Marc:**
+
+- [ ] Ficha de un atleta que responda los **dos** cuestionarios → Estadísticas
+      → General → tarjeta "Cuestionarios". El selector **Diario / Semanal**
+      lleva el recuento de cada uno al lado.
+- [ ] En semanal, "pasos" y "peso corporal" salen en **gráficas distintas**, y
+      las escalas 1-10 juntas en una tercera con el eje fijo de 0 a 10.
+- [ ] Editor de plantilla (icono del engranaje): cada pregunta tiene ahora un
+      desplegable **"Gráfica"** y un campo de unidad. Cambiar el de "pasos" a
+      *Sensaciones* y guardar → esa línea se muda a la gráfica de escalas.
+      Devolverlo a *Recuentos*.
+- [ ] Añadir una pregunta nueva **al principio** del cuestionario: el color de
+      las demás **no cambia**.
+- [ ] Que el atleta siga pudiendo rellenar y editar sus cuestionarios con
+      normalidad, y que una respuesta **antigua** se abra sin perder nada.
+
+**Una desviación deliberada, para que conste.** K9 dice que la heurística *"se
+persiste la primera vez que el entrenador abre el editor de plantilla"*. Se ha
+implementado como **se resuelve al abrir y se escribe al guardar**, no como un
+guardado automático al abrir. Motivo: guardar al abrir convertiría a un coach
+que está usando la plantilla **predefinida** en un coach con plantilla
+**propia** sin que él lo pida, y eso cambia lo que significa el botón
+"Restablecer predefinido". Como `resolveAxis` aplica la heurística también al
+leer, no hay ninguna pérdida de comportamiento: la persistencia solo sirve
+para que el coach pueda **corregirla**. Si prefieres el guardado automático,
+es una línea.
+
+**Deuda apuntada:** `invertPolarity` está en el contrato y en el tipo, pero
+todavía **no colorea nada**. Ponerlo a funcionar es trabajo del bloque 7
+(rediseño), donde vive la decisión de color.
