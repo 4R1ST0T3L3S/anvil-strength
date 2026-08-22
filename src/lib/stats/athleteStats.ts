@@ -20,6 +20,7 @@
 import type { ExerciseHistoryRow } from '../../services/trainingService';
 import type { TrainingSet } from '../../types/training';
 import type { FormResponse } from '../../services/formsService';
+import { estimate1RM } from '../training/oneRm';
 
 // =====================================================================
 // LECTORES BÁSICOS
@@ -106,16 +107,15 @@ export function repsKey(targetReps: string | null | undefined): string {
 }
 
 /**
- * 1RM estimado por Epley.
+ * 1RM estimado. La fórmula vive en `src/lib/training/oneRm.ts`; esto la
+ * reexpone para no romper a quien la importe desde aquí.
  *
- * Se corta en 12 repeticiones a propósito: por encima la fórmula deja de
- * predecir fuerza máxima y empieza a medir resistencia, y una serie de 20
- * daría un "1RM" que nadie levantaría nunca.
+ * La copia que había en este fichero NO cortaba en `reps === 1`, así que un
+ * 1RM real y medido de 100 kg salía como 103,3 en todas las estadísticas
+ * —y en todo lo que se calcula encima: intensidad relativa, comparativa
+ * entre ejercicios, reparto por zonas—. Ver la cabecera de `oneRm.ts`.
  */
-export function estimate1RM(kg: number, reps: number): number | null {
-    if (kg <= 0 || reps <= 0 || reps > 12) return null;
-    return Math.round(kg * (1 + reps / 30) * 10) / 10;
-}
+export { estimate1RM } from '../training/oneRm';
 
 // =====================================================================
 // RESUMEN GENERAL

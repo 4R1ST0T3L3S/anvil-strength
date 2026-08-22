@@ -9,6 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "preview": "vite preview",
     "db:check": "node scripts/db-check.mjs",
+    "test": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs --test \"src/**/*.test.ts\"",
     "test:e2e": "playwright test",
     "verify": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/ajuste-previo-y-1rm.mjs && node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/acuerdo-encoder.mjs && node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/calibracion-completa.mjs && node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/escala-manual.mjs && node scripts/verify/deteccion-disco.mjs",
     "update-types": "npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/supabase.ts"

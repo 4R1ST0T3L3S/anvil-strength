@@ -17,6 +17,7 @@
 import { parsePrescription, type VolumeSessionInput } from '../volume/engine';
 import { classifyExercise, type MovementPattern } from '../volume/muscles';
 import type { TrainingSet } from '../../types/training';
+import { estimate1RM } from '../training/oneRm';
 
 // =====================================================================
 // 1. PARSEO DE CAMPOS DE TEXTO LIBRE
@@ -59,29 +60,16 @@ export function isOpenEnded(targetReps: string | null | undefined): boolean {
 // =====================================================================
 
 /**
- * Epley: 1RM = carga x (1 + reps/30).
+ * La fórmula vive en `src/lib/training/oneRm.ts` y esto solo la reexpone,
+ * para no romper a quien ya importa `estimate1RM` desde este módulo.
  *
- * Se elige Epley y no Brzycki porque en el rango de 1-8 repeticiones —donde
- * se programa el powerlifting— Epley es algo más conservadora por arriba y no
- * se rompe con repeticiones altas, mientras que Brzycki diverge por encima de
- * 10 (a 37 repeticiones daría un 1RM infinito).
- *
- * Por encima de 12 repeticiones cualquier fórmula deja de ser fiable, así que
- * se devuelve null en vez de un número que nadie debería usar.
+ * Se sacó de aquí porque había TRES copias distintas —esta, la de
+ * `stats/athleteStats.ts` y una en línea dentro de la calculadora del
+ * atleta— y no coincidían: la de estadísticas inflaba un 3,3% cualquier
+ * levantamiento a una repetición. La cabecera de `oneRm.ts` lo cuenta
+ * entero.
  */
-export function estimate1RM(load: number, reps: number): number | null {
-    if (!Number.isFinite(load) || load <= 0) return null;
-    if (!Number.isFinite(reps) || reps <= 0 || reps > 12) return null;
-    if (reps === 1) return load;
-    return round1(load * (1 + reps / 30));
-}
-
-/** Carga teórica para N repeticiones dado un 1RM. Inversa de Epley. */
-export function loadForReps(oneRm: number, reps: number): number | null {
-    if (!Number.isFinite(oneRm) || oneRm <= 0) return null;
-    if (!Number.isFinite(reps) || reps <= 0 || reps > 12) return null;
-    return round1(oneRm / (1 + reps / 30));
-}
+export { estimate1RM, loadForReps, MAX_REPS_FOR_1RM } from '../training/oneRm';
 
 // =====================================================================
 // 3. REFERENCIAS DE 1RM

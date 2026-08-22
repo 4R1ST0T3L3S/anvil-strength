@@ -8,6 +8,7 @@ import { calcular1RMporVelocidad, Movimiento } from '../../../utils/vbtCalculato
 import { lockBodyScroll } from '../../../lib/scrollLock';
 import { useAthletePrefs } from '../../../hooks/useAthletePrefs';
 import { toDisplay, fromInput, formatLoad } from '../../../lib/units';
+import { estimate1RM } from '../../../lib/training/oneRm';
 
 interface OneRMCalculatorProps {
     isOpen: boolean;
@@ -285,15 +286,22 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
             let e1rm = result.e1RM || 0;
             let percentage = result.pct1RM;
 
-            // Hybrid Logic if reps > 1: Check against Epley
-            if (r > 1) {
-                const epley1RM = w * (1 + 0.0333 * r);
-                // If Epley predicts a higher 1RM than Velocity, it likely means the user did a failure set
-                // where velocity was low (final rep) but load/reps indicate higher strength.
-                if (epley1RM > e1rm) {
-                    e1rm = epley1RM;
-                    percentage = null; // Percentage from VBT is invalid if we used Epley
-                }
+            // MEZCLA CON EPLEY POR ENCIMA DE UNA REPETICIÓN.
+            //
+            // Si la fórmula por repeticiones predice MÁS que la de
+            // velocidad, casi siempre es una serie llevada al fallo: la
+            // última repetición sale lentísima y hunde la estimación por
+            // velocidad, mientras que carga y repeticiones siguen diciendo
+            // la verdad. En ese caso manda Epley.
+            //
+            // `estimate1RM` es la copia única de src/lib/training/oneRm.ts.
+            // Aquí había una en línea con 0,0333 —que NO es 1/30— y sin
+            // techo de repeticiones, así que esta pantalla daba un número
+            // distinto al del resto de la aplicación para la misma serie.
+            const epley1RM = r > 1 ? estimate1RM(w, r) : null;
+            if (epley1RM !== null && epley1RM > e1rm) {
+                e1rm = epley1RM;
+                percentage = null; // el %1RM de la recta ya no aplica
             }
 
             setEstimated1RM(Math.round(e1rm * 10) / 10);
