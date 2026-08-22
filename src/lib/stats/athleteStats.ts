@@ -118,6 +118,76 @@ export function repsKey(targetReps: string | null | undefined): string {
 export { estimate1RM } from '../training/oneRm';
 
 // =====================================================================
+// AGRUPACIÓN POR SEMANA — EL CRITERIO, EN UN SOLO SITIO
+// =====================================================================
+//
+// EL FALLO QUE CORRIGE
+//
+// `week_number` se REINICIA en cada bloque: todo bloque empieza por la
+// semana 1. Agrupar el historial por `week_number` a secas suma la semana 1
+// de enero con la semana 1 de junio y con la semana 1 de octubre, y las
+// dibuja en el mismo punto del eje. Con el límite de 2 bloques que había
+// antes el destrozo era pequeño y pasaba desapercibido; ahora que la
+// pantalla de estadísticas recibe el historial ENTERO, un atleta con seis
+// bloques veía seis años de progresión aplastados en cinco puntos.
+//
+// La unidad real de tiempo es el par (bloque, semana), y el orden lo da
+// `blockSequence` —que ya viene resuelto desde el servicio— y no el nombre
+// del bloque ni su id.
+
+/** Identidad de una semana concreta de un bloque concreto. */
+interface WeekSlot {
+    blockId: string;
+    blockName: string;
+    blockSequence: number;
+    week: number;
+}
+
+/** Clave de mapa para una semana. Ordenable como texto no, como número sí. */
+function weekSlotKey(row: ExerciseHistoryRow): string {
+    return `${row.blockSequence}|${row.blockId}|${row.weekNumber}`;
+}
+
+function weekSlotOf(row: ExerciseHistoryRow): WeekSlot {
+    return {
+        blockId: row.blockId,
+        blockName: row.blockName,
+        blockSequence: row.blockSequence,
+        week: row.weekNumber,
+    };
+}
+
+/** Bloque primero, semana después. El orden en que ocurrieron. */
+function compareWeekSlots(a: WeekSlot, b: WeekSlot): number {
+    return a.blockSequence - b.blockSequence || a.week - b.week;
+}
+
+/**
+ * ¿El historial abarca más de un bloque? Decide la forma de las etiquetas.
+ */
+function isMultiBlock(history: ExerciseHistoryRow[]): boolean {
+    const seen = new Set<string>();
+    for (const row of history) {
+        seen.add(row.blockId);
+        if (seen.size > 1) return true;
+    }
+    return false;
+}
+
+/**
+ * Etiqueta corta del eje X.
+ *
+ * Con un solo bloque, "S3" — no hay ambigüedad posible. Con varios, "B2·S3",
+ * porque un eje que dijera "S1 S2 S3 S1 S2" no se puede leer. Se usa el
+ * ordinal del bloque y no su nombre a propósito: los nombres reales
+ * ("Fuerza — Otoño 2026") no caben en un eje, y el nombre completo viaja
+ * igualmente en `blockName` para el tooltip.
+ */
+function weekLabel(slot: WeekSlot, multiBlock: boolean): string {
+    return multiBlock ? `B${slot.blockSequence + 1}·S${slot.week}` : `S${slot.week}`;
+}
+
+// =====================================================================
 // RESUMEN GENERAL
 // =====================================================================
 
@@ -132,8 +202,19 @@ export interface GeneralSummary {
     /** Series por encima de RPE 8: el trabajo que de verdad cuesta recuperar. */
     hardSets: number;
     exercisesTracked: number;
-    firstWeek: number | null;
-    lastWeek: number | null;
+    /**
+     * Semanas DISTINTAS con registro, contando el par (bloque, semana).
+     *
+     * Antes había `firstWeek`/`lastWeek`, que era el mínimo y el máximo de
+     * `week_number` en todo el historial. Con el límite de 2 bloques ya
+     * engañaba; con el historial entero decía cosas como "Semanas 1–8" para
+     * un atleta con dos años y seis bloques, porque todos los bloques
+     * empiezan por la semana 1 y ninguno pasa de 8. Un recuento de semanas
+     * reales no se puede leer mal.
+     */
+    weeksTracked: number;
+    /** Bloques distintos con registro. */
+    blocksTracked: number;
 }
 
 export function summarize(history: ExerciseHistoryRow[]): GeneralSummary {
@@ -145,14 +226,16 @@ export function summarize(history: ExerciseHistoryRow[]): GeneralSummary {
 
     const sessions = new Set<string>();
     const exercises = new Set<string>();
-    const weeks: number[] = [];
+    const weeks = new Set<string>();
+    const blocks = new Set<string>();
     const bestByExercise = new Map<string, number>();
     const loadSamples: { name: string; kg: number }[] = [];
 
     for (const row of history) {
         sessions.add(row.sessionId);
         exercises.add(row.exerciseName);
-        weeks.push(row.weekNumber);
+        weeks.add(weekSlotKey(row));
+        blocks.add(row.blockId);
 
         for (const set of row.sets) {
             totalSets += 1;
@@ -197,8 +280,8 @@ export function summarize(history: ExerciseHistoryRow[]): GeneralSummary {
         avgRpe: rpeCount ? Math.round((rpeSum / rpeCount) * 10) / 10 : null,
         hardSets,
         exercisesTracked: exercises.size,
-        firstWeek: weeks.length ? Math.min(...weeks) : null,
-        lastWeek: weeks.length ? Math.max(...weeks) : null,
+        weeksTracked: weeks.size,
+        blocksTracked: blocks.size,
     };
 }
 
@@ -207,18 +290,37 @@ export function summarize(history: ExerciseHistoryRow[]): GeneralSummary {
 // =====================================================================
 
 export interface WeeklyPoint {
+    /** Número de semana DENTRO de su bloque. Se reinicia en cada bloque. */
     week: number;
+    /** "S3", o "B2·S3" si el historial abarca varios bloques. */
     label: string;
+    blockId: string;
+    blockName: string;
+    blockSequence: number;
     tonnage: number;
     sets: number;
     avgRpe: number | null;
     avgIntensityPct: number | null;
 }
 
-/** Evolución semana a semana de carga, series, esfuerzo e intensidad. */
+/**
+ * Evolución semana a semana de carga, series, esfuerzo e intensidad.
+ *
+ * Un punto por (bloque, semana) y en orden cronológico — ver la sección
+ * "AGRUPACIÓN POR SEMANA" de arriba para por qué no vale agrupar por el
+ * número de semana a secas.
+ */
 export function weeklySeries(history: ExerciseHistoryRow[]): WeeklyPoint[] {
-    const byWeek = new Map<number, { tonnage: number; sets: number; rpeSum: number; rpeCount: number; intensities: number[] }>();
+    const multiBlock = isMultiBlock(history);
+    const byWeek = new Map<string, {
+        slot: WeekSlot;
+        tonnage: number; sets: number; rpeSum: number; rpeCount: number; intensities: number[];
+    }>();
 
+    // El 1RM de referencia se saca de TODO el historial, no de cada bloque:
+    // la intensidad relativa tiene que medirse contra la misma vara en las
+    // dos puntas de la gráfica, o una mejora de fuerza se leería como una
+    // bajada de intensidad.
     const bestByExercise = new Map<string, number>();
     for (const row of history) {
         for (const set of row.sets) {
@@ -234,7 +336,11 @@ export function weeklySeries(history: ExerciseHistoryRow[]): WeeklyPoint[] {
     }
 
     for (const row of history) {
-        const bucket = byWeek.get(row.weekNumber) ?? { tonnage: 0, sets: 0, rpeSum: 0, rpeCount: 0, intensities: [] };
+        const key = weekSlotKey(row);
+        const bucket = byWeek.get(key) ?? {
+            slot: weekSlotOf(row),
+            tonnage: 0, sets: 0, rpeSum: 0, rpeCount: 0, intensities: [],
+        };
 
         for (const set of row.sets) {
             bucket.sets += 1;
@@ -254,14 +360,17 @@ export function weeklySeries(history: ExerciseHistoryRow[]): WeeklyPoint[] {
             }
         }
 
-        byWeek.set(row.weekNumber, bucket);
+        byWeek.set(key, bucket);
     }
 
-    return [...byWeek.entries()]
-        .sort((a, b) => a[0] - b[0])
-        .map(([week, b]) => ({
-            week,
-            label: `S${week}`,
+    return [...byWeek.values()]
+        .sort((a, b) => compareWeekSlots(a.slot, b.slot))
+        .map(b => ({
+            week: b.slot.week,
+            label: weekLabel(b.slot, multiBlock),
+            blockId: b.slot.blockId,
+            blockName: b.slot.blockName,
+            blockSequence: b.slot.blockSequence,
             tonnage: Math.round(b.tonnage),
             sets: b.sets,
             avgRpe: b.rpeCount ? Math.round((b.rpeSum / b.rpeCount) * 10) / 10 : null,
@@ -276,8 +385,13 @@ export function weeklySeries(history: ExerciseHistoryRow[]): WeeklyPoint[] {
 // =====================================================================
 
 export interface PlannedActualWeekPoint {
+    /** Número de semana DENTRO de su bloque. Se reinicia en cada bloque. */
     week: number;
+    /** "S3", o "B2·S3" si el historial abarca varios bloques. */
     label: string;
+    blockId: string;
+    blockName: string;
+    blockSequence: number;
     /**
      * El tonelaje que dibujaba el plan al pautarlo — existe desde el
      * momento en que el coach programa la semana, entrene o no el atleta
@@ -329,13 +443,18 @@ export function plannedVsActualWeekly(history: ExerciseHistoryRow[]): PlannedAct
     }
 
     type Bucket = {
+        slot: WeekSlot;
         plannedTonnage: number; plannedSets: number; plannedIntensities: number[];
         actualTonnage: number; actualSets: number; actualIntensities: number[];
     };
-    const byWeek = new Map<number, Bucket>();
+    // Por (bloque, semana), no por semana: ver `weeklySeries`.
+    const multiBlock = isMultiBlock(history);
+    const byWeek = new Map<string, Bucket>();
 
     for (const row of history) {
-        const bucket = byWeek.get(row.weekNumber) ?? {
+        const key = weekSlotKey(row);
+        const bucket = byWeek.get(key) ?? {
+            slot: weekSlotOf(row),
             plannedTonnage: 0, plannedSets: 0, plannedIntensities: [],
             actualTonnage: 0, actualSets: 0, actualIntensities: [],
         };
@@ -359,16 +478,19 @@ export function plannedVsActualWeekly(history: ExerciseHistoryRow[]): PlannedAct
             }
         }
 
-        byWeek.set(row.weekNumber, bucket);
+        byWeek.set(key, bucket);
     }
 
     const avg = (xs: number[]) => xs.length ? Math.round(xs.reduce((a, c) => a + c, 0) / xs.length) : null;
 
-    return [...byWeek.entries()]
-        .sort((a, b) => a[0] - b[0])
-        .map(([week, b]) => ({
-            week,
-            label: `S${week}`,
+    return [...byWeek.values()]
+        .sort((a, b) => compareWeekSlots(a.slot, b.slot))
+        .map(b => ({
+            week: b.slot.week,
+            label: weekLabel(b.slot, multiBlock),
+            blockId: b.slot.blockId,
+            blockName: b.slot.blockName,
+            blockSequence: b.slot.blockSequence,
             plannedTonnage: b.plannedSets > 0 ? Math.round(b.plannedTonnage) : null,
             actualTonnage: b.actualSets > 0 ? Math.round(b.actualTonnage) : null,
             plannedSets: b.plannedSets,
@@ -383,8 +505,13 @@ export function plannedVsActualWeekly(history: ExerciseHistoryRow[]): PlannedAct
 // =====================================================================
 
 export interface ComparisonPoint {
+    /** "S3", o "B2·S3" si el historial abarca varios bloques. */
     label: string;
+    /** Número de semana DENTRO de su bloque. */
     week: number;
+    blockId: string;
+    blockName: string;
+    blockSequence: number;
     /** Una clave por ejercicio comparado, con su mejor 1RM estimado. */
     [exercise: string]: number | string | null;
 }
@@ -403,7 +530,11 @@ export function compareExercises(
 ): ComparisonPoint[] {
     if (names.length === 0) return [];
 
-    const byWeek = new Map<number, Record<string, number>>();
+    // Por (bloque, semana): comparar el press de banca de la semana 1 de
+    // enero con el de la semana 1 de junio en el mismo punto del eje daba
+    // una comparativa que no comparaba nada. Ver `weeklySeries`.
+    const multiBlock = isMultiBlock(history);
+    const byWeek = new Map<string, { slot: WeekSlot; values: Record<string, number> }>();
 
     for (const row of history) {
         if (!names.includes(row.exerciseName)) continue;
@@ -418,18 +549,26 @@ export function compareExercises(
         }
         if (best === 0) continue;
 
-        const bucket = byWeek.get(row.weekNumber) ?? {};
+        const key = weekSlotKey(row);
+        const bucket = byWeek.get(key) ?? { slot: weekSlotOf(row), values: {} };
         // Dentro de la misma semana puede haber varios días del mismo
         // ejercicio: se queda el mejor, que es el que marca el progreso.
-        if (!bucket[row.exerciseName] || best > bucket[row.exerciseName]) {
-            bucket[row.exerciseName] = best;
+        if (!bucket.values[row.exerciseName] || best > bucket.values[row.exerciseName]) {
+            bucket.values[row.exerciseName] = best;
         }
-        byWeek.set(row.weekNumber, bucket);
+        byWeek.set(key, bucket);
     }
 
-    return [...byWeek.entries()]
-        .sort((a, b) => a[0] - b[0])
-        .map(([week, values]) => ({ label: `S${week}`, week, ...values }));
+    return [...byWeek.values()]
+        .sort((a, b) => compareWeekSlots(a.slot, b.slot))
+        .map(({ slot, values }) => ({
+            label: weekLabel(slot, multiBlock),
+            week: slot.week,
+            blockId: slot.blockId,
+            blockName: slot.blockName,
+            blockSequence: slot.blockSequence,
+            ...values,
+        }));
 }
 
 // =====================================================================
@@ -560,9 +699,13 @@ function isSetDone(set: TrainingSet): boolean {
 
 export interface AdherencePoint {
     sessionId: string;
+    /** "S3·D2", o "B2·S3·D2" si el historial abarca varios bloques. */
     label: string;
     week: number;
     day: number;
+    blockId: string;
+    blockName: string;
+    blockSequence: number;
     /** Tonelaje PRESCRITO en kilos (solo series pautadas en kg). */
     plannedTonnage: number;
     /** Tonelaje REALMENTE movido. */
@@ -589,14 +732,20 @@ export interface AdherencePoint {
  * cero por trabajo que todavía no tocaba hacer.
  */
 export function adherenceSeries(history: ExerciseHistoryRow[]): AdherencePoint[] {
+    const multiBlock = isMultiBlock(history);
     const bySession = new Map<string, AdherencePoint>();
 
     for (const row of history) {
         const point = bySession.get(row.sessionId) ?? {
             sessionId: row.sessionId,
-            label: `S${row.weekNumber}·D${row.dayNumber}`,
+            label: multiBlock
+                ? `B${row.blockSequence + 1}·S${row.weekNumber}·D${row.dayNumber}`
+                : `S${row.weekNumber}·D${row.dayNumber}`,
             week: row.weekNumber,
             day: row.dayNumber,
+            blockId: row.blockId,
+            blockName: row.blockName,
+            blockSequence: row.blockSequence,
             plannedTonnage: 0,
             actualTonnage: 0,
             setsPlanned: 0,
@@ -625,7 +774,12 @@ export function adherenceSeries(history: ExerciseHistoryRow[]): AdherencePoint[]
 
     return [...bySession.values()]
         .filter(p => p.setsDone > 0)
-        .sort((a, b) => a.week - b.week || a.day - b.day)
+        // Bloque primero. Ordenar solo por semana y día intercalaba las
+        // sesiones de bloques distintos y la línea de adherencia iba y venía
+        // en el tiempo.
+        .sort((a, b) =>
+            a.blockSequence - b.blockSequence || a.week - b.week || a.day - b.day
+        )
         .map(p => ({
             ...p,
             plannedTonnage: Math.round(p.plannedTonnage),

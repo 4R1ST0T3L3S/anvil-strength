@@ -195,7 +195,11 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     useEffect(() => {
         if (!editingSessionId || historyLoaded.current || !athleteId) return;
         historyLoaded.current = true;
-        trainingService.getExerciseHistoryByAthlete(athleteId)
+        // Dos bloques bastan para un sparkline de 8 puntos, y aquí el
+        // límite SÍ es una decisión de rendimiento: esto se carga
+        // mientras el coach está programando. La pantalla de
+        // estadísticas, en cambio, pide el historial entero.
+        trainingService.getExerciseHistoryByAthlete(athleteId, { blockLimit: 2 })
             .then(rows => {
                 const map: Record<string, number[]> = {};
                 rows.forEach(r => {

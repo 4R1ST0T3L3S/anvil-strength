@@ -429,8 +429,8 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                                         label="Ejercicios"
                                         value={String(summary.exercisesTracked)}
                                         hint={
-                                            summary.firstWeek !== null
-                                                ? `Semanas ${summary.firstWeek}–${summary.lastWeek}`
+                                            summary.weeksTracked > 0
+                                                ? `${summary.weeksTracked} ${summary.weeksTracked === 1 ? 'semana' : 'semanas'} · ${summary.blocksTracked} ${summary.blocksTracked === 1 ? 'bloque' : 'bloques'}`
                                                 : 'Sin registro todavía'
                                         }
                                     />

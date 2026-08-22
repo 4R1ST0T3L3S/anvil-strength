@@ -60,6 +60,20 @@ export interface ExerciseHistoryRow {
     variantName: string | null;
     blockId: string;
     blockName: string;
+    /**
+     * Posición del bloque EN EL TIEMPO dentro del historial devuelto, 0 el
+     * más antiguo.
+     *
+     * Es la clave de ordenación de todo lo que se agregue por semanas: el
+     * `weekNumber` se REINICIA en cada bloque, así que "semana 1" no
+     * identifica un momento, solo un sitio dentro de un bloque. Ver
+     * `getExerciseHistoryByAthlete`.
+     */
+    blockSequence: number;
+    /** Fecha de inicio del bloque, o null en los bloques anteriores a K10. */
+    blockStartDate: string | null;
+    /** Alta del bloque. Es el orden de reserva cuando no hay `blockStartDate`. */
+    blockCreatedAt: string;
     /** Macrociclo al que pertenece el bloque. Null si el bloque es suelto. */
     macroId: string | null;
     sessionId: string;
@@ -78,6 +92,33 @@ export interface ExerciseHistoryRow {
     primaryMuscles: string[] | null;
     secondaryMuscles: string[] | null;
     sets: TrainingSet[];
+}
+
+/** Alcance de `getExerciseHistoryByAthlete`. */
+export interface ExerciseHistoryOptions {
+    /**
+     * Cuántos bloques traer, contando desde el más reciente hacia atrás.
+     * `null` o ausente = TODOS.
+     *
+     * Solo se pone cuando el límite es una decisión de rendimiento
+     * consciente —los sparklines del planificador, que no necesitan más que
+     * las últimas cargas—. Para cualquier cosa que el usuario lea como "su
+     * historial", dejarlo sin poner.
+     */
+    blockLimit?: number | null;
+}
+
+/**
+ * Clave de ordenación cronológica de un bloque.
+ *
+ * `start_date` cuando la hay; si no, la fecha de alta. Las dos son ISO, así
+ * que se comparan como texto sin construir ningún Date. Se recorta
+ * `created_at` a 10 caracteres para que un bloque CON fecha de inicio y otro
+ * SIN ella se comparen por el mismo grano —el día— y no por si uno lleva
+ * hora y el otro no.
+ */
+function blockOrderKey(block: { start_date: string | null; created_at: string }): string {
+    return (block.start_date ?? block.created_at).slice(0, 10) + '|' + block.created_at;
 }
 
 /** Referencia a la última vez que el atleta hizo un ejercicio, en una sesión ya cerrada. */
@@ -2110,32 +2151,77 @@ export const trainingService = {
     },
 
     /**
-     * ESTADÍSTICAS: historial completo de ejercicios del atleta
-     * (todas las prescripciones + registros, con bloque y semana para ordenar).
-     */
-    /**
-     * Historial de cargas de ejercicios.
+     * HISTORIAL DE EJERCICIOS DEL ATLETA — la fuente de TODAS las
+     * estadísticas y de los sparklines del planificador.
      *
-     * Limita a los últimos 2 bloques activos para evitar cargar gigabytes de
-     * histórico completo. El WorkoutBuilder solo necesita las últimas 8 cargas
-     * de cada ejercicio para los sparklines; tomar 2 bloques es más que
-     * suficiente y evita tabletear la base en bloque grande.
+     * ALCANCE: POR DEFECTO, TODO
+     *
+     * Antes limitaba SIEMPRE a los últimos 2 bloques, sin que quien llamaba
+     * pudiera decidirlo. Para los sparklines del `WorkoutBuilder` está bien
+     * —solo necesita las últimas cargas de cada ejercicio—, pero la pantalla
+     * de estadísticas usaba la MISMA función, así que enseñaba "todo el
+     * historial" de un atleta enseñando dos bloques: la progresión anual, el
+     * tonelaje acumulado y la comparativa entre ejercicios se cortaban por
+     * un límite que no se veía por ninguna parte.
+     *
+     * Ahora el alcance es del que llama. Sin opciones, TODO; el
+     * planificador pide explícitamente `{ blockLimit: 2 }`, que es donde el
+     * límite sí es una decisión de rendimiento y no un recorte silencioso.
+     *
+     * ORDEN CRONOLÓGICO DE LOS BLOQUES
+     *
+     * Cada fila viaja con `blockSequence`: la posición del bloque en el
+     * tiempo dentro de lo que se ha traído, 0 el más antiguo. Sin eso no hay
+     * forma de agregar bien, porque el número de semana se REINICIA en cada
+     * bloque: la semana 1 de enero y la semana 1 de junio son dos semanas
+     * distintas y agrupar por `week_number` a secas las suma en el mismo
+     * punto de la gráfica.
+     *
+     * El orden sale de `start_date` cuando el bloque la tiene y de
+     * `created_at` cuando no (ver decisión K10: la fecha de inicio pasa a ser
+     * obligatoria en los bloques nuevos, pero los viejos siguen sin ella y
+     * hay que ordenarlos igual).
      */
-    async getExerciseHistoryByAthlete(athleteId: string): Promise<ExerciseHistoryRow[]> {
-        // 1. Últimos 2 bloques del atleta (probablemente el actual + el anterior)
+    async getExerciseHistoryByAthlete(
+        athleteId: string,
+        options: ExerciseHistoryOptions = {}
+    ): Promise<ExerciseHistoryRow[]> {
+        const { blockLimit = null } = options;
+
+        // 1. Los bloques del atleta, con lo justo para ordenarlos en el tiempo.
         const { data: blocks, error: blocksError } = await supabase
             .from('training_blocks')
-            .select('id')
-            .eq('athlete_id', athleteId)
-            .order('created_at', { ascending: false })
-            .limit(2);
+            .select('id, name, start_date, created_at, macro_id')
+            .eq('athlete_id', athleteId);
 
         if (blocksError) throw blocksError;
         if (!blocks || blocks.length === 0) return [];
 
-        const blockIds = blocks.map(b => b.id);
+        type BlockRow = {
+            id: string;
+            name: string;
+            start_date: string | null;
+            created_at: string;
+            macro_id: string | null;
+        };
 
-        // 2. Ejercicios en esos bloques únicamente
+        const chronological = ([...blocks] as BlockRow[])
+            .sort((a, b) => blockOrderKey(a).localeCompare(blockOrderKey(b)));
+
+        // `blockLimit` se queda con los MÁS RECIENTES, y la secuencia se
+        // renumera sobre lo que de verdad se devuelve: quien recibe estas
+        // filas no puede saber que existen bloques anteriores, así que una
+        // secuencia que empezara en 7 no significaría nada para él.
+        const selected = blockLimit != null && blockLimit > 0
+            ? chronological.slice(-blockLimit)
+            : chronological;
+
+        const blockMeta = new Map(
+            selected.map((b, index) => [b.id, { ...b, sequence: index }])
+        );
+        const blockIds = selected.map(b => b.id);
+
+        // 2. Ejercicios en esos bloques únicamente.
         const { data, error } = await supabase
             .from('session_exercises')
             .select(`
@@ -2144,8 +2230,7 @@ export const trainingService = {
                 exercise:exercise_library (id, name, primary_muscles, secondary_muscles),
                 training_sets (*),
                 session:training_sessions!inner (
-                    id, week_number, day_number, date,
-                    block:training_blocks!inner (id, name, athlete_id, created_at, macro_id)
+                    id, block_id, week_number, day_number, date
                 )
             `)
             .in('session.block_id', blockIds);
@@ -2169,43 +2254,57 @@ export const trainingService = {
             training_sets: TrainingSet[];
             session: {
                 id: string;
+                block_id: string;
                 week_number: number;
                 day_number: number;
                 date: string | null;
-                block: { id: string; name: string; athlete_id: string; created_at: string; macro_id: string | null };
             };
         };
 
         const rows = (data as unknown as RawRow[] | null) || [];
 
         return rows
-            .filter(r => r.exercise && r.session?.block)
+            .filter(r => r.exercise && r.session && blockMeta.has(r.session.block_id))
             // EL CALENTAMIENTO NO ES HISTORIAL DE RENDIMIENTO. De aquí salen el
             // tonelaje, el 1RM estimado, el reparto muscular y las tendencias:
             // dejar entrar las aproximaciones y la movilidad inflaría todas
             // esas cifras. Ver `countsForVolume` en src/types/training.ts.
             .filter(r => countsForVolume(r.section))
-            .map(r => ({
-                sessionExerciseId: r.id,
-                exerciseId: r.exercise_id,
-                exerciseName: r.exercise!.name,
-                variantName: r.variant_name,
-                blockId: r.session.block.id,
-                blockName: r.session.block.name,
-                macroId: r.session.block.macro_id ?? null,
-                sessionId: r.session.id,
-                weekNumber: r.session.week_number,
-                dayNumber: r.session.day_number,
-                date: r.session.date ?? null,
-                rpeGlobal: r.rpe,
-                velocityAvg: r.velocity_avg,
-                // La de la prescripción manda; si no la hay, la de la
-                // biblioteca; si tampoco, null y que decidan las reglas.
-                primaryMuscles: r.primary_muscles ?? r.exercise?.primary_muscles ?? null,
-                secondaryMuscles: r.secondary_muscles ?? r.exercise?.secondary_muscles ?? null,
-                sets: (r.training_sets || []).sort((a, b) => a.order_index - b.order_index)
-            }))
-            .sort((a, b) => a.weekNumber - b.weekNumber || a.dayNumber - b.dayNumber);
+            .map(r => {
+                const block = blockMeta.get(r.session.block_id)!;
+                return {
+                    sessionExerciseId: r.id,
+                    exerciseId: r.exercise_id,
+                    exerciseName: r.exercise!.name,
+                    variantName: r.variant_name,
+                    blockId: block.id,
+                    blockName: block.name,
+                    blockSequence: block.sequence,
+                    blockStartDate: block.start_date ?? null,
+                    blockCreatedAt: block.created_at,
+                    macroId: block.macro_id ?? null,
+                    sessionId: r.session.id,
+                    weekNumber: r.session.week_number,
+                    dayNumber: r.session.day_number,
+                    date: r.session.date ?? null,
+                    rpeGlobal: r.rpe,
+                    velocityAvg: r.velocity_avg,
+                    // La de la prescripción manda; si no la hay, la de la
+                    // biblioteca; si tampoco, null y que decidan las reglas.
+                    primaryMuscles: r.primary_muscles ?? r.exercise?.primary_muscles ?? null,
+                    secondaryMuscles: r.secondary_muscles ?? r.exercise?.secondary_muscles ?? null,
+                    sets: (r.training_sets || []).sort((a, b) => a.order_index - b.order_index)
+                };
+            })
+            // BLOQUE primero, luego semana y día. Ordenar solo por semana
+            // intercalaba los bloques entre sí —semana 1 de todos, después
+            // semana 2 de todos— y cualquier gráfica construida sobre eso
+            // dibujaba una línea que iba y venía en el tiempo.
+            .sort((a, b) =>
+                a.blockSequence - b.blockSequence
+                || a.weekNumber - b.weekNumber
+                || a.dayNumber - b.dayNumber
+            );
     },
 
     /**
