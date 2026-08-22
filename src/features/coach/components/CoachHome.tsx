@@ -8,6 +8,7 @@ import {
     BookOpen, Quote, LayoutDashboard, AlertTriangle,
 } from 'lucide-react';
 import { AttentionPanel } from './AttentionPanel';
+import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { TeamCard, NextCompCard, NoCompCard, type NextComp } from './CoachHomeCards';
 import type { LucideIcon } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
@@ -113,14 +114,9 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
                 // filtro, un atleta desvinculado (`ended`) o archivado seguía
                 // sumando aquí aunque ya hubiera desaparecido de la lista: el
                 // contador de inicio y la lista de abajo se contradecían.
-                const { data: links, error } = await supabase
-                    .from('coach_athletes')
-                    .select('athlete_id')
-                    .eq('coach_id', user.id)
-                    .eq('status', 'active');
-
-                if (error) throw error;
-                const athleteIds = (links ?? []).map((l: { athlete_id: string }) => l.athlete_id);
+                // El filtro vive en la puerta única, no aquí: ver
+                // src/features/coach/hooks/useCoachRoster.ts.
+                const athleteIds = await fetchRosterIds(user.id, 'active');
                 if (alive) setAthleteCount(athleteIds.length);
 
                 if (athleteIds.length === 0) {

@@ -17,6 +17,17 @@ export interface ExerciseLibrary {
      */
     primary_muscles?: string[] | null;
     secondary_muscles?: string[] | null;
+    /**
+     * Indicaciones GENERALES del ejercicio, independientes de que haya vídeo.
+     *
+     * Las de `exercise_videos` describen la versión concreta que ese atleta
+     * está viendo y mandan sobre estas; estas son el respaldo que hace que la
+     * ficha diga algo aunque no se haya subido ningún vídeo todavía.
+     * Ver database/exercise_indications.sql.
+     */
+    setup?: string | null;
+    cues?: string[] | null;
+    common_errors?: string[] | null;
     is_public: boolean;
     created_at: string;
 }

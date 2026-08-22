@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus, Mail, Link2, Loader } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus, Mail, Link2, Loader, Archive, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { InviteAthleteModal } from './InviteAthleteModal';
-import { DangerConfirmModal } from '../../../components/modals/DangerConfirmModal';
+import { RemoveAthleteModal } from './RemoveAthleteModal';
 import { athletesService, ACCOUNT_STATUS_LABEL, hasAccount } from '../../../services/athletesService';
+import { fetchRosterIds, useCoachRoster, rosterQueryKey, type RosterAthlete } from '../hooks/useCoachRoster';
 import { AddAthleteModal } from './AddAthleteModal';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
@@ -49,6 +51,16 @@ const FILTERS = [
     { key: 'inactive', label: 'Sin entrenar' },
     { key: 'lowAdherence', label: 'Flojos' },
     { key: 'noPlan', label: 'Sin plan' },
+    /**
+     * Los que se fueron. Va el ÚLTIMO y separado del resto porque no es un
+     * filtro sobre la misma lista: cambia de qué lista se habla —de las
+     * relaciones vivas a las cerradas—, y por eso trae su propia consulta y
+     * sus propias acciones.
+     *
+     * Existe porque sin él "archivar" perdería gente: se puede archivar a un
+     * atleta y no habría ninguna pantalla desde la que traerlo de vuelta.
+     */
+    { key: 'archived', label: 'Archivados' },
 ] as const;
 
 type FilterKey = (typeof FILTERS)[number]['key'];
@@ -73,8 +85,37 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
     const [reloadKey, setReloadKey] = useState(0);
     const [athleteToRemove, setAthleteToRemove] = useState<AthleteWithPlan | null>(null);
     const [athleteToInvite, setAthleteToInvite] = useState<AthleteWithPlan | null>(null);
-    const [removing, setRemoving] = useState(false);
     const [copyingLinkFor, setCopyingLinkFor] = useState<string | null>(null);
+    const [reactivating, setReactivating] = useState<string | null>(null);
+    const queryClient = useQueryClient();
+
+    /**
+     * Los archivados y los que se fueron. `enabled` los pide solo cuando se
+     * mira esa pestaña: es la lista que menos se abre y no tiene por qué
+     * costar una consulta en cada visita a "Atletas".
+     */
+    const { athletes: pasados, loading: cargandoPasados } = useCoachRoster(user.id, {
+        scope: 'inactive',
+        enabled: filter === 'archived',
+    });
+
+    /** Devuelve a alguien al equipo. Deshace tanto archivar como sacar. */
+    const handleReactivate = async (athlete: RosterAthlete) => {
+        setReactivating(athlete.id);
+        try {
+            await athletesService.setRelationStatus(athlete.id, 'active');
+            toast.success(`${athlete.full_name ?? 'El atleta'} vuelve a tu equipo`);
+            // Las DOS listas cambian: sale de una y entra en la otra.
+            queryClient.invalidateQueries({ queryKey: rosterQueryKey(user.id, 'inactive') });
+            queryClient.invalidateQueries({ queryKey: rosterQueryKey(user.id, 'active') });
+            setReloadKey(k => k + 1);
+        } catch (err) {
+            console.error(err);
+            toast.error(err instanceof Error ? err.message : 'No se pudo reactivar.');
+        } finally {
+            setReactivating(null);
+        }
+    };
 
     /**
      * ALTERNATIVA AL CORREO: un enlace que se copia y se manda por donde
@@ -96,24 +137,16 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
         }
     };
 
-    const handleRemove = async () => {
-        if (!athleteToRemove) return;
-        setRemoving(true);
-        try {
-            // Cierra el tramo de la relación en vez de borrar la fila. El
-            // histórico —quién le entrenó y cuándo— es lo que da sentido a los
-            // bloques que el atleta conserva; borrarlo dejaba años de
-            // entrenamientos sin nadie que explicara de dónde salieron.
-            await athletesService.setRelationStatus(athleteToRemove.id, 'ended');
-            setAthletes(prev => prev.filter(a => a.id !== athleteToRemove.id));
-            toast.success(`${athleteToRemove.full_name} ya no está en tu equipo`);
-            setAthleteToRemove(null);
-        } catch (err) {
-            console.error(err);
-            toast.error(err instanceof Error ? err.message : 'No se pudo sacar del equipo.');
-        } finally {
-            setRemoving(false);
-        }
+    /**
+     * Qué hacer DESPUÉS de archivar, sacar del equipo o borrar.
+     *
+     * Los tres niveles y sus confirmaciones viven en `RemoveAthleteModal`; lo
+     * único que le queda a la lista es quitar la tarjeta. Se quita en local en
+     * vez de recargar la lista entera: el cambio ya está hecho en el servidor
+     * y volver a pedirlo todo haría parpadear las veinte fichas para borrar una.
+     */
+    const handleRemoved = (athleteId: string) => {
+        setAthletes(prev => prev.filter(a => a.id !== athleteId));
     };
 
     useEffect(() => {
@@ -124,15 +157,9 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 // Solo las relaciones VIVAS. Las cerradas y las archivadas
                 // siguen en la tabla —son el histórico— y sin este filtro la
                 // lista iría creciendo con gente que ya no se entrena aquí.
-                const { data: links, error: linksError } = await supabase
-                    .from('coach_athletes')
-                    .select('athlete_id')
-                    .eq('coach_id', user.id)
-                    .eq('status', 'active');
-
-                if (linksError) throw linksError;
-
-                const athleteIds = links?.map((l: { athlete_id: string }) => l.athlete_id) || [];
+                // El filtro vive en la puerta única, no aquí: ver
+                // src/features/coach/hooks/useCoachRoster.ts.
+                const athleteIds = await fetchRosterIds(user.id, 'active');
 
                 if (athleteIds.length === 0) {
                     if (alive) { setAthletes([]); setLoading(false); }
@@ -225,6 +252,8 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 }
                 case 'noPlan':
                     return !a.active_plan_name;
+                // 'archived' no se filtra aquí: es otra lista entera, con su
+                // propia consulta. Ver el bloque de render de más abajo.
                 default:
                     return true;
             }
@@ -325,29 +354,14 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 onSent={() => { setAthleteToInvite(null); setReloadKey(k => k + 1); }}
             />
 
-            <DangerConfirmModal
-                key={athleteToRemove?.id ?? 'sin-atleta'}
+            <RemoveAthleteModal
                 open={athleteToRemove !== null}
                 onClose={() => setAthleteToRemove(null)}
-                onConfirm={handleRemove}
-                working={removing}
-                title="Sacar del equipo"
-                confirmLabel="Sacar del equipo"
-                description={
-                    <>
-                        <strong className="font-bold">{athleteToRemove?.full_name}</strong> dejará de
-                        aparecer en tu lista, en el chat y en tu panel. Tú dejarás de ver su
-                        entrenamiento y él dejará de verte a ti.
-                        {/* Se dice EXPLÍCITAMENTE qué NO se borra. Un botón que
-                            pone "eliminar" hace pensar que se pierde todo, y esa
-                            duda es la que hace que nadie lo use nunca. */}
-                        <span className="mt-2 block text-t-xs text-ink-muted">
-                            No se borra su cuenta, ni su historial de entrenamiento, ni las
-                            competiciones que le hayas asignado —siguen en tu agenda—. Si vuelve a
-                            entrar con una invitación tuya, lo recuperas todo tal y como estaba.
-                        </span>
-                    </>
-                }
+                athlete={athleteToRemove}
+                onDone={() => {
+                    if (athleteToRemove) handleRemoved(athleteToRemove.id);
+                    setAthleteToRemove(null);
+                }}
             />
 
             {/* Búsqueda, filtros y orden. Antes solo existía la búsqueda por
@@ -408,7 +422,16 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 </div>
             </div>
 
-            {visible.length === 0 ? (
+            {filter === 'archived' ? (
+                <ArchivedList
+                    athletes={pasados}
+                    loading={cargandoPasados}
+                    searchTerm={searchTerm}
+                    reactivatingId={reactivating}
+                    onReactivate={handleReactivate}
+                    onBackToTeam={() => setFilter('all')}
+                />
+            ) : visible.length === 0 ? (
                 <EmptyList
                     hasAthletes={athletes.length > 0}
                     onClear={() => { setFilter('all'); setSearchTerm(''); }}
@@ -585,15 +608,17 @@ function AthleteCard({
                             </>
                         )}
 
-                        {/* Sacar del equipo. Aparece al pasar por encima de la
-                            tarjeta y no siempre: es la única acción destructiva
-                            de la lista y no tiene por qué competir por atención
-                            con el resto en cada una de las veinte fichas.
-                            En táctil no hay hover, así que ahí se ve siempre. */}
+                        {/* Quitar del equipo: abre las tres opciones
+                            (archivar, sacar, borrar la ficha). Aparece al pasar
+                            por encima de la tarjeta y no siempre: es la única
+                            acción destructiva de la lista y no tiene por qué
+                            competir por atención con el resto en cada una de las
+                            veinte fichas. En táctil no hay hover, así que ahí se
+                            ve siempre. */}
                         <button
                             onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                            aria-label={`Sacar a ${athlete.full_name} del equipo`}
-                            title="Sacar del equipo"
+                            aria-label={`Quitar a ${athlete.full_name} del equipo`}
+                            title="Quitar del equipo"
                             className="rounded-field p-2 text-ink-faint opacity-100 transition-all duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
                         >
                             <UserMinus size={16} aria-hidden="true" />
@@ -815,5 +840,126 @@ function SendAccessModal({
                 </div>
             </form>
         </Modal>
+    );
+}
+
+/**
+ * LOS QUE SE FUERON.
+ *
+ * Lista aparte y deliberadamente sosa: sin constancia, sin plan activo, sin
+ * récords. Esa información describe a alguien que entrena AHORA, y aquí no
+ * entrena nadie — pintarla invitaría a compararlos con el equipo, que es
+ * justo lo que no hay que hacer.
+ *
+ * Lo único que se ofrece es traerlos de vuelta, porque es lo único que tiene
+ * sentido hacer desde aquí. Y existe sobre todo por eso: sin esta pantalla,
+ * "archivar" sería una forma de perder gente.
+ */
+export function ArchivedList({
+    athletes,
+    loading,
+    searchTerm,
+    reactivatingId,
+    onReactivate,
+    onBackToTeam,
+}: {
+    athletes: RosterAthlete[];
+    loading: boolean;
+    searchTerm: string;
+    reactivatingId: string | null;
+    onReactivate: (a: RosterAthlete) => void;
+    onBackToTeam: () => void;
+}) {
+    const term = searchTerm.trim().toLowerCase();
+    const visible = term
+        ? athletes.filter(a => (a.full_name?.toLowerCase() ?? '').includes(term))
+        : athletes;
+
+    if (loading) {
+        return (
+            <div className="space-y-2">
+                <Skeleton className="h-16 w-full rounded-card" />
+                <Skeleton className="h-16 w-full rounded-card" />
+            </div>
+        );
+    }
+
+    if (visible.length === 0) {
+        return (
+            <div className="rounded-card border border-[var(--border-default)] bg-surface-raised px-5 py-10 text-center">
+                <Archive size={22} className="mx-auto mb-3 text-ink-faint" aria-hidden="true" />
+                <p className="text-t-sm font-bold text-ink">
+                    {term ? 'Nadie con ese nombre' : 'No has archivado a nadie'}
+                </p>
+                <p className="mx-auto mt-1.5 max-w-sm text-t-xs leading-relaxed text-ink-subtle">
+                    {term
+                        ? 'Prueba con otro nombre.'
+                        : 'Aquí aparecen los atletas que archivas o sacas del equipo. Se conservan enteros y puedes traerlos de vuelta cuando quieras.'}
+                </p>
+                <button
+                    onClick={onBackToTeam}
+                    className="mt-4 rounded-field border border-subtle px-4 py-2 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                >
+                    Volver al equipo
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <ul className="space-y-2">
+            {visible.map((athlete, index) => {
+                const trabajando = reactivatingId === athlete.id;
+                // Se dice CUÁNDO se fue: "hace ocho meses" y "la semana
+                // pasada" son dos decisiones distintas sobre la misma persona.
+                const desde = athlete.endedAt ?? athlete.startedAt;
+                const cuando = desde
+                    ? new Date(desde).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+                    : null;
+
+                return (
+                    <motion.li
+                        key={athlete.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={stagger(index)}
+                        className="flex items-center gap-3.5 rounded-card border border-[var(--border-default)] bg-surface-raised p-3.5"
+                    >
+                        <SafeImage
+                            src={athlete.avatar_url}
+                            alt=""
+                            // Atenuado: es un dato del pasado y se lee como tal.
+                            className="h-10 w-10 shrink-0 rounded-pill object-cover opacity-60"
+                            fallback={
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-surface-sunken text-t-xs font-bold text-ink-faint">
+                                    {(athlete.full_name ?? '?').charAt(0).toUpperCase()}
+                                </span>
+                            }
+                        />
+
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-t-sm font-bold text-ink-muted">
+                                {athlete.full_name ?? 'Atleta'}
+                            </p>
+                            <p className="mt-0.5 truncate text-t-xs text-ink-subtle">
+                                {athlete.status === 'archived' ? 'Archivado' : 'Fuera del equipo'}
+                                {cuando && ` · desde ${cuando}`}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => onReactivate(athlete)}
+                            disabled={trabajando}
+                            className="flex shrink-0 items-center gap-1.5 rounded-field border border-subtle px-3 py-2 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink disabled:opacity-40"
+                        >
+                            {trabajando
+                                ? <Loader size={13} className="animate-spin" aria-hidden="true" />
+                                : <RotateCcw size={13} aria-hidden="true" />}
+                            Reactivar
+                        </button>
+                    </motion.li>
+                );
+            })}
+        </ul>
     );
 }

@@ -369,6 +369,46 @@ export const athletesService = {
     },
 
     /**
+     * BORRA DE VERDAD la ficha de un atleta gestionado. IRREVERSIBLE.
+     *
+     * Es el tercer nivel de "quitar a alguien", y el único que destruye algo.
+     * Los otros dos —archivar y terminar la relación— conservan todo y se
+     * deshacen volviendo a `active`. Ver `setRelationStatus`.
+     *
+     * SOLO SIRVE PARA FICHAS QUE NUNCA HAN SIDO DE NADIE: el servidor exige
+     * `account_status = 'managed'` y `claimed_at IS NULL`. En cuanto una
+     * persona ha entrado en su cuenta, su entrenamiento es suyo y no hay
+     * ninguna circunstancia en la que un tercero deba poder borrarlo — así
+     * que la condición vive en la base de datos y no en el botón. Ver
+     * database/migrations/0001_bloque1_integridad.sql.
+     *
+     * Existe porque sin ella un atleta ficticio creado por error se quedaba
+     * para siempre: no podía entrar (nunca tuvo contraseña), su entrenador
+     * dejaba de poder leerlo al cerrar la relación, y no había forma de
+     * eliminarlo.
+     */
+    async deleteManagedProfile(athleteId: string): Promise<{ name: string | null; rows: number }> {
+        const { data, error } = await supabase.rpc('delete_managed_athlete', {
+            p_athlete_id: athleteId,
+        });
+
+        if (error) {
+            // PGRST202 = la función no existe todavía. El resto de mensajes
+            // vienen del propio servidor y ya están escritos para leerse.
+            if (error.code === 'PGRST202') {
+                throw new Error(
+                    'Falta la migración del borrado en la base de datos. ' +
+                    'Hay que ejecutar «database/migrations/0001_bloque1_integridad.sql» en Supabase.'
+                );
+            }
+            throw new Error(error.message);
+        }
+
+        const result = (data ?? {}) as { name?: string | null; rows?: number };
+        return { name: result.name ?? null, rows: result.rows ?? 0 };
+    },
+
+    /**
      * Marca la ficha como reclamada.
      *
      * La llama el propio atleta la primera vez que entra de verdad. No mueve
@@ -390,6 +430,10 @@ export const athletesService = {
      * segundo en guardar pisaría la del primero. El atleta NO las ve.
      */
     async getCoachNotes(coachId: string, athleteId: string): Promise<string | null> {
+        // UN par coach-atleta concreto, no una lista: aquí no hay ningún
+        // filtro de estado que olvidar. Las notas de una relación terminada se
+        // siguen leyendo a propósito, que es lo que las hace un histórico.
+        // eslint-disable-next-line no-restricted-syntax
         const { data, error } = await supabase
             .from('coach_athletes')
             .select('notes')
@@ -402,6 +446,8 @@ export const athletesService = {
     },
 
     async saveCoachNotes(coachId: string, athleteId: string, notes: string): Promise<void> {
+        // UN par concreto, igual que getCoachNotes. Ver el comentario de arriba.
+        // eslint-disable-next-line no-restricted-syntax
         const { error } = await supabase
             .from('coach_athletes')
             .update({ notes: notes.trim() || null })

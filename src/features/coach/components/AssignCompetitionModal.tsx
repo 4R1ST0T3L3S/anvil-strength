@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { useAuth } from '../../../context/AuthContext';
+import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { competitionsService } from '../../../services/competitionsService';
 import { Competition } from '../../../services/aepService';
 import { Modal } from '../../../components/ui/Modal';
@@ -16,6 +17,10 @@ interface AssignCompetitionModalProps {
 
 export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignCompetitionModalProps) {
     const { session } = useAuth();
+    // El identificador suelto y no `session` entero: es de lo ÚNICO que
+    // depende la consulta, y con el objeto en las dependencias el callback se
+    // rehacía en cada refresco del token.
+    const coachId = session?.user.id ?? null;
     const [athletes, setAthletes] = useState<UserProfile[]>([]);
     const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
@@ -24,16 +29,13 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
     const [description, setDescription] = useState('');
 
     const fetchAthletes = useCallback(async () => {
+        if (!coachId) return;
         try {
             setLoading(true);
-            const { data: links, error: linksError } = await supabase
-                .from('coach_athletes')
-                .select('athlete_id')
-                .eq('coach_id', session?.user.id);
-
-            if (linksError) throw linksError;
-
-            const athleteIds = links?.map(l => l.athlete_id) || [];
+            // Por la puerta única, y solo los vínculos vivos: asignar una
+            // competición a alguien que ya no está en el equipo no significa
+            // nada. Ver src/features/coach/hooks/useCoachRoster.ts.
+            const athleteIds = await fetchRosterIds(coachId, 'active');
 
             if (athleteIds.length === 0) {
                 setAthletes([]);
@@ -54,13 +56,13 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
         } finally {
             setLoading(false);
         }
-    }, [session?.user.id]);
+    }, [coachId]);
 
     useEffect(() => {
-        if (isOpen && session?.user.id) {
+        if (isOpen && coachId) {
             fetchAthletes();
         }
-    }, [isOpen, session?.user.id, fetchAthletes]);
+    }, [isOpen, coachId, fetchAthletes]);
 
     const toggleAthlete = (id: string) => {
         const newSelected = new Set(selectedAthletes);

@@ -19,6 +19,7 @@ import { ViewTransition } from '../../../components/layout/ViewTransition';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { PreferencesPage } from './PreferencesPage';
+import { PdfThemeSettings } from '../../profile/components/PdfThemeSettings';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 import { FloatingChat } from '../../chat/components/FloatingChat';
@@ -43,6 +44,11 @@ const VIEWS = {
     pwr: 'pwr_analysis',
     preferencias: 'preferences',
     perfil: 'profile',
+    // El diseño del PDF tiene ruta PROPIA y no es un estado dentro de
+    // "Mi perfil": necesita la pantalla entera para la vista previa, y
+    // teniendo URL se puede llegar desde Preferencias —que es donde un
+    // entrenador lo busca— sin pasar por el perfil.
+    documento: 'pdf_theme',
 } as const;
 
 type Slug = keyof typeof VIEWS;
@@ -58,6 +64,7 @@ const TITLES: Record<Slug, string | undefined> = {
     pwr: 'Análisis PWR',
     preferencias: 'Preferencias',
     perfil: 'Mi perfil',
+    documento: 'Documento PDF',
 };
 
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
@@ -182,7 +189,9 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             case 'pwr_analysis':
                 return <PwrAnalysisTab />;
             case 'preferences':
-                return <PreferencesPage coachId={user.id} />;
+                return <PreferencesPage coachId={user.id} onOpenPdfTheme={() => go('documento')} />;
+            case 'pdf_theme':
+                return <PdfThemeSettings user={user} onBack={() => go('preferencias')} />;
             case 'home':
             default:
                 return <CoachHome user={user} onNavigate={(v) => go(viewToSlug(v))} />;
@@ -197,7 +206,11 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             onLogout={onLogout}
             panelSwitch={panelSwitch}
             title={athleteId ? undefined : TITLES[slug]}
-            onBack={slug === '' && !athleteId ? undefined : () => go(athleteId ? 'atletas' : '')}
+            onBack={
+                slug === '' && !athleteId
+                    ? undefined
+                    : () => go(athleteId ? 'atletas' : slug === 'documento' ? 'preferencias' : '')
+            }
         >
             <ViewTransition transitionKey={athleteId ?? slug}>{renderContent()}</ViewTransition>
 

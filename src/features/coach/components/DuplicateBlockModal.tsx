@@ -3,6 +3,7 @@ import { Check, Copy, Loader, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../components/ui/Modal';
 import { supabase } from '../../../lib/supabase';
+import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock } from '../../../types/training';
 
@@ -56,16 +57,13 @@ export function DuplicateBlockModal({
 
         let alive = true;
         (async () => {
-            const { data: links } = await supabase
-                .from('coach_athletes')
-                .select('athlete_id')
-                .eq('coach_id', coachId);
-
-            const ids = (links ?? [])
-                .map((l: { athlete_id: string }) => l.athlete_id)
+            // Por la puerta única y solo vínculos vivos: copiar un bloque a
+            // alguien que ya no entrena aquí no tiene destinatario.
+            // Ver src/features/coach/hooks/useCoachRoster.ts.
+            const ids = (await fetchRosterIds(coachId, 'active'))
                 // El atleta del que sale el bloque no puede ser destino: sería
                 // duplicárselo a sí mismo, que no es lo que nadie quiere aquí.
-                .filter((id: string) => id !== currentAthleteId);
+                .filter(id => id !== currentAthleteId);
 
             if (ids.length === 0) { if (alive) setCandidates([]); return; }
 

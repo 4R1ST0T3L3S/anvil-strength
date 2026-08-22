@@ -331,6 +331,19 @@ Movilidad de cadera 5'`}
                         prescription="3x5 @180kg"
                         coachNotes="Para un segundo en el agujero."
                         externalVideoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                        // Indicaciones del ejercicio, que es lo que se ve
+                        // DEBAJO del vídeo. Aquí van a mano; en la aplicación
+                        // salen de `exercise_library`.
+                        setup="Barra apoyada en la espalda, no en el cuello. Pies a la anchura de los hombros, puntas ligeramente hacia fuera."
+                        generalCues={[
+                            'Empuja las rodillas hacia fuera durante todo el recorrido',
+                            'Mantén el pecho alto y la mirada al frente',
+                            'Reparte el peso en el medio del pie, ni en punta ni en talón',
+                        ]}
+                        generalErrors={[
+                            'Que las rodillas se metan hacia dentro al subir',
+                            'Levantar la cadera antes que el pecho',
+                        ]}
                     />
 
                     <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">

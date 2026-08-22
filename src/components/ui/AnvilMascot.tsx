@@ -113,9 +113,23 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
 
                         {/* --- SONRISA / BOCA DE ESFUERZO --- */}
                         {/* Se transforma de sonrisa curva a linea recta de esfuerzo */}
-                        <motion.path
-                            d="M80 110 Q100 125 120 110"
-                            animate={{ d: isLifting ? "M85 115 Q100 115 115 115" : "M80 110 Q100 125 120 110" }}
+                        {/* `path` normal, NO `motion.path`.
+                            framer-motion NO sabe animar el atributo `d` de un
+                            SVG: no interpola trazados (para eso hace falta algo
+                            como flubber). Lo que hacía era peor que no animar
+                            —tomaba el control de `d` y escribía la cadena
+                            "undefined" ENCIMA del valor estático—, así que el
+                            navegador rechazaba el trazado entero:
+                            «Expected moveto path command ('M' or 'm')».
+                            Resultado: la boca, los brazos y las piernas del
+                            muñeco no se dibujaban NUNCA. No era una animación
+                            que fallara, era el dibujo que no existía.
+                            El cambio de pose es ahora instantáneo. Es lo que
+                            hay sin una librería de morphing, y para un guiño de
+                            la portada sobra: lo que se lee es que cambia de
+                            cara al levantar, no cuánto tarda en cambiarla. */}
+                        <path
+                            d={isLifting ? "M85 115 Q100 115 115 115" : "M80 110 Q100 125 120 110"}
                             stroke="black"
                             strokeWidth="4"
                             strokeLinecap="round"
@@ -124,40 +138,37 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
 
                         {/* --- BRAZOS --- */}
                         {/* Izquierdo */}
-                        <motion.path
-                            // Normal: Flexionando | Deadlift: Estirados abajo agarrando la barra
-                            animate={{
-                                d: isLifting
-                                    ? "M40 100 L40 160"  // Brazo estirado bajando a la barra
-                                    : ["M40 100 Q20 100 20 60", "M40 100 Q20 90 20 50", "M40 100 Q20 100 20 60"]
-                            }}
+                        {/* Ver la nota de la boca: `path`, no `motion.path`.
+                            Aquí el estado de reposo era además un array de
+                            fotogramas (un vaivén de respiración) que tampoco
+                            llegó a moverse nunca; se queda su primer fotograma. */}
+                        <path
+                            d={isLifting
+                                ? "M40 100 L40 160"          // estirado, agarrando la barra
+                                : "M40 100 Q20 100 20 60"}   // flexionado
                             stroke="white"
                             strokeWidth="5"
                             strokeLinecap="round"
                             fill="none"
-                            transition={{ duration: 0.5 }}
                         />
                         {/* Derecho */}
-                        <motion.path
-                            animate={{
-                                d: isLifting
-                                    ? "M160 100 L160 160"
-                                    : ["M160 100 Q180 100 180 60", "M160 100 Q180 90 180 50", "M160 100 Q180 100 180 60"]
-                            }}
+                        <path
+                            d={isLifting
+                                ? "M160 100 L160 160"
+                                : "M160 100 Q180 100 180 60"}
                             stroke="white"
                             strokeWidth="5"
                             strokeLinecap="round"
                             fill="none"
-                            transition={{ duration: 0.5 }}
                         />
 
                         {/* --- PIERNAS (Se comprimen al bajar) --- */}
-                        <motion.path
-                            animate={{ d: isLifting ? "M80 150 L80 160 L70 160" : "M80 150 L80 185 L70 185" }}
+                        <path
+                            d={isLifting ? "M80 150 L80 160 L70 160" : "M80 150 L80 185 L70 185"}
                             stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"
                         />
-                        <motion.path
-                            animate={{ d: isLifting ? "M120 150 L120 160 L130 160" : "M120 150 L120 185 L130 185" }}
+                        <path
+                            d={isLifting ? "M120 150 L120 160 L130 160" : "M120 150 L120 185 L130 185"}
                             stroke="white" strokeWidth="5" strokeLinecap="round" fill="none"
                         />
                     </svg>

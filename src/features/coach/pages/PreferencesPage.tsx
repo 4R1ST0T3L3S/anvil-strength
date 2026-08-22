@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Palette, SlidersHorizontal, CalendarClock, Save } from 'lucide-react';
+import { Palette, SlidersHorizontal, CalendarClock, Save, FileText, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/Button';
 import { useCoachPrefs, useSaveCoachPrefs } from '../../../hooks/useCoachPrefs';
@@ -20,7 +20,12 @@ import type { CoachPrefs, IntensityMetric, WeightUnit, FirstWeekday } from '../.
  * decidida y cerrada, es la unidad y el primer día de la semana, que cada
  * atleta puede pisar desde su propio perfil.
  */
-export function PreferencesPage({ coachId }: { coachId: string }) {
+export function PreferencesPage({ coachId, onOpenPdfTheme }: {
+    coachId: string;
+    /** Abre el diseño del PDF. Vive en su propia ruta porque necesita la
+     *  pantalla entera para la vista previa del documento. */
+    onOpenPdfTheme?: () => void;
+}) {
     const { prefs: loaded, loading } = useCoachPrefs(coachId);
     const save = useSaveCoachPrefs(coachId);
 
@@ -55,6 +60,38 @@ export function PreferencesPage({ coachId }: { coachId: string }) {
 
     return (
         <div className="mx-auto w-full max-w-3xl space-y-6 px-4 pb-24 pt-4 md:px-0">
+            {/* DOCUMENTO PDF.
+                Va lo PRIMERO y no dentro de "Mi perfil", que es donde vivía
+                su único acceso. Perfil es quién eres; el aspecto del PDF es
+                cómo trabajas, y por tanto se busca aquí — la prueba es que
+                aquí se buscó y no se encontró.
+
+                Es un enlace y no una tarjeta con controles porque la pantalla
+                del PDF necesita el ancho entero para la vista previa; meterla
+                en esta columna de 3xl la dejaría ilegible. */}
+            {onOpenPdfTheme && (
+                <button
+                    type="button"
+                    onClick={onOpenPdfTheme}
+                    className="group flex w-full items-center gap-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay md:p-6"
+                >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand">
+                        <FileText size={18} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-t-base font-semibold text-ink">Documento PDF</span>
+                        <span className="mt-0.5 block text-t-xs text-ink-subtle">
+                            Colores, tipografía, logotipo y columnas de la hoja de entrenamiento que reciben tus atletas. Puedes copiar el diseño de un PDF que ya repartas.
+                        </span>
+                    </span>
+                    <ChevronRight
+                        size={16}
+                        aria-hidden="true"
+                        className="shrink-0 text-ink-faint transition-transform duration-fast ease-snap group-hover:translate-x-0.5"
+                    />
+                </button>
+            )}
+
             {/* MARCA Y COLORES */}
             <Card icon={Palette} title="Colores" hint="El color de un ejercicio dice a qué parte del día pertenece de un vistazo.">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -48,9 +48,17 @@ export function DangerConfirmModal({
     // OTRO atleta con la palabra ya escrita lo dejaría completamente desarmado.
     const [typed, setTyped] = useState('');
 
-    // Se ignoran mayúsculas y espacios sobrantes: el objetivo es que el
-    // usuario se detenga a leer, no ponerle una prueba de mecanografía.
-    const matches = typed.trim().toLowerCase() === confirmWord.toLowerCase();
+    // Se ignoran mayúsculas, espacios sobrantes Y ACENTOS: el objetivo es que
+    // el usuario se detenga a leer, no ponerle una prueba de mecanografía.
+    //
+    // Los acentos importan desde que la palabra puede ser el NOMBRE de un
+    // atleta —que es lo que obliga a mirar a quién se está borrando—: exigir
+    // "josé" con tilde en un teclado de móvil convierte una salvaguarda en un
+    // obstáculo, y un obstáculo se rodea, no se respeta.
+    const normalizar = (s: string) =>
+        s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    const matches = normalizar(typed) === normalizar(confirmWord);
 
     return (
         <Modal open={open} onClose={onClose} title={title} size="sm" dismissible={!working}>

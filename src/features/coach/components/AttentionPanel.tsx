@@ -4,6 +4,7 @@ import { AlertTriangle, ChevronRight, CalendarClock, UserX, TrendingDown, Check 
 import type { LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
+import { fetchRoster } from '../hooks/useCoachRoster';
 import { trainingService, type AthleteAdherence } from '../../../services/trainingService';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { stagger } from '../../../lib/motion';
@@ -52,18 +53,18 @@ export function AttentionPanel({ coachId }: { coachId: string }) {
 
         const load = async () => {
             try {
-                const { data: links, error } = await supabase
-                    .from('coach_athletes')
-                    .select('athlete_id')
-                    .eq('coach_id', coachId);
-
-                if (error) throw error;
-
-                const athleteIds = (links ?? []).map((l: { athlete_id: string }) => l.athlete_id);
+                // Solo los vínculos VIVOS, y por la puerta única
+                // (useCoachRoster). Aquí estaba el fallo: la consulta se
+                // escribía a mano y sin `status = 'active'`, así que un atleta
+                // al que el coach había sacado del equipo desaparecía de la
+                // pestaña "Atletas" —que sí filtraba— y seguía saliendo AQUÍ,
+                // en el inicio del panel, con su nombre de verdad. Indis-
+                // tinguible de un atleta real, y sin ninguna forma de quitarlo.
+                const roster = await fetchRoster(coachId, 'active');
+                const athleteIds = roster.map(a => a.id);
                 if (athleteIds.length === 0) { if (alive) setItems([]); return; }
 
-                const [{ data: profiles }, { data: blocks }, adherence] = await Promise.all([
-                    supabase.from('profiles').select('id, full_name').in('id', athleteIds),
+                const [{ data: blocks }, adherence] = await Promise.all([
                     supabase
                         .from('training_blocks')
                         .select('athlete_id, name, end_date, is_active')
@@ -74,7 +75,7 @@ export function AttentionPanel({ coachId }: { coachId: string }) {
 
                 if (!alive) return;
 
-                const names = new Map((profiles ?? []).map(p => [p.id as string, (p.full_name as string) ?? 'Atleta']));
+                const names = new Map(roster.map(a => [a.id, a.full_name ?? 'Atleta']));
                 const activeBlockByAthlete = new Map(
                     (blocks ?? []).map(b => [b.athlete_id as string, b])
                 );

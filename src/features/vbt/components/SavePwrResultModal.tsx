@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Link2, Loader, Search, User, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '../../../lib/supabase';
+import { fetchRoster } from '../../coach/hooks/useCoachRoster';
 import { vbtService, type AttachableSet } from '../../../services/vbtService';
 import { velocityZone } from '../../../lib/vbt/analysis';
 import type { VbtMetrics } from '../../../types/training';
@@ -105,22 +105,19 @@ export function SavePwrResultModal({
         if (!open || fixedAthleteId || !coachId) return;
 
         let alive = true;
-        supabase
-            .from('coach_athletes')
-            .select('athlete_id')
-            .eq('coach_id', coachId)
-            .then(async ({ data }) => {
-                const ids = (data ?? []).map(r => r.athlete_id as string);
-                if (ids.length === 0) { if (alive) setAthletes([]); return; }
-
-                const { data: profiles } = await supabase
-                    .from('profiles')
-                    .select('id, full_name, avatar_url')
-                    .in('id', ids)
-                    .order('full_name');
-
-                if (alive) setAthletes((profiles ?? []) as AthleteOption[]);
-            });
+        // Por la puerta única y solo vínculos vivos: guardar un análisis en
+        // alguien que ya no está en el equipo es guardarlo donde nadie lo va a
+        // mirar. Ver src/features/coach/hooks/useCoachRoster.ts.
+        fetchRoster(coachId, 'active')
+            .then(roster => {
+                if (!alive) return;
+                setAthletes(roster.map(a => ({
+                    id: a.id,
+                    full_name: a.full_name ?? 'Atleta',
+                    avatar_url: a.avatar_url,
+                })) as AthleteOption[]);
+            })
+            .catch(() => { if (alive) setAthletes([]); });
 
         return () => { alive = false; };
     }, [open, coachId, fixedAthleteId]);

@@ -35,6 +35,15 @@ const MobilePreview = import.meta.env.DEV
     ? lazy(() => import('../features/devtools/MobilePreview').then(module => ({ default: module.MobilePreview })))
     : null;
 
+/**
+ * Banco de PIEZAS sueltas (el de arriba monta pantallas enteras). Mismo
+ * mecanismo de desaparición en producción: el ternario mata la rama y con
+ * ella la importación dinámica. Ver la nota de MobilePreview.
+ */
+const PiezasPreview = import.meta.env.DEV
+    ? lazy(() => import('../features/devtools/PiezasPreview').then(module => ({ default: module.PiezasPreview })))
+    : null;
+
 
 
 interface AppRoutesProps {
@@ -86,6 +95,12 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             {MobilePreview && (
                 <Route path="/dev/movil" element={
                     <Suspense fallback={<DashboardSkeleton />}><MobilePreview /></Suspense>
+                } />
+            )}
+
+            {PiezasPreview && (
+                <Route path="/dev/piezas" element={
+                    <Suspense fallback={<DashboardSkeleton />}><PiezasPreview /></Suspense>
                 } />
             )}
 

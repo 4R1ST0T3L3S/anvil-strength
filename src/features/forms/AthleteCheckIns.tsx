@@ -6,7 +6,7 @@ import {
     formsService, getPeriodKey, mergeQuestions,
     FormType, FormQuestion, FormAnswer
 } from '../../services/formsService';
-import { chatService } from '../../services/chatService';
+import { fetchActiveCoach } from '../coach/hooks/useCoachRoster';
 import { CheckInAnswerFields, AnswerValues } from './CheckInAnswerFields';
 
 // ============ Tarjeta de acceso (para el home del atleta) ============
@@ -107,7 +107,7 @@ export function CheckInFormModal({
         const load = async () => {
             try {
                 // Plantilla del coach del atleta (o predefinida)
-                const coach = await chatService.getMyCoach(athleteId).catch(() => null);
+                const coach = await fetchActiveCoach(athleteId).catch(() => null);
                 const qs = await formsService.getTemplate(coach?.id || null, type);
                 formsService.getIntro(coach?.id || null, type).then(setIntro).catch(() => { });
 

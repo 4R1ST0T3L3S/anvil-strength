@@ -19,7 +19,7 @@ import { ConfirmationModal } from '../../../components/modals/ConfirmationModal'
 import { Button } from '../../../components/ui/Button';
 import { AnchoredMenu } from '../../../components/ui/AnchoredMenu';
 import { SafeImage } from '../../../components/ui/SafeImage';
-import { useCoachAthleteRoster } from '../hooks/useCoachAthleteRoster';
+import { useCoachRoster } from '../hooks/useCoachRoster';
 import { puede, type Capacidad } from '../../../lib/roles';
 
 interface CoachAthleteDetailsProps {
@@ -86,9 +86,9 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     // NAVEGACIÓN RÁPIDA ENTRE ATLETAS. El nombre de la cabecera se convierte
     // en el disparador de un desplegable con el resto del equipo: antes,
     // saltar a otro atleta obligaba a volver a la lista, buscarlo y volver a
-    // entrar. `useCoachAthleteRoster` es una consulta ligera y con caché —no
+    // entrar. `useCoachRoster` es una consulta ligera y con caché —no
     // repite lo que ya pidió la pestaña "Atletas" si el coach vino de ahí.
-    const { athletes: roster, loading: rosterLoading } = useCoachAthleteRoster(currentUser?.id);
+    const { athletes: roster, loading: rosterLoading } = useCoachRoster(currentUser?.id);
     const [rosterOpen, setRosterOpen] = useState(false);
     const [rosterSearch, setRosterSearch] = useState('');
     const rosterAnchorRef = useRef<HTMLButtonElement>(null);

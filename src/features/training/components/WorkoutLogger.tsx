@@ -58,6 +58,13 @@ interface ExtendedSessionExercise extends Omit<SessionExercise, 'exercise'> {
         name: string;
         video_url?: string | null;
         muscle_group?: string | null;
+        // Indicaciones generales del ejercicio. Opcionales porque la consulta
+        // trae `exercise_library(*)` y las columnas no existen hasta que se
+        // ejecuta database/exercise_indications.sql: hasta entonces llegan
+        // como `undefined` y la ficha simplemente no las pinta.
+        setup?: string | null;
+        cues?: string[] | null;
+        common_errors?: string[] | null;
     } | null;
     sets: TrainingSet[];
 }
@@ -1325,6 +1332,12 @@ function LoggerExerciseCard({
                     // consulta (`exercise:exercise_library (name, video_url,
                     // muscle_group)`) y no lo leía nadie.
                     externalVideoUrl={sessionExercise.exercise?.video_url}
+                    // Indicaciones del EJERCICIO. Llegan por el `select(*)` de
+                    // `exercise_library`, así que no hay consulta nueva: son
+                    // tres columnas más de una fila que ya venía.
+                    setup={sessionExercise.exercise?.setup}
+                    generalCues={sessionExercise.exercise?.cues}
+                    generalErrors={sessionExercise.exercise?.common_errors}
                 />
             </Modal>
 
