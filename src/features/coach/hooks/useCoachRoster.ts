@@ -237,3 +237,61 @@ export function useCoachRoster(
         refetch: query.refetch,
     };
 }
+
+// =====================================================================
+// ESTADO DE FACTURACIÓN DE LA RELACIÓN (K7)
+// =====================================================================
+/**
+ * POR QUÉ ESTO VIVE AQUÍ Y NO EN `paymentsService`.
+ *
+ * Porque `billing_mode` es una columna de `coach_athletes`, y esa tabla se
+ * consulta por UNA sola puerta: la regla de eslint que hay al respecto no es
+ * una manía de organización, viene de que la misma consulta llegó a estar
+ * escrita ocho veces y cinco olvidaban el filtro de estado.
+ *
+ * `billing_mode` es de la RELACIÓN y no del atleta: alguien con entrenador de
+ * fuerza y nutricionista puede estar al día con uno y no con el otro, y su
+ * perfil no puede decir las dos cosas a la vez.
+ */
+
+import type { BillingMode } from '../../../lib/billing';
+
+/** Clave de caché del modo de facturación de una pareja concreta. */
+export const billingModeQueryKey = (coachId: string, athleteId: string) =>
+    ['billing-mode', coachId, athleteId] as const;
+
+/**
+ * Lee el modo de facturación de una relación.
+ *
+ * Devuelve `'auto'` ante cualquier problema —relación inexistente, columna que
+ * todavía no existe porque la migración no se ha ejecutado—, que es el valor
+ * que NO bloquea a nadie. Ver la regla de oro de `usePuertaDePago`.
+ */
+export async function fetchBillingMode(coachId: string, athleteId: string): Promise<BillingMode> {
+    const { data, error } = await supabase
+        .from('coach_athletes')
+        .select('billing_mode')
+        .eq('coach_id', coachId)
+        .eq('athlete_id', athleteId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+    if (error || !data) return 'auto';
+    return (data.billing_mode as BillingMode) ?? 'auto';
+}
+
+/** Cambia el modo de facturación de una relación. */
+export async function setBillingMode(
+    coachId: string,
+    athleteId: string,
+    modo: BillingMode
+): Promise<void> {
+    const { error } = await supabase
+        .from('coach_athletes')
+        .update({ billing_mode: modo })
+        .eq('coach_id', coachId)
+        .eq('athlete_id', athleteId)
+        .eq('status', 'active');
+
+    if (error) throw error;
+}

@@ -22,6 +22,34 @@
  */
 
 export type WeightUnit = 'kg' | 'lb';
+
+/**
+ * QUÉ HACE LA PUERTA DE PAGO. Decisión K1.
+ *
+ *   'off'   — ni avisa ni bloquea. Para quien no cobra por la aplicación.
+ *   'warn'  — avisa al atleta, no le corta nada. **Es el valor por defecto**,
+ *             y lo es a propósito: K1 exige un despliegue en dos tiempos.
+ *             Una semana con datos reales comprobando que el semáforo dice la
+ *             verdad ANTES de que nadie se quede sin entrenar por un fallo.
+ *   'block' — corta lo que diga `blocks`.
+ *
+ * El paso de 'warn' a 'block' es una decisión del entrenador, y de momento
+ * también de Marc: no se cambia el valor por defecto hasta que la semana de
+ * prueba haya pasado.
+ */
+export type BillingGate = 'off' | 'warn' | 'block';
+
+/** Qué se corta cuando la puerta bloquea. Decisión K5. */
+export interface BillingBlocks {
+    /** El registro de la sesión y la planificación. Es el servicio. */
+    entrenamiento: boolean;
+    /** Mediciones de velocidad. Es entrenamiento. */
+    vbt: boolean;
+    /** El plan de comidas. Es el servicio. */
+    nutricion: boolean;
+    /** El panel de "Hoy" del inicio: enseña el entrenamiento del día. */
+    hoy: boolean;
+}
 export type FirstWeekday = 'monday' | 'sunday';
 export type IntensityMetric = 'rpe' | 'percent_1rm' | 'relative_to_block_max';
 export type IntensityCurve = 'linear' | 'contrast';
@@ -65,6 +93,24 @@ export interface CoachPrefs {
         showRpeToAthlete: boolean;
         showVelocityToAthlete: boolean;
     };
+    /**
+     * PUERTA DE PAGO. Decisiones K1, K5, K6.
+     *
+     * ANVIL no cobra: no hay pasarela y no se mueve dinero. `athlete_payments`
+     * es un REGISTRO que el entrenador rellena a mano. Lo que decidió K1 —y
+     * que REVOCA la decisión del 12/08/2026— es que ese registro pase a
+     * decidir el acceso.
+     *
+     * El chat NUNCA se corta, y por eso no está en `blocks`: si le cortas el
+     * chat, el atleta no puede ni preguntar cómo pagar.
+     */
+    billing: {
+        gate: BillingGate;
+        /** Días de cortesía tras vencer. K6: siete, para quien paga el 3 y no el 1. */
+        graceDays: number;
+        blocks: BillingBlocks;
+    };
+
     /** Unidad y primer día por defecto para atletas SIN override propio. */
     defaultUnit: WeightUnit;
     defaultFirstWeekday: FirstWeekday;
@@ -110,6 +156,17 @@ export const DEFAULT_COACH_PREFS: CoachPrefs = {
         showRpeToAthlete: true,
         showVelocityToAthlete: true,
     },
+    billing: {
+        // 'warn' Y NO 'block'. Ver BillingGate: K1 exige salir avisando.
+        gate: 'warn',
+        graceDays: 7,
+        blocks: {
+            entrenamiento: true,
+            vbt: true,
+            nutricion: true,
+            hoy: true,
+        },
+    },
     defaultUnit: 'kg',
     defaultFirstWeekday: 'monday',
 };
@@ -131,6 +188,16 @@ export function resolveCoachPrefs(raw: unknown): CoachPrefs {
         },
         intensity: { ...DEFAULT_COACH_PREFS.intensity, ...saved.intensity },
         programming: { ...DEFAULT_COACH_PREFS.programming, ...saved.programming },
+        billing: {
+            ...DEFAULT_COACH_PREFS.billing,
+            ...saved.billing,
+            // `blocks` se funde aparte: con el spread de arriba, un
+            // `billing.blocks` guardado a medias —por ejemplo desde una versión
+            // anterior que solo tenía `entrenamiento`— dejaría el resto en
+            // `undefined`, y `undefined` no bloquea. Un ajuste a medio guardar
+            // no puede abrir una puerta que el entrenador cerró.
+            blocks: { ...DEFAULT_COACH_PREFS.billing.blocks, ...saved.billing?.blocks },
+        },
         defaultUnit: saved.defaultUnit ?? DEFAULT_COACH_PREFS.defaultUnit,
         defaultFirstWeekday: saved.defaultFirstWeekday ?? DEFAULT_COACH_PREFS.defaultFirstWeekday,
     };

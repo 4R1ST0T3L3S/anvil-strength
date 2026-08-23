@@ -22,7 +22,9 @@ import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
 import { AthleteVbtView } from '../components/AthleteVbtView';
-import { RestrictedFeature } from '../../../components/ui/RestrictedFeature';
+import { BloqueoDePago } from '../../../components/ui/BloqueoDePago';
+import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
+import { vistaBloqueada } from '../../../lib/billing';
 import { AnvilRanking } from '../components/AnvilRanking';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
@@ -79,6 +81,10 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const navigate = useNavigate();
     const { view } = useParams<{ view: string }>();
     const { refetch } = useUser();
+
+    // Antes de los `return` de mas abajo: los hooks se llaman siempre, en el
+    // mismo orden, o React pierde la cuenta.
+    const puerta = usePuertaDePago(user.id);
 
     // Una ruta inventada (`/dashboard/loquesea`) no puede dejar la pantalla en
     // blanco: se corrige a la de inicio antes de renderizar nada.
@@ -191,14 +197,40 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
     const renderContent = () => {
         switch (VIEWS[slug]) {
+            /*
+             * LA PUERTA DE PAGO SUSTITUYE A `has_access`. Decisión K3.
+             *
+             * Antes, estas tres vistas se cerraban con `user.has_access === false`
+             * y un cartel de "Planificación Premium". Eso mezclaba dos cosas
+             * que ahora tienen dos nombres:
+             *
+             *   · `has_access` — la ADMINISTRACIÓN de ANVIL suspende la cuenta.
+             *     Se queda, pero ya no cierra el entrenamiento.
+             *   · puerta de pago — el ENTRENADOR dice que este atleta no está
+             *     al día CON ÉL.
+             *
+             * Y el cartel de "Premium" era engañoso de todas formas: sugería un
+             * plan de suscripción de la plataforma que no existe. Aquí no se
+             * vende ningún plan; hay un entrenador esperando un cobro.
+             *
+             * Lo que NO se toca: chat, perfil, competiciones, calendario,
+             * ranking y comunidad (K5). El chat sobre todo — sin él, el atleta
+             * no puede ni preguntar cómo pagar.
+             */
             case 'planning':
-                if (user.has_access === false) return <RestrictedFeature title="Planificación Premium" />;
+                if (vistaBloqueada('entrenamiento', puerta.resultado, puerta.prefs.billing.blocks)) {
+                    return <BloqueoDePago resultado={puerta.resultado} queSeHaBloqueado="Tu entrenamiento" />;
+                }
                 return <WorkoutLogger athleteId={user.id} athleteName={user.full_name} />;
             case 'vbt':
-                if (user.has_access === false) return <RestrictedFeature title="Velocidad Premium" />;
+                if (vistaBloqueada('vbt', puerta.resultado, puerta.prefs.billing.blocks)) {
+                    return <BloqueoDePago resultado={puerta.resultado} queSeHaBloqueado="El análisis de velocidad" />;
+                }
                 return <AthleteVbtView athleteId={user.id} />;
             case 'nutrition':
-                if (user.has_access === false) return <RestrictedFeature title="Nutrición Premium" />;
+                if (vistaBloqueada('nutricion', puerta.resultado, puerta.prefs.billing.blocks)) {
+                    return <BloqueoDePago resultado={puerta.resultado} queSeHaBloqueado="Tu plan de nutrición" />;
+                }
                 return <AthleteNutritionView user={user} />;
             case 'competitions':
                 return <AthleteCompetitionsView user={user} />;

@@ -16,6 +16,9 @@ import { AnvilRanking } from './AnvilRanking';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { CountdownWidget } from '../../../components/ui/CountdownWidget';
+import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
+import { vistaBloqueada } from '../../../lib/billing';
+import { AvisoDePago } from '../../../components/ui/BloqueoDePago';
 
 interface AthleteHomeProps {
     user: UserProfile;
@@ -147,6 +150,7 @@ function NavTile({
  */
 export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const navigate = useNavigate();
+    const puerta = usePuertaDePago(user.id);
     const [loading, setLoading] = useState(true);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
@@ -175,12 +179,23 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
 
     const firstName = user.full_name?.split(' ')[0] || 'Atleta';
     const teamName = user.role === 'athlete' ? getTeamName(user.coach_name) : null;
-    const locked = user.has_access === false;
+    /*
+     * EL PANEL DE "HOY" SE CIERRA POR PAGO, NO POR `has_access` (K3, K5).
+     *
+     * Enseña el entrenamiento del día, así que es servicio del entrenador. El
+     * resto del inicio —competiciones, ranking, comunidad, cuestionarios— se
+     * ve con normalidad: no es suyo.
+     */
+    const locked = vistaBloqueada('hoy', puerta.resultado, puerta.prefs.billing.blocks);
     const accent = user.coach_brand_color || 'var(--brand)';
 
     return (
         <>
             <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 pb-24 md:px-8 md:py-10">
+                {/* Con la puerta en modo aviso (K1) esto informa y no corta.
+                    Con la puerta cerrada, el panel de "Hoy" ya está bloqueado
+                    mas abajo y esta franja explica por que. */}
+                <AvisoDePago resultado={puerta.resultado} />
                 {/* ---------------------------------------------------------
                     CABECERA                                              */}
                 <header>

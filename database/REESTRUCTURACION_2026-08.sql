@@ -16,7 +16,12 @@
 --      día de la semana, que es lo único que varía por persona y no por
 --      quien programa (decidido el 12/08/2026, ver memoria del proyecto).
 --   3. athlete_payments       — registro de pagos. Semáforo, no pasarela:
---      esto NO cobra nada, solo avisa. Nunca corta el acceso.
+--      esto NO cobra nada. AQUÍ DECÍA «solo avisa, nunca corta el acceso»,
+--      y dejó de ser cierto el 21/08/2026: la decisión K1 lo revocó y el
+--      registro SÍ decide el acceso al entrenamiento, al VBT y a la
+--      nutrición. La puerta la implementa database/PAGOS_2026-08-23.sql y
+--      sale de fábrica en modo aviso. Se reescribe en vez de borrarse para
+--      que el cambio quede donde estaba la razón anterior.
 --   4. competition_results    — resultado de una competición ya disputada.
 --      Tabla propia y no columnas en `competitions`: esa tabla también
 --      guarda el calendario oficial de la AEP, que no tiene resultados.
