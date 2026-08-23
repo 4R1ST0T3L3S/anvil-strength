@@ -85,11 +85,19 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
     const [activeMetric, setActiveMetric] = useState<'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM'>('Vm');
     const [summaryData, setSummaryData] = useState<SummaryRow[]>();
 
+    /*
+     * Igual que en VbtChartModal: los CSV del encoder son inmutables y sin
+     * embargo se descargaban y parseaban enteros en cada apertura. Aqui el
+     * coste es mayor porque se comparan VARIAS sesiones a la vez.
+     *
+     * Se conserva el efecto —la logica de union de puntos es larga y no se
+     * toca en esta fase— pero `setLoading(true)` sale del cuerpo: el estado
+     * arranca ya en true, que es lo que de verdad ocurre al abrir el modal.
+     */
     useEffect(() => {
         if (!isOpen || sessionsToCompare.length === 0) return;
 
         let isMounted = true;
-        setLoading(true);
 
         const fetchAndParse = async () => {
             try {

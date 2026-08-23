@@ -20,6 +20,36 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
         /**
+         * `preserve-manual-memoization` BAJA A AVISO. Y por qué, exactamente.
+         *
+         * Esta regla no dice que haya un fallo: dice que React Compiler ha
+         * renunciado a optimizar un componente porque no puede conservar la
+         * memoización escrita a mano. Es una nota de COMPILACIÓN.
+         *
+         * Y en este proyecto **React Compiler no está activado**: no está en
+         * `vite.config.ts` ni en `package.json`. O sea que hoy no cambia ni un
+         * byte de lo que se ejecuta.
+         *
+         * Quedan 12 avisos, todos en `WorkoutBuilder` (9) y `WorkoutLogger`
+         * (3), y no son 12 problemas: son 2. Cuando el compilador se rinde con
+         * un componente, reporta TODOS los `useMemo` y `useCallback` que ha
+         * tenido que dejar sin optimizar, aunque estén perfectamente escritos
+         * —entre ellos un `useMemo` de tres líneas que solo calcula un rango de
+         * semanas—. La causa está en otro sitio del mismo fichero.
+         *
+         * Encontrarla en dos componentes de 2.100 y 1.600 líneas, que además
+         * son el constructor de bloques y el registro de series (lo más
+         * delicado que tiene la aplicación), es un trabajo de horas cuyo
+         * beneficio hoy es cero. Se deja anotado como deuda, a la vista, en vez
+         * de silenciarlo o de fingir que no está.
+         *
+         * CUÁNDO VOLVER A SUBIRLO A ERROR: el día que se active React
+         * Compiler. Ese día esto sí pasa a costar rendimiento real y toca
+         * arreglarlo antes de encenderlo.
+         */
+        'react-hooks/preserve-manual-memoization': 'warn',
+
+        /**
          * `coach_athletes` SE CONSULTA POR UNA SOLA PUERTA.
          *
          * La misma consulta —"¿quiénes son los atletas de este entrenador?"—

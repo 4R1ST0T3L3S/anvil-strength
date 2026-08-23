@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { notificationsService, AppNotification } from '../../services/notificationsService';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { AnchoredMenu } from './AnchoredMenu';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 function timeAgo(dateStr: string): string {
     const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -25,9 +26,7 @@ function timeAgo(dateStr: string): string {
  */
 export function NotificationBell({ userId }: { userId: string }) {
     const [isOpen, setIsOpen] = useState(false);
-    const [notifications, setNotifications] = useState<AppNotification[]>([]);
-    const [unreadCount, setUnreadCount] = useState(0);
-    const [loading, setLoading] = useState(false);
+
     const bellRef = useRef<HTMLButtonElement>(null);
     const welcomeShown = useRef(false);
     const push = usePushNotifications();
@@ -44,20 +43,44 @@ export function NotificationBell({ userId }: { userId: string }) {
         }
     };
 
-    const refresh = useCallback(async () => {
-        try {
+    /**
+     * Los avisos y cuántos hay sin leer, por consulta.
+     *
+     * Esta campana vive en la cabecera de TODAS las pantallas del panel, así
+     * que se monta y desmonta en cada cambio de vista. Con el `useState` que
+     * había, eso eran dos peticiones por cada navegación —y dos renders, uno
+     * por cada `setState`—. Con la caché, la campana ya sabe lo que tiene que
+     * enseñar desde el primer frame.
+     *
+     * OJO, DEUDA CONOCIDA: esto lee la tabla `notifications` a través de
+     * `notificationsService`, mientras que `src/hooks/useNotifications.ts`
+     * —el que usa `NotificationsPopover`— lee `app_notifications` por su
+     * cuenta. Son DOS sistemas de avisos distintos conviviendo. No se unifican
+     * aquí porque decidir cuál se queda es una decisión de datos, no de
+     * interfaz.
+     */
+    const queryClient = useQueryClient();
+    const claveAvisos = ['avisos-campana', userId] as const;
+
+    const { data: avisos, refetch, isPending: loading } = useQuery({
+        queryKey: ['avisos-campana', userId],
+        queryFn: async () => {
             const [items, count] = await Promise.all([
                 notificationsService.getNotifications(userId),
-                notificationsService.getUnreadCount(userId)
+                notificationsService.getUnreadCount(userId),
             ]);
-            setNotifications(items);
-            setUnreadCount(count);
-            return count;
-        } catch (e) {
-            console.error('Error loading notifications:', e);
-            return 0;
-        }
-    }, [userId]);
+            return { items, count };
+        },
+        enabled: !!userId,
+    });
+
+    const notifications: AppNotification[] = avisos?.items ?? [];
+    const unreadCount = avisos?.count ?? 0;
+
+    const refresh = useCallback(async () => {
+        const { data } = await refetch();
+        return data?.count ?? 0;
+    }, [refetch]);
 
     /*
      * Carga inicial + aviso de bienvenida.
@@ -88,30 +111,38 @@ export function NotificationBell({ userId }: { userId: string }) {
     // Realtime: nuevas notificaciones
     useEffect(() => {
         const channel = notificationsService.subscribe(userId, (n) => {
-            setNotifications(prev => [n, ...prev]);
-            setUnreadCount(prev => prev + 1);
+            // El aviso nuevo entra en la cache, no en un useState: asi lo ve
+            // cualquier otra copia de la campana que este montada.
+            queryClient.setQueryData<{ items: AppNotification[]; count: number }>(
+                claveAvisos,
+                (previo) => previo
+                    ? { items: [n, ...previo.items], count: previo.count + 1 }
+                    : { items: [n], count: 1 }
+            );
             toast(n.title, { description: n.message, duration: 6000 });
         });
         return () => { channel.unsubscribe(); };
-    }, [userId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, queryClient]);
 
     // Cerrar al pulsar fuera o con Escape lo resuelve `AnchoredMenu`, que
     // además excluye el propio botón para que su clic no cierre y reabra.
 
-    const handleOpen = async () => {
+    const handleOpen = () => {
         setIsOpen(prev => !prev);
-        if (!isOpen && notifications.length === 0) {
-            setLoading(true);
-            await refresh();
-            setLoading(false);
-        }
+        // Al abrir se pide de nuevo por si ha entrado algo mientras. Ya no hace
+        // falta un 'loading' propio: la consulta enseña lo que tenia guardado
+        // y refresca por detras, que es justo lo que se quiere aqui.
+        if (!isOpen) void refresh();
     };
 
     const handleMarkAllRead = async () => {
         try {
             await notificationsService.markAllRead(userId);
-            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-            setUnreadCount(0);
+            queryClient.setQueryData<{ items: AppNotification[]; count: number }>(
+                claveAvisos,
+                (previo) => previo ? { items: previo.items.map(n => ({ ...n, is_read: true })), count: 0 } : previo
+            );
         } catch (e) {
             console.error('Error marking notifications read:', e);
         }

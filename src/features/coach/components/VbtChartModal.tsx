@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Papa from 'papaparse';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { X, Download, Loader, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { mapRowToVbt, isValidVbtRow } from '../utils/vbtParser';
+import { useQuery } from '@tanstack/react-query';
 
 interface VbtChartModalProps {
     isOpen: boolean;
@@ -24,8 +25,7 @@ interface VbtDataPoint {
 }
 
 export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: VbtChartModalProps) {
-    const [data, setData] = useState<VbtDataPoint[]>([]);
-    const [loading, setLoading] = useState(true);
+
     const [activeMetrics, setActiveMetrics] = useState({
         Vm: true,
         Vmp: false,
@@ -35,47 +35,47 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
         ROM: false
     });
 
-    useEffect(() => {
-        if (!isOpen || !vbtFileUrl) return;
-
-        let isMounted = true;
-        setLoading(true);
-
-        // Fetch and parse the CSV from the URL
-        Papa.parse(vbtFileUrl, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-                if (!isMounted) return;
-
-                try {
-                    const parsedData = (results.data as Record<string, unknown>[]).map(mapRowToVbt);
-
-                    // Filter out rows that might be completely empty or invalid
-                    const validData = parsedData.filter(isValidVbtRow);
-                    
-                    setData(validData);
-                } catch (err) {
-                    console.error("Error parsing VBT CSV:", err);
-                    toast.error("El formato del archivo VBT no es compatible o está corrupto.");
-                } finally {
-                    setLoading(false);
-                }
-            },
-            error: (err) => {
-                console.error("Error downloading VBT data:", err);
-                if (isMounted) {
-                    toast.error("Error al descargar los datos del VBT.");
-                    setLoading(false);
-                }
-            }
-        });
-
-        return () => {
-            isMounted = false;
-        };
-    }, [isOpen, vbtFileUrl]);
+    /**
+     * El CSV del encoder, descargado y convertido a puntos.
+     *
+     * Por consulta y no por efecto. El fichero es INMUTABLE —es una medicion
+     * que ya ocurrio— y sin embargo se volvia a descargar y a parsear en cada
+     * apertura del modal. El entrenador abre y cierra estas graficas media
+     * docena de veces seguidas cuando compara series.
+     *
+     * Papa.parse es de devolucion de llamada, asi que se envuelve en una
+     * promesa para poder esperarla.
+     */
+    const { data = [], isPending: loading } = useQuery({
+        queryKey: ['vbt-csv', vbtFileUrl],
+        queryFn: () => new Promise<VbtDataPoint[]>((resolver, rechazar) => {
+            Papa.parse(vbtFileUrl!, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    try {
+                        const filas = (results.data as Record<string, unknown>[]).map(mapRowToVbt);
+                        resolver(filas.filter(isValidVbtRow));
+                    } catch (err) {
+                        console.error('Error parsing VBT CSV:', err);
+                        toast.error('El formato del archivo VBT no es compatible o esta corrupto.');
+                        rechazar(err);
+                    }
+                },
+                error: (err) => {
+                    console.error('Error downloading VBT data:', err);
+                    toast.error('Error al descargar los datos del VBT.');
+                    rechazar(err);
+                },
+            });
+        }),
+        enabled: isOpen && !!vbtFileUrl,
+        // El fichero no cambia nunca: una vez descargado, vale para siempre.
+        staleTime: Infinity,
+        // Un CSV corrupto seguira corrupto: reintentar solo hace esperar mas.
+        retry: false,
+    });
 
     if (!isOpen) return null;
 

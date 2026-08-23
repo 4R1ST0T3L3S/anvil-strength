@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser, UserProfile } from '../../../hooks/useUser';
 import { adminService } from '../services/adminService';
 import { isAdmin } from '../../../lib/roles';
 import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
 
 type TabType = 'todos' | 'atletas' | 'entrenadores' | 'nutricionistas';
 
@@ -13,38 +15,54 @@ export function AdminDashboard() {
     const { data: currentUser, isLoading: isUserLoading } = useUser();
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [initialUsers, setInitialUsers] = useState<UserProfile[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<TabType>('todos');
+    const queryClient = useQueryClient();
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-    // Function to load users
-    const loadUsers = async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
+    /*
+     * LA LISTA DEL SERVIDOR VA POR CONSULTA; LA EDITABLE SIGUE SIENDO LOCAL.
+     *
+     * Esta pantalla mantiene DOS copias a proposito —la que se esta tocando y
+     * la original— para poder ensenar el boton de guardar solo cuando hay
+     * cambios de verdad. Eso es estado de formulario, no cache de servidor, y
+     * por eso no desaparece.
+     *
+     * Lo que si desaparece es el efecto que las llenaba: con el, entrar en el
+     * panel eran dos renders (uno con la lista vacia y otro con los datos) y
+     * cero cache. El ajuste durante el render siembra las dos copias en cuanto
+     * llega una lista nueva, sin pintar el intermedio.
+     */
+    const { data: usuariosServidor, isPending: cargandoUsuarios, error: errorConsulta } = useQuery({
+        queryKey: CLAVES.usuariosAdmin.raiz,
+        queryFn: async () => {
             const data = await adminService.getAllUsers();
+            // El propio administrador se quita de la lista: la columna de correo
+            // no esta en la base y no se puede filtrar en el servidor.
+            return data.filter(u => u.id !== currentUser?.id);
+        },
+        enabled: isAdmin(currentUser),
+    });
 
-            // Filter out the current admin user since the email column isn't in the database to filter backend
-            const filteredData = data.filter(u => u.id !== currentUser?.id);
+    const [semillaUsuarios, setSemillaUsuarios] = useState(usuariosServidor);
+    if (usuariosServidor && semillaUsuarios !== usuariosServidor) {
+        setSemillaUsuarios(usuariosServidor);
+        setUsers(usuariosServidor);
+        setInitialUsers(usuariosServidor);
+    }
 
-            setUsers(filteredData);
-            setInitialUsers(filteredData);
-        } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Error al cargar usuarios');
-        } finally {
-            setIsLoading(false);
-        }
+    const isLoading = cargandoUsuarios;
+    // El fallo de la consulta se ensena con los demas errores de la pantalla,
+    // en vez de dejar la tabla vacia sin explicacion.
+    const errorVisible = error ?? (errorConsulta instanceof Error ? errorConsulta.message : null);
+
+    /** Vuelve a pedir la lista. Tras guardar cambios o borrar a alguien. */
+    const loadUsers = async () => {
+        setError(null);
+        await queryClient.invalidateQueries({ queryKey: CLAVES.usuariosAdmin.raiz });
     };
-
-    useEffect(() => {
-        if (isAdmin(currentUser)) {
-            loadUsers();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentUser]);
 
     // Show message briefly
     const showSuccess = (msg: string) => {
@@ -87,9 +105,14 @@ export function AdminDashboard() {
             
             await adminService.updateUsersBulk(updates);
             
-            // Sync initialUsers so the save button disappears
+            // La copia original se iguala a la editada, y así el botón de
+            // guardar desaparece sin esperar a que vuelva el servidor.
             setInitialUsers(users);
             showSuccess('Cambios guardados correctamente');
+            // Y además se invalida la consulta: lo que se acaba de guardar
+            // tiene que quedar reflejado en la caché, o cualquier otra pantalla
+            // que lea esta lista seguiría enseñando los roles de antes.
+            void loadUsers();
         } catch (err: unknown) {
             showError(err instanceof Error ? err.message : 'Error al guardar los cambios en la base de datos');
         } finally {
@@ -281,10 +304,10 @@ export function AdminDashboard() {
                 </div>
 
                 {/* Alerts */}
-                {error && (
+                {errorVisible && (
                     <div className="mb-6 bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-lg flex items-center gap-3 font-bold">
                         <X size={20} />
-                        {error}
+                        {errorVisible}
                     </div>
                 )}
 

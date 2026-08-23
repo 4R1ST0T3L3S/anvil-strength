@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Trophy, MapPin, Settings, X, Calendar, Check, Loader, Flag } from 'lucide-react';
 import { LiveCountdown, formatCompetitionName, getCompetitionColorClass } from './CompetitionCountdown';
-import { fetchCompetitions, Competition } from '../../services/aepService';
+import { fetchCompetitions } from '../../services/aepService';
+import { useQuery } from '@tanstack/react-query';
 
 // ============ Temas / Presets visuales ============
 
@@ -85,12 +86,26 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
         return assigned || null;
     }, [prefs, assigned]);
 
-    // Si el evento elegido ya pasó (más de 1 día), volver a la convocatoria asignada
+    /*
+     * Si el evento elegido ya pasó (más de un día), se vuelve a la convocatoria
+     * asignada.
+     *
+     * ESTE SÍ ES UN EFECTO LEGÍTIMO, y por eso lleva la regla desactivada en
+     * vez de convertirse en un ajuste durante el render: `savePrefs` escribe
+     * en `localStorage`, que es un sistema externo. Un ajuste durante el render
+     * se ejecutaría también en los intentos de render que React descarta, y
+     * eso son escrituras al disco que nadie ha pedido. Sincronizar un sistema
+     * externo con el estado es literalmente para lo que existen los efectos.
+     *
+     * El coste —un render de más— se paga una vez, el día siguiente a una
+     * competición, y no en cada interacción.
+     */
     useEffect(() => {
         if (!event || prefs.source === 'assigned') return;
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         if (new Date(event.date + 'T00:00:00') < yesterday) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             savePrefs({ ...prefs, source: 'assigned' });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,9 +193,6 @@ function CountdownSettings({
     hasAssigned: boolean;
 }) {
     const [draft, setDraft] = useState<CountdownPrefs>(prefs);
-    const [aepCompetitions, setAepCompetitions] = useState<Competition[]>([]);
-    const [loadingAep, setLoadingAep] = useState(false);
-    const [aepError, setAepError] = useState<string | null>(null);
 
     // Ajuste durante el render en vez de un efecto. Ademas arregla un fallo
     // real: el efecto dependia de `prefs`, que es un objeto nuevo en cada
@@ -193,16 +205,23 @@ function CountdownSettings({
         if (isOpen) setDraft(prefs);
     }
 
-    // Cargar calendario AEP al abrir la pestaña correspondiente
-    useEffect(() => {
-        if (!isOpen || draft.source !== 'aep' || aepCompetitions.length > 0 || loadingAep) return;
-        setLoadingAep(true);
-        setAepError(null);
-        fetchCompetitions()
-            .then(comps => setAepCompetitions(comps.filter(c => c.dateIso)))
-            .catch(() => setAepError('No se pudo cargar el calendario AEP. Inténtalo más tarde.'))
-            .finally(() => setLoadingAep(false));
-    }, [isOpen, draft.source, aepCompetitions.length, loadingAep]);
+    /*
+     * El calendario de la AEP, por consulta.
+     *
+     * El efecto que había dependía de `aepCompetitions.length` y de
+     * `loadingAep`, o sea de su propio resultado, y se protegía con una
+     * guarda al principio para no repetirse. Es el patrón que `enabled` y la
+     * caché hacen innecesario: se pide una vez, se guarda, y al volver a la
+     * pestaña ya está.
+     */
+    const { data: aepCompetitions = [], isPending: loadingAep, isError: aepFallo } = useQuery({
+        queryKey: ['calendario-aep'],
+        queryFn: () => fetchCompetitions().then(comps => comps.filter(c => c.dateIso)),
+        enabled: isOpen && draft.source === 'aep',
+        // El calendario federativo se publica una vez y cambia poco.
+        staleTime: 1000 * 60 * 60,
+    });
+    const aepError = aepFallo ? 'No se pudo cargar el calendario AEP. Inténtalo más tarde.' : null;
 
     const handleSave = () => {
         onSave(draft);

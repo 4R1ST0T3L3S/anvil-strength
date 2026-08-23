@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Check, ChevronRight, Loader, Zap } from 'lucide-react';
 import {
     getAthleteTrainingTree, getBlockTree,
-    type TrainingTreeMacro, type TrainingTreeSession,
+    type TrainingTreeSession,
 } from '../../../services/vbtService';
 import { getWeekNumber } from '../../../utils/dateUtils';
 import { WEEKDAYS } from '../../../types/training';
 import { cn } from '../../../lib/utils';
+import { useQuery } from '@tanstack/react-query';
 
 /**
  * ELEGIR UNA SERIE BAJANDO POR EL PLAN
@@ -69,13 +70,29 @@ export function AssignSetPicker({
     value: AssignSetSelection | null;
     onChange: (selection: AssignSetSelection | null) => void;
 }) {
-    const [macros, setMacros] = useState<TrainingTreeMacro[]>([]);
-    const [loadingTree, setLoadingTree] = useState(true);
-
     const [macroId, setMacroId] = useState<string | null | undefined>(undefined);
     const [blockId, setBlockId] = useState<string | null>(null);
-    const [sessions, setSessions] = useState<TrainingTreeSession[]>([]);
-    const [loadingBlock, setLoadingBlock] = useState(false);
+
+    /*
+     * EL ÁRBOL DE ENTRENAMIENTO DEL ATLETA, POR CONSULTA.
+     *
+     * Este selector se abre desde el análisis de vídeo para decir a qué serie
+     * pertenece la medición, y se abre varias veces seguidas cuando se
+     * analizan varias series de la misma sesión. Con los efectos que había,
+     * cada apertura volvía a pedir el árbol entero y luego el bloque entero:
+     * dos viajes completos para elegir lo mismo que se acababa de elegir.
+     */
+    const { data: macros = [], isPending: loadingTree } = useQuery({
+        queryKey: ['arbol-entrenamiento', athleteId],
+        queryFn: () => getAthleteTrainingTree(athleteId),
+    });
+
+    const { data: sessions = [], isPending: cargandoBloque } = useQuery({
+        queryKey: ['arbol-bloque', blockId],
+        queryFn: () => getBlockTree(blockId!),
+        enabled: !!blockId,
+    });
+    const loadingBlock = !!blockId && cargandoBloque;
 
     const [week, setWeek] = useState<number | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -84,61 +101,48 @@ export function AssignSetPicker({
     // ---------------------------------------------------------------
     // Carga del árbol
     // ---------------------------------------------------------------
-    useEffect(() => {
-        let alive = true;
-        setLoadingTree(true);
+    /*
+     * PROPUESTA AUTOMÁTICA AL LLEGAR EL ÁRBOL.
+     *
+     * Con un solo macrociclo no hay nada que elegir: se salta el nivel
+     * entero en vez de enseñar un botón obligatorio. Y si el macro tiene un
+     * solo bloque, también se elige; si tiene varios, se propone el activo.
+     *
+     * Ajuste durante el render y no un efecto: con el efecto se pintaba un
+     * frame con los tres niveles vacíos —tres listas montadas para nada—
+     * antes de plegarse solos.
+     */
+    const [arbolAnterior, setArbolAnterior] = useState(macros);
+    if (arbolAnterior !== macros) {
+        setArbolAnterior(macros);
+        if (macros.length === 1) {
+            setMacroId(macros[0].id);
+            if (macros[0].blocks.length === 1) {
+                setBlockId(macros[0].blocks[0].id);
+            } else {
+                const activo = macros[0].blocks.find(b => b.isActive);
+                if (activo) setBlockId(activo.id);
+            }
+        }
+    }
 
-        getAthleteTrainingTree(athleteId)
-            .then(tree => {
-                if (!alive) return;
-                setMacros(tree);
-
-                // Con un solo macrociclo no hay nada que elegir: se salta el
-                // nivel entero en vez de enseñar un botón obligatorio.
-                if (tree.length === 1) {
-                    setMacroId(tree[0].id);
-                    if (tree[0].blocks.length === 1) setBlockId(tree[0].blocks[0].id);
-                    else {
-                        // Y si hay varios, se propone el activo.
-                        const active = tree[0].blocks.find(b => b.isActive);
-                        if (active) setBlockId(active.id);
-                    }
-                }
-            })
-            .catch(() => { if (alive) setMacros([]); })
-            .finally(() => { if (alive) setLoadingTree(false); });
-
-        return () => { alive = false; };
-    }, [athleteId]);
-
-    // Contenido del bloque elegido.
-    useEffect(() => {
-        if (!blockId) { setSessions([]); return; }
-
-        let alive = true;
-        setLoadingBlock(true);
-
-        getBlockTree(blockId)
-            .then(rows => {
-                if (!alive) return;
-                setSessions(rows);
-
-                // LA SEMANA ACTUAL POR DEFECTO. Es lo que pidió el diseño y
-                // es lo correcto: se está guardando el vídeo de hoy. Si el
-                // bloque no llega a la semana de hoy —uno pasado— se cae en
-                // la última que tenga, no en la primera: lo último que se
-                // entrenó está más cerca de lo que se busca.
-                const weeks = [...new Set(rows.map(r => r.weekNumber))].sort((a, b) => a - b);
-                const current = getWeekNumber();
-                setWeek(weeks.includes(current) ? current : (weeks[weeks.length - 1] ?? null));
-                setSessionId(null);
-                setExerciseId(null);
-            })
-            .catch(() => { if (alive) setSessions([]); })
-            .finally(() => { if (alive) setLoadingBlock(false); });
-
-        return () => { alive = false; };
-    }, [blockId]);
+    /*
+     * LA SEMANA ACTUAL POR DEFECTO, al llegar el contenido del bloque.
+     *
+     * Es lo correcto: se está guardando el vídeo de hoy. Si el bloque no
+     * llega a la semana de hoy —uno pasado— se cae en la última que tenga,
+     * no en la primera: lo último que se entrenó está más cerca de lo que
+     * se busca.
+     */
+    const [bloqueAnterior, setBloqueAnterior] = useState(sessions);
+    if (bloqueAnterior !== sessions) {
+        setBloqueAnterior(sessions);
+        const semanas = [...new Set(sessions.map(r => r.weekNumber))].sort((a, b) => a - b);
+        const actual = getWeekNumber();
+        setWeek(semanas.includes(actual) ? actual : (semanas[semanas.length - 1] ?? null));
+        setSessionId(null);
+        setExerciseId(null);
+    }
 
     // ---------------------------------------------------------------
     // Derivados
@@ -208,7 +212,7 @@ export function AssignSetPicker({
     // Cambiar un nivel de arriba invalida lo de abajo. Sin esto se podría
     // guardar contra una serie de un día que ya no está seleccionado.
     const changeMacro = (id: string | null) => {
-        setMacroId(id); setBlockId(null); setSessions([]);
+        setMacroId(id); setBlockId(null);
         setWeek(null); setSessionId(null); setExerciseId(null); onChange(null);
     };
     const changeBlock = (id: string) => {
@@ -405,7 +409,14 @@ function Level({
     const [open, setOpen] = useState(true);
 
     // Al elegir se pliega solo; al deshacer la elección se vuelve a abrir.
-    useEffect(() => { setOpen(chosen === null); }, [chosen]);
+    // Ajuste durante el render y no un efecto: con el efecto se veía un frame
+    // con el nivel todavía abierto después de elegir, y como cada nivel monta
+    // su lista entera, ese frame de más se notaba.
+    const [elegidoAntes, setElegidoAntes] = useState(chosen);
+    if (elegidoAntes !== chosen) {
+        setElegidoAntes(chosen);
+        setOpen(chosen === null);
+    }
 
     if (chosen !== null && !open) {
         return (

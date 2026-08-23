@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 
@@ -23,6 +23,7 @@ import { useCoachRoster } from '../hooks/useCoachRoster';
 import { puede, type Capacidad } from '../../../lib/roles';
 import { useQuery } from '@tanstack/react-query';
 import { CLAVES } from '../../../lib/queryKeys';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
@@ -80,6 +81,7 @@ const BUILDER_WIDTH = 'mx-auto w-full max-w-7xl pb-6';
 
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { data: currentUser } = useUser();
     const [activeTab, setActiveTab] = useState<Tab>('planning');
 
@@ -93,8 +95,6 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     const [rosterSearch, setRosterSearch] = useState('');
     const rosterAnchorRef = useRef<HTMLButtonElement>(null);
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-    const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
-    const [results, setResults] = useState<Record<string, CompetitionResult>>({});
     const [addingCompetition, setAddingCompetition] = useState(false);
     const [newCompetition, setNewCompetition] = useState({ name: '', date: '', location: '' });
     const [savingCompetition, setSavingCompetition] = useState(false);
@@ -106,17 +106,34 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         onConfirm: () => void;
     }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
 
-    const fetchCompetitions = useCallback(async () => {
-        if (!athleteId) return;
-        try {
-            const data = await competitionsService.getAthleteCompetitions(athleteId);
-            setCompetitions(data || []);
-            const resultRows = await competitionsService.getResults(athleteId);
-            setResults(Object.fromEntries(resultRows.map(r => [r.competition_id, r])));
-        } catch (error) {
-            console.error('Error fetching competitions:', error);
-        }
-    }, [athleteId]);
+    /**
+     * Las competiciones del atleta y sus resultados, en una sola consulta.
+     *
+     * Juntas y no en dos porque la pestaña necesita las dos para pintar una
+     * fila: la competición da el nombre y la fecha, el resultado da las
+     * marcas. Separadas se veria la lista y luego los numeros apareciendo
+     * encima.
+     */
+    const { data: competicionesQuery } = useQuery({
+        queryKey: CLAVES.competicionesAsignadas.deAtleta(athleteId),
+        queryFn: async () => {
+            const lista = await competitionsService.getAthleteCompetitions(athleteId);
+            const filas = await competitionsService.getResults(athleteId);
+            return {
+                competitions: lista || [],
+                results: Object.fromEntries(filas.map(r => [r.competition_id, r])),
+            };
+        },
+        enabled: !!athleteId,
+    });
+
+    const competitions = competicionesQuery?.competitions ?? [];
+    const results = competicionesQuery?.results ?? {};
+
+    /** Tras asignar, editar o borrar una competición. */
+    const fetchCompetitions = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.competicionesAsignadas.deAtleta(athleteId) });
+    }, [queryClient, athleteId]);
 
     const handleAddCompetition = async () => {
         if (!newCompetition.name.trim() || !newCompetition.date || !currentUser) {
@@ -167,7 +184,13 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
             onConfirm: async () => {
                 try {
                     await competitionsService.removeAssignment(id);
-                    setCompetitions(prev => prev.filter(c => c.id !== id));
+                    // Borrado optimista sobre la cache compartida.
+                    queryClient.setQueryData<{ competitions: CompetitionAssignment[]; results: Record<string, unknown> }>(
+                        CLAVES.competicionesAsignadas.deAtleta(athleteId),
+                        (previo) => previo
+                            ? { ...previo, competitions: previo.competitions.filter(c => c.id !== id) }
+                            : previo
+                    );
                 } catch (error) {
                     console.error('Error removing competition:', error);
                     // alert('Error al eliminar la competición');
@@ -207,7 +230,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         },
     });
 
-    useEffect(() => { fetchCompetitions(); }, [fetchCompetitions]);
+
 
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
     if (!athlete) return <div className="p-8 text-center text-danger">Atleta no encontrado</div>;
