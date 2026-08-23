@@ -9,14 +9,26 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'sw.js'],
+      // `masked-icon.svg` estaba en esta lista y NO EXISTE en `public/`.
+      // DEUDA CONOCIDA, se resuelve en F3 (PWA): `sw.js` es un service worker
+      // escrito a mano que `usePushNotifications` registra por su cuenta, y a
+      // la vez `push-sw.js` se inyecta en el generado por workbox. Son dos
+      // manejadores de `push` compitiendo. Hoy no se nota porque `main.tsx`
+      // desregistra todos los service workers; al reactivar la PWA (K11) sí.
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'sw.js'],
       manifest: {
         name: 'Anvil Strength Powerlifting',
         short_name: 'Anvil Strength',
         description: 'Anvil Strength Powerlifting App',
-        // v2: Force icon update
-        theme_color: '#000000',
-        background_color: '#000000',
+        // `lang` lo rellenaba vite-plugin-pwa con 'en' por defecto, en una
+        // aplicación que está entera en español.
+        lang: 'es',
+        // Los dos colores salen de tokens.css, no de un negro cualquiera:
+        // `theme_color` pinta la barra del sistema y tiene que ser el mismo
+        // `--surface-sunken` que declara `<meta name="theme-color">` en
+        // index.html, o la barra cambia de color al instalar la app.
+        theme_color: '#0a0a0a',
+        background_color: '#0a0a0a',
         display: 'standalone',
         start_url: '/',
         scope: '/',
@@ -25,18 +37,25 @@ export default defineConfig({
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
+            // `any maskable` a la vez era mentira por partida doble: prometía
+            // servir sin recorte (y el yunque tocaba el borde) y con recorte
+            // (y no tenía margen para él). Ahora son dos ficheros distintos:
+            // este sangra el rojo hasta el borde y encoge el yunque para que
+            // quepa en el círculo seguro del 80%.
             src: 'pwa-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
           }
         ]
       },

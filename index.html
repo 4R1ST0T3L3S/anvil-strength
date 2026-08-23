@@ -3,8 +3,24 @@
 
 <head>
   <meta charset="UTF-8" />
+  <!-- ICONOS.
+       El SVG manda donde se puede: el yunque se pinta blanco sobre pestaña
+       oscura y negro sobre pestaña clara, que es algo que un .ico no sabe
+       hacer porque no admite consulta de medios.
+
+       `favicon.ico` es el respaldo para lo que no entiende SVG (marcadores,
+       algunos clientes de escritorio, resultados de búsqueda). Va DESPUÉS a
+       propósito: el navegador se queda con la última declaración que sepa
+       usar, así que quien entienda SVG usa el SVG. Y lleva fondo rojo, no
+       transparente — un yunque blanco sin fondo sobre una pestaña clara es
+       un icono invisible.
+
+       Los cinco los genera `scripts/generate-icons.mjs` a partir de
+       logo.svg, derivando el rojo de `--brand`. Antes los cuatro PNG eran
+       literalmente el mismo fichero de 180x180 con cuatro nombres. -->
   <link rel="icon" type="image/svg+xml" href="/logo.svg" media="(prefers-color-scheme: dark)" />
   <link rel="icon" type="image/svg+xml" href="/logo-black.svg" media="(prefers-color-scheme: light)" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <!-- `viewport-fit=cover` es lo que ACTIVA las variables `env(safe-area-inset-*)`.
        Sin él valen cero siempre, y todas las reservas de espacio que hace la app
