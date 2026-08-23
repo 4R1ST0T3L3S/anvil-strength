@@ -46,7 +46,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
     const balance = points?.balance || 0;
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-8 animate-fade">
             <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">

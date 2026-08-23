@@ -39,7 +39,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
 
     if (!plan) {
         return (
-            <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
+            <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade">
                 <header>
                     <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-white">Mi Nutrición</h1>
                     <p className="text-ink-muted text-lg">Tu plan de alimentación personalizado.</p>
@@ -118,7 +118,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
     ];
 
     return (
-        <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade-in">
+        <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade">
             <header className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-white">Mi Nutrición</h1>

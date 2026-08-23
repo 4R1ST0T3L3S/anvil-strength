@@ -296,7 +296,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
     return (
         <div className={embedded
             ? 'flex min-h-[60vh] flex-col'
-            : 'fixed inset-0 z-modal flex flex-col bg-surface-canvas animate-in fade-in duration-200'
+            : 'fixed inset-0 z-modal flex flex-col bg-surface-canvas animate-fade'
         }>
             {/* ----------------------------------------------------- */}
             <header className={embedded ? 'shrink-0' : 'shrink-0 border-b border-subtle bg-surface-raised'}>

@@ -1449,7 +1449,7 @@ function LoggerExerciseCard({
 
             {/* Selector: ¿a qué serie corresponde el archivo VBT? */}
             {pendingSetTag && (
-                <div className="px-4 py-3 bg-anvil-red/5 border-b border-anvil-red/20 animate-in slide-in-from-top-2">
+                <div className="px-4 py-3 bg-anvil-red/5 border-b border-anvil-red/20 animate-drop">
                     <p className="text-t-2xs font-black uppercase tracking-wider text-anvil-red mb-2">
                         ¿A qué serie corresponde el archivo?
                     </p>

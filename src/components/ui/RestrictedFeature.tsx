@@ -10,7 +10,7 @@ export function RestrictedFeature({
     description = "Esta sección está restringida porque actualmente no formáis parte de Anvil Strength Club."
 }: RestrictedFeatureProps) {
     return (
-        <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="flex flex-col items-center justify-center h-full min-h-[400px] p-6 text-center animate-pop">
             <div className="relative mb-6">
                 <div className="absolute inset-0 bg-anvil-red/20 blur-xl rounded-full scale-150"></div>
                 <div className="relative bg-gradient-to-b from-[#0a0a0a] to-[#0a0a0a] border border-white/10 p-6 rounded-full shadow-2xl">

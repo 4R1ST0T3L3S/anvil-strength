@@ -39,7 +39,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
 
 
     return (
-        <div className="fixed bottom-24 left-4 right-4 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-base">
+        <div className="fixed bottom-24 left-4 right-4 z-[100] animate-rise">
             <div className={cn(
                 "bg-surface-sunken border border-[var(--border-default)] rounded-card shadow-2xl p-4 flex items-center justify-between",
                 isFinished ? "border-green-500/50 bg-green-900/10" : "border-anvil-red/30"

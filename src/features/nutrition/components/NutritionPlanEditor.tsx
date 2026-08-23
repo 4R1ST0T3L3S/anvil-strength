@@ -149,7 +149,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
 
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-8 animate-fade">
             {/* Cabecera / Resumen de Macros */}
             <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
@@ -331,7 +331,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
 
             {/* Configuración de Portada */}
             {plan && isEditingConfig && (
-                <div className="bg-[#111111] border border-zinc-800 rounded-xl p-6 animate-fade-in space-y-6">
+                <div className="bg-[#111111] border border-zinc-800 rounded-xl p-6 animate-fade space-y-6">
                     <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-4 border-b border-zinc-800 pb-2">Configuración del Plan (Portada)</h3>
                     
                     <div>

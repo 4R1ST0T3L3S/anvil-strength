@@ -65,7 +65,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
             {/* Dropdown Popover */}
             {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex gap-2 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex gap-2 animate-pop">
 
                     {/* Minutes Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-1">

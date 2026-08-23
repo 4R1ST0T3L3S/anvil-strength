@@ -88,7 +88,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
             {/* Favorite Brands Manager */}
             {isEditingBrands && (
-                <div className="bg-[#111111] border border-zinc-800 rounded-lg p-3 animate-fade-in">
+                <div className="bg-[#111111] border border-zinc-800 rounded-lg p-3 animate-fade">
                     <p className="text-xs text-zinc-400 mb-2 font-bold uppercase flex items-center gap-1">
                         <Star size={12} /> Marcas Prioritarias
                     </p>
@@ -160,7 +160,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
             {/* Add Grams Form */}
             {selectedFood && (
-                <div className="animate-fade-in bg-[#111111] p-4 rounded-lg border border-anvil-red/30">
+                <div className="animate-fade bg-[#111111] p-4 rounded-lg border border-anvil-red/30">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <h3 className="text-lg font-bold text-white">{selectedFood.product_name}</h3>

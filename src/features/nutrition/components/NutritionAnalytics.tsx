@@ -73,7 +73,7 @@ export function NutritionAnalytics() {
     ];
 
     return (
-        <div className="p-6 md:p-10 space-y-8 animate-fade-in pb-24">
+        <div className="p-6 md:p-10 space-y-8 animate-fade pb-24">
             <div>
                 <h1 className="text-3xl font-black text-white uppercase italic tracking-wider mb-2">
                     Métricas del Club

@@ -87,7 +87,7 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/90 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/90 backdrop-blur-sm animate-fade">
             <div className="bg-[#0a0a0a] max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
                 
                 {/* Header */}

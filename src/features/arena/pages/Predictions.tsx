@@ -105,7 +105,7 @@ export default function Predictions({ user }: PredictionsProps) {
                 {loading ? (
                   <span className="text-2xl font-black text-gray-600">...</span>
                 ) : (
-                  <span className="text-5xl font-black text-white tracking-tighter drop-shadow-lg animate-in fade-in slide-in-from-bottom-2">
+                  <span className="text-5xl font-black text-white tracking-tighter drop-shadow-lg animate-rise">
                     {balance}
                   </span>
                 )}

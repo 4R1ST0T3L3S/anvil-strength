@@ -99,7 +99,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
     }
 
     return (
-        <div className="fixed inset-0 z-[180] bg-[#141414] flex flex-col animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[180] bg-[#141414] flex flex-col animate-fade">
             {/* Header */}
             <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-4 border-b border-white/5 bg-[#1a1a1a] shrink-0 print:hidden">
                 <div className="min-w-0">

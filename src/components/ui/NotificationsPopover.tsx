@@ -42,7 +42,14 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-[110]" onClick={() => setIsOpen(false)} />
-                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} w-80 max-h-[480px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200`}>
+                    {/* La entrada sigue a la colocación: si el panel se abre
+                        hacia arriba tiene que SUBIR, y si se abre hacia abajo
+                        tiene que BAJAR. Antes era `slide-in-from-top-2` fijo
+                        —y además una clase que no existía, así que no se
+                        ejecutaba nunca—, lo que en la variante de arriba
+                        habría hecho que el panel entrara alejándose del botón
+                        que lo abre. */}
+                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2 animate-rise' : 'top-full mt-2 animate-drop'} w-80 max-h-[480px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden`}>
                         <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
                             <h3 className="font-black uppercase tracking-widest text-xs flex items-center gap-2">
                                 <Bell size={14} className="text-anvil-red" /> Notificaciones

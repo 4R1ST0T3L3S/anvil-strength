@@ -212,6 +212,82 @@ export default {
         toast: "500",
         tooltip: "600",
       },
+
+      /* ENTRADAS EN CSS — el nivel 2 de la arquitectura de movimiento.
+         =================================================================
+         POR QUÉ EXISTEN.
+
+         Dieciocho ficheros usaban `animate-in`, `fade-in`, `zoom-in-95`,
+         `slide-in-from-top-2` y `animate-fade-in`: la sintaxis de
+         `tailwindcss-animate`, que NO está instalado. No había ni plugin ni
+         keyframes propios, así que Tailwind no generaba una sola regla y esas
+         animaciones NUNCA se ejecutaron — comprobado en el CSS compilado.
+         Popovers, menús, el temporizador de descanso y toda la sección de
+         nutrición llevaban desde siempre apareciendo de golpe.
+
+         POR QUÉ NO SE INSTALA EL PLUGIN, QUE SERÍA LO CÓMODO.
+
+         `tailwindcss-animate` trae su propia escala de duraciones y su propio
+         vocabulario (`animate-in` + modificadores). Meterlo significaría tener
+         TRES sistemas de movimiento conviviendo: la capa de respuesta de
+         index.css, framer-motion, y ese. Justo lo que produjo este fallo.
+
+         Estas cinco animaciones son la traducción de las que se pedían, pero
+         atadas a los tokens del sistema: misma curva y misma duración que usa
+         framer-motion a través de lib/motion.ts. `prefers-reduced-motion` ya
+         las neutraliza dos veces (tokens.css colapsa --dur-* a 1ms e
+         index.css fuerza animation-duration).
+
+         CUÁNDO USAR ESTAS Y CUÁNDO framer-motion: estas sirven para algo que
+         ENTRA y ya está. En cuanto haga falta animar también la SALIDA hace
+         falta AnimatePresence, y entonces es framer-motion. Ver DESIGN.md.
+
+         Solo se desplazan `opacity` y `transform`: nada que fuerce reflow. */
+      keyframes: {
+        fade: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        // Sube al entrar. El equivalente de `riseIn` en lib/motion.ts, y los
+        // mismos 8px: suficiente para leerse como "ha llegado" sin que el ojo
+        // pierda el sitio.
+        rise: {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        // Baja al entrar. Para lo que cuelga de una cabecera: menús, avisos
+        // pegados arriba. La dirección cuenta de dónde viene el elemento.
+        drop: {
+          from: { opacity: "0", transform: "translateY(-8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        // Entra desde la derecha. Paneles laterales y vistas que sustituyen a
+        // otra dentro del mismo hueco.
+        slide: {
+          from: { opacity: "0", transform: "translateX(16px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        // 0.97 y no 0.95: por debajo de eso un diálogo se lee como que rebota.
+        // Es el mismo valor que `dialogIn` en lib/motion.ts.
+        pop: {
+          from: { opacity: "0", transform: "scale(0.97)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+      },
+
+      /* `both` en el modo de relleno: sin él, el elemento se pinta un frame en
+         su estado final antes de arrancar la animación y se ve un parpadeo. */
+      animation: {
+        fade: "fade var(--dur-base) var(--ease-out) both",
+        rise: "rise var(--dur-base) var(--ease-out) both",
+        drop: "drop var(--dur-base) var(--ease-out) both",
+        slide: "slide var(--dur-base) var(--ease-out) both",
+        pop: "pop var(--dur-base) var(--ease-out) both",
+        // Giro lento y continuo para un icono decorativo (el engranaje de la
+        // cuenta atrás). El único caso legítimo de bucle en la aplicación, y
+        // por eso lleva la curva de bucle y no la de salida.
+        "spin-slow": "spin 4s linear infinite",
+      },
     },
   },
   plugins: [],
