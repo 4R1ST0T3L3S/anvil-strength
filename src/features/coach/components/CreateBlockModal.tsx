@@ -143,7 +143,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                     onClick={() => setColor(c.hex)}
                                     aria-label={c.label}
                                     title={c.label}
-                                    className={`h-9 w-9 rounded-pill border-2 transition-all duration-fast ease-snap ${
+                                    className={`h-9 w-9 rounded-pill border-2 transition-[border-color,box-shadow,transform] duration-fast ease-snap ${
  color === c.hex
  ? 'scale-110 border-ink shadow-raise'
  : 'border-transparent hover:scale-105 hover:border-[var(--border-strong)]'

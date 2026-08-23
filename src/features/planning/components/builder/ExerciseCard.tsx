@@ -235,7 +235,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
     };
 
     return (
-        <div className="bg-surface-raised rounded-card border border-subtle p-4 group relative hover:border-[var(--border-default)] transition-all shadow-sm">
+        <div className="bg-surface-raised rounded-card border border-subtle p-4 group relative hover:border-[var(--border-default)] transition-colors shadow-sm">
             {/* Delete Exercise Button (Absolute Top Right) */}
             <button
                 onClick={onRemoveExercise}
@@ -444,7 +444,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     <button
                                         key={mod.key}
                                         onClick={() => setPendingModifier(mod.key)}
-                                        className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-anvil-red border border-transparent hover:border-anvil-red/30 transition-all"
+                                        className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-anvil-red border border-transparent hover:border-anvil-red/30 transition-colors"
                                     >
                                         + {mod.key}
                                     </button>

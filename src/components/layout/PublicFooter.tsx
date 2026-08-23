@@ -18,14 +18,14 @@ export function PublicFooter() {
                                 href="https://www.instagram.com/anvilstrength_"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-all"
+                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-colors"
                                 aria-label="Instagram de Anvil Strength"
                             >
                                 <Instagram size={18} />
                             </a>
                             <a
                                 href="mailto:anvilstrengthclub@gmail.com"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-all"
+                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-colors"
                                 aria-label="Email de Anvil Strength"
                             >
                                 <Mail size={18} />
@@ -34,7 +34,7 @@ export function PublicFooter() {
                                 href="https://wa.me/34640761674"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-all"
+                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-colors"
                                 aria-label="WhatsApp de Anvil Strength"
                             >
                                 <MessageCircle size={18} />
@@ -69,10 +69,10 @@ export function PublicFooter() {
                     <div>
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600 mb-5">Federaciones</p>
                         <div className="flex items-center gap-4 mb-8">
-                            <a href="https://www.powerlifting.sport/" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 opacity-50 hover:scale-105 transition-all">
+                            <a href="https://www.powerlifting.sport/" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 opacity-50 hover:scale-105 transition-[opacity,transform]">
                                 <img src="/Logo-ipf.png" alt="IPF — International Powerlifting Federation" className="h-10 w-auto object-contain" />
                             </a>
-                            <a href="https://powerliftingspain.es/" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 opacity-50 hover:scale-105 transition-all">
+                            <a href="https://powerliftingspain.es/" target="_blank" rel="noopener noreferrer" className="hover:opacity-100 opacity-50 hover:scale-105 transition-[opacity,transform]">
                                 <img src="/logo-aep.png" alt="AEP — Asociación Española de Powerlifting" className="h-9 w-auto object-contain" />
                             </a>
                         </div>

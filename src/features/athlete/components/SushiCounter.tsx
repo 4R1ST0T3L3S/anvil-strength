@@ -113,7 +113,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
 
                 {/* Ambient Background Gradient based on totals */}
                 <div 
-                    className="absolute inset-0 opacity-20 pointer-events-none transition-all duration-1000"
+                    className="absolute inset-0 opacity-20 pointer-events-none transition-colors duration-slow"
                     style={{
                         background: `radial-gradient(circle at center, ${totals.piezas > 20 ? '#ef4444' : totals.piezas > 10 ? '#f97316' : '#22c55e'}, transparent 60%)`,
                         filter: 'blur(100px)'
@@ -134,14 +134,14 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                     <div className="flex items-center gap-2 md:gap-3">
                         <button
                             onClick={resetCounts}
-                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition-all shadow-inner"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition-colors shadow-inner"
                             title="Resetear contador"
                         >
                             <RotateCcw size={18} />
                         </button>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 transition-all font-black text-xl shadow-inner"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 transition-colors font-black text-xl shadow-inner"
                         >
                             <X size={24} />
                         </button>
@@ -177,7 +177,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                                 exit={{ opacity: 0, scale: 0.9 }}
                                                 onClick={handleSaveRecord}
                                                 disabled={isSaving}
-                                                className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl font-black uppercase text-t-2xs md:text-xs tracking-widest transition-all ${
+                                                className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl font-black uppercase text-t-2xs md:text-xs tracking-widest transition-[background-color,box-shadow,color,transform] ${
  celebration 
  ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
  : 'bg-white text-black hover:bg-gray-200 shadow-xl'
@@ -208,7 +208,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                 <div className="flex items-center gap-2 md:gap-4 bg-black/40 p-1.5 md:p-3 rounded-xl md:rounded-2xl border border-white/5">
                                     <button
                                         onClick={() => handleSubtract(type.id)}
-                                        className="w-11 h-11 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-white rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-all"
+                                        className="w-11 h-11 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-white rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-[background-color,transform]"
                                     >
                                         <Minus size={16} className="md:w-5 md:h-5" />
                                     </button>
@@ -227,7 +227,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                     </div>
                                     <button
                                         onClick={() => handleAdd(type.id)}
-                                        className="w-11 h-11 md:w-12 md:h-12 text-black rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-all shadow-lg"
+                                        className="w-11 h-11 md:w-12 md:h-12 text-black rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-transform shadow-lg"
                                         style={{ backgroundColor: type.color }}
                                     >
                                         <Plus size={16} className="md:w-5 md:h-5" />

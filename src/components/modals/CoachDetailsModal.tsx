@@ -52,7 +52,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           <div className="hidden md:flex justify-end mb-12">
             <button
               onClick={onClose}
-              className="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all rounded-full border border-white/10"
+              className="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors rounded-full border border-white/10"
             >
               <X size={24} />
             </button>
@@ -89,7 +89,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                 href={coach.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-all rounded-2xl group border border-white/5"
+                className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-colors rounded-2xl group border border-white/5"
               >
                 <Instagram size={20} className="group-hover:scale-110 transition-transform" />
                 <span className="font-black uppercase text-xs tracking-widest">Instagram</span>
@@ -99,7 +99,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   href={coach.contactForm}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-all rounded-2xl group border border-white/5"
+                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-colors rounded-2xl group border border-white/5"
                 >
                   <FileText size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Formulario</span>
@@ -108,7 +108,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
               {coach.email && (
                 <a
                   href={`mailto:${coach.email}`}
-                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-all rounded-2xl group border border-white/5"
+                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-colors rounded-2xl group border border-white/5"
                 >
                   <Mail size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Email</span>

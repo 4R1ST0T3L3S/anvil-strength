@@ -53,7 +53,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                     placeholder="Buscar atleta por nombre o apodo..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#111111] text-white pl-12 pr-4 py-4 rounded-xl border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-all"
+                    className="w-full bg-[#111111] text-white pl-12 pr-4 py-4 rounded-xl border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-[border-color,box-shadow]"
                 />
             </div>
 

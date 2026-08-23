@@ -68,7 +68,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                             <button
                                 key={t}
                                 onClick={() => setType(t)}
-                                className={`px-4 py-1.5 rounded-md text-xs font-black uppercase transition-all ${
+                                className={`px-4 py-1.5 rounded-md text-xs font-black uppercase transition-colors ${
  type === t ? 'bg-anvil-red text-white' : 'text-gray-400 hover:text-white'
  }`}
                             >
@@ -78,14 +78,14 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                     </div>
                     <button
                         onClick={() => setEditing('new')}
-                        className="flex items-center gap-2 px-3 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-anvil-red hover:bg-anvil-red hover:text-white transition-all"
+                        className="flex items-center gap-2 px-3 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-anvil-red hover:bg-anvil-red hover:text-white transition-colors"
                     >
                         <Plus size={14} />
                         Nuevo check-in
                     </button>
                     <button
                         onClick={() => setEditorOpen(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-black uppercase text-gray-300 hover:text-white hover:border-anvil-red/40 transition-all"
+                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-black uppercase text-gray-300 hover:text-white hover:border-anvil-red/40 transition-colors"
                     >
                         <Settings2 size={14} className="text-anvil-red" />
                         Editar formulario
@@ -103,7 +103,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                     </p>
                     <button
                         onClick={() => setEditing('new')}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-anvil-red hover:bg-anvil-red hover:text-white transition-all"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-anvil-red hover:bg-anvil-red hover:text-white transition-colors"
                     >
                         <Plus size={14} /> Rellenarlo por él
                     </button>
@@ -533,7 +533,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                             ))}
                             <button
                                 onClick={addQuestion}
-                                className="w-full py-3 border-2 border-dashed border-white/10 hover:border-anvil-red/50 rounded-xl text-gray-500 hover:text-anvil-red text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                className="w-full py-3 border-2 border-dashed border-white/10 hover:border-anvil-red/50 rounded-xl text-gray-500 hover:text-anvil-red text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                             >
                                 <Plus size={14} /> Añadir pregunta
                             </button>

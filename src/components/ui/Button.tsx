@@ -49,9 +49,24 @@ const VARIANT: Record<Variant, string> = {
         'bg-transparent text-danger border border-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] active:border-danger',
 };
 
+/**
+ * ZONA PULSABLE DE 44px SIN ENGORDAR EL BOTÓN.
+ *
+ * `DESIGN.md` fija el suelo en 44px porque esta aplicación se usa de pie, en
+ * un gimnasio, con una mano y el móvil moviéndose. Pero `sm` mide 32 y `md`
+ * 40: subirlos a 44 rompería las barras de herramientas densas y haría que
+ * un botón secundario pesara visualmente lo mismo que el primario.
+ *
+ * La salida es la misma que ya usa el registro de series: un pseudo-elemento
+ * que estira la zona SENSIBLE por arriba y por abajo sin cambiar lo que se
+ * ve. `sm` gana 6px por lado (32 → 44) y `md` gana 2 (40 → 44). `lg` ya mide
+ * 48 y no necesita nada.
+ *
+ * `before:content-['']` es obligatorio: sin él el pseudo-elemento no existe.
+ */
 const SIZE: Record<Size, string> = {
-    sm: 'h-8 px-3 text-xs gap-1.5 rounded-field',
-    md: 'h-10 px-4 text-sm gap-2 rounded-field',
+    sm: "h-8 px-3 text-xs gap-1.5 rounded-field before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']",
+    md: "h-10 px-4 text-sm gap-2 rounded-field before:absolute before:-inset-y-0.5 before:inset-x-0 before:content-['']",
     lg: 'h-12 px-6 text-base gap-2 rounded-card',
 };
 

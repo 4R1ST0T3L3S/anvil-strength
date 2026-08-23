@@ -75,7 +75,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         setSelectedFood(null);
                     }}
                     autoFocus
-                    className="w-full bg-[#111111] text-white pl-10 pr-12 py-3 rounded-lg border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-all"
+                    className="w-full bg-[#111111] text-white pl-10 pr-12 py-3 rounded-lg border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-[border-color,box-shadow]"
                 />
                 <button 
                     onClick={() => setIsEditingBrands(!isEditingBrands)}

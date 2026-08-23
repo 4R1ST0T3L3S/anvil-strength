@@ -72,7 +72,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                     return (
                         <div 
                             key={item.id}
-                            className={`relative group bg-[#0a0a0a] border rounded-3xl p-6 transition-all ${
+                            className={`relative group bg-[#0a0a0a] border rounded-3xl p-6 transition-[background-color,border-color,opacity] ${
  item.available 
  ? 'border-white/5 hover:border-anvil-red/30 cursor-pointer' 
  : 'border-white/5 opacity-60 grayscale cursor-not-allowed'
@@ -104,7 +104,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                                         {item.available && (
                                             <button 
                                                 disabled={!canAfford}
-                                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${
  canAfford 
  ? 'bg-anvil-red text-white hover:bg-red-700 shadow-lg shadow-red-900/20' 
  : 'bg-white/5 text-gray-500'
@@ -129,7 +129,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                     <h4 className="font-black uppercase italic text-white">¿Tienes un código de regalo?</h4>
                     <p className="text-blue-400/80 text-sm font-medium">Canjea tus cupones del club para obtener monedas extra al instante.</p>
                 </div>
-                <button className="ml-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-black uppercase tracking-widest text-xs rounded-xl transition-all">
+                <button className="ml-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-black uppercase tracking-widest text-xs rounded-xl transition-colors">
                     Canjear Código
                 </button>
             </div>

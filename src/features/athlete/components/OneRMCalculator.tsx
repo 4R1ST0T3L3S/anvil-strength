@@ -32,7 +32,7 @@ function CustomSelect({
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between overflow-hidden hover:border-white/10 ${className}`}>
+        <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-colors group flex flex-col justify-between overflow-hidden hover:border-white/10 ${className}`}>
             <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate text-center w-full">
                 {label}
             </label>
@@ -82,7 +82,7 @@ function CustomSelect({
                                             onChange(option.value);
                                             setIsOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-5 py-4 rounded-xl text-left transition-all mb-1 last:mb-0 ${value === option.value
+                                        className={`w-full flex items-center justify-between px-5 py-4 rounded-xl text-left transition-colors mb-1 last:mb-0 ${value === option.value
  ? 'bg-white text-black'
  : 'text-gray-400 hover:bg-white/5 hover:text-white'
  }`}
@@ -133,7 +133,7 @@ function WheelSelector({
     }, [isOpen, value, options]);
 
     return (
-        <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between overflow-hidden hover:border-white/10 ${className}`}>
+        <div className={`bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-colors group flex flex-col justify-between overflow-hidden hover:border-white/10 ${className}`}>
             <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors truncate text-center w-full">
                 {label}
             </label>
@@ -205,7 +205,7 @@ function WheelSelector({
                                         onClick={() => {
                                             itemRefs.current[index]?.scrollIntoView({ block: 'center', behavior: 'smooth' });
                                         }}
-                                        className="snap-center w-full h-16 flex items-center justify-center text-4xl font-black italic transition-all duration-100"
+                                        className="snap-center w-full h-16 flex items-center justify-center text-4xl font-black italic transition-colors duration-instant"
                                         style={{ opacity: 0.3, transform: 'scale(0.8)', color: 'gray' }}
                                     >
                                         {option.label}
@@ -376,7 +376,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
-                            className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-all"
+                            className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-colors"
                         >
                             <X className="w-6 h-6 md:w-7 md:h-7" />
                         </button>
@@ -394,13 +394,13 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             <div className="grid grid-cols-2 p-1.5 bg-black/60 rounded-[1.5rem] border border-white/5 shrink-0 w-full">
                                 <button
                                     onClick={() => setMethod('rpe')}
-                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-all ${method === 'rpe' ? 'bg-white text-black shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
+                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${method === 'rpe' ? 'bg-white text-black shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
                                 >
                                     <Activity className="w-4 h-4" /> Por RPE
                                 </button>
                                 <button
                                     onClick={() => setMethod('velocity')}
-                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-all ${method === 'velocity' ? 'bg-white text-black shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
+                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${method === 'velocity' ? 'bg-white text-black shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-gray-300'}`}
                                 >
                                     <Zap className="w-4 h-4" /> Velocidad
                                 </button>
@@ -410,7 +410,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             <div className="space-y-4">
                                 <div className="grid grid-cols-12 gap-3 md:gap-4">
                                     {/* Peso */}
-                                    <div className="col-span-12 md:col-span-6 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between text-center hover:border-white/10">
+                                    <div className="col-span-12 md:col-span-6 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-white/10">
                                         <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Peso ({unit})</label>
                                         <input
                                             type="number"
@@ -424,7 +424,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                     </div>
 
                                     {/* Reps */}
-                                    <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between text-center hover:border-white/10">
+                                    <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-white/10">
                                         <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Reps</label>
                                         <input
                                             type="number"
@@ -447,7 +447,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             options={[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5].map(v => ({ label: `${v}`, value: v }))}
                                         />
                                     ) : (
-                                        <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-all group flex flex-col justify-between text-center hover:border-white/10">
+                                        <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-white/5 rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-white/10">
                                             <label className="block text-t-2xs font-black text-gray-500 mb-1 uppercase tracking-widest group-hover:text-anvil-red transition-colors">Velocidad (m/s)</label>
                                             <input
                                                 type="number"
@@ -513,7 +513,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                                     exit={{ opacity: 0, scale: 0.9 }}
                                                     onClick={handleSavePR}
                                                     disabled={isSaving}
-                                                    className={`absolute bottom-0 translate-y-16 flex items-center gap-2 px-6 py-2 rounded-xl font-black uppercase text-xs tracking-widest transition-all ${
+                                                    className={`absolute bottom-0 translate-y-16 flex items-center gap-2 px-6 py-2 rounded-xl font-black uppercase text-xs tracking-widest transition-[background-color,box-shadow,color,transform] ${
  celebration 
  ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
  : 'bg-white text-black hover:bg-gray-200 shadow-xl'
@@ -536,7 +536,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                 <div className="p-4 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-white/5 shrink-0">
                     <button
                         onClick={calculate1RM}
-                        className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-anvil-red hover:text-white py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"
+                        className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-anvil-red hover:text-white py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-[background-color,box-shadow,color,transform] active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"
                     >
                         <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         Calcular 1RM

@@ -78,7 +78,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-all"
+                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-colors"
                     >
                         <X size={24} />
                     </button>
@@ -198,13 +198,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                 <div className="flex bg-black/60 p-1 rounded-lg border border-white/5 shrink-0">
                                     <button
                                         onClick={() => setHasCollars(true)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-all ${hasCollars ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${hasCollars ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white'}`}
                                     >
                                         SÍ
                                     </button>
                                     <button
                                         onClick={() => setHasCollars(false)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-all ${!hasCollars ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
+                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${!hasCollars ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-white'}`}
                                     >
                                         NO
                                     </button>

@@ -144,7 +144,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             <button
                                 onClick={handleConfirm}
                                 disabled={loading || amount <= 0 || amount > balance}
-                                className="w-full py-5 bg-yellow-500 text-black font-black uppercase italic rounded-2xl hover:bg-yellow-400 transition-all shadow-xl shadow-yellow-900/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
+                                className="w-full py-5 bg-yellow-500 text-black font-black uppercase italic rounded-2xl hover:bg-yellow-400 transition-[background-color,opacity] shadow-xl shadow-yellow-900/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
                             >
                                 {loading ? 'PROCESANDO...' : 'CONFIRMAR APUESTA'}
                             </button>
@@ -152,7 +152,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             {onAddToSlip && (
                                 <button
                                     onClick={() => onAddToSlip(bet, option)}
-                                    className="w-full py-4 bg-white/5 text-gray-400 hover:text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all border border-white/5 hover:border-white/10"
+                                    className="w-full py-4 bg-white/5 text-gray-400 hover:text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-colors border border-white/5 hover:border-white/10"
                                 >
                                     O AÑADIR AL BOLETO (COMBINADA)
                                 </button>

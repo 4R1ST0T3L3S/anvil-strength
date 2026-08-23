@@ -114,7 +114,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                 <div className="flex items-center gap-2 shrink-0">
                     <button
                         onClick={handleExportPdf}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase text-gray-300 hover:text-white hover:border-anvil-red/40 transition-all"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase text-gray-300 hover:text-white hover:border-anvil-red/40 transition-colors"
                     >
                         <FileDown size={14} className="text-anvil-red" /> PDF
                     </button>

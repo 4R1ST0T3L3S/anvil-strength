@@ -360,7 +360,7 @@ function MetricToggle({ label, color, isActive, onClick }: { label: string, colo
     return (
         <button
             onClick={onClick}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors text-xs font-bold uppercase tracking-widest"
             style={{
                 borderColor: isActive ? color : 'transparent',
                 backgroundColor: isActive ? `${color}15` : '#ffffff05',

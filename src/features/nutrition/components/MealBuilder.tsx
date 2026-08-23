@@ -285,7 +285,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsAdjusting(!isAdjusting); }}
-                            className={`p-2 rounded-lg transition-all ${isAdjusting ? 'bg-anvil-red text-black' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-anvil-red text-black' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
                             title="Ajuste Inteligente"
                         >
                             <Wand2 size={18} />
@@ -380,7 +380,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => setSelectedProposalId(opt.id)}
-                                                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-white' : 'bg-[#111111] border-white/5 text-zinc-500 hover:bg-white/5'}`}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-white' : 'bg-[#111111] border-white/5 text-zinc-500 hover:bg-white/5'}`}
                                                     >
                                                         {opt.name}
                                                     </button>
@@ -568,7 +568,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                     <button 
                                         key={cat}
                                         onClick={() => onCategorySearch(cat)}
-                                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all hover:scale-105 ${CATEGORY_COLORS[cat]} ${CATEGORY_TEXT[cat]} hover:brightness-125`}
+                                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition-transform hover:scale-105 ${CATEGORY_COLORS[cat]} ${CATEGORY_TEXT[cat]} hover:brightness-125`}
                                     >
                                         <Plus size={12} className="inline mr-1" />{cat}
                                     </button>

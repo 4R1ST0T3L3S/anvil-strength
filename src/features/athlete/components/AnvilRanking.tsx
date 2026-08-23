@@ -122,7 +122,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                 
                 {/* Ambient Background Gradient based on ranking type */}
                 <div 
-                    className="absolute inset-0 opacity-10 pointer-events-none transition-colors duration-1000"
+                    className="absolute inset-0 opacity-10 pointer-events-none transition-colors duration-slow"
                     style={{
                         background: `radial-gradient(circle at top right, ${rankingType === 'gl' ? '#ef4444' : '#06b6d4'}, transparent 60%)`,
                         filter: 'blur(100px)'
@@ -146,13 +146,13 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         <div className="hidden sm:flex p-1 md:p-1.5 bg-white/5 rounded-xl md:rounded-2xl border border-white/10 shadow-inner mr-2">
                             <button 
                                 onClick={() => setRankingType('gl')}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${rankingType === 'gl' ? 'bg-anvil-red text-white shadow-lg' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
                                 <span className="flex items-center gap-2"><Trophy size={14} className="hidden md:block" /> GL Points</span>
                             </button>
                             <button 
                                 onClick={() => setRankingType('sushi')}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-all ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
                                 <span className="flex items-center gap-2"><Fish size={14} className="hidden md:block" /> Sushi</span>
                             </button>
@@ -161,7 +161,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         {handleClose && (
                             <button
                                 onClick={handleClose}
-                                className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 transition-all font-black text-xl shadow-inner"
+                                className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 transition-colors font-black text-xl shadow-inner"
                             >
                                 <X size={24} />
                             </button>
@@ -174,13 +174,13 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                     <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 shadow-inner">
                         <button 
                             onClick={() => setRankingType('gl')}
-                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-all ${rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-colors ${rankingType === 'gl' ? 'bg-anvil-red text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                         >
                             <Trophy size={14} /> GL Points
                         </button>
                         <button 
                             onClick={() => setRankingType('sushi')}
-                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-all ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${rankingType === 'sushi' ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                         >
                             <Fish size={14} /> Sushi
                         </button>
@@ -206,7 +206,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         transition={{ delay: index * 0.05 }}
                                         key={athlete.id}
-                                        className={`group relative bg-black/40 border border-white/10 rounded-2xl md:rounded-[2rem] p-4 md:p-6 flex items-center gap-3 md:gap-6 hover:bg-white/5 hover:border-white/20 transition-all overflow-hidden ${
+                                        className={`group relative bg-black/40 border border-white/10 rounded-2xl md:rounded-[2rem] p-4 md:p-6 flex items-center gap-3 md:gap-6 hover:bg-white/5 hover:border-white/20 transition-[background-color,border-color,box-shadow] overflow-hidden ${
  index === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-yellow-500/30 shadow-[inset_4px_0_0_#eab308]' :
  index === 1 ? 'bg-gradient-to-r from-gray-400/10 to-transparent border-gray-400/30 shadow-[inset_4px_0_0_#9ca3af]' :
  index === 2 ? 'bg-gradient-to-r from-amber-700/10 to-transparent border-amber-700/30 shadow-[inset_4px_0_0_#b45309]' :

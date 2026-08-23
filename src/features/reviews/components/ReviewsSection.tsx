@@ -77,7 +77,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                             <span className="text-ink-muted w-12">{star} ★</span>
                                             <div className="flex-1 bg-surface-raised rounded-full h-2 overflow-hidden">
                                                 <div
-                                                    className="bg-yellow-400 h-full transition-all duration-500"
+                                                    className="bg-yellow-400 h-full transition-colors duration-slow"
                                                     style={{ width: `${percentage}%` }}
                                                 />
                                             </div>

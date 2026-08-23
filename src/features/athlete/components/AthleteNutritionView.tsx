@@ -151,7 +151,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="bg-surface-sunken border border-subtle p-5 rounded-card space-y-3 hover:border-[var(--border-default)] transition-all"
+                        className="bg-surface-sunken border border-subtle p-5 rounded-card space-y-3 hover:border-[var(--border-default)] transition-colors"
                     >
                         <div className="flex justify-between items-center">
                             <div className={`p-1.5 rounded-lg bg-white/5 ${macro.textColor}`}>
@@ -232,7 +232,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                             }, { kcal: 0, prot: 0, carbs: 0, fats: 0 });
 
                             return (
-                                <div key={meal.id} className="bg-surface-sunken border border-subtle rounded-card overflow-hidden hover:border-[var(--border-default)] transition-all">
+                                <div key={meal.id} className="bg-surface-sunken border border-subtle rounded-card overflow-hidden hover:border-[var(--border-default)] transition-colors">
                                     {/* Meal Header */}
                                     <button
                                         onClick={() => toggleMeal(meal.id)}

@@ -32,7 +32,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                 >
                     <div className={`
  bg-black/90 backdrop-blur-2xl border-2 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto
- w-[280px] transition-colors duration-500 cursor-move relative
+ w-[280px] transition-colors duration-slow cursor-move relative
  ${isExceeded ? 'border-anvil-red shadow-red-900/20' : 'border-zinc-800 shadow-black/40'}
 `}>
                         {/* Drag Handle Area */}

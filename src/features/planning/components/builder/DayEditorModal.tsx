@@ -415,7 +415,7 @@ export function DayEditorModal({
                                     <button
                                         key={lift.short}
                                         onClick={() => onAddExercise(session.id, lift.name)}
-                                        className={`group p-4 rounded-card border ${theme.border} ${theme.bg} hover:scale-105 transition-all text-center`}
+                                        className={`group p-4 rounded-card border ${theme.border} ${theme.bg} hover:scale-105 transition-transform text-center`}
                                     >
                                         <span className={`block text-2xl font-black italic ${theme.accent}`}>{lift.short}</span>
                                         <span className="block text-[10px] font-bold uppercase tracking-wider text-ink-muted mt-1">{lift.name}</span>
@@ -625,7 +625,7 @@ export function DayEditorModal({
                             {!isAddingEx ? (
                                 <button
                                     onClick={() => setIsAddingEx(true)}
-                                    className="w-full py-3.5 border-2 border-dashed border-[var(--border-default)] hover:border-anvil-red/50 hover:bg-anvil-red/5 rounded-card text-ink-subtle hover:text-anvil-red transition-all text-[11px] font-black tracking-widest uppercase flex items-center justify-center gap-2"
+                                    className="w-full py-3.5 border-2 border-dashed border-[var(--border-default)] hover:border-anvil-red/50 hover:bg-anvil-red/5 rounded-card text-ink-subtle hover:text-anvil-red transition-colors text-[11px] font-black tracking-widest uppercase flex items-center justify-center gap-2"
                                 >
                                     <Plus size={14} /> Ejercicio
                                 </button>

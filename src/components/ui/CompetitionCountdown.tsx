@@ -172,7 +172,7 @@ export function CompetitionBanner({
  ${fontClasses[activeFont] || ''}
  ${shapeClasses[activeShape] || shapeClasses.rounded} 
  ${mobile ? 'py-10 px-4 min-h-[220px]' : 'py-16 px-8 min-h-[280px]'}
- text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-all cursor-pointer group w-full
+ text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-[box-shadow,color] cursor-pointer group w-full
 `}
             style={containerStyles}
         >

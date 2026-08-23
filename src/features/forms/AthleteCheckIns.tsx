@@ -39,7 +39,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                         <button
                             key={type}
                             onClick={() => setOpenForm(type)}
-                            className={`relative p-4 rounded-2xl border text-left transition-all active:scale-[0.97] ${
+                            className={`relative p-4 rounded-2xl border text-left transition-[background-color,border-color,color,transform] active:scale-[0.97] ${
  done
  ? 'bg-green-500/5 border-green-500/20'
  : 'bg-[#1c1c1c] border-white/10 hover:border-anvil-red/40'

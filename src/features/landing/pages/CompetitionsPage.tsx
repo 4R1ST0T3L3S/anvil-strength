@@ -166,13 +166,13 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         transition={{ delay: index * 0.1 }}
                                         whileHover={{ scale: 1.01 }}
                                         onClick={() => setSelectedEvent(event)}
-                                        className="flex flex-col lg:flex-row bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer group shadow-2xl min-h-[350px] transition-all hover:border-anvil-red/30"
+                                        className="flex flex-col lg:flex-row bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-anvil-red/30"
                                     >
                                         {/* Cover Image */}
                                         <div className="w-full lg:w-[480px] h-64 lg:h-auto shrink-0 relative overflow-hidden">
                                             <img
                                                 src={meta.coverImage}
-                                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
+                                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-slow group-hover:scale-110"
                                                 alt={event.name}
                                                 onError={(e) => {
                                                     (e.target as HTMLImageElement).src = '/portadaanvil2.jpg';
@@ -190,7 +190,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         <div className="p-8 lg:p-12 flex-1 flex flex-col justify-center">
                                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                                                 <div>
-                                                    <h3 className="text-4xl md:text-6xl font-black uppercase font-bebas italic leading-none mb-4 group-hover:text-anvil-red transition-colors duration-300">
+                                                    <h3 className="text-4xl md:text-6xl font-black uppercase font-bebas italic leading-none mb-4 group-hover:text-anvil-red transition-colors duration-slow">
                                                         {event.name}
                                                     </h3>
                                                     <div className="flex flex-wrap gap-6 text-gray-500 font-bold uppercase tracking-widest text-xs">
@@ -234,7 +234,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                         {event.athletes.length} {event.athletes.length === 1 ? 'Atleta convocado' : 'Atletas convocados'}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-anvil-red font-black uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 duration-300">
+                                                <div className="flex items-center gap-2 text-anvil-red font-black uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-[opacity,transform] translate-x-4 group-hover:translate-x-0 duration-slow">
                                                     Ver Roster <ChevronRight size={16} />
                                                 </div>
                                             </div>
@@ -283,7 +283,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                 <img
                                     src={result.image}
                                     alt={result.title}
-                                    className="w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-all duration-700"
+                                    className="w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-[opacity,transform] duration-slow"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-8 flex flex-col justify-end">
                                     <h3 className="text-4xl font-black uppercase font-bebas italic text-white mb-1">{result.title}</h3>
@@ -380,7 +380,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-anvil-red/40 rounded-full transition-all group"
+                        className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-anvil-red/40 rounded-full transition-colors group"
                     >
                         <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </button>
@@ -430,7 +430,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                                     <img
                                                         src={rosterPhoto}
                                                         alt={athlete.full_name}
-                                                        className="w-auto h-full md:h-[115%] object-contain object-bottom relative z-20 transition-transform duration-500 hover:scale-[1.02]"
+                                                        className="w-auto h-full md:h-[115%] object-contain object-bottom relative z-20 transition-transform duration-slow hover:scale-[1.02]"
                                                         draggable={false}
                                                     />
                                                 ) : (
@@ -475,13 +475,13 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                 <div className="absolute inset-x-0 top-[40%] -translate-y-1/2 px-4 md:px-10 flex justify-between pointer-events-none z-[70]">
                     <button
                         onClick={() => goTo(activeIndex - 1, -1)}
-                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-white/10 hover:border-anvil-red/40 rounded-full transition-all group pointer-events-auto backdrop-blur-md"
+                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-white/10 hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
                     >
                         <ChevronLeft className="w-8 h-8 group-hover:scale-110 transition-transform" />
                     </button>
                     <button
                         onClick={() => goTo(activeIndex + 1, 1)}
-                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-white/10 hover:border-anvil-red/40 rounded-full transition-all group pointer-events-auto backdrop-blur-md"
+                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-white/10 hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
                     >
                         <ChevronRight className="w-8 h-8 group-hover:scale-110 transition-transform" />
                     </button>
@@ -535,7 +535,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                         href={athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 text-gray-300 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl"
+                                        className="inline-flex items-center gap-3 text-gray-300 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-2xl transition-colors font-black uppercase tracking-[0.2em] text-xs shadow-xl"
                                     >
                                         <Instagram size={20} />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram!.replace('https://www.instagram.com/', '@').replace('/', '')}
@@ -554,7 +554,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                         <button
                             key={i}
                             onClick={() => goTo(i, i > activeIndex ? 1 : -1)}
-                            className={`h-1.5 transition-all duration-500 rounded-full ${i === activeIndex ? 'w-16 bg-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'w-2.5 bg-white/10 hover:bg-white/30'}`}
+                            className={`h-1.5 transition-[background-color,box-shadow] duration-slow rounded-full ${i === activeIndex ? 'w-16 bg-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'w-2.5 bg-white/10 hover:bg-white/30'}`}
                         />
                     ))}
                 </div>

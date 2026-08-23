@@ -619,7 +619,7 @@ function AthleteCard({
                             onClick={(e) => { e.stopPropagation(); onRemove(); }}
                             aria-label={`Quitar a ${athlete.full_name} del equipo`}
                             title="Quitar del equipo"
-                            className="rounded-field p-2 text-ink-faint opacity-100 transition-all duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
+                            className="rounded-field p-2 text-ink-faint opacity-100 transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
                         >
                             <UserMinus size={16} aria-hidden="true" />
                         </button>

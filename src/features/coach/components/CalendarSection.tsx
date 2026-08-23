@@ -217,7 +217,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         const { esInvitado, level, color, bg, border, line, icon } = meta;
 
                         return (
-                            <div key={index} className={`relative bg-[#0a0a0a] border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-all hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
+                            <div key={index} className={`relative bg-[#0a0a0a] border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-[background-color,border-color,opacity] hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
                                 <div className="flex flex-col gap-5 md:gap-6">
 
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}
@@ -263,7 +263,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                             {user?.role === 'coach' && (
                                                 <button
                                                     onClick={() => setSelectedCompetition(comp)}
-                                                    className="px-8 py-3 bg-anvil-red text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-all shadow-lg active:scale-95"
+                                                    className="px-8 py-3 bg-anvil-red text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-[background-color,transform] shadow-lg active:scale-95"
                                                 >
                                                     Asignar
                                                 </button>
@@ -272,7 +272,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                                 <button
                                                     onClick={() => handleAddSelfCompetition(comp, index)}
                                                     disabled={addingCompId === index}
-                                                    className="px-8 py-3 bg-white text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-200 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                                                    className="px-8 py-3 bg-white text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-200 transition-[background-color,opacity,transform] active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                                 >
                                                     {addingCompId === index ? <Loader size={14} className="animate-spin" /> : <Plus size={16} />}
                                                     Añadir

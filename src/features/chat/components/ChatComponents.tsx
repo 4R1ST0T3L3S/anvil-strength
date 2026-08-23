@@ -49,12 +49,12 @@ export const ChatInput: React.FC<{ onSend: (val: string) => void }> = ({ onSend 
                 value={text}
                 onChange={e => setText(e.target.value)}
                 placeholder="Escribe un mensaje..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-anvil-red/50 transition-all placeholder:text-gray-600"
+                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-anvil-red/50 transition-colors placeholder:text-gray-600"
             />
             <button 
                 type="submit"
                 disabled={!text.trim()}
-                className="p-4 bg-anvil-red text-white rounded-2xl hover:bg-red-500 transition-all shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:grayscale"
+                className="p-4 bg-anvil-red text-white rounded-2xl hover:bg-red-500 transition-[background-color,opacity] shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:grayscale"
             >
                 <Send size={20} />
             </button>

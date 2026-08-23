@@ -142,12 +142,12 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                         </div>
 
                         {/* Player Input Grid */}
-                        <div className={`mt-8 grid grid-cols-3 gap-3 w-full max-w-[300px] transition-opacity duration-300 ${status === 'playing' ? 'opacity-100 pointer-events-auto' : 'opacity-30 pointer-events-none grayscale'}`}>
+                        <div className={`mt-8 grid grid-cols-3 gap-3 w-full max-w-[300px] transition-opacity duration-slow ${status === 'playing' ? 'opacity-100 pointer-events-auto' : 'opacity-30 pointer-events-none grayscale'}`}>
                             {[1, 2, 3, 4, 5, 6].map(num => (
                                 <button
                                     key={`btn-${num}`}
                                     onClick={() => handleNumberClick(num)}
-                                    className="aspect-square bg-[#0a0a0a] border border-white/5 rounded-2xl flex items-center justify-center active:bg-purple-600 active:scale-95 transition-all"
+                                    className="aspect-square bg-[#0a0a0a] border border-white/5 rounded-2xl flex items-center justify-center active:bg-purple-600 active:scale-95 transition-[background-color,transform]"
                                 >
                                     <DieFace number={num} size="small" />
                                 </button>

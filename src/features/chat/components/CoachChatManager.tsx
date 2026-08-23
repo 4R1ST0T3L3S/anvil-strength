@@ -73,7 +73,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                         setSelectedAthlete(null);
                         fetchAthletes();
                     }}
-                    className="absolute top-6 left-6 z-[80] p-3 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-white/10 transition-all"
+                    className="absolute top-6 left-6 z-[80] p-3 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-white/10 transition-colors"
                 >
                     <ChevronLeft size={24} />
                 </button>
@@ -91,7 +91,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                 <div className="flex items-center gap-4">
                     <button 
                         onClick={() => navigate('/dashboard')}
-                        className="p-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-all"
+                        className="p-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-colors"
                     >
                         <ChevronLeft size={24} />
                     </button>
@@ -106,7 +106,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                 {puede(coach, 'ver_trastienda') && (
                     <button 
                         onClick={() => setShowAll(!showAll)}
-                        className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${
+                        className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-colors border ${
  showAll 
  ? 'bg-anvil-red border-anvil-red text-white' 
  : 'bg-white/5 border-white/10 text-gray-500 hover:text-white'
@@ -124,7 +124,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                     <input 
                         type="text"
                         placeholder="BUSCAR POR NOMBRE..."
-                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase text-xs focus:border-anvil-red/50 transition-all"
+                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase text-xs focus:border-anvil-red/50 transition-colors"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -149,7 +149,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                             <button
                                 key={athlete.id}
                                 onClick={() => setSelectedAthlete(athlete)}
-                                className="w-full bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-[#0a0a0a] transition-all active:scale-[0.98]"
+                                className="w-full bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-[#0a0a0a] transition-[background-color,border-color,transform] active:scale-[0.98]"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative">

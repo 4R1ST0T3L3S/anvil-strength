@@ -83,9 +83,9 @@ export function CountdownPage() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + (index * 0.1), duration: 0.6 }}
-                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-all duration-300"
+                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-colors duration-slow"
                         >
-                            <span className="text-2xl sm:text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-300 tabular-nums leading-none">
+                            <span className="text-2xl sm:text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-slow tabular-nums leading-none">
                                 {item.value.toString().padStart(2, '0')}
                             </span>
                             <span className="text-[9px] md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
@@ -110,13 +110,13 @@ export function CountdownPage() {
                             href="https://instagram.com/anvilstrength_"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-all duration-300"
+                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
                         >
                             <Instagram size={24} />
                         </a>
                         <a
                             href="mailto:info@anvilstrength.com"
-                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-all duration-300"
+                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
                         >
                             <Mail size={24} />
                         </a>

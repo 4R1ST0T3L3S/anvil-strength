@@ -4,7 +4,8 @@ import { UserProfile } from '../hooks/useUser';
 import { isStaff, isAdmin, isAthlete, puede } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
-import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
+import { AppShellSkeleton } from '../components/skeletons/AppShellSkeleton';
+import { PageSkeleton } from '../components/skeletons/PageSkeleton';
 // Lazy Load Pages
 const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
 const CompetitionsPage = lazy(() => import('../features/landing/pages/CompetitionsPage').then(module => ({ default: module.CompetitionsPage })));
@@ -42,6 +43,16 @@ const MobilePreview = import.meta.env.DEV
  */
 const PiezasPreview = import.meta.env.DEV
     ? lazy(() => import('../features/devtools/PiezasPreview').then(module => ({ default: module.PiezasPreview })))
+    : null;
+
+/**
+ * Banco del SISTEMA DE DISEÑO: todas las primitivas en todos sus estados.
+ * El tercer hermano de los otros dos — aquel monta pantallas, el otro piezas
+ * de negocio, este las piezas base. Mismo mecanismo de desaparición en
+ * producción; ver la nota de MobilePreview.
+ */
+const SistemaPreview = import.meta.env.DEV
+    ? lazy(() => import('../features/devtools/SistemaPreview').then(module => ({ default: module.SistemaPreview })))
     : null;
 
 
@@ -94,13 +105,19 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 Solo en desarrollo. Ver la nota de `MobilePreview` arriba. */}
             {MobilePreview && (
                 <Route path="/dev/movil" element={
-                    <Suspense fallback={<DashboardSkeleton />}><MobilePreview /></Suspense>
+                    <Suspense fallback={<AppShellSkeleton />}><MobilePreview /></Suspense>
                 } />
             )}
 
             {PiezasPreview && (
                 <Route path="/dev/piezas" element={
-                    <Suspense fallback={<DashboardSkeleton />}><PiezasPreview /></Suspense>
+                    <Suspense fallback={<AppShellSkeleton />}><PiezasPreview /></Suspense>
+                } />
+            )}
+
+            {SistemaPreview && (
+                <Route path="/dev/sistema" element={
+                    <Suspense fallback={<PageSkeleton />}><SistemaPreview /></Suspense>
                 } />
             )}
 
@@ -109,7 +126,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 que todavía no tiene cuenta, y tiene que poder ver de quién
                 es la invitación antes de registrarse. */}
             <Route path="/invitacion/:code" element={
-                <Suspense fallback={<DashboardSkeleton />}>
+                <Suspense fallback={<PageSkeleton />}>
                     <InvitePage onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
                 </Suspense>
             } />
@@ -119,7 +136,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 correo (/invitacion) para quien un entrenador dio de alta a
                 mano. Ver ClaimAthletePage. */}
             <Route path="/reclamar/:token" element={
-                <Suspense fallback={<DashboardSkeleton />}>
+                <Suspense fallback={<PageSkeleton />}>
                     <ClaimAthletePage />
                 </Suspense>
             } />
@@ -128,7 +145,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 Google y los enlaces de confirmación de email vuelven aquí.
                 Ver src/lib/authRedirect.ts. */}
             <Route path="/auth/callback" element={
-                <Suspense fallback={<DashboardSkeleton />}><AuthCallback /></Suspense>
+                <Suspense fallback={<PageSkeleton />}><AuthCallback /></Suspense>
             } />
             
             <Route path="/web" element={
@@ -147,16 +164,16 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 volvía a la portada, que es el fallo que se estaba pidiendo
                 arreglar. */}
             <Route path="/legal/aviso-legal" element={
-                <Suspense fallback={<DashboardSkeleton />}><AvisoLegal onLoginClick={onLoginClick} /></Suspense>
+                <Suspense fallback={<PageSkeleton />}><AvisoLegal onLoginClick={onLoginClick} /></Suspense>
             } />
             <Route path="/legal/privacidad" element={
-                <Suspense fallback={<DashboardSkeleton />}><PoliticaPrivacidad onLoginClick={onLoginClick} /></Suspense>
+                <Suspense fallback={<PageSkeleton />}><PoliticaPrivacidad onLoginClick={onLoginClick} /></Suspense>
             } />
             <Route path="/legal/cookies" element={
-                <Suspense fallback={<DashboardSkeleton />}><PoliticaCookies onLoginClick={onLoginClick} /></Suspense>
+                <Suspense fallback={<PageSkeleton />}><PoliticaCookies onLoginClick={onLoginClick} /></Suspense>
             } />
             <Route path="/legal/terminos" element={
-                <Suspense fallback={<DashboardSkeleton />}><Terminos onLoginClick={onLoginClick} /></Suspense>
+                <Suspense fallback={<PageSkeleton />}><Terminos onLoginClick={onLoginClick} /></Suspense>
             } />
 
             {/* --- PERFIL PAGE (For pending users) --- */}
@@ -190,7 +207,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     user.has_access === false ? (
                         <Navigate to="/pending" replace />
                     ) : (
-                        <Suspense fallback={<DashboardSkeleton />}>
+                        <Suspense fallback={<AppShellSkeleton />}>
                             <ArenaView user={user} />
                         </Suspense>
                     )
@@ -201,7 +218,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
 
             <Route path="/dashboard/chat" element={
                 hasActiveSession && user ? (
-                    <Suspense fallback={<DashboardSkeleton />}>
+                    <Suspense fallback={<AppShellSkeleton />}>
                         {/* Quien llega a /dashboard/chat PUEDE gestionar
                             atletas (es entrenador o nutricionista) pero quiso
                             entrar por /dashboard: quiere su panel de atleta. El
@@ -219,7 +236,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
 
             <Route path="/dashboard/games" element={
                 hasActiveSession && user ? (
-                    <Suspense fallback={<DashboardSkeleton />}>
+                    <Suspense fallback={<AppShellSkeleton />}>
                         <AnvilGamesHub user={user} />
                     </Suspense>
                 ) : (
@@ -240,7 +257,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     !user && !hasActiveSession ? (
                         <Navigate to="/" replace />
                     ) : !user && hasActiveSession ? (
-                        <DashboardSkeleton />
+                        <AppShellSkeleton />
                     ) : !isAthlete(user) ? (
                         // Sin panel de atleta —ni siquiera como secundario—.
                         // Redirige al de entrenador. Así un entrenador que
@@ -248,7 +265,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         // a atleta" que pone la otra rama.
                         <Navigate to="/coach-dashboard" replace />
                     ) : user ? (
-                        <Suspense fallback={<DashboardSkeleton />}>
+                        <Suspense fallback={<AppShellSkeleton />}>
                             <UserDashboard
                                 user={user}
                                 onLogout={onLogout}
@@ -267,11 +284,11 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     !user && !hasActiveSession ? (
                         <Navigate to="/" replace />
                     ) : !user && hasActiveSession ? (
-                        <DashboardSkeleton />
+                        <AppShellSkeleton />
                     ) : !isStaff(user) ? (
                         <Navigate to="/dashboard" replace />
                     ) : user ? (
-                        <Suspense fallback={<DashboardSkeleton />}>
+                        <Suspense fallback={<AppShellSkeleton />}>
                             <CoachDashboard user={user} onLogout={onLogout} />
                         </Suspense>
                     ) : null
@@ -283,7 +300,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 !user && !hasActiveSession ? (
                     <Navigate to="/" replace />
                 ) : !user && hasActiveSession ? (
-                    <DashboardSkeleton />
+                    <AppShellSkeleton />
                 ) : !puede(user, 'pautar_nutricion') ? (
                     // El panel de pautar comidas es de quien pauta nutrición:
                     // nutricionistas (y por herencia, desarrollo/administración).
@@ -292,7 +309,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     // nutricionista además de otra cosa.
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
-                    <Suspense fallback={<DashboardSkeleton />}>
+                    <Suspense fallback={<AppShellSkeleton />}>
                         <NutritionDashboard user={user} onLogout={onLogout} />
                     </Suspense>
                 ) : null
@@ -305,7 +322,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 ) : !isAdmin(user) ? (
                     <Navigate to="/" replace />
                 ) : (
-                    <Suspense fallback={<DashboardSkeleton />}>
+                    <Suspense fallback={<AppShellSkeleton />}>
                         <AdminDashboard />
                     </Suspense>
                 )

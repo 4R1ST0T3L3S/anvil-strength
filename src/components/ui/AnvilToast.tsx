@@ -29,7 +29,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                         className="pointer-events-auto relative group overflow-hidden"
                     >
                         <div className={`
- relative flex gap-4 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all
+ relative flex gap-4 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-[background-color,border-color,box-shadow]
  ${notif.type === 'success' ? 'bg-green-500/10 border-green-500/20' : 
  notif.type === 'error' ? 'bg-anvil-red/10 border-anvil-red/20' :
  notif.type === 'reward' ? 'bg-yellow-500/10 border-yellow-500/20' :

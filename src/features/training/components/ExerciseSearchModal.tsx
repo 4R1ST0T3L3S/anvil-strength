@@ -195,7 +195,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                         <button
                                             key={ex.id}
                                             onClick={() => onSelect(ex.id)}
-                                            className="flex flex-col text-left p-4 rounded-xl bg-zinc-900/50 hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition-all group"
+                                            className="flex flex-col text-left p-4 rounded-xl bg-zinc-900/50 hover:bg-zinc-800 border border-transparent hover:border-zinc-700 transition-colors group"
                                         >
                                             <span className="font-bold text-white group-hover:text-anvil-red transition-colors">{ex.name}</span>
                                             <span className="text-xs text-zinc-500 uppercase tracking-wider mt-1">{ex.muscle_group || 'Otros'}</span>

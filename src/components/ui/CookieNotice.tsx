@@ -51,25 +51,29 @@ export function CookieNotice() {
         <div
             role="region"
             aria-label="Aviso de cookies"
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0a0a0a]/97 px-4 py-4 backdrop-blur-md transition-transform duration-base ease-out sm:px-6"
+            className="fixed inset-x-0 bottom-0 z-sticky border-t border-subtle bg-surface-sunken/95 px-4 py-4 backdrop-blur-md transition-transform duration-base ease-snap sm:px-6"
             style={{
                 paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
             }}
         >
             <div className="mx-auto flex max-w-[1400px] flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <div className="flex items-start gap-3">
-                    <Cookie size={18} className="mt-0.5 shrink-0 text-anvil-red" aria-hidden="true" />
-                    <p className="text-xs leading-relaxed text-gray-400 sm:text-sm">
+                    <Cookie size={18} className="mt-0.5 shrink-0 text-brand" aria-hidden="true" />
+                    <p className="text-t-xs leading-relaxed text-ink-muted sm:text-t-sm">
                         Usamos solo las cookies técnicas necesarias para que la sesión funcione —
                         ninguna de seguimiento ni publicidad.{' '}
-                        <Link to="/legal/cookies" className="text-anvil-red hover:underline">
+                        <Link to="/legal/cookies" className="text-brand hover:underline">
                             Más información
                         </Link>
                     </p>
                 </div>
+                {/* 44px de alto: este aviso aparece en la portada, en móvil y
+                    encima de todo lo demás. A los 32 que medía, el pulgar falla
+                    y el aviso no se va, que es la peor combinación posible para
+                    algo que tapa el pie de la página. */}
                 <button
                     onClick={dismiss}
-                    className="w-full shrink-0 rounded-lg bg-white px-5 py-2 text-xs font-black uppercase tracking-wide text-black transition-colors duration-fast hover:bg-gray-200 sm:w-auto"
+                    className="flex min-h-[44px] w-full shrink-0 items-center justify-center rounded-field bg-ink px-5 text-t-xs font-black uppercase tracking-wide text-ink-inverse transition-colors duration-fast ease-snap hover:bg-ink-muted sm:w-auto"
                 >
                     Entendido
                 </button>

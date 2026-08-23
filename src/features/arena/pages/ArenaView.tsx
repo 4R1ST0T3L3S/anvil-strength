@@ -219,7 +219,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         <div className="flex gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/5 w-fit">
                             <button 
                                 onClick={() => setActiveTab('active')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-[background-color,box-shadow,color] ${
  activeTab === 'active' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
  }`}
                             >
@@ -228,7 +228,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             </button>
                             <button 
                                 onClick={() => setActiveTab('history')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-[background-color,box-shadow,color] ${
  activeTab === 'history' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
  }`}
                             >
@@ -379,7 +379,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                         </div>
                                         <button 
                                             onClick={() => handlePlaceParlay(100)} // Valor por defecto o abrir modal de importe
-                                            className="w-full py-4 bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-lg flex items-center justify-center gap-3"
+                                            className="w-full py-4 bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-widest rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
                                         >
                                             Realizar Combinada (100 AC)
                                             <Send size={16} />

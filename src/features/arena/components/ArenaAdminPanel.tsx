@@ -90,7 +90,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         key={type}
                                         type="button"
                                         onClick={() => setNewBet({ ...newBet, type })}
-                                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
+                                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors ${
  newBet.type === type ? 'border-anvil-red bg-anvil-red/10 text-white' : 'border-white/5 bg-black/40 text-gray-500'
  }`}
                                     >
@@ -141,7 +141,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                     <button 
                                         type="button"
                                         onClick={handleAddOption}
-                                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/20 transition-all font-black text-[10px] uppercase tracking-widest"
+                                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/20 transition-colors font-black text-[10px] uppercase tracking-widest"
                                     >
                                         + AÑADIR OPCIÓN
                                     </button>
@@ -177,7 +177,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                 {bet.type === 'prediction' ? (
                                     <button 
                                         onClick={() => handleResolve(bet.id)}
-                                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-yellow-500 hover:text-black transition-all"
+                                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-yellow-500 hover:text-black transition-colors"
                                     >
                                         Resolver con Valor Real
                                     </button>
@@ -186,7 +186,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         <button 
                                             key={opt.id}
                                             onClick={() => handleResolve(bet.id, opt.id)}
-                                            className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-green-500 hover:text-black transition-all whitespace-nowrap"
+                                            className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-green-500 hover:text-black transition-colors whitespace-nowrap"
                                         >
                                             Resolver: {opt.name}
                                         </button>
@@ -197,7 +197,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                         <div className="flex gap-2">
                             <button 
                                 onClick={() => onDeleteBet(bet.id)}
-                                className="p-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+                                className="p-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-colors"
                             >
                                 <Trash2 size={16} />
                             </button>

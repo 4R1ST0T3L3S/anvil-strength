@@ -48,9 +48,9 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
                 <img
                   src={athlete.image}
                   alt={athlete.name}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-colors duration-slow"
                 />
-                <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-slow">
                   <p className="text-white font-bold uppercase tracking-wider text-lg">{athlete.name}</p>
                   <p className="text-xs text-anvil-red font-bold uppercase tracking-widest">{athlete.category}</p>
                 </div>

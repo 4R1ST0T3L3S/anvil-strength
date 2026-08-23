@@ -267,7 +267,7 @@ export function AdminDashboard() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as TabType)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-all ${
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color] ${
  isActive 
  ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' 
  : 'bg-[#0a0a0a] text-gray-400 border border-white/5 hover:border-white/20 hover:text-white'
@@ -382,7 +382,7 @@ export function AdminDashboard() {
                                                         <td className="p-4">
                                                             <button
                                                                 onClick={() => toggleAccess(user.id, user.has_access)}
-                                                                className={`mx-auto flex items-center justify-center gap-2 px-4 py-2 w-full max-w-[120px] rounded-lg font-bold text-sm uppercase transition-all shadow-md active:scale-95 ${user.has_access
+                                                                className={`mx-auto flex items-center justify-center gap-2 px-4 py-2 w-full max-w-[120px] rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color,transform] shadow-md active:scale-95 ${user.has_access
  ? 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500/20 shadow-green-500/5'
  : 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20 shadow-red-500/5'
  }`}

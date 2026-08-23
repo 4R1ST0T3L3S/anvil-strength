@@ -168,7 +168,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                 </div>
 
                 {/* Input Area (Keypad) */}
-                <div className={`p-6 bg-[#0a0a0a] border-t border-white/10 transition-all duration-300 ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
+                <div className={`p-6 bg-[#0a0a0a] border-t border-white/10 transition-[background-color,border-color,opacity,transform] duration-slow ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
                     <div className="flex items-center justify-between mb-4 bg-black p-4 rounded-xl border border-white/5">
                         <span className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Respuesta:</span>
                         <span className="text-2xl font-black text-white">{inputValue || '_'}</span>
@@ -179,27 +179,27 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                             <button
                                 key={`kp-${num}`}
                                 onClick={() => handleNumberClick(num.toString())}
-                                className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-all"
+                                className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
                             >
                                 {num}
                             </button>
                         ))}
                         <button
                             onClick={handleBackspace}
-                            className="bg-anvil-red/10 text-anvil-red border border-anvil-red/20 p-4 rounded-xl text-xl font-bold active:bg-anvil-red active:text-white active:scale-95 transition-all"
+                            className="bg-anvil-red/10 text-anvil-red border border-anvil-red/20 p-4 rounded-xl text-xl font-bold active:bg-anvil-red active:text-white active:scale-95 transition-[background-color,color,transform]"
                         >
                             ←
                         </button>
                         <button
                             onClick={() => handleNumberClick('0')}
-                            className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-all"
+                            className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
                         >
                             0
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={!inputValue}
-                            className={`p-4 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${inputValue ? 'bg-blue-600 text-white active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}
+                            className={`p-4 rounded-xl text-sm font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${inputValue ? 'bg-blue-600 text-white active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}
                         >
                             OK
                         </button>

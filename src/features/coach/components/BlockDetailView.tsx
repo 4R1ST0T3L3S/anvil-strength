@@ -112,7 +112,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                         {sessions.map((session) => (
                             <div
                                 key={session.id}
-                                className="group bg-surface-sunken border border-subtle rounded-xl p-4 hover:border-anvil-red/30 transition-all cursor-pointer"
+                                className="group bg-surface-sunken border border-subtle rounded-xl p-4 hover:border-anvil-red/30 transition-colors cursor-pointer"
                                 onClick={() => onSelectSession(session)}
                             >
                                 <div className="flex items-center justify-between">

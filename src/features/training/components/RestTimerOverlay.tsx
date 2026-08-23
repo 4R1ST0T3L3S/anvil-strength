@@ -71,13 +71,13 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                         <>
                             <button
                                 onClick={() => onAddSeconds(-10)}
-                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-all"
+                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-[color,transform]"
                             >
                                 <Minus size={14} />
                             </button>
                             <button
                                 onClick={() => onAddSeconds(10)}
-                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-all"
+                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-[color,transform]"
                             >
                                 <Plus size={14} />
                             </button>
@@ -85,7 +85,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                     )}
                     <button
                         onClick={onClose}
-                        className="ml-2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-all"
+                        className="ml-2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-[color,transform]"
                     >
                         <X size={16} />
                     </button>

@@ -98,7 +98,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar por nombre o grupo muscular..."
-                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:border-anvil-red/50 transition-all font-medium"
+                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:border-anvil-red/50 transition-colors font-medium"
                                 autoFocus
                             />
                         </div>
@@ -138,7 +138,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                         <button
                                             onClick={() => handleAdd(ex)}
                                             disabled={addingInfo === ex.id}
-                                            className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black rounded-lg text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-2"
+                                            className="px-4 py-2 bg-white/5 hover:bg-white text-white hover:text-black rounded-lg text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2"
                                         >
                                             {addingInfo === ex.id ? (
                                                 <Loader size={16} className="animate-spin" />

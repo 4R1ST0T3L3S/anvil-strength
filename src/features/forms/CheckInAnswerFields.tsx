@@ -31,7 +31,7 @@ export function CheckInAnswerFields({
                                         key={i}
                                         type="button"
                                         onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
-                                        className={`aspect-square rounded-lg text-xs font-black transition-all ${
+                                        className={`aspect-square rounded-lg text-xs font-black transition-[background-color,box-shadow,color,transform] ${
  values[q.id] === i
  ? 'bg-anvil-red text-white scale-110 shadow-lg shadow-anvil-red/30'
  : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'

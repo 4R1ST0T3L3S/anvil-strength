@@ -156,7 +156,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-all"
+                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-2xl flex items-center justify-center text-gray-400 transition-colors"
                     >
                         <X className="w-6 h-6 md:w-7 md:h-7" />
                     </button>
@@ -169,7 +169,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                         {/* LEFT: Inputs & Button - Centered & Smaller */}
                         <div className="col-span-12 md:col-span-6 flex flex-col justify-center h-full pt-4 md:pt-0 shrink-0">
                             <div className="flex flex-col md:grid md:grid-rows-3 gap-6 h-auto md:h-[75%] w-full">
-                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
+                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-colors group flex flex-col justify-center min-h-[120px] md:min-h-0">
                                     <label className="block text-t-2xs md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Tu 1RM Actual (Opcional)</label>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -185,7 +185,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                     </div>
                                 </div>
 
-                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-all group flex flex-col justify-center min-h-[120px] md:min-h-0">
+                                <div className="bg-black/40 border-2 border-white/5 rounded-2xl p-4 md:p-6 transition-colors group flex flex-col justify-center min-h-[120px] md:min-h-0">
                                     <label className="block text-t-2xs md:text-xs font-black text-gray-600 mb-2 uppercase tracking-widest group-hover:text-blue-500 transition-colors">Peso Objetivo Hoy</label>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -203,7 +203,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
 
                                 <button
                                     onClick={calculateWarmUp}
-                                    className="group w-full min-h-[80px] md:min-h-0 bg-blue-600 text-white hover:bg-blue-500 rounded-2xl font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl shadow-blue-600/20"
+                                    className="group w-full min-h-[80px] md:min-h-0 bg-blue-600 text-white hover:bg-blue-500 rounded-2xl font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-[background-color,transform] active:scale-[0.98] shadow-2xl shadow-blue-600/20"
                                 >
                                     <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                     <span className="md:hidden">Calcular</span>
@@ -238,7 +238,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                             initial={{ opacity: 0, x: 20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.05 }}
-                                            className={`flex items-center justify-between p-5 md:p-6 rounded-[1.5rem] border-2 transition-all ${set.percentage === 100
+                                            className={`flex items-center justify-between p-5 md:p-6 rounded-[1.5rem] border-2 transition-[background-color,border-color,box-shadow] ${set.percentage === 100
  ? 'bg-blue-600/20 border-blue-600 shadow-lg shadow-blue-600/10'
  : 'bg-black/40 border-white/5 hover:border-white/10'
  }`}

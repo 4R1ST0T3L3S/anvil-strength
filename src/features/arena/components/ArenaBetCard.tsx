@@ -34,7 +34,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="group relative bg-[#0a0a0a] border border-white/5 rounded-[2rem] overflow-hidden hover:border-anvil-red/30 transition-all duration-500 shadow-2xl"
+            className="group relative bg-[#0a0a0a] border border-white/5 rounded-[2rem] overflow-hidden hover:border-anvil-red/30 transition-colors duration-slow shadow-2xl"
         >
             {/* Header / Type Badge */}
             <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 flex items-center gap-2">
@@ -69,7 +69,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                     <button
                         onClick={() => bet.status === 'open' && onBetClick(bet, null)}
                         disabled={bet.status !== 'open'}
-                        className={`w-full py-6 rounded-[2rem] border-2 border-dashed transition-all duration-300 flex flex-col items-center gap-2 ${
+                        className={`w-full py-6 rounded-[2rem] border-2 border-dashed transition-[background-color,border-color,color,opacity] duration-slow flex flex-col items-center gap-2 ${
  bet.status === 'open'
  ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/50 text-yellow-500'
  : 'border-white/5 bg-black/40 text-gray-500 opacity-50 cursor-not-allowed'
@@ -86,7 +86,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                     e.stopPropagation();
                                     onAddToSlip(bet, null);
                                 }}
-                                className="mt-4 p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-all border border-white/5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                className="mt-4 p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors border border-white/5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
                             >
                                 <Plus size={14} /> Añadir al boleto
                             </button>
@@ -107,7 +107,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                             return (
                                 <div
                                     key={option.id}
-                                    className={`relative group/option p-5 rounded-2xl border transition-all duration-300 overflow-hidden ${
+                                    className={`relative group/option p-5 rounded-2xl border transition-[background-color,border-color,opacity,transform] duration-slow overflow-hidden ${
  bet.status === 'open' 
  ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:scale-[1.02] active:scale-95' 
  : isWinner 
@@ -117,7 +117,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                 >
                                     {/* Percentage bar background */}
                                     <div 
-                                        className={`absolute bottom-0 left-0 h-1 transition-all duration-1000 ${index === 0 ? 'bg-anvil-red' : 'bg-blue-600'}`} 
+                                        className={`absolute bottom-0 left-0 h-1 transition-colors duration-slow ${index === 0 ? 'bg-anvil-red' : 'bg-blue-600'}`} 
                                         style={{ width: `${pct}%` }}
                                     />
 
@@ -136,7 +136,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                                     e.stopPropagation();
                                                     onBetClick(bet, option);
                                                 }}
-                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-anvil-red text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all border border-white/5 hover:border-anvil-red shadow-lg"
+                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-anvil-red text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-colors border border-white/5 hover:border-anvil-red shadow-lg"
                                             >
                                                 Apostar
                                             </button>
@@ -146,7 +146,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                                         e.stopPropagation();
                                                         onAddToSlip(bet, option);
                                                     }}
-                                                    className="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-all border border-white/5"
+                                                    className="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors border border-white/5"
                                                     title="Añadir al boleto"
                                                 >
                                                     <Plus size={16} />

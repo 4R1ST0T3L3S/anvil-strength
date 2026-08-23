@@ -273,6 +273,13 @@ export default {
           from: { opacity: "0", transform: "scale(0.97)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        // Barra de progreso indeterminada del arranque en frío. Vivía como un
+        // `<style>` inyectado dentro de DashboardSkeleton, o sea una etiqueta
+        // de estilo nueva en cada render de ese componente.
+        shimmer: {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(200%)" },
+        },
       },
 
       /* `both` en el modo de relleno: sin él, el elemento se pinta un frame en
@@ -287,6 +294,7 @@ export default {
         // cuenta atrás). El único caso legítimo de bucle en la aplicación, y
         // por eso lleva la curva de bucle y no la de salida.
         "spin-slow": "spin 4s linear infinite",
+        shimmer: "shimmer 1.5s linear infinite",
       },
     },
   },

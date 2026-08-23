@@ -162,7 +162,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                             <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#0a0a0a] border border-white/10">
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
                                     {/* Placeholder Content */}
-                                    <div className="text-center group-hover:scale-105 transition-transform duration-700">
+                                    <div className="text-center group-hover:scale-105 transition-transform duration-slow">
                                         <Crown size={60} className="text-anvil-red mb-6 mx-auto opacity-80 sm:w-20 sm:h-20" />
                                         <span className="text-5xl sm:text-6xl md:text-9xl font-black text-white/10 uppercase tracking-tighter">
                                             PIEZA<br />ANGULAR
@@ -196,7 +196,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                             <motion.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
                                 <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-6 border border-white/5">
                                     {product.id === 3 ? (
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-slow" />
                                     ) : (
                                         <div className="absolute inset-0 flex items-center justify-center bg-[#151515] group-hover:bg-[#0a0a0a] transition-colors">
                                             <span className="text-2xl sm:text-3xl font-black text-white/10 uppercase tracking-tighter -rotate-12">WORKING<br />ON IT</span>
@@ -217,7 +217,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             {/* --- STEEZY STORE BANNER --- */}
             <section className="py-12 bg-white text-black border-y-4 border-anvil-red overflow-hidden relative group cursor-pointer">
                 <a href="https://steezylifts.com/password" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-20"></a>
-                <div className="absolute inset-0 bg-anvil-red/10 transform -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-500 z-10" />
+                <div className="absolute inset-0 bg-anvil-red/10 transform -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-slow z-10" />
 
                 <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
                     <div className="flex items-center gap-6">
@@ -232,7 +232,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 group-hover:gap-8 transition-all duration-300">
+                    <div className="flex items-center gap-4 group-hover:gap-8 transition-colors duration-slow">
                         <span className="text-xl md:text-2xl font-black uppercase tracking-tight">VISITAR WEB</span>
                         <ArrowRight size={32} className="text-anvil-red" />
                     </div>
@@ -274,7 +274,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     placeholder="TU EMAIL"
                                     className="bg-transparent border-0 text-black placeholder-gray-400 px-6 sm:px-8 py-4 sm:py-5 font-bold uppercase flex-1 min-w-0 text-sm sm:text-base focus:ring-0"
                                 />
-                                <button className="bg-transparent text-black px-6 sm:px-10 py-4 sm:py-5 font-black uppercase transition-all flex items-center justify-center gap-3 whitespace-nowrap text-sm sm:text-base hover:opacity-60">
+                                <button className="bg-transparent text-black px-6 sm:px-10 py-4 sm:py-5 font-black uppercase transition-[color,opacity] flex items-center justify-center gap-3 whitespace-nowrap text-sm sm:text-base hover:opacity-60">
                                     UNIRME <ArrowRight size={22} strokeWidth={3} />
                                 </button>
                             </div>

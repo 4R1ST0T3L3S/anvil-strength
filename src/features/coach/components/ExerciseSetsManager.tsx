@@ -258,7 +258,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
 
             <button
                 onClick={handleAddSet}
-                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-white hover:border-[var(--border-strong)] transition-all"
+                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-white hover:border-[var(--border-strong)] transition-colors"
             >
                 <Plus size={14} />
                 Prescribir Series

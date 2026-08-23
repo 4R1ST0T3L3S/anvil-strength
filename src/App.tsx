@@ -7,7 +7,8 @@ import { useRedeemPendingInvite } from './hooks/useRedeemPendingInvite';
 import { useClaimManagedProfile } from './hooks/useClaimManagedProfile';
 import { AuthModal } from './features/auth/components/AuthModal';
 import { ErrorFallback } from './components/ui/ErrorFallback';
-import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { Button } from './components/ui/Button';
+import { DashboardSkeleton } from './components/skeletons/DashboardSkeleton';
 
 import { ReloadPrompt } from './components/pwa/ReloadPrompt';
 import { Toaster } from 'sonner';
@@ -57,27 +58,34 @@ function App() {
   const handleLoginClick = () => { setAuthMode('login'); setIsAuthModalOpen(true); };
   const handleSignupClick = () => { setAuthMode('signup'); setIsAuthModalOpen(true); };
 
-  if (isLoading) return <LoadingSpinner fullscreen message="Verificando sesión..." />;
+  // El arranque en frío: todavía no se sabe si hay sesión, así que no se
+  // sabe ni qué panel pintar. Es la única espera de la aplicación en la que
+  // de verdad no hay nada que conservar en pantalla, y por eso es la única
+  // que lleva la pantalla completa con la mascota. Todo lo demás usa
+  // esqueletos que conservan el armazón — ver AppShellSkeleton.
+  if (isLoading) return <DashboardSkeleton />;
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
-        <h2 className="text-xl font-bold text-anvil-red mb-2">Error de conexión</h2>
-        <p className="text-gray-400 mb-4 text-center max-w-md">
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-surface-sunken p-4 text-ink">
+        <h2 className="mb-2 text-t-xl font-bold text-danger">Error de conexión</h2>
+        <p className="mb-4 max-w-md text-center text-ink-muted">
           {error instanceof Error ? error.message : 'No se pudo cargar el perfil.'}
         </p>
-        <button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['user'] })}
-          className="bg-white text-black px-6 py-3 rounded-lg font-black uppercase tracking-wider hover:bg-gray-200 transition-colors"
-        >
+        <Button variant="primary" size="lg" onClick={() => queryClient.invalidateQueries({ queryKey: ['user'] })}>
           Reintentar
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white font-sans overflow-x-hidden">
+    // `overflow-x-hidden` es el corte de seguridad de la aplicación entera:
+    // basta con que una tabla o una rejilla se pase de ancho para arrastrar la
+    // PÁGINA hacia la derecha y dejar media pantalla en negro. El precio es que
+    // esconde los desbordes en vez de arreglarlos, y por eso existe
+    // `src/lib/overflowGuard.ts`, que en desarrollo los delata igualmente.
+    <div className="min-h-[100dvh] overflow-x-hidden bg-surface-sunken font-sans text-ink selection:bg-brand selection:text-brand-ink">
       <ReloadPrompt />
       <Toaster position="top-center" theme="dark" richColors />
       <ErrorBoundary FallbackComponent={ErrorFallback}>

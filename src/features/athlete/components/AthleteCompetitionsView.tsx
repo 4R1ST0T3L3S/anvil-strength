@@ -83,7 +83,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                             return (
                                 <div key={comp.id} className="relative group">
                                     <div className="absolute inset-0 bg-gradient-to-r from-anvil-red/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] -z-10 blur-xl"></div>
-                                    <div className={`${getCompetitionColorClass(comp.level)} rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center justify-between transition-all hover:scale-[1.01] hover:shadow-2xl`}>
+                                    <div className={`${getCompetitionColorClass(comp.level)} rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center justify-between transition-[box-shadow,transform] hover:scale-[1.01] hover:shadow-2xl`}>
                                         <div className="space-y-4">
                                             <div className="flex flex-wrap items-center gap-3">
                                                 <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-black px-3 py-1 rounded uppercase tracking-wider">

@@ -164,7 +164,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
 
                 <div 
                     onClick={() => setActiveGameId(gameOfTheDay.id)}
-                    className="relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-white/10 cursor-pointer group hover:border-purple-500/50 transition-all active:scale-[0.98]"
+                    className="relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-white/10 cursor-pointer group hover:border-purple-500/50 transition-[border-color,transform] active:scale-[0.98]"
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent z-0"></div>
                     

@@ -244,7 +244,7 @@ function CountdownSettings({
                                         key={tab.id}
                                         disabled={tab.disabled}
                                         onClick={() => setDraft({ ...draft, source: tab.id })}
-                                        className={`py-2.5 px-2 rounded-xl text-[11px] font-black uppercase tracking-wide transition-all border ${
+                                        className={`py-2.5 px-2 rounded-xl text-[11px] font-black uppercase tracking-wide transition-colors border ${
  draft.source === tab.id
  ? 'bg-anvil-red border-anvil-red text-white'
  : 'bg-[#252525] border-white/5 text-gray-400 hover:text-white hover:border-white/20'
@@ -275,7 +275,7 @@ function CountdownSettings({
                                                         ...draft,
                                                         aep: { name: comp.campeonato, date: comp.dateIso!, location: comp.sede, level: comp.level }
                                                     })}
-                                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
  isSelected
  ? 'bg-anvil-red/10 border-anvil-red'
  : 'bg-[#252525] border-white/5 hover:border-white/20'
@@ -341,7 +341,7 @@ function CountdownSettings({
                                         onClick={() => setDraft({ ...draft, themeId: theme.id })}
                                         className="flex flex-col items-center gap-1.5 group"
                                     >
-                                        <div className={`w-full aspect-square rounded-xl ${theme.swatch} border-2 transition-all ${
+                                        <div className={`w-full aspect-square rounded-xl ${theme.swatch} border-2 transition-[border-color,box-shadow,transform] ${
  draft.themeId === theme.id ? 'border-white scale-105 shadow-lg' : 'border-transparent group-hover:border-white/30'
  } flex items-center justify-center`}>
                                             {draft.themeId === theme.id && <Check size={16} className="text-white drop-shadow" />}
