@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, Maximize2, Minimize2 } from 'lucide-react';
 import { AthleteChatView } from '../pages/AthleteChatView';
 import { UserProfile } from '../../../hooks/useUser';
@@ -49,7 +49,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
 
     return createPortal(
         <AnimatePresence>
-            <motion.div
+            <m.div
                 initial={{ x: '100%' }}
                 animate={{ x: isMinimized ? 'calc(100% - 60px)' : 0 }}
                 exit={{ x: '100%' }}
@@ -127,7 +127,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                         </span>
                     </div>
                 )}
-            </motion.div>
+            </m.div>
         </AnimatePresence>,
         document.body
     );

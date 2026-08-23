@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { RefreshCcw, Eye } from 'lucide-react';
 import { AnvilLogoSVG } from '../../../components/ui/AnvilLogoSVG';
@@ -148,7 +148,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
 
                     <AnimatePresence>
                         {status === 'flashing' && anvils.map(anvil => (
-                            <motion.div
+                            <m.div
                                 key={anvil.id}
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -162,7 +162,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                                 }}
                             >
                                 <AnvilLogoSVG width={anvil.size} height={anvil.size} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
-                            </motion.div>
+                            </m.div>
                         ))}
                     </AnimatePresence>
                 </div>

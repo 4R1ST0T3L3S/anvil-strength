@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Trophy, MapPin, Settings, X, Calendar, Check, Loader, Flag } from 'lucide-react';
 import { LiveCountdown, formatCompetitionName, getCompetitionColorClass } from './CompetitionCountdown';
 import { fetchCompetitions, Competition } from '../../services/aepService';
@@ -213,12 +213,12 @@ function CountdownSettings({
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4" onClick={(e) => e.stopPropagation()}>
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     onClick={onClose}
                     className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                 />
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 40 }}
@@ -374,7 +374,7 @@ function CountdownSettings({
                             Guardar
                         </button>
                     </div>
-                </motion.div>
+                </m.div>
             </div>
         </AnimatePresence>
     );

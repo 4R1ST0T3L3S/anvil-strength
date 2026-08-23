@@ -1,6 +1,6 @@
 import { useCallback, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { cn } from '../../lib/utils';
 
 /**
@@ -165,7 +165,7 @@ export function Tabs<T extends string>({
                             moviéndose, que es lo que comunica "has cambiado de
                             sitio" en lugar de "ha cambiado la pantalla". */}
                         {esActiva && (
-                            <motion.span
+                            <m.span
                                 layoutId={`${grupo}-subrayado`}
                                 className="absolute inset-x-1 -bottom-px h-0.5 rounded-pill bg-brand"
                                 transition={{ type: 'spring', stiffness: 520, damping: 40 }}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useJsonLd } from '../../../hooks/useJsonLd';
 import { Fold } from './landingKit';
@@ -88,7 +88,7 @@ export function FAQSection() {
 
                                 <AnimatePresence initial={false}>
                                     {open && (
-                                        <motion.div
+                                        <m.div
                                             initial={{ height: 0, opacity: 0 }}
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
@@ -98,7 +98,7 @@ export function FAQSection() {
                                             <p className="max-w-[68ch] pb-6 text-t-base leading-relaxed text-ink-muted">
                                                 {faq.a}
                                             </p>
-                                        </motion.div>
+                                        </m.div>
                                     )}
                                 </AnimatePresence>
                             </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Search, Plus, Loader, Dumbbell } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
 import { ExerciseLibrary } from '../../../types/training';
@@ -67,7 +67,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -75,7 +75,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                     className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                 />
 
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -153,7 +153,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                             </div>
                         )}
                     </div>
-                </motion.div>
+                </m.div>
             </div>
         </AnimatePresence>
     );

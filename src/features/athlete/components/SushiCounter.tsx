@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Fish, RotateCcw, Plus, Minus, Trophy, Save, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useUser } from '../../../hooks/useUser';
 import { supabase } from '../../../lib/supabase';
 import { lockBodyScroll } from '../../../lib/scrollLock';
@@ -152,7 +152,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 <div className="relative z-10 bg-[#0a0a0a]/50 border-b border-white/5 w-full shrink-0 flex items-center justify-center py-4 md:py-10">
                     <div className="flex flex-col items-center justify-center text-center">
                         <p className="text-gray-500 text-t-2xs md:text-sm font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Piezas Consumidas</p>
-                        <motion.div 
+                        <m.div 
                             key={totals.piezas}
                             initial={{ scale: 1.5, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -171,7 +171,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                     
                                     <AnimatePresence>
                                         {totals.piezas > (user.max_sushi_pieces || 0) && (
-                                            <motion.button
+                                            <m.button
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.9 }}
@@ -185,12 +185,12 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                             >
                                                 {isSaving ? <Loader2 size={14} className="animate-spin" /> : celebration ? <Trophy size={14} /> : <Save size={14} />}
                                                 {celebration ? '¡Nuevo Récord!' : 'Guardar'}
-                                            </motion.button>
+                                            </m.button>
                                         )}
                                     </AnimatePresence>
                                 </div>
                             )}
-                        </motion.div>
+                        </m.div>
                     </div>
                 </div>
 
@@ -214,7 +214,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                     </button>
                                     <div className="w-8 md:w-16 text-center">
                                         <AnimatePresence mode="popLayout">
-                                            <motion.span 
+                                            <m.span 
                                                 key={counts[type.id]}
                                                 initial={{ y: -20, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
@@ -222,7 +222,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                                 style={{ color: type.color }}
                                             >
                                                 {counts[type.id]}
-                                            </motion.span>
+                                            </m.span>
                                         </AnimatePresence>
                                     </div>
                                     <button

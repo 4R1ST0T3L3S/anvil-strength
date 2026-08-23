@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus, Mail, Link2, Loader, Archive, RotateCcw } from 'lucide-react';
@@ -397,7 +397,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
  }`}
                                 >
                                     {active && (
-                                        <motion.span
+                                        <m.span
                                             layoutId="athlete-filter-pill"
                                             className="absolute inset-0 rounded-pill bg-brand"
                                             transition={{ type: 'spring', stiffness: 520, damping: 40 }}
@@ -510,7 +510,7 @@ function AthleteCard({
     }[tone];
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={stagger(index)}
@@ -678,7 +678,7 @@ function AthleteCard({
                     )}
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -918,7 +918,7 @@ export function ArchivedList({
                     : null;
 
                 return (
-                    <motion.li
+                    <m.li
                         key={athlete.id}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -957,7 +957,7 @@ export function ArchivedList({
                                 : <RotateCcw size={13} aria-hidden="true" />}
                             Reactivar
                         </button>
-                    </motion.li>
+                    </m.li>
                 );
             })}
         </ul>

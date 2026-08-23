@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Calendar } from 'lucide-react';
 import { athletes as clubAthletes } from '../../../data/athletes';
 import { lockBodyScroll } from '../../../lib/scrollLock';
@@ -49,7 +49,7 @@ function SmokeLayer() {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {plumes.map((p, i) => (
-                <motion.div
+                <m.div
                     key={i}
                     className="absolute rounded-full"
                     style={{
@@ -109,7 +109,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
     return (
         <AnimatePresence>
             {data && (
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -132,7 +132,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Foto del atleta */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, y: 80, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 40 }}
@@ -153,10 +153,10 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                                     </span>
                                 </div>
                             )}
-                        </motion.div>
+                        </m.div>
 
                         {/* Info */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, x: 40 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 20 }}
@@ -187,9 +187,9 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                                     {data.description}
                                 </p>
                             )}
-                        </motion.div>
+                        </m.div>
                     </div>
-                </motion.div>
+                </m.div>
             )}
         </AnimatePresence>
     );

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Check, FileSpreadsheet, Loader, Plus, Trash2, UploadCloud, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { vbtService } from '../../../services/vbtService';
@@ -222,7 +222,7 @@ export function AddMeasurementModal({
 
     return (
         <AnimatePresence>
-            <motion.div
+            <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -230,7 +230,7 @@ export function AddMeasurementModal({
                 className="fixed inset-0 z-[250] flex items-end justify-center bg-black/75 backdrop-blur-sm sm:items-center sm:p-4"
                 onClick={onClose}
             >
-                <motion.div
+                <m.div
                     initial={{ y: 24, scale: 0.98 }}
                     animate={{ y: 0, scale: 1 }}
                     exit={{ y: 24, scale: 0.98 }}
@@ -427,8 +427,8 @@ export function AddMeasurementModal({
                             </button>
                         </div>
                     </footer>
-                </motion.div>
-            </motion.div>
+                </m.div>
+            </m.div>
         </AnimatePresence>
     );
 }

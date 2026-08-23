@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Bell, CheckCircle, XCircle, Coins, X } from 'lucide-react';
 
 export type NotificationType = 'success' | 'error' | 'info' | 'reward';
@@ -20,7 +20,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
         <div className="fixed top-6 right-6 z-[10000] space-y-4 pointer-events-none w-full max-w-[320px] md:max-w-[400px]">
             <AnimatePresence mode="popLayout">
                 {notifications.map((notif) => (
-                    <motion.div
+                    <m.div
                         key={notif.id}
                         layout
                         initial={{ opacity: 0, x: 50, scale: 0.9 }}
@@ -68,7 +68,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                             </button>
 
                             {/* Progress bar */}
-                            <motion.div 
+                            <m.div 
                                 initial={{ width: "100%" }}
                                 animate={{ width: "0%" }}
                                 transition={{ duration: 5, ease: "linear" }}
@@ -80,7 +80,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
  }`}
                             />
                         </div>
-                    </motion.div>
+                    </m.div>
                 ))}
             </AnimatePresence>
         </div>

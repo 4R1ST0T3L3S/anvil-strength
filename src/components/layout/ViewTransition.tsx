@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../lib/motion';
 
 interface ViewTransitionProps {
@@ -31,7 +31,7 @@ export function ViewTransition({ transitionKey, children }: ViewTransitionProps)
 
     return (
         <AnimatePresence mode="wait" initial={false}>
-            <motion.div
+            <m.div
                 key={transitionKey}
                 initial={reduced ? { opacity: 0 } : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -63,7 +63,7 @@ export function ViewTransition({ transitionKey, children }: ViewTransitionProps)
                 className="min-h-full"
             >
                 {children}
-            </motion.div>
+            </m.div>
         </AnimatePresence>
     );
 }

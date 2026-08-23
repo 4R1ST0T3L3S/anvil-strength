@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { dialogIn, sheetIn, fade, transition, DURATION } from '../../lib/motion';
@@ -139,7 +139,7 @@ export function Modal({
                     className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-6"
                     style={{ zIndex: 'var(--z-modal)' }}
                 >
-                    <motion.div
+                    <m.div
                         {...fade}
                         transition={transition(DURATION.fast)}
                         onClick={close}
@@ -147,7 +147,7 @@ export function Modal({
                         aria-hidden="true"
                     />
 
-                    <motion.div
+                    <m.div
                         ref={panelRef}
                         role="dialog"
                         aria-modal="true"
@@ -228,7 +228,7 @@ export function Modal({
                                 {footer}
                             </footer>
                         )}
-                    </motion.div>
+                    </m.div>
                 </div>
             )}
         </AnimatePresence>,

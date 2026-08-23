@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Wand2, Calculator, Check, X as XIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Meal, MealFood, FoodItem, FoodCategory } from '../../../types/nutrition';
 import { useCreateMeal, useDeleteMeal, useAddFoodToMeal, useRemoveFoodFromMeal, useUpdateBulkMealFoods } from '../../../hooks/useNutrition';
 import { FoodSearch } from './FoodSearch';
@@ -306,7 +306,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     {/* Smart Adjuster Panel */}
                     <AnimatePresence>
                         {isAdjusting && (
-                            <motion.div 
+                            <m.div 
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -417,7 +417,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                     )}
                                 </div>
 
-                            </motion.div>
+                            </m.div>
                         )}
                     </AnimatePresence>
 
@@ -440,10 +440,10 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     {/* Food Groups by Category */}
                     <AnimatePresence>
                         {foodGroups.length > 0 ? (
-                            <motion.div layout className="space-y-3 mb-4">
+                            <m.div layout className="space-y-3 mb-4">
                                 <AnimatePresence>
                                     {foodGroups.map(group => (
-                                        <motion.div 
+                                        <m.div 
                                             key={group.groupId}
                                             layout
                                             initial={{ opacity: 0, scale: 0.95 }}
@@ -518,12 +518,12 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                     </div>
                                                 );
                                             })}
-                                        </motion.div>
+                                        </m.div>
                                     ))}
                                 </AnimatePresence>
-                            </motion.div>
+                            </m.div>
                         ) : (
-                            <motion.div 
+                            <m.div 
                                 layout
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -531,7 +531,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                 className="text-sm text-zinc-500 text-center py-2 mb-2"
                             >
                                 No hay alimentos en esta comida.
-                            </motion.div>
+                            </m.div>
                         )}
                     </AnimatePresence>
 

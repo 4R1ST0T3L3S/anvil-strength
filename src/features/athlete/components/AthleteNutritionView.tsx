@@ -14,7 +14,7 @@ import {
 import { UserProfile } from '../../../hooks/useUser';
 import { useAthleteNutritionPlan } from '../../../hooks/useNutrition';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 interface AthleteNutritionViewProps {
     user: UserProfile;
@@ -146,7 +146,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
             {/* Macros Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {macroCards.map((macro, i) => (
-                    <motion.div
+                    <m.div
                         key={i}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -165,7 +165,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                 <span className="text-xs text-ink-subtle">/ {macro.target}{macro.unit}</span>
                             </div>
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <motion.div
+                                <m.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (macro.current / (macro.target || 1)) * 100)}%` }}
                                     transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
@@ -173,7 +173,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                 />
                             </div>
                         </div>
-                    </motion.div>
+                    </m.div>
                 ))}
             </div>
 

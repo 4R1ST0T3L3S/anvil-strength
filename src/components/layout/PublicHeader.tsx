@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
@@ -324,7 +324,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
             {/* Menú móvil a pantalla completa */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
-                    <motion.div
+                    <m.div
                         role="dialog"
                         aria-modal="true"
                         aria-label="Menú de navegación"
@@ -357,7 +357,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             que es justo lo que un menú no debe pedir. */}
                         <nav aria-label="Secciones del sitio" className="flex flex-1 flex-col justify-center gap-2 px-8 py-4">
                             {NAV_LINKS.map((link, index) => (
-                                <motion.a
+                                <m.a
                                     key={link.name}
                                     href={link.href}
                                     initial={{ opacity: 0, x: 20 }}
@@ -370,7 +370,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
  }`}
                                 >
                                     {link.name}
-                                </motion.a>
+                                </m.a>
                             ))}
                         </nav>
 
@@ -391,7 +391,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                                 </button>
                             )}
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </header>

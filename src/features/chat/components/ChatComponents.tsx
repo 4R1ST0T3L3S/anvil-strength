@@ -1,10 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChatMessage } from '../../../types/database';
 
 export const ChatBubble: React.FC<{ message: ChatMessage; isOwn: boolean }> = ({ message, isOwn }) => {
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, x: isOwn ? 20 : -20, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}
@@ -22,7 +22,7 @@ export const ChatBubble: React.FC<{ message: ChatMessage; isOwn: boolean }> = ({
                     {isOwn && message.is_read && <span className="ml-2">✓✓</span>}
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 };
 

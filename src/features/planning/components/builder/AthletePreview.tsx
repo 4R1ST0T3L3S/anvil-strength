@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { ExtendedSession } from './types';
 
@@ -7,14 +7,14 @@ import type { ExtendedSession } from './types';
 // ==========================================
 export function AthletePreview({ session, onClose }: { session: ExtendedSession; onClose: () => void }) {
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={onClose}
         >
-            <motion.div
+            <m.div
                 initial={{ y: 40, scale: 0.96 }}
                 animate={{ y: 0, scale: 1 }}
                 exit={{ y: 40, scale: 0.96 }}
@@ -77,8 +77,8 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
                         ))
                     )}
                 </div>
-            </motion.div>
-        </motion.div>
+            </m.div>
+        </m.div>
     );
 }
 

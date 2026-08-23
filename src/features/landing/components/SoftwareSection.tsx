@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 
 export function SoftwareSection() {
@@ -20,7 +20,7 @@ export function SoftwareSection() {
 
             <div className="max-w-[1400px] mx-auto px-6 relative z-10 flex flex-col items-center">
                 {/* Header */}
-                <motion.div
+                <m.div
                     className="text-center mb-16"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -37,10 +37,10 @@ export function SoftwareSection() {
                         <p>Elevando el estándar del powerlifting mediante innovación.</p>
                         <p>Análisis VBT y gestión integral en una sola app.</p>
                     </div>
-                </motion.div>
+                </m.div>
 
                 {/* Software Image Showcase */}
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, scale: 0.95, y: 30 }}
                     whileInView={{ opacity: 1, scale: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -57,7 +57,7 @@ export function SoftwareSection() {
                             (e.target as HTMLImageElement).src = '/portadaanvil2.jpg';
                         }}
                     />
-                </motion.div>
+                </m.div>
 
                 {/* Downloads & Platforms */}
                 <div className="w-full max-w-5xl">

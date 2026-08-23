@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { Target, RefreshCcw, Timer } from 'lucide-react';
 import { AnvilLogoSVG } from '../../../components/ui/AnvilLogoSVG';
@@ -219,7 +219,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
                 )}
 
                 {status === 'playing' && squares.map(sq => !sq.clicked && (
-                    <motion.div
+                    <m.div
                         key={`sq-${sq.id}`}
                         className={`absolute w-[40px] h-[40px] flex items-center justify-center cursor-pointer active:scale-90 transition-transform ${sq.isAnvil ? 'text-anvil-red drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'}`}
                         style={{ left: sq.x, top: sq.y }}
@@ -229,7 +229,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
                         }}
                     >
                         <AnvilLogoSVG width={40} height={40} />
-                    </motion.div>
+                    </m.div>
                 ))}
             </div>
         </div>

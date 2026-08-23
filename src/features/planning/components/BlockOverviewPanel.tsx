@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Info, XCircle, TrendingDown, Gauge } from 'lucide-react';
 import {
     analyzeBlock,
@@ -244,7 +244,7 @@ function IssuePanel({ issues }: { issues: BlockAnalytics['issues'] }) {
                 const style = ISSUE_STYLE[issue.level];
                 const Icon = style.icon;
                 return (
-                    <motion.div
+                    <m.div
                         key={`${issue.code}-${issue.week ?? i}`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -257,7 +257,7 @@ function IssuePanel({ issues }: { issues: BlockAnalytics['issues'] }) {
                     >
                         <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                         <span>{issue.message}</span>
-                    </motion.div>
+                    </m.div>
                 );
             })}
 
@@ -362,7 +362,7 @@ function WeeklyChart({
                                 {value == null ? '—' : metric.format(value)}
                             </p>
 
-                            <motion.div
+                            <m.div
                                 initial={false}
                                 animate={{ height: `${Math.max(pct, value == null ? 0 : 2)}%` }}
                                 transition={transition(DURATION.base)}
@@ -431,7 +431,7 @@ function IntensityBreakdown({ analytics }: { analytics: BlockAnalytics }) {
                             const sets = analytics.setsByZone[z.key];
                             if (sets === 0) return null;
                             return (
-                                <motion.div
+                                <m.div
                                     key={z.key}
                                     initial={false}
                                     animate={{ width: `${(sets / total) * 100}%` }}
@@ -542,7 +542,7 @@ function FrequencyBreakdown({ analytics }: { analytics: BlockAnalytics }) {
             ) : (
                 <ul className="space-y-3">
                     {rows.map(([pattern, freq], i) => (
-                        <motion.li
+                        <m.li
                             key={pattern}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -557,14 +557,14 @@ function FrequencyBreakdown({ analytics }: { analytics: BlockAnalytics }) {
                                 </span>
                             </div>
                             <div className="h-1.5 overflow-hidden rounded-pill bg-surface-sunken">
-                                <motion.div
+                                <m.div
                                     className="h-full bg-brand"
                                     initial={false}
                                     animate={{ width: `${(freq / max) * 100}%` }}
                                     transition={transition(DURATION.base)}
                                 />
                             </div>
-                        </motion.li>
+                        </m.li>
                     ))}
                 </ul>
             )}
@@ -614,7 +614,7 @@ function MuscleSummary({
                         const ref = WEEKLY_SET_REFERENCE[r.muscle];
                         const scale = Math.max(ref.max * 1.35, r.perWeek);
                         return (
-                            <motion.li
+                            <m.li
                                 key={r.muscle}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -649,7 +649,7 @@ function MuscleSummary({
                                         }}
                                         aria-hidden="true"
                                     />
-                                    <motion.div
+                                    <m.div
                                         className={cn(
                                             'relative h-full',
                                             r.verdict === 'above'
@@ -663,7 +663,7 @@ function MuscleSummary({
                                         transition={transition(DURATION.base)}
                                     />
                                 </div>
-                            </motion.li>
+                            </m.li>
                         );
                     })}
                 </ul>
@@ -702,7 +702,7 @@ function WeekTable({
 
             <AnimatePresence initial={false}>
                 {open && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
@@ -769,7 +769,7 @@ function WeekTable({
                         <p className="mt-3 text-t-2xs text-ink-faint">
                             Un guion significa que falta el dato de partida, no que valga cero.
                         </p>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </section>

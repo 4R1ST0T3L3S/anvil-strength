@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Activity, Check, Loader, Trash2, UploadCloud, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { vbtService } from '../../../services/vbtService';
@@ -217,7 +217,7 @@ export function SetVbtModal({
 
     return (
         <AnimatePresence>
-            <motion.div
+            <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -225,7 +225,7 @@ export function SetVbtModal({
                 className="fixed inset-0 z-[240] flex items-end justify-center bg-black/75 backdrop-blur-sm sm:items-center sm:p-4"
                 onClick={onClose}
             >
-                <motion.div
+                <m.div
                     initial={{ y: 24, scale: 0.98 }}
                     animate={{ y: 0, scale: 1 }}
                     exit={{ y: 24, scale: 0.98 }}
@@ -415,8 +415,8 @@ export function SetVbtModal({
                             Guardar
                         </button>
                     </footer>
-                </motion.div>
-            </motion.div>
+                </m.div>
+            </m.div>
 
             {/* El analizador guarda por su cuenta directamente en la serie, así
                 que al volver ya no hay nada que teclear aquí: se cierran los

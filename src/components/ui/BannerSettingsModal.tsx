@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { X, Save, Trophy, Palette, Type, Clock, Layout } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
@@ -73,7 +73,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                 onClose();
             }}
         >
-            <motion.div
+            <m.div
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -244,7 +244,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                         )}
                     </button>
                 </div>
-            </motion.div>
+            </m.div>
         </div>,
         document.body
     );

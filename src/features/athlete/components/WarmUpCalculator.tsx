@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, TrendingUp, Dumbbell, List, ChevronDown } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
 import { useUser } from '../../../hooks/useUser';
 import { useAthletePrefs } from '../../../hooks/useAthletePrefs';
@@ -233,7 +233,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                             <div className="space-y-3 h-full overflow-y-auto no-scrollbar [&::-webkit-scrollbar]:hidden pr-2">
                                 {warmUpSets.length > 0 ? (
                                     warmUpSets.map((set, i) => (
-                                        <motion.div
+                                        <m.div
                                             key={i}
                                             initial={{ opacity: 0, x: 20 }}
                                             animate={{ opacity: 1, x: 0 }}
@@ -264,7 +264,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                                     {set.reps}
                                                 </p>
                                             </div>
-                                        </motion.div>
+                                        </m.div>
                                     ))
                                 ) : (
                                     <div className="text-center py-20 bg-black/20 rounded-[2rem] border-2 border-dashed border-white/5 flex flex-col items-center justify-center gap-4">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { AlertCircle, Check, Loader, UserPlus } from 'lucide-react';
 import { invitesService, type InvitePreview, type InviteProblem } from '../../../services/invitesService';
 import { UserProfile, useUser } from '../../../hooks/useUser';
@@ -96,7 +96,7 @@ export function InvitePage({
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-surface-canvas px-4 py-12">
-            <motion.div
+            <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: DURATION.base, ease: EASE_OUT }}
@@ -121,7 +121,7 @@ export function InvitePage({
                         onSignupClick={onSignupClick}
                     />
                 )}
-            </motion.div>
+            </m.div>
         </div>
     );
 }

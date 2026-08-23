@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MoreVertical, ChevronDown, Download, Copy, ArrowRightLeft, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { transition, DURATION } from '../../../../lib/motion';
 
 // ==========================================
@@ -135,7 +135,7 @@ export function WeekMenu({
 
             <AnimatePresence>
                 {open && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, scale: 0.97, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.97, y: -4 }}
@@ -192,7 +192,7 @@ export function WeekMenu({
                                 </MenuItem>
                             </>
                         )}
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

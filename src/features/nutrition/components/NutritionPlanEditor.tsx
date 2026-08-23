@@ -3,7 +3,7 @@ import { useAthleteNutritionPlan, useCreateNutritionPlan, useUpdateNutritionPlan
 import { useUser } from '../../../hooks/useUser';
 import { MealBuilder } from './MealBuilder';
 import { Apple, Target, Settings, Download, Plus, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { PDFEditorModal } from './PDFEditorModal';
 import { FloatingMacroTracker } from './FloatingMacroTracker';
 
@@ -259,72 +259,72 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         {/* Kcal */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
                             <span className="text-zinc-500 text-xs font-bold uppercase mb-1">Calorías</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-white">{Math.round(currentMacros.kcal)}</span>
                                 <span className="text-sm text-zinc-500">/ {plan?.calories_target} kcal</span>
                             </div>
                             <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
-                                <motion.div 
+                                <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.kcal / (plan?.calories_target || 1)) * 100)}%` }}
                                     transition={{ duration: 1, ease: "easeOut" }}
                                     className="h-full bg-white" 
                                 />
                             </div>
-                        </motion.div>
+                        </m.div>
 
                         {/* Prot */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
                             <span className="text-blue-400/70 text-xs font-bold uppercase mb-1">Proteína</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-blue-400">{Math.round(currentMacros.prot)}g</span>
                                 <span className="text-sm text-zinc-500">/ {plan?.protein_target}g</span>
                             </div>
                             <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
-                                <motion.div 
+                                <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.prot / (plan?.protein_target || 1)) * 100)}%` }}
                                     transition={{ duration: 1, delay: 0.1, ease: "easeOut" }}
                                     className="h-full bg-blue-500" 
                                 />
                             </div>
-                        </motion.div>
+                        </m.div>
 
                         {/* Carbs */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
                             <span className="text-yellow-400/70 text-xs font-bold uppercase mb-1">Carbohidratos</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-yellow-400">{Math.round(currentMacros.carbs)}g</span>
                                 <span className="text-sm text-zinc-500">/ {plan?.carbs_target}g</span>
                             </div>
                             <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
-                                <motion.div 
+                                <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.carbs / (plan?.carbs_target || 1)) * 100)}%` }}
                                     transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
                                     className="h-full bg-yellow-500" 
                                 />
                             </div>
-                        </motion.div>
+                        </m.div>
 
                         {/* Fats */}
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
                             <span className="text-orange-400/70 text-xs font-bold uppercase mb-1">Grasas</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-orange-400">{Math.round(currentMacros.fats)}g</span>
                                 <span className="text-sm text-zinc-500">/ {plan?.fats_target}g</span>
                             </div>
                             <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
-                                <motion.div 
+                                <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.fats / (plan?.fats_target || 1)) * 100)}%` }}
                                     transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
                                     className="h-full bg-orange-500" 
                                 />
                             </div>
-                        </motion.div>
+                        </m.div>
                     </div>
                 )}
             </div>

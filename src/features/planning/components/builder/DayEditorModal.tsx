@@ -5,7 +5,7 @@ import {
     LayoutTemplate, CopyPlus, GripVertical, ChevronDown, Sparkles, Wand2,
     Flame as FlameIcon,
 } from 'lucide-react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { m, AnimatePresence, Reorder } from 'framer-motion';
 import { type ParsedWarmupExercise } from '../../../../lib/planning/warmupParser';
 import { VolumePanel } from '../VolumePanel';
 import { ResizeHandle, usePanelWidth } from '../../../../components/ui/ResizeHandle';
@@ -476,7 +476,7 @@ export function DayEditorModal({
                                 <span className="ml-1.5 text-ink-faint">{session.exercises.length}</span>
                             )}
                             {mobileTab === t.key && (
-                                <motion.span
+                                <m.span
                                     layoutId="dayeditor-tab"
                                     className="absolute inset-x-3 bottom-0 h-0.5 bg-brand"
                                     transition={{ type: 'spring', stiffness: 500, damping: 38 }}
@@ -490,7 +490,7 @@ export function DayEditorModal({
                     escritorio los paneles vuelven a ser una fila normal y
                     recortar aquí cortaría los desplegables de la cabecera. */}
                 <div ref={trackRef} className="flex-1 min-h-0 overflow-hidden lg:overflow-visible">
-                <motion.div
+                <m.div
                     className="flex h-full w-[300%] lg:w-full"
                     drag={isDesktop ? false : 'x'}
                     // Bloquear la dirección al primer movimiento es lo que
@@ -652,7 +652,7 @@ export function DayEditorModal({
                     <div className="w-1/3 shrink-0 overflow-y-auto p-4 min-h-0 md:p-6 lg:w-auto lg:flex-1 lg:shrink">
                         <AnimatePresence mode="wait">
                             {selectedEx ? (
-                                <motion.div
+                                <m.div
                                     key={selectedEx.id}
                                     initial={{ opacity: 0, x: 24, scale: 0.98 }}
                                     animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -676,7 +676,7 @@ export function DayEditorModal({
                                         onRemoveExercise={() => onRemoveExercise(selectedEx.id, session.id)}
                                         onOpenVbtChart={onOpenVbtChart}
                                     />
-                                </motion.div>
+                                </m.div>
                             ) : (
                                 <div className="h-full flex items-center justify-center text-ink-subtle text-sm font-bold uppercase tracking-wider">
                                     Selecciona un ejercicio de la lista
@@ -765,7 +765,7 @@ export function DayEditorModal({
                                                 <span className="text-ink-subtle">{count} series · {pct}%</span>
                                             </div>
                                             <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
-                                                <motion.div
+                                                <m.div
                                                     className={`h-full ${theme.bar} rounded-full`}
                                                     initial={{ width: 0 }}
                                                     animate={{ width: `${pct}%` }}
@@ -805,7 +805,7 @@ export function DayEditorModal({
                             })}
                         </div>
                     </div>
-                </motion.div>
+                </m.div>
                 </div>
                 </>
             )}

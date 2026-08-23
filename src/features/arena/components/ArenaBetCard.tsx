@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Swords, Users, HelpCircle, Trophy, TrendingUp, Plus } from 'lucide-react';
 import { ArenaBet, ArenaOption } from '../../../types/database';
 
@@ -31,7 +31,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
     };
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="group relative bg-[#0a0a0a] border border-white/5 rounded-[2rem] overflow-hidden hover:border-anvil-red/30 transition-colors duration-slow shadow-2xl"
@@ -183,6 +183,6 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                     </span>
                 )}
             </div>
-        </motion.div>
+        </m.div>
     );
 };

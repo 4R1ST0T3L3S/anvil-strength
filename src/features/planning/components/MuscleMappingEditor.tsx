@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Check, RotateCcw, Target, X } from 'lucide-react';
 import { MUSCLE_GROUPS, classifyExercise, type MuscleGroup } from '../../../lib/volume/muscles';
 import { transition, DURATION } from '../../../lib/motion';
@@ -95,7 +95,7 @@ export function MuscleMappingEditor({
 
     return (
         <AnimatePresence>
-            <motion.div
+            <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -103,7 +103,7 @@ export function MuscleMappingEditor({
                 className="fixed inset-0 z-[220] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
                 onClick={onClose}
             >
-                <motion.div
+                <m.div
                     initial={{ y: 24, scale: 0.98 }}
                     animate={{ y: 0, scale: 1 }}
                     exit={{ y: 24, scale: 0.98 }}
@@ -200,8 +200,8 @@ export function MuscleMappingEditor({
                             </button>
                         </div>
                     </footer>
-                </motion.div>
-            </motion.div>
+                </m.div>
+            </m.div>
         </AnimatePresence>
     );
 }

@@ -1,4 +1,4 @@
-import { motion, useAnimation } from "framer-motion";
+import { m, useAnimation } from "framer-motion";
 import { useEffect, useState } from "react";
 
 export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string }) => {
@@ -58,7 +58,7 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
 
     return (
         <div className={`relative flex items-center justify-center ${className}`}>
-            <motion.div
+            <m.div
                 className="w-full h-full relative"
                 animate={controls}
             >
@@ -76,7 +76,7 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
                         viewBox="0 0 200 200"
                     >
                         {/* --- BARRA DE PESO MUERTO (Solo visible durante el lift) --- */}
-                        <motion.g
+                        <m.g
                             initial={{ opacity: 0 }}
                             animate={{
                                 opacity: isLifting ? 1 : 0,
@@ -95,10 +95,10 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
                             <rect x="205" y="130" width="15" height="68" fill="#1c1c1c" rx="2" />
                             <rect x="195" y="135" width="10" height="58" fill="#dc2626" rx="1" />
                             <rect x="187" y="138" width="8" height="52" fill="#1c1c1c" rx="1" />
-                        </motion.g>
+                        </m.g>
 
                         {/* --- OJOS --- */}
-                        <motion.g
+                        <m.g
                             // Parpadeo normal, ojos "esforzados" durante el lift
                             animate={isLifting ? { scaleY: 0.8 } : { scaleY: [1, 0.1, 1, 1, 1] }}
                             transition={isLifting ? { duration: 0.2 } : { repeat: Infinity, duration: 4, times: [0, 0.05, 0.1, 0.5, 1] }}
@@ -109,11 +109,11 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
 
                             <circle cx="130" cy="85" r="8" fill="white" stroke="black" strokeWidth="2" />
                             <circle cx="130" cy="85" r={isLifting ? 2 : 3} fill="black" />
-                        </motion.g>
+                        </m.g>
 
                         {/* --- SONRISA / BOCA DE ESFUERZO --- */}
                         {/* Se transforma de sonrisa curva a linea recta de esfuerzo */}
-                        {/* `path` normal, NO `motion.path`.
+                        {/* `path` normal, NO `m.path`.
                             framer-motion NO sabe animar el atributo `d` de un
                             SVG: no interpola trazados (para eso hace falta algo
                             como flubber). Lo que hacía era peor que no animar
@@ -138,7 +138,7 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
 
                         {/* --- BRAZOS --- */}
                         {/* Izquierdo */}
-                        {/* Ver la nota de la boca: `path`, no `motion.path`.
+                        {/* Ver la nota de la boca: `path`, no `m.path`.
                             Aquí el estado de reposo era además un array de
                             fotogramas (un vaivén de respiración) que tampoco
                             llegó a moverse nunca; se queda su primer fotograma. */}
@@ -175,12 +175,12 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
                 </div>
 
                 {/* --- SOMBRA DEL SUELO --- */}
-                <motion.div
+                <m.div
                     className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-2/3 h-2 bg-black/40 blur-sm rounded-[100%]"
                     animate={{ scaleX: [1, 0.8, 1], opacity: [0.4, 0.2, 0.4] }}
                     transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                 />
-            </motion.div>
+            </m.div>
         </div>
     );
 };

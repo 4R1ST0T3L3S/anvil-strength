@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronDown, Activity, Zap, Calculator, TrendingUp, Check, Trophy, Save, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useUser } from '../../../hooks/useUser';
 import { supabase } from '../../../lib/supabase';
 import { calcular1RMporVelocidad, Movimiento } from '../../../utils/vbtCalculator';
@@ -52,7 +52,7 @@ function CustomSelect({
                 {isOpen && (
                     <div className="fixed inset-0 z-[10000] flex items-end md:items-center justify-center p-0 md:p-4">
                         {/* Backdrop */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -61,7 +61,7 @@ function CustomSelect({
                         />
 
                         {/* Options List */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, y: 100 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 100 }}
@@ -94,7 +94,7 @@ function CustomSelect({
                                     </button>
                                 ))}
                             </div>
-                        </motion.div>
+                        </m.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -152,7 +152,7 @@ function WheelSelector({
             <AnimatePresence>
                 {isOpen && (
                     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md">
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
@@ -219,7 +219,7 @@ function WheelSelector({
                             >
                                 Cerrar
                             </button>
-                        </motion.div>
+                        </m.div>
                     </div>
                 )}
             </AnimatePresence>
@@ -507,7 +507,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                         
                                         <AnimatePresence>
                                             {estimated1RM > currentPR && (
-                                                <motion.button
+                                                <m.button
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     exit={{ opacity: 0, scale: 0.9 }}
@@ -521,7 +521,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                                 >
                                                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : celebration ? <Trophy size={16} /> : <Save size={16} />}
                                                     {celebration ? '¡PR Guardado!' : 'Guardar Nuevo PR'}
-                                                </motion.button>
+                                                </m.button>
                                             )}
                                         </AnimatePresence>
                                     </div>

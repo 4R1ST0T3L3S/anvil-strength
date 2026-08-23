@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Check, Gauge, MessageSquare, MessageSquareText } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -511,7 +511,7 @@ export function LoggerSetRow({
                 desplaza las series de abajo sin avisar. */}
             <AnimatePresence initial={false}>
                 {noteOpen && (
-                    <motion.div
+                    <m.div
                         initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
                         animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
                         exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
@@ -532,7 +532,7 @@ export function LoggerSetRow({
                                 className="w-full resize-none rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-t-base leading-relaxed text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                             />
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

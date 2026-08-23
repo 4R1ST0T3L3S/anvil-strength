@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Instagram, Mail } from 'lucide-react';
 
 export function CountdownPage() {
@@ -47,7 +47,7 @@ export function CountdownPage() {
             <div className="relative z-10 flex flex-col items-center px-4 text-center max-w-5xl mx-auto w-full">
 
                 {/* Logo */}
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, ease: "easeOut" }}
@@ -58,10 +58,10 @@ export function CountdownPage() {
                         alt="Anvil Strength Logo"
                         className="h-20 md:h-32 lg:h-40 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
                     />
-                </motion.div>
+                </m.div>
 
                 {/* Main Heading */}
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.8 }}
@@ -73,12 +73,12 @@ export function CountdownPage() {
                     <p className="text-sm md:text-2xl text-gray-400 font-bold uppercase tracking-[0.2em]">
                         Opening soon:
                     </p>
-                </motion.div>
+                </m.div>
 
                 {/* Counter */}
                 <div className="grid grid-cols-4 gap-2 md:gap-8 w-full max-w-5xl mb-12 md:mb-16">
                     {timeUnits.map((item, index) => (
-                        <motion.div
+                        <m.div
                             key={item.label}
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -91,12 +91,12 @@ export function CountdownPage() {
                             <span className="text-[9px] md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
                                 {item.label}
                             </span>
-                        </motion.div>
+                        </m.div>
                     ))}
                 </div>
 
                 {/* Footer / Socials */}
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1, duration: 1 }}
@@ -121,7 +121,7 @@ export function CountdownPage() {
                             <Mail size={24} />
                         </a>
                     </div>
-                </motion.div>
+                </m.div>
             </div>
 
             {/* Bottom Gradient Line */}

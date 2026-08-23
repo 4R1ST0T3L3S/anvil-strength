@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import { TeamModal } from '../../../components/modals/TeamModal';
@@ -210,14 +210,14 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 </div>
 
                 <div className="relative z-10 mx-auto w-full max-w-[1180px] px-6 pb-24 pt-32 text-center md:px-10">
-                    <motion.h1
+                    <m.h1
                         initial={{ opacity: 0, y: 24 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                         className="text-d-lg font-black uppercase text-white"
                     >
                         Anvil Strength
-                    </motion.h1>
+                    </m.h1>
 
                     {/* LEMA, en la fuente display — el único contraste
                         tipográfico deliberado de toda la portada. La frase
@@ -225,16 +225,16 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         desaparece: vive en el fold siguiente, que es donde
                         de verdad se explica qué es el club. Aquí solo hace
                         falta una idea, no un resumen. */}
-                    <motion.p
+                    <m.p
                         initial={{ opacity: 0, y: 18 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         className="mt-5 font-display text-[clamp(1.75rem,5vw,3rem)] uppercase leading-[0.95] tracking-[0.01em] text-white/90"
                     >
                         Where champions are forged
-                    </motion.p>
+                    </m.p>
 
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.65, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
@@ -254,7 +254,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         >
                             Ver de qué va
                         </a>
-                    </motion.div>
+                    </m.div>
                 </div>
             </section>
 
@@ -504,7 +504,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         onMouseEnter={() => setIsPaused(true)}
                         onMouseLeave={() => setIsPaused(false)}
                     >
-                        <motion.div
+                        <m.div
                             className="flex gap-4 px-4"
                             animate={{ x: -(carouselIndex * (280 + 16)) }}
                             transition={isTransitioning ? { duration: 0.8, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}
@@ -531,7 +531,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                     </div>
                                 </button>
                             ))}
-                        </motion.div>
+                        </m.div>
                     </div>
                 </div>
             </section>
@@ -723,7 +723,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 tiene que pedir el clic. El balanceo se para con
                 `prefers-reduced-motion` — una animación infinita es
                 justo la que peor sienta a quien la desactiva.          */}
-            <motion.button
+            <m.button
                 type="button"
                 aria-label="Abrir el chat de Anvil Strength"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -747,7 +747,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     ¿Hablamos?
                 </span>
                 <AnvilMascot className="h-24 w-24 md:h-28 md:w-28" />
-            </motion.button>
+            </m.button>
         </div>
     );
 }
@@ -791,7 +791,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
                 <>
                     <figure className="group/img relative aspect-[16/10] overflow-hidden rounded-card bg-surface-sunken">
                         <AnimatePresence initial={false} mode="popLayout">
-                            <motion.div
+                            <m.div
                                 key={imgIndex}
                                 className="absolute inset-0"
                                 initial={reduce ? false : { opacity: 0, x: 40 }}
@@ -813,7 +813,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
                                     fallbackClassName="bg-surface-sunken"
                                     draggable={false}
                                 />
-                            </motion.div>
+                            </m.div>
                         </AnimatePresence>
 
                         {/* Flechas solo en escritorio: en móvil se arrastra. */}

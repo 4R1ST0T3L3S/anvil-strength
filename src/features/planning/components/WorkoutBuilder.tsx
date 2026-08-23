@@ -11,7 +11,7 @@ import {
     Loader, Plus, Save, Calendar, CalendarPlus, FileText, BarChart3, Eye, EyeOff,
     LayoutTemplate, ChevronDown, Send, Check,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { type ParsedWarmupExercise } from '../../../lib/planning/warmupParser';
 import { toast } from 'sonner';
@@ -1621,7 +1621,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
                             <AnimatePresence>
                                 {daysPrompt && (
-                                    <motion.div
+                                    <m.div
                                         initial={{ opacity: 0, scale: 0.97, y: -4 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.97, y: -4 }}
@@ -1646,7 +1646,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                                 </button>
                                             ))}
                                         </div>
-                                    </motion.div>
+                                    </m.div>
                                 )}
                             </AnimatePresence>
                         </div>
@@ -1668,7 +1668,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
                             <AnimatePresence>
                                 {releasePrompt && (
-                                    <motion.div
+                                    <m.div
                                         initial={{ opacity: 0, scale: 0.97, y: -4 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.97, y: -4 }}
@@ -1700,7 +1700,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                                 </button>
                                             ))}
                                         </div>
-                                    </motion.div>
+                                    </m.div>
                                 )}
                             </AnimatePresence>
                         </div>
@@ -1786,7 +1786,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 lista larga y el cambio puede hacerse a cualquier altura. */}
             <AnimatePresence>
                 {hasUnsavedChanges && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 8 }}
@@ -1802,7 +1802,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                         >
                             Guardar cambios
                         </Button>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
 

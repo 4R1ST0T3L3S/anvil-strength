@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Info, TrendingUp } from 'lucide-react';
 import {
     computeVolume,
@@ -128,7 +128,7 @@ export function VolumePanel({
                 qué hacer. Un badge de color sin texto no accionaría nada. */}
             <AnimatePresence initial={false}>
                 {alerts.length > 0 && (
-                    <motion.ul
+                    <m.ul
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
@@ -154,7 +154,7 @@ export function VolumePanel({
                                 </span>
                             </li>
                         ))}
-                    </motion.ul>
+                    </m.ul>
                 )}
             </AnimatePresence>
 
@@ -165,7 +165,7 @@ export function VolumePanel({
             ) : (
                 <ul className="space-y-2">
                     {rows.map((row, i) => (
-                        <motion.li
+                        <m.li
                             key={row.muscle}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -179,7 +179,7 @@ export function VolumePanel({
                                 max={maxTotal}
                                 perWeek={scope === 'day' ? null : row.perWeek}
                             />
-                        </motion.li>
+                        </m.li>
                     ))}
                 </ul>
             )}
@@ -268,13 +268,13 @@ function MuscleBar({
                 role="img"
                 aria-label={`${muscle}: ${direct} series directas, ${indirect} indirectas, ${total} en total`}
             >
-                <motion.div
+                <m.div
                     className="bg-brand"
                     initial={false}
                     animate={{ width: `${directPct}%` }}
                     transition={transition(DURATION.base)}
                 />
-                <motion.div
+                <m.div
                     className="bg-brand/35"
                     initial={false}
                     animate={{ width: `${indirectPct}%` }}

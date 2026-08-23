@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Check, Loader, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { vbtService } from '../../../services/vbtService';
@@ -213,7 +213,7 @@ export function SetVideoAnalysisModal({
 
     return (
         <AnimatePresence>
-            <motion.div
+            <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -221,7 +221,7 @@ export function SetVideoAnalysisModal({
                 className="fixed inset-0 z-[245] flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center sm:p-4"
                 onClick={onClose}
             >
-                <motion.div
+                <m.div
                     initial={{ y: 24, scale: 0.98 }}
                     animate={{ y: 0, scale: 1 }}
                     exit={{ y: 24, scale: 0.98 }}
@@ -351,8 +351,8 @@ export function SetVideoAnalysisModal({
                             Guardar en la serie
                         </button>
                     </footer>
-                </motion.div>
-            </motion.div>
+                </m.div>
+            </m.div>
         </AnimatePresence>
     );
 }

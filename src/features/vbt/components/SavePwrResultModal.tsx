@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Check, Link2, Loader, Search, User, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchRoster } from '../../coach/hooks/useCoachRoster';
@@ -232,7 +232,7 @@ export function SavePwrResultModal({
 
     return (
         <AnimatePresence>
-            <motion.div
+            <m.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -240,7 +240,7 @@ export function SavePwrResultModal({
                 className="fixed inset-0 z-[250] flex items-end justify-center bg-black/75 backdrop-blur-sm sm:items-center sm:p-4"
                 onClick={onClose}
             >
-                <motion.div
+                <m.div
                     initial={{ y: 24, scale: 0.98 }}
                     animate={{ y: 0, scale: 1 }}
                     exit={{ y: 24, scale: 0.98 }}
@@ -440,8 +440,8 @@ export function SavePwrResultModal({
                             Guardar
                         </button>
                     </footer>
-                </motion.div>
-            </motion.div>
+                </m.div>
+            </m.div>
         </AnimatePresence>
     );
 }

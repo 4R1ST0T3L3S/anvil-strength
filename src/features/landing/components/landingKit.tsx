@@ -17,7 +17,7 @@
  *      gusto pulsarlo.
  */
 
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { m, useReducedMotion, type Variants } from 'framer-motion';
 import type { ReactNode } from 'react';
 
 // =====================================================================
@@ -161,7 +161,7 @@ export function Reveal({
     if (reduce) return <div className={className}>{children}</div>;
 
     return (
-        <motion.div
+        <m.div
             className={className}
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -169,7 +169,7 @@ export function Reveal({
             transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
         >
             {children}
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -204,7 +204,7 @@ export function StaggerList({
     if (reduce) return <div className={className}>{children}</div>;
 
     return (
-        <motion.div
+        <m.div
             className={className}
             variants={staggerList}
             initial="hidden"
@@ -212,7 +212,7 @@ export function StaggerList({
             viewport={{ once: true, amount: 0.15 }}
         >
             {children}
-        </motion.div>
+        </m.div>
     );
 }
 
@@ -228,8 +228,8 @@ export function StaggerItem({
     if (reduce) return <div className={className}>{children}</div>;
 
     return (
-        <motion.div className={className} variants={staggerItem}>
+        <m.div className={className} variants={staggerItem}>
             {children}
-        </motion.div>
+        </m.div>
     );
 }

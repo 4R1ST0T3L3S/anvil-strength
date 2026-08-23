@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../../../lib/supabase';
 import { X, Trophy, User as UserIcon, Fish, ArrowUpRight } from 'lucide-react';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
 
 interface AnvilRankingProps {
@@ -199,7 +199,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         <div className="max-w-4xl mx-auto space-y-3 md:space-y-4 pb-12">
                             <AnimatePresence mode="popLayout">
                                 {athletes.map((athlete, index) => (
-                                    <motion.div
+                                    <m.div
                                         layout
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -264,7 +264,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                                                 {rankingType === 'gl' ? 'GL POINTS' : 'PIEZAS'}
                                             </p>
                                         </div>
-                                    </motion.div>
+                                    </m.div>
                                 ))}
                             </AnimatePresence>
                         </div>

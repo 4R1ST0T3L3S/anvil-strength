@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { trainingService, parseGroupedReps } from '../../../services/trainingService';
 import type { LastSessionSetReference } from '../../../services/trainingService';
@@ -800,7 +800,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             {/* Se anima el ancho y no un `transform`: una barra
                                 escalada deforma sus propios bordes redondeados,
                                 y a 4px de alto el coste de layout es nulo. */}
-                            <motion.div
+                            <m.div
                                 className={completedSets >= totalSets ? 'h-full bg-success' : 'h-full bg-brand'}
                                 initial={false}
                                 animate={{ width: `${Math.round((completedSets / totalSets) * 100)}%` }}

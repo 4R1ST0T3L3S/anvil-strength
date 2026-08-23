@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { AlertTriangle, ChevronRight, CalendarClock, UserX, TrendingDown, Check } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -183,7 +183,7 @@ export function AttentionPanel({ coachId }: { coachId: string }) {
     return (
         <ul className="space-y-2">
             {items.slice(0, 6).map((item, index) => (
-                <motion.li
+                <m.li
                     key={item.key}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -220,7 +220,7 @@ export function AttentionPanel({ coachId }: { coachId: string }) {
                             className="shrink-0 text-ink-faint transition-transform duration-fast ease-snap group-hover:translate-x-0.5 group-hover:text-ink-muted"
                         />
                     </button>
-                </motion.li>
+                </m.li>
             ))}
 
             {items.length > 6 && (

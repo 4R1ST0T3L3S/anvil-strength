@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
+import { m, AnimatePresence, useMotionValue } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { Calendar, MapPin, Instagram, ChevronLeft, ChevronRight, X } from 'lucide-react';
@@ -128,7 +128,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                     />
                 </div>
                 <div className="relative z-10 text-center px-4">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+                    <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
                         <div className="inline-flex items-center gap-2 bg-anvil-red/10 border border-anvil-red/20 text-anvil-red text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
                             <Calendar className="w-3.5 h-3.5" />
                             Temporada 2025 – 2026
@@ -142,7 +142,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                         <p className="text-gray-500 text-base sm:text-lg font-bold tracking-[0.3em] uppercase max-w-xl mx-auto">
                             Donde la preparación se encuentra con la plataforma.
                         </p>
-                    </motion.div>
+                    </m.div>
                 </div>
             </section>
 
@@ -158,7 +158,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                             {upcomingEvents.map((event, index) => {
                                 const meta = getCompetitionMeta(event.name);
                                 return (
-                                    <motion.div
+                                    <m.div
                                         key={event.name}
                                         initial={{ opacity: 0, x: -30 }}
                                         whileInView={{ opacity: 1, x: 0 }}
@@ -239,7 +239,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                 </div>
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </m.div>
                                 );
                             })}
                         </div>
@@ -260,7 +260,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
             {/* ── RESULTADOS ANTERIORES ─────────────────────────────────────── */}
             <section className="py-24 bg-[#0a0a0a]">
                 <div className="max-w-[1400px] mx-auto px-6">
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -269,10 +269,10 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                         <h2 className="text-5xl md:text-9xl font-black uppercase font-bebas italic leading-none tracking-tight">
                             Resultados <span className="text-anvil-red">Anteriores</span>
                         </h2>
-                    </motion.div>
+                    </m.div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {pastResults.map((result, i) => (
-                            <motion.div
+                            <m.div
                                 key={result.id}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -289,7 +289,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                     <h3 className="text-4xl font-black uppercase font-bebas italic text-white mb-1">{result.title}</h3>
                                     <p className="text-anvil-red font-black uppercase tracking-widest text-sm">{result.result}</p>
                                 </div>
-                            </motion.div>
+                            </m.div>
                         ))}
                     </div>
                 </div>
@@ -355,7 +355,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
     };
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -369,11 +369,11 @@ function RosterModal({ event, onClose }: RosterModalProps) {
 
             {/* Header bar */}
             <div className="relative z-[60] flex items-center justify-between px-8 py-6 flex-shrink-0">
-                <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+                <m.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
                     <p className="text-anvil-red text-[10px] font-black uppercase tracking-[0.4em] mb-1">Roster Oficial</p>
                     <h2 className="text-2xl md:text-5xl font-black uppercase font-bebas italic text-white leading-none tracking-tight">{event.name}</h2>
-                </motion.div>
-                <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-6">
+                </m.div>
+                <m.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-widest">
                         <Calendar size={12} className="text-anvil-red" />
                         {formatDate(event.date)}
@@ -384,7 +384,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                     >
                         <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </button>
-                </motion.div>
+                </m.div>
             </div>
 
             {/* Main Stage */}
@@ -402,7 +402,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                 const rosterPhoto = getAthleteRosterPhoto(athlete.full_name);
 
                                 return (
-                                    <motion.div
+                                    <m.div
                                         key={athlete.full_name}
                                         initial={{ opacity: 0, x: relIndex * 400, scale: 0.5, filter: 'blur(10px)' }}
                                         animate={{ 
@@ -450,13 +450,13 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                                     <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[30%] h-20 bg-anvil-red/50 blur-[50px] rounded-full" />
 
                                                     {/* Animated Smoke Layers */}
-                                                    <motion.div 
+                                                    <m.div 
                                                         animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.2, 1], y: [0, -15, 0] }}
                                                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                                                         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.2),transparent_70%)] blur-[50px]" 
                                                     />
                                                     
-                                                    <motion.div 
+                                                    <m.div 
                                                         animate={{ opacity: [0.1, 0.3, 0.1], scale: [1.3, 1, 1.3], x: [-30, 30, -30] }}
                                                         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                                                         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[90%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03),transparent_60%)] blur-[40px]" 
@@ -464,7 +464,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                                 </div>
                                             )}
                                         </div>
-                                    </motion.div>
+                                    </m.div>
                                 );
                             })}
                         </AnimatePresence>
@@ -490,7 +490,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                 {/* Description & Info Panel */}
                 <div className="relative z-[80] w-full max-w-5xl px-6 pb-16 -mt-8 md:-mt-12 flex flex-col items-center">
                     <AnimatePresence mode="wait">
-                        <motion.div
+                        <m.div
                             key={activeIndex}
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
@@ -529,7 +529,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                 </p>
                                 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.instagram && (
-                                    <motion.a
+                                    <m.a
                                         whileHover={{ scale: 1.05, backgroundColor: '#dc2626', borderColor: '#dc2626', color: 'white' }}
                                         whileTap={{ scale: 0.95 }}
                                         href={athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram}
@@ -539,10 +539,10 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                     >
                                         <Instagram size={20} />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram!.replace('https://www.instagram.com/', '@').replace('/', '')}
-                                    </motion.a>
+                                    </m.a>
                                 )}
                             </div>
-                        </motion.div>
+                        </m.div>
                     </AnimatePresence>
                 </div>
             </div>
@@ -559,6 +559,6 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                     ))}
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     );
 }

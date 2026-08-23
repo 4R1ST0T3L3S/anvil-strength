@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { Trophy, RefreshCcw, Dices } from 'lucide-react';
 
@@ -117,7 +117,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                         <div className="h-40 flex items-center justify-center w-full">
                             <AnimatePresence mode="wait">
                                 {status === 'showing' && activeDieIndex >= 0 && (
-                                    <motion.div
+                                    <m.div
                                         key={`die-${activeDieIndex}`}
                                         initial={{ scale: 0.5, opacity: 0, rotateY: 90 }}
                                         animate={{ scale: 1, opacity: 1, rotateY: 0 }}
@@ -127,16 +127,16 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                                     >
                                         {/* Simple Die Face rendering based on number */}
                                         <DieFace number={sequence[activeDieIndex]} />
-                                    </motion.div>
+                                    </m.div>
                                 )}
                                 {status === 'playing' && (
-                                    <motion.p
+                                    <m.p
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         className="text-zinc-500 font-bold uppercase tracking-widest text-sm text-center"
                                     >
                                         Tu turno. Faltan {sequence.length - playerSequence.length} dados.
-                                    </motion.p>
+                                    </m.p>
                                 )}
                             </AnimatePresence>
                         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ClipboardCheck, X, Check, Loader, CalendarCheck, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -175,12 +175,12 @@ export function CheckInFormModal({
     return (
         <AnimatePresence>
             <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center">
-                <motion.div
+                <m.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     onClick={onClose}
                     className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                 />
-                <motion.div
+                <m.div
                     initial={{ opacity: 0, y: 60 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 60 }}
@@ -230,7 +230,7 @@ export function CheckInFormModal({
                             Enviar check-in
                         </button>
                     </div>
-                </motion.div>
+                </m.div>
             </div>
         </AnimatePresence>
     );

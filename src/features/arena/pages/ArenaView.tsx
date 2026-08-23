@@ -9,7 +9,7 @@ import { ArenaBet, ArenaOption } from '../../../types/database';
 import { ArenaBetCard } from '../components/ArenaBetCard';
 import { ArenaBettingModal } from '../components/ArenaBettingModal';
 import { ArenaAdminPanel } from '../components/ArenaAdminPanel';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { puede } from '../../../lib/roles';
 
 interface ExtendedProfile extends UserProfile {
@@ -338,7 +338,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
             {/* Bet Slip (Parlay UI) */}
             <AnimatePresence>
                 {betSlip.length > 0 && (
-                    <motion.div 
+                    <m.div 
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
@@ -392,7 +392,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                 )}
                             </div>
                         </div>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../../../hooks/useUser';
 import { competitionsService } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -152,13 +152,13 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
             <div className="space-y-4">
                 <AnimatePresence>
                 {competitions.length === 0 ? (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-8 text-center flex flex-col items-center justify-center">
+                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-8 text-center flex flex-col items-center justify-center">
                         <Calendar size={24} className="text-gray-600 mb-3" />
                         <p className="text-sm font-medium text-gray-400">No hay competiciones programadas.</p>
-                    </motion.div>
+                    </m.div>
                 ) : (
                     competitions.map((comp: CompetitionGroup, index: number) => (
-                        <motion.div 
+                        <m.div 
                             key={`${comp.name}-${comp.date}`} 
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -218,7 +218,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                 <span className="text-xl font-black text-anvil-red">{comp.entries.length}</span>
                                 <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mt-1">Convoc.</span>
                             </div>
-                        </motion.div>
+                        </m.div>
                     ))
                 )}
                 </AnimatePresence>

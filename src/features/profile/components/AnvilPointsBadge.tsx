@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAnvilPoints } from '../hooks/useAnvilPoints';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Coins } from 'lucide-react';
 
 interface AnvilPointsBadgeProps {
@@ -19,7 +19,7 @@ export const AnvilPointsBadge: React.FC<AnvilPointsBadgeProps> = ({ userId, clas
 
     return (
         <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
                 key={points?.balance ?? 0}
                 initial={{ opacity: 0, y: -20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -41,7 +41,7 @@ export const AnvilPointsBadge: React.FC<AnvilPointsBadgeProps> = ({ userId, clas
                 </div>
 
                 {/* Particle effect on value change could be added here in the future */}
-            </motion.div>
+            </m.div>
         </AnimatePresence>
     );
 };

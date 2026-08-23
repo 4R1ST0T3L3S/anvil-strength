@@ -192,7 +192,19 @@ export default defineConfig({
           if (/[\\/]node_modules[\\/](react|react-dom|scheduler|react-router)/.test(id)) {
             return 'vendor-react';
           }
-          if (id.includes('framer-motion')) return 'vendor-motion';
+          /**
+           * framer-motion YA NO va aquí, y quitarlo es lo que hace que
+           * `LazyMotion` sirva de algo.
+           *
+           * Metiéndolo todo en un chunk propio, el núcleo (`m`, ~5 KB) y el
+           * motor de animación (`domMax`, ~28 KB) acaban en el MISMO fichero.
+           * Da igual que `App.tsx` pida el motor con un `import()` diferido:
+           * si el chunk es uno solo y algo del arranque lo toca, se descarga
+           * entero. El diferido no ahorraba un byte.
+           *
+           * Sin esta línea, Rollup sigue el grafo de importaciones de verdad
+           * y separa el motor en su propio trozo, que es lo que se pretendía.
+           */
           if (id.includes('@supabase')) return 'vendor-supabase';
         },
       },

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { Check, Copy, Link2, Loader, Share2, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../components/ui/Modal';
@@ -153,7 +153,7 @@ export function InviteAthleteModal({
 
                     <AnimatePresence initial={false}>
                         {showOptions && (
-                            <motion.div
+                            <m.div
                                 initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
                                 animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
                                 exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
@@ -209,7 +209,7 @@ export function InviteAthleteModal({
                                         persona concreta, déjalo en 1.
                                     </p>
                                 </div>
-                            </motion.div>
+                            </m.div>
                         )}
                     </AnimatePresence>
                 </div>
@@ -226,7 +226,7 @@ export function InviteAthleteModal({
                         </h3>
                         <ul className="space-y-2">
                             {active.map((invite, index) => (
-                                <motion.li
+                                <m.li
                                     key={invite.id}
                                     initial={{ opacity: 0, y: 6 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -278,7 +278,7 @@ export function InviteAthleteModal({
                                         </span>
                                         <span>{expiryLabel(invite.expires_at)}</span>
                                     </p>
-                                </motion.li>
+                                </m.li>
                             ))}
                         </ul>
                     </div>

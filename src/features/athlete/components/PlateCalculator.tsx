@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Calculator, Weight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 
 interface PlateCalculatorProps {
     isOpen: boolean;
@@ -113,7 +113,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center gap-0.5 pl-1">
                                     <AnimatePresence mode="popLayout">
                                         {platesNeeded.map((plate, i) => (
-                                            <motion.div
+                                            <m.div
                                                 key={`${plate.weight}-${i}`}
                                                 initial={{ x: 100, opacity: 0 }}
                                                 animate={{ x: 0, opacity: 1 }}
@@ -125,13 +125,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                 }}
                                             >
                                                 <span className="rotate-90 leading-none tracking-tighter">{plate.label}</span>
-                                            </motion.div>
+                                            </m.div>
                                         ))}
                                     </AnimatePresence>
 
                                     {/* Competition Collar (Silver) - Now INSIDE the flex container to stick to plates */}
                                     {hasCollars && (
-                                        <motion.div
+                                        <m.div
                                             initial={{ x: 30, opacity: 0 }}
                                             animate={{ x: 0, opacity: 1 }}
                                             className="w-4 md:w-8 h-14 md:h-28 bg-[#dddddd] rounded-sm shadow-2xl z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
@@ -142,7 +142,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                             <div className="absolute -top-6 md:-top-10 left-1/2 -translate-x-1/2 w-1 md:w-2 h-8 md:h-12 bg-[#bbbbbb] rounded-full border border-black/10 shadow-lg origin-bottom -rotate-12">
                                                 <div className="absolute top-0 left-0 w-full h-1/3 bg-white/20 rounded-full"></div>
                                             </div>
-                                        </motion.div>
+                                        </m.div>
                                     )}
                                 </div>
                             </div>
@@ -233,7 +233,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                             .map(([weight, count], idx) => {
                                                 const plate = PLATES_CONFIG.find(p => p.weight === parseFloat(weight));
                                                 return (
-                                                    <motion.div
+                                                    <m.div
                                                         key={weight}
                                                         initial={{ opacity: 0, scale: 0.8 }}
                                                         animate={{ opacity: 1, scale: 1 }}
@@ -247,11 +247,11 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                             <span className="text-lg md:text-2xl font-black text-white italic">x{count}</span>
                                                             <span className="text-t-2xs font-bold text-gray-500 uppercase tracking-wider">{weight} kg</span>
                                                         </div>
-                                                    </motion.div>
+                                                    </m.div>
                                                 );
                                             })}
                                         {hasCollars && (
-                                            <motion.div
+                                            <m.div
                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 className="flex items-center gap-3 bg-gray-400/10 pr-5 pl-2 py-3 rounded-2xl border border-gray-400/20"
@@ -263,7 +263,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                     <span className="text-lg md:text-2xl font-black text-white italic">x1</span>
                                                     <span className="text-t-2xs font-bold text-gray-400 uppercase tracking-wider">Cierre</span>
                                                 </div>
-                                            </motion.div>
+                                            </m.div>
                                         )}
                                     </AnimatePresence>
 

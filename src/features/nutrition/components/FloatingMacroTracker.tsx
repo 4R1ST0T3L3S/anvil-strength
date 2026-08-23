@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Target, AlertCircle, X } from 'lucide-react';
 
 interface FloatingMacroTrackerProps {
@@ -22,7 +22,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
     return (
         <AnimatePresence>
             {isVisible && (
-                <motion.div
+                <m.div
                     drag
                     dragMomentum={false}
                     initial={{ opacity: 0, x: 20, y: 0, scale: 0.9 }}
@@ -93,7 +93,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                             </div>
                         </div>
                     </div>
-                </motion.div>
+                </m.div>
             )}
         </AnimatePresence>
     );
@@ -115,7 +115,7 @@ function MacroItem({ label, current, target, color, isExceeded }: any) {
                 </span>
             </div>
             <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
-                <motion.div 
+                <m.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, (current / (target || 1)) * 100)}%` }}
                     className={`h-full ${isExceeded ? 'bg-anvil-red' : color.replace('text-', 'bg-')}`}

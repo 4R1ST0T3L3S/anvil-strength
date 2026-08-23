@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { CloudOff, RefreshCw, Check } from 'lucide-react';
 import { useWriteQueue } from '../../hooks/useWriteQueue';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../lib/motion';
@@ -28,7 +28,7 @@ export function SaveIndicator({ className = '' }: { className?: string }) {
     return (
         <AnimatePresence>
             {visible && (
-                <motion.div
+                <m.div
                     initial={reduced ? { opacity: 0 } : { opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
@@ -66,7 +66,7 @@ export function SaveIndicator({ className = '' }: { className?: string }) {
                             <span className="text-ink-subtle">Guardado</span>
                         </>
                     )}
-                </motion.div>
+                </m.div>
             )}
         </AnimatePresence>
     );

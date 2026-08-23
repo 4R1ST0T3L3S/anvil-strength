@@ -1,4 +1,4 @@
-import { motion, Variants } from 'framer-motion';
+import { m, Variants } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { ArrowRight, X as XIcon, Zap, Crown } from 'lucide-react';
@@ -81,14 +81,14 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
                     <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/wall-4-light.png')] mix-blend-overlay" />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#0a0a0a]" />
-                    <motion.div animate={{ opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 5, repeat: Infinity, repeatType: "reverse" }} className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-red-900/10 via-transparent to-transparent" />
+                    <m.div animate={{ opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 5, repeat: Infinity, repeatType: "reverse" }} className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-red-900/10 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent z-10" />
                 </div>
 
                 <div className="relative z-20 max-w-[1600px] mx-auto px-6 w-full text-center flex flex-col items-center justify-center h-full">
                     {/* Logos Container - Responsive Fix */}
                     {/* --- LOGOS CONTAINER: POSICIÓN AJUSTADA --- */}
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -96,7 +96,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                         className="flex items-center justify-center gap-3 sm:gap-6 md:gap-12 mb-8 md:mb-20 pt-12 sm:pt-16 md:pt-24 relative"
                     >
                         {/* Steezy Logo - Reducimos el margen negativo para que no suba tanto */}
-                        <motion.a
+                        <m.a
                             href="https://steezylifts.com/password"
                             target="_blank"
                             rel="noopener noreferrer"
@@ -106,59 +106,59 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                             className="w-32 sm:w-48 md:w-80 opacity-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] -mt-4 sm:-mt-8 md:-mt-12 cursor-pointer"
                         >
                             <img src="/steezy_sin_fonfo.png" alt="Steezy Lifts" className="w-full h-auto object-contain invert" />
-                        </motion.a>
+                        </m.a>
 
                         {/* X Separator - Ajustamos un poco el tamaño para que encuadre */}
-                        <motion.div
+                        <m.div
                             initial={{ rotate: -25, opacity: 0 }}
                             animate={{ rotate: 0, opacity: 1 }}
                             transition={{ delay: 0.5, duration: 0.8 }}
                             className="text-3xl md:text-8xl text-anvil-red font-black z-10 flex items-center"
                         >
                             <XIcon strokeWidth={3} className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16" />
-                        </motion.div>
+                        </m.div>
 
                         {/* Anvil Logo - Mantenemos un margen superior mínimo para equilibrio visual */}
                         <div className="w-24 sm:w-40 md:w-64 opacity-90 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.1)] mt-2 md:mt-4">
                             <img src="/logo-dark-removebg-preview.png" alt="Anvil Strength" className="w-full h-auto object-contain" />
                         </div>
-                    </motion.div>
+                    </m.div>
 
-                    <motion.h1 variants={staggerContainer} initial="hidden" animate="visible" className="text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] font-black tracking-tighter text-white uppercase italic mb-8 sm:mb-10">
-                        <motion.span variants={fadeInUp} className="block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500 mb-2">STREETWEAR</motion.span>
-                        <motion.span variants={fadeInUp} className="block text-anvil-red drop-shadow-[0_0_25px_rgba(220,38,38,0.6)]">POWERLIFTING</motion.span>
-                    </motion.h1>
+                    <m.h1 variants={staggerContainer} initial="hidden" animate="visible" className="text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] font-black tracking-tighter text-white uppercase italic mb-8 sm:mb-10">
+                        <m.span variants={fadeInUp} className="block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500 mb-2">STREETWEAR</m.span>
+                        <m.span variants={fadeInUp} className="block text-anvil-red drop-shadow-[0_0_25px_rgba(220,38,38,0.6)]">POWERLIFTING</m.span>
+                    </m.h1>
 
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1 }} className="space-y-4 max-w-4xl mx-auto px-4">
+                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1 }} className="space-y-4 max-w-4xl mx-auto px-4">
                         <p className="text-sm sm:text-lg md:text-2xl text-white font-bold tracking-widest uppercase">EL ÚNICO CLUB DONDE EL ESTILO LO LLEVAS EN TARIMA Y EN EL PODIO.</p>
                         <p className="text-[10px] sm:text-sm md:text-lg text-gray-400 font-mono tracking-[0.2em] uppercase">The First Spanish Powerlifting Streetwear Brand</p>
-                    </motion.div>
+                    </m.div>
                 </div>
             </section>
 
             {/* --- MANIFESTO --- */}
             <section className="py-16 sm:py-24 bg-[#0a0a0a] relative overflow-hidden">
                 <div className="max-w-[1200px] mx-auto px-6 flex flex-col items-center text-center">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-4xl">
+                    <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-4xl">
                         <h2 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none mb-10">MORE THAN <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-600">JUST FABRIC.</span></h2>
                         <div className="space-y-6 text-base sm:text-lg md:text-xl text-gray-400 font-medium leading-relaxed">
                             <p><strong className="text-white">Steezy Lifts</strong> no hace ropa de gimnasio. Crea cultura. Una colección exclusiva para <strong>Anvil Strength</strong>. Únete a la cultura.</p>
                         </div>
-                    </motion.div>
+                    </m.div>
                 </div>
             </section>
 
             {/* --- PRODUCT SHOWCASE --- */}
             <section className="py-20 bg-[#0a0a0a]">
                 <div className="max-w-[1600px] mx-auto px-6">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 text-left">
+                    <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 text-left">
                         <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase italic tracking-tighter">THE <span className="text-anvil-red">COLLECTION</span></h2>
                         <div className="mt-4 md:mt-0 text-right"><p className="text-gray-400 font-mono text-[10px] sm:text-sm">STEEZY LIFTS x ANVIL STRENGTH</p><p className="text-white font-bold text-lg sm:text-xl tracking-widest">OFFICIAL GEAR</p></div>
-                    </motion.div>
+                    </m.div>
 
                     {/* --- PIEZA ANGULAR (SINGLET - ID 4) RESTAURADA --- */}
                     {products.filter(p => p.id === 4).map((product) => (
-                        <motion.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mb-24 relative group cursor-pointer">
+                        <m.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mb-24 relative group cursor-pointer">
                             <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#0a0a0a] border border-white/10">
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
                                     {/* Placeholder Content */}
@@ -187,13 +187,13 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </m.div>
                     ))}
 
                     {/* GRID PRODUCTS (ID 1, 2, 3) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24">
                         {products.filter(p => p.id !== 4).map((product, index) => (
-                            <motion.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
+                            <m.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
                                 <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-6 border border-white/5">
                                     {product.id === 3 ? (
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-slow" />
@@ -208,7 +208,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     <h3 className="text-lg sm:text-xl font-black uppercase italic group-hover:text-anvil-red transition-colors">{product.name}</h3>
                                     <p className="text-gray-500 text-[10px] sm:text-xs font-mono uppercase tracking-wide">{product.description}</p>
                                 </div>
-                            </motion.div>
+                            </m.div>
                         ))}
                     </div>
                 </div>
@@ -245,7 +245,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                 <div className="absolute inset-0 bg-black/5 opacity-10"></div>
 
                 <div className="max-w-5xl mx-auto px-6 relative z-10">
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.8 }}
@@ -284,7 +284,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                 * NO SPAM. SOLO FUEGO.
                             </p>
                         </div>
-                    </motion.div>
+                    </m.div>
                 </div>
             </section>
 

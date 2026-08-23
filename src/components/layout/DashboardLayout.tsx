@@ -1,5 +1,5 @@
 import { ReactNode, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, Globe, LogOut, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
@@ -104,7 +104,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
  }`}
                         >
                             {item.isActive && (
-                                <motion.span
+                                <m.span
                                     layoutId="sidebar-active"
                                     className="absolute inset-0 bg-anvil-red/10 border border-anvil-red/20 rounded-xl"
                                     transition={{ type: 'spring', stiffness: 500, damping: 38 }}
@@ -242,7 +242,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
  }`}
                     >
                         {item.isActive && (
-                            <motion.span
+                            <m.span
                                 layoutId="bottomnav-active"
                                 className="absolute inset-x-0.5 inset-y-0 rounded-card bg-[var(--brand-quiet)]"
                                 transition={{ type: 'spring', stiffness: 520, damping: 40 }}
