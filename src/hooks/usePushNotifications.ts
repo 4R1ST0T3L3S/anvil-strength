@@ -82,12 +82,28 @@ export function usePushNotifications() {
                 return false;
             }
 
-            // 2. Registrar el Service Worker si no está registrado
-            let registration = await navigator.serviceWorker.getRegistration();
-            if (!registration) {
-                registration = await navigator.serviceWorker.register('/sw.js');
-                await navigator.serviceWorker.ready;
-            }
+            /*
+             * 2. EL SERVICE WORKER YA ESTÁ, Y ES UNO SOLO.
+             *
+             * Antes esto registraba `/sw.js` por su cuenta si no encontraba
+             * ninguno. El problema es que `vite-plugin-pwa` genera el SUYO —y
+             * le inyecta `push-sw.js`, que trae exactamente los mismos
+             * manejadores de `push`—, así que había dos service workers
+             * compitiendo con dos copias del mismo código. Un aviso llegaba
+             * duplicado o no llegaba, según cuál tuviera el control.
+             *
+             * `navigator.serviceWorker.ready` espera al que hay, sea cual sea,
+             * en vez de crear otro. Y si no hay ninguno —porque el navegador
+             * no los admite— esa promesa NO RESUELVE NUNCA, así que lleva
+             * tope: mejor decir que no se han podido activar que dejar el
+             * botón girando para siempre.
+             */
+            const registration = await Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise<never>((_, rechazar) =>
+                    setTimeout(() => rechazar(new Error('El service worker no se ha activado')), 10_000)
+                ),
+            ]);
 
             // 3. Suscribirse a Push Manager
             const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);

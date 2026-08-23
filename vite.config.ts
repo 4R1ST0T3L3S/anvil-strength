@@ -8,14 +8,38 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      // `masked-icon.svg` estaba en esta lista y NO EXISTE en `public/`.
-      // DEUDA CONOCIDA, se resuelve en F3 (PWA): `sw.js` es un service worker
-      // escrito a mano que `usePushNotifications` registra por su cuenta, y a
-      // la vez `push-sw.js` se inyecta en el generado por workbox. Son dos
-      // manejadores de `push` compitiendo. Hoy no se nota porque `main.tsx`
-      // desregistra todos los service workers; al reactivar la PWA (K11) sí.
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'sw.js'],
+      /**
+       * 'prompt' Y NO 'autoUpdate'. Decisión K11.
+       *
+       * Con 'autoUpdate', el service worker se actualiza solo y toma el
+       * control en cuanto hay una versión nueva. En una aplicación cualquiera
+       * eso es cómodo; aquí significa que el código puede cambiar debajo de
+       * alguien que está A MITAD DE UNA SESIÓN DE ENTRENAMIENTO, con series
+       * marcadas y otras por marcar. Es justo lo que no puede pasar.
+       *
+       * Con 'prompt' se avisa y decide la persona. `ReloadPrompt` ya está
+       * escrito para esto: enseña un aviso que no caduca con un botón de
+       * "Actualizar", y hasta que no se pulse sigue corriendo la versión que
+       * había.
+       */
+      registerType: 'prompt',
+      /**
+       * `sw.js` YA NO ESTÁ EN ESTA LISTA, y es parte de reactivar la PWA.
+       *
+       * Era un service worker escrito a mano con manejadores de `push`, que
+       * `usePushNotifications` registraba por su cuenta. Pero workbox genera
+       * el SUYO y le inyecta `push-sw.js`, que trae exactamente los mismos
+       * manejadores: había dos service workers con dos copias del mismo
+       * código, y un aviso llegaba duplicado o no llegaba según cuál tuviera
+       * el control. Mientras la PWA estaba desactivada no se notaba.
+       *
+       * Ahora manda uno solo: el generado. `push-sw.js` sigue entrando por
+       * `importScripts`, más abajo. `public/sw.js` se puede borrar cuando se
+       * confirme que nadie lo tiene registrado del despliegue anterior.
+       *
+       * (`masked-icon.svg` también estaba aquí y NO EXISTE en `public/`.)
+       */
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
         name: 'Anvil Strength Powerlifting',
         short_name: 'Anvil Strength',
@@ -84,8 +108,18 @@ export default defineConfig({
          * worker se lo pide cuando le toca. Lo único que cambia es CUÁNDO.
          * A cambio se pierde el análisis de vídeo sin conexión, que tampoco
          * funcionaba: necesita subir el vídeo.
+         *
+         * `normativa_equipo.pdf` (14 MB) se añade como CINTURÓN, no porque
+         * estuviera entrando. Comprobado en el manifiesto generado: no está.
+         * El motivo es que `globPatterns` solo recoge js, css, html, ico, png
+         * y svg por defecto, y `.pdf` no está en esa lista — no el límite de
+         * tamaño de aquí arriba, que el fichero cumple de sobra.
+         *
+         * Se deja escrito porque el día que alguien amplíe `globPatterns` para
+         * precachear, digamos, las fuentes, se llevaría catorce megas de
+         * reglamento por delante sin enterarse.
          */
-        globIgnores: ['**/opencv.js'],
+        globIgnores: ['**/opencv.js', '**/normativa_equipo.pdf'],
 
         /**
          * SIN ESTO, EL PDF DE LA NORMATIVA "RECARGABA LA WEB" AL ABRIRLO.
