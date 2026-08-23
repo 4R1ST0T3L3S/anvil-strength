@@ -822,9 +822,14 @@ function RestInput({
     // Si el valor cambia POR FUERA (recarga, plantilla aplicada, progresión),
     // la casilla lo refleja. Mientras se está escribiendo no: `draft` solo se
     // resincroniza cuando el valor de arriba deja de coincidir con lo enviado.
-    useEffect(() => {
+    // Ajuste durante el render. Aqui importa mas que en otros sitios: esto es
+    // una casilla que se esta escribiendo, y un render intermedio con el valor
+    // anterior se ve como que el numero "rebota" mientras se teclea.
+    const [segundosAnteriores, setSegundosAnteriores] = useState(seconds);
+    if (segundosAnteriores !== seconds) {
+        setSegundosAnteriores(seconds);
         setDraft(seconds != null ? String(seconds) : '');
-    }, [seconds]);
+    }
 
     // Al desmontar se manda lo que quedara pendiente. Es lo que hace que
     // cerrar el editor del día guarde el descanso en vez de tirarlo.

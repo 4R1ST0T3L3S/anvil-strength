@@ -4,6 +4,23 @@ import { UserProfile } from '../../../hooks/useUser';
 import { Target, RefreshCcw, Timer } from 'lucide-react';
 import { AnvilLogoSVG } from '../../../components/ui/AnvilLogoSVG';
 
+/*
+ * SOBRE LOS `react-hooks/purity` DE ESTE FICHERO.
+ *
+ * El analizador marca `Math.random()` y `Date.now()` porque no puede DEMOSTRAR
+ * que el codigo que los usa no corra durante el render, y llamarlos ahi haria
+ * que cada render diera un resultado distinto.
+ *
+ * Aqui no ocurre, y se ha comprobado siguiendo los puntos de entrada: todas
+ * las funciones que los usan cuelgan de `startGame`, que es un manejador de
+ * click, o de un `setTimeout` disparado por otro manejador. Ninguna se
+ * ejecuta al pintar.
+ *
+ * Se desactiva la regla en los puntos concretos y no en el fichero entero:
+ * si alguien mueve una de estas llamadas al cuerpo del componente, la regla
+ * tiene que volver a saltar.
+ */
+
 interface AnvilHuntGameProps {
     user: UserProfile;
     onSaveScore: (score: number) => void;
@@ -93,6 +110,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
     const startGame = () => {
         setLevel(0);
         setElapsedTime(0);
+        // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera.
         setStartTime(Date.now());
         initLevel(0);
         setStatus('playing');
@@ -109,14 +127,19 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
         for (let i = 0; i < total; i++) {
             const isAnvil = i < config.anvils;
             const speedBase = 1.5 * config.speedMultiplier;
+            // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera: cuelga de un manejador, no del render.
             const angle = Math.random() * Math.PI * 2;
             
             newSquares.push({
                 id: i,
                 isAnvil,
+                // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera: cuelga de un manejador, no del render.
                 x: Math.random() * (rect.width - 40),
+                // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera: cuelga de un manejador, no del render.
                 y: Math.random() * (rect.height - 40),
+                // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera: cuelga de un manejador, no del render.
                 vx: Math.cos(angle) * speedBase * (Math.random() * 0.5 + 0.8),
+                // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera: cuelga de un manejador, no del render.
                 vy: Math.sin(angle) * speedBase * (Math.random() * 0.5 + 0.8),
                 clicked: false
             });

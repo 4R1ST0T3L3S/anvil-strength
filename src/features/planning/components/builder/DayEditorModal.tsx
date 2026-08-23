@@ -178,11 +178,20 @@ export function DayEditorModal({
     };
 
     // Mantener una selección válida cuando cambia la lista
-    useEffect(() => {
-        if (!session.exercises.some(e => e.id === selectedExId)) {
-            setSelectedExId(session.exercises[session.exercises.length - 1]?.id ?? null);
-        }
-    }, [session.exercises, selectedExId]);
+    /*
+     * Si el ejercicio elegido ya no esta en la lista —se ha borrado, o se ha
+     * cambiado de dia— se pasa al ultimo.
+     *
+     * Ajuste durante el render y no un efecto: con el efecto se pintaba un
+     * frame apuntando a un ejercicio que ya no existe, y el panel de la
+     * derecha aparecia vacio un instante antes de recolocarse.
+     */
+    const elegidoValido = session.exercises.some(e => e.id === selectedExId)
+        ? selectedExId
+        : session.exercises[session.exercises.length - 1]?.id ?? null;
+    if (elegidoValido !== selectedExId) {
+        setSelectedExId(elegidoValido);
+    }
 
     const selectedEx = session.exercises.find(e => e.id === selectedExId) || null;
     const metrics = useMemo(() => computeDayMetrics(session.exercises), [session.exercises]);

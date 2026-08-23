@@ -777,9 +777,13 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
     // `null` en el mismo instante: sin esto el panel se queda vacío y la
     // salida se ve como un parpadeo en vez de como un cierre.
     const [shown, setShown] = useState<Achievement | null>(achievement);
-    useEffect(() => {
+    // Ajuste durante el render: al abrir el modal sobre otro logro, con el
+    // efecto se veia un frame con la foto del logro anterior.
+    const [logroAnterior, setLogroAnterior] = useState(achievement);
+    if (logroAnterior !== achievement) {
+        setLogroAnterior(achievement);
         if (achievement) { setShown(achievement); setImgIndex(0); }
-    }, [achievement]);
+    }
 
     const images = shown?.images ?? [];
     const many = images.length > 1;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Palette, SlidersHorizontal, CalendarClock, Save, FileText, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/Button';
@@ -33,7 +33,15 @@ export function PreferencesPage({ coachId, onOpenPdfTheme }: {
     const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
 
-    useEffect(() => { if (!dirty) setPrefs(loaded); }, [loaded, dirty]);
+    // Las preferencias del servidor solo entran si no hay cambios sin
+    // guardar; si los hay, mandan los del formulario. Ajuste durante el render
+    // en vez de un efecto: con el efecto, un refresco de la consulta pintaba
+    // un frame con los valores viejos antes de corregirse.
+    const [cargadasAntes, setCargadasAntes] = useState(loaded);
+    if (cargadasAntes !== loaded) {
+        setCargadasAntes(loaded);
+        if (!dirty) setPrefs(loaded);
+    }
 
     const patch = (fn: (prev: CoachPrefs) => CoachPrefs) => {
         setPrefs(fn);

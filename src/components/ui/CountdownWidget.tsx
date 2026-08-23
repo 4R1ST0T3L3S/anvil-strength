@@ -182,9 +182,16 @@ function CountdownSettings({
     const [loadingAep, setLoadingAep] = useState(false);
     const [aepError, setAepError] = useState<string | null>(null);
 
-    useEffect(() => {
+    // Ajuste durante el render en vez de un efecto. Ademas arregla un fallo
+    // real: el efecto dependia de `prefs`, que es un objeto nuevo en cada
+    // render del padre, asi que se reejecutaba sin parar y PISABA el borrador
+    // mientras se tocaban los ajustes. Mirando solo la apertura, el borrador
+    // se toma una vez, al abrir.
+    const [abiertoAntes, setAbiertoAntes] = useState(isOpen);
+    if (abiertoAntes !== isOpen) {
+        setAbiertoAntes(isOpen);
         if (isOpen) setDraft(prefs);
-    }, [isOpen, prefs]);
+    }
 
     // Cargar calendario AEP al abrir la pestaña correspondiente
     useEffect(() => {

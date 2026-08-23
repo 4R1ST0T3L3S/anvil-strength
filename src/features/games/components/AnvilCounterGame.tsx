@@ -4,6 +4,23 @@ import { UserProfile } from '../../../hooks/useUser';
 import { RefreshCcw, Eye } from 'lucide-react';
 import { AnvilLogoSVG } from '../../../components/ui/AnvilLogoSVG';
 
+/*
+ * SOBRE LOS `react-hooks/purity` DE ESTE FICHERO.
+ *
+ * El analizador marca `Math.random()` y `Date.now()` porque no puede DEMOSTRAR
+ * que el codigo que los usa no corra durante el render, y llamarlos ahi haria
+ * que cada render diera un resultado distinto.
+ *
+ * Aqui no ocurre, y se ha comprobado siguiendo los puntos de entrada: todas
+ * las funciones que los usan cuelgan de `startGame`, que es un manejador de
+ * click, o de un `setTimeout` disparado por otro manejador. Ninguna se
+ * ejecuta al pintar.
+ *
+ * Se desactiva la regla en los puntos concretos y no en el fichero entero:
+ * si alguien mueve una de estas llamadas al cuerpo del componente, la regla
+ * tiene que volver a saltar.
+ */
+
 interface AnvilCounterGameProps {
     user: UserProfile;
     onSaveScore: (score: number) => void;
@@ -36,6 +53,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
         
         // Determinar cantidad. Sube la dificultad
         const maxAnvils = Math.min(15, 3 + Math.floor(currentScore / 2)); 
+        // eslint-disable-next-line react-hooks/purity -- Ver la nota de cabecera: cuelga de un manejador, no del render.
         const count = Math.floor(Math.random() * maxAnvils) + 1; // 1 to maxAnvils
         
         generateAnvils(count);

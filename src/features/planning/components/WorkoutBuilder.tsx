@@ -458,10 +458,19 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         loadData();
     }, [athleteId, blockId, loadData]);
 
-    // Reset expanded weeks when block changes (collapse all)
-    useEffect(() => {
+    /*
+     * Al cambiar de bloque, todas las semanas se pliegan.
+     *
+     * Ajuste durante el render en vez de un efecto: con el efecto se pintaba
+     * un frame con las semanas que estaban desplegadas en el bloque ANTERIOR,
+     * y como cada semana desplegada monta sus días con sus ejercicios, ese
+     * frame de más costaba de verdad.
+     */
+    const [bloqueDesplegado, setBloqueDesplegado] = useState(blockData?.id);
+    if (bloqueDesplegado !== blockData?.id) {
+        setBloqueDesplegado(blockData?.id);
         setExpandedWeeks([]);
-    }, [blockData?.id]);
+    }
 
 
     const handleSaveChanges = async () => {
@@ -1342,42 +1351,57 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
      * el portapapeles de la tarjeta y "Traer el día entero" del editor.
      */
     const copyDayWithConfirm = useCallback((sourceSessionId: string, targetSessionId: string) => {
-        setBlockData(prev => {
-            if (!prev) return prev;
-            const source = prev.sessions.find(s => s.id === sourceSessionId);
-            const target = prev.sessions.find(s => s.id === targetSessionId);
-            if (!source) return prev;
-            const sourceLabel = dayLabelFor(source);
+        /*
+         * ESTO ESTABA DENTRO DE UN `setBlockData(prev => …)`, Y ERA UN FALLO.
+         *
+         * El actualizador de un `setState` se usaba solo para LEER el estado
+         * actual: no cambiaba nada y terminaba con `return prev`. El problema
+         * es que React puede invocar un actualizador MÁS DE UNA VEZ — lo hace
+         * siempre en modo estricto, que es el que monta esta aplicación, y
+         * también al reintentar un render concurrente.
+         *
+         * Con los efectos secundarios dentro, eso significa que pegar un día
+         * sobre otro VACÍO lanzaba `doPaste()` dos veces: dos copias en el
+         * servidor y dos recargas. Sobre un día con ejercicios, el diálogo de
+         * confirmación se montaba dos veces.
+         *
+         * Leyendo `blockData` del cierre y poniéndolo en las dependencias, la
+         * función se ejecuta exactamente una vez por clic. Es además lo que
+         * permitía al analizador de React conservar la memoización.
+         */
+        if (!blockData) return;
+        const source = blockData.sessions.find(s => s.id === sourceSessionId);
+        const target = blockData.sessions.find(s => s.id === targetSessionId);
+        if (!source) return;
+        const sourceLabel = dayLabelFor(source);
 
-            const doPaste = async () => {
-                try {
-                    setLoading(true);
-                    await trainingService.copyDayInto(sourceSessionId, [targetSessionId], 'replace');
-                    await loadData();
-                    toast.success(`«${sourceLabel}» copiado`);
-                } catch (err) {
-                    console.error(err);
-                    toast.error(`Error copiando el día: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            if (target && target.exercises.length > 0) {
-                setConfirmModal({
-                    isOpen: true,
-                    title: `Pegar «${sourceLabel}» sobre ${dayLabelFor(target)}`,
-                    description: `Los ejercicios de ${dayLabelFor(target)} se sustituyen por una copia de «${sourceLabel}». Lo que hubiera programado se pierde.`,
-                    confirmText: 'Pegar',
-                    variant: 'info',
-                    onConfirm: doPaste,
-                });
-            } else {
-                doPaste();
+        const doPaste = async () => {
+            try {
+                setLoading(true);
+                await trainingService.copyDayInto(sourceSessionId, [targetSessionId], 'replace');
+                await loadData();
+                toast.success(`«${sourceLabel}» copiado`);
+            } catch (err) {
+                console.error(err);
+                toast.error(`Error copiando el día: ${explainWeekError(rawSaveError(err))}`, { duration: 10000 });
+            } finally {
+                setLoading(false);
             }
-            return prev;
-        });
-    }, [dayLabelFor, loadData]);
+        };
+
+        if (target && target.exercises.length > 0) {
+            setConfirmModal({
+                isOpen: true,
+                title: `Pegar «${sourceLabel}» sobre ${dayLabelFor(target)}`,
+                description: `Los ejercicios de ${dayLabelFor(target)} se sustituyen por una copia de «${sourceLabel}». Lo que hubiera programado se pierde.`,
+                confirmText: 'Pegar',
+                variant: 'info',
+                onConfirm: doPaste,
+            });
+        } else {
+            doPaste();
+        }
+    }, [blockData, dayLabelFor, loadData]);
 
     /** Pega el día copiado (portapapeles) SOBRE `targetSessionId`. */
     const handlePasteDay = useCallback((targetSessionId: string) => {
@@ -1394,8 +1418,11 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     /** Copia `sourceSessionId` sobre varios días de golpe, con confirmación previa. */
     const handleCopyDayToMany = useCallback((sourceSessionId: string, targetIds: string[], mode: 'replace' | 'append') => {
         if (targetIds.length === 0) return;
-        setBlockData(prev => {
-            const source = prev?.sessions.find(s => s.id === sourceSessionId);
+        {
+            // Mismo caso que `copyDayWithConfirm`: el actualizador de estado se
+            // usaba para leer, y React lo ejecuta más de una vez. Aquí el
+            // efecto duplicado era montar el diálogo de confirmación dos veces.
+            const source = blockData?.sessions.find(s => s.id === sourceSessionId);
             const label = source ? dayLabelFor(source) : 'este día';
 
             setConfirmModal({
@@ -1422,9 +1449,8 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                     }
                 },
             });
-            return prev;
-        });
-    }, [dayLabelFor, loadData]);
+        }
+    }, [blockData, dayLabelFor, loadData]);
 
     /**
      * Descarga la semana en PDF: una página por día, una fila por ejercicio,
