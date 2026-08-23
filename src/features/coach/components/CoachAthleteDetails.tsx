@@ -177,10 +177,15 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     };
 
 
-    useEffect(() => {
+    // Cambiar de atleta reinicia la pestaña y el bloque elegido. Ajuste
+    // durante el render: con el efecto se pintaba un frame con el bloque del
+    // atleta ANTERIOR seleccionado dentro de la ficha del nuevo.
+    const [atletaAnterior, setAtletaAnterior] = useState(athleteId);
+    if (atletaAnterior !== athleteId) {
+        setAtletaAnterior(athleteId);
         setSelectedBlockId(null);
         setActiveTab('planning');
-    }, [athleteId]);
+    }
 
     useEffect(() => {
         const fetchAthlete = async () => {
@@ -622,7 +627,13 @@ function CompetitionResultRow({ result, onSave }: {
 }) {
     const [draft, setDraft] = useState<Partial<CompetitionResult>>(result ?? {});
 
-    useEffect(() => { setDraft(result ?? {}); }, [result]);
+    // Ajuste durante el render: el borrador sigue al resultado que llega de
+    // fuera sin encadenar un render de más.
+    const [resultadoAnterior, setResultadoAnterior] = useState(result);
+    if (resultadoAnterior !== result) {
+        setResultadoAnterior(result);
+        setDraft(result ?? {});
+    }
 
     const field = (key: keyof CompetitionResult, label: string, placeholder: string) => (
         <label className="block">

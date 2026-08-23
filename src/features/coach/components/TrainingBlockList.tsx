@@ -1,5 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, FolderOpen, Calendar, ChevronRight, Loader, Trash2, AlertTriangle, Pencil, TrendingUp, Layers, Trophy, Folder, Copy } from 'lucide-react';
+import { CLAVES } from '../../../lib/queryKeys';
+import { SkeletonList } from '../../../components/ui/Skeleton';
 import { DuplicateBlockModal } from './DuplicateBlockModal';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, Macrocycle } from '../../../types/training';
@@ -7,7 +10,7 @@ import { CreateBlockModal } from './CreateBlockModal';
 import { EditBlockModal } from './EditBlockModal';
 import { AthleteStatsModal } from './AthleteStatsModal';
 import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils';
-import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
+import { competitionsService } from '../../../services/competitionsService';
 import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'sonner';
 import { EmptyState } from '../../../components/ui/EmptyState';
@@ -49,9 +52,7 @@ interface TrainingBlockListProps {
 
 export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: TrainingBlockListProps) {
     const { session } = useAuth();
-    const [blocks, setBlocks] = useState<TrainingBlock[]>([]);
-    const [macros, setMacros] = useState<Macrocycle[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isStatsOpen, setIsStatsOpen] = useState(false);
     const [isCreateMacroOpen, setIsCreateMacroOpen] = useState(false);
@@ -67,31 +68,66 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
     // Bloque que se está copiando a otros atletas
     const [blockToDuplicate, setBlockToDuplicate] = useState<TrainingBlock | null>(null);
 
-    const fetchBlocks = useCallback(async () => {
-        try {
-            setLoading(true);
-            const [blocksData, macrosData] = await Promise.all([
-                trainingService.getBlocksByAthlete(athleteId),
-                trainingService.getMacrosByAthlete(athleteId).catch(() => [] as Macrocycle[])
-            ]);
-            setBlocks(blocksData);
-            setMacros(macrosData);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, [athleteId]);
+    /**
+     * DOS CONSULTAS Y NO UN `useEffect` CON `setLoading`.
+     *
+     * Lo que había: un `useCallback` que ponía `loading` a true, pedía las dos
+     * listas y las guardaba en dos `useState`. Eso tiene tres precios que no
+     * se ven al leerlo:
+     *
+     *   · `setLoading(true)` corría en el CUERPO del efecto, así que cada
+     *     entrada en la pantalla eran dos renders seguidos con datos
+     *     distintos. Es el parpadeo al cambiar de pestaña.
+     *   · No hay caché: volver a la lista de bloques después de mirar uno
+     *     la pedía entera otra vez, y hasta que llegaba se veía el spinner.
+     *   · Dos peticiones sin coordinar: si el atleta cambia a mitad de vuelo,
+     *     la respuesta vieja podía pisar a la nueva.
+     *
+     * Separadas en dos consultas y no en una sola con `Promise.all` porque
+     * son dos recursos distintos: los macros fallan a menudo (la tabla puede
+     * no estar migrada) y no deben tumbar la lista de bloques, que es lo que
+     * la pantalla existe para enseñar.
+     */
+    const { data: blocks = [], isPending: cargandoBloques } = useQuery({
+        queryKey: CLAVES.bloques.deAtleta(athleteId),
+        queryFn: () => trainingService.getBlocksByAthlete(athleteId),
+    });
 
-    useEffect(() => {
-        fetchBlocks();
-    }, [athleteId, fetchBlocks]);
+    const { data: macros = [] } = useQuery({
+        queryKey: CLAVES.macros.deAtleta(athleteId),
+        // El `.catch` se queda: si la tabla de macros no existe todavía, la
+        // pantalla sigue sirviendo para lo suyo en vez de romperse entera.
+        queryFn: () => trainingService.getMacrosByAthlete(athleteId).catch(() => [] as Macrocycle[]),
+    });
+
+    /** Vuelve a pedir bloques y macros. Para después de crear, editar o borrar. */
+    const refrescar = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.bloques.deAtleta(athleteId) });
+        queryClient.invalidateQueries({ queryKey: CLAVES.macros.deAtleta(athleteId) });
+    }, [queryClient, athleteId]);
+
+    /**
+     * Escritura optimista sobre la caché.
+     *
+     * Sustituye a los `setBlocks(prev => …)` de antes. Hace lo mismo —pintar
+     * el cambio antes de que conteste el servidor— pero sobre la caché
+     * compartida, así que cualquier otra pantalla que esté leyendo esta misma
+     * clave se entera. Con `useState` el cambio moría dentro de este
+     * componente.
+     */
+    const parchearBloques = useCallback((fn: (previos: TrainingBlock[]) => TrainingBlock[]) => {
+        queryClient.setQueryData<TrainingBlock[]>(CLAVES.bloques.deAtleta(athleteId), (previos) => fn(previos ?? []));
+    }, [queryClient, athleteId]);
+
+    const parchearMacros = useCallback((fn: (previos: Macrocycle[]) => Macrocycle[]) => {
+        queryClient.setQueryData<Macrocycle[]>(CLAVES.macros.deAtleta(athleteId), (previos) => fn(previos ?? []));
+    }, [queryClient, athleteId]);
 
     const handleAssignMacro = async (blockId: string, macroId: string | null) => {
         setMacroPickerBlockId(null);
         try {
             await trainingService.assignBlockToMacro(blockId, macroId);
-            setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, macro_id: macroId } : b));
+            parchearBloques(prev => prev.map(b => b.id === blockId ? { ...b, macro_id: macroId } : b));
             toast.success(macroId ? 'Bloque añadido al macro' : 'Bloque sacado del macro');
         } catch (e) {
             console.error(e);
@@ -102,8 +138,8 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
     const handleDeleteMacro = async (macroId: string) => {
         try {
             await trainingService.deleteMacro(macroId);
-            setMacros(prev => prev.filter(m => m.id !== macroId));
-            setBlocks(prev => prev.map(b => b.macro_id === macroId ? { ...b, macro_id: null } : b));
+            parchearMacros(prev => prev.filter(m => m.id !== macroId));
+            parchearBloques(prev => prev.map(b => b.macro_id === macroId ? { ...b, macro_id: null } : b));
             toast.success('Macro eliminado (los bloques se conservan)');
         } catch (e) {
             console.error(e);
@@ -122,7 +158,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
         try {
             await trainingService.deleteBlock(blockToDelete);
             toast.success('Bloque eliminado correctamente');
-            fetchBlocks();
+            refrescar();
         } catch (error) {
             console.error(error);
             toast.error('Error al eliminar el bloque');
@@ -261,12 +297,10 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
         );
     };
 
-    if (loading) {
-        return (
-            <div className="flex justify-center p-12">
-                <Loader className="animate-spin text-ink-faint" size={22} />
-            </div>
-        );
+    // Esqueleto con la forma de la lista, no un giro centrado: así el hueco
+    // que ocupa el contenido ya está reservado y nada salta al llegar.
+    if (cargandoBloques) {
+        return <SkeletonList filas={3} conAvatar={false} className="p-1" />;
     }
 
     return (
@@ -389,14 +423,14 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 athleteId={athleteId}
-                onBlockCreated={fetchBlocks}
+                onBlockCreated={refrescar}
             />
 
             <EditBlockModal
                 isOpen={blockToEdit !== null}
                 onClose={() => setBlockToEdit(null)}
                 block={blockToEdit}
-                onBlockUpdated={fetchBlocks}
+                onBlockUpdated={refrescar}
             />
 
             <DuplicateBlockModal
@@ -421,7 +455,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                     coachId={session.user.id}
                     onClose={() => setIsCreateMacroOpen(false)}
                     onCreated={(macro) => {
-                        setMacros(prev => [macro, ...prev]);
+                        parchearMacros(prev => [macro, ...prev]);
                         setIsCreateMacroOpen(false);
                     }}
                 />
@@ -479,15 +513,16 @@ function CreateMacroModal({
     onCreated: (macro: Macrocycle) => void;
 }) {
     const [name, setName] = useState('');
-    const [competitions, setCompetitions] = useState<CompetitionAssignment[]>([]);
     const [selectedCompId, setSelectedCompId] = useState<string>('');
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        competitionsService.getAthleteCompetitions(athleteId)
-            .then(comps => setCompetitions(comps || []))
-            .catch(() => setCompetitions([]));
-    }, [athleteId]);
+    // Las competiciones asignadas al atleta, por consulta y no por efecto:
+    // este modal se abre y se cierra varias veces seguidas mientras se
+    // organizan los macros, y sin caché cada apertura era otra petición.
+    const { data: competitions = [] } = useQuery({
+        queryKey: CLAVES.competicionesAsignadas.deAtleta(athleteId),
+        queryFn: () => competitionsService.getAthleteCompetitions(athleteId).then(c => c || []),
+    });
 
     const handleCreate = async () => {
         if (!name.trim() || saving) return;

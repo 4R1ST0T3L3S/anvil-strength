@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
-import { CreditCard, Plus, Trash2, Loader } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { paymentsService, type AthletePayment } from '../../../services/paymentsService';
+import { paymentsService } from '../../../services/paymentsService';
 import { paymentStatus, paymentStatusLabel, PAYMENT_STATE_STYLE } from '../../../lib/billing';
 import { Button } from '../../../components/ui/Button';
+import { CLAVES } from '../../../lib/queryKeys';
+import { Skeleton } from '../../../components/ui/Skeleton';
 
 /**
  * CONTROL DE PAGOS.
@@ -14,23 +17,22 @@ import { Button } from '../../../components/ui/Button';
  * acceso — decidido y cerrado, ver src/lib/billing.ts.
  */
 export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachId: string }) {
-    const [history, setHistory] = useState<AthletePayment[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [adding, setAdding] = useState(false);
     const [paidUntil, setPaidUntil] = useState('');
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [saving, setSaving] = useState(false);
 
-    const load = () => {
-        setLoading(true);
-        paymentsService.getHistory(athleteId)
-            .then(setHistory)
-            .catch(err => console.error('Pagos:', err))
-            .finally(() => setLoading(false));
-    };
+    const { data: history = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.pagos.deAtleta(athleteId),
+        queryFn: () => paymentsService.getHistory(athleteId),
+    });
 
-    useEffect(load, [athleteId]);
+    /** Tras registrar o borrar un pago. El semaforo de arriba se recalcula solo. */
+    const load = () => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.pagos.deAtleta(athleteId) });
+    };
 
     const status = paymentStatus(history[0]?.paid_until ?? null);
     const style = PAYMENT_STATE_STYLE[status.state];
@@ -124,8 +126,14 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                 </div>
             )}
 
+            {/* Esqueleto con la forma de las filas de pago, no un giro:
+                el historial suele tener dos o tres líneas y el hueco tiene
+                que estar reservado antes de que lleguen. */}
             {loading ? (
-                <div className="flex justify-center py-4"><Loader className="animate-spin text-ink-faint" size={18} /></div>
+                <div className="space-y-1.5" aria-busy="true">
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-9 w-full" />
+                </div>
             ) : history.length > 0 && (
                 <div className="space-y-1.5">
                     {history.map(p => (

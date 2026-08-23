@@ -1,10 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
+import { SkeletonList } from '../../../components/ui/Skeleton';
 import { ArrowLeft, Plus, MoreVertical, Activity } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
-import { TrainingSession, SessionExercise } from '../../../types/training';
+import { TrainingSession } from '../../../types/training';
 import { AddExerciseModal } from './AddExerciseModal';
 import { ExerciseSetsManager } from './ExerciseSetsManager';
-import { Loader } from 'lucide-react';
 import { VbtChartModal } from './VbtChartModal';
 
 interface SessionDetailViewProps {
@@ -13,26 +15,20 @@ interface SessionDetailViewProps {
 }
 
 export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
-    const [exercises, setExercises] = useState<SessionExercise[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [vbtModalConfig, setVbtModalConfig] = useState<{ isOpen: boolean; url: string; exerciseName: string }>({ isOpen: false, url: '', exerciseName: '' });
 
-    const fetchExercises = useCallback(async () => {
-        try {
-            setLoading(true);
-            const data = await trainingService.getSessionExercises(session.id);
-            setExercises(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, [session.id]);
+    // Los ejercicios de la sesion, por consulta. Ver la nota gemela en
+    // BlockDetailView: el patron anterior repintaba dos veces cada entrada.
+    const { data: exercises = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.ejerciciosDeSesion.deSesion(session.id),
+        queryFn: () => trainingService.getSessionExercises(session.id),
+    });
 
-    useEffect(() => {
-        fetchExercises();
-    }, [session.id, fetchExercises]);
+    const fetchExercises = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.ejerciciosDeSesion.deSesion(session.id) });
+    }, [queryClient, session.id]);
 
     return (
         <div className="flex flex-col h-full bg-surface-sunken">
@@ -72,10 +68,10 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                     </button>
                 </div>
 
+                {/* Esqueleto con la forma de la lista, no un giro centrado:
+                    asi el hueco esta reservado y nada salta al llegar. */}
                 {loading ? (
-                    <div className="flex justify-center py-12">
-                        <Loader className="text-anvil-red animate-spin" />
-                    </div>
+                    <SkeletonList filas={3} conAvatar={false} />
                 ) : exercises.length === 0 ? (
                     <div className="text-center py-12 border-2 border-dashed border-subtle rounded-xl">
                         <p className="text-ink-subtle mb-4">No hay ejercicios para este día.</p>

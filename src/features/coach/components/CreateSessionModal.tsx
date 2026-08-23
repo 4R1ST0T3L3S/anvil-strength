@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Save, Loader, AlertCircle } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -21,17 +21,23 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
     const [dayOfWeek, setDayOfWeek] = useState<Weekday | ''>('');
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
+    // Ajuste durante el render en vez de un efecto. Ver la nota en AuthModal.
+    // Ojo con la dependencia: antes el efecto dependía de `existingSessions`,
+    // que es un array nuevo en cada render del padre, así que se reejecutaba
+    // continuamente y BORRABA el nombre mientras se escribía. Mirando solo
+    // `isOpen`, el reinicio ocurre una vez, al abrir, que es lo que se quería.
+    const [abiertoAntes, setAbiertoAntes] = useState(isOpen);
+    if (abiertoAntes !== isOpen) {
+        setAbiertoAntes(isOpen);
         if (isOpen) {
-            // Auto increment day logic
             const maxDay = existingSessions.length > 0
                 ? Math.max(...existingSessions.map(s => s.day_number))
                 : 0;
             setDayNumber(maxDay + 1);
-            setName(''); // Reset name
-            setDayOfWeek(''); // Reset dayOfWeek
+            setName('');
+            setDayOfWeek('');
         }
-    }, [isOpen, existingSessions]);
+    }
 
     // Helper for translation
     const translateDay = (day: string) => {

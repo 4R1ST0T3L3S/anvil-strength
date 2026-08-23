@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Calendar as CalendarIcon, Save, Loader } from 'lucide-react';
 import { CalendarWeekPicker } from './CalendarWeekPicker';
 import { Modal } from '../../../components/ui/Modal';
@@ -30,7 +30,12 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
     const [color, setColor] = useState('#ef4444');
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
+    // Ajuste durante el render en vez de un efecto: al abrir el modal sobre
+    // otro bloque, con el efecto se pintaba un frame con los datos del bloque
+    // ANTERIOR. Ver la nota larga en AuthModal.
+    const [bloqueAnterior, setBloqueAnterior] = useState(block);
+    if (bloqueAnterior !== block) {
+        setBloqueAnterior(block);
         if (block) {
             setName(block.name || '');
             setStartWeek(block.start_week ?? 1);
@@ -38,7 +43,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
             setIsActive(block.is_active);
             setColor(block.color || '#ef4444');
         }
-    }, [block]);
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

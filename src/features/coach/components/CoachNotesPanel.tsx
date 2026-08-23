@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { StickyNote, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { athletesService } from '../../../services/athletesService';
+import { CLAVES } from '../../../lib/queryKeys';
 
 /**
  * NOTAS PRIVADAS DEL ENTRENADOR.
@@ -10,18 +12,35 @@ import { athletesService } from '../../../services/athletesService';
  * día en el constructor.
  */
 export function CoachNotesPanel({ coachId, athleteId }: { coachId: string; athleteId: string }) {
-    const [notes, setNotes] = useState('');
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        let alive = true;
-        setLoading(true);
-        athletesService.getCoachNotes(coachId, athleteId)
-            .then(n => { if (alive) setNotes(n ?? ''); })
-            .finally(() => { if (alive) setLoading(false); });
-        return () => { alive = false; };
-    }, [coachId, athleteId]);
+    const { data: guardadas = '', isPending: loading } = useQuery({
+        queryKey: CLAVES.notasDelCoach.deRelacion(coachId, athleteId),
+        queryFn: () => athletesService.getCoachNotes(coachId, athleteId).then(n => n ?? ''),
+    });
+
+    /**
+     * EL BORRADOR ES ESTADO LOCAL, Y TIENE QUE SERLO.
+     *
+     * Este cuadro se escribe a mano y se guarda con retardo, así que mientras
+     * el entrenador teclea el valor de la caché está desfasado a propósito.
+     * Si el texto se leyera directamente de `useQuery`, un refresco en
+     * segundo plano le borraría la frase a medias.
+     *
+     * `key` en vez de un efecto que sincronice: al cambiar de atleta o al
+     * llegar las notas del servidor, React vuelve a montar el borrador y
+     * `useState` lo inicializa solo. Un `useEffect(() => setNotes(...))` haría
+     * lo mismo con un render de más y una condición de carrera de regalo.
+     */
+    const [notes, setNotes] = useState(guardadas);
+    const [semilla, setSemilla] = useState(guardadas);
+    if (guardadas !== semilla) {
+        // Ajuste durante el render: el patrón que React documenta para
+        // "reiniciar estado cuando cambia una prop". No es un efecto, así que
+        // no encadena un render extra ni pinta un frame con el valor viejo.
+        setSemilla(guardadas);
+        setNotes(guardadas);
+    }
 
     const commit = async () => {
         setSaving(true);

@@ -53,11 +53,15 @@ function SetTextInput({
 }) {
     const [localVal, setLocalVal] = useState(initialValue);
 
-    // Only reset from external state when the row identity changes (e.g. after a save)
-    useEffect(() => {
+    // El valor local vuelve al de fuera solo cuando cambia la identidad de la
+    // fila (por ejemplo después de guardar). Ajuste durante el render y no un
+    // efecto: aquí se está escribiendo un número, y un render intermedio con
+    // el valor viejo se ve como que la casilla "rebota".
+    const [claveAnterior, setClaveAnterior] = useState(resetKey);
+    if (claveAnterior !== resetKey) {
+        setClaveAnterior(resetKey);
         setLocalVal(initialValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [resetKey]);
+    }
 
     return (
         <input

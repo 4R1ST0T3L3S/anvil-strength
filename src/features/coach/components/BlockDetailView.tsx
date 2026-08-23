@@ -1,9 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
+import { SkeletonList } from '../../../components/ui/Skeleton';
 import { ArrowLeft, Calendar, Plus, Dumbbell, MoreVertical } from 'lucide-react';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingBlock, TrainingSession } from '../../../types/training';
 import { CreateSessionModal } from './CreateSessionModal';
-import { Loader } from 'lucide-react';
 
 interface BlockDetailViewProps {
     block: TrainingBlock;
@@ -12,25 +14,20 @@ interface BlockDetailViewProps {
 }
 
 export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailViewProps) {
-    const [sessions, setSessions] = useState<TrainingSession[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] = useState(false);
 
-    const fetchSessions = useCallback(async () => {
-        try {
-            setLoading(true);
-            const data = await trainingService.getSessionsByBlock(block.id);
-            setSessions(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, [block.id]);
+    // Las sesiones del bloque, por consulta. Antes eran un useCallback con
+    // setLoading(true) en el cuerpo de un efecto: dos renders seguidos en cada
+    // entrada, y ninguna cache al volver desde una sesion concreta.
+    const { data: sessions = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.sesiones.deBloque(block.id),
+        queryFn: () => trainingService.getSessionsByBlock(block.id),
+    });
 
-    useEffect(() => {
-        fetchSessions();
-    }, [block.id, fetchSessions]);
+    const fetchSessions = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.sesiones.deBloque(block.id) });
+    }, [queryClient, block.id]);
 
     const formatDate = (dateStr?: string | null) => {
         if (!dateStr) return '—';
@@ -93,10 +90,10 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                     </button>
                 </div>
 
+                {/* Esqueleto con la forma de la lista, no un giro centrado:
+                    asi el hueco esta reservado y nada salta al llegar. */}
                 {loading ? (
-                    <div className="flex justify-center py-12">
-                        <Loader className="text-anvil-red animate-spin" />
-                    </div>
+                    <SkeletonList filas={3} conAvatar={false} />
                 ) : sessions.length === 0 ? (
                     <div className="text-center py-12 border-2 border-dashed border-subtle rounded-xl">
                         <p className="text-ink-subtle mb-4">No hay días de entrenamiento definidos.</p>

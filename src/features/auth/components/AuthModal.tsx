@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Mail, Lock, User as UserIcon, Loader, AlertCircle } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { getAuthCallbackUrl } from '../../../lib/authRedirect';
@@ -40,9 +40,19 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     }
   };
 
-  // El modal se monta una vez y se reutiliza: sin esto, pulsar "Registrarse"
-  // después de haber abierto "Entrar" seguía enseñando el formulario de login.
-  useEffect(() => {
+  /*
+   * El modal se monta una vez y se reutiliza: sin esto, pulsar "Registrarse"
+   * después de haber abierto "Entrar" seguía enseñando el formulario de login.
+   *
+   * Ajuste durante el render y no un efecto. Con el efecto se pintaba un frame
+   * con el modo anterior antes de corregirlo, y en este modal concreto eso
+   * significa que al pedir "Crear cuenta" se leía "Entrar" durante un instante.
+   * React documenta este patrón para reiniciar estado al cambiar una prop:
+   * detecta el setState, tira el render a medias y rehace con el valor nuevo.
+   */
+  const [aperturaAnterior, setAperturaAnterior] = useState({ isOpen, initialMode });
+  if (aperturaAnterior.isOpen !== isOpen || aperturaAnterior.initialMode !== initialMode) {
+    setAperturaAnterior({ isOpen, initialMode });
     if (isOpen) {
       setIsLogin(initialMode === 'login');
       setError('');
@@ -50,7 +60,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
       setSupabaseStatus('unknown');
       setAcceptedTerms(false);
     }
-  }, [isOpen, initialMode]);
+  }
 
   /**
    * El alta pide lo mínimo: apodo, email y contraseña.
