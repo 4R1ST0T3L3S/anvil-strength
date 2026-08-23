@@ -284,7 +284,7 @@ export function SavePwrResultModal({
                                             value={search}
                                             onChange={e => setSearch(e.target.value)}
                                             placeholder="Buscar…"
-                                            className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken pl-8 pr-3 text-t-xs text-ink outline-none focus:border-brand"
+                                            className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken pl-8 pr-3 text-t-xs text-ink focus:border-brand"
                                         />
                                     </div>
                                 )}
@@ -326,7 +326,7 @@ export function SavePwrResultModal({
                                 value={exerciseName}
                                 onChange={e => { setExerciseName(e.target.value); setSetId(null); }}
                                 placeholder="Sentadilla"
-                                className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm text-ink outline-none focus:border-brand"
+                                className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm text-ink focus:border-brand"
                             />
                         </div>
 
@@ -419,7 +419,7 @@ export function SavePwrResultModal({
                                 onChange={e => setNotes(e.target.value)}
                                 rows={2}
                                 placeholder="Cámara lateral, barra con cinta reflectante…"
-                                className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-xs text-ink outline-none focus:border-brand"
+                                className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-xs text-ink focus:border-brand"
                             />
                         </div>
                     </div>

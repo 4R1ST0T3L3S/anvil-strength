@@ -195,8 +195,8 @@ export function AttentionPanel({ coachId }: { coachId: string }) {
                     >
                         <span
                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-field ${
-                                item.severity === 'high' ? 'bg-[var(--danger-quiet)]' : 'bg-[var(--warning-quiet)]'
-                            }`}
+ item.severity === 'high' ? 'bg-[var(--danger-quiet)]' : 'bg-[var(--warning-quiet)]'
+ }`}
                         >
                             <item.icon
                                 size={15}

@@ -29,12 +29,12 @@ function IconAction({
             aria-label={label}
             title={label}
             className={`rounded-field p-2 transition-colors duration-fast ease-snap ${
-                active
-                    ? 'bg-brand-quiet text-brand'
-                    : danger
-                        ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger'
-                        : 'text-ink-subtle hover:bg-surface-sunken hover:text-ink'
-            }`}
+ active
+ ? 'bg-brand-quiet text-brand'
+ : danger
+ ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger'
+ : 'text-ink-subtle hover:bg-surface-sunken hover:text-ink'
+ }`}
         >
             <Icon size={16} aria-hidden="true" />
         </button>
@@ -238,8 +238,8 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                             key={m.id}
                                             onClick={() => handleAssignMacro(block.id, m.id)}
                                             className={`w-full rounded-field px-2.5 py-2 text-left text-t-sm font-semibold transition-colors duration-fast ${
-                                                block.macro_id === m.id ? 'bg-brand-quiet text-brand' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
-                                            }`}
+ block.macro_id === m.id ? 'bg-brand-quiet text-brand' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
+ }`}
                                         >
                                             {m.name}
                                         </button>
@@ -523,7 +523,7 @@ function CreateMacroModal({
                         maxLength={120}
                         autoFocus
                         placeholder="Ej: Preparación Nacional 2027"
-                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm font-semibold text-ink outline-none transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle focus:border-brand"
+                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm font-semibold text-ink transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle focus:border-brand"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); }}
                     />
                 </label>
@@ -535,7 +535,7 @@ function CreateMacroModal({
                     <select
                         value={selectedCompId}
                         onChange={(e) => setSelectedCompId(e.target.value)}
-                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand"
+                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink transition-colors duration-fast focus:border-brand"
                     >
                         <option value="">Sin competición</option>
                         {competitions.map(c => (

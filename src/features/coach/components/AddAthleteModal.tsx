@@ -116,7 +116,7 @@ export function AddAthleteModal({
                         minLength={2}
                         maxLength={80}
                         placeholder="Marta Ruiz"
-                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                     />
                 </div>
 
@@ -135,7 +135,7 @@ export function AddAthleteModal({
                             value={email}
                             onChange={e => { setEmail(e.target.value); setConflict(null); }}
                             placeholder="marta@ejemplo.com"
-                            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                         />
                     </div>
                     <p className="text-t-xs leading-relaxed text-ink-subtle">

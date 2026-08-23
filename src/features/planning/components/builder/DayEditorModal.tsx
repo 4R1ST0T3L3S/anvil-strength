@@ -218,7 +218,7 @@ export function DayEditorModal({
                         <span className="text-lg font-black text-anvil-red leading-none">{session.day_number}</span>
                     </div>
                     <input
-                        className="bg-transparent font-black text-xl md:text-2xl text-white outline-none w-full placeholder-gray-600 uppercase tracking-tight border-b-2 border-transparent focus:border-anvil-red/50 transition-colors min-w-0"
+                        className="bg-transparent font-black text-xl md:text-2xl text-white w-full placeholder-gray-600 uppercase tracking-tight border-b-2 border-transparent focus:border-anvil-red/50 transition-colors min-w-0"
                         value={session.name ?? ''}
                         onChange={(e) => onUpdateName(session.id, e.target.value)}
                         placeholder={`DÍA ${session.day_number}`}
@@ -304,7 +304,7 @@ export function DayEditorModal({
                                                 onChange={(e) => setTemplateName(e.target.value)}
                                                 placeholder='Ej: "Día pesado SQ"'
                                                 maxLength={80}
-                                                className="flex-1 bg-black/40 border border-[var(--border-default)] rounded-lg py-2 px-3 text-white text-xs focus:outline-none focus:border-anvil-red/50 min-w-0"
+                                                className="flex-1 bg-black/40 border border-[var(--border-default)] rounded-lg py-2 px-3 text-white text-xs focus:border-anvil-red/50 min-w-0"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' && templateName.trim()) {
                                                         onSaveTemplate(templateName.trim());

@@ -307,7 +307,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                 value={rosterSearch}
                                 onChange={(e) => setRosterSearch(e.target.value)}
                                 placeholder="Buscar atleta…"
-                                className="w-full rounded-field bg-surface-sunken py-2 pl-8 pr-2 text-t-sm text-ink outline-none placeholder:text-ink-faint"
+                                className="w-full rounded-field bg-surface-sunken py-2 pl-8 pr-2 text-t-sm text-ink placeholder:text-ink-faint"
                             />
                         </div>
                     )}
@@ -328,8 +328,8 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                             if (!isCurrent) navigate(`/coach-dashboard/atletas/${a.id}`);
                                         }}
                                         className={`flex w-full items-center gap-3 rounded-field px-2.5 py-2 text-left transition-colors duration-fast ease-snap ${
-                                            isCurrent ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-raised'
-                                        }`}
+ isCurrent ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-raised'
+ }`}
                                     >
                                         <SafeImage
                                             src={a.avatar_url ?? undefined}
@@ -382,10 +382,10 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     aria-selected={active}
                                     onClick={() => setActiveTab(key)}
                                     className={`flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-field px-4 text-t-sm font-bold transition-colors duration-fast ease-snap md:px-6 ${
-                                        active
-                                            ? 'bg-brand text-brand-ink'
-                                            : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
-                                    }`}
+ active
+ ? 'bg-brand text-brand-ink'
+ : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
+ }`}
                                 >
                                     <Icon size={17} aria-hidden="true" className="shrink-0" />
                                     {label}

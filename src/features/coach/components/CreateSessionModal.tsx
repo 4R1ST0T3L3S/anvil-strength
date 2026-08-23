@@ -120,7 +120,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                     max="30"
                                     value={dayNumber}
                                     onChange={(e) => setDayNumber(parseInt(e.target.value))}
-                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl pl-12 pr-4 py-3 text-white font-bold text-lg focus:outline-none focus:border-anvil-red/50 transition-all text-center"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl pl-12 pr-4 py-3 text-white font-bold text-lg focus:border-anvil-red/50 transition-all text-center"
                                 />
                             </div>
                         </div>
@@ -133,7 +133,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                             <select
                                 value={dayOfWeek}
                                 onChange={(e) => setDayOfWeek(e.target.value as Weekday | '')}
-                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white font-bold focus:outline-none focus:border-anvil-red/50 transition-all appearance-none cursor-pointer"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white font-bold focus:border-anvil-red/50 transition-all appearance-none cursor-pointer"
                             >
                                 <option value="">Seleccionar día (Opcional)</option>
                                 <option value="monday">Lunes</option>
@@ -156,7 +156,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ej: Torso Pesado, Pierna..."
-                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-anvil-red/50 transition-all"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-anvil-red/50 transition-all"
                             />
                         </div>
 

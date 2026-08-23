@@ -51,7 +51,7 @@ export function ExerciseAutocomplete({
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setHighlighted(0); }}
                 placeholder="Escribe el ejercicio... (ej: ba → Banca)"
-                className="w-full bg-black/40 text-white font-bold p-3 rounded-xl border border-subtle focus:border-anvil-red outline-none placeholder-gray-600"
+                className="w-full bg-black/40 text-white font-bold p-3 rounded-xl border border-subtle focus:border-anvil-red placeholder-gray-600"
                 onKeyDown={(e) => {
                     if (e.key === 'ArrowDown') {
                         e.preventDefault();
@@ -77,7 +77,7 @@ export function ExerciseAutocomplete({
                             onMouseDown={(e) => { e.preventDefault(); submit(s); }}
                             onMouseEnter={() => setHighlighted(i)}
                             className={`w-full px-4 py-2.5 text-left text-t-sm font-medium transition-colors duration-fast ease-snap ${i === highlighted ? 'bg-brand text-brand-ink' : 'text-ink-muted'
-                                }`}
+ }`}
                         >
                             {s}
                         </button>
@@ -93,7 +93,7 @@ export function ExerciseAutocomplete({
                             onMouseDown={(e) => { e.preventDefault(); submit(query); }}
                             onMouseEnter={() => setHighlighted(suggestions.length)}
                             className={`flex w-full items-center gap-2 border-t border-[var(--border-subtle)] px-4 py-2.5 text-left text-t-sm transition-colors duration-fast ease-snap ${highlighted === suggestions.length ? 'bg-brand text-brand-ink' : 'text-ink-muted'
-                                }`}
+ }`}
                         >
                             <Plus size={14} className="shrink-0" aria-hidden="true" />
                             <span className="truncate">

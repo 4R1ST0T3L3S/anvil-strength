@@ -264,7 +264,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 if (e.key === 'Enter') commitMax((e.target as HTMLInputElement).value);
                                 if (e.key === 'Escape') setEditingMax(false);
                             }}
-                            className="w-24 rounded-field border border-brand bg-surface-sunken px-2 py-1 text-center text-t-xs tabular-nums text-ink outline-none"
+                            className="w-24 rounded-field border border-brand bg-surface-sunken px-2 py-1 text-center text-t-xs tabular-nums text-ink"
                         />
                     ) : (
                         <button
@@ -344,7 +344,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         aria-label="Parte del día"
                         title={EXERCISE_SECTIONS.find(x => x.key === (sessionExercise.section ?? 'main'))?.hint}
                         className={cn(
-                            'ml-auto shrink-0 cursor-pointer rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide outline-none transition-colors duration-fast',
+                            'ml-auto shrink-0 cursor-pointer rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast',
                             (sessionExercise.section ?? 'main') === 'warmup'
                                 ? 'border-[var(--brand-line)] bg-brand-quiet text-brand'
                                 : 'border-transparent bg-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
@@ -373,7 +373,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             value={sessionExercise.round_count ?? ''}
                             onChange={(e) => commitRounds(e.target.value)}
                             placeholder="3"
-                            className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                            className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
                         />
                     </label>
                 )}
@@ -396,7 +396,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 if (e.key === 'Escape') setEditingVideo(false);
                             }}
                             placeholder="https://youtube.com/watch?v=..."
-                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
                         />
                         <p className="mt-1 text-t-2xs text-ink-faint">
                             Vídeo de técnica del ejercicio. Lo verán todos tus atletas que lo tengan pautado.
@@ -414,7 +414,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             onChange={(e) => handleVariantChange(e.target.value)}
                             onBlur={handleVariantBlur}
                             placeholder="Variante (ej: Tempo 3&quot; · Gomas media)"
-                            className="w-full bg-black/20 text-xs text-center text-anvil-red border border-subtle focus:border-anvil-red rounded-lg py-1.5 px-3 outline-none placeholder-gray-600 transition-colors font-bold"
+                            className="w-full bg-black/20 text-xs text-center text-anvil-red border border-subtle focus:border-anvil-red rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
                         />
                         {pendingModifier ? (
                             <div className="flex items-center gap-2 justify-center">
@@ -425,7 +425,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     value={modifierValue}
                                     onChange={(e) => setModifierValue(e.target.value)}
                                     placeholder={VARIANT_MODIFIERS.find(m => m.key === pendingModifier)?.prompt}
-                                    className="w-32 bg-black/40 text-xs text-center text-white border border-anvil-red/40 rounded-lg py-1 px-2 outline-none placeholder-gray-600"
+                                    className="w-32 bg-black/40 text-xs text-center text-white border border-anvil-red/40 rounded-lg py-1 px-2 placeholder-gray-600"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') applyModifier(pendingModifier, modifierValue);
                                         if (e.key === 'Escape') { setPendingModifier(null); setModifierValue(''); }
@@ -511,7 +511,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         onChange={(e) => handleNotesChange(e.target.value)}
                         onBlur={handleNotesBlur}
                         placeholder="Notas técnicas..."
-                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 outline-none resize-none h-[40px] leading-tight transition-colors"
+                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 resize-none h-[40px] leading-tight transition-colors"
                     />
                 </div>
             </div>
@@ -531,7 +531,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         onChange={(e) => handleMetricChange(e.target.value as TargetMetric)}
                         aria-label="Unidad de la prescripción"
                         title={TARGET_METRICS.find(m => m.key === exerciseMetric)?.hint}
-                        className="w-full cursor-pointer rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide text-ink-muted outline-none transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand"
+                        className="w-full cursor-pointer rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand"
                     >
                         {TARGET_METRICS.map(m => (
                             <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
@@ -601,9 +601,9 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                         ? `Velocidad registrada: ${set.vbt_mean_velocity} m/s`
                                         : 'Añadir datos de velocidad (VBT) a esta serie'}
                                     className={`p-0.5 transition-colors ${set.vbt_mean_velocity != null
-                                        ? 'text-green-400 hover:text-green-300'
-                                        : 'text-ink-faint opacity-100 hover:text-brand md:opacity-0 group-hover/row:opacity-100'
-                                        }`}
+ ? 'text-green-400 hover:text-green-300'
+ : 'text-ink-faint opacity-100 hover:text-brand md:opacity-0 group-hover/row:opacity-100'
+ }`}
                                 >
                                     <Activity size={11} />
                                 </button>
@@ -879,7 +879,7 @@ function RestInput({
                 }}
                 placeholder="seg"
                 aria-label="Descanso entre series, en segundos"
-                className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
             />
             {asMinutes && (
                 <p className="mt-0.5 text-center text-[9px] tabular-nums text-ink-faint">{asMinutes}</p>
@@ -940,9 +940,9 @@ function SetTechniqueEditor({
                                     // tendría deshacer.
                                     onClick={() => onUpdateSet(set.id, 'set_type', on ? null : t.key)}
                                     className={`rounded-chip px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
-                                        ? 'bg-warning text-[var(--surface-sunken)]'
-                                        : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
-                                        }`}
+ ? 'bg-warning text-[var(--surface-sunken)]'
+ : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ }`}
                                 >
                                     {t.short}
                                 </button>
@@ -962,9 +962,9 @@ function SetTechniqueEditor({
                                     title={`Encadenar con los ejercicios marcados ${tag} en este día`}
                                     onClick={() => onUpdateSet(set.id, 'group_tag', on ? null : tag)}
                                     className={`rounded-chip px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
-                                        ? 'bg-info text-[var(--surface-sunken)]'
-                                        : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
-                                        }`}
+ ? 'bg-info text-[var(--surface-sunken)]'
+ : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ }`}
                                 >
                                     {tag}
                                 </button>
@@ -993,7 +993,7 @@ function SetTechniqueEditor({
                             key={`${set.id}_detail`}
                             onBlur={(e) => onUpdateSet(set.id, 'set_detail', e.target.value.trim() || null)}
                             placeholder={active.detailHint}
-                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 py-1 text-t-2xs text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 py-1 text-t-2xs text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
                         />
                     )}
                 </div>
@@ -1026,7 +1026,7 @@ function CompactInput({ value, onChange, placeholder, type = "text" }: CompactIn
                 }
             }}
             onWheel={(e) => e.currentTarget.blur()} // Prevent accidental scroll changes
-            className="w-full bg-surface-overlay border border-transparent hover:border-[var(--border-default)] focus:border-blue-500 rounded px-1 py-1 text-xs text-center text-white outline-none transition-colors placeholder:text-ink-subtle"
+            className="w-full bg-surface-overlay border border-transparent hover:border-[var(--border-default)] focus:border-blue-500 rounded px-1 py-1 text-xs text-center text-white transition-colors placeholder:text-ink-subtle"
             placeholder={placeholder}
         />
     )
@@ -1113,9 +1113,9 @@ function LoadInput({
                 }}
                 placeholder={placeholder}
                 title={referenceMax ? `1RM ${referenceMax} kg — puedes escribir "85%"` : 'Sin 1RM registrado para este ejercicio'}
-                className={`w-full rounded-field border bg-surface-overlay px-1 py-1 text-center text-t-sm font-semibold tabular-nums text-ink outline-none transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle ${
-                    warn ? 'border-warning' : 'border-transparent hover:border-[var(--border-default)] focus:border-brand'
-                }`}
+                className={`w-full rounded-field border bg-surface-overlay px-1 py-1 text-center text-t-sm font-semibold tabular-nums text-ink transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle ${
+ warn ? 'border-warning' : 'border-transparent hover:border-[var(--border-default)] focus:border-brand'
+ }`}
             />
 
             {/* La intensidad, para leerla sin calcular. `text-ink-subtle` y no
@@ -1124,8 +1124,8 @@ function LoadInput({
             <span
                 aria-hidden={percent === null && !warn}
                 className={`h-4 text-center text-t-2xs leading-4 tabular-nums ${
-                    warn ? 'text-warning' : 'text-ink-subtle'
-                }`}
+ warn ? 'text-warning' : 'text-ink-subtle'
+ }`}
             >
                 {warn ? 'sin 1RM' : percent !== null ? `${percent}%` : ''}
             </span>

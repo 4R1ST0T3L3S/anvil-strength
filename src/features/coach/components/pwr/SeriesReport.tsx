@@ -517,8 +517,8 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                                         key={rep.index}
                                         onClick={() => setFocused(f => (f === rep.index ? null : rep.index))}
                                         className={`cursor-pointer border-b border-subtle/50 transition last:border-0 hover:bg-white/5 ${
-                                            focused === rep.index ? 'bg-white/[0.07]' : ''
-                                        }`}
+ focused === rep.index ? 'bg-white/[0.07]' : ''
+ }`}
                                     >
                                         <td className="px-2 py-1.5">
                                             <span className="inline-flex items-center gap-1.5 font-bold text-ink">

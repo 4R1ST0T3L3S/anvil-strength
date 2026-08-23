@@ -264,7 +264,7 @@ export function AddMeasurementModal({
                                     onChange={e => setExerciseName(e.target.value)}
                                     list="vbt-exercise-library"
                                     placeholder="Sentadilla"
-                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm text-ink outline-none focus:border-brand"
+                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm text-ink focus:border-brand"
                                 />
                                 <datalist id="vbt-exercise-library">
                                     {library.map(name => <option key={name} value={name} />)}
@@ -276,7 +276,7 @@ export function AddMeasurementModal({
                                     type="date"
                                     value={performedAt}
                                     onChange={e => setPerformedAt(e.target.value)}
-                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-t-sm text-ink outline-none focus:border-brand"
+                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-t-sm text-ink focus:border-brand"
                                 />
                             </div>
                             <div>
@@ -284,7 +284,7 @@ export function AddMeasurementModal({
                                 <select
                                     value={source}
                                     onChange={e => setSource(e.target.value as VbtSource)}
-                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-t-sm text-ink outline-none focus:border-brand"
+                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-t-sm text-ink focus:border-brand"
                                 >
                                     <option value="encoder">Encoder</option>
                                     <option value="video">Vídeo</option>
@@ -394,7 +394,7 @@ export function AddMeasurementModal({
                                 onChange={e => setNotes(e.target.value)}
                                 rows={2}
                                 placeholder="Perfil de cargas antes del bloque de fuerza…"
-                                className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-xs text-ink outline-none focus:border-brand"
+                                className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-xs text-ink focus:border-brand"
                             />
                         </div>
 
@@ -454,7 +454,7 @@ function Cell({
             placeholder={placeholder}
             title={warn ? 'Ese valor queda muy fuera del rango habitual. ¿Unidades correctas?' : undefined}
             className={cn(
-                'h-8 w-full rounded-field border bg-surface-sunken px-2 text-center text-t-xs tabular-nums text-ink outline-none transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none',
+                'h-8 w-full rounded-field border bg-surface-sunken px-2 text-center text-t-xs tabular-nums text-ink transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none',
                 warn ? 'border-[var(--warning)]' : 'border-[var(--border-default)]'
             )}
         />

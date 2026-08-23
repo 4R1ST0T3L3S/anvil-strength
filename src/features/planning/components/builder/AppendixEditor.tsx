@@ -79,7 +79,7 @@ export function AppendixEditor({
                         rows={3}
                         maxLength={2000}
                         placeholder={placeholder}
-                        className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm leading-relaxed text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand focus:outline-none"
+                        className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm leading-relaxed text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
                     />
                     <p className="mt-1 text-t-2xs text-ink-faint">
                         Se guarda al salir del campo. Lo ve el atleta y sale en el PDF.

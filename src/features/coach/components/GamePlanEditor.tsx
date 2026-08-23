@@ -154,7 +154,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.kg}
                                                         onChange={(e) => updateAttempt(key, i, 'kg', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-2 text-white text-sm font-black text-center focus:outline-none focus:border-anvil-red/50"
+                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-2 text-white text-sm font-black text-center focus:border-anvil-red/50"
                                                     />
                                                 </div>
                                                 <div>
@@ -163,7 +163,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.rpe}
                                                         onChange={(e) => updateAttempt(key, i, 'rpe', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-2 text-white text-sm text-center focus:outline-none focus:border-anvil-red/50"
+                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-2 text-white text-sm text-center focus:border-anvil-red/50"
                                                     />
                                                 </div>
                                                 <div>
@@ -172,7 +172,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.velocity}
                                                         onChange={(e) => updateAttempt(key, i, 'velocity', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-2 text-white text-sm text-center focus:outline-none focus:border-anvil-red/50"
+                                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-2 text-white text-sm text-center focus:border-anvil-red/50"
                                                     />
                                                 </div>
                                             </div>
@@ -180,7 +180,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                 value={att.note}
                                                 onChange={(e) => updateAttempt(key, i, 'note', e.target.value)}
                                                 placeholder="Anotación (ej: solo si el 2º sube fácil)"
-                                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-3 text-gray-300 text-xs focus:outline-none focus:border-anvil-red/50"
+                                                className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg py-2 px-3 text-gray-300 text-xs focus:border-anvil-red/50"
                                             />
                                         </div>
                                     ))}
@@ -196,14 +196,14 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                     value={w.kg}
                                                     onChange={(e) => updateLift(key, { warmups: lift.warmups.map((x, xi) => xi === i ? { ...x, kg: e.target.value } : x) })}
                                                     placeholder="kg"
-                                                    className="w-14 bg-transparent text-white text-xs font-bold text-center focus:outline-none"
+                                                    className="w-14 bg-transparent text-white text-xs font-bold text-center"
                                                 />
                                                 <span className="text-gray-600 text-xs">×</span>
                                                 <input
                                                     value={w.reps}
                                                     onChange={(e) => updateLift(key, { warmups: lift.warmups.map((x, xi) => xi === i ? { ...x, reps: e.target.value } : x) })}
                                                     placeholder="reps"
-                                                    className="w-10 bg-transparent text-white text-xs text-center focus:outline-none"
+                                                    className="w-10 bg-transparent text-white text-xs text-center"
                                                 />
                                                 <button
                                                     onClick={() => updateLift(key, { warmups: lift.warmups.filter((_, xi) => xi !== i) })}
@@ -227,7 +227,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                     value={lift.liftNote}
                                     onChange={(e) => updateLift(key, { liftNote: e.target.value })}
                                     placeholder={`Notas de ${label.toLowerCase()} (setup, comandos, avisos...)`}
-                                    className="w-full bg-black/20 border border-white/5 rounded-xl py-2.5 px-4 text-gray-300 text-sm focus:outline-none focus:border-anvil-red/50"
+                                    className="w-full bg-black/20 border border-white/5 rounded-xl py-2.5 px-4 text-gray-300 text-sm focus:border-anvil-red/50"
                                 />
                             </div>
                         );
@@ -242,7 +242,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                             rows={4}
                             maxLength={2000}
                             placeholder="Pesaje, horarios, comida, equipación, mentalidad..."
-                            className="w-full bg-black/20 border border-white/5 rounded-xl py-3 px-4 text-gray-200 text-sm focus:outline-none focus:border-anvil-red/50 resize-none"
+                            className="w-full bg-black/20 border border-white/5 rounded-xl py-3 px-4 text-gray-200 text-sm focus:border-anvil-red/50 resize-none"
                         />
                     </div>
                 </div>

@@ -107,10 +107,10 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                     <button 
                         onClick={() => setShowAll(!showAll)}
                         className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all border ${
-                            showAll 
-                            ? 'bg-anvil-red border-anvil-red text-white' 
-                            : 'bg-white/5 border-white/10 text-gray-500 hover:text-white'
-                        }`}
+ showAll 
+ ? 'bg-anvil-red border-anvil-red text-white' 
+ : 'bg-white/5 border-white/10 text-gray-500 hover:text-white'
+ }`}
                     >
                         {showAll ? 'VIENDO TODOS LOS ATLETAS' : 'VER SOLO MIS ATLETAS'}
                     </button>
@@ -124,7 +124,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                     <input 
                         type="text"
                         placeholder="BUSCAR POR NOMBRE..."
-                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase text-xs outline-none focus:border-anvil-red/50 transition-all"
+                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase text-xs focus:border-anvil-red/50 transition-all"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />

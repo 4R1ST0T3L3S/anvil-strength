@@ -164,7 +164,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                     <input
                         type="text"
                         placeholder="Buscar atleta…"
-                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                        className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -184,16 +184,16 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                                     key={athlete.id}
                                     onClick={() => toggleAthlete(athlete.id)}
                                     className={`flex items-center gap-3 rounded-field border p-3 text-left transition-colors duration-fast ease-snap active:scale-[0.98] ${
-                                        isSelected
-                                            ? 'border-[var(--brand-line)] bg-brand-quiet text-ink'
-                                            : 'border-subtle bg-surface-sunken text-ink-muted hover:border-[var(--border-strong)] hover:text-ink'
-                                    }`}
+ isSelected
+ ? 'border-[var(--brand-line)] bg-brand-quiet text-ink'
+ : 'border-subtle bg-surface-sunken text-ink-muted hover:border-[var(--border-strong)] hover:text-ink'
+ }`}
                                 >
                                     <span
                                         aria-hidden="true"
                                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border transition-colors duration-fast ${
-                                            isSelected ? 'border-brand bg-brand' : 'border-[var(--border-strong)]'
-                                        }`}
+ isSelected ? 'border-brand bg-brand' : 'border-[var(--border-strong)]'
+ }`}
                                     >
                                         {isSelected && <Check size={12} className="text-brand-ink" aria-hidden="true" />}
                                     </span>
@@ -226,7 +226,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                         rows={3}
                         maxLength={400}
                         placeholder="Ej: Fernando busca revalidar su título en -74kg tras su victoria en Chiva…"
-                        className="w-full resize-none rounded-field border border-subtle bg-surface-sunken px-3.5 py-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                        className="w-full resize-none rounded-field border border-subtle bg-surface-sunken px-3.5 py-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                     />
                 </label>
             </div>

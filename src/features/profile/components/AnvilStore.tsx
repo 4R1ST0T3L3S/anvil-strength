@@ -73,10 +73,10 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                         <div 
                             key={item.id}
                             className={`relative group bg-[#0a0a0a] border rounded-3xl p-6 transition-all ${
-                                item.available 
-                                ? 'border-white/5 hover:border-anvil-red/30 cursor-pointer' 
-                                : 'border-white/5 opacity-60 grayscale cursor-not-allowed'
-                            }`}
+ item.available 
+ ? 'border-white/5 hover:border-anvil-red/30 cursor-pointer' 
+ : 'border-white/5 opacity-60 grayscale cursor-not-allowed'
+ }`}
                         >
                             <div className="flex gap-6">
                                 <div className="shrink-0 w-16 h-16 bg-black/40 rounded-2xl flex items-center justify-center shadow-xl border border-white/5 group-hover:scale-110 transition-transform">
@@ -105,10 +105,10 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                                             <button 
                                                 disabled={!canAfford}
                                                 className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                                                    canAfford 
-                                                    ? 'bg-anvil-red text-white hover:bg-red-700 shadow-lg shadow-red-900/20' 
-                                                    : 'bg-white/5 text-gray-500'
-                                                }`}
+ canAfford 
+ ? 'bg-anvil-red text-white hover:bg-red-700 shadow-lg shadow-red-900/20' 
+ : 'bg-white/5 text-gray-500'
+ }`}
                                             >
                                                 {canAfford ? 'Canjear' : 'Faltan Monedas'}
                                             </button>

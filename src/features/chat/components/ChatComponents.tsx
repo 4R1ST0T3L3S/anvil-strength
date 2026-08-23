@@ -10,10 +10,10 @@ export const ChatBubble: React.FC<{ message: ChatMessage; isOwn: boolean }> = ({
             className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}
         >
             <div className={`max-w-[80%] md:max-w-[70%] p-4 rounded-[1.5rem] relative ${
-                isOwn 
-                ? 'bg-anvil-red text-white rounded-br-none shadow-[0_4px_20px_rgba(220,38,38,0.2)]' 
-                : 'bg-[#0a0a0a] text-gray-200 border border-white/5 rounded-bl-none shadow-xl'
-            }`}>
+ isOwn 
+ ? 'bg-anvil-red text-white rounded-br-none shadow-[0_4px_20px_rgba(220,38,38,0.2)]' 
+ : 'bg-[#0a0a0a] text-gray-200 border border-white/5 rounded-bl-none shadow-xl'
+ }`}>
                 <p className="text-sm font-bold leading-relaxed whitespace-pre-wrap">
                     {message.content}
                 </p>
@@ -49,7 +49,7 @@ export const ChatInput: React.FC<{ onSend: (val: string) => void }> = ({ onSend 
                 value={text}
                 onChange={e => setText(e.target.value)}
                 placeholder="Escribe un mensaje..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-anvil-red/50 transition-all placeholder:text-gray-600"
+                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-anvil-red/50 transition-all placeholder:text-gray-600"
             />
             <button 
                 type="submit"

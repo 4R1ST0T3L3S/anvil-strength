@@ -69,7 +69,7 @@ function SetTextInput({
                 onChange(e.target.value);
             }}
             onBlur={onBlur}
-            className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+            className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 transition-colors"
         />
     );
 }
@@ -213,7 +213,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                     onChange={(e) => handleUpdateSet(set.id, 'target_rpe', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_rpe: e.target.value })}
                                     placeholder="@"
-                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 transition-colors"
                                 />
                             </div>
 
@@ -225,7 +225,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                     onChange={(e) => handleUpdateSet(set.id, 'target_load', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_load: e.target.value ? parseFloat(e.target.value) : null })}
                                     placeholder="kg"
-                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 focus:outline-none transition-colors"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 transition-colors"
                                 />
                             </div>
 

@@ -114,10 +114,10 @@ export function RolesSection({ user }: { user: UserProfile }) {
                             aria-checked={activo}
                             onClick={() => alternar(rol)}
                             className={`flex min-w-0 items-start gap-3 rounded-card border p-3.5 text-left transition-colors duration-fast ease-snap ${
-                                activo
-                                    ? 'border-brand bg-[var(--brand-quiet)]'
-                                    : 'border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-surface-overlay'
-                            }`}
+ activo
+ ? 'border-brand bg-[var(--brand-quiet)]'
+ : 'border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-surface-overlay'
+ }`}
                         >
                             {/* Casilla dibujada y no un <input>: tiene que
                                 verse igual en iOS, en Android y en escritorio,
@@ -126,10 +126,10 @@ export function RolesSection({ user }: { user: UserProfile }) {
                             <span
                                 aria-hidden="true"
                                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-chip border transition-colors duration-fast ${
-                                    activo
-                                        ? 'border-brand bg-brand text-brand-ink'
-                                        : 'border-[var(--border-strong)]'
-                                }`}
+ activo
+ ? 'border-brand bg-brand text-brand-ink'
+ : 'border-[var(--border-strong)]'
+ }`}
                             >
                                 {activo && <Check size={13} strokeWidth={3.5} />}
                             </span>

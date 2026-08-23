@@ -379,7 +379,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                         placeholder="Buscar atleta…"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full rounded-field border border-subtle bg-surface-raised py-2.5 pl-9 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                        className="w-full rounded-field border border-subtle bg-surface-raised py-2.5 pl-9 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                     />
                 </div>
 
@@ -393,8 +393,8 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                                     onClick={() => setFilter(key)}
                                     aria-pressed={active}
                                     className={`relative rounded-pill px-3 py-1.5 text-t-xs font-bold transition-colors duration-fast ease-snap active:scale-[0.97] ${
-                                        active ? 'text-brand-ink' : 'text-ink-muted hover:text-ink'
-                                    }`}
+ active ? 'text-brand-ink' : 'text-ink-muted hover:text-ink'
+ }`}
                                 >
                                     {active && (
                                         <motion.span
@@ -413,7 +413,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                         value={sort}
                         onChange={(e) => setSort(e.target.value as SortKey)}
                         aria-label="Ordenar la lista"
-                        className="ml-auto rounded-field border border-subtle bg-surface-raised px-2.5 py-1.5 text-t-xs font-semibold text-ink-muted outline-none transition-colors duration-fast focus:border-brand"
+                        className="ml-auto rounded-field border border-subtle bg-surface-raised px-2.5 py-1.5 text-t-xs font-semibold text-ink-muted transition-colors duration-fast focus:border-brand"
                     >
                         {SORTS.map(({ key, label }) => (
                             <option key={key} value={key}>{label}</option>
@@ -520,7 +520,7 @@ function AthleteCard({
                 tabIndex={0}
                 onClick={onSelect}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); } }}
-                className="group cursor-pointer rounded-card border border-[var(--border-default)] bg-surface-raised p-4 transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay focus:outline-none focus-visible:border-brand"
+                className="group cursor-pointer rounded-card border border-[var(--border-default)] bg-surface-raised p-4 transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay focus-visible:border-brand"
             >
                 <div className="flex items-start gap-3">
                     {athlete.avatar_url ? (
@@ -646,8 +646,8 @@ function AthleteCard({
                         <div className="h-1 overflow-hidden rounded-pill bg-surface-sunken">
                             <div
                                 className={`h-full rounded-pill ${
-                                    ratio >= 0.85 ? 'bg-success' : ratio >= ATTENTION_THRESHOLDS.lowAdherence ? 'bg-warning' : 'bg-danger'
-                                }`}
+ ratio >= 0.85 ? 'bg-success' : ratio >= ATTENTION_THRESHOLDS.lowAdherence ? 'bg-warning' : 'bg-danger'
+ }`}
                                 style={{ width: `${Math.min(100, Math.round(ratio * 100))}%` }}
                             />
                         </div>
@@ -816,7 +816,7 @@ function SendAccessModal({
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             placeholder="marta@ejemplo.com"
-                            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken pl-9 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                         />
                     </div>
                 </div>

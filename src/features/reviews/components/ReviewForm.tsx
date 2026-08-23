@@ -82,14 +82,14 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
                     required
                     minLength={10}
                     maxLength={1000}
-                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:outline-none focus:border-anvil-red transition-colors resize-none"
+                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 focus:border-anvil-red transition-colors resize-none"
                 />
                 <p className={`text-xs mt-2 ${!isValid && characterCount > 0
-                    ? 'text-red-500'
-                    : characterCount > 900
-                        ? 'text-yellow-500'
-                        : 'text-gray-500'
-                    }`}>
+ ? 'text-red-500'
+ : characterCount > 900
+ ? 'text-yellow-500'
+ : 'text-gray-500'
+ }`}>
                     {characterCount}/1000 caracteres {characterCount < 10 && '(mínimo 10)'}
                 </p>
             </div>

@@ -420,7 +420,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                 <select
                                     value={resolved.typography.family}
                                     onChange={e => patch({ typography: { family: e.target.value as FontFamily } })}
-                                    className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand"
+                                    className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink transition-colors duration-fast focus:border-brand"
                                 >
                                     {FONT_FAMILIES.map(f => (
                                         <option key={f.key} value={f.key}>{f.label} — {f.hint}</option>
@@ -556,13 +556,13 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                                 value={col.label}
                                                 maxLength={32}
                                                 onChange={e => editColumn(i, { label: e.target.value })}
-                                                className="h-9 min-w-0 flex-1 rounded-chip bg-transparent px-2 text-t-sm text-ink outline-none placeholder:text-ink-subtle"
+                                                className="h-9 min-w-0 flex-1 rounded-chip bg-transparent px-2 text-t-sm text-ink placeholder:text-ink-subtle"
                                                 placeholder="Rótulo"
                                             />
                                             <select
                                                 value={col.key}
                                                 onChange={e => editColumn(i, { key: e.target.value as PdfSheetColumn['key'] })}
-                                                className="h-9 shrink-0 rounded-chip border border-subtle bg-surface-raised px-1.5 text-t-2xs font-bold text-ink-muted outline-none"
+                                                className="h-9 shrink-0 rounded-chip border border-subtle bg-surface-raised px-1.5 text-t-2xs font-bold text-ink-muted"
                                             >
                                                 <option value="name">Ejercicio</option>
                                                 <option value="series">Series</option>
@@ -578,7 +578,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                                     max={80}
                                                     value={Math.round(col.width)}
                                                     onChange={e => editColumn(i, { width: Number(e.target.value) || 15 })}
-                                                    className="w-full bg-transparent text-t-2xs font-bold text-ink outline-none"
+                                                    className="w-full bg-transparent text-t-2xs font-bold text-ink"
                                                     aria-label="Ancho relativo"
                                                 />
                                                 <span className="text-t-2xs text-ink-faint">%</span>
@@ -780,7 +780,7 @@ function TextInput({ value, onChange, placeholder }: { value: string; onChange: 
             onChange={e => onChange(e.target.value)}
             placeholder={placeholder}
             maxLength={60}
-            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+            className="h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
         />
     );
 }
@@ -800,7 +800,7 @@ function ColorInput({ value, onChange }: { value: string; onChange: (v: string) 
                 value={value}
                 onChange={e => onChange(e.target.value)}
                 maxLength={7}
-                className="w-full bg-transparent text-t-sm font-bold uppercase tracking-wide text-ink outline-none"
+                className="w-full bg-transparent text-t-sm font-bold uppercase tracking-wide text-ink"
             />
         </div>
     );
@@ -821,8 +821,8 @@ function SegmentedControl<T extends string>({
                     type="button"
                     onClick={() => onChange(opt.value)}
                     className={`flex-1 rounded-chip px-2 py-2 text-t-xs font-bold transition-colors duration-fast ease-snap ${
-                        value === opt.value ? 'bg-brand text-brand-ink' : 'text-ink-subtle hover:text-ink'
-                    }`}
+ value === opt.value ? 'bg-brand text-brand-ink' : 'text-ink-subtle hover:text-ink'
+ }`}
                 >
                     {opt.label}
                 </button>
@@ -842,13 +842,13 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
             <span
                 aria-hidden="true"
                 className={`relative h-6 w-10 shrink-0 rounded-pill transition-colors duration-fast ${
-                    checked ? 'bg-brand' : 'bg-surface-sunken'
-                }`}
+ checked ? 'bg-brand' : 'bg-surface-sunken'
+ }`}
             >
                 <span
                     className={`absolute top-0.5 h-5 w-5 rounded-pill bg-white shadow-raise transition-transform duration-fast ${
-                        checked ? 'translate-x-[18px]' : 'translate-x-0.5'
-                    }`}
+ checked ? 'translate-x-[18px]' : 'translate-x-0.5'
+ }`}
                 />
             </span>
         </button>

@@ -75,7 +75,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         setSelectedFood(null);
                     }}
                     autoFocus
-                    className="w-full bg-[#111111] text-white pl-10 pr-12 py-3 rounded-lg border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-all outline-none"
+                    className="w-full bg-[#111111] text-white pl-10 pr-12 py-3 rounded-lg border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-all"
                 />
                 <button 
                     onClick={() => setIsEditingBrands(!isEditingBrands)}
@@ -99,7 +99,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                             onChange={(e) => setNewBrand(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addBrand()}
                             placeholder="Ej. Hacendado, Prozis..."
-                            className="flex-1 bg-zinc-900 text-sm text-white px-3 py-1.5 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                            className="flex-1 bg-zinc-900 text-sm text-white px-3 py-1.5 rounded border border-zinc-800 focus:border-anvil-red"
                         />
                         <button onClick={addBrand} className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 rounded text-sm transition-colors">
                             Añadir
@@ -214,7 +214,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                                 min="1"
                                 value={grams || ''}
                                 onChange={(e) => setGrams(parseInt(e.target.value) || 0)}
-                                className="w-full bg-zinc-900 text-white font-bold text-lg px-4 py-3 rounded-lg border border-zinc-700 focus:border-anvil-red outline-none text-center"
+                                className="w-full bg-zinc-900 text-white font-bold text-lg px-4 py-3 rounded-lg border border-zinc-700 focus:border-anvil-red text-center"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500">gramos</span>
                         </div>

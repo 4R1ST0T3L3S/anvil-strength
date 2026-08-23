@@ -53,9 +53,9 @@ export function CoachAthleteStatsTab({ athleteId, athleteName, coachId }: {
                             aria-selected={active}
                             onClick={() => setSub(key)}
                             className={`flex shrink-0 items-center justify-center gap-1.5 rounded-chip px-3 py-2 text-t-xs font-semibold transition-colors duration-fast ease-snap ${active
-                                ? 'bg-brand text-brand-ink'
-                                : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
-                                }`}
+ ? 'bg-brand text-brand-ink'
+ : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
+ }`}
                         >
                             <Icon size={14} aria-hidden="true" />
                             {label}

@@ -229,7 +229,7 @@ export function VideoTrimmer({
                             if (edge === 'from') setFrom(value.from + delta);
                             else setTo(value.to + delta);
                         }}
-                        className="absolute inset-y-0 z-10 flex w-5 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center focus:outline-none"
+                        className="absolute inset-y-0 z-10 flex w-5 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center"
                         style={{ left: `${pct(value[edge])}%` }}
                     >
                         <span className={`h-full w-1.5 rounded-pill bg-brand shadow-[0_0_0_1px_rgba(0,0,0,0.4)] ${dragging === edge ? 'w-2' : ''}`} />

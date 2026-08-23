@@ -122,16 +122,16 @@ export function ResizeHandle({
             onDoubleClick={onReset}
             title="Arrastra para ajustar · doble clic para restablecer"
             className={`relative hidden w-1.5 shrink-0 cursor-col-resize touch-none select-none transition-colors duration-fast lg:block
-                before:absolute before:inset-y-0 before:-left-2 before:-right-2 before:content-['']
-                ${dragging ? 'bg-brand' : 'bg-transparent hover:bg-[var(--brand-line)]'}`}
+ before:absolute before:inset-y-0 before:-left-2 before:-right-2 before:content-['']
+ ${dragging ? 'bg-brand' : 'bg-transparent hover:bg-[var(--brand-line)]'}`}
         >
             {/* Marca central. Solo se ve al pasar por encima o al arrastrar:
                 una línea siempre visible en mitad de la pantalla es ruido. */}
             <span
                 aria-hidden="true"
                 className={`pointer-events-none absolute left-1/2 top-1/2 h-8 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-pill transition-opacity duration-fast ${
-                    dragging ? 'bg-brand-ink opacity-100' : 'bg-ink-subtle opacity-0 hover:opacity-100'
-                }`}
+ dragging ? 'bg-brand-ink opacity-100' : 'bg-ink-subtle opacity-0 hover:opacity-100'
+ }`}
             />
         </div>
     );

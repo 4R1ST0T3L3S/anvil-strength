@@ -168,12 +168,12 @@ export function CompetitionBanner({
         <div 
             onClick={() => userId && setIsSettingsOpen(true)}
             className={`
-                ${themeClasses[activeTheme] || themeClasses.dark} 
-                ${fontClasses[activeFont] || ''}
-                ${shapeClasses[activeShape] || shapeClasses.rounded} 
-                ${mobile ? 'py-10 px-4 min-h-[220px]' : 'py-16 px-8 min-h-[280px]'}
-                text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-all cursor-pointer group w-full
-            `}
+ ${themeClasses[activeTheme] || themeClasses.dark} 
+ ${fontClasses[activeFont] || ''}
+ ${shapeClasses[activeShape] || shapeClasses.rounded} 
+ ${mobile ? 'py-10 px-4 min-h-[220px]' : 'py-16 px-8 min-h-[280px]'}
+ text-white flex flex-col items-center text-center justify-center relative overflow-hidden shadow-2xl transition-all cursor-pointer group w-full
+`}
             style={containerStyles}
         >
             {/* Hover overlay (Desktop) */}
@@ -202,9 +202,9 @@ export function CompetitionBanner({
                     <Trophy size={mobile ? 14 : 16} /> TU PRÓXIMO RETO
                 </div>
                 <h3 className={`
-                    ${activeFont === 'bebas' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'}
-                    font-black uppercase italic leading-none max-w-4xl drop-shadow-2xl mb-3
-                `}>
+ ${activeFont === 'bebas' ? 'text-4xl md:text-5xl' : 'text-2xl md:text-3xl'}
+ font-black uppercase italic leading-none max-w-4xl drop-shadow-2xl mb-3
+`}>
                     {displayName}
                 </h3>
                 {location && !settings?.customName && (

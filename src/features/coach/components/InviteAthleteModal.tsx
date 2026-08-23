@@ -169,7 +169,7 @@ export function InviteAthleteModal({
                                             value={label}
                                             onChange={(e) => setLabel(e.target.value)}
                                             placeholder="Marta · Grupo iniciación…"
-                                            className="w-full rounded-field border border-subtle bg-surface-canvas px-3 py-2 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                                            className="w-full rounded-field border border-subtle bg-surface-canvas px-3 py-2 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                                         />
                                     </label>
 
@@ -184,7 +184,7 @@ export function InviteAthleteModal({
                                                 max={500}
                                                 value={maxUses}
                                                 onChange={(e) => setMaxUses(Math.max(1, Number(e.target.value) || 1))}
-                                                className="w-full rounded-field border border-subtle bg-surface-canvas px-3 py-2 text-t-sm tabular-nums text-ink outline-none transition-colors duration-fast focus:border-brand"
+                                                className="w-full rounded-field border border-subtle bg-surface-canvas px-3 py-2 text-t-sm tabular-nums text-ink transition-colors duration-fast focus:border-brand"
                                             />
                                         </label>
 
@@ -198,7 +198,7 @@ export function InviteAthleteModal({
                                                 max={365}
                                                 value={expiresInDays}
                                                 onChange={(e) => setExpiresInDays(Math.max(1, Number(e.target.value) || 30))}
-                                                className="w-full rounded-field border border-subtle bg-surface-canvas px-3 py-2 text-t-sm tabular-nums text-ink outline-none transition-colors duration-fast focus:border-brand"
+                                                className="w-full rounded-field border border-subtle bg-surface-canvas px-3 py-2 text-t-sm tabular-nums text-ink transition-colors duration-fast focus:border-brand"
                                             />
                                         </label>
                                     </div>

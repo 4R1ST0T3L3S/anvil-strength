@@ -278,7 +278,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                 type="text"
                 placeholder="Apodo (Ej: El Toro)"
                 autoComplete="nickname"
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors font-bold"
+                className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors font-bold"
                 value={formData.nickname}
                 onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                 required={!isLogin}
@@ -296,7 +296,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="email"
               placeholder="Email"
               autoComplete="username email"
-              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -314,7 +314,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="password"
               placeholder="Contraseña"
               autoComplete={isLogin ? "current-password" : "new-password"}
-              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required

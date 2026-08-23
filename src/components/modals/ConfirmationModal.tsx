@@ -82,9 +82,9 @@ export function ConfirmationModal({
                         <div className="space-y-4 p-6 text-center">
                             <div
                                 className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${danger
-                                    ? 'bg-danger-quiet text-danger'
-                                    : 'bg-info/15 text-info'
-                                    }`}
+ ? 'bg-danger-quiet text-danger'
+ : 'bg-info/15 text-info'
+ }`}
                             >
                                 {danger ? <AlertTriangle size={24} /> : <HelpCircle size={24} />}
                             </div>
@@ -109,7 +109,7 @@ export function ConfirmationModal({
                                     onClose();
                                 }}
                                 className={`flex-1 rounded-field px-4 py-3 text-t-xs font-bold uppercase tracking-wider text-brand-ink transition-colors duration-fast ${danger ? 'bg-danger hover:bg-danger-hover' : 'bg-info hover:opacity-90'
-                                    }`}
+ }`}
                             >
                                 {confirmText}
                             </button>

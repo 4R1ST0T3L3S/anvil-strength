@@ -1030,7 +1030,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                                 value={plateDiameterM}
                                 onChange={e => setPlateDiameterM(Number(e.target.value))}
                                 aria-label="Diámetro real del disco"
-                                className="ml-auto cursor-pointer rounded-chip border border-subtle bg-surface-overlay px-2 py-1 text-t-2xs font-semibold text-ink focus:outline-none focus:ring-1 focus:ring-brand"
+                                className="ml-auto cursor-pointer rounded-chip border border-subtle bg-surface-overlay px-2 py-1 text-t-2xs font-semibold text-ink focus:ring-1 focus:ring-brand"
                             >
                                 {PLATE_PRESETS.map(p => (
                                     <option key={p.meters} value={p.meters}>{p.label}</option>

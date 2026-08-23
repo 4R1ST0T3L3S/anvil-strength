@@ -40,10 +40,10 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             key={type}
                             onClick={() => setOpenForm(type)}
                             className={`relative p-4 rounded-2xl border text-left transition-all active:scale-[0.97] ${
-                                done
-                                    ? 'bg-green-500/5 border-green-500/20'
-                                    : 'bg-[#1c1c1c] border-white/10 hover:border-anvil-red/40'
-                            }`}
+ done
+ ? 'bg-green-500/5 border-green-500/20'
+ : 'bg-[#1c1c1c] border-white/10 hover:border-anvil-red/40'
+ }`}
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <CalendarCheck size={18} className={done ? 'text-green-400' : 'text-anvil-red'} />

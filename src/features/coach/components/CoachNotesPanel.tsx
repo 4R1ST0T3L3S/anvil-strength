@@ -53,7 +53,7 @@ export function CoachNotesPanel({ coachId, athleteId }: { coachId: string; athle
                     rows={4}
                     maxLength={4000}
                     placeholder="Lesiones a vigilar, cómo prefiere que le hables, lo que no debe faltar en cada bloque..."
-                    className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm leading-relaxed text-ink outline-none transition-colors duration-fast placeholder:text-ink-faint focus:border-brand"
+                    className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm leading-relaxed text-ink transition-colors duration-fast placeholder:text-ink-faint focus:border-brand"
                 />
             )}
         </section>

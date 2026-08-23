@@ -245,10 +245,10 @@ function CountdownSettings({
                                         disabled={tab.disabled}
                                         onClick={() => setDraft({ ...draft, source: tab.id })}
                                         className={`py-2.5 px-2 rounded-xl text-[11px] font-black uppercase tracking-wide transition-all border ${
-                                            draft.source === tab.id
-                                                ? 'bg-anvil-red border-anvil-red text-white'
-                                                : 'bg-[#252525] border-white/5 text-gray-400 hover:text-white hover:border-white/20'
-                                        } disabled:opacity-30 disabled:cursor-not-allowed`}
+ draft.source === tab.id
+ ? 'bg-anvil-red border-anvil-red text-white'
+ : 'bg-[#252525] border-white/5 text-gray-400 hover:text-white hover:border-white/20'
+ } disabled:opacity-30 disabled:cursor-not-allowed`}
                                     >
                                         {tab.label}
                                     </button>
@@ -276,10 +276,10 @@ function CountdownSettings({
                                                         aep: { name: comp.campeonato, date: comp.dateIso!, location: comp.sede, level: comp.level }
                                                     })}
                                                     className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
-                                                        isSelected
-                                                            ? 'bg-anvil-red/10 border-anvil-red'
-                                                            : 'bg-[#252525] border-white/5 hover:border-white/20'
-                                                    }`}
+ isSelected
+ ? 'bg-anvil-red/10 border-anvil-red'
+ : 'bg-[#252525] border-white/5 hover:border-white/20'
+ }`}
                                                 >
                                                     <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-anvil-red border-anvil-red' : 'border-gray-600'}`}>
                                                         {isSelected && <Check size={10} className="text-white" />}
@@ -315,7 +315,7 @@ function CountdownSettings({
                                         maxLength={60}
                                         value={draft.custom?.name || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: e.target.value, date: draft.custom?.date || '' } })}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:border-anvil-red/50 transition-colors"
                                     />
                                 </div>
                                 <div className="relative">
@@ -325,7 +325,7 @@ function CountdownSettings({
                                         min={new Date().toISOString().split('T')[0]}
                                         value={draft.custom?.date || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: draft.custom?.name || '', date: e.target.value } })}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
+                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
                                     />
                                 </div>
                             </div>
@@ -342,8 +342,8 @@ function CountdownSettings({
                                         className="flex flex-col items-center gap-1.5 group"
                                     >
                                         <div className={`w-full aspect-square rounded-xl ${theme.swatch} border-2 transition-all ${
-                                            draft.themeId === theme.id ? 'border-white scale-105 shadow-lg' : 'border-transparent group-hover:border-white/30'
-                                        } flex items-center justify-center`}>
+ draft.themeId === theme.id ? 'border-white scale-105 shadow-lg' : 'border-transparent group-hover:border-white/30'
+ } flex items-center justify-center`}>
                                             {draft.themeId === theme.id && <Check size={16} className="text-white drop-shadow" />}
                                         </div>
                                         <span className={`text-[9px] font-bold uppercase tracking-wide text-center leading-tight ${draft.themeId === theme.id ? 'text-white' : 'text-gray-500'}`}>

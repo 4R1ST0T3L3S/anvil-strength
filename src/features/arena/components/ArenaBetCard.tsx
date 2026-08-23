@@ -70,10 +70,10 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                         onClick={() => bet.status === 'open' && onBetClick(bet, null)}
                         disabled={bet.status !== 'open'}
                         className={`w-full py-6 rounded-[2rem] border-2 border-dashed transition-all duration-300 flex flex-col items-center gap-2 ${
-                            bet.status === 'open'
-                            ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/50 text-yellow-500'
-                            : 'border-white/5 bg-black/40 text-gray-500 opacity-50 cursor-not-allowed'
-                        }`}
+ bet.status === 'open'
+ ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/50 text-yellow-500'
+ : 'border-white/5 bg-black/40 text-gray-500 opacity-50 cursor-not-allowed'
+ }`}
                     >
                         <TrendingUp size={24} />
                         <span className="text-sm font-black uppercase italic tracking-tighter">
@@ -108,12 +108,12 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                 <div
                                     key={option.id}
                                     className={`relative group/option p-5 rounded-2xl border transition-all duration-300 overflow-hidden ${
-                                        bet.status === 'open' 
-                                        ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:scale-[1.02] active:scale-95' 
-                                        : isWinner 
-                                            ? 'bg-green-500/20 border-green-500/50 grayscale-0' 
-                                            : 'bg-black/40 border-white/5 opacity-50 grayscale'
-                                    }`}
+ bet.status === 'open' 
+ ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:scale-[1.02] active:scale-95' 
+ : isWinner 
+ ? 'bg-green-500/20 border-green-500/50 grayscale-0' 
+ : 'bg-black/40 border-white/5 opacity-50 grayscale'
+ }`}
                                 >
                                     {/* Percentage bar background */}
                                     <div 
@@ -167,12 +167,12 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
 
             {/* Status Footer */}
             <div className={`px-8 py-3 border-t border-white/5 flex items-center justify-between ${
-                bet.status === 'open' ? 'bg-anvil-red/5' : 'bg-black/20'
-            }`}>
+ bet.status === 'open' ? 'bg-anvil-red/5' : 'bg-black/20'
+ }`}>
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${
-                        bet.status === 'open' ? 'bg-anvil-red animate-pulse' : 'bg-gray-600'
-                    }`} />
+ bet.status === 'open' ? 'bg-anvil-red animate-pulse' : 'bg-gray-600'
+ }`} />
                     <span className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500">
                         {bet.status === 'open' ? 'En Vivo / Abierta' : bet.status === 'resolved' ? 'Resuelta' : 'Cerrada'}
                     </span>

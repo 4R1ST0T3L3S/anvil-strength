@@ -207,30 +207,30 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                                         transition={{ delay: index * 0.05 }}
                                         key={athlete.id}
                                         className={`group relative bg-black/40 border border-white/10 rounded-2xl md:rounded-[2rem] p-4 md:p-6 flex items-center gap-3 md:gap-6 hover:bg-white/5 hover:border-white/20 transition-all overflow-hidden ${
-                                            index === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-yellow-500/30 shadow-[inset_4px_0_0_#eab308]' :
-                                            index === 1 ? 'bg-gradient-to-r from-gray-400/10 to-transparent border-gray-400/30 shadow-[inset_4px_0_0_#9ca3af]' :
-                                            index === 2 ? 'bg-gradient-to-r from-amber-700/10 to-transparent border-amber-700/30 shadow-[inset_4px_0_0_#b45309]' :
-                                            ''
-                                        }`}
+ index === 0 ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-yellow-500/30 shadow-[inset_4px_0_0_#eab308]' :
+ index === 1 ? 'bg-gradient-to-r from-gray-400/10 to-transparent border-gray-400/30 shadow-[inset_4px_0_0_#9ca3af]' :
+ index === 2 ? 'bg-gradient-to-r from-amber-700/10 to-transparent border-amber-700/30 shadow-[inset_4px_0_0_#b45309]' :
+ ''
+ }`}
                                     >
                                         {/* Rank Number */}
                                         <div className={`w-8 md:w-12 shrink-0 flex flex-col items-center justify-center font-black italic tracking-tighter ${
-                                            index === 0 ? 'text-yellow-500 text-3xl md:text-5xl drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]' :
-                                            index === 1 ? 'text-gray-400 text-2xl md:text-4xl' :
-                                            index === 2 ? 'text-amber-700 text-2xl md:text-4xl' :
-                                            'text-gray-600 text-xl md:text-3xl'
-                                        }`}>
+ index === 0 ? 'text-yellow-500 text-3xl md:text-5xl drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]' :
+ index === 1 ? 'text-gray-400 text-2xl md:text-4xl' :
+ index === 2 ? 'text-amber-700 text-2xl md:text-4xl' :
+ 'text-gray-600 text-xl md:text-3xl'
+ }`}>
                                             {index + 1}
                                             {index === 0 && <span className="text-t-2xs font-black tracking-widest uppercase mt-1 not-italic">MVP</span>}
                                         </div>
 
                                         {/* Avatar */}
                                         <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden shrink-0 border-2 ${
-                                            index === 0 ? 'border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
-                                            index === 1 ? 'border-gray-400' :
-                                            index === 2 ? 'border-amber-700' :
-                                            'border-white/10'
-                                        }`}>
+ index === 0 ? 'border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]' :
+ index === 1 ? 'border-gray-400' :
+ index === 2 ? 'border-amber-700' :
+ 'border-white/10'
+ }`}>
                                             {athlete.avatar_url ? (
                                                 <img src={athlete.avatar_url} alt={athlete.full_name} className="w-full h-full object-cover" />
                                             ) : (

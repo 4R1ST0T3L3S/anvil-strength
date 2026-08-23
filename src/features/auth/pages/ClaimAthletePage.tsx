@@ -122,7 +122,7 @@ export function ClaimAthletePage() {
                                     placeholder="Tu correo"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken py-3 pl-10 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand"
+                                    className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken py-3 pl-10 pr-3 text-t-sm text-ink transition-colors duration-fast focus:border-brand"
                                 />
                             </div>
                             <div className="relative">
@@ -137,7 +137,7 @@ export function ClaimAthletePage() {
                                     placeholder="Contraseña (mínimo 8 caracteres)"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken py-3 pl-10 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand"
+                                    className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken py-3 pl-10 pr-3 text-t-sm text-ink transition-colors duration-fast focus:border-brand"
                                 />
                             </div>
 

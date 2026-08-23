@@ -96,9 +96,9 @@ export const DayCard = memo(function DayCard({
                     aria-haspopup="menu"
                     title="Agendar en un día de la semana"
                     className={`rounded-chip px-1.5 py-0.5 text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
-                        ? 'bg-brand-quiet font-semibold text-brand'
-                        : 'text-ink-subtle hover:text-ink'
-                        }`}
+ ? 'bg-brand-quiet font-semibold text-brand'
+ : 'text-ink-subtle hover:text-ink'
+ }`}
                 >
                     {scheduled || `Día ${session.day_number}`}
                 </button>
@@ -124,7 +124,7 @@ export const DayCard = memo(function DayCard({
                             role="menuitem"
                             onClick={() => { onChangeWeekday(session.id, d.key); setPickerOpen(false); }}
                             className={`flex w-full items-center justify-between rounded-field px-2.5 py-2 text-left text-t-sm transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink ${session.day_of_week === d.key ? 'font-semibold text-ink' : 'text-ink-muted'
-                                }`}
+ }`}
                         >
                             {d.label}
                             {session.day_of_week === d.key && <Check size={13} aria-hidden="true" />}

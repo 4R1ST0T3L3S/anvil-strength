@@ -38,7 +38,7 @@ function CustomSelect({
             </label>
             <button
                 onClick={() => setIsOpen(true)}
-                className="w-full flex items-center justify-center focus:outline-none text-center relative"
+                className="w-full flex items-center justify-center text-center relative"
             >
                 <span className="text-4xl font-black text-white italic truncate px-4">
                     {options.find(opt => opt.value === value)?.label || value}
@@ -83,9 +83,9 @@ function CustomSelect({
                                             setIsOpen(false);
                                         }}
                                         className={`w-full flex items-center justify-between px-5 py-4 rounded-xl text-left transition-all mb-1 last:mb-0 ${value === option.value
-                                            ? 'bg-white text-black'
-                                            : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                                            }`}
+ ? 'bg-white text-black'
+ : 'text-gray-400 hover:bg-white/5 hover:text-white'
+ }`}
                                     >
                                         <span className={`text-lg uppercase tracking-wider ${value === option.value ? 'font-black italic' : 'font-bold'}`}>
                                             {option.label}
@@ -139,7 +139,7 @@ function WheelSelector({
             </label>
             <button
                 onClick={() => setIsOpen(true)}
-                className="w-full flex items-center justify-center focus:outline-none text-center relative"
+                className="w-full flex items-center justify-center text-center relative"
             >
                 <span className="text-4xl font-black text-white italic truncate px-4">
                     {options.find(opt => opt.value === value)?.label || value}
@@ -419,7 +419,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             value={weight}
                                             onChange={(e) => setWeight(e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-transparent text-4xl font-black text-white focus:outline-none placeholder:text-gray-800 italic text-center"
+                                            className="w-full bg-transparent text-4xl font-black text-white placeholder:text-gray-800 italic text-center"
                                         />
                                     </div>
 
@@ -433,7 +433,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             value={reps}
                                             onChange={(e) => setReps(e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-transparent text-4xl font-black text-white focus:outline-none text-center placeholder:text-gray-800 italic"
+                                            className="w-full bg-transparent text-4xl font-black text-white text-center placeholder:text-gray-800 italic"
                                         />
                                     </div>
 
@@ -456,7 +456,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                                 value={velocity}
                                                 onChange={(e) => setVelocity(e.target.value)}
                                                 placeholder="0.0"
-                                                className="w-full bg-transparent text-3xl font-black text-white focus:outline-none placeholder:text-gray-800 italic text-center"
+                                                className="w-full bg-transparent text-3xl font-black text-white placeholder:text-gray-800 italic text-center"
                                             />
                                         </div>
                                     )}
@@ -514,10 +514,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                                     onClick={handleSavePR}
                                                     disabled={isSaving}
                                                     className={`absolute bottom-0 translate-y-16 flex items-center gap-2 px-6 py-2 rounded-xl font-black uppercase text-xs tracking-widest transition-all ${
-                                                        celebration 
-                                                            ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
-                                                            : 'bg-white text-black hover:bg-gray-200 shadow-xl'
-                                                    }`}
+ celebration 
+ ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
+ : 'bg-white text-black hover:bg-gray-200 shadow-xl'
+ }`}
                                                 >
                                                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : celebration ? <Trophy size={16} /> : <Save size={16} />}
                                                     {celebration ? '¡PR Guardado!' : 'Guardar Nuevo PR'}

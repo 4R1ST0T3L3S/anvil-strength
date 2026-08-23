@@ -91,7 +91,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Ej: Bloque fuerza enero"
-                            className="h-12 w-full rounded-field border border-subtle bg-surface-sunken px-4 text-t-base font-bold text-ink outline-none transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle focus:border-brand"
+                            className="h-12 w-full rounded-field border border-subtle bg-surface-sunken px-4 text-t-base font-bold text-ink transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle focus:border-brand"
                             autoFocus
                         />
                     </label>
@@ -107,10 +107,10 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                                     aria-label={c.label}
                                     title={c.label}
                                     className={`h-9 w-9 rounded-pill border-2 transition-all duration-fast ease-snap ${
-                                        color === c.hex
-                                            ? 'scale-110 border-ink shadow-raise'
-                                            : 'border-transparent hover:scale-105 hover:border-[var(--border-strong)]'
-                                    }`}
+ color === c.hex
+ ? 'scale-110 border-ink shadow-raise'
+ : 'border-transparent hover:scale-105 hover:border-[var(--border-strong)]'
+ }`}
                                     style={{ backgroundColor: c.hex }}
                                 />
                             ))}

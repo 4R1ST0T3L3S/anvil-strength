@@ -364,7 +364,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Buscar ejercicio…"
-                                    className="w-full rounded-field border border-[var(--border-default)] bg-surface-canvas py-2 pl-8 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand focus:outline-none"
+                                    className="w-full rounded-field border border-[var(--border-default)] bg-surface-canvas py-2 pl-8 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                                 />
                             </div>
 

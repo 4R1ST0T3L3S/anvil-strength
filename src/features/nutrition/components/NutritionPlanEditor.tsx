@@ -208,7 +208,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                 type="number" 
                                 value={macrosForm.calories || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, calories: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="w-full bg-[#111111] text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red"
                             />
                         </div>
                         <div>
@@ -217,7 +217,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                 type="number" 
                                 value={macrosForm.protein || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, protein: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-blue-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-blue-500 outline-none"
+                                className="w-full bg-[#111111] text-blue-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -226,7 +226,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                 type="number" 
                                 value={macrosForm.carbs || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, carbs: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-yellow-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-yellow-500 outline-none"
+                                className="w-full bg-[#111111] text-yellow-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-yellow-500"
                             />
                         </div>
                         <div>
@@ -235,7 +235,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                 type="number" 
                                 value={macrosForm.fats || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, fats: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-orange-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-orange-500 outline-none"
+                                className="w-full bg-[#111111] text-orange-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-orange-500"
                             />
                         </div>
                         <div className="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
@@ -341,7 +341,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             placeholder="Ej. Hipertrofia Bloque 1, Fuerza Máxima..."
                             value={configForm.training_block_id} 
                             onChange={(e) => setConfigForm({...configForm, training_block_id: e.target.value})}
-                            className="w-full bg-[#0a0a0a] text-white px-4 py-3 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                            className="w-full bg-[#0a0a0a] text-white px-4 py-3 rounded border border-zinc-800 focus:border-anvil-red"
                         />
                     </div>
 
@@ -359,7 +359,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewTag('');
                                     }
                                 }}
-                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red"
                             />
                             <button 
                                 onClick={() => {
@@ -397,7 +397,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewGuideline('');
                                     }
                                 }}
-                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red"
                             />
                             <button 
                                 onClick={() => {
@@ -435,7 +435,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewSupplement('');
                                     }
                                 }}
-                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none"
+                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red"
                             />
                             <button 
                                 onClick={() => {

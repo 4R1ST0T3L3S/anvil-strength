@@ -106,7 +106,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     value={customName}
                                     onChange={(e) => setCustomName(e.target.value)}
                                     placeholder="Ej: Sentadilla con Pausa 3s"
-                                    className="w-full bg-zinc-900 border border-zinc-800 text-white p-3 rounded-lg focus:border-anvil-red outline-none transition-colors"
+                                    className="w-full bg-zinc-900 border border-zinc-800 text-white p-3 rounded-lg focus:border-anvil-red transition-colors"
                                     autoFocus
                                 />
                             </div>
@@ -115,7 +115,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                 <select 
                                     value={customGroup}
                                     onChange={(e) => setCustomGroup(e.target.value)}
-                                    className="w-full bg-zinc-900 border border-zinc-800 text-white p-3 rounded-lg focus:border-anvil-red outline-none transition-colors"
+                                    className="w-full bg-zinc-900 border border-zinc-800 text-white p-3 rounded-lg focus:border-anvil-red transition-colors"
                                 >
                                     {MUSCLE_GROUPS.filter(g => g !== 'Todos').map(g => (
                                         <option key={g} value={g}>{g}</option>
@@ -152,7 +152,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                         placeholder="Buscar ejercicio..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        className="w-full bg-zinc-900 border border-zinc-800 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+                                        className="w-full bg-zinc-900 border border-zinc-800 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
                                         autoFocus
                                     />
                                 </div>
@@ -172,10 +172,10 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     key={group}
                                     onClick={() => setActiveTab(group)}
                                     className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors mr-2 ${
-                                        activeTab === group 
-                                        ? 'bg-anvil-red text-black' 
-                                        : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
-                                    }`}
+ activeTab === group 
+ ? 'bg-anvil-red text-black' 
+ : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+ }`}
                                 >
                                     {group}
                                 </button>

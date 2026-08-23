@@ -1720,9 +1720,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                     aria-selected={view === key}
                                     onClick={() => setView(key)}
                                     className={`flex items-center gap-1.5 rounded-chip px-3 py-1.5 text-t-xs font-semibold transition-colors duration-fast ease-snap ${view === key
-                                        ? 'bg-brand text-brand-ink'
-                                        : 'text-ink-subtle hover:text-ink'
-                                        }`}
+ ? 'bg-brand text-brand-ink'
+ : 'text-ink-subtle hover:text-ink'
+ }`}
                                 >
                                     <Icon size={13} aria-hidden="true" />
                                     {label}
@@ -1760,7 +1760,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                     maxLength={1000}
                                     autoFocus
                                     placeholder="Objetivos del bloque, por qué se hacen ciertas cosas, enfoque de las semanas..."
-                                    className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand focus:outline-none"
+                                    className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
                                 />
                                 <div className="flex justify-end gap-2">
                                     <Button variant="ghost" size="sm" onClick={() => setIsEditingDescription(false)}>
@@ -1885,7 +1885,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                                     type="text"
                                                     value={weekNameInput}
                                                     onChange={(e) => setWeekNameInput(e.target.value)}
-                                                    className="flex-1 min-w-0 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-base text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand focus:outline-none"
+                                                    className="flex-1 min-w-0 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-base text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
                                                     placeholder="Nombre de la semana"
                                                     autoFocus
                                                     onKeyDown={(e) => {

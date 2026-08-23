@@ -176,7 +176,7 @@ export function ProgressionModal({
                             rows={Math.max(6, weekCount + 1)}
                             spellCheck={false}
                             placeholder={PLACEHOLDER}
-                            className="mt-1.5 w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken p-3 font-mono text-t-sm text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                            className="mt-1.5 w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken p-3 font-mono text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
                         />
                     </label>
 
@@ -222,7 +222,7 @@ export function ProgressionModal({
                                     value={templateName}
                                     onChange={(e) => setTemplateName(e.target.value)}
                                     placeholder="Guardar como…"
-                                    className="min-w-0 flex-1 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-sm text-ink outline-none transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                                    className="min-w-0 flex-1 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
                                 />
                                 <Button
                                     size="sm"

@@ -69,8 +69,8 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                 key={t}
                                 onClick={() => setType(t)}
                                 className={`px-4 py-1.5 rounded-md text-xs font-black uppercase transition-all ${
-                                    type === t ? 'bg-anvil-red text-white' : 'text-gray-400 hover:text-white'
-                                }`}
+ type === t ? 'bg-anvil-red text-white' : 'text-gray-400 hover:text-white'
+ }`}
                             >
                                 {t === 'daily' ? 'Diario' : 'Semanal'}
                             </button>
@@ -145,8 +145,8 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                     <div
                                         key={a.id}
                                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold ${
-                                            a.qtype === 'scale' ? scaleColor(Number(a.value)) : 'text-gray-300 bg-white/5 border-white/10'
-                                        }`}
+ a.qtype === 'scale' ? scaleColor(Number(a.value)) : 'text-gray-300 bg-white/5 border-white/10'
+ }`}
                                     >
                                         <span className="text-gray-400 font-medium">{a.label}:</span>
                                         <span className="font-black">
@@ -307,7 +307,7 @@ function CoachResponseEditorModal({
                                     type={type === 'daily' ? 'date' : 'week'}
                                     value={periodKey}
                                     onChange={(e) => setPeriodKey(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-anvil-red/50 transition-colors"
                                 />
                                 {overwrites && (
                                     <p className="text-[11px] font-bold text-yellow-400 mt-2">
@@ -441,7 +441,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                     placeholder='Ej: "Rellénalo la noche anterior. La escala es de 1 a 10."'
                                     rows={2}
                                     maxLength={500}
-                                    className="w-full resize-y bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors"
+                                    className="w-full resize-y bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:border-anvil-red/50 transition-colors"
                                 />
                                 <p className="mt-1 text-[10px] text-gray-600">Aparece arriba del todo, antes de la primera pregunta.</p>
                             </div>
@@ -455,12 +455,12 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                             onChange={(e) => updateQuestion(i, { label: e.target.value })}
                                             placeholder="Texto de la pregunta..."
                                             maxLength={120}
-                                            className="flex-1 bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-anvil-red/50 transition-colors min-w-0"
+                                            className="flex-1 bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:border-anvil-red/50 transition-colors min-w-0"
                                         />
                                         <select
                                             value={q.qtype}
                                             onChange={(e) => updateQuestion(i, { qtype: e.target.value as QuestionType })}
-                                            className="bg-black/30 border border-white/5 rounded-lg py-2 px-2 text-gray-300 text-xs focus:outline-none focus:border-anvil-red/50 shrink-0"
+                                            className="bg-black/30 border border-white/5 rounded-lg py-2 px-2 text-gray-300 text-xs focus:border-anvil-red/50 shrink-0"
                                         >
                                             {(Object.keys(QTYPE_LABELS) as QuestionType[]).map(t => (
                                                 <option key={t} value={t}>{QTYPE_LABELS[t]}</option>
@@ -480,7 +480,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         onChange={(e) => updateQuestion(i, { help: e.target.value || undefined })}
                                         placeholder="Ayuda bajo la pregunta (opcional): cómo se responde, qué escala usar..."
                                         maxLength={160}
-                                        className="w-full bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:border-anvil-red/50 transition-colors"
                                     />
                                     {/* EN QUÉ GRÁFICA SE PINTA (K9).
                                         Dos preguntas solo comparten eje Y si
@@ -494,7 +494,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         <select
                                             value={q.axis ?? resolveAxis(q)}
                                             onChange={(e) => updateQuestion(i, { axis: e.target.value as FormAxis })}
-                                            className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                            className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:border-anvil-red/50"
                                         >
                                             {SELECTABLE_AXES.map(a => (
                                                 <option key={a} value={a}>{AXIS_DEFINITIONS[a].label}</option>
@@ -506,7 +506,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                             onChange={(e) => updateQuestion(i, { unit: e.target.value || undefined })}
                                             placeholder="Unidad"
                                             maxLength={12}
-                                            className="w-24 shrink-0 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                            className="w-24 shrink-0 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:border-anvil-red/50"
                                         />
                                     </div>
                                     {q.qtype === 'scale' && (
@@ -517,7 +517,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                                 onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, minLabel: e.target.value || undefined } })}
                                                 placeholder="Extremo bajo (1)"
                                                 maxLength={40}
-                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:border-anvil-red/50"
                                             />
                                             <input
                                                 type="text"
@@ -525,7 +525,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                                 onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, maxLabel: e.target.value || undefined } })}
                                                 placeholder="Extremo alto (10)"
                                                 maxLength={40}
-                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:outline-none focus:border-anvil-red/50"
+                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:border-anvil-red/50"
                                             />
                                         </div>
                                     )}

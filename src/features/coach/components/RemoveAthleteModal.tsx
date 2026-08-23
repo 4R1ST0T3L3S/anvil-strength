@@ -169,14 +169,14 @@ export function RemoveAthleteModal({ open, onClose, athlete, onDone }: RemoveAth
                                         else setConfirmando(esperandoConfirmacion ? null : 'end');
                                     }}
                                     className={`group flex w-full items-center gap-3.5 rounded-card border p-4 text-left transition-colors duration-fast ease-snap disabled:opacity-50 ${
-                                        peligro
-                                            ? 'border-[var(--danger-quiet)] hover:border-danger/50 hover:bg-[var(--danger-quiet)]'
-                                            : 'border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-surface-overlay'
-                                    } ${esperandoConfirmacion ? 'border-[var(--border-strong)] bg-surface-overlay' : ''}`}
+ peligro
+ ? 'border-[var(--danger-quiet)] hover:border-danger/50 hover:bg-[var(--danger-quiet)]'
+ : 'border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-surface-overlay'
+ } ${esperandoConfirmacion ? 'border-[var(--border-strong)] bg-surface-overlay' : ''}`}
                                 >
                                     <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-field ${
-                                        peligro ? 'bg-[var(--danger-quiet)] text-danger' : 'bg-surface-sunken text-ink-muted'
-                                    }`}>
+ peligro ? 'bg-[var(--danger-quiet)] text-danger' : 'bg-surface-sunken text-ink-muted'
+ }`}>
                                         {ocupado
                                             ? <Loader size={16} className="animate-spin" aria-hidden="true" />
                                             : <Icon size={16} aria-hidden="true" />}

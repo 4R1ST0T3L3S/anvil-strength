@@ -84,9 +84,9 @@ export function CopyDayMenu({
                 title="Copiar este día"
                 aria-label={`Copiar ${sessionLabel}`}
                 className={`rounded-field p-1.5 transition-colors duration-fast ease-snap ${open
-                    ? 'bg-brand-quiet text-brand'
-                    : 'text-ink-faint opacity-0 hover:text-ink focus-visible:opacity-100 group-hover/day:opacity-100'
-                    }`}
+ ? 'bg-brand-quiet text-brand'
+ : 'text-ink-faint opacity-0 hover:text-ink focus-visible:opacity-100 group-hover/day:opacity-100'
+ }`}
             >
                 <ClipboardCopy size={14} aria-hidden="true" />
             </button>

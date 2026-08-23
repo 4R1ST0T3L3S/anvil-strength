@@ -179,7 +179,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                             value={oneRM}
                                             onChange={(e) => setOneRM(e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-transparent text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic"
+                                            className="w-full bg-transparent text-4xl md:text-5xl font-black text-white placeholder:text-gray-800 italic"
                                         />
                                         <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">{unit}</span>
                                     </div>
@@ -195,7 +195,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                             value={targetWeight}
                                             onChange={(e) => setTargetWeight(e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-transparent text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic"
+                                            className="w-full bg-transparent text-4xl md:text-5xl font-black text-white placeholder:text-gray-800 italic"
                                         />
                                         <span className="text-xl md:text-3xl font-black text-gray-800 uppercase italic">{unit}</span>
                                     </div>
@@ -239,13 +239,13 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.05 }}
                                             className={`flex items-center justify-between p-5 md:p-6 rounded-[1.5rem] border-2 transition-all ${set.percentage === 100
-                                                ? 'bg-blue-600/20 border-blue-600 shadow-lg shadow-blue-600/10'
-                                                : 'bg-black/40 border-white/5 hover:border-white/10'
-                                                }`}
+ ? 'bg-blue-600/20 border-blue-600 shadow-lg shadow-blue-600/10'
+ : 'bg-black/40 border-white/5 hover:border-white/10'
+ }`}
                                         >
                                             <div className="flex items-center gap-4 md:gap-6">
                                                 <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center font-black italic text-lg md:text-xl ${set.percentage === 100 ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-500'
-                                                    }`}>
+ }`}>
                                                     {i + 1}
                                                 </div>
                                                 <div>

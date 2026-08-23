@@ -100,8 +100,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             key={item.label}
                             onClick={item.onClick}
                             className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-colors duration-fast active:scale-[0.98] ${
-                                item.isActive ? 'text-white' : 'text-ink-subtle hover:text-white hover:bg-white/[0.04]'
-                            }`}
+ item.isActive ? 'text-white' : 'text-ink-subtle hover:text-white hover:bg-white/[0.04]'
+ }`}
                         >
                             {item.isActive && (
                                 <motion.span
@@ -238,8 +238,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         // de lo que acierta, y esta barra se usa de pie, con una
                         // mano y el movil moviendose.
                         className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-card px-1 py-1.5 transition-colors duration-fast ${
-                            item.isActive ? 'text-brand' : 'text-ink-subtle'
-                        }`}
+ item.isActive ? 'text-brand' : 'text-ink-subtle'
+ }`}
                     >
                         {item.isActive && (
                             <motion.span
@@ -337,8 +337,8 @@ function AccountMenu({
                                 role="menuitem"
                                 onClick={() => { setOpen(false); item.onClick(); }}
                                 className={`flex w-full items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-semibold transition-colors duration-fast ease-snap hover:bg-surface-raised ${
-                                    item.isActive ? 'text-brand' : 'text-ink-muted hover:text-ink'
-                                }`}
+ item.isActive ? 'text-brand' : 'text-ink-muted hover:text-ink'
+ }`}
                             >
                                 <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>
                                 {item.label}

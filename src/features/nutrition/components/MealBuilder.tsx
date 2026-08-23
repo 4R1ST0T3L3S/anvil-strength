@@ -137,7 +137,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                             placeholder="Escribe el nombre de la comida..."
                             value={newMealName === 'Otros' ? '' : newMealName}
                             onChange={(e) => setNewMealName(e.target.value)}
-                            className="w-full bg-[#111111] text-white px-4 py-2 rounded-lg border border-zinc-800 focus:border-anvil-red outline-none mt-2"
+                            className="w-full bg-[#111111] text-white px-4 py-2 rounded-lg border border-zinc-800 focus:border-anvil-red mt-2"
                             autoFocus
                         />
                     )}
@@ -327,7 +327,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                 type="number" 
                                                 value={adjustTargets.protein || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, protein: Number(e.target.value)})}
-                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-blue-400 font-bold text-sm outline-none focus:border-blue-500/50"
+                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-blue-400 font-bold text-sm focus:border-blue-500/50"
                                             />
                                         </div>
                                         <div>
@@ -336,7 +336,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                 type="number" 
                                                 value={adjustTargets.carbs || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, carbs: Number(e.target.value)})}
-                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-yellow-400 font-bold text-sm outline-none focus:border-yellow-500/50"
+                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-yellow-400 font-bold text-sm focus:border-yellow-500/50"
                                             />
                                         </div>
                                         <div>
@@ -345,7 +345,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                 type="number" 
                                                 value={adjustTargets.fats || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, fats: Number(e.target.value)})}
-                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-orange-400 font-bold text-sm outline-none focus:border-orange-500/50"
+                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-orange-400 font-bold text-sm focus:border-orange-500/50"
                                             />
                                         </div>
                                     </div>

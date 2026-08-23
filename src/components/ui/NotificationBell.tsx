@@ -170,8 +170,8 @@ export function NotificationBell({ userId }: { userId: string }) {
                                     <div
                                         key={n.id}
                                         className={`p-4 border-b border-white/5 last:border-b-0 transition-colors ${
-                                            n.is_read ? 'opacity-60' : 'bg-anvil-red/5'
-                                        }`}
+ n.is_read ? 'opacity-60' : 'bg-anvil-red/5'
+ }`}
                                     >
                                         <div className="flex items-start gap-3">
                                             {!n.is_read && <span className="w-2 h-2 bg-anvil-red rounded-full mt-1.5 shrink-0" />}
@@ -193,10 +193,10 @@ export function NotificationBell({ userId }: { userId: string }) {
                                     onClick={handleTogglePush}
                                     disabled={push.isLoading}
                                     className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide transition-colors disabled:opacity-50 ${
-                                        push.isSubscribed
-                                            ? 'bg-white/5 text-gray-400 hover:text-white'
-                                            : 'bg-anvil-red hover:bg-red-700 text-white'
-                                    }`}
+ push.isSubscribed
+ ? 'bg-white/5 text-gray-400 hover:text-white'
+ : 'bg-anvil-red hover:bg-red-700 text-white'
+ }`}
                                 >
                                     {push.isLoading ? <Loader className="animate-spin" size={13} /> : push.isSubscribed ? <BellOff size={13} /> : <BellRing size={13} />}
                                     {push.isSubscribed ? 'Desactivar avisos push' : 'Activar avisos push (app cerrada)'}

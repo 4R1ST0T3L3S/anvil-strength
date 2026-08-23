@@ -190,7 +190,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                     {activeTab === 'fonts' && (<>
                         <p className="text-xs text-zinc-500 uppercase font-bold mb-2">Nombre del Club / Entrenador</p>
                         <input type="text" value={s.clubName} onChange={e => update({ clubName: e.target.value })}
-                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none" />
+                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red" />
                         <p className="text-xs text-zinc-500 uppercase font-bold mt-4 mb-2">Tipografía Principal</p>
                         <div className="grid grid-cols-2 gap-2">
                             {['Inter', 'Roboto', 'Outfit', 'Montserrat'].map(f => (
@@ -247,7 +247,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                     <div>
                         <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Nombre del archivo</label>
                         <input type="text" value={pdfFileName} onChange={e => setPdfFileName(e.target.value)} placeholder="Plan_Entrenamiento"
-                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none" />
+                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red" />
                     </div>
                     <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-anvil-red hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         {isGenerating ? <><Loader2 size={18} className="animate-spin" /> Generando...</> : <><Download size={18} /> Descargar PDF</>}

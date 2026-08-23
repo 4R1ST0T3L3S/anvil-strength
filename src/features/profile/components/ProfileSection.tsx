@@ -186,10 +186,10 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
 
             {message && (
                 <div className={`mb-6 flex items-center gap-3 rounded-card border p-4 ${
-                    message.type === 'success'
-                        ? 'border-[var(--success-line,var(--border-strong))] bg-[var(--success-quiet)] text-success'
-                        : 'border-[var(--danger-line,var(--border-strong))] bg-[var(--danger-quiet)] text-danger'
-                }`}>
+ message.type === 'success'
+ ? 'border-[var(--success-line,var(--border-strong))] bg-[var(--success-quiet)] text-success'
+ : 'border-[var(--danger-line,var(--border-strong))] bg-[var(--danger-quiet)] text-danger'
+ }`}>
                     {message.type === 'success' ? <CheckCircle2 size={18} aria-hidden="true" /> : <AlertCircle size={18} aria-hidden="true" />}
                     <p className="text-t-sm font-bold">{message.text}</p>
                 </div>
@@ -452,7 +452,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
 }
 
 const INPUT =
-    'h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink outline-none transition-colors duration-fast focus:border-brand';
+    'h-11 w-full rounded-field border border-subtle bg-surface-sunken px-3 text-t-sm text-ink transition-colors duration-fast focus:border-brand';
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
     return (
@@ -473,7 +473,7 @@ function PrField({ label, value, onChange }: { label: string; value: string; onC
                 value={value}
                 onChange={e => onChange(e.target.value)}
                 placeholder="0"
-                className="w-20 bg-transparent text-right text-t-lg font-black tabular-nums text-ink outline-none"
+                className="w-20 bg-transparent text-right text-t-lg font-black tabular-nums text-ink"
             />
         </div>
     );

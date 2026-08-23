@@ -163,10 +163,10 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
             <button
                 onClick={() => setActiveMetric(value as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest ${
-                    isActive 
-                        ? 'bg-anvil-red text-black border-anvil-red shadow-lg' 
-                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
-                }`}
+ isActive 
+ ? 'bg-anvil-red text-black border-anvil-red shadow-lg' 
+ : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
+ }`}
             >
                 {label}
             </button>

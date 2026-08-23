@@ -117,10 +117,10 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                                 onClick={() => patch({ exerciseType: key })}
                                 aria-pressed={setup.exerciseType === key}
                                 className={`rounded-field border px-3 py-2 text-t-2xs font-semibold transition-colors duration-fast ${
-                                    setup.exerciseType === key
-                                        ? 'border-brand-line bg-brand-quiet text-ink'
-                                        : 'border-subtle bg-surface-sunken text-ink-muted hover:text-ink'
-                                }`}
+ setup.exerciseType === key
+ ? 'border-brand-line bg-brand-quiet text-ink'
+ : 'border-subtle bg-surface-sunken text-ink-muted hover:text-ink'
+ }`}
                             >
                                 {EXERCISE_LABEL[key]}
                             </button>
@@ -153,7 +153,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                                 value={setup.loadKg || ''}
                                 placeholder="0"
                                 onChange={e => patch({ loadKg: Number(e.target.value) })}
-                                className="w-24 bg-transparent text-center text-base font-bold tabular-nums text-ink outline-none sm:text-t-sm"
+                                className="w-24 bg-transparent text-center text-base font-bold tabular-nums text-ink sm:text-t-sm"
                             />
                             <button
                                 type="button"
@@ -183,7 +183,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                     <select
                         value={setup.barTypeId}
                         onChange={e => patch({ barTypeId: e.target.value })}
-                        className="w-full rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base font-semibold text-ink outline-none transition-colors duration-fast focus:border-brand-line sm:text-t-xs"
+                        className="w-full rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base font-semibold text-ink transition-colors duration-fast focus:border-brand-line sm:text-t-xs"
                     >
                         {BAR_TYPES.map(b => (
                             <option key={b.id} value={b.id}>

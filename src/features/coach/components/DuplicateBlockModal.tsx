@@ -152,7 +152,7 @@ export function DuplicateBlockModal({
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar atleta…"
-                                className="w-full rounded-field border border-subtle bg-surface-sunken py-2.5 pl-9 pr-3 text-t-sm text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                                className="w-full rounded-field border border-subtle bg-surface-sunken py-2.5 pl-9 pr-3 text-t-sm text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                             />
                         </div>
 
@@ -165,15 +165,15 @@ export function DuplicateBlockModal({
                                             onClick={() => toggle(candidate.id)}
                                             aria-pressed={checked}
                                             className={`flex w-full items-center gap-3 rounded-field px-3 py-2.5 text-left transition-colors duration-fast ease-snap active:scale-[0.99] ${
-                                                checked ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-overlay'
-                                            }`}
+ checked ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-overlay'
+ }`}
                                         >
                                             <span
                                                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-chip border transition-colors duration-fast ${
-                                                    checked
-                                                        ? 'border-brand bg-brand text-brand-ink'
-                                                        : 'border-[var(--border-strong)]'
-                                                }`}
+ checked
+ ? 'border-brand bg-brand text-brand-ink'
+ : 'border-[var(--border-strong)]'
+ }`}
                                             >
                                                 {checked && <Check size={13} strokeWidth={3.5} aria-hidden="true" />}
                                             </span>

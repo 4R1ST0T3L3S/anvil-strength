@@ -47,6 +47,42 @@ module.exports = {
                     'Usa fetchRoster/fetchRosterIds/useCoachRoster de ' +
                     'src/features/coach/hooks/useCoachRoster.ts.',
             },
+
+            /**
+             * `outline-none` SIN ANILLO DE SUSTITUCIÓN DEJA EL CONTROL SIN FOCO.
+             *
+             * Había 156 repartidos por la app: 97 sueltos (que matan el
+             * contorno SIEMPRE, no solo al enfocar) y 59 con el prefijo
+             * `focus:`. Ninguno de los 97 traía un anillo propio.
+             *
+             * Y no bastaba con el `:focus-visible` global de index.css:
+             * `.focus\:outline-none:focus` tiene especificidad (0,2,0) y
+             * `:focus-visible` (0,1,0), así que la utilidad GANA. El anillo
+             * estaba escrito, y perdía.
+             *
+             * Lo que sí vale es `focus-visible:outline-none` acompañado de
+             * `focus-visible:ring-*`, que es lo que hace `Button`: ahí el
+             * contorno se sustituye por un anillo, no se borra. Esta regla lo
+             * permite a propósito y solo prohíbe las dos formas destructivas.
+             */
+            {
+                selector: "Literal[value=/(^|\\s)(focus:)?outline-none(\\s|$)/]",
+                message:
+                    'No uses `outline-none` ni `focus:outline-none`: borran el anillo de foco y ' +
+                    'ganan por especificidad al `:focus-visible` global de index.css, así que el ' +
+                    'control queda inutilizable con teclado. Si necesitas un foco propio, usa ' +
+                    '`focus-visible:outline-none` JUNTO A `focus-visible:ring-2 focus-visible:ring-brand` ' +
+                    '(ver src/components/ui/Button.tsx). Si no, no pongas nada: el anillo ya viene solo.',
+            },
+            {
+                selector: "TemplateElement[value.raw=/(^|\\s)(focus:)?outline-none(\\s|$)/]",
+                message:
+                    'No uses `outline-none` ni `focus:outline-none`: borran el anillo de foco y ' +
+                    'ganan por especificidad al `:focus-visible` global de index.css, así que el ' +
+                    'control queda inutilizable con teclado. Si necesitas un foco propio, usa ' +
+                    '`focus-visible:outline-none` JUNTO A `focus-visible:ring-2 focus-visible:ring-brand` ' +
+                    '(ver src/components/ui/Button.tsx). Si no, no pongas nada: el anillo ya viene solo.',
+            },
         ],
     },
     overrides: [

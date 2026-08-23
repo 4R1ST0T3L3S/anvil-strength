@@ -772,7 +772,7 @@ function SetRow({
                             onChange={(e) => setDraftReps(e.target.value)}
                             placeholder="reps"
                             aria-label={`Repeticiones corregidas, serie ${index + 1}`}
-                            className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink outline-none focus:border-brand"
+                            className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink focus:border-brand"
                         />
                         <span className="text-ink-faint">×</span>
                         <input
@@ -783,7 +783,7 @@ function SetRow({
                             onChange={(e) => setDraftLoad(e.target.value)}
                             placeholder="kg"
                             aria-label={`Kilos corregidos, serie ${index + 1}`}
-                            className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink outline-none focus:border-brand"
+                            className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink focus:border-brand"
                         />
                         <span className="text-ink-faint">@</span>
                         <input
@@ -794,7 +794,7 @@ function SetRow({
                             onChange={(e) => setDraftRpe(e.target.value)}
                             placeholder="RPE"
                             aria-label={`RPE corregido, serie ${index + 1}`}
-                            className="w-14 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink outline-none focus:border-brand"
+                            className="w-14 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink focus:border-brand"
                         />
                         <button
                             onClick={handleSave}

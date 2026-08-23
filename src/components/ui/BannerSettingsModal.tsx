@@ -103,7 +103,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 value={settings.customName || ''}
                                 onChange={e => setSettings({ ...settings, customName: e.target.value })}
                                 placeholder="Ej: Mi Próximo PR"
-                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 transition-all"
+                                className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:border-anvil-red/50 transition-all"
                             />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -113,7 +113,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     type="date"
                                     value={settings.targetDate || ''}
                                     onChange={e => setSettings({ ...settings, targetDate: e.target.value })}
-                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 transition-all [color-scheme:dark]"
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:border-anvil-red/50 transition-all [color-scheme:dark]"
                                 />
                             </div>
                             <div>
@@ -124,7 +124,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     type="time"
                                     value={settings.targetTime || ''}
                                     onChange={e => setSettings({ ...settings, targetTime: e.target.value })}
-                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 transition-all [color-scheme:dark]"
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:border-anvil-red/50 transition-all [color-scheme:dark]"
                                 />
                             </div>
                         </div>
@@ -213,7 +213,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 <select
                                     value={settings.font || 'inter'}
                                     onChange={e => setSettings({ ...settings, font: e.target.value as any })}
-                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 appearance-none"
+                                    className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white focus:border-anvil-red/50 appearance-none"
                                 >
                                     <option value="inter">Inter (Moderno)</option>
                                     <option value="bebas">Bebas (Fuerte)</option>

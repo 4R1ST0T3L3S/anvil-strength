@@ -82,9 +82,9 @@ export function DangerConfirmModal({
                         autoCapitalize="none"
                         spellCheck={false}
                         aria-label={`Escribe ${confirmWord} para confirmar`}
-                        className={`w-full rounded-field border bg-surface-sunken px-3 py-2.5 text-t-base text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle ${
-                            matches ? 'border-danger' : 'border-subtle focus:border-[var(--border-strong)]'
-                        }`}
+                        className={`w-full rounded-field border bg-surface-sunken px-3 py-2.5 text-t-base text-ink transition-colors duration-fast placeholder:text-ink-subtle ${
+ matches ? 'border-danger' : 'border-subtle focus:border-[var(--border-strong)]'
+ }`}
                     />
                 </label>
 

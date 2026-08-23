@@ -276,7 +276,7 @@ function FieldRow({
                     id={id}
                     value={(value as string) ?? ''}
                     onChange={e => onChange(e.target.value || null)}
-                    className="mt-1.5 h-11 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm text-ink focus:border-[var(--brand-line)] focus:outline-none"
+                    className="mt-1.5 h-11 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm text-ink focus:border-[var(--brand-line)]"
                 >
                     <option value="">Sin especificar</option>
                     {(field.options ?? []).map(opt => (
@@ -290,7 +290,7 @@ function FieldRow({
                     onChange={e => onChange(e.target.value || null)}
                     rows={2}
                     maxLength={500}
-                    className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                    className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
                 />
             ) : (
                 <input
@@ -307,7 +307,7 @@ function FieldRow({
                         if (raw === '') return onChange(null);
                         onChange(field.type === 'number' ? Number(raw) : raw);
                     }}
-                    className="mt-1.5 h-11 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm tabular-nums text-ink focus:border-[var(--brand-line)] focus:outline-none"
+                    className="mt-1.5 h-11 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 text-t-sm tabular-nums text-ink focus:border-[var(--brand-line)]"
                 />
             )}
         </div>

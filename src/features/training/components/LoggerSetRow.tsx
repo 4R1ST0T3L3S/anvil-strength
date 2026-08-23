@@ -529,7 +529,7 @@ export function LoggerSetRow({
                                 }}
                                 placeholder="Cómo ha ido esta serie…"
                                 // text-t-base (16px): por debajo, iOS hace zoom al enfocar.
-                                className="w-full resize-none rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-t-base leading-relaxed text-ink outline-none transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
+                                className="w-full resize-none rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-t-base leading-relaxed text-ink transition-colors duration-fast placeholder:text-ink-subtle focus:border-brand"
                             />
                         </div>
                     </motion.div>
@@ -604,7 +604,7 @@ function SetInput({
                 // da un salto y se descoloca cada vez que el atleta toca una
                 // casilla. Es la mitad de por qué el registro se sentía "mal
                 // puesto" en móvil.
-                'h-11 w-full rounded-field border bg-surface-sunken px-0 text-center text-t-base font-extrabold tabular-nums outline-none transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                'h-11 w-full rounded-field border bg-surface-sunken px-0 text-center text-t-base font-extrabold tabular-nums transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
                 filled
                     ? tone === 'brand'
                         ? 'border-[var(--brand-line)] text-brand'

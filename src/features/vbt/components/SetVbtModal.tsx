@@ -338,7 +338,7 @@ export function SetVbtModal({
                                 <select
                                     value={source}
                                     onChange={e => setSource(e.target.value as VbtSource)}
-                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-t-xs text-ink outline-none focus:border-brand"
+                                    className="h-9 w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-t-xs text-ink focus:border-brand"
                                 >
                                     <option value="encoder">Encoder</option>
                                     <option value="video">Vídeo (PWR)</option>
@@ -469,7 +469,7 @@ function Field({
                 onChange={e => onChange(e.target.value)}
                 placeholder={placeholder}
                 className={cn(
-                    'h-9 w-full rounded-field border bg-surface-sunken px-2 text-center text-t-sm font-semibold tabular-nums text-ink outline-none transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none',
+                    'h-9 w-full rounded-field border bg-surface-sunken px-2 text-center text-t-sm font-semibold tabular-nums text-ink transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none',
                     emphasis ? 'border-[var(--brand-line)]' : 'border-[var(--border-default)]'
                 )}
             />

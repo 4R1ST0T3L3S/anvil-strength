@@ -220,8 +220,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             <button 
                                 onClick={() => setActiveTab('active')}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
-                                    activeTab === 'active' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
-                                }`}
+ activeTab === 'active' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
+ }`}
                             >
                                 <TrendingUp size={14} />
                                 Apuestas Activas
@@ -229,8 +229,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             <button 
                                 onClick={() => setActiveTab('history')}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
-                                    activeTab === 'history' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
-                                }`}
+ activeTab === 'history' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
+ }`}
                             >
                                 <History size={14} />
                                 Historial

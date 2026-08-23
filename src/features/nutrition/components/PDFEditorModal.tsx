@@ -216,10 +216,10 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                         ))}
                         <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Nombre del Club</p>
                         <input type="text" value={s.clubName} onChange={e => update({ clubName: e.target.value })}
-                            className="w-full bg-zinc-900 text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none text-sm" />
+                            className="w-full bg-zinc-900 text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red text-sm" />
                         <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Texto de Pie</p>
                         <input type="text" value={s.footerText} onChange={e => update({ footerText: e.target.value })} placeholder="Ej. Preparado por Dr. García"
-                            className="w-full bg-zinc-900 text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none text-sm" />
+                            className="w-full bg-zinc-900 text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red text-sm" />
                     </>)}
 
                     {activeTab === 'image' && (<>
@@ -277,7 +277,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                     <div>
                         <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Nombre del archivo</label>
                         <input type="text" value={pdfFileName} onChange={e => setPdfFileName(e.target.value)} placeholder="Plan_Nutricional"
-                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red outline-none" />
+                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red" />
                     </div>
                     <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-anvil-red hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         {isGenerating ? <><Loader2 size={18} className="animate-spin" /> Generando...</> : <><Download size={18} /> Descargar PDF</>}

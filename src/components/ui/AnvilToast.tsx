@@ -29,20 +29,20 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                         className="pointer-events-auto relative group overflow-hidden"
                     >
                         <div className={`
-                            relative flex gap-4 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all
-                            ${notif.type === 'success' ? 'bg-green-500/10 border-green-500/20' : 
-                              notif.type === 'error' ? 'bg-anvil-red/10 border-anvil-red/20' :
-                              notif.type === 'reward' ? 'bg-yellow-500/10 border-yellow-500/20' :
-                              'bg-white/5 border-white/10'}
-                        `}>
+ relative flex gap-4 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-all
+ ${notif.type === 'success' ? 'bg-green-500/10 border-green-500/20' : 
+ notif.type === 'error' ? 'bg-anvil-red/10 border-anvil-red/20' :
+ notif.type === 'reward' ? 'bg-yellow-500/10 border-yellow-500/20' :
+ 'bg-white/5 border-white/10'}
+`}>
                             {/* Icon */}
                             <div className={`
-                                shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg
-                                ${notif.type === 'success' ? 'bg-green-500 text-white' : 
-                                  notif.type === 'error' ? 'bg-anvil-red text-white' :
-                                  notif.type === 'reward' ? 'bg-yellow-500 text-black' :
-                                  'bg-white/10 text-white'}
-                            `}>
+ shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg
+ ${notif.type === 'success' ? 'bg-green-500 text-white' : 
+ notif.type === 'error' ? 'bg-anvil-red text-white' :
+ notif.type === 'reward' ? 'bg-yellow-500 text-black' :
+ 'bg-white/10 text-white'}
+`}>
                                 {notif.type === 'success' && <CheckCircle size={24} />}
                                 {notif.type === 'error' && <XCircle size={24} />}
                                 {notif.type === 'reward' && <Coins size={24} className="animate-bounce" />}
@@ -73,11 +73,11 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                                 animate={{ width: "0%" }}
                                 transition={{ duration: 5, ease: "linear" }}
                                 className={`absolute bottom-0 left-0 h-1 ${
-                                    notif.type === 'success' ? 'bg-green-500' : 
-                                    notif.type === 'error' ? 'bg-anvil-red' :
-                                    notif.type === 'reward' ? 'bg-yellow-500' :
-                                    'bg-white/20'
-                                }`}
+ notif.type === 'success' ? 'bg-green-500' : 
+ notif.type === 'error' ? 'bg-anvil-red' :
+ notif.type === 'reward' ? 'bg-yellow-500' :
+ 'bg-white/20'
+ }`}
                             />
                         </div>
                     </motion.div>

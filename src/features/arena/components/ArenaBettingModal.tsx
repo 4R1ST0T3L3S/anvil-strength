@@ -89,7 +89,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                                             type="number"
                                             step="any"
                                             placeholder="TU VALOR (EJ: 102.5)"
-                                            className="w-full bg-black border border-white/10 p-4 rounded-xl font-black text-xl text-white text-center outline-none focus:border-yellow-500/50 transition-colors"
+                                            className="w-full bg-black border border-white/10 p-4 rounded-xl font-black text-xl text-white text-center focus:border-yellow-500/50 transition-colors"
                                             value={predictionValue}
                                             onChange={(e) => setPredictionValue(e.target.value)}
                                         />
@@ -115,7 +115,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                                         type="number"
                                         value={amount}
                                         onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
-                                        className="w-full bg-black border border-white/10 p-5 pl-14 rounded-2xl font-black text-2xl text-white outline-none focus:border-yellow-500/50 transition-colors"
+                                        className="w-full bg-black border border-white/10 p-5 pl-14 rounded-2xl font-black text-2xl text-white focus:border-yellow-500/50 transition-colors"
                                     />
                                     <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-yellow-500 italic">AC</span>
                                 </div>

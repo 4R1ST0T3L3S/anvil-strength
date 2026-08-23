@@ -136,8 +136,8 @@ function Bench() {
                         key={p.key}
                         onClick={() => { setPreset(p.key); setScan(null); setOriginal(null); }}
                         className={`rounded px-3 py-1.5 text-xs font-bold uppercase ${
-                            !scan && preset === p.key ? 'bg-white text-black' : 'bg-white/10 text-white/70'
-                        }`}
+ !scan && preset === p.key ? 'bg-white text-black' : 'bg-white/10 text-white/70'
+ }`}
                     >
                         {p.label}
                     </button>

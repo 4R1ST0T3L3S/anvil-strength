@@ -186,7 +186,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                             }
                                         }}
                                         placeholder="20"
-                                        className="w-full bg-transparent text-center text-4xl md:text-5xl font-black text-white focus:outline-none placeholder:text-gray-800 italic tracking-tighter"
+                                        className="w-full bg-transparent text-center text-4xl md:text-5xl font-black text-white placeholder:text-gray-800 italic tracking-tighter"
                                     />
                                     <span className="text-xl md:text-2xl font-black text-gray-800 uppercase italic">kg</span>
                                 </div>

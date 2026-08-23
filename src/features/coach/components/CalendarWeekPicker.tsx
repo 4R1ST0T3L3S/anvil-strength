@@ -163,10 +163,10 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                                 type="button"
                                 onClick={() => handleWeekClick(weekNum)}
                                 className={`
-                                    text-[10px] font-bold rounded flex items-center justify-center transition-colors
-                                    ${inRange ? 'text-white' : 'text-gray-600 group-hover:text-gray-300'}
-                                    ${inRange && !isStart && !isEnd ? 'bg-white/10' : ''}
-                                `}
+ text-[10px] font-bold rounded flex items-center justify-center transition-colors
+ ${inRange ? 'text-white' : 'text-gray-600 group-hover:text-gray-300'}
+ ${inRange && !isStart && !isEnd ? 'bg-white/10' : ''}
+`}
                                 style={isStart || isEnd ? { backgroundColor: selectedColor } : undefined}
                             >
                                 W{weekNum}
@@ -175,9 +175,9 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                             {/* Days */}
                             <div
                                 className={`
-                                    grid grid-cols-7 rounded-lg overflow-hidden cursor-pointer transition-colors border border-transparent
-                                    ${inRange ? 'bg-white/5 border-white/5' : 'hover:bg-white/5 hover:border-white/10'}
-                                `}
+ grid grid-cols-7 rounded-lg overflow-hidden cursor-pointer transition-colors border border-transparent
+ ${inRange ? 'bg-white/5 border-white/5' : 'hover:bg-white/5 hover:border-white/10'}
+`}
                                 style={{
                                     ...(isStart || isEnd ? { borderColor: selectedColor, backgroundColor: `${selectedColor}20` } : {}),
                                     ...(inRange && !isStart && !isEnd ? {} : {}) // Middle range keeps default/class style or could inherit light tint
@@ -188,10 +188,10 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                                     <div
                                         key={dIndex}
                                         className={`
-                                            h-8 flex items-center justify-center text-xs font-medium
-                                            ${day.isCurrentMonth ? 'text-gray-300' : 'text-gray-700'}
-                                            ${inRange ? 'text-white' : ''}
-                                        `}
+ h-8 flex items-center justify-center text-xs font-medium
+ ${day.isCurrentMonth ? 'text-gray-300' : 'text-gray-700'}
+ ${inRange ? 'text-white' : ''}
+`}
                                     >
                                         {day.date.getDate()}
                                     </div>

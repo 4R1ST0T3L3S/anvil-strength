@@ -178,10 +178,10 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                                 onClick={handleSaveRecord}
                                                 disabled={isSaving}
                                                 className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-xl font-black uppercase text-t-2xs md:text-xs tracking-widest transition-all ${
-                                                    celebration 
-                                                        ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
-                                                        : 'bg-white text-black hover:bg-gray-200 shadow-xl'
-                                                }`}
+ celebration 
+ ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
+ : 'bg-white text-black hover:bg-gray-200 shadow-xl'
+ }`}
                                             >
                                                 {isSaving ? <Loader2 size={14} className="animate-spin" /> : celebration ? <Trophy size={14} /> : <Save size={14} />}
                                                 {celebration ? '¡Nuevo Récord!' : 'Guardar'}

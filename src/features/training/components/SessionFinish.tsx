@@ -148,10 +148,10 @@ export function SessionFinish({
         <>
             <section
                 className={`overflow-hidden rounded-card border ${
-                    done
-                        ? 'border-[var(--success-quiet)] bg-surface-raised'
-                        : 'border-[var(--border-default)] bg-surface-raised'
-                }`}
+ done
+ ? 'border-[var(--success-quiet)] bg-surface-raised'
+ : 'border-[var(--border-default)] bg-surface-raised'
+ }`}
             >
                 <div className="p-4 md:p-5">
                     {/* -------------------------------------------------
@@ -159,8 +159,8 @@ export function SessionFinish({
                     <div className="flex items-start gap-3">
                         <span
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-field ${
-                                done ? 'bg-success-quiet text-success' : 'bg-brand-quiet text-brand'
-                            }`}
+ done ? 'bg-success-quiet text-success' : 'bg-brand-quiet text-brand'
+ }`}
                         >
                             <Check size={18} strokeWidth={3} aria-hidden="true" />
                         </span>
@@ -235,10 +235,10 @@ export function SessionFinish({
                                 {summary.rpeDelta !== null && summary.rpeDelta !== 0 && (
                                     <span
                                         className={`rounded-chip px-2 py-0.5 text-t-2xs font-black tabular-nums ${
-                                            summary.rpeDelta > 0
-                                                ? 'bg-warning-quiet text-warning'
-                                                : 'bg-success-quiet text-success'
-                                        }`}
+ summary.rpeDelta > 0
+ ? 'bg-warning-quiet text-warning'
+ : 'bg-success-quiet text-success'
+ }`}
                                     >
                                         {summary.rpeDelta > 0 ? '+' : ''}
                                         {summary.rpeDelta.toFixed(1)}
@@ -273,7 +273,7 @@ export function SessionFinish({
                                 maxLength={1000}
                                 placeholder="Molestia en el hombro, la última serie se fue lenta…"
                                 // text-t-base (16px): por debajo, iOS hace zoom al enfocar.
-                                className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-base text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)] focus:outline-none"
+                                className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-base text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
                             />
                             {done && (
                                 <Button

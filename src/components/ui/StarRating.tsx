@@ -29,17 +29,17 @@ export function StarRating({
                     onMouseEnter={() => !readonly && setHoverRating(star)}
                     onMouseLeave={() => !readonly && setHoverRating(0)}
                     className={`transition-all ${readonly
-                            ? 'cursor-default'
-                            : 'cursor-pointer hover:scale-110 active:scale-95'
-                        }`}
+ ? 'cursor-default'
+ : 'cursor-pointer hover:scale-110 active:scale-95'
+ }`}
                     aria-label={`${star} ${star === 1 ? 'estrella' : 'estrellas'}`}
                 >
                     <Star
                         size={size}
                         className={`${star <= displayRating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'fill-none text-gray-400'
-                            } transition-colors duration-150`}
+ ? 'fill-yellow-400 text-yellow-400'
+ : 'fill-none text-gray-400'
+ } transition-colors duration-150`}
                     />
                 </button>
             ))}

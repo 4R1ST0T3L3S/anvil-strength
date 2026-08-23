@@ -225,7 +225,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                             value={device}
                             onChange={e => setDevice(e.target.value)}
                             placeholder="ADR Encoder, Vitruve, Speed4Lifts…"
-                            className="mt-1.5 w-full rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base text-ink outline-none transition-colors duration-fast focus:border-brand-line sm:text-t-xs"
+                            className="mt-1.5 w-full rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base text-ink transition-colors duration-fast focus:border-brand-line sm:text-t-xs"
                         />
                     </div>
 
@@ -257,7 +257,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                             <select
                                 value={setIndex}
                                 onChange={e => setSetIndex(Number(e.target.value))}
-                                className="mt-2 w-full rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base font-semibold text-ink outline-none sm:text-t-xs"
+                                className="mt-2 w-full rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base font-semibold text-ink sm:text-t-xs"
                             >
                                 {parsed.sets.map((s, i) => (
                                     <option key={s.setNumber} value={i}>
@@ -346,7 +346,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                                     onChange={e => setNotes(e.target.value)}
                                     rows={2}
                                     placeholder="Cámara, distancia, iluminación… lo que haga falta para repetir esta sesión."
-                                    className="mt-1.5 w-full resize-y rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base text-ink outline-none transition-colors duration-fast focus:border-brand-line sm:text-t-xs"
+                                    className="mt-1.5 w-full resize-y rounded-field border border-subtle bg-surface-sunken px-3 py-2 text-base text-ink transition-colors duration-fast focus:border-brand-line sm:text-t-xs"
                                 />
                             </div>
                         </div>

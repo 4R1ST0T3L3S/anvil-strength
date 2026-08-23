@@ -250,7 +250,7 @@ export function AdminDashboard() {
                                     placeholder="Buscar por nombre o email..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-anvil-red transition-colors"
+                                    className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:border-anvil-red transition-colors"
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                             </div>
@@ -268,10 +268,10 @@ export function AdminDashboard() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as TabType)}
                                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-all ${
-                                    isActive 
-                                    ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' 
-                                    : 'bg-[#0a0a0a] text-gray-400 border border-white/5 hover:border-white/20 hover:text-white'
-                                }`}
+ isActive 
+ ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' 
+ : 'bg-[#0a0a0a] text-gray-400 border border-white/5 hover:border-white/20 hover:text-white'
+ }`}
                             >
                                 <Icon size={18} />
                                 {tab.label}
@@ -363,12 +363,12 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.role}
                                                                     onChange={(e) => changeRole(user.id, e.target.value as 'coach' | 'athlete' | 'nutritionist')}
-                                                                    className={`w-full appearance-none bg-[#0a0a0a] border rounded-lg px-3 py-1.5 text-sm font-bold uppercase cursor-pointer focus:outline-none transition-colors ${user.role === 'coach'
-                                                                        ? 'border-indigo-500/30 text-indigo-400 hover:border-indigo-500/60'
-                                                                        : user.role === 'nutritionist'
-                                                                            ? 'border-emerald-500/30 text-emerald-400 hover:border-emerald-500/60'
-                                                                            : 'border-white/10 text-gray-300 hover:border-white/30'
-                                                                        }`}
+                                                                    className={`w-full appearance-none bg-[#0a0a0a] border rounded-lg px-3 py-1.5 text-sm font-bold uppercase cursor-pointer transition-colors ${user.role === 'coach'
+ ? 'border-indigo-500/30 text-indigo-400 hover:border-indigo-500/60'
+ : user.role === 'nutritionist'
+ ? 'border-emerald-500/30 text-emerald-400 hover:border-emerald-500/60'
+ : 'border-white/10 text-gray-300 hover:border-white/30'
+ }`}
                                                                 >
                                                                     <option value="athlete" className="bg-[#0a0a0a] text-gray-300">Atleta</option>
                                                                     <option value="coach" className="bg-[#0a0a0a] text-indigo-400">Entrenador</option>
@@ -383,9 +383,9 @@ export function AdminDashboard() {
                                                             <button
                                                                 onClick={() => toggleAccess(user.id, user.has_access)}
                                                                 className={`mx-auto flex items-center justify-center gap-2 px-4 py-2 w-full max-w-[120px] rounded-lg font-bold text-sm uppercase transition-all shadow-md active:scale-95 ${user.has_access
-                                                                    ? 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500/20 shadow-green-500/5'
-                                                                    : 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20 shadow-red-500/5'
-                                                                    }`}
+ ? 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500/20 shadow-green-500/5'
+ : 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20 shadow-red-500/5'
+ }`}
                                                             >
                                                                 {user.has_access ? (
                                                                     <>
@@ -409,7 +409,7 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.coach_id || 'unassigned'}
                                                                     onChange={(e) => changeCoach(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:outline-none focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:border-anvil-red transition-colors"
                                                                 >
                                                                     <option value="unassigned" className="bg-[#0a0a0a] text-gray-500">Sin asignar</option>
                                                                     {coaches.map(c => (
@@ -426,7 +426,7 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.nutritionist_id || 'unassigned'}
                                                                     onChange={(e) => changeNutritionist(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:outline-none focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:border-anvil-red transition-colors"
                                                                 >
                                                                     <option value="unassigned" className="bg-[#0a0a0a] text-gray-500">Sin asignar</option>
                                                                     {nutritionists.map(n => (
