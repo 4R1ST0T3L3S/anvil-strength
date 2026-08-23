@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../../../lib/supabase';
 import { X, Trophy, User as UserIcon, Fish, ArrowUpRight } from 'lucide-react';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
 import { m, AnimatePresence } from 'framer-motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
+import { useQuery } from '@tanstack/react-query';
 
 interface AnvilRankingProps {
     isOpen?: boolean;
@@ -30,23 +31,9 @@ interface RankedAthlete {
 export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
     const isModal = isOpen !== undefined;
     const isVisible = isModal ? isOpen : true;
-    const [athletes, setAthletes] = useState<RankedAthlete[]>([]);
-    const [loading, setLoading] = useState(true);
     const [rankingType, setRankingType] = useState<'gl' | 'sushi'>('gl');
 
-    useEffect(() => {
-        if (isVisible) fetchRankings();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isVisible, rankingType]);
-
-    // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
-    useEffect(() => {
-        if (!isVisible) return;
-        return lockBodyScroll();
-    }, [isVisible]);
-
-    const fetchRankings = async () => {
-        setLoading(true);
+    const fetchRankings = useCallback(async (): Promise<RankedAthlete[]> => {
         try {
             const { data: profiles, error: profError } = await supabase
                 .from('profiles')
@@ -101,13 +88,33 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                 })
                 .sort((a, b) => rankingType === 'gl' ? b.gl_points - a.gl_points : b.sushi_pieces - a.sushi_pieces);
 
-            setAthletes(rankedData);
+            return rankedData;
         } catch (error) {
             console.error('Error fetching rankings:', error);
-        } finally {
-            setLoading(false);
+            return [];
         }
-    };
+    }, [rankingType]);
+
+    /*
+     * El ranking del club.
+     *
+     * `enabled` sustituye al `if (isVisible)` que habia dentro del efecto:
+     * cerrado no pide nada, y al reabrirlo aparece al instante desde la cache
+     * en vez de con el giro de siempre. Ademas, el efecto llamaba a una
+     * funcion declarada MAS ABAJO, que es lo que el analizador marcaba.
+     */
+    const { data: athletes = [], isPending: loading } = useQuery({
+        queryKey: ['ranking-club'],
+        queryFn: fetchRankings,
+        enabled: isVisible,
+    });
+
+    // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
+    useEffect(() => {
+        if (!isVisible) return;
+        return lockBodyScroll();
+    }, [isVisible]);
+
 
     const handleClose = isModal ? onClose : onBack;
 

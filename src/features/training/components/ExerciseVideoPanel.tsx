@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Video, AlertTriangle, CheckCircle2, User, PlayCircle, Settings2 } from 'lucide-react';
 import { VideoModal } from '../../../components/ui/VideoModal';
 import {
@@ -7,6 +7,7 @@ import {
 } from '../../../services/exerciseVideoService';
 import { classifyExercise } from '../../../lib/volume/muscles';
 import { cn } from '../../../lib/utils';
+import { useQuery } from '@tanstack/react-query';
 
 /**
  * Ficha de un ejercicio para el atleta.
@@ -92,27 +93,24 @@ export function ExerciseVideoPanel({
     generalErrors,
     className,
 }: ExerciseVideoPanelProps) {
-    const [video, setVideo] = useState<ResolvedVideo | null>(null);
-    const [loading, setLoading] = useState(true);
     const [externalOpen, setExternalOpen] = useState(false);
 
     const externalUrl = externalVideoUrl?.trim() || null;
 
-    useEffect(() => {
-        let cancelled = false;
-        setLoading(true);
-        exerciseVideoService
-            .resolve(exerciseId, athleteId)
-            .then((v) => {
-                if (!cancelled) setVideo(v);
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [exerciseId, athleteId]);
+    /*
+     * El video del ejercicio, por consulta.
+     *
+     * Este panel se monta una vez POR EJERCICIO del registro de la sesion, y
+     * el atleta sube y baja por la lista durante todo el entrenamiento. Con el
+     * efecto, cada vez que un ejercicio volvia a entrar en pantalla se
+     * resolvia otra vez su video; ahora se resuelve una vez por sesion.
+     */
+    const { data: video = null, isPending: loading } = useQuery({
+        queryKey: ['video-ejercicio', exerciseId, athleteId],
+        queryFn: () => exerciseVideoService.resolve(exerciseId, athleteId),
+        // El video de un ejercicio no cambia a mitad de un entrenamiento.
+        staleTime: 1000 * 60 * 30,
+    });
 
     const classification = classifyExercise(exerciseName);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Swords, X, TrendingUp, History, Info, Loader, Trash2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
@@ -11,6 +11,7 @@ import { ArenaBettingModal } from '../components/ArenaBettingModal';
 import { ArenaAdminPanel } from '../components/ArenaAdminPanel';
 import { m, AnimatePresence } from 'framer-motion';
 import { puede } from '../../../lib/roles';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface ExtendedProfile extends UserProfile {
     is_developer?: boolean;
@@ -18,8 +19,7 @@ interface ExtendedProfile extends UserProfile {
 
 export function ArenaView({ user }: { user: ExtendedProfile }) {
     const { data: pointsData, refetch: refetchPoints } = useAnvilPoints(user.id);
-    const [bets, setBets] = useState<(ArenaBet & { options: ArenaOption[] })[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
     
     const [bettingModal, setBettingModal] = useState<{ 
@@ -38,35 +38,56 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         predictionValue?: number;
     }[]>([]);
 
-    const fetchBets = useCallback(async () => {
-        try {
-            setLoading(true);
+    /**
+     * Las apuestas de la Arena, con sondeo cada tres segundos.
+     *
+     * El sondeo lo lleva react-query y no un setInterval a pelo, que es lo
+     * que habia. Dos cosas se arreglan solas al cambiarlo:
+     *
+     *   · Seguia consultando con la PESTANA EN SEGUNDO PLANO. Alguien que
+     *     dejaba la Arena abierta en otra pestana hacia 1.200 consultas por
+     *     hora sin mirar ninguna. react-query para al perder el foco.
+     *   · Si una consulta tardaba mas de 3s, se solapaba con la siguiente.
+     *     Aqui la siguiente se programa cuando termina la anterior.
+     *
+     * Tres segundos se mantienen: la Arena no necesita aviso al instante como
+     * los mensajes, pero si que las apuestas de los demas aparezcan mientras
+     * se esta mirando.
+     */
+    const { data: bets = [], isPending: loading } = useQuery({
+        queryKey: ['apuestas-arena'],
+        queryFn: async () => {
             const { data, error } = await supabase
                 .from('arena_bets')
-                .select(`
-                    *,
-                    options:arena_options(*)
-                `)
+                .select('*, options:arena_options(*)')
                 .order('created_at', { ascending: false });
-
             if (error) throw error;
-            setBets(data || []);
-        } catch (err) {
-            console.error('Error fetching bets:', err);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+            return (data || []) as (ArenaBet & { options: ArenaOption[] })[];
+        },
+        refetchInterval: 3000,
+    });
 
-    useEffect(() => {
-        fetchBets();
+    /** Tras apostar, resolver o borrar: se pide ya, sin esperar al sondeo. */
+    const fetchBets = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: ['apuestas-arena'] });
+    }, [queryClient]);
 
-        // Polling cada 3 segundos en lugar de realtime (ahorramos muchas queries)
-        // El arena no necesita notificación al instante como mensajes o entrenamientos
-        const interval = setInterval(fetchBets, 3000);
-
-        return () => clearInterval(interval);
-    }, [fetchBets]);
+    /*
+     * El sondeo cada 3 segundos lo lleva ahora react-query.
+     *
+     * Lo que habia era un setInterval a pelo. Dos problemas que se arreglan
+     * solos al pasarlo a 'refetchInterval':
+     *
+     *   · Seguia sondeando con la PESTANA EN SEGUNDO PLANO. Alguien que dejaba
+     *     la Arena abierta en otra pestana hacia 1.200 consultas por hora sin
+     *     mirarlas. Por defecto, react-query para al perder el foco.
+     *   · Si una consulta tardaba mas de 3s, se solapaba con la siguiente.
+     *     react-query espera a que termine antes de programar la siguiente.
+     *
+     * Tres segundos se mantienen: la Arena no necesita aviso al instante como
+     * los mensajes o el entrenamiento, pero si que las apuestas de los demas
+     * aparezcan mientras se mira.
+     */
 
     const activeBets = bets.filter(b => b.status === 'open' || b.status === 'locked');
     const historyBets = bets.filter(b => b.status === 'resolved' || b.status === 'cancelled');

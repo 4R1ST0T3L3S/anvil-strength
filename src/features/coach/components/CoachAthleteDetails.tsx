@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
-import { UserProfile } from '../../../hooks/useUser';
+
 import { ArrowLeft, ChevronDown, FileText, Trophy, Trash2, Calendar, MapPin, Apple, MessageSquare, BarChart3, IdCard, Plus, Search } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,6 +21,8 @@ import { AnchoredMenu } from '../../../components/ui/AnchoredMenu';
 import { SafeImage } from '../../../components/ui/SafeImage';
 import { useCoachRoster } from '../hooks/useCoachRoster';
 import { puede, type Capacidad } from '../../../lib/roles';
+import { useQuery } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
 
 interface CoachAthleteDetailsProps {
     athleteId: string;
@@ -79,8 +81,6 @@ const BUILDER_WIDTH = 'mx-auto w-full max-w-7xl pb-6';
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
     const navigate = useNavigate();
     const { data: currentUser } = useUser();
-    const [athlete, setAthlete] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('planning');
 
     // NAVEGACIÓN RÁPIDA ENTRE ATLETAS. El nombre de la cabecera se convierte
@@ -187,27 +187,27 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         setActiveTab('planning');
     }
 
-    useEffect(() => {
-        const fetchAthlete = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', athleteId)
-                    .single();
+    /*
+     * La ficha del atleta, por consulta.
+     *
+     * Es la pantalla a la que el entrenador entra y sale continuamente
+     * —mira un bloque, vuelve, mira otro—, asi que es donde mas se nota tener
+     * cache: antes cada vuelta era otra consulta y otro "Cargando perfil...".
+     */
+    const { data: athlete = null, isPending: loading } = useQuery({
+        queryKey: CLAVES.atleta.porId(athleteId),
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', athleteId)
+                .single();
+            if (error) throw error;
+            return data;
+        },
+    });
 
-                if (error) throw error;
-                setAthlete(data);
-            } catch (err) {
-                console.error('Error fetching athlete details:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAthlete();
-        fetchCompetitions();
-    }, [athleteId, fetchCompetitions]);
+    useEffect(() => { fetchCompetitions(); }, [fetchCompetitions]);
 
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
     if (!athlete) return <div className="p-8 text-center text-danger">Atleta no encontrado</div>;

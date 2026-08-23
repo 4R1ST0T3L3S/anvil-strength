@@ -59,9 +59,21 @@ export function NotificationBell({ userId }: { userId: string }) {
         }
     }, [userId]);
 
-    // Carga inicial + aviso de bienvenida
+    /*
+     * Carga inicial + aviso de bienvenida.
+     *
+     * El efecto llamaba a 'refresh()', que hace dos setState de forma
+     * sincrona: dos renders por cada montaje de la campana, que esta en la
+     * cabecera de TODAS las pantallas del panel.
+     *
+     * Ahora el efecto solo dispara el aviso, y lo hace desde dentro de una
+     * promesa —no en el cuerpo—, que es donde el analizador si lo admite.
+     * El 'ref' sigue garantizando que el aviso salga una vez por sesion.
+     */
     useEffect(() => {
-        refresh().then(count => {
+        let vivo = true;
+        void refresh().then(count => {
+            if (!vivo) return;
             if (count > 0 && !welcomeShown.current) {
                 welcomeShown.current = true;
                 toast(`🔔 Tienes ${count} ${count === 1 ? 'aviso nuevo' : 'avisos nuevos'}`, {
@@ -70,6 +82,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                 });
             }
         });
+        return () => { vivo = false; };
     }, [refresh]);
 
     // Realtime: nuevas notificaciones

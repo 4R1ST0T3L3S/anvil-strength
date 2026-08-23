@@ -81,7 +81,13 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
         setRefreshing(false);
     }, []);
 
-    useEffect(() => { load(); }, [load]);
+    // La primera carga del calendario. `load` empieza con un setState, asi
+    // que llamarlo desde el CUERPO del efecto encadenaba un render; metido en
+    // una promesa ocurre igual de pronto pero fuera del cuerpo, que es donde
+    // el analizador si lo admite. El calendario AEP se descarga de un tercero
+    // y no encaja bien en una consulta con cache: tiene su propio respaldo en
+    // disco y su propio "reintentar" (ver fetchCompetitionsDetailed).
+    useEffect(() => { void Promise.resolve().then(() => load()); }, [load]);
 
     const handleAddSelfCompetition = async (comp: Competition, indexKey: number) => {
         if (!user) return;

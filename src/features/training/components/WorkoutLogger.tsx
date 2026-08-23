@@ -39,6 +39,17 @@ interface WorkoutLoggerProps {
 import { Modal } from '../../../components/ui/Modal';
 import { ExerciseVideoPanel } from './ExerciseVideoPanel';
 
+import { useQuery } from '@tanstack/react-query';
+
+/**
+ * Mapa vacio ESTABLE, a nivel de modulo.
+ *
+ * Un `new Map()` como valor por defecto crearia un objeto distinto en cada
+ * render, y todo lo que dependa de el —memos, props de las filas de series—
+ * se recalcularia sin que nada haya cambiado.
+ */
+const MAPA_VACIO = new Map<string, never>();
+
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
 }
@@ -152,7 +163,6 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
      * y ninguna tarjeta muestra referencia: el entrenamiento en sí no
      * depende de esto.
      */
-    const [lastSessionByExercise, setLastSessionByExercise] = useState<Map<string, LastSessionSetReference>>(new Map());
 
     // Clave de contenido y no de referencia: `allSessions` cambia de
     // identidad cada vez que se marca una serie (handleSetChange copia el
@@ -168,25 +178,30 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         )].join(',');
     }, [allSessions, activeSessionId]);
 
-    useEffect(() => {
-        if (!activeSessionId || !activeExerciseIdsKey) {
-            setLastSessionByExercise(new Map());
-            return;
-        }
-        const exerciseIds = activeExerciseIdsKey.split(',');
-
-        let cancelled = false;
-        trainingService.getLastSessionSetsForExercises(athleteId, exerciseIds, activeSessionId)
-            .then(map => { if (!cancelled) setLastSessionByExercise(map); })
+    /*
+     * Lo que el atleta levanto la ultima vez en cada ejercicio.
+     *
+     * Por consulta y no por efecto, y aqui importa mas que en ningun otro
+     * sitio: esto es el registro de la sesion, la pantalla que el atleta abre
+     * y cierra veinte veces en un entrenamiento. Con el efecto, cada vuelta
+     * eran otra peticion y otro doble render mientras esta de pie en el
+     * gimnasio esperando para la siguiente serie.
+     *
+     * Es referencia informativa, no critica: si falla, la sesion sigue
+     * funcionando sin ella, y por eso el error no se propaga.
+     */
+    const { data: lastSessionByExercise = MAPA_VACIO } = useQuery({
+        queryKey: ['ultima-sesion', athleteId, activeSessionId, activeExerciseIdsKey],
+        queryFn: () => trainingService
+            .getLastSessionSetsForExercises(athleteId, activeExerciseIdsKey.split(','), activeSessionId!)
             .catch(err => {
-                // Referencia informativa, no crítica: si falla, la sesión
-                // sigue funcionando sin ella.
                 console.error('Error cargando última sesión:', err);
-                if (!cancelled) setLastSessionByExercise(new Map());
-            });
-
-        return () => { cancelled = true; };
-    }, [athleteId, activeSessionId, activeExerciseIdsKey]);
+                return MAPA_VACIO;
+            }),
+        enabled: !!activeSessionId && !!activeExerciseIdsKey,
+        // Lo que se hizo la semana pasada no cambia a mitad de entrenamiento.
+        staleTime: 1000 * 60 * 60,
+    });
 
     // Vídeo enlazado desde el calentamiento o los extras. Se reproduce dentro
     // de la app para no sacar al atleta de la sesión a medio registrar.
