@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { StarRating } from '../../../components/ui/StarRating';
 import { ReviewForm } from './ReviewForm';
 import { reviewsService } from '../../../services/reviewsService';
-import { AthleteReview } from '../../../types/database';
+
 import { MessageCircle } from 'lucide-react';
 
 interface ReviewsSectionProps {
@@ -10,26 +11,20 @@ interface ReviewsSectionProps {
 }
 
 export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
-    const [reviews, setReviews] = useState<AthleteReview[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    const queryClient = useQueryClient();
 
-    const loadReviews = async () => {
-        try {
-            setError('');
-            const data = await reviewsService.getAllReviews();
-            setReviews(data);
-        } catch (err: unknown) {
-            console.error('Error loading reviews:', err);
-            setError('Error al cargar las reseñas');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Las reseñas de la portada. Van a la caché porque esta sección se
+    // desmonta y se vuelve a montar cada vez que alguien navega a otra ruta
+    // y vuelve, y sin ella eso era otra consulta cada vez.
+    const { data: reviews = [], isPending: isLoading, isError } = useQuery({
+        queryKey: ['resenas'],
+        queryFn: () => reviewsService.getAllReviews(),
+    });
+    const error = isError ? 'Error al cargar las reseñas' : '';
 
-    useEffect(() => {
-        loadReviews();
-    }, []);
+    const loadReviews = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: ['resenas'] });
+    }, [queryClient]);
 
     // Calculate average rating
     const averageRating = reviews.length > 0

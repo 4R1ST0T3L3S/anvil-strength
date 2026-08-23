@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { m, AnimatePresence } from 'framer-motion';
 import { ClipboardCheck, X, Check, Loader, CalendarCheck, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,24 +9,38 @@ import {
 } from '../../services/formsService';
 import { fetchActiveCoach } from '../coach/hooks/useCoachRoster';
 import { CheckInAnswerFields, AnswerValues } from './CheckInAnswerFields';
+import { CLAVES } from '../../lib/queryKeys';
 
 // ============ Tarjeta de acceso (para el home del atleta) ============
 
 export function CheckInCard({ athleteId }: { athleteId: string }) {
     const [openForm, setOpenForm] = useState<FormType | null>(null);
-    const [status, setStatus] = useState<{ daily: boolean; weekly: boolean }>({ daily: false, weekly: false });
+    const queryClient = useQueryClient();
 
-    const refreshStatus = useCallback(async () => {
-        try {
-            const [daily, weekly] = await Promise.all([
-                formsService.getResponse(athleteId, 'daily', getPeriodKey('daily')),
-                formsService.getResponse(athleteId, 'weekly', getPeriodKey('weekly'))
-            ]);
-            setStatus({ daily: !!daily, weekly: !!weekly });
-        } catch { /* tabla aún no migrada: la tarjeta sigue funcionando */ }
-    }, [athleteId]);
+    // Si el atleta ya ha rellenado hoy el diario y esta semana el semanal.
+    // Por consulta: esta tarjeta vive en el inicio del atleta, que es la
+    // pantalla más visitada de la aplicación, y volver a ella no debería
+    // costar dos peticiones.
+    const { data: status = { daily: false, weekly: false } } = useQuery({
+        queryKey: CLAVES.cuestionarios.estadoDeAtleta(athleteId),
+        queryFn: async () => {
+            try {
+                const [daily, weekly] = await Promise.all([
+                    formsService.getResponse(athleteId, 'daily', getPeriodKey('daily')),
+                    formsService.getResponse(athleteId, 'weekly', getPeriodKey('weekly')),
+                ]);
+                return { daily: !!daily, weekly: !!weekly };
+            } catch {
+                // Tabla aún no migrada: la tarjeta sigue funcionando y solo
+                // deja de saber si ya se rellenó.
+                return { daily: false, weekly: false };
+            }
+        },
+    });
 
-    useEffect(() => { refreshStatus(); }, [refreshStatus]);
+    const refreshStatus = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.cuestionarios.estadoDeAtleta(athleteId) });
+    }, [queryClient, athleteId]);
 
     return (
         <div className="space-y-3">

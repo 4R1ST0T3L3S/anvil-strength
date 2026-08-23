@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Search, User, Check, Save, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
@@ -21,48 +22,33 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
     // depende la consulta, y con el objeto en las dependencias el callback se
     // rehacía en cada refresco del token.
     const coachId = session?.user.id ?? null;
-    const [athletes, setAthletes] = useState<UserProfile[]>([]);
     const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [description, setDescription] = useState('');
 
-    const fetchAthletes = useCallback(async () => {
-        if (!coachId) return;
-        try {
-            setLoading(true);
+    // `enabled` sustituye al `if (isOpen && coachId)` que había dentro del
+    // efecto: la consulta no se lanza hasta que las dos condiciones se dan, y
+    // no hay que acordarse de comprobarlas.
+    const { data: athletes = [], isPending: loading } = useQuery({
+        queryKey: ['atletas-asignables', coachId],
+        queryFn: async () => {
             // Por la puerta única, y solo los vínculos vivos: asignar una
             // competición a alguien que ya no está en el equipo no significa
             // nada. Ver src/features/coach/hooks/useCoachRoster.ts.
-            const athleteIds = await fetchRosterIds(coachId, 'active');
-
-            if (athleteIds.length === 0) {
-                setAthletes([]);
-                return;
-            }
+            const athleteIds = await fetchRosterIds(coachId!, 'active');
+            if (athleteIds.length === 0) return [] as UserProfile[];
 
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .in('id', athleteIds)
                 .order('full_name', { ascending: true });
-
             if (error) throw error;
-            setAthletes(data || []);
-        } catch (err) {
-            console.error('Error fetching athletes:', err);
-            toast.error('Error al cargar atletas');
-        } finally {
-            setLoading(false);
-        }
-    }, [coachId]);
-
-    useEffect(() => {
-        if (isOpen && coachId) {
-            fetchAthletes();
-        }
-    }, [isOpen, coachId, fetchAthletes]);
+            return (data || []) as UserProfile[];
+        },
+        enabled: isOpen && !!coachId,
+    });
 
     const toggleAthlete = (id: string) => {
         const newSelected = new Set(selectedAthletes);

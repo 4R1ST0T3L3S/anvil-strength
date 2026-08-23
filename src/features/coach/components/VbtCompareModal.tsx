@@ -42,6 +42,42 @@ const getSessionLabel = (ex: VbtExerciseData) => {
     return `${format(dateFallback, "d MMM", { locale: es })} (Día ${ex.session.day_number})`;
 };
 
+type Metrica = 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM';
+
+/**
+ * Botón de métrica.
+ *
+ * POR QUÉ VIVE AQUÍ FUERA Y NO DENTRO DEL MODAL, QUE ES DONDE ESTABA.
+ *
+ * Un componente declarado dentro de otro es un TIPO NUEVO en cada render del
+ * padre. React no puede saber que es "el mismo de antes", así que en vez de
+ * actualizarlo lo DESMONTA y lo vuelve a montar entero: se pierde el estado
+ * interno, se pierde el foco y cualquier animación arranca de cero.
+ *
+ * Aquí eran seis botones remontándose cada vez que se movía el ratón por la
+ * gráfica de comparación. Sacándolo fuera, el tipo es estable y React se
+ * limita a actualizar lo que cambia.
+ */
+function MetricRadio({ value, label, activa, onSelect }: {
+    value: Metrica;
+    label: string;
+    activa: Metrica;
+    onSelect: (m: Metrica) => void;
+}) {
+    const isActive = activa === value;
+    return (
+        <button
+            onClick={() => onSelect(value)}
+            className={`flex items-center gap-2 rounded-field border px-4 py-2 text-t-xs font-bold uppercase tracking-widest transition-colors duration-fast ease-snap ${isActive
+                ? 'border-brand bg-brand text-brand-ink'
+                : 'border-[var(--border-default)] bg-surface-raised text-ink-muted hover:bg-surface-overlay hover:text-ink'
+                }`}
+        >
+            {label}
+        </button>
+    );
+}
+
 export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompareModalProps) {
     const [data, setData] = useState<Record<string, unknown>[]>([]);
     const [loading, setLoading] = useState(true);
@@ -157,21 +193,6 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
 
     if (!isOpen) return null;
 
-    const MetricRadio = ({ value, label }: { value: string, label: string }) => {
-        const isActive = activeMetric === value;
-        return (
-            <button
-                onClick={() => setActiveMetric(value as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-[background-color,border-color,box-shadow,color] text-xs font-bold uppercase tracking-widest ${
- isActive 
- ? 'bg-anvil-red text-black border-anvil-red shadow-lg' 
- : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
- }`}
-            >
-                {label}
-            </button>
-        );
-    };
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/95 backdrop-blur-sm animate-fade">
@@ -219,12 +240,12 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                             {/* Metric Selector */}
                             <div className="flex flex-wrap items-center justify-center gap-2 mb-8 w-full p-2">
                                 <span className="text-xs uppercase font-bold text-gray-600 px-2 mr-2">Analizar:</span>
-                                <MetricRadio value="Vm" label="Vm" />
-                                <MetricRadio value="Vmp" label="Vmp" />
-                                <MetricRadio value="Vmax" label="Vmax" />
-                                <MetricRadio value="Potencia" label="Potencia" />
-                                <MetricRadio value="Fatiga" label="Fatiga" />
-                                <MetricRadio value="ROM" label="ROM" />
+                                <MetricRadio value="Vm" label="Vm" activa={activeMetric} onSelect={setActiveMetric} />
+                                <MetricRadio value="Vmp" label="Vmp" activa={activeMetric} onSelect={setActiveMetric} />
+                                <MetricRadio value="Vmax" label="Vmax" activa={activeMetric} onSelect={setActiveMetric} />
+                                <MetricRadio value="Potencia" label="Potencia" activa={activeMetric} onSelect={setActiveMetric} />
+                                <MetricRadio value="Fatiga" label="Fatiga" activa={activeMetric} onSelect={setActiveMetric} />
+                                <MetricRadio value="ROM" label="ROM" activa={activeMetric} onSelect={setActiveMetric} />
                             </div>
 
                             {/* Main Chart */}

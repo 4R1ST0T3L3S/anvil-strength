@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClipboardCheck, Loader, Settings2, Plus, Trash2, X, Save, RotateCcw, Pencil, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -11,30 +12,25 @@ import {
 } from '../../lib/forms/axes';
 import { CheckInAnswerFields, AnswerValues } from './CheckInAnswerFields';
 import { ConfirmationModal } from '../../components/modals/ConfirmationModal';
+import { CLAVES } from '../../lib/queryKeys';
 
 /** Pestaña de check-ins del atleta para el coach: respuestas + edición de plantillas. */
 export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; coachId: string }) {
     const [type, setType] = useState<FormType>('daily');
-    const [responses, setResponses] = useState<FormResponse[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [editorOpen, setEditorOpen] = useState(false);
     /** Respuesta que el coach está editando; `'new'` = crear una nueva. */
     const [editing, setEditing] = useState<FormResponse | 'new' | null>(null);
     const [deleting, setDeleting] = useState<FormResponse | null>(null);
 
-    const load = useCallback(async () => {
-        try {
-            setLoading(true);
-            const data = await formsService.getResponsesByAthlete(athleteId, type);
-            setResponses(data);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    }, [athleteId, type]);
+    const { data: responses = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.cuestionarios.respuestasDeAtleta(athleteId, type),
+        queryFn: () => formsService.getResponsesByAthlete(athleteId, type),
+    });
 
-    useEffect(() => { load(); }, [load]);
+    const load = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.cuestionarios.respuestasDeAtleta(athleteId, type) });
+    }, [queryClient, athleteId, type]);
 
     const scaleColor = (v: number) => {
         if (v <= 3) return 'text-red-400 bg-red-500/10 border-red-500/20';

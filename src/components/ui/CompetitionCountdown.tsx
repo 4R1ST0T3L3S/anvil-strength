@@ -188,7 +188,9 @@ export function CompetitionBanner({
             <button 
                 onClick={(e) => {
                     e.stopPropagation();
-                    userId && setIsSettingsOpen(true);
+                    // `userId && setX()` como sentencia: funciona, pero es una
+                    // expresión evaluada por su efecto secundario y se lee mal.
+                    if (userId) setIsSettingsOpen(true);
                 }}
                 className="md:hidden absolute top-4 right-4 z-[60] p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10 text-white/80"
             >

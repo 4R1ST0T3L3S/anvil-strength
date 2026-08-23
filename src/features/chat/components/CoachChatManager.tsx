@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import { Search, MessageSquare, Loader, ChevronLeft } from 'lucide-react';
@@ -8,58 +9,53 @@ import { puede } from '../../../lib/roles';
 
 export function CoachChatManager({ coach }: { coach: UserProfile }) {
     const navigate = useNavigate();
-    const [athletes, setAthletes] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedAthlete, setSelectedAthlete] = useState<any | null>(null);
-
     const [showAll, setShowAll] = useState(false);
 
-    useEffect(() => {
-        fetchAthletes();
-    }, [coach.id, showAll]);
+    /**
+     * La lista de atletas, con su ultimo mensaje y sus no leidos.
+     *
+     * Antes: un efecto que llamaba a una funcion declarada MAS ABAJO —lo que
+     * el analizador marca como usar algo antes de declararlo— y que ponia
+     * loading a true en el cuerpo del efecto, o sea dos renders por entrada.
+     *
+     * Y sin cache: volver de una conversacion al listado lanzaba otra vez las
+     * DOS consultas, y entretanto se veia el giro. Ahora el listado vuelve al
+     * instante desde la cache y se refresca por detras.
+     */
+    const claveLista = ['chat-roster', coach.id, showAll] as const;
 
-    const fetchAthletes = async () => {
-        try {
-            setLoading(true);
+    const { data: athletes = [], isPending: loading } = useQuery({
+        queryKey: claveLista,
+        queryFn: async () => {
             let query = supabase.from('profiles').select('*');
-            
-            if (!showAll) {
-                query = query.eq('coach_id', coach.id);
-            } else {
-                query = query.eq('role', 'athlete');
-            }
+            if (!showAll) query = query.eq('coach_id', coach.id);
+            else query = query.eq('role', 'athlete');
 
             const { data: athletesData, error: athletesError } = await query;
             if (athletesError) throw athletesError;
 
-            // Obtener últimos mensajes
             const { data: messages, error: msgsError } = await supabase
                 .from('chat_messages')
                 .select('*')
                 .or(`sender_id.eq.${coach.id},receiver_id.eq.${coach.id}`)
                 .order('created_at', { ascending: false });
-
             if (msgsError) throw msgsError;
 
-            const enrichedAthletes = (athletesData || []).map(athlete => {
-                const lastMsg = messages?.find(m => m.sender_id === athlete.id || m.receiver_id === athlete.id);
-                const unreadCount = messages?.filter(m => m.sender_id === athlete.id && m.receiver_id === coach.id && !m.is_read).length;
-                
-                return {
-                    ...athlete,
-                    lastMessage: lastMsg,
-                    unreadCount
-                };
-            });
+            return (athletesData || []).map(athlete => ({
+                ...athlete,
+                lastMessage: messages?.find(m => m.sender_id === athlete.id || m.receiver_id === athlete.id),
+                unreadCount: messages?.filter(m => m.sender_id === athlete.id && m.receiver_id === coach.id && !m.is_read).length,
+            }));
+        },
+    });
 
-            setAthletes(enrichedAthletes);
-        } catch (error) {
-            console.error('Error fetching athletes for chat:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    /** Al volver de una conversacion: los no leidos han cambiado. */
+    const fetchAthletes = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: claveLista });
+    }, [queryClient, coach.id, showAll]);
 
     const filteredAthletes = athletes.filter(a => 
         a.full_name?.toLowerCase().includes(searchTerm.toLowerCase())

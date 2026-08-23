@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search, Check, Star, X } from 'lucide-react';
 import { useSearchFoodItems } from '../../../hooks/useNutrition';
 import { FoodItem } from '../../../types/nutrition';
@@ -14,17 +14,28 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
     const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
     const [grams, setGrams] = useState<number>(100);
     
-    // Marcas favoritas
-    const [favoriteBrands, setFavoriteBrands] = useState<string[]>([]);
+    /**
+     * Las marcas favoritas se leen AL INICIALIZAR el estado, no en un efecto.
+     *
+     * Con el efecto: primer render con la lista vacía, efecto, segundo render
+     * con la lista. Se veía el hueco de las marcas parpadear en cada apertura.
+     * Con el inicializador perezoso —la función que se le pasa a useState— la
+     * lectura ocurre UNA vez, antes del primer pintado.
+     *
+     * El `try` se queda y ahora explica por qué: si alguien manoseó el
+     * almacenamiento del navegador, la aplicación arranca sin marcas en vez
+     * de romperse.
+     */
+    const [favoriteBrands, setFavoriteBrands] = useState<string[]>(() => {
+        try {
+            const guardadas = localStorage.getItem('anvil_favorite_brands');
+            return guardadas ? JSON.parse(guardadas) : [];
+        } catch {
+            return [];
+        }
+    });
     const [isEditingBrands, setIsEditingBrands] = useState(false);
     const [newBrand, setNewBrand] = useState('');
-
-    useEffect(() => {
-        const savedBrands = localStorage.getItem('anvil_favorite_brands');
-        if (savedBrands) {
-            try { setFavoriteBrands(JSON.parse(savedBrands)); } catch (e) {}
-        }
-    }, []);
 
     const saveBrands = (brands: string[]) => {
         setFavoriteBrands(brands);

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { X, Search, Plus, Loader, Dumbbell } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -14,29 +15,25 @@ interface AddExerciseModalProps {
 }
 
 export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCount, onExerciseAdded }: AddExerciseModalProps) {
-    const [exercises, setExercises] = useState<ExerciseLibrary[]>([]);
     const [search, setSearch] = useState('');
-    const [loading, setLoading] = useState(true);
     const [addingInfo, setAddingId] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isOpen && exercises.length === 0) {
-            fetchLibrary();
-        }
-    }, [isOpen, exercises.length]);
-
-    const fetchLibrary = async () => {
-        try {
-            setLoading(true);
-            const data = await trainingService.getExerciseLibrary();
-            setExercises(data);
-        } catch (error) {
-            console.error(error);
-            toast.error('Error al cargar la librería de ejercicios');
-        } finally {
-            setLoading(false);
-        }
-    };
+    /**
+     * La librería de ejercicios NO cambia mientras el modal está abierto, y
+     * es la misma para todas las sesiones: es el caso de libro para una
+     * caché. Antes se pedía en cada apertura si la lista local estaba vacía,
+     * y la lista local se vaciaba al desmontar el modal — o sea, siempre.
+     *
+     * `enabled` en vez de un `if` dentro del efecto: react-query no lanza
+     * nada mientras el modal está cerrado, y no hay que acordarse de nada.
+     */
+    const { data: exercises = [], isPending: loading } = useQuery({
+        queryKey: ['libreria-ejercicios'],
+        queryFn: () => trainingService.getExerciseLibrary(),
+        enabled: isOpen,
+        // Cambia cuando el entrenador crea un ejercicio nuevo, no sola.
+        staleTime: 1000 * 60 * 30,
+    });
 
     const handleAdd = async (exercise: ExerciseLibrary) => {
         setAddingId(exercise.id);
