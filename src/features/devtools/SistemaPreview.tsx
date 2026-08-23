@@ -18,6 +18,7 @@ import {
 } from '../../components/ui/Skeleton';
 import { Chart } from '../../components/charts/Chart';
 import { PeriodSelector } from '../../components/ui/PeriodSelector';
+import { WidgetStack } from '../../components/ui/WidgetStack';
 import { reglaDe, usePeriodo, type BloqueTemporal } from '../../lib/period';
 import { EJE, REJILLA, TOOLTIP, SERIE, ALTO } from '../../components/charts/theme';
 import {
@@ -75,6 +76,36 @@ const FILAS = [
     { id: '2', nombre: 'Menganita Pérez', categoria: '-72', total: 412, sesiones: 9 },
     { id: '3', nombre: 'Zutanito Ruiz', categoria: '-93', total: 605, sesiones: 15 },
 ];
+
+/**
+ * Tarjeta de ejemplo para la pila.
+ *
+ * Lleva un contador de montajes A PROPÓSITO: es la única forma de VER el
+ * presupuesto de K8 —solo se monta la activa ±1— sin abrir el perfilador de
+ * React. Al recorrer la pila con las flechas, los números van subiendo solo
+ * en las tarjetas que entran en la ventana.
+ */
+let montajes = 0;
+
+const TONO_DEMO: Record<string, string> = {
+    brand: 'text-brand',
+    success: 'text-success',
+    info: 'text-info',
+    warning: 'text-warning',
+};
+
+function TarjetaDemo({ n, color }: { n: number; color: string }) {
+    const [id] = useState(() => ++montajes);
+    return (
+        <div className="flex min-h-[140px] flex-col justify-center rounded-card border border-[var(--border-default)] bg-surface-raised p-5">
+            <p className={`text-t-2xs font-bold uppercase tracking-widest ${TONO_DEMO[color] ?? 'text-ink-subtle'}`}>
+                Tarjeta {n}
+            </p>
+            <p className="mt-1 text-metric font-black tabular-nums text-ink">{n * 137}</p>
+            <p className="mt-1 text-t-xs text-ink-subtle">Montaje n.º {id} desde que cargó la página</p>
+        </div>
+    );
+}
 
 function Bloque({ titulo, nota, children }: { titulo: string; nota?: string; children: React.ReactNode }) {
     return (
@@ -408,6 +439,24 @@ export function SistemaPreview() {
                             <dd className="tabular-nums text-ink-muted">{periodoResuelto.semanas?.join(', ') ?? 'todas'}</dd>
                         </dl>
                     </div>
+                </Bloque>
+
+                {/* =========================== PILA DE WIDGETS ====================== */}
+                <Bloque
+                    titulo="Pila de widgets"
+                    nota="Decision K8: apilados tambien en escritorio, con conmutador a rejilla que recuerda la eleccion. Recorrelo con las flechas: los puntos son UNA sola parada de tabulador. Solo se monta la tarjeta activa mas o menos una — mira la etiqueta de cada una."
+                >
+                    <WidgetStack
+                        id="banco-sistema"
+                        aria-label="Widgets de ejemplo"
+                        widgets={[
+                            { id: 'w1', titulo: 'Hoy', render: () => <TarjetaDemo n={1} color="brand" /> },
+                            { id: 'w2', titulo: 'Constancia', render: () => <TarjetaDemo n={2} color="success" /> },
+                            { id: 'w3', titulo: 'Volumen', render: () => <TarjetaDemo n={3} color="info" /> },
+                            { id: 'w4', titulo: 'Competicion', render: () => <TarjetaDemo n={4} color="warning" /> },
+                            { id: 'w5', titulo: 'Ranking', render: () => <TarjetaDemo n={5} color="brand" /> },
+                        ]}
+                    />
                 </Bloque>
 
                 {/* ========================= ESTADOS VACÍOS ======================== */}
