@@ -65,7 +65,7 @@ export default function Predictions({ user }: PredictionsProps) {
     <DashboardLayout
       menuItems={menuItems}
     >
-      <div className="p-4 md:p-8 text-white min-h-screen">
+      <div className="p-4 md:p-8 text-white min-h-[100dvh]">
         {/* CABECERA */}
         <header className="mb-10 border-b border-gray-800 pb-6">
           <h1 className="text-4xl md:text-5xl font-black text-yellow-500 tracking-tighter uppercase mb-2 flex items-center gap-3">

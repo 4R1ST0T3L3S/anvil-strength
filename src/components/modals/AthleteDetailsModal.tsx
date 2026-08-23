@@ -74,14 +74,14 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
               <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 shadow-2xl group hover:border-anvil-red/30 transition-colors">
                 <div className="flex items-center gap-3 mb-4 text-gray-500">
                   <Activity size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">GL Points</span>
+                  <span className="text-t-2xs font-black uppercase tracking-widest">GL Points</span>
                 </div>
                 <p className="text-5xl font-black text-white">{athlete.stats.glPoints}</p>
               </div>
               <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 shadow-2xl group hover:border-anvil-red/30 transition-colors">
                 <div className="flex items-center gap-3 mb-4 text-gray-500">
                   <Trophy size={18} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Total</span>
+                  <span className="text-t-2xs font-black uppercase tracking-widest">Total</span>
                 </div>
                 <p className="text-5xl font-black text-white">{athlete.stats.total} <span className="text-sm font-normal text-gray-500 uppercase">kg</span></p>
               </div>
@@ -89,7 +89,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
 
             {/* Lifts */}
             <div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8 flex items-center gap-4">
+              <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500 mb-8 flex items-center gap-4">
                 <span className="w-8 h-[1px] bg-anvil-red" />
                 Mejores Marcas
               </h3>
@@ -100,7 +100,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
                   { label: 'Deadlift', value: athlete.stats.deadlift }
                 ].map((lift) => (
                   <div key={lift.label} className="text-center p-6 bg-[#0a0a0a] rounded-2xl border border-white/5 hover:border-anvil-red/20 transition-colors group">
-                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 group-hover:text-anvil-red transition-colors">{lift.label}</p>
+                    <p className="text-t-2xs text-gray-500 uppercase font-black tracking-widest mb-3 group-hover:text-anvil-red transition-colors">{lift.label}</p>
                     <p className="text-3xl font-black text-white">{lift.value}</p>
                   </div>
                 ))}
@@ -110,7 +110,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             {/* Last Competition */}
             <div className="bg-gradient-to-r from-anvil-red/20 to-transparent p-8 rounded-2xl border border-anvil-red/30 shadow-xl relative overflow-hidden group">
               <div className="relative z-10">
-                <p className="text-[10px] text-anvil-red font-black uppercase tracking-[0.2em] mb-3">Última Competición</p>
+                <p className="text-t-2xs text-anvil-red font-black uppercase tracking-[0.2em] mb-3">Última Competición</p>
                 <p className="text-2xl text-white font-black uppercase font-bebas italic tracking-wider">{athlete.stats.lastCompetition}</p>
               </div>
               <Trophy className="absolute right-6 top-1/2 -translate-y-1/2 text-anvil-red/10 group-hover:scale-125 transition-transform duration-slow" size={80} />

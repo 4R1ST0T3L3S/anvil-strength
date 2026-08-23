@@ -17,7 +17,7 @@ export const ChatBubble: React.FC<{ message: ChatMessage; isOwn: boolean }> = ({
                 <p className="text-sm font-bold leading-relaxed whitespace-pre-wrap">
                     {message.content}
                 </p>
-                <div className={`text-[8px] font-black uppercase tracking-widest mt-2 opacity-50 ${isOwn ? 'text-right' : 'text-left'}`}>
+                <div className={`text-t-2xs font-black uppercase tracking-widest mt-2 opacity-50 ${isOwn ? 'text-right' : 'text-left'}`}>
                     {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     {isOwn && message.is_read && <span className="ml-2">✓✓</span>}
                 </div>

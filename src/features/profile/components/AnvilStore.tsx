@@ -59,7 +59,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                 <div className="bg-black/40 border border-yellow-500/30 px-6 py-3 rounded-2xl flex items-center gap-3">
                     <Star className="text-yellow-500 fill-yellow-500" size={20} />
                     <div className="text-right">
-                        <p className="text-[10px] font-black text-yellow-500/60 uppercase tracking-widest leading-none mb-1">Tu Balance</p>
+                        <p className="text-t-2xs font-black text-yellow-500/60 uppercase tracking-widest leading-none mb-1">Tu Balance</p>
                         <p className="text-xl font-black text-white leading-none">{balance.toLocaleString()}</p>
                     </div>
                 </div>
@@ -86,7 +86,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="font-black uppercase italic text-lg">{item.title}</h3>
                                         {!item.available && (
-                                            <div className="flex items-center gap-1 text-[10px] font-black text-gray-500 bg-white/5 px-2 py-1 rounded-full">
+                                            <div className="flex items-center gap-1 text-t-2xs font-black text-gray-500 bg-white/5 px-2 py-1 rounded-full">
                                                 <Lock size={10} /> PRÓXIMAMENTE
                                             </div>
                                         )}
@@ -95,7 +95,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                                     
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center font-black text-black text-[10px]">A</div>
+                                            <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center font-black text-black text-t-2xs">A</div>
                                             <span className={`font-black ${canAfford ? 'text-white' : 'text-anvil-red'}`}>
                                                 {item.cost.toLocaleString()}
                                             </span>

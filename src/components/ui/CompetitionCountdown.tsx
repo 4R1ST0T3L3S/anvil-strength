@@ -40,7 +40,7 @@ const TimeBlock = ({ value, label }: { value: number, label: string }) => (
         <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
             {value.toString().padStart(2, '0')}
         </span>
-        <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
+        <span className="text-t-2xs sm:text-t-2xs lg:text-t-2xs uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
     </div>
 );
 
@@ -180,7 +180,7 @@ export function CompetitionBanner({
             <div className="hidden md:flex absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors items-center justify-center opacity-0 group-hover:opacity-100 z-50">
                 <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-full flex items-center gap-2 border border-white/10">
                     <Settings size={14} className="animate-spin-slow" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Personalizar</span>
+                    <span className="text-t-2xs font-bold uppercase tracking-widest">Personalizar</span>
                 </div>
             </div>
 
@@ -200,7 +200,7 @@ export function CompetitionBanner({
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[35rem] h-[35rem] bg-white/5 rounded-full pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center w-full">
-                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-[10px] sm:text-xs uppercase tracking-widest mb-3">
+                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-t-2xs sm:text-xs uppercase tracking-widest mb-3">
                     <Trophy size={mobile ? 14 : 16} /> TU PRÓXIMO RETO
                 </div>
                 <h3 className={`

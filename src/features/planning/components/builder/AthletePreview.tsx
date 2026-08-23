@@ -29,7 +29,7 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
 
                 <div className="shrink-0 px-5 py-3 bg-surface-canvas border-b border-subtle flex items-center justify-between">
                     <div>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-anvil-red">Así lo verá el atleta</p>
+                        <p className="text-t-2xs font-black uppercase tracking-widest text-anvil-red">Así lo verá el atleta</p>
                         <h3 className="font-black text-white uppercase text-lg leading-tight">{session.name || `Día ${session.day_number}`}</h3>
                     </div>
                     <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
@@ -54,7 +54,7 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
                                     <h4 className="font-bold text-base leading-tight text-gray-100">{ex.exercise?.name}</h4>
                                     {ex.variant_name && <p className="text-xs text-anvil-red font-bold mt-0.5">{ex.variant_name}</p>}
                                     {(ex.rpe || ex.velocity_avg || ex.rest_seconds) && (
-                                        <div className="flex gap-3 mt-2 text-[10px] font-bold text-ink-subtle uppercase">
+                                        <div className="flex gap-3 mt-2 text-t-2xs font-bold text-ink-subtle uppercase">
                                             {ex.rpe && <span>RPE {ex.rpe}</span>}
                                             {ex.velocity_avg && <span>Vel {ex.velocity_avg}</span>}
                                             {ex.rest_seconds ? <span>Rest {ex.rest_seconds}s</span> : null}
@@ -65,13 +65,13 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
                                 <div className="p-3 space-y-1.5">
                                     {ex.sets.map((set, i) => (
                                         <div key={set.id} className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 text-sm">
-                                            <span className="text-[10px] font-black text-ink-subtle uppercase">Serie {i + 1}</span>
+                                            <span className="text-t-2xs font-black text-ink-subtle uppercase">Serie {i + 1}</span>
                                             <span className="font-bold text-white font-mono">
                                                 {set.target_reps || '—'}{set.target_load ? ` @ ${set.target_load}kg` : ''}{set.target_rpe ? ` RPE ${set.target_rpe}` : ''}
                                             </span>
                                         </div>
                                     ))}
-                                    {ex.sets.length === 0 && <p className="text-[11px] text-ink-subtle italic px-1">Sin series prescritas</p>}
+                                    {ex.sets.length === 0 && <p className="text-t-2xs text-ink-subtle italic px-1">Sin series prescritas</p>}
                                 </div>
                             </div>
                         ))
@@ -89,7 +89,7 @@ function PreviewAppendix({ label, body }: { label: string; body?: string | null 
     return (
         <div className="overflow-hidden rounded-card border border-subtle bg-surface-canvas">
             <div className="border-l-2 border-anvil-red px-3.5 py-3">
-                <p className="text-[9px] font-black uppercase tracking-widest text-anvil-red">{label}</p>
+                <p className="text-t-2xs font-black uppercase tracking-widest text-anvil-red">{label}</p>
                 <p className="mt-1.5 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
                     {body.trim()}
                 </p>

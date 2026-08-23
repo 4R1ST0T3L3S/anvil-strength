@@ -42,7 +42,7 @@ export function CheckInAnswerFields({
                                 ))}
                             </div>
                             {(q.scale?.minLabel || q.scale?.maxLabel) && (
-                                <div className="mt-1.5 flex justify-between text-[10px] text-gray-600">
+                                <div className="mt-1.5 flex justify-between text-t-2xs text-gray-600">
                                     <span>{q.scale?.minLabel}</span>
                                     <span>{q.scale?.maxLabel}</span>
                                 </div>

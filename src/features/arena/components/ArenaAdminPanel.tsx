@@ -65,7 +65,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
             <div className="flex items-center justify-between bg-anvil-red/10 border border-anvil-red/20 p-6 rounded-3xl">
                 <div>
                     <h3 className="text-xl font-black uppercase italic text-white leading-none mb-2">Panel de Control Arena</h3>
-                    <p className="text-[10px] font-bold text-anvil-red uppercase tracking-widest">Solo visible para Marc (Developer)</p>
+                    <p className="text-t-2xs font-bold text-anvil-red uppercase tracking-widest">Solo visible para Marc (Developer)</p>
                 </div>
                 <button 
                     onClick={() => setIsCreateModalOpen(true)}
@@ -117,7 +117,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
 
                             {newBet.type !== 'prediction' && (
                                 <div className="space-y-3">
-                                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-1">OPCIONES</span>
+                                    <span className="text-t-2xs font-black text-gray-600 uppercase tracking-widest ml-1">OPCIONES</span>
                                     {newBet.options.map((opt, i) => (
                                         <div key={i} className="relative flex items-center gap-2">
                                             <input 
@@ -141,7 +141,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                     <button 
                                         type="button"
                                         onClick={handleAddOption}
-                                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/20 transition-colors font-black text-[10px] uppercase tracking-widest"
+                                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/20 transition-colors font-black text-t-2xs uppercase tracking-widest"
                                     >
                                         + AÑADIR OPCIÓN
                                     </button>
@@ -150,7 +150,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
 
                             {newBet.type === 'prediction' && (
                                 <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl">
-                                    <p className="text-[10px] font-black text-yellow-500 uppercase italic mb-2 flex items-center gap-2">
+                                    <p className="text-t-2xs font-black text-yellow-500 uppercase italic mb-2 flex items-center gap-2">
                                         <TrendingUp size={14} /> Modo Predicción Numérica
                                     </p>
                                     <p className="text-t-2xs font-bold text-gray-500 uppercase leading-tight tracking-wider">

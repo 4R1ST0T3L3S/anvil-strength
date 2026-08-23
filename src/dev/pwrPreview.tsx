@@ -172,7 +172,7 @@ function Preview() {
     const { concentrics, eccentrics, series, report } = DEMO;
 
     return (
-        <div className="min-h-screen bg-surface-canvas p-4 text-ink">
+        <div className="min-h-[100dvh] bg-surface-canvas p-4 text-ink">
             <header className="mx-auto mb-4 max-w-6xl">
                 <h1 className="text-t-lg font-black text-ink">Informe de serie · banco de pruebas</h1>
                 <p className="mt-1 text-t-2xs text-ink-subtle">

@@ -192,7 +192,7 @@ export function AdminDashboard() {
     // Auth protection check
     if (isUserLoading) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
+            <div className="min-h-[100dvh] bg-[#0a0a0a] text-white flex items-center justify-center p-4">
                 <Loader className="animate-spin text-anvil-red h-8 w-8" />
             </div>
         );
@@ -233,7 +233,7 @@ export function AdminDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-[100dvh] bg-[#0a0a0a] text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
 
                 {/* Header Section */}
@@ -481,7 +481,7 @@ export function AdminDashboard() {
                                                                 {user.logo_url && (
                                                                     <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-white/5 rounded flex-shrink-0" />
                                                                 )}
-                                                                <label className="text-[10px] font-bold uppercase bg-[#0a0a0a] hover:bg-white/10 px-2 py-1.5 border border-white/20 rounded cursor-pointer transition-colors whitespace-nowrap text-gray-300">
+                                                                <label className="text-t-2xs font-bold uppercase bg-[#0a0a0a] hover:bg-white/10 px-2 py-1.5 border border-white/20 rounded cursor-pointer transition-colors whitespace-nowrap text-gray-300">
                                                                     Subir
                                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
                                                                 </label>

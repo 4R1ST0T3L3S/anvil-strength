@@ -71,12 +71,12 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
 
     return (
-        <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
             {/* Shared Public Header */}
             <PublicHeader onLoginClick={onLoginClick} />
 
             {/* --- HERO SECTION --- */}
-            <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+            <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-[#0a0a0a]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
                     <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/wall-4-light.png')] mix-blend-overlay" />
@@ -131,7 +131,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
                     <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1 }} className="space-y-4 max-w-4xl mx-auto px-4">
                         <p className="text-sm sm:text-lg md:text-2xl text-white font-bold tracking-widest uppercase">EL ÚNICO CLUB DONDE EL ESTILO LO LLEVAS EN TARIMA Y EN EL PODIO.</p>
-                        <p className="text-[10px] sm:text-sm md:text-lg text-gray-400 font-mono tracking-[0.2em] uppercase">The First Spanish Powerlifting Streetwear Brand</p>
+                        <p className="text-t-2xs sm:text-sm md:text-lg text-gray-400 font-mono tracking-[0.2em] uppercase">The First Spanish Powerlifting Streetwear Brand</p>
                     </m.div>
                 </div>
             </section>
@@ -153,7 +153,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                 <div className="max-w-[1600px] mx-auto px-6">
                     <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 text-left">
                         <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase italic tracking-tighter">THE <span className="text-anvil-red">COLLECTION</span></h2>
-                        <div className="mt-4 md:mt-0 text-right"><p className="text-gray-400 font-mono text-[10px] sm:text-sm">STEEZY LIFTS x ANVIL STRENGTH</p><p className="text-white font-bold text-lg sm:text-xl tracking-widest">OFFICIAL GEAR</p></div>
+                        <div className="mt-4 md:mt-0 text-right"><p className="text-gray-400 font-mono text-t-2xs sm:text-sm">STEEZY LIFTS x ANVIL STRENGTH</p><p className="text-white font-bold text-lg sm:text-xl tracking-widest">OFFICIAL GEAR</p></div>
                     </m.div>
 
                     {/* --- PIEZA ANGULAR (SINGLET - ID 4) RESTAURADA --- */}
@@ -172,7 +172,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     {/* Overlay Info */}
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 sm:p-12 flex flex-col md:flex-row items-end justify-between">
                                         <div className="max-w-2xl text-left">
-                                            <div className="bg-anvil-red text-white text-[10px] font-black uppercase px-3 py-1 tracking-widest inline-block mb-4">
+                                            <div className="bg-anvil-red text-white text-t-2xs font-black uppercase px-3 py-1 tracking-widest inline-block mb-4">
                                                 {product.tag}
                                             </div>
                                             <h3 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic text-white mb-4 leading-none">
@@ -202,11 +202,11 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                             <span className="text-2xl sm:text-3xl font-black text-white/10 uppercase tracking-tighter -rotate-12">WORKING<br />ON IT</span>
                                         </div>
                                     )}
-                                    <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold uppercase px-2 py-1 tracking-widest">{product.tag}</div>
+                                    <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md text-white text-t-2xs sm:text-t-2xs font-bold uppercase px-2 py-1 tracking-widest">{product.tag}</div>
                                 </div>
                                 <div className="space-y-1 text-left">
                                     <h3 className="text-lg sm:text-xl font-black uppercase italic group-hover:text-anvil-red transition-colors">{product.name}</h3>
-                                    <p className="text-gray-500 text-[10px] sm:text-xs font-mono uppercase tracking-wide">{product.description}</p>
+                                    <p className="text-gray-500 text-t-2xs sm:text-xs font-mono uppercase tracking-wide">{product.description}</p>
                                 </div>
                             </m.div>
                         ))}
@@ -280,7 +280,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                             </div>
 
                             {/* Texto pequeño inferior */}
-                            <p className="mt-6 text-black/60 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
+                            <p className="mt-6 text-black/60 text-t-2xs sm:text-xs font-bold uppercase tracking-[0.2em]">
                                 * NO SPAM. SOLO FUEGO.
                             </p>
                         </div>

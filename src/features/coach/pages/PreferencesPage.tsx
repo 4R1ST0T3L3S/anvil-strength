@@ -315,6 +315,7 @@ function NumberInput({ value, onChange, min, max, step = 1 }: { value: number; o
     return (
         <input
             type="number"
+                            inputMode="decimal"
             value={value}
             min={min}
             max={max}

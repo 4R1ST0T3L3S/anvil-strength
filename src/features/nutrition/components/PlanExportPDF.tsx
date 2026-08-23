@@ -21,7 +21,7 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
     };
 
     return (
-        <div className="print-plan p-8 bg-white text-black min-h-screen font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="print-plan p-8 bg-white text-black min-h-[100dvh] font-sans" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* ===== PORTADA ===== */}
             <div className="text-center mb-8 border-b-4 border-black pb-6">
                 <h1 className="text-4xl font-black uppercase tracking-widest mb-1">ANVIL POWER CLUB</h1>

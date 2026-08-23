@@ -173,7 +173,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                 {/* Tabs */}
                 <div className="flex flex-wrap border-b border-zinc-800">
                     {([['colors', Palette, 'Color'], ['fonts', Type, 'Fuente'], ['image', Image, 'Logo'], ['layout', LayoutTemplate, 'Layout'], ['ai', Sparkles, 'IA']] as const).map(([key, Icon, label]) => (
-                        <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 min-w-[56px] py-2.5 text-[10px] font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-anvil-red bg-zinc-800/50 border-b-2 border-anvil-red' : 'text-zinc-500 hover:text-white'}`}>
+                        <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 min-w-[56px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-anvil-red bg-zinc-800/50 border-b-2 border-anvil-red' : 'text-zinc-500 hover:text-white'}`}>
                             <Icon size={16} />{label}
                         </button>
                     ))}
@@ -377,7 +377,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                                                     <React.Fragment key={group.groupId}>
                                                         {/* Category Header Row */}
                                                         <tr style={{ background: isDark ? '#111' : '#e5e5e5' }}>
-                                                            <td colSpan={6} className="px-2 py-1 text-[10px] font-black uppercase tracking-wider" style={{ color: s.accentColor, borderBottom: `1px solid ${isDark ? '#333' : '#ddd'}` }}>
+                                                            <td colSpan={6} className="px-2 py-1 text-t-2xs font-black uppercase tracking-wider" style={{ color: s.accentColor, borderBottom: `1px solid ${isDark ? '#333' : '#ddd'}` }}>
                                                                 {group.category} {totalCounts[group.category] > 1 ? `(OPCIÓN ${group.catIndex})` : ''}
                                                                 {group.items.length > 1 && <span style={{ color: '#22c55e', marginLeft: '8px' }}>— ELIGE 1 OPCIÓN</span>}
                                                             </td>
@@ -405,7 +405,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                                         <div className="px-2 py-2 space-y-2">
                                             {grouped.map(group => (
                                                 <div key={group.groupId}>
-                                                    <div className="text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: s.accentColor }}>
+                                                    <div className="text-t-2xs font-black uppercase tracking-wider mb-1" style={{ color: s.accentColor }}>
                                                         {group.category} {totalCounts[group.category] > 1 ? `(OPCIÓN ${group.catIndex})` : ''}
                                                         {group.items.length > 1 && <span style={{ color: '#22c55e', marginLeft: '4px' }}>— ELIGE 1 OPCIÓN</span>}
                                                     </div>

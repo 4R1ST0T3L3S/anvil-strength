@@ -543,7 +543,8 @@ export function LoggerSetRow({
  * Casilla numérica de una serie.
  *
  * `inputMode="decimal"` para que el móvil abra el teclado numérico: sin él
- * el atleta tiene que cambiar de teclado en cada serie. `type="number"` y no
+ * el atleta tiene que cambiar de teclado en cada serie. `type="number"
+                            inputMode="decimal"` y no
  * `text` para las flechas de escritorio, pero sin spinner visible, que en
  * una fila de 60px de alto no cabe y se pulsa sin querer.
  *

@@ -82,7 +82,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const overflowItems = visibleItems.filter(item => item.hideOnMobileBar);
 
     return (
-        <div className="flex h-screen bg-surface-canvas text-white overflow-hidden font-sans">
+        <div className="flex h-[100dvh] bg-surface-canvas text-white overflow-hidden font-sans">
 
             {/* ============ SIDEBAR (escritorio) ============ */}
             <aside className="hidden md:flex flex-col w-56 shrink-0 bg-surface-sunken border-r border-subtle">
@@ -151,7 +151,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     )}
 
                     {userName && (
-                        <p className="truncate px-3 pt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+                        <p className="truncate px-3 pt-2 text-t-2xs font-bold uppercase tracking-[0.2em] text-ink-faint">
                             {userName}
                         </p>
                     )}
@@ -194,7 +194,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             <button
                                 onClick={panelSwitch.onClick}
                                 aria-label={panelSwitch.label}
-                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97] md:hidden"
+                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97] md:hidden"
                             >
                                 <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
                                 <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
@@ -256,7 +256,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         {/* 10px es el suelo. A los 8px que tenia, la etiqueta
                             era una mancha gris: se leia el icono y el texto
                             solo anadia ruido debajo. */}
-                        <span className="relative max-w-full truncate text-[10px] font-bold leading-none tracking-tight">
+                        <span className="relative max-w-full truncate text-t-2xs font-bold leading-none tracking-tight">
                             {item.shortLabel ?? item.label.replace('Mi ', '').replace('Mis ', '')}
                         </span>
                     </button>

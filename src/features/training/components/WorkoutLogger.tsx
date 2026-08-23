@@ -489,7 +489,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         setActiveSessionId(pickSessionForToday(allSessions.filter(s => s.week_number === week)));
     };
 
-    if (loading) return <div className="h-screen flex items-center justify-center bg-black"><Loader className="animate-spin text-white" /></div>;
+    if (loading) return <div className="h-[100dvh] flex items-center justify-center bg-black"><Loader className="animate-spin text-white" /></div>;
 
     if (!block) {
         return (

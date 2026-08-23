@@ -385,7 +385,7 @@ export function SetVbtModal({
                                     {repVelocities.map((v, i) => (
                                         <span
                                             key={i}
-                                            className="rounded-chip bg-surface-sunken px-1.5 py-0.5 text-[10px] tabular-nums text-ink-muted"
+                                            className="rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs tabular-nums text-ink-muted"
                                         >
                                             {v.toFixed(2)}
                                         </span>

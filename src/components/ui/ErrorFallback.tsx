@@ -38,7 +38,7 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
     // Show brief message while reloading
     if (isChunkError) {
         return (
-            <div role="alert" className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
+            <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
                 <div className="bg-[#0a0a0a] p-8 rounded-xl border border-white/10 max-w-md w-full text-center shadow-2xl">
                     <div className="mx-auto bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mb-6">
                         <RefreshCw className="text-white h-8 w-8 animate-spin" />
@@ -51,7 +51,7 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
     }
 
     return (
-        <div role="alert" className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
+        <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
             <div className="bg-[#0a0a0a] p-8 rounded-xl border border-red-500/20 max-w-md w-full text-center shadow-2xl">
                 <div className="mx-auto bg-red-500/10 w-16 h-16 rounded-full flex items-center justify-center mb-6">
                     <AlertTriangle className="text-anvil-red h-8 w-8" />

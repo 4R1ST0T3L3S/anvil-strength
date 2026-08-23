@@ -37,7 +37,7 @@ export function CountdownPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-white">
+        <div className="min-h-[100dvh] bg-[#0a0a0a] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-white">
             {/* Background Texture/Gradient */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-[#0a0a0a] to-[#0a0a0a]" />
@@ -88,7 +88,7 @@ export function CountdownPage() {
                             <span className="text-2xl sm:text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-slow tabular-nums leading-none">
                                 {item.value.toString().padStart(2, '0')}
                             </span>
-                            <span className="text-[9px] md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
+                            <span className="text-t-2xs md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
                                 {item.label}
                             </span>
                         </m.div>
@@ -102,7 +102,7 @@ export function CountdownPage() {
                     transition={{ delay: 1, duration: 1 }}
                     className="flex flex-col items-center gap-6 mb-8 md:mb-0"
                 >
-                    <p className="text-white/30 text-[10px] md:text-xs font-bold uppercase tracking-widest text-center px-4">
+                    <p className="text-white/30 text-t-2xs md:text-xs font-bold uppercase tracking-widest text-center px-4">
                         Síguenos para no perderte el lanzamiento
                     </p>
                     <div className="flex items-center gap-6">

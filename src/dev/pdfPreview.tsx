@@ -123,7 +123,7 @@ function Bench() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0b0c0e] p-6 text-white">
+        <div className="min-h-[100dvh] bg-[#0b0c0e] p-6 text-white">
             <h1 className="mb-1 text-xl font-black uppercase tracking-widest">Hoja de entrenamiento</h1>
             <p className="mb-5 text-xs text-white/50">
                 {resolved.layout.sheet === 'table' ? 'Maqueta de tabla' : 'Maqueta de bloques'} ·{' '}
@@ -160,7 +160,7 @@ function Bench() {
             </div>
 
             {scan && (
-                <pre className="mb-5 max-h-64 overflow-auto rounded-lg bg-black/50 p-3 text-[11px] leading-relaxed text-emerald-300">
+                <pre className="mb-5 max-h-64 overflow-auto rounded-lg bg-black/50 p-3 text-t-2xs leading-relaxed text-emerald-300">
                     {JSON.stringify({ report: scan.report, theme: scan.theme }, null, 1)}
                 </pre>
             )}

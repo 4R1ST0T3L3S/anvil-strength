@@ -543,12 +543,12 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                                 <div className="space-y-2">
                                                     <div className="flex flex-wrap items-center gap-3">
                                                         {comp.level && (
-                                                            <span className={`text-[10px] font-black uppercase tracking-widest ${meta.bg} ${meta.color} px-2 py-1 rounded`}>
+                                                            <span className={`text-t-2xs font-black uppercase tracking-widest ${meta.bg} ${meta.color} px-2 py-1 rounded`}>
                                                                 {comp.level}
                                                             </span>
                                                         )}
                                                         {isPast && (
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-ink-faint px-2 py-1 rounded bg-surface-raised">
+                                                            <span className="text-t-2xs font-black uppercase tracking-widest text-ink-faint px-2 py-1 rounded bg-surface-raised">
                                                                 Disputada
                                                             </span>
                                                         )}
@@ -660,7 +660,7 @@ function CompetitionResultRow({ result, onSave }: {
 
     const field = (key: keyof CompetitionResult, label: string, placeholder: string) => (
         <label className="block">
-            <span className="mb-1 block text-[10px] font-black uppercase tracking-widest text-ink-subtle">{label}</span>
+            <span className="mb-1 block text-t-2xs font-black uppercase tracking-widest text-ink-subtle">{label}</span>
             <input
                 type="text"
                 inputMode="decimal"
@@ -675,7 +675,7 @@ function CompetitionResultRow({ result, onSave }: {
 
     return (
         <div className="border-t border-subtle pt-4">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-ink-subtle">Resultado</p>
+            <p className="mb-3 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">Resultado</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                 {field('bodyweight_kg', 'Peso', 'kg')}
                 {field('squat_kg', 'Sentadilla', 'kg')}

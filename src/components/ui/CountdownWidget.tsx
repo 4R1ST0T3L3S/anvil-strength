@@ -150,7 +150,7 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
             </button>
 
             <div className="relative z-10 flex flex-col items-center w-full">
-                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-[10px] md:text-xs uppercase tracking-widest mb-2">
+                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-t-2xs md:text-xs uppercase tracking-widest mb-2">
                     <Trophy size={14} /> {prefs.source === 'custom' ? 'TU OBJETIVO' : prefs.source === 'aep' ? 'CALENDARIO AEP' : 'TU PRÓXIMO RETO'}
                 </div>
                 <h3 className="mb-2 text-t-xl font-black uppercase italic leading-tight drop-shadow-lg md:text-t-2xl">
@@ -263,14 +263,14 @@ function CountdownSettings({
                     <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {/* Fuente del evento */}
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">¿A qué cuenta atrás?</p>
+                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">¿A qué cuenta atrás?</p>
                             <div className="grid grid-cols-3 gap-2">
                                 {sourceTabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         disabled={tab.disabled}
                                         onClick={() => setDraft({ ...draft, source: tab.id })}
-                                        className={`py-2.5 px-2 rounded-xl text-[11px] font-black uppercase tracking-wide transition-colors border ${
+                                        className={`py-2.5 px-2 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors border ${
  draft.source === tab.id
  ? 'bg-anvil-red border-anvil-red text-white'
  : 'bg-[#252525] border-white/5 text-gray-400 hover:text-white hover:border-white/20'
@@ -285,7 +285,7 @@ function CountdownSettings({
                         {/* Lista AEP */}
                         {draft.source === 'aep' && (
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Calendario oficial AEP</p>
+                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Calendario oficial AEP</p>
                                 {loadingAep ? (
                                     <div className="flex justify-center py-8"><Loader className="animate-spin text-anvil-red" size={24} /></div>
                                 ) : aepError ? (
@@ -312,12 +312,12 @@ function CountdownSettings({
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-sm font-bold text-white truncate">{comp.campeonato}</p>
-                                                        <p className="text-[11px] text-gray-500 font-bold flex items-center gap-2">
+                                                        <p className="text-t-2xs text-gray-500 font-bold flex items-center gap-2">
                                                             <span className="flex items-center gap-1"><Calendar size={10} /> {comp.fecha}</span>
                                                             <span className="flex items-center gap-1 truncate"><MapPin size={10} /> {comp.sede}</span>
                                                         </p>
                                                     </div>
-                                                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-white/5 text-gray-400 shrink-0">{comp.level}</span>
+                                                    <span className="text-t-2xs font-black uppercase px-2 py-0.5 rounded bg-white/5 text-gray-400 shrink-0">{comp.level}</span>
                                                 </button>
                                             );
                                         })}
@@ -332,7 +332,7 @@ function CountdownSettings({
                         {/* Evento personalizado */}
                         {draft.source === 'custom' && (
                             <div className="space-y-3">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Tu propio objetivo</p>
+                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500">Tu propio objetivo</p>
                                 <div className="relative">
                                     <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                                     <input
@@ -359,7 +359,7 @@ function CountdownSettings({
 
                         {/* Temas */}
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Estilo</p>
+                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Estilo</p>
                             <div className="grid grid-cols-4 gap-3">
                                 {COUNTDOWN_THEMES.map(theme => (
                                     <button
@@ -372,7 +372,7 @@ function CountdownSettings({
  } flex items-center justify-center`}>
                                             {draft.themeId === theme.id && <Check size={16} className="text-white drop-shadow" />}
                                         </div>
-                                        <span className={`text-[9px] font-bold uppercase tracking-wide text-center leading-tight ${draft.themeId === theme.id ? 'text-white' : 'text-gray-500'}`}>
+                                        <span className={`text-t-2xs font-bold uppercase tracking-wide text-center leading-tight ${draft.themeId === theme.id ? 'text-white' : 'text-gray-500'}`}>
                                             {theme.label}
                                         </span>
                                     </button>

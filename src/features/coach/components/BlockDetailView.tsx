@@ -51,7 +51,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                                 {block.name}
                             </h2>
                             {block.is_active && (
-                                <span className="bg-anvil-red/20 text-anvil-red text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                                <span className="bg-anvil-red/20 text-anvil-red text-t-2xs font-black px-2 py-0.5 rounded uppercase tracking-wider">
                                     Activo
                                 </span>
                             )}
@@ -115,7 +115,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 bg-black/40 rounded-lg flex flex-col items-center justify-center border border-subtle text-center">
-                                            <span className="text-[10px] text-ink-subtle font-bold uppercase">Día</span>
+                                            <span className="text-t-2xs text-ink-subtle font-bold uppercase">Día</span>
                                             <span className="text-xl font-black text-white leading-none">{session.day_number}</span>
                                         </div>
                                         <div>

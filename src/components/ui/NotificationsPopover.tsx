@@ -33,7 +33,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
             >
                 <Bell size={20} className={unreadCount > 0 ? "text-anvil-red animate-pulse" : "text-gray-400 group-hover:text-white"} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-white text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
                         {unreadCount > 9 ? '+9' : unreadCount}
                     </span>
                 )}
@@ -57,7 +57,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-[10px] font-bold text-gray-500 hover:text-white uppercase transition-colors"
+                                    className="text-t-2xs font-bold text-gray-500 hover:text-white uppercase transition-colors"
                                 >
                                     Marcar todo leído
                                 </button>
@@ -87,7 +87,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                                                     {!notif.is_read && <div className="w-2 h-2 bg-anvil-red rounded-full shadow-[0_0_8px_rgba(220,38,38,0.5)]" />}
                                                 </div>
                                                 <p className="text-xs text-gray-400 leading-relaxed mb-2">{notif.content}</p>
-                                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">
+                                                <span className="text-t-2xs font-bold text-gray-600 uppercase tracking-widest">
                                                     {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
                                                 </span>
                                             </div>

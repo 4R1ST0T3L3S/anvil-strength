@@ -222,7 +222,8 @@ export interface NumberFieldProps extends Omit<InputProps, 'type'> {
 /**
  * Campo numérico.
  *
- * POR QUÉ `type="text"` Y NO `type="number"`. El campo numérico nativo:
+ * POR QUÉ `type="text"` Y NO `type="number"
+                            inputMode="decimal"`. El campo numérico nativo:
  *   · Muestra unas flechitas que en móvil no se pueden pulsar bien y en
  *     escritorio cambian el valor al hacer scroll por encima sin querer.
  *   · Rechaza la coma decimal en algunos idiomas del sistema, así que un

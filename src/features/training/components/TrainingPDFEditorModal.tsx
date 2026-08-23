@@ -165,7 +165,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                         ['advanced', LayoutTemplate, 'Estilo'],
                         ['ai', Sparkles, 'IA']
                     ] as const).map(([key, Icon, label]) => (
-                        <button key={key} onClick={() => setActiveTab(key as any)} className={`flex-1 min-w-[60px] py-2.5 text-[10px] font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-anvil-red bg-zinc-800/50 border-b-2 border-anvil-red' : 'text-zinc-500 hover:text-white'}`}>
+                        <button key={key} onClick={() => setActiveTab(key as any)} className={`flex-1 min-w-[60px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-anvil-red bg-zinc-800/50 border-b-2 border-anvil-red' : 'text-zinc-500 hover:text-white'}`}>
                             <Icon size={16} />{label}
                         </button>
                     ))}
@@ -223,7 +223,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                         <div className="grid grid-cols-3 gap-2">
                             {['compact', 'normal', 'relaxed'].map(pad => (
                                 <button key={pad} onClick={() => update({ tablePadding: pad as any })}
-                                    className={`py-2 px-1 text-[10px] font-bold uppercase rounded border transition-colors ${s.tablePadding === pad ? 'bg-anvil-red/10 border-anvil-red text-anvil-red' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'}`}>
+                                    className={`py-2 px-1 text-t-2xs font-bold uppercase rounded border transition-colors ${s.tablePadding === pad ? 'bg-anvil-red/10 border-anvil-red text-anvil-red' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'}`}>
                                     {pad}
                                 </button>
                             ))}
@@ -331,11 +331,11 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                                                         <tr key={ex.id} style={{ background: bg, borderBottom: `1px solid ${isDark ? '#262626' : '#eee'}` }}>
                                                             <td className={`px-3 ${padY} font-bold max-w-[200px]`}>
                                                                 <span className="block">{ex.exercise?.name || 'Ejercicio'}</span>
-                                                                {ex.notes && <span className="block text-[10px] font-normal pdf-subtle mt-1">{ex.notes}</span>}
+                                                                {ex.notes && <span className="block text-t-2xs font-normal pdf-subtle mt-1">{ex.notes}</span>}
                                                                 {extendedEx.modifiers && extendedEx.modifiers.length > 0 && (
                                                                     <div className="mt-1 flex flex-wrap gap-1">
                                                                         {extendedEx.modifiers.map((mod, i) => (
-                                                                            <span key={i} className="text-[8px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded-sm border" style={{ color: s.accentColor, borderColor: s.accentColor, borderRadius: Math.min(s.borderRadius, 4) }}>{mod}</span>
+                                                                            <span key={i} className="text-t-2xs font-black tracking-widest uppercase px-1.5 py-0.5 rounded-sm border" style={{ color: s.accentColor, borderColor: s.accentColor, borderRadius: Math.min(s.borderRadius, 4) }}>{mod}</span>
                                                                         ))}
                                                                     </div>
                                                                 )}

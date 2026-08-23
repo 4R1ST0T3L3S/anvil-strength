@@ -111,7 +111,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                         {item.vbt_file_url && (
                                             <button 
                                                 onClick={() => setVbtModalConfig({ isOpen: true, url: item.vbt_file_url!, exerciseName: item.exercise?.name || 'VBT' })}
-                                                className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors uppercase tracking-wider"
+                                                className="bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-1.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors uppercase tracking-wider"
                                                 title="Ver Gráfica VBT"
                                             >
                                                 <Activity size={14} />

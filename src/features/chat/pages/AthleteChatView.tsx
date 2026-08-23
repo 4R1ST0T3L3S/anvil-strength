@@ -21,12 +21,12 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
 
     if (!user.coach_id) {
         return (
-            <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center">
+            <div className="min-h-[100dvh] bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center">
                 <div className="p-6 bg-anvil-red/10 rounded-full text-anvil-red mb-6">
                     <ShieldCheck size={48} />
                 </div>
                 <h2 className="text-2xl font-black uppercase italic text-white mb-2">Sin Entrenador Asignado</h2>
-                <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest max-w-xs">
+                <p className="text-gray-500 font-bold uppercase text-t-2xs tracking-widest max-w-xs">
                     Contacta con la administración para que se te asigne un técnico de Anvil Strength.
                 </p>
             </div>
@@ -47,7 +47,7 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
                 </button>
                 <div className="flex-1">
                     <h1 className="text-lg font-black uppercase italic text-white leading-none">Canal de Comunicación</h1>
-                    <p className="text-[9px] font-bold text-anvil-red uppercase tracking-widest mt-1">
+                    <p className="text-t-2xs font-bold text-anvil-red uppercase tracking-widest mt-1">
                         Coach: {user.coach_name || 'Staff Técnico'}
                     </p>
                 </div>
@@ -67,7 +67,7 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
                     <>
                         <div className="flex flex-col items-center mb-10 opacity-30">
                             <ShieldCheck size={32} className="text-gray-500 mb-2" />
-                            <p className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-500">Conexión Segura de Punto a Punto</p>
+                            <p className="text-t-2xs font-black uppercase tracking-[0.4em] text-gray-500">Conexión Segura de Punto a Punto</p>
                         </div>
                         {messages.map(msg => (
                             <ChatBubble key={msg.id} message={msg} isOwn={msg.sender_id === user.id} />

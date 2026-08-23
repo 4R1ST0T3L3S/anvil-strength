@@ -69,7 +69,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
 
           {/* Bio */}
           <div className="mb-12">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-4">
+            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-anvil-red" />
               Presentación
             </h3>
@@ -80,7 +80,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
 
           {/* Contact */}
           <div className="mt-auto">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-4">
+            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-anvil-red" />
               Contacto Directo
             </h3>

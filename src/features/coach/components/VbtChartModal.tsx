@@ -319,7 +319,7 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
                                 </div>
                                 <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto overflow-x-auto">
                                     <table className="w-full text-left text-xs sm:text-sm text-gray-400 relative">
-                                        <thead className="sticky top-0 z-10 text-[10px] sm:text-xs uppercase bg-[#0a0a0a] text-gray-500 font-bold border-b border-white/5 shadow-sm">
+                                        <thead className="sticky top-0 z-10 text-t-2xs sm:text-xs uppercase bg-[#0a0a0a] text-gray-500 font-bold border-b border-white/5 shadow-sm">
                                             <tr>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">S/R</th>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">Carga</th>

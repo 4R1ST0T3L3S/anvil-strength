@@ -565,7 +565,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                                     </td>
                                                     <td className="px-2 py-2 text-right tabular-nums text-ink-muted">{rir ?? '—'}</td>
                                                     <td className="px-2 py-2">
-                                                        <span className="rounded-chip bg-surface-sunken px-1.5 py-0.5 text-[10px] text-ink-subtle">
+                                                        <span className="rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs text-ink-subtle">
                                                             {m.source}
                                                         </span>
                                                     </td>

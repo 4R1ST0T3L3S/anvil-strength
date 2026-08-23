@@ -72,7 +72,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             <h2 className="text-2xl font-black uppercase italic text-yellow-500 tracking-tighter">
                                 Tu Apuesta
                             </h2>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+                            <p className="text-t-2xs font-bold text-gray-500 uppercase tracking-widest mt-1">
                                 LA ARENA - ANVIL STRENGTH
                             </p>
                         </div>
@@ -80,13 +80,14 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                         {/* Content */}
                         <div className="p-8 space-y-6">
                             <div className="bg-black/40 border border-white/5 rounded-2xl p-6">
-                                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-2 text-center">
+                                <span className="text-t-2xs font-black text-gray-600 uppercase tracking-widest block mb-2 text-center">
                                     {bet.type === 'prediction' ? 'ESTÁS PREDICIENDO UN VALOR' : 'ESTÁS APOSTANDO POR'}
                                 </span>
                                 {bet.type === 'prediction' ? (
                                     <div className="relative">
                                         <input 
                                             type="number"
+                            inputMode="decimal"
                                             step="any"
                                             placeholder="TU VALOR (EJ: 102.5)"
                                             className="w-full bg-black border border-white/10 p-4 rounded-xl font-black text-xl text-white text-center focus:border-yellow-500/50 transition-colors"
@@ -99,20 +100,21 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                                         {option?.name}
                                     </h3>
                                 )}
-                                <p className="text-[10px] font-bold text-anvil-red uppercase tracking-[0.2em] text-center mt-2">
+                                <p className="text-t-2xs font-bold text-anvil-red uppercase tracking-[0.2em] text-center mt-2">
                                     {bet.title}
                                 </p>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex justify-between items-end px-2">
-                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">CANTIDAD A APOSTAR</span>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">SALDO: {balance.toLocaleString()} AC</span>
+                                    <span className="text-t-2xs font-black text-gray-500 uppercase tracking-widest">CANTIDAD A APOSTAR</span>
+                                    <span className="text-t-2xs font-black text-gray-400 uppercase tracking-widest">SALDO: {balance.toLocaleString()} AC</span>
                                 </div>
                                 <div className="relative">
                                     <Coins size={24} className="absolute left-5 top-1/2 -translate-y-1/2 text-yellow-500" />
                                     <input 
                                         type="number"
+                            inputMode="decimal"
                                         value={amount}
                                         onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
                                         className="w-full bg-black border border-white/10 p-5 pl-14 rounded-2xl font-black text-2xl text-white focus:border-yellow-500/50 transition-colors"
@@ -124,14 +126,14 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             {amount > balance && (
                                 <div className="flex items-center gap-2 text-anvil-red bg-anvil-red/10 p-3 rounded-xl border border-anvil-red/20">
                                     <AlertTriangle size={16} />
-                                    <span className="text-[10px] font-bold uppercase">Saldo insuficiente para esta apuesta</span>
+                                    <span className="text-t-2xs font-bold uppercase">Saldo insuficiente para esta apuesta</span>
                                 </div>
                             )}
 
                             <div className="flex gap-4 p-4 bg-yellow-500/5 border border-yellow-500/10 rounded-2xl">
                                 <TrendingUp size={20} className="text-yellow-500 shrink-0" />
                                 <div>
-                                    <p className="text-[10px] font-black text-white uppercase italic mb-1">Reparto Proporcional</p>
+                                    <p className="text-t-2xs font-black text-white uppercase italic mb-1">Reparto Proporcional</p>
                                     <p className="text-t-2xs font-bold text-gray-500 uppercase leading-tight tracking-wider">
                                         Si ganas, recibirás una parte del bote total proporcional a tu apuesta.
                                     </p>
@@ -152,7 +154,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             {onAddToSlip && (
                                 <button
                                     onClick={() => onAddToSlip(bet, option)}
-                                    className="w-full py-4 bg-white/5 text-gray-400 hover:text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-colors border border-white/5 hover:border-white/10"
+                                    className="w-full py-4 bg-white/5 text-gray-400 hover:text-white font-black uppercase tracking-widest text-t-2xs rounded-2xl transition-colors border border-white/5 hover:border-white/10"
                                 >
                                     O AÑADIR AL BOLETO (COMBINADA)
                                 </button>

@@ -180,7 +180,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                     <button
                         onClick={() => load(true)}
                         disabled={refreshing || loading}
-                        className="flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-[11px] font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-white disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-t-2xs font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-white disabled:opacity-40"
                     >
                         <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
                         {refreshing ? 'Actualizando' : 'Actualizar'}
@@ -229,12 +229,12 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}
                                     <div className="flex justify-between items-start">
                                         <div className="flex flex-col gap-2">
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest ${bg} ${color}`}>
+                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-t-2xs md:text-xs font-black uppercase tracking-widest ${bg} ${color}`}>
                                                 {icon && icon}
                                                 {level}
                                             </div>
                                             {esInvitado && (
-                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-[10px] font-black px-3 py-1.5 rounded-lg uppercase border border-white/5`}>
+                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-t-2xs font-black px-3 py-1.5 rounded-lg uppercase border border-white/5`}>
                                                     <Users size={12} /> Atleta Invitado
                                                 </div>
                                             )}

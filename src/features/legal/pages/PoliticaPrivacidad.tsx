@@ -13,7 +13,7 @@ export function PoliticaPrivacidad({ onLoginClick }: LegalPageProps) {
         canonical: 'https://anvilstrength.es/legal/privacidad'
     });
     return (
-        <div className="font-sans min-h-screen bg-[#0a0a0a] text-gray-300">
+        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-gray-300">
             <PublicHeader onLoginClick={onLoginClick} />
             <div className="max-w-3xl mx-auto px-6 pt-40 pb-24">
                 <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-12">Política de Privacidad</h1>

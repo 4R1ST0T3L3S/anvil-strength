@@ -80,7 +80,7 @@ export function PiezasPreview() {
     };
 
     return (
-        <div className="min-h-screen bg-surface-canvas px-4 py-8 md:px-8">
+        <div className="min-h-[100dvh] bg-surface-canvas px-4 py-8 md:px-8">
             <div className="mx-auto w-full max-w-3xl space-y-10">
                 <header>
                     <p className="text-t-2xs font-bold uppercase tracking-widest text-brand">

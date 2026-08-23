@@ -173,7 +173,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
     return (
         <div className="p-4 bg-black/10">
             {sets.length > 0 && (
-                <div className="grid grid-cols-11 gap-2 mb-2 text-[10px] uppercase font-bold text-ink-subtle tracking-wider text-center">
+                <div className="grid grid-cols-11 gap-2 mb-2 text-t-2xs uppercase font-bold text-ink-subtle tracking-wider text-center">
                     <div className="col-span-2">Series</div>
                     <div className="col-span-2">Reps</div>
                     <div className="col-span-2">RPE</div>
@@ -230,6 +230,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                             <div className="col-span-2">
                                 <input
                                     type="number"
+                            inputMode="decimal"
                                     value={set.target_load || ''}
                                     onChange={(e) => handleUpdateSet(set.id, 'target_load', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_load: e.target.value ? parseFloat(e.target.value) : null })}

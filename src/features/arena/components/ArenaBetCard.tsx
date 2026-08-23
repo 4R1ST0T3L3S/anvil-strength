@@ -60,7 +60,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                 {/* Pool Display */}
                 <div className="flex items-center gap-2 mb-8 bg-black/40 rounded-xl px-4 py-3 border border-white/5 w-fit">
                     <TrendingUp size={14} className="text-yellow-500" />
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Bote Total:</span>
+                    <span className="text-t-2xs font-black text-gray-500 uppercase tracking-widest">Bote Total:</span>
                     <span className="text-sm font-black text-yellow-500">{totalPool.toLocaleString()} AC</span>
                 </div>
 
@@ -86,7 +86,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                     e.stopPropagation();
                                     onAddToSlip(bet, null);
                                 }}
-                                className="mt-4 p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors border border-white/5 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                className="mt-4 p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl transition-colors border border-white/5 flex items-center gap-2 text-t-2xs font-black uppercase tracking-widest"
                             >
                                 <Plus size={14} /> Añadir al boleto
                             </button>
@@ -127,7 +127,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                             {option.name}
                                         </span>
                                         <span className="text-lg font-black text-white/40 group-hover/option:text-white transition-colors mb-2">
-                                            {option.total_pool} <span className="text-[10px] italic">AC</span>
+                                            {option.total_pool} <span className="text-t-2xs italic">AC</span>
                                         </span>
                                         
                                         <div className="flex gap-2 w-full">
@@ -136,7 +136,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                                     e.stopPropagation();
                                                     onBetClick(bet, option);
                                                 }}
-                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-anvil-red text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-colors border border-white/5 hover:border-anvil-red shadow-lg"
+                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-anvil-red text-white font-black text-t-2xs uppercase tracking-widest rounded-xl transition-colors border border-white/5 hover:border-anvil-red shadow-lg"
                                             >
                                                 Apostar
                                             </button>

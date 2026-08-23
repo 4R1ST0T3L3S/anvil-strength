@@ -122,6 +122,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted font-bold">Día</span>
                                 <input
                                     type="number"
+                            inputMode="decimal"
                                     min="1"
                                     max="30"
                                     value={dayNumber}

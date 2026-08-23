@@ -205,7 +205,8 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         <div>
                             <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Calorías</label>
                             <input 
-                                type="number" 
+                                type="number"
+                            inputMode="decimal" 
                                 value={macrosForm.calories || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, calories: Number(e.target.value)})}
                                 className="w-full bg-[#111111] text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red"
@@ -214,7 +215,8 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         <div>
                             <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Proteína (g)</label>
                             <input 
-                                type="number" 
+                                type="number"
+                            inputMode="decimal" 
                                 value={macrosForm.protein || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, protein: Number(e.target.value)})}
                                 className="w-full bg-[#111111] text-blue-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-blue-500"
@@ -223,7 +225,8 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         <div>
                             <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Carbos (g)</label>
                             <input 
-                                type="number" 
+                                type="number"
+                            inputMode="decimal" 
                                 value={macrosForm.carbs || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, carbs: Number(e.target.value)})}
                                 className="w-full bg-[#111111] text-yellow-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-yellow-500"
@@ -232,7 +235,8 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         <div>
                             <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Grasas (g)</label>
                             <input 
-                                type="number" 
+                                type="number"
+                            inputMode="decimal" 
                                 value={macrosForm.fats || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, fats: Number(e.target.value)})}
                                 className="w-full bg-[#111111] text-orange-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-orange-500"

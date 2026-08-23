@@ -199,7 +199,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-xs text-white truncate">{entry.profiles?.full_name}</p>
-                                                <p className="text-[10px] text-gray-500 uppercase truncate">{entry.category || 'N/A'}</p>
+                                                <p className="text-t-2xs text-gray-500 uppercase truncate">{entry.category || 'N/A'}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
@@ -216,7 +216,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             {/* Side tag */}
                             <div className="absolute right-0 top-0 h-full w-14 bg-black/40 hidden md:flex flex-col items-center justify-center border-l border-white/5">
                                 <span className="text-xl font-black text-anvil-red">{comp.entries.length}</span>
-                                <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mt-1">Convoc.</span>
+                                <span className="text-t-2xs font-bold text-gray-500 uppercase tracking-widest mt-1">Convoc.</span>
                             </div>
                         </m.div>
                     ))

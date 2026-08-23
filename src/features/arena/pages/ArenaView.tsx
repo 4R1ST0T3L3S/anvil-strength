@@ -206,7 +206,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-[100dvh] bg-[#0a0a0a] text-white">
             {/* Header */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5 px-4 md:px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -221,7 +221,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
 
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex flex-col items-end">
-                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Tu Saldo</span>
+                        <span className="text-t-2xs font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Tu Saldo</span>
                         <span className="text-lg font-black text-yellow-500 leading-none">
                             {pointsData?.balance?.toLocaleString() || 0} <span className="text-xs italic">AC</span>
                         </span>
@@ -240,7 +240,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         <div className="flex gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/5 w-fit">
                             <button 
                                 onClick={() => setActiveTab('active')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-[background-color,box-shadow,color] ${
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-t-2xs uppercase tracking-widest transition-[background-color,box-shadow,color] ${
  activeTab === 'active' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
  }`}
                             >
@@ -249,7 +249,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             </button>
                             <button 
                                 onClick={() => setActiveTab('history')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-[background-color,box-shadow,color] ${
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-t-2xs uppercase tracking-widest transition-[background-color,box-shadow,color] ${
  activeTab === 'history' ? 'bg-anvil-red text-white shadow-lg shadow-red-900/20' : 'text-gray-500 hover:text-white'
  }`}
                             >
@@ -261,7 +261,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-4">
                                 <Loader className="animate-spin text-anvil-red" size={32} />
-                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Cargando combates...</p>
+                                <p className="text-t-2xs font-black text-gray-500 uppercase tracking-widest">Cargando combates...</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 gap-6">
@@ -299,7 +299,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             <div className="text-4xl font-black text-white italic tracking-tighter mb-1">
                                 {pointsData?.balance?.toLocaleString() || 0}
                             </div>
-                            <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest italic">Anvil Coins</span>
+                            <span className="text-t-2xs font-black text-yellow-500 uppercase tracking-widest italic">Anvil Coins</span>
                         </div>
 
                         {/* Trastienda de la Arena: crear, resolver y borrar
@@ -379,7 +379,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                 {betSlip.map(leg => (
                                     <div key={leg.bet.id} className="bg-white/5 rounded-xl p-3 flex justify-between items-center border border-white/5">
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-black uppercase text-gray-500 truncate">{leg.bet.title}</p>
+                                            <p className="text-t-2xs font-black uppercase text-gray-500 truncate">{leg.bet.title}</p>
                                             <p className="text-xs font-bold text-white uppercase italic">
                                                 Gana: <span className="text-anvil-red">{leg.option?.name || leg.predictionValue}</span>
                                             </p>
@@ -395,7 +395,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                 {betSlip.length >= 2 ? (
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center px-2">
-                                            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Multiplicador Estimado</span>
+                                            <span className="text-t-2xs font-black text-gray-500 uppercase tracking-widest">Multiplicador Estimado</span>
                                             <span className="text-sm font-black text-yellow-500 italic">x{Math.pow(2, betSlip.length - 1).toFixed(1)}</span>
                                         </div>
                                         <button 
@@ -407,7 +407,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                         </button>
                                     </div>
                                 ) : (
-                                    <p className="text-center text-[10px] font-black text-gray-500 uppercase tracking-widest py-2">
+                                    <p className="text-center text-t-2xs font-black text-gray-500 uppercase tracking-widest py-2">
                                         Añade {2 - betSlip.length} más para una combinada
                                     </p>
                                 )}
@@ -423,8 +423,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
 function RuleItem({ title, desc }: { title: string; desc: string }) {
     return (
         <div className="space-y-1">
-            <p className="text-[10px] font-black text-anvil-red uppercase italic tracking-widest">{title}</p>
-            <p className="text-[10px] font-bold text-gray-500 uppercase leading-relaxed tracking-wider">{desc}</p>
+            <p className="text-t-2xs font-black text-anvil-red uppercase italic tracking-widest">{title}</p>
+            <p className="text-t-2xs font-bold text-gray-500 uppercase leading-relaxed tracking-wider">{desc}</p>
         </div>
     );
 }

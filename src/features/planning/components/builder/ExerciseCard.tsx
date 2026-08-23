@@ -256,6 +256,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     {editingMax ? (
                         <input
                             type="number"
+                            inputMode="decimal"
                             autoFocus
                             defaultValue={referenceMax ?? ''}
                             placeholder="1RM en kg"
@@ -320,7 +321,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     {sessionExercise.vbt_file_url && (
                         <button
                             onClick={() => onOpenVbtChart(sessionExercise.vbt_file_url!, exerciseName)}
-                            className="shrink-0 bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
+                            className="shrink-0 bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
                             title="Ver Gráfica VBT"
                         >
                             <Activity size={12} />
@@ -418,7 +419,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         />
                         {pendingModifier ? (
                             <div className="flex items-center gap-2 justify-center">
-                                <span className="text-[10px] font-black uppercase text-ink-subtle">{pendingModifier}:</span>
+                                <span className="text-t-2xs font-black uppercase text-ink-subtle">{pendingModifier}:</span>
                                 <input
                                     autoFocus
                                     type="text"
@@ -433,7 +434,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 />
                                 <button
                                     onClick={() => applyModifier(pendingModifier, modifierValue)}
-                                    className="text-[10px] font-black uppercase text-anvil-red hover:text-white transition-colors"
+                                    className="text-t-2xs font-black uppercase text-anvil-red hover:text-white transition-colors"
                                 >
                                     OK
                                 </button>
@@ -444,7 +445,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     <button
                                         key={mod.key}
                                         onClick={() => setPendingModifier(mod.key)}
-                                        className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-anvil-red border border-transparent hover:border-anvil-red/30 transition-colors"
+                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-anvil-red border border-transparent hover:border-anvil-red/30 transition-colors"
                                     >
                                         + {mod.key}
                                     </button>
@@ -716,7 +717,7 @@ function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
 
     return (
         <div className="mt-3 rounded-card border border-[var(--success-line,var(--border-subtle))] bg-[var(--success-quiet)] px-3 py-2">
-            <p className="mb-1.5 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-success">
+            <p className="mb-1.5 flex items-center gap-1.5 text-t-2xs font-black uppercase tracking-widest text-success">
                 <Check size={10} aria-hidden="true" />
                 Registrado · {done.length} {done.length === 1 ? 'serie' : 'series'}
             </p>
@@ -887,7 +888,7 @@ function RestInput({
                 className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
             />
             {asMinutes && (
-                <p className="mt-0.5 text-center text-[9px] tabular-nums text-ink-faint">{asMinutes}</p>
+                <p className="mt-0.5 text-center text-t-2xs tabular-nums text-ink-faint">{asMinutes}</p>
             )}
         </div>
     );
@@ -944,7 +945,7 @@ function SetTechniqueEditor({
                                     // eso, marcar una técnica por error no
                                     // tendría deshacer.
                                     onClick={() => onUpdateSet(set.id, 'set_type', on ? null : t.key)}
-                                    className={`rounded-chip px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
  ? 'bg-warning text-[var(--surface-sunken)]'
  : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
  }`}
@@ -966,7 +967,7 @@ function SetTechniqueEditor({
                                     key={tag}
                                     title={`Encadenar con los ejercicios marcados ${tag} en este día`}
                                     onClick={() => onUpdateSet(set.id, 'group_tag', on ? null : tag)}
-                                    className={`rounded-chip px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
  ? 'bg-info text-[var(--surface-sunken)]'
  : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
  }`}
@@ -1021,6 +1022,10 @@ function CompactInput({ value, onChange, placeholder, type = "text" }: CompactIn
     return (
         <input
             type={type}
+            // El teclado con coma en movil. Con  a secas, iOS
+            // ensena un teclado numerico SIN separador decimal, asi que no se
+            // puede escribir 97,5 en la casilla de una serie.
+            inputMode={type === 'number' ? 'decimal' : undefined}
             value={value ?? ''}
             onChange={(e) => {
                 const val = e.target.value;
@@ -1047,7 +1052,8 @@ function CompactInput({ value, onChange, placeholder, type = "text" }: CompactIn
  * de 2,5 más cercano porque es el salto mínimo que se puede montar con discos.
  * Ver src/lib/planning/loadMath.ts.
  *
- * POR QUÉ NO ES UN `type="number"`
+ * POR QUÉ NO ES UN `type="number"
+                            inputMode="decimal"`
  * Un input numérico rechaza el carácter '%' antes de que llegue al manejador,
  * así que no habría forma de escribir el porcentaje. Es de texto y valida al
  * confirmar.

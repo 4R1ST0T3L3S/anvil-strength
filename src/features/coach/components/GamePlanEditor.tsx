@@ -107,7 +107,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                         <Swords className="text-anvil-red shrink-0" size={22} />
                         Game Plan · <span className="text-gray-400 truncate">{athleteName}</span>
                     </h2>
-                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider truncate">
+                    <p className="text-t-2xs font-bold text-gray-500 uppercase tracking-wider truncate">
                         {competition.name} · {new Date(competition.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                 </div>
@@ -146,10 +146,10 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                                     {lift.attempts.map((att, i) => (
                                         <div key={i} className="bg-black/20 border border-white/5 rounded-xl p-4 space-y-2.5">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">{ATTEMPT_LABELS[i]}</p>
+                                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500">{ATTEMPT_LABELS[i]}</p>
                                             <div className="grid grid-cols-3 gap-2">
                                                 <div>
-                                                    <label className="text-[9px] font-black uppercase text-gray-600 block mb-1">Kg</label>
+                                                    <label className="text-t-2xs font-black uppercase text-gray-600 block mb-1">Kg</label>
                                                     <input
                                                         value={att.kg}
                                                         onChange={(e) => updateAttempt(key, i, 'kg', e.target.value)}
@@ -158,7 +158,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-[9px] font-black uppercase text-gray-600 block mb-1">RPE</label>
+                                                    <label className="text-t-2xs font-black uppercase text-gray-600 block mb-1">RPE</label>
                                                     <input
                                                         value={att.rpe}
                                                         onChange={(e) => updateAttempt(key, i, 'rpe', e.target.value)}
@@ -167,7 +167,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-[9px] font-black uppercase text-gray-600 block mb-1">Vel m/s</label>
+                                                    <label className="text-t-2xs font-black uppercase text-gray-600 block mb-1">Vel m/s</label>
                                                     <input
                                                         value={att.velocity}
                                                         onChange={(e) => updateAttempt(key, i, 'velocity', e.target.value)}
@@ -188,7 +188,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
 
                                 {/* Aproximaciones (calentamientos) */}
                                 <div className="mb-4">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Aproximaciones</p>
+                                    <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-2">Aproximaciones</p>
                                     <div className="flex flex-wrap items-center gap-2">
                                         {lift.warmups.map((w, i) => (
                                             <div key={i} className="flex items-center gap-1 bg-black/20 border border-white/10 rounded-lg px-2 py-1.5">
@@ -215,7 +215,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                         ))}
                                         <button
                                             onClick={() => updateLift(key, { warmups: [...lift.warmups, { kg: '', reps: '' }] })}
-                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red/10 text-gray-500 hover:text-anvil-red text-[10px] font-black uppercase transition-colors border border-transparent hover:border-anvil-red/30"
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red/10 text-gray-500 hover:text-anvil-red text-t-2xs font-black uppercase transition-colors border border-transparent hover:border-anvil-red/30"
                                         >
                                             <Plus size={11} /> Serie
                                         </button>
@@ -235,7 +235,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
 
                     {/* Notas generales */}
                     <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-5 md:p-6">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Notas generales del día</p>
+                        <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Notas generales del día</p>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}

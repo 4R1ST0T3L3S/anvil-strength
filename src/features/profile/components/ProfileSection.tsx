@@ -469,6 +469,7 @@ function PrField({ label, value, onChange }: { label: string; value: string; onC
             <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">{label}</span>
             <input
                 type="number"
+                            inputMode="decimal"
                 step="0.1"
                 value={value}
                 onChange={e => onChange(e.target.value)}

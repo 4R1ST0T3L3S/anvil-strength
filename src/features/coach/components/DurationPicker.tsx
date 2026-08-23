@@ -69,7 +69,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
                     {/* Minutes Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-1">
-                        <div className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Min</div>
+                        <div className="text-t-2xs uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Min</div>
                         <div className="space-y-1">
                             {minuteOptions.map(m => (
                                 <button
@@ -91,7 +91,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
                     {/* Seconds Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pl-1">
-                        <div className="text-[10px] uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Seg</div>
+                        <div className="text-t-2xs uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Seg</div>
                         <div className="space-y-1">
                             {fineSecondOptions.map(s => (
                                 <button

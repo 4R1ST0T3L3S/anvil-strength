@@ -560,7 +560,7 @@ function SessionCard({ session, onSetPatched }: { session: LoggedSession; onSetP
                             {session.date && ` · ${session.date.split('-').reverse().join('/')}`}
                         </span>
                         {summary.completed && (
-                            <span className="rounded-chip bg-[var(--success-quiet)] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-success">
+                            <span className="rounded-chip bg-[var(--success-quiet)] px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wider text-success">
                                 Cerrado
                             </span>
                         )}
@@ -947,7 +947,7 @@ function DeviationsView({ rows }: { rows: DeviationRow[] }) {
                                     <span
                                         key={j}
                                         className={cn(
-                                            'rounded-chip px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                                            'rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold tabular-nums',
                                             d.kind === 'load-down' || d.kind === 'rpe-over' || d.kind === 'reps-down'
                                                 ? 'bg-[var(--warning-quiet)] text-warning'
                                                 : 'bg-[var(--success-quiet)] text-success'

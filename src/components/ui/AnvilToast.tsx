@@ -54,7 +54,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                                 <h4 className="text-sm font-black uppercase italic text-white leading-tight mb-1 truncate">
                                     {notif.title}
                                 </h4>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase leading-tight tracking-wider">
+                                <p className="text-t-2xs font-bold text-gray-400 uppercase leading-tight tracking-wider">
                                     {notif.message}
                                 </p>
                             </div>

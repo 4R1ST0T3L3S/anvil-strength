@@ -113,7 +113,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
     ];
 
     return (
-        <div className="font-sans min-h-screen bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
             <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* ── HERO ─────────────────────────────────────────────────────── */}
@@ -129,7 +129,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                 </div>
                 <div className="relative z-10 text-center px-4">
                     <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-                        <div className="inline-flex items-center gap-2 bg-anvil-red/10 border border-anvil-red/20 text-anvil-red text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
+                        <div className="inline-flex items-center gap-2 bg-anvil-red/10 border border-anvil-red/20 text-anvil-red text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
                             <Calendar className="w-3.5 h-3.5" />
                             Temporada 2025 – 2026
                         </div>
@@ -180,7 +180,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
                                             <div className="absolute top-6 left-6">
-                                                <span className="bg-anvil-red text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
+                                                <span className="bg-anvil-red text-white text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
                                                     {event.level}
                                                 </span>
                                             </div>
@@ -225,7 +225,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                             </div>
                                                         ))}
                                                         {event.athletes.length > 4 && (
-                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-anvil-red flex items-center justify-center text-[10px] font-black text-white">
+                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-anvil-red flex items-center justify-center text-t-2xs font-black text-white">
                                                                 +{event.athletes.length - 4}
                                                             </div>
                                                         )}
@@ -370,11 +370,11 @@ function RosterModal({ event, onClose }: RosterModalProps) {
             {/* Header bar */}
             <div className="relative z-[60] flex items-center justify-between px-8 py-6 flex-shrink-0">
                 <m.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                    <p className="text-anvil-red text-[10px] font-black uppercase tracking-[0.4em] mb-1">Roster Oficial</p>
+                    <p className="text-anvil-red text-t-2xs font-black uppercase tracking-[0.4em] mb-1">Roster Oficial</p>
                     <h2 className="text-2xl md:text-5xl font-black uppercase font-bebas italic text-white leading-none tracking-tight">{event.name}</h2>
                 </m.div>
                 <m.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-6">
-                    <div className="hidden md:flex items-center gap-2 text-gray-500 text-[10px] font-black uppercase tracking-widest">
+                    <div className="hidden md:flex items-center gap-2 text-gray-500 text-t-2xs font-black uppercase tracking-widest">
                         <Calendar size={12} className="text-anvil-red" />
                         {formatDate(event.date)}
                     </div>
@@ -504,19 +504,19 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                             
                             {/* Badges / Stats */}
                             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                                <div className="inline-flex items-center gap-2 bg-anvil-red text-white text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-white/10">
+                                <div className="inline-flex items-center gap-2 bg-anvil-red text-white text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-white/10">
                                     {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.category || 'Atleta Anvil'}
                                 </div>
                                 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.competitionDate && (
-                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-white/10 shadow-xl">
+                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-white/10 shadow-xl">
                                         <Calendar size={14} className="text-anvil-red" />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.competitionDate}
                                     </div>
                                 )}
 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.stats?.total ? (
-                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-[11px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-white/10 shadow-xl">
+                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-white/10 shadow-xl">
                                         Total: <span className="text-white text-sm">{athletesData.find(a => a.name === athletes[activeIndex].full_name)!.stats!.total} KG</span>
                                     </div>
                                 ) : null}

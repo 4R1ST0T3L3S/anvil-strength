@@ -88,12 +88,12 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                     </div>
                     <div>
                         <h3 className="text-white font-black uppercase italic tracking-wider leading-none">Dice Memory</h3>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Nivel: {sequence.length}</p>
+                        <p className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Nivel: {sequence.length}</p>
                     </div>
                 </div>
                 <div className="flex gap-4 items-center">
                     <div className="text-right">
-                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest block">Puntos</span>
+                        <span className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest block">Puntos</span>
                         <span className="text-anvil-red font-black text-xl leading-none">{score}</span>
                     </div>
                     <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white bg-black/20 rounded-xl">X</button>

@@ -95,7 +95,7 @@ export function InvitePage({
     }, [userLoading, user, preview, code]);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-surface-canvas px-4 py-12">
+        <div className="flex min-h-[100dvh] items-center justify-center bg-surface-canvas px-4 py-12">
             <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

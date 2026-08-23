@@ -314,7 +314,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                             >
                                 <div className="bg-[#0a0a0a] border border-anvil-red/30 rounded-xl p-4 space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-anvil-red flex items-center gap-2">
+                                        <h5 className="text-t-2xs font-black uppercase tracking-[0.2em] text-anvil-red flex items-center gap-2">
                                             <Calculator size={14} /> Smart Adjuster
                                         </h5>
                                         <button onClick={() => { setIsAdjusting(false); setOptimizedProposals(null); setSelectedProposalId(null); }} className="text-zinc-600 hover:text-white"><XIcon size={16} /></button>
@@ -322,27 +322,30 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                     
                                     <div className="grid grid-cols-3 gap-3">
                                         <div>
-                                            <label className="block text-[9px] font-bold text-zinc-500 uppercase mb-1">Proteína Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-zinc-500 uppercase mb-1">Proteína Obj.</label>
                                             <input 
-                                                type="number" 
+                                                type="number"
+                            inputMode="decimal" 
                                                 value={adjustTargets.protein || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, protein: Number(e.target.value)})}
                                                 className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-blue-400 font-bold text-sm focus:border-blue-500/50"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[9px] font-bold text-zinc-500 uppercase mb-1">Carbos Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-zinc-500 uppercase mb-1">Carbos Obj.</label>
                                             <input 
-                                                type="number" 
+                                                type="number"
+                            inputMode="decimal" 
                                                 value={adjustTargets.carbs || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, carbs: Number(e.target.value)})}
                                                 className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-yellow-400 font-bold text-sm focus:border-yellow-500/50"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[9px] font-bold text-zinc-500 uppercase mb-1">Grasas Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-zinc-500 uppercase mb-1">Grasas Obj.</label>
                                             <input 
-                                                type="number" 
+                                                type="number"
+                            inputMode="decimal" 
                                                 value={adjustTargets.fats || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, fats: Number(e.target.value)})}
                                                 className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-orange-400 font-bold text-sm focus:border-orange-500/50"
@@ -351,7 +354,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                     </div>
 
                                     {adjustError && (
-                                        <p className="text-[10px] font-bold text-anvil-red uppercase animate-pulse">{adjustError}</p>
+                                        <p className="text-t-2xs font-bold text-anvil-red uppercase animate-pulse">{adjustError}</p>
                                     )}
 
                                     {!optimizedProposals ? (
@@ -373,14 +376,14 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                         </button>
                                     ) : (
                                         <div className="space-y-3">
-                                            <p className="text-[10px] font-bold text-zinc-400 uppercase italic">Revisa las opciones y aplica la que prefieras:</p>
+                                            <p className="text-t-2xs font-bold text-zinc-400 uppercase italic">Revisa las opciones y aplica la que prefieras:</p>
                                             
                                             <div className="flex gap-2">
                                                 {optimizedProposals.map(opt => (
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => setSelectedProposalId(opt.id)}
-                                                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-white' : 'bg-[#111111] border-white/5 text-zinc-500 hover:bg-white/5'}`}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-white' : 'bg-[#111111] border-white/5 text-zinc-500 hover:bg-white/5'}`}
                                                     >
                                                         {opt.name}
                                                     </button>

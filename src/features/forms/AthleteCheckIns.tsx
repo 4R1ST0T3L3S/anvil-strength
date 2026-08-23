@@ -63,7 +63,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             <div className="flex items-center justify-between mb-2">
                                 <CalendarCheck size={18} className={done ? 'text-green-400' : 'text-anvil-red'} />
                                 {done && (
-                                    <span className="flex items-center gap-1 text-[9px] font-black uppercase text-green-400">
+                                    <span className="flex items-center gap-1 text-t-2xs font-black uppercase text-green-400">
                                         <Check size={10} /> Hecho
                                     </span>
                                 )}
@@ -71,7 +71,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             <p className="font-black uppercase text-sm text-white leading-none">
                                 {type === 'daily' ? 'Diario' : 'Semanal'}
                             </p>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">
+                            <p className="text-t-2xs text-gray-500 font-bold uppercase tracking-wider mt-1">
                                 {done ? 'Editar respuesta' : type === 'daily' ? '¿Cómo fue la sesión?' : 'Resumen de la semana'}
                             </p>
                         </button>
@@ -213,7 +213,7 @@ export function CheckInFormModal({
 
                     <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {editedByCoach && (
-                            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-anvil-red bg-anvil-red/10 border border-anvil-red/20 rounded-xl px-3 py-2">
+                            <p className="flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-anvil-red bg-anvil-red/10 border border-anvil-red/20 rounded-xl px-3 py-2">
                                 <UserCog size={13} /> Tu coach ha modificado este check-in
                             </p>
                         )}

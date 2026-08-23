@@ -110,11 +110,11 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                         <div key={r.id} className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-5">
                             <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="min-w-0">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
+                                    <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500">
                                         {periodLabel(r.type, r.period_key)}
                                     </p>
                                     {r.updated_by === coachId && (
-                                        <span className="mt-1 inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-anvil-red">
+                                        <span className="mt-1 inline-flex items-center gap-1 text-t-2xs font-black uppercase tracking-wider text-anvil-red">
                                             <UserCog size={10} /> Editado por ti
                                         </span>
                                     )}
@@ -279,7 +279,7 @@ function CoachResponseEditorModal({
                             <UserCog className="text-anvil-red" size={18} />
                             {response ? 'Editar check-in' : 'Nuevo check-in'}
                         </h2>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mt-1">
+                        <p className="text-t-2xs font-bold uppercase tracking-wider text-gray-500 mt-1">
                             {type === 'daily' ? 'Diario' : 'Semanal'} · en nombre del atleta
                         </p>
                     </div>
@@ -306,7 +306,7 @@ function CoachResponseEditorModal({
                                     className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-anvil-red/50 transition-colors"
                                 />
                                 {overwrites && (
-                                    <p className="text-[11px] font-bold text-yellow-400 mt-2">
+                                    <p className="text-t-2xs font-bold text-yellow-400 mt-2">
                                         Ya existe un check-in en ese periodo: al guardar lo reemplazarás.
                                     </p>
                                 )}
@@ -428,7 +428,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                     ) : (
                         <>
                             <div>
-                                <label className="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                <label className="mb-1.5 block text-t-2xs font-black uppercase tracking-widest text-gray-500">
                                     Indicación general (opcional)
                                 </label>
                                 <textarea
@@ -439,7 +439,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                     maxLength={500}
                                     className="w-full resize-y bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:border-anvil-red/50 transition-colors"
                                 />
-                                <p className="mt-1 text-[10px] text-gray-600">Aparece arriba del todo, antes de la primera pregunta.</p>
+                                <p className="mt-1 text-t-2xs text-gray-600">Aparece arriba del todo, antes de la primera pregunta.</p>
                             </div>
 
                             {questions.map((q, i) => (
@@ -484,7 +484,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         "pasos" (~9.000) aplastaba a "sueño"
                                         (0-10) contra el suelo. */}
                                     <div className="flex items-center gap-2">
-                                        <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                        <span className="shrink-0 text-t-2xs font-black uppercase tracking-widest text-gray-500">
                                             Gráfica
                                         </span>
                                         <select

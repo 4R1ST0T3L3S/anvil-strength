@@ -139,10 +139,10 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
 
             {/* Grid Header */}
             <div className="grid grid-cols-[30px_1fr] gap-2 mb-2 shrink-0">
-                <div className="text-[10px] font-bold text-gray-500 uppercase text-center self-center">Sem</div>
+                <div className="text-t-2xs font-bold text-gray-500 uppercase text-center self-center">Sem</div>
                 <div className="grid grid-cols-7 text-center">
                     {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
-                        <div key={d} className="text-[10px] font-bold text-gray-500">{d}</div>
+                        <div key={d} className="text-t-2xs font-bold text-gray-500">{d}</div>
                     ))}
                 </div>
             </div>
@@ -163,7 +163,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                                 type="button"
                                 onClick={() => handleWeekClick(weekNum)}
                                 className={`
- text-[10px] font-bold rounded flex items-center justify-center transition-colors
+ text-t-2xs font-bold rounded flex items-center justify-center transition-colors
  ${inRange ? 'text-white' : 'text-gray-600 group-hover:text-gray-300'}
  ${inRange && !isStart && !isEnd ? 'bg-white/10' : ''}
 `}
@@ -203,7 +203,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
             </div>
 
             {/* Footer Helper */}
-            <div className="mt-4 flex items-center justify-between text-[10px] text-gray-500 uppercase font-bold tracking-wider shrink-0">
+            <div className="mt-4 flex items-center justify-between text-t-2xs text-gray-500 uppercase font-bold tracking-wider shrink-0">
                 <div>Clic: Seleccionar / Rango</div>
                 <div>
                     Seleccionado: <span className="text-white">{startWeek} - {endWeek}</span> ({endWeek - startWeek + 1} semanas)

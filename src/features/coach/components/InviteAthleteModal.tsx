@@ -180,6 +180,7 @@ export function InviteAthleteModal({
                                             </span>
                                             <input
                                                 type="number"
+                            inputMode="decimal"
                                                 min={1}
                                                 max={500}
                                                 value={maxUses}
@@ -194,6 +195,7 @@ export function InviteAthleteModal({
                                             </span>
                                             <input
                                                 type="number"
+                            inputMode="decimal"
                                                 min={1}
                                                 max={365}
                                                 value={expiresInDays}

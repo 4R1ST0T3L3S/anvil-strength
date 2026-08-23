@@ -34,7 +34,7 @@ export const AnvilPointsBadge: React.FC<AnvilPointsBadgeProps> = ({ userId, clas
                 </div>
                 
                 <div className="relative flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 leading-none mb-0.5">Anvil Points</span>
+                    <span className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 leading-none mb-0.5">Anvil Points</span>
                     <span className="text-sm font-black text-white leading-none tracking-tight">
                         {points?.balance?.toLocaleString() ?? 0}
                     </span>

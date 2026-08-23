@@ -574,6 +574,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                             <div className="flex h-9 w-16 shrink-0 items-center rounded-chip border border-subtle bg-surface-raised px-2">
                                                 <input
                                                     type="number"
+                            inputMode="decimal"
                                                     min={4}
                                                     max={80}
                                                     value={Math.round(col.width)}

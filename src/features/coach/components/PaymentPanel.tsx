@@ -202,6 +202,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                             <span className="mb-1 block text-t-xs font-semibold uppercase tracking-wide text-ink-subtle">Importe (opcional)</span>
                             <input
                                 type="number"
+                            inputMode="decimal"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="€"

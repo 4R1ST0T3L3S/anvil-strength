@@ -162,7 +162,7 @@ export function NotificationBell({ userId }: { userId: string }) {
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-anvil-red px-1 text-[10px] font-black text-white">
+                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-anvil-red px-1 text-t-2xs font-black text-white">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
@@ -192,7 +192,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                             {unreadCount > 0 && (
                                 <button
                                     onClick={handleMarkAllRead}
-                                    className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 hover:text-anvil-red uppercase tracking-wide transition-colors"
+                                    className="flex items-center gap-1.5 text-t-2xs font-bold text-gray-400 hover:text-anvil-red uppercase tracking-wide transition-colors"
                                 >
                                     <CheckCheck size={14} /> Marcar leídas
                                 </button>
@@ -222,7 +222,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                                             <div className="min-w-0">
                                                 <p className="text-sm font-bold text-white leading-tight">{n.title}</p>
                                                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">{n.message}</p>
-                                                <p className="text-[10px] text-gray-600 font-bold uppercase mt-1.5">{timeAgo(n.created_at)}</p>
+                                                <p className="text-t-2xs text-gray-600 font-bold uppercase mt-1.5">{timeAgo(n.created_at)}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -236,7 +236,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                                 <button
                                     onClick={handleTogglePush}
                                     disabled={push.isLoading}
-                                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide transition-colors disabled:opacity-50 ${
+                                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors disabled:opacity-50 ${
  push.isSubscribed
  ? 'bg-white/5 text-gray-400 hover:text-white'
  : 'bg-anvil-red hover:bg-red-700 text-white'

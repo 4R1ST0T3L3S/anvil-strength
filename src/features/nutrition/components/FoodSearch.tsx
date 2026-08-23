@@ -222,6 +222,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         <div className="flex-1 relative">
                             <input
                                 type="number"
+                            inputMode="decimal"
                                 min="1"
                                 value={grams || ''}
                                 onChange={(e) => setGrams(parseInt(e.target.value) || 0)}

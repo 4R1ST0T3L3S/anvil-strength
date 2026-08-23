@@ -547,7 +547,7 @@ function AthleteCard({
                                 cero. Sin este distintivo, la tarjeta parecería
                                 la de un atleta que ha dejado de entrenar. */}
                             {!online && (
-                                <span className="shrink-0 rounded-chip bg-surface-sunken px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-ink-subtle">
+                                <span className="shrink-0 rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wider text-ink-subtle">
                                     {ACCOUNT_STATUS_LABEL[athlete.account_status ?? 'active']}
                                 </span>
                             )}

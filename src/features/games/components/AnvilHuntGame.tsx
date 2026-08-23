@@ -196,7 +196,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
                     </div>
                     <div>
                         <h3 className="text-white font-black uppercase italic tracking-wider leading-none">Anvil Hunt</h3>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Nivel {Math.min(level + 1, 3)}/3</p>
+                        <p className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Nivel {Math.min(level + 1, 3)}/3</p>
                     </div>
                 </div>
                 <div className="flex gap-4 items-center">

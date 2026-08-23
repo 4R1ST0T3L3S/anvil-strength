@@ -138,7 +138,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
     }
 
     return (
-        <main className="pt-28 pb-24 px-4 md:px-8 max-w-7xl mx-auto min-h-screen">
+        <main className="pt-28 pb-24 px-4 md:px-8 max-w-7xl mx-auto min-h-[100dvh]">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <button 
@@ -159,7 +159,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
             <section className="mb-12">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Juego del Día</h2>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{today}</span>
+                    <span className="text-t-2xs font-bold text-zinc-500 uppercase tracking-widest">{today}</span>
                 </div>
 
                 <div 
@@ -185,7 +185,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
                                 {bestScores[gameOfTheDay.id] !== undefined && (
                                     <div className="flex items-center gap-2 text-sm bg-black/30 px-4 py-2 rounded-lg border border-white/5">
                                         <Trophy size={14} className="text-yellow-500" />
-                                        <span className="text-zinc-400 uppercase font-bold text-[10px] tracking-widest">Tu Mejor Hoy:</span>
+                                        <span className="text-zinc-400 uppercase font-bold text-t-2xs tracking-widest">Tu Mejor Hoy:</span>
                                         <span className="text-white font-black">{formatScore(gameOfTheDay.id, bestScores[gameOfTheDay.id])}</span>
                                     </div>
                                 )}
@@ -200,7 +200,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
                 <section>
                     <div className="flex items-center gap-2 mb-4 p-3 bg-anvil-red/10 border border-anvil-red/20 rounded-xl w-fit">
                         <AlertCircle size={14} className="text-anvil-red" />
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-anvil-red">Modo Developer: Todos los Juegos</h2>
+                        <h2 className="text-t-2xs font-black uppercase tracking-[0.2em] text-anvil-red">Modo Developer: Todos los Juegos</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -219,7 +219,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
                                 </div>
                                 
                                 <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-auto">
-                                    <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">
+                                    <span className="text-t-2xs font-bold text-zinc-600 uppercase tracking-widest">
                                         {game.id === gameOfTheDay.id ? '★ JUEGO DEL DÍA' : 'PRUEBA DEV'}
                                     </span>
                                     {bestScores[game.id] !== undefined && (

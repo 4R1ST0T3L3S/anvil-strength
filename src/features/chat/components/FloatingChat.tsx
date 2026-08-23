@@ -81,7 +81,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                         {!isMinimized && (
                             <div className="flex flex-col truncate">
                                 <h3 className="text-white font-black text-sm uppercase italic truncate">{athlete.full_name}</h3>
-                                <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">En línea</span>
+                                <span className="text-t-2xs text-green-500 font-bold uppercase tracking-widest">En línea</span>
                             </div>
                         )}
                     </div>

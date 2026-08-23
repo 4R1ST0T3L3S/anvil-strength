@@ -324,7 +324,7 @@ function Bench() {
     }, [log]);
 
     return (
-        <div className="min-h-screen bg-surface-canvas p-4 text-ink">
+        <div className="min-h-[100dvh] bg-surface-canvas p-4 text-ink">
             <div className="mx-auto max-w-4xl">
                 <h1 className="text-t-lg font-black">Banco de medición del bucle de análisis</h1>
                 <p className="mt-1 text-t-2xs text-ink-subtle">

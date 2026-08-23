@@ -201,7 +201,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:gap-4 md:px-5 md:py-4">
                     <div className="flex min-w-0 items-center gap-3 md:gap-4">
                         {isActive && (
-                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-[10px] font-black uppercase tracking-wider text-brand">
+                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-black uppercase tracking-wider text-brand">
                                 Activo
                             </span>
                         )}
