@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Plus, Trash2, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import { trainingService } from '../../../services/trainingService';
 import { TrainingSet } from '../../../types/training';
 import { DurationPicker } from './DurationPicker';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
 
 interface ExerciseSetsManagerProps {
     sessionExerciseId: string;
@@ -79,24 +81,27 @@ function SetTextInput({
 }
 
 export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerProps) {
-    const [sets, setSets] = useState<TrainingSet[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [savingId, setSavingId] = useState<string | null>(null);
 
-    const fetchSets = useCallback(async () => {
-        try {
-            const data = await trainingService.getSetsByExercise(sessionExerciseId);
-            setSets(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, [sessionExerciseId]);
+    // Las series prescritas del ejercicio. Este componente se monta una vez por
+    // ejercicio de la sesion, asi que un dia con seis ejercicios eran seis
+    // peticiones en cada entrada; ahora se cachean por ejercicio.
+    const { data: sets = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.seriesDeEjercicio.deEjercicio(sessionExerciseId),
+        queryFn: () => trainingService.getSetsByExercise(sessionExerciseId),
+    });
 
-    useEffect(() => {
-        fetchSets();
-    }, [sessionExerciseId, fetchSets]);
+    /**
+     * Escritura optimista sobre la cache, en vez de los  de antes.
+     *
+     * Es el mismo gesto —pintar el cambio antes de que conteste el servidor—
+     * pero sobre la cache compartida: si la misma lista de series esta abierta
+     * en otro sitio, se entera. Con  el cambio moria aqui dentro.
+     */
+    const setSets = useCallback((siguientes: TrainingSet[]) => {
+        queryClient.setQueryData(CLAVES.seriesDeEjercicio.deEjercicio(sessionExerciseId), siguientes);
+    }, [queryClient, sessionExerciseId]);
 
     const handleAddSet = async () => {
         try {

@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Search, X, Plus, Loader2, Dumbbell } from 'lucide-react';
 import { ExerciseLibrary } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface Props {
     onSelect: (exerciseId: string) => void;
@@ -13,8 +14,6 @@ interface Props {
 const MUSCLE_GROUPS = ['Todos', 'Pecho', 'Espalda', 'Pierna', 'Hombro', 'Bíceps', 'Tríceps', 'Core', 'Otros'];
 
 export function ExerciseSearchModal({ onSelect, onClose }: Props) {
-    const [exercises, setExercises] = useState<ExerciseLibrary[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('Todos');
     
@@ -24,22 +23,16 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
     const [customGroup, setCustomGroup] = useState('Otros');
     const [submitting, setSubmitting] = useState(false);
 
-    const loadExercises = async () => {
-        try {
-            setLoading(true);
-            const data = await trainingService.getExerciseLibrary();
-            setExercises(data);
-        } catch (error) {
-            console.error('Error loading exercises:', error);
-            toast.error('Error al cargar la biblioteca de ejercicios');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadExercises();
-    }, []);
+    // La misma libreria que pide AddExerciseModal, y con la MISMA clave: los
+    // dos comparten cache, asi que abrir uno despues del otro no vuelve a
+    // pedirla. Media hora de frescura porque solo cambia cuando alguien crea
+    // un ejercicio nuevo.
+    const queryClient = useQueryClient();
+    const { data: exercises = [], isPending: loading } = useQuery({
+        queryKey: ['libreria-ejercicios'],
+        queryFn: () => trainingService.getExerciseLibrary(),
+        staleTime: 1000 * 60 * 30,
+    });
 
     const filteredExercises = useMemo(() => {
         let filtered = exercises;
@@ -69,7 +62,13 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
             });
             
             toast.success('Ejercicio creado con éxito');
-            setExercises(prev => [...prev, newEx]);
+            // El ejercicio nuevo entra en la caché COMPARTIDA de la librería,
+            // así que `AddExerciseModal` —que lee la misma clave— también lo
+            // ve sin tener que volver a pedir nada.
+            queryClient.setQueryData<ExerciseLibrary[]>(
+                ['libreria-ejercicios'],
+                (previos) => [...(previos ?? []), newEx]
+            );
             setIsCreating(false);
             setCustomName('');
             onSelect(newEx.id); // Select it immediately

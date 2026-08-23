@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
     CartesianGrid, ComposedChart, Legend, Line, LineChart, ReferenceLine,
     ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis,
@@ -18,6 +18,8 @@ import { AddMeasurementModal } from '../../vbt/components/AddMeasurementModal';
 import { VbtChartModal } from './VbtChartModal';
 import { useUser } from '../../../hooks/useUser';
 import { cn } from '../../../lib/utils';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
 
 /**
  * VBT — ESPACIO DE ANÁLISIS
@@ -73,34 +75,38 @@ type LegacyVbtExercise = SessionExercise & {
 
 export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
     const { data: currentUser } = useUser();
-    const [measurements, setMeasurements] = useState<VbtMeasurement[]>([]);
-    const [legacy, setLegacy] = useState<LegacyVbtExercise[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [view, setView] = useState<VbtView>('perfil');
     const [exercise, setExercise] = useState<string | null>(null);
     const [addOpen, setAddOpen] = useState(false);
     const [chartUrl, setChartUrl] = useState<{ url: string; name: string } | null>(null);
 
-    const load = useCallback(async () => {
-        try {
-            // Las dos fuentes en paralelo. La lista antigua —archivos colgados
-            // de series del plan— sigue siendo válida y no se tira: son
-            // ficheros reales que el atleta subió.
+    /**
+     * Las dos fuentes de VBT, en paralelo. La lista antigua —ficheros colgados
+     * de series del plan— sigue siendo valida y no se tira: son archivos
+     * reales que el atleta subio.
+     *
+     * En una sola consulta y no dos porque la pantalla necesita las dos juntas
+     * para decidir que ensenar, y con dos consultas separadas se veria primero
+     * media lista y luego la otra mitad.
+     */
+    const { data, isPending: loading } = useQuery({
+        queryKey: CLAVES.vbt.deAtleta(athleteId),
+        queryFn: async () => {
             const [rows, exercises] = await Promise.all([
                 vbtService.getMeasurements(athleteId),
                 trainingService.getVbtExercisesByAthlete(athleteId).catch(() => []),
             ]);
-            setMeasurements(rows);
-            setLegacy(exercises as LegacyVbtExercise[]);
-        } catch (err) {
-            console.error(err);
-            toast.error(err instanceof Error ? err.message : 'No se pudo cargar el VBT');
-        } finally {
-            setLoading(false);
-        }
-    }, [athleteId]);
+            return { measurements: rows, legacy: exercises as LegacyVbtExercise[] };
+        },
+    });
 
-    useEffect(() => { void load(); }, [load]);
+    const measurements = useMemo(() => data?.measurements ?? [], [data]);
+    const legacy = useMemo(() => data?.legacy ?? [], [data]);
+
+    const load = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.vbt.deAtleta(athleteId) });
+    }, [queryClient, athleteId]);
 
     const byExercise = useMemo(() => summarizeByExercise(measurements), [measurements]);
 
@@ -177,7 +183,16 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
         if (!confirm('¿Borrar esta medición?')) return;
         try {
             await vbtService.deleteMeasurement(id);
-            setMeasurements(prev => prev.filter(m => m.id !== id));
+            // Borrado optimista sobre la caché compartida, no sobre un
+            // `useState` local: así la ficha del atleta y esta pestaña ven lo
+            // mismo sin que ninguna tenga que enterarse de la otra.
+            queryClient.setQueryData(
+                CLAVES.vbt.deAtleta(athleteId),
+                (previo: { measurements: VbtMeasurement[]; legacy: LegacyVbtExercise[] } | undefined) =>
+                    previo
+                        ? { ...previo, measurements: previo.measurements.filter(m => m.id !== id) }
+                        : previo
+            );
             toast.success('Medición borrada');
         } catch (err) {
             console.error(err);
