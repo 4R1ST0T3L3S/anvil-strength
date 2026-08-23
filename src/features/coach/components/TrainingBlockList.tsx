@@ -216,12 +216,50 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                     <Calendar size={12} aria-hidden="true" />
                                     Semana {block.start_week || '?'}–{block.end_week || '?'}
                                 </span>
-                                {block.start_week && block.end_week && (
+
+                                {/*
+                                    EL RANGO DE FECHAS SOLO SE PINTA SI HAY FECHA DE INICIO.
+
+                                    Antes se pintaba siempre, y se calculaba con
+                                    `getDateRangeFromWeek(semana)` — que usa el AÑO EN CURSO
+                                    por defecto. Un bloque de 2025 salía con las fechas de
+                                    2026: no un poco desviado, un año entero.
+
+                                    Ahora el año sale de `start_date`, que es el único sitio
+                                    donde consta de verdad. Sin ella no se enseña ningún
+                                    rango: es justo lo que dice K10 —nunca inventar una
+                                    fecha— y en su lugar aparece el aviso de abajo.
+                                */}
+                                {block.start_week && block.end_week && block.start_date && (
                                     <>
                                         <span className="hidden h-1 w-1 shrink-0 rounded-pill bg-[var(--border-strong)] sm:block" aria-hidden="true" />
                                         <span className="hidden truncate sm:block">
-                                            {formatDateRange(getDateRangeFromWeek(block.start_week).start, getDateRangeFromWeek(block.end_week).end)}
+                                            {(() => {
+                                                const anyo = new Date(block.start_date).getFullYear();
+                                                // Si la última semana lleva un número menor que
+                                                // la primera, el bloque cruza el fin de año.
+                                                const anyoFin = block.end_week < block.start_week ? anyo + 1 : anyo;
+                                                return formatDateRange(
+                                                    getDateRangeFromWeek(block.start_week, anyo).start,
+                                                    getDateRangeFromWeek(block.end_week, anyoFin).end
+                                                );
+                                            })()}
                                         </span>
+                                    </>
+                                )}
+
+                                {!block.start_date && (
+                                    <>
+                                        <span className="hidden h-1 w-1 shrink-0 rounded-pill bg-[var(--border-strong)] sm:block" aria-hidden="true" />
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); setBlockToEdit(block); }}
+                                            title="Sin fecha de inicio, las estadísticas de este bloque solo se pueden agrupar por número de semana"
+                                            className="flex shrink-0 items-center gap-1 rounded-chip px-1.5 py-0.5 text-t-2xs font-bold text-warning transition-colors duration-fast ease-snap hover:bg-[var(--warning-quiet)]"
+                                        >
+                                            <AlertTriangle size={11} aria-hidden="true" />
+                                            Sin fecha
+                                        </button>
                                     </>
                                 )}
                             </div>

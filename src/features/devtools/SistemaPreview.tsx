@@ -17,6 +17,8 @@ import {
     Skeleton, SkeletonText, SkeletonList, SkeletonCard, SkeletonStat, SkeletonChart, SkeletonTable,
 } from '../../components/ui/Skeleton';
 import { Chart } from '../../components/charts/Chart';
+import { PeriodSelector } from '../../components/ui/PeriodSelector';
+import { reglaDe, usePeriodo, type BloqueTemporal } from '../../lib/period';
 import { EJE, REJILLA, TOOLTIP, SERIE, ALTO } from '../../components/charts/theme';
 import {
     useCampo, combinar, requerido, email, contrasena, aceptado, validarCarga, validarRpe,
@@ -55,6 +57,19 @@ const DATOS_GRAFICA = [
     { semana: 'S7', total: 525 }, { semana: 'S8', total: 540 },
 ];
 
+/**
+ * Bloques de mentira para el selector de periodo.
+ *
+ * Los dos ultimos NO tienen fecha de inicio a proposito: es el caso que
+ * decide K10 y el que hay que poder mirar sin montar datos reales.
+ */
+const BLOQUES_DEMO: BloqueTemporal[] = [
+    { id: 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa', name: 'Fuerza I', start_week: 30, end_week: 33, start_date: '2026-07-20' },
+    { id: 'bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb', name: 'Hipertrofia', start_week: 26, end_week: 29, start_date: '2026-06-22' },
+    { id: 'cccccccc-3333-4333-8333-cccccccccccc', name: 'Bloque antiguo (sin fecha)', start_week: 10, end_week: 14, start_date: null },
+    { id: 'dddddddd-4444-4444-8444-dddddddddddd', name: 'Otro sin fecha', start_week: 1, end_week: 4, start_date: null },
+];
+
 const FILAS = [
     { id: '1', nombre: 'Fulanito de Tal', categoria: '-83', total: 540, sesiones: 12 },
     { id: '2', nombre: 'Menganita Pérez', categoria: '-72', total: 412, sesiones: 9 },
@@ -79,6 +94,13 @@ export function SistemaPreview() {
     const [pestana, setPestana] = useState<'programacion' | 'estadisticas' | 'competicion' | 'datos'>('programacion');
     const [cargandoBoton, setCargandoBoton] = useState(false);
     const [enviado, setEnviado] = useState<string | null>(null);
+
+    const {
+        periodo,
+        resuelto: periodoResuelto,
+        cambiar: cambiarPeriodo,
+        opciones: opcionesPeriodo,
+    } = usePeriodo('volumen', { bloques: BLOQUES_DEMO });
 
     // Formulario de muestra, con las mismas reglas que usará la aplicación.
     const nombre = useCampo({ inicial: '', validar: requerido<string>('el nombre') });
@@ -354,6 +376,37 @@ export function SistemaPreview() {
                                 <Skeleton className="h-10 w-24" />
                             </div>
                         </div>
+                    </div>
+                </Bloque>
+
+                {/* ========================== PERIODO TEMPORAL ====================== */}
+                <Bloque
+                    titulo="Selector de periodo"
+                    nota="Su estado vive en la URL: cámbialo y mira la barra de direcciones. Los dos últimos bloques no tienen fecha de inicio (punto ámbar): al elegirlos, la resolución cae a ordinal y se explica por qué."
+                >
+                    <div className="flex flex-col gap-4">
+                        <PeriodSelector
+                            opciones={opcionesPeriodo}
+                            valor={periodo}
+                            onChange={cambiarPeriodo}
+                            bloques={BLOQUES_DEMO}
+                            resuelto={periodoResuelto}
+                            nota={reglaDe('volumen').nota}
+                            onPonerFecha={() => setEnviado('Aquí se abriría el bloque para ponerle la fecha.')}
+                        />
+
+                        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-field bg-surface-sunken p-3 text-t-xs">
+                            <dt className="text-ink-subtle">Resolución</dt>
+                            <dd className={periodoResuelto.resolucion === 'ordinal' ? 'font-bold text-warning' : 'font-bold text-success'}>
+                                {periodoResuelto.resolucion}
+                            </dd>
+                            <dt className="text-ink-subtle">Desde</dt>
+                            <dd className="tabular-nums text-ink-muted">{periodoResuelto.desde?.toLocaleDateString('es-ES') ?? '—'}</dd>
+                            <dt className="text-ink-subtle">Hasta</dt>
+                            <dd className="tabular-nums text-ink-muted">{periodoResuelto.hasta?.toLocaleDateString('es-ES') ?? '—'}</dd>
+                            <dt className="text-ink-subtle">Semanas ISO</dt>
+                            <dd className="tabular-nums text-ink-muted">{periodoResuelto.semanas?.join(', ') ?? 'todas'}</dd>
+                        </dl>
                     </div>
                 </Bloque>
 

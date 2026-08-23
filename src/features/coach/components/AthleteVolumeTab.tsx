@@ -11,6 +11,8 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import { Info } from 'lucide-react';
+import { PeriodSelector } from '../../../components/ui/PeriodSelector';
+import { dentroDelPeriodo, reglaDe, usePeriodo } from '../../../lib/period';
 import type { ExerciseHistoryRow } from '../../../services/trainingService';
 import type { Macrocycle } from '../../../types/training';
 import {
@@ -37,10 +39,20 @@ import { cn } from '../../../lib/utils';
  * La diferencia entre ambas ES el dato de adherencia.
  */
 
+/**
+ * EL ÁMBITO YA NO INCLUYE EL TIEMPO.
+ *
+ * Antes este selector mezclaba dos ejes en uno: "progresión general / un
+ * macrociclo / un bloque". Los dos extremos son PERIODOS —todo el historial,
+ * o el rango de un bloque— y el de en medio es un agrupamiento.
+ *
+ * Ahora el tiempo lo lleva `PeriodSelector`, que además ofrece lo que aquí
+ * no había forma de pedir: esta semana, este mes, las últimas cuatro. El
+ * macrociclo se queda como lo que es, un filtro por pertenencia.
+ */
 type Scope =
     | { kind: 'all' }
-    | { kind: 'macro'; id: string }
-    | { kind: 'block'; id: string };
+    | { kind: 'macro'; id: string };
 
 /**
  * Colores de las líneas por músculo.
@@ -84,11 +96,50 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
         return [...seen.values()];
     }, [history]);
 
+    /**
+     * Los bloques que hay en el historial, en el formato que entiende el
+     * módulo de periodo. `start_week`/`end_week` se deducen de las semanas
+     * que aparecen: el historial no trae los límites del bloque, trae las
+     * sesiones que se hicieron dentro.
+     */
+    const bloquesTemporales = useMemo(() => blocks.map((b) => {
+        const semanas = history.filter((r) => r.blockId === b.id).map((r) => r.weekNumber);
+        return {
+            id: b.id,
+            name: b.name,
+            start_week: semanas.length ? Math.min(...semanas) : null,
+            end_week: semanas.length ? Math.max(...semanas) : null,
+            start_date: history.find((r) => r.blockId === b.id)?.blockStartDate ?? null,
+        };
+    }), [blocks, history]);
+
+    const { periodo, resuelto, cambiar, opciones } = usePeriodo('volumen', { bloques: bloquesTemporales });
+
+    /**
+     * FILTRADO POR PERIODO, en dos modos.
+     *
+     * Cuando el periodo se ha podido resolver contra el calendario, se filtra
+     * por la FECHA de la sesión. Si una sesión no tiene fecha —las hay— se
+     * conserva: esconder trabajo que sí ocurrió porque falta un dato de
+     * calendario sería peor que enseñarlo de más.
+     *
+     * En modo ordinal (un bloque sin fecha de inicio, decisión K10) no hay
+     * calendario contra el que filtrar, así que se filtra por bloque, que es
+     * lo único que se sabe con certeza.
+     */
     const filtered = useMemo(() => {
-        if (scope.kind === 'macro') return history.filter((r) => r.macroId === scope.id);
-        if (scope.kind === 'block') return history.filter((r) => r.blockId === scope.id);
-        return history;
-    }, [history, scope]);
+        let filas = history;
+
+        if (scope.kind === 'macro') filas = filas.filter((r) => r.macroId === scope.id);
+
+        if (periodo.tipo === 'bloque' && periodo.blockId) {
+            filas = filas.filter((r) => r.blockId === periodo.blockId);
+        } else if (resuelto.resolucion === 'calendar' && (resuelto.desde || resuelto.hasta)) {
+            filas = filas.filter((r) => (r.date ? dentroDelPeriodo(r.date, resuelto) : true));
+        }
+
+        return filas;
+    }, [history, scope, periodo, resuelto]);
 
     /**
      * El historial llega como filas de ejercicio; el motor trabaja con
@@ -213,35 +264,36 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
             <div className="flex flex-wrap items-center gap-3">
                 <select
                     value={
-                        scope.kind === 'all' ? 'all' : `${scope.kind}:${scope.id}`
+                        scope.kind === 'all' ? 'all' : `macro:${scope.id}`
                     }
                     onChange={(e) => {
                         const v = e.target.value;
                         if (v === 'all') return setScope({ kind: 'all' });
-                        const [kind, id] = v.split(':');
-                        setScope({ kind: kind as 'macro' | 'block', id });
+                        setScope({ kind: 'macro', id: v.slice('macro:'.length) });
                     }}
-                    aria-label="Ámbito"
+                    aria-label="Macrociclo"
                     className="rounded-field border border-[var(--border-default)] bg-surface-raised px-3 py-2 text-sm text-ink"
                 >
-                    <option value="all">Progresión general</option>
-                    {macros.length > 0 && (
-                        <optgroup label="Macrociclos">
-                            {macros.map((m) => (
-                                <option key={m.id} value={`macro:${m.id}`}>
-                                    {m.name}
-                                </option>
-                            ))}
-                        </optgroup>
-                    )}
-                    <optgroup label="Bloques / mesociclos">
-                        {blocks.map((b) => (
-                            <option key={b.id} value={`block:${b.id}`}>
-                                {b.name}
-                            </option>
-                        ))}
-                    </optgroup>
+                    <option value="all">Todos los macrociclos</option>
+                    {macros.map((m) => (
+                        <option key={m.id} value={`macro:${m.id}`}>
+                            {m.name}
+                        </option>
+                    ))}
                 </select>
+
+                {/* EL PERIODO. Va primero en el orden de lectura porque es la
+                    pregunta que se hace antes: "¿de cuándo?" y luego "¿de
+                    quién?". Su estado vive en la URL, así que este enlace se
+                    puede pegar en un mensaje y el otro ve lo mismo. */}
+                <PeriodSelector
+                    opciones={opciones}
+                    valor={periodo}
+                    onChange={cambiar}
+                    bloques={bloquesTemporales}
+                    resuelto={resuelto}
+                    nota={reglaDe('volumen').nota}
+                />
 
                 <div className="flex rounded-field bg-surface-sunken p-0.5">
                     {(

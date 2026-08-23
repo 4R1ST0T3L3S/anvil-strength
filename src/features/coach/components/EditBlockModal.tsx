@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar as CalendarIcon, Save, Loader } from 'lucide-react';
+import { AlertTriangle, Calendar as CalendarIcon, Save, Loader } from 'lucide-react';
 import { CalendarWeekPicker } from './CalendarWeekPicker';
 import { Modal } from '../../../components/ui/Modal';
 import { toast } from 'sonner';
@@ -28,6 +28,18 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
     const [endWeek, setEndWeek] = useState<number>(4);
     const [isActive, setIsActive] = useState(true);
     const [color, setColor] = useState('#ef4444');
+    /**
+     * Fecha de inicio (decisión K10).
+     *
+     * Sin ella, las semanas del bloque son números sueltos: no se pueden
+     * situar en el calendario y todas las estadísticas por mes o por fechas
+     * dejan de tener respuesta para este bloque. Los bloques nuevos ya la
+     * traen; este campo existe para poder PONÉRSELA a los viejos.
+     *
+     * Se guarda como `aaaa-mm-dd`, que es lo que devuelve `<input type=date>`
+     * y lo que espera la columna.
+     */
+    const [startDate, setStartDate] = useState('');
     const [loading, setLoading] = useState(false);
 
     // Ajuste durante el render en vez de un efecto: al abrir el modal sobre
@@ -42,6 +54,9 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
             setEndWeek(block.end_week ?? 4);
             setIsActive(block.is_active);
             setColor(block.color || '#ef4444');
+            // La columna puede venir con hora; el campo de fecha solo quiere
+            // los diez primeros caracteres.
+            setStartDate(block.start_date ? String(block.start_date).slice(0, 10) : '');
         }
     }
 
@@ -67,7 +82,12 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                 start_week: startWeek,
                 end_week: endWeek,
                 is_active: isActive,
-                color: color
+                color: color,
+                // `null` y no cadena vacía: la columna es DATE y '' no es una
+                // fecha. Y vaciarla es una acción legítima — devuelve el
+                // bloque al modo ordinal, que es mejor que dejar una fecha
+                // inventada (K10).
+                start_date: startDate ? startDate : null,
             });
 
             toast.success('Bloque actualizado correctamente');
@@ -99,6 +119,32 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                             className="h-12 w-full rounded-field border border-subtle bg-surface-sunken px-4 text-t-base font-bold text-ink transition-colors duration-fast placeholder:font-normal placeholder:text-ink-subtle focus:border-brand"
                             autoFocus
                         />
+                    </label>
+
+                    {/* FECHA DE INICIO — decisión K10.
+                        Sin ella el bloque funciona igual para entrenar, pero
+                        sus estadísticas solo pueden agregarse por número de
+                        semana. El aviso aparece únicamente cuando falta, para
+                        no dar la lata en los bloques que ya la tienen. */}
+                    <label className="block space-y-1.5">
+                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                            Fecha de inicio
+                        </span>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="h-12 w-full rounded-field border border-subtle bg-surface-sunken px-4 text-t-base font-bold text-ink transition-colors duration-fast [color-scheme:dark] focus:border-brand"
+                        />
+                        {!startDate && (
+                            <span className="flex items-start gap-1.5 text-t-xs text-warning">
+                                <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                                <span className="text-ink-muted">
+                                    Sin fecha, las estadísticas de este bloque solo se pueden agrupar por
+                                    número de semana: no habrá «este mes» ni comparación por fechas.
+                                </span>
+                            </span>
+                        )}
                     </label>
 
                     <div className="space-y-1.5">
