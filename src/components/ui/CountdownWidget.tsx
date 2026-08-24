@@ -248,7 +248,7 @@ function CountdownSettings({
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 40 }}
-                    className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh] text-left"
+                    className="relative bg-surface-canvas w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh] text-left"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
@@ -273,7 +273,7 @@ function CountdownSettings({
                                         className={`py-2.5 px-2 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors border ${
  draft.source === tab.id
  ? 'bg-anvil-red border-anvil-red text-ink'
- : 'bg-[#252525] border-subtle text-ink-muted hover:text-ink hover:border-strong'
+ : 'bg-surface-raised border-subtle text-ink-muted hover:text-ink hover:border-strong'
  } disabled:opacity-30 disabled:cursor-not-allowed`}
                                     >
                                         {tab.label}
@@ -304,7 +304,7 @@ function CountdownSettings({
                                                     className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
  isSelected
  ? 'bg-anvil-red/10 border-anvil-red'
- : 'bg-[#252525] border-subtle hover:border-strong'
+ : 'bg-surface-raised border-subtle hover:border-strong'
  }`}
                                                 >
                                                     <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-anvil-red border-anvil-red' : 'border-gray-600'}`}>
@@ -341,7 +341,7 @@ function CountdownSettings({
                                         maxLength={60}
                                         value={draft.custom?.name || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: e.target.value, date: draft.custom?.date || '' } })}
-                                        className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-surface-sunken border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
                                     />
                                 </div>
                                 <div className="relative">
@@ -351,7 +351,7 @@ function CountdownSettings({
                                         min={new Date().toISOString().split('T')[0]}
                                         value={draft.custom?.date || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: draft.custom?.name || '', date: e.target.value } })}
-                                        className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
+                                        className="w-full bg-surface-sunken border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
                                     />
                                 </div>
                             </div>

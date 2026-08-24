@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (loading) {
         return (
-            <div className="min-h-[100dvh] bg-[#0a0a0a] flex flex-col items-center justify-center text-ink">
+            <div className="min-h-[100dvh] bg-surface-sunken flex flex-col items-center justify-center text-ink">
                 <Loader className="w-12 h-12 text-brand-text animate-spin mb-4" />
                 <h2 className="text-xl font-bold tracking-widest uppercase">Anvil Strength</h2>
                 <p className="text-ink-subtle text-sm mt-2">Verificando sesión...</p>

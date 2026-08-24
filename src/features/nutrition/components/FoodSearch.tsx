@@ -65,7 +65,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
     };
 
     return (
-        <div className="bg-[#0a0a0a] border border-line rounded-xl p-4 w-full flex flex-col gap-4 max-h-[500px]">
+        <div className="bg-surface-sunken border border-line rounded-xl p-4 w-full flex flex-col gap-4 max-h-[500px]">
             {/* Smart Search Indicator */}
             {referenceFood && (
                 <div className="bg-success-quiet border border-green-500/30 rounded-lg p-3 flex items-center gap-3">

@@ -113,12 +113,12 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
     ];
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
             <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* ── HERO ─────────────────────────────────────────────────────── */}
             <section className="relative pt-48 pb-24 flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-[#0a0a0a]">
+                <div className="absolute inset-0 bg-surface-sunken">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.07)_0%,transparent_70%)]" />
                     <div className="absolute inset-0 opacity-[0.03]"
                         style={{
@@ -147,7 +147,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
             </section>
 
             {/* ── PRÓXIMAS COMPETICIONES ────────────────────────────────────── */}
-            <section className="pb-20 pt-4 bg-[#0a0a0a]">
+            <section className="pb-20 pt-4 bg-surface-sunken">
                 <div className="max-w-[1400px] mx-auto px-6">
                     {loading ? (
                         <div className="flex justify-center py-20">
@@ -166,7 +166,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         transition={{ delay: index * 0.1 }}
                                         whileHover={{ scale: 1.01 }}
                                         onClick={() => setSelectedEvent(event)}
-                                        className="flex flex-col lg:flex-row bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-subtle cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-anvil-red/30"
+                                        className="flex flex-col lg:flex-row bg-surface-sunken rounded-[2.5rem] overflow-hidden border border-subtle cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-anvil-red/30"
                                     >
                                         {/* Cover Image */}
                                         <div className="w-full lg:w-[480px] h-64 lg:h-auto shrink-0 relative overflow-hidden">
@@ -204,7 +204,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="shrink-0 bg-[#0a0a0a] backdrop-blur-md rounded-2xl p-4 border border-subtle">
+                                                <div className="shrink-0 bg-surface-sunken backdrop-blur-md rounded-2xl p-4 border border-subtle">
                                                     <LiveCountdown targetDate={event.date} />
                                                 </div>
                                             </div>
@@ -218,7 +218,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                                 {athlete.avatar_url ? (
                                                                     <img src={athlete.avatar_url} alt="" className="w-full h-full object-cover" />
                                                                 ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center text-xs font-black text-gray-400 uppercase bg-[#0a0a0a]">
+                                                                    <div className="w-full h-full flex items-center justify-center text-xs font-black text-gray-400 uppercase bg-surface-sunken">
                                                                         {athlete.full_name.charAt(0)}
                                                                     </div>
                                                                 )}
@@ -258,7 +258,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
             </section>
 
             {/* ── RESULTADOS ANTERIORES ─────────────────────────────────────── */}
-            <section className="py-24 bg-[#0a0a0a]">
+            <section className="py-24 bg-surface-sunken">
                 <div className="max-w-[1400px] mx-auto px-6">
                     <m.div
                         initial={{ opacity: 0, y: 20 }}
@@ -278,7 +278,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className="relative aspect-video bg-[#0a0a0a] rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-anvil-red/30 transition-colors shadow-2xl"
+                                className="relative aspect-video bg-surface-sunken rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-anvil-red/30 transition-colors shadow-2xl"
                             >
                                 <img
                                     src={result.image}
@@ -509,14 +509,14 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                 </div>
                                 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.competitionDate && (
-                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
+                                    <div className="inline-flex items-center gap-2 bg-surface-sunken/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
                                         <Calendar size={14} className="text-brand-text" />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.competitionDate}
                                     </div>
                                 )}
 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.stats?.total ? (
-                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
+                                    <div className="inline-flex items-center gap-2 bg-surface-sunken/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
                                         Total: <span className="text-ink text-sm">{athletesData.find(a => a.name === athletes[activeIndex].full_name)!.stats!.total} KG</span>
                                     </div>
                                 ) : null}
@@ -535,7 +535,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                         href={athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 text-gray-300 bg-[#0a0a0a]/80 backdrop-blur-xl border border-line px-8 py-4 rounded-2xl transition-colors font-black uppercase tracking-[0.2em] text-xs shadow-xl"
+                                        className="inline-flex items-center gap-3 text-gray-300 bg-surface-sunken/80 backdrop-blur-xl border border-line px-8 py-4 rounded-2xl transition-colors font-black uppercase tracking-[0.2em] text-xs shadow-xl"
                                     >
                                         <Instagram size={20} />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram!.replace('https://www.instagram.com/', '@').replace('/', '')}

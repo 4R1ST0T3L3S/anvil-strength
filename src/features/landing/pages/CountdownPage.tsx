@@ -37,10 +37,10 @@ export function CountdownPage() {
     ];
 
     return (
-        <div className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-ink">
+        <div className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-ink">
             {/* Background Texture/Gradient */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-[#0a0a0a] to-[#0a0a0a]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-surface-sunken to-surface-sunken" />
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
             </div>
 

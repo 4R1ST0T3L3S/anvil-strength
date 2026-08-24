@@ -18,7 +18,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
         onClick={onClose}
       />
 
-      <div className="relative bg-[#0a0a0a] w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
+      <div className="relative bg-surface-sunken w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
         
         {/* Close Button Mobile */}
         <button
@@ -35,7 +35,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
             alt={coach.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent md:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-transparent to-transparent md:hidden" />
           <div className="absolute bottom-0 left-0 p-6 md:hidden">
             <h2 className="text-3xl font-black uppercase tracking-tighter text-ink leading-none mb-1 font-bebas italic">
               {coach.name}
@@ -47,7 +47,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
         </div>
 
         {/* Details Section - Scrollable on Desktop */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar bg-gradient-to-b from-[#0a0a0a] to-[#0a0a0a]">
+        <div className="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar bg-gradient-to-b from-surface-sunken to-surface-sunken">
           {/* Close Button Desktop */}
           <div className="hidden md:flex justify-end mb-12">
             <button
@@ -89,7 +89,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                 href={coach.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
+                className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
               >
                 <Instagram size={20} className="group-hover:scale-110 transition-transform" />
                 <span className="font-black uppercase text-xs tracking-widest">Instagram</span>
@@ -99,7 +99,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   href={coach.contactForm}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
+                  className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <FileText size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Formulario</span>
@@ -108,7 +108,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
               {coach.email && (
                 <a
                   href={`mailto:${coach.email}`}
-                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
+                  className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <Mail size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Email</span>

@@ -12,7 +12,7 @@ export function PendingApprovalPage() {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-[#0a0a0a] flex items-center justify-center p-6 text-ink font-sans selection:bg-anvil-red">
+        <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center p-6 text-ink font-sans selection:bg-anvil-red">
             <div className="max-w-md w-full bg-[#151515] border border-line rounded-2xl p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden">
                 {/* Background Accent */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-anvil-red/10 via-anvil-red to-anvil-red/10" />
@@ -32,7 +32,7 @@ export function PendingApprovalPage() {
                     Tu cuenta ha sido creada con éxito, pero actualmente se encuentra pendiente de aprobación por parte del equipo de Anvil Strength. Serás notificado cuando tu acceso sea autorizado.
                 </p>
 
-                <div className="bg-[#0a0a0a] rounded-xl p-4 border border-subtle mb-8">
+                <div className="bg-surface-sunken rounded-xl p-4 border border-subtle mb-8">
                     <p className="text-xs uppercase tracking-widest font-bold text-ink-subtle mb-1">
                         Estado Actual
                     </p>

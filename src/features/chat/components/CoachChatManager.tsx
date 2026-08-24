@@ -63,7 +63,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
 
     if (selectedAthlete) {
         return (
-            <div className="fixed inset-0 z-[70] bg-[#0a0a0a]">
+            <div className="fixed inset-0 z-[70] bg-surface-sunken">
                 <button 
                     onClick={() => {
                         setSelectedAthlete(null);
@@ -82,7 +82,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
     }
 
     return (
-        <div className="min-h-[100dvh] bg-[#0a0a0a] p-6 md:p-12">
+        <div className="min-h-[100dvh] bg-surface-sunken p-6 md:p-12">
             <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button 
@@ -120,7 +120,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                     <input 
                         type="text"
                         placeholder="BUSCAR POR NOMBRE..."
-                        className="w-full bg-[#0a0a0a] border border-subtle rounded-2xl py-4 pl-12 pr-6 text-ink font-bold uppercase text-xs focus:border-anvil-red/50 transition-colors"
+                        className="w-full bg-surface-sunken border border-subtle rounded-2xl py-4 pl-12 pr-6 text-ink font-bold uppercase text-xs focus:border-anvil-red/50 transition-colors"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -145,7 +145,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                             <button
                                 key={athlete.id}
                                 onClick={() => setSelectedAthlete(athlete)}
-                                className="w-full bg-[#0a0a0a] border border-subtle p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-[#0a0a0a] transition-[background-color,border-color,transform] active:scale-[0.98]"
+                                className="w-full bg-surface-sunken border border-subtle p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-surface-sunken transition-[background-color,border-color,transform] active:scale-[0.98]"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
@@ -153,7 +153,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                                             {athlete.full_name?.substring(0, 1)}
                                         </div>
                                         {athlete.unreadCount > 0 && (
-                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-anvil-red text-ink text-t-2xs font-black rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-anvil-red text-ink text-t-2xs font-black rounded-full flex items-center justify-center border-2 border-surface-sunken">
                                                 {athlete.unreadCount}
                                             </div>
                                         )}

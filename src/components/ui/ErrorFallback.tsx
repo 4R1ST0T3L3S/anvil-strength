@@ -38,8 +38,8 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
     // Show brief message while reloading
     if (isChunkError) {
         return (
-            <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex flex-col items-center justify-center p-4">
-                <div className="bg-[#0a0a0a] p-8 rounded-xl border border-line max-w-md w-full text-center shadow-2xl">
+            <div role="alert" className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center p-4">
+                <div className="bg-surface-sunken p-8 rounded-xl border border-line max-w-md w-full text-center shadow-2xl">
                     <div className="mx-auto bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mb-6">
                         <RefreshCw className="text-ink h-8 w-8 animate-spin" />
                     </div>
@@ -51,8 +51,8 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
     }
 
     return (
-        <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex flex-col items-center justify-center p-4">
-            <div className="bg-[#0a0a0a] p-8 rounded-xl border border-danger/20 max-w-md w-full text-center shadow-2xl">
+        <div role="alert" className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center p-4">
+            <div className="bg-surface-sunken p-8 rounded-xl border border-danger/20 max-w-md w-full text-center shadow-2xl">
                 <div className="mx-auto bg-danger-quiet w-16 h-16 rounded-full flex items-center justify-center mb-6">
                     <AlertTriangle className="text-brand-text h-8 w-8" />
                 </div>

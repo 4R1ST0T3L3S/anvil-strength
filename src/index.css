@@ -109,6 +109,33 @@ button:not([data-no-press]),
   }
 }
 
+/* 4b. EL OBJETIVO TÁCTIL DE 44px, PARA LOS CAMPOS QUE NO PASAN POR `Field`.
+      Quedan unos 150 `<input>`, 33 `<select>` y 19 `<textarea>` escritos a
+      mano por toda la app. `Field` y compañía garantizan cuatro cosas —44px
+      de alto, 16px de texto, anillo de foco y error que no depende del
+      color— pero solo para quien los usa. Migrar 202 controles uno a uno es
+      un trabajo enorme y arriesgado; el alto mínimo, en cambio, se puede dar
+      a todos de una vez y aquí.
+
+      `pointer: coarse` y no siempre. 44px es una medida del DEDO, no del
+      cursor: en escritorio, con ratón, forzarla engorda rejillas densas
+      —la de series, la del editor de PDF— sin que nadie gane nada. En
+      móvil y tableta, donde el fallo se paga, se aplica sin excepción.
+
+      `data-compacto` es la salida para el caso raro en que un campo tenga
+      que seguir siendo pequeño incluso con el dedo. Si hay que usarlo mucho,
+      es que la pantalla necesita otra disposición, no otro tamaño de campo.
+
+      No lleva `line-height` ni `padding`: solo el alto mínimo. Cualquier
+      otra cosa cambiaría la maquetación de doscientos sitios a ciegas. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([data-compacto]),
+  select:not([data-compacto]),
+  textarea:not([data-compacto]) {
+    min-height: 44px;
+  }
+}
+
 /* 5. FOCO VISIBLE, PERO SOLO PARA QUIEN NAVEGA CON TECLADO.
       `:focus-visible` y no `:focus`: el anillo tras un clic de ratón es
       ruido, tras un tabulador es lo único que te dice dónde estás. */

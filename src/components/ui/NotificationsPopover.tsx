@@ -33,7 +33,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
             >
                 <Bell size={20} className={unreadCount > 0 ? "text-brand-text animate-pulse" : "text-ink-muted group-hover:text-ink"} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-ink text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-ink text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-surface-sunken">
                         {unreadCount > 9 ? '+9' : unreadCount}
                     </span>
                 )}
@@ -49,8 +49,8 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                         ejecutaba nunca—, lo que en la variante de arriba
                         habría hecho que el panel entrara alejándose del botón
                         que lo abre. */}
-                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2 animate-rise' : 'top-full mt-2 animate-drop'} w-80 max-h-[480px] bg-[#0a0a0a] border border-line rounded-2xl shadow-2xl z-[110] overflow-hidden`}>
-                        <div className="p-4 border-b border-subtle flex justify-between items-center bg-[#0a0a0a]">
+                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2 animate-rise' : 'top-full mt-2 animate-drop'} w-80 max-h-[480px] bg-surface-sunken border border-line rounded-2xl shadow-2xl z-[110] overflow-hidden`}>
+                        <div className="p-4 border-b border-subtle flex justify-between items-center bg-surface-sunken">
                             <h3 className="font-black uppercase tracking-widest text-xs flex items-center gap-2">
                                 <Bell size={14} className="text-brand-text" /> Notificaciones
                             </h3>

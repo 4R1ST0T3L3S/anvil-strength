@@ -556,7 +556,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
 
       <div className={`grid grid-cols-2 gap-3 flex-1 min-h-0 ${dimmed}`}>
           {/* Velocity Line Chart */}
-          <div className="bg-[#0a0a0a] border border-subtle p-3 rounded-xl flex flex-col h-full overflow-hidden">
+          <div className="bg-surface-sunken border border-subtle p-3 rounded-xl flex flex-col h-full overflow-hidden">
               <h3 className="text-ink text-xs font-bold mb-2 flex items-center gap-1 shrink-0">
                   <Activity className="text-brand-text" size={14} />
                   Topología de Velocidad
@@ -610,13 +610,13 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Bar Path Scatter Chart */}
-          <div className="bg-[#0a0a0a] border border-subtle p-3 rounded-xl flex flex-col items-center h-full overflow-hidden">
+          <div className="bg-surface-sunken border border-subtle p-3 rounded-xl flex flex-col items-center h-full overflow-hidden">
               <h3 className="text-ink text-xs font-bold mb-2 flex items-center gap-1 w-full shrink-0">
                   <Target className="text-success" size={14} />
                   Trayectoria (1:1)
               </h3>
               
-              <div className="flex-1 min-h-[100px] w-full max-w-[200px] xl:max-w-[300px] aspect-square bg-[#0a0a0a] rounded-xl flex items-center justify-center border border-subtle">
+              <div className="flex-1 min-h-[100px] w-full max-w-[200px] xl:max-w-[300px] aspect-square bg-surface-sunken rounded-xl flex items-center justify-center border border-subtle">
                   <ResponsiveContainer width="100%" height="100%">
                     <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -637,7 +637,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
       {/* Grid de Métricas Avanzadas (La "Magia Físico-Matemática") */}
       <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0 ${dimmed}`}>
           {/* Potencia */}
-          <div className="bg-[#0a0a0a] border border-warning/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
+          <div className="bg-surface-sunken border border-warning/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Zap size={12} className="text-warning" />
                  <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Potencia</p>
@@ -649,7 +649,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Fuerza N */}
-          <div className="bg-[#0a0a0a] border border-orange-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(249,115,22,0.03)]">
+          <div className="bg-surface-sunken border border-orange-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(249,115,22,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Flame size={12} className="text-orange-500" />
                  {/* "Fuerza en barra" y no "Fuerza suelo", que es lo que ponía.
@@ -667,7 +667,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* RFD */}
-          <div className="bg-[#0a0a0a] border border-blue-400/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(96,165,250,0.03)]">
+          <div className="bg-surface-sunken border border-blue-400/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(96,165,250,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <TrendingUp size={12} className="text-info" />
                  <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">RFD</p>
@@ -679,7 +679,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Sticking Point */}
-          <div className="bg-[#0a0a0a] border border-danger/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(239,68,68,0.03)]">
+          <div className="bg-surface-sunken border border-danger/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(239,68,68,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <AlertTriangle size={12} className="text-danger-text" />
                  <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Sticking Point</p>
@@ -706,7 +706,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Desviacion X */}
-          <div className="bg-[#0a0a0a] border border-purple-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(168,85,247,0.03)]">
+          <div className="bg-surface-sunken border border-purple-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(168,85,247,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <MoveHorizontal size={12} className="text-purple-500" />
                  <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Desviación X</p>
@@ -718,7 +718,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Tiempos Fase */}
-          <div className="bg-[#0a0a0a] border border-teal-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(20,184,166,0.03)]">
+          <div className="bg-surface-sunken border border-teal-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(20,184,166,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Clock size={12} className="text-teal-500" />
                  <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Tiempo Exc / Con</p>
@@ -730,7 +730,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Pérdida de Vel */}
-          <div className="bg-[#0a0a0a] border border-pink-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(236,72,153,0.03)]">
+          <div className="bg-surface-sunken border border-pink-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(236,72,153,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Percent size={12} className="text-pink-500" />
                  <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Fatiga</p>

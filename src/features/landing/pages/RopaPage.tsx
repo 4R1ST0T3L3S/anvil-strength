@@ -71,18 +71,18 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
             {/* Shared Public Header */}
             <PublicHeader onLoginClick={onLoginClick} />
 
             {/* --- HERO SECTION --- */}
             <section className="relative h-[100dvh] min-h-[700px] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-[#0a0a0a]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
+                <div className="absolute inset-0 bg-surface-sunken">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-surface-sunken to-surface-sunken" />
                     <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/wall-4-light.png')] mix-blend-overlay" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#0a0a0a]" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-surface-sunken" />
                     <m.div animate={{ opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 5, repeat: Infinity, repeatType: "reverse" }} className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-red-900/10 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent z-10" />
+                    <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-surface-sunken via-surface-sunken/80 to-transparent z-10" />
                 </div>
 
                 <div className="relative z-20 max-w-[1600px] mx-auto px-6 w-full text-center flex flex-col items-center justify-center h-full">
@@ -137,7 +137,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             </section>
 
             {/* --- MANIFESTO --- */}
-            <section className="py-16 sm:py-24 bg-[#0a0a0a] relative overflow-hidden">
+            <section className="py-16 sm:py-24 bg-surface-sunken relative overflow-hidden">
                 <div className="max-w-[1200px] mx-auto px-6 flex flex-col items-center text-center">
                     <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-4xl">
                         <h2 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none mb-10">MORE THAN <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-600">JUST FABRIC.</span></h2>
@@ -149,7 +149,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             </section>
 
             {/* --- PRODUCT SHOWCASE --- */}
-            <section className="py-20 bg-[#0a0a0a]">
+            <section className="py-20 bg-surface-sunken">
                 <div className="max-w-[1600px] mx-auto px-6">
                     <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-line pb-8 text-left">
                         <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase italic tracking-tighter">THE <span className="text-brand-text">COLLECTION</span></h2>
@@ -159,7 +159,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     {/* --- PIEZA ANGULAR (SINGLET - ID 4) RESTAURADA --- */}
                     {products.filter(p => p.id === 4).map((product) => (
                         <m.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mb-24 relative group cursor-pointer">
-                            <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#0a0a0a] border border-line">
+                            <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-surface-sunken border border-line">
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
                                     {/* Placeholder Content */}
                                     <div className="text-center group-hover:scale-105 transition-transform duration-slow">
@@ -194,11 +194,11 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24">
                         {products.filter(p => p.id !== 4).map((product, index) => (
                             <m.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
-                                <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-6 border border-subtle">
+                                <div className="relative aspect-[3/4] bg-surface-sunken overflow-hidden mb-6 border border-subtle">
                                     {product.id === 3 ? (
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-slow" />
                                     ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-[#151515] group-hover:bg-[#0a0a0a] transition-colors">
+                                        <div className="absolute inset-0 flex items-center justify-center bg-[#151515] group-hover:bg-surface-sunken transition-colors">
                                             <span className="text-2xl sm:text-3xl font-black text-white/10 uppercase tracking-tighter -rotate-12">WORKING<br />ON IT</span>
                                         </div>
                                     )}

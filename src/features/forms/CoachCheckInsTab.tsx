@@ -92,7 +92,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
             {loading ? (
                 <div className="flex justify-center py-16"><Loader className="animate-spin text-brand-text" size={26} /></div>
             ) : responses.length === 0 ? (
-                <div className="text-center py-16 bg-[#252525] border border-subtle rounded-xl">
+                <div className="text-center py-16 bg-surface-raised border border-subtle rounded-xl">
                     <ClipboardCheck size={40} className="mx-auto text-gray-600 mb-4" />
                     <p className="text-ink-muted font-medium">
                         El atleta aún no ha respondido ningún check-in {type === 'daily' ? 'diario' : 'semanal'}.
@@ -272,7 +272,7 @@ function CoachResponseEditorModal({
     return (
         <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="relative bg-surface-canvas w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
                     <div className="min-w-0">
                         <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">
@@ -303,7 +303,7 @@ function CoachResponseEditorModal({
                                     type={type === 'daily' ? 'date' : 'week'}
                                     value={periodKey}
                                     onChange={(e) => setPeriodKey(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 px-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
+                                    className="w-full bg-surface-sunken border border-line rounded-xl py-3 px-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
                                 />
                                 {overwrites && (
                                     <p className="text-t-2xs font-bold text-warning mt-2">
@@ -411,7 +411,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-[#1c1c1c] w-full max-w-xl rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="relative bg-surface-canvas w-full max-w-xl rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh]">
                 <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
                     <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">
                         <Settings2 className="text-brand-text" size={18} />
@@ -443,7 +443,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                             </div>
 
                             {questions.map((q, i) => (
-                                <div key={i} className="space-y-2 bg-[#252525] border border-subtle rounded-xl p-3">
+                                <div key={i} className="space-y-2 bg-surface-raised border border-subtle rounded-xl p-3">
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="text"

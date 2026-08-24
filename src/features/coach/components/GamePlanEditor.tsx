@@ -154,7 +154,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.kg}
                                                         onChange={(e) => updateAttempt(key, i, 'kg', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-[#0a0a0a] border border-line rounded-lg py-2 px-2 text-ink text-sm font-black text-center focus:border-anvil-red/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm font-black text-center focus:border-anvil-red/50"
                                                     />
                                                 </div>
                                                 <div>
@@ -163,7 +163,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.rpe}
                                                         onChange={(e) => updateAttempt(key, i, 'rpe', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-[#0a0a0a] border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-anvil-red/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-anvil-red/50"
                                                     />
                                                 </div>
                                                 <div>
@@ -172,7 +172,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.velocity}
                                                         onChange={(e) => updateAttempt(key, i, 'velocity', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-[#0a0a0a] border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-anvil-red/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-anvil-red/50"
                                                     />
                                                 </div>
                                             </div>
@@ -180,7 +180,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                 value={att.note}
                                                 onChange={(e) => updateAttempt(key, i, 'note', e.target.value)}
                                                 placeholder="Anotación (ej: solo si el 2º sube fácil)"
-                                                className="w-full bg-[#0a0a0a] border border-line rounded-lg py-2 px-3 text-ink text-xs focus:border-anvil-red/50"
+                                                className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-3 text-ink text-xs focus:border-anvil-red/50"
                                             />
                                         </div>
                                     ))}

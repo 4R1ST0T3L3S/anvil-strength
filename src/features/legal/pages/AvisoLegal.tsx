@@ -13,7 +13,7 @@ export function AvisoLegal({ onLoginClick }: LegalPageProps) {
         canonical: 'https://anvilstrength.es/legal/aviso-legal'
     });
     return (
-        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-ink">
+        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink">
             <PublicHeader onLoginClick={onLoginClick} />
             <div className="max-w-3xl mx-auto px-6 pt-40 pb-24">
                 <h1 className="text-4xl font-black text-ink uppercase tracking-tighter mb-12">Aviso Legal</h1>

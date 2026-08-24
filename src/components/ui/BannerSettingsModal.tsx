@@ -80,7 +80,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                 className="bg-[#161616] border border-line rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="p-6 border-b border-subtle flex justify-between items-center bg-[#0a0a0a]">
+                <div className="p-6 border-b border-subtle flex justify-between items-center bg-surface-sunken">
                     <div className="flex items-center gap-3">
                         <Palette className="text-brand-text" size={20} />
                         <h3 className="text-ink font-black uppercase italic tracking-widest">Personalizar Contador</h3>
@@ -225,7 +225,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                     </div>
                 </div>
 
-                <div className="p-4 sm:p-6 bg-[#0a0a0a] border-t border-subtle flex gap-3">
+                <div className="p-4 sm:p-6 bg-surface-sunken border-t border-subtle flex gap-3">
                     <button
                         onClick={onClose}
                         className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-bold uppercase text-xs tracking-widest text-ink-muted hover:text-ink transition-colors"

@@ -63,10 +63,10 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#0a0a0a] border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Header */}
-                <div className="p-4 md:px-6 md:py-3 border-b border-subtle flex justify-between items-center bg-[#0a0a0a] shrink-0 h-16 md:h-20">
+                <div className="p-4 md:px-6 md:py-3 border-b border-subtle flex justify-between items-center bg-surface-sunken shrink-0 h-16 md:h-20">
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="text-success origin-left">
                             <Weight size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />
@@ -85,7 +85,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                 </div>
 
                 {/* Visual Bar - Mobile: Fixed Height, Desktop: Flexible */}
-                <div className="bg-[#0a0a0a] border-b border-subtle w-full shrink-0 h-48 md:h-[35%] flex items-center justify-center relative overflow-hidden">
+                <div className="bg-surface-sunken border-b border-subtle w-full shrink-0 h-48 md:h-[35%] flex items-center justify-center relative overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_70%)]"></div>
 
                     {/* The Barbell Visualization */}
@@ -214,7 +214,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
 
                         {/* RIGHT: Inventory Info */}
                         <div className="flex flex-col overflow-hidden pt-4 md:pt-2 h-full">
-                            <div className="bg-[#0a0a0a] rounded-2xl p-3 md:p-4 border border-subtle flex-1 flex flex-col md:overflow-hidden min-h-[200px]">
+                            <div className="bg-surface-sunken rounded-2xl p-3 md:p-4 border border-subtle flex-1 flex flex-col md:overflow-hidden min-h-[200px]">
                                 <div className="flex items-center justify-between mb-4 md:mb-8 shrink-0">
                                     <h3 className="text-sm md:text-base font-black text-ink uppercase tracking-widest italic">Discos (Por lado)</h3>
                                     <div className="px-3 py-1 bg-anvil-red/10 rounded-full border border-anvil-red/20">
@@ -281,7 +281,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-subtle shrink-0 text-center flex items-center justify-center gap-3 h-16 md:h-20">
+                <div className="p-4 md:px-6 md:py-4 bg-surface-sunken border-t border-subtle shrink-0 text-center flex items-center justify-center gap-3 h-16 md:h-20">
                     <p className="text-t-2xs md:text-xs font-black text-ink-subtle uppercase tracking-[0.3em] italic">
                         TOTAL EN BARRA:
                     </p>

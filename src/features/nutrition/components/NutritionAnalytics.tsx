@@ -86,8 +86,8 @@ export function NutritionAnalytics() {
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {kpiCards.map((card, idx) => (
-                    <div key={idx} className="bg-[#0a0a0a] border border-line p-6 rounded-2xl flex items-center gap-4 hover:border-anvil-red/50 transition-colors">
-                        <div className="bg-[#0a0a0a] p-4 rounded-xl">
+                    <div key={idx} className="bg-surface-sunken border border-line p-6 rounded-2xl flex items-center gap-4 hover:border-anvil-red/50 transition-colors">
+                        <div className="bg-surface-sunken p-4 rounded-xl">
                             {card.icon}
                         </div>
                         <div>
@@ -101,7 +101,7 @@ export function NutritionAnalytics() {
             {metrics.totalPlans > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Gráfico Circular de Macros */}
-                    <div className="bg-[#0a0a0a] border border-line p-6 rounded-2xl">
+                    <div className="bg-surface-sunken border border-line p-6 rounded-2xl">
                         <h3 className="text-lg font-black text-ink uppercase mb-6">Distribución Calórica Promedio</h3>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
@@ -132,7 +132,7 @@ export function NutritionAnalytics() {
                     </div>
 
                     {/* Gráfico de Barras - Gramos */}
-                    <div className="bg-[#0a0a0a] border border-line p-6 rounded-2xl">
+                    <div className="bg-surface-sunken border border-line p-6 rounded-2xl">
                         <h3 className="text-lg font-black text-ink uppercase mb-6">Gramos Promedio por Macro</h3>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
@@ -156,7 +156,7 @@ export function NutritionAnalytics() {
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-dashed border-line">
+                <div className="text-center py-20 bg-surface-sunken rounded-2xl border border-dashed border-line">
                     <p className="text-ink-subtle font-medium">No hay suficientes datos. Crea algunos planes nutricionales para ver las métricas.</p>
                 </div>
             )}

@@ -360,10 +360,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#0a0a0a] border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Premium Header */}
-                <div className="p-4 md:px-6 md:py-3 border-b border-subtle flex justify-between items-center bg-[#0a0a0a] shrink-0 h-16 md:h-20">
+                <div className="p-4 md:px-6 md:py-3 border-b border-subtle flex justify-between items-center bg-surface-sunken shrink-0 h-16 md:h-20">
                     <div className="flex items-center gap-4 md:gap-5">
                         <div className="text-brand-text origin-left">
                             <Calculator size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />
@@ -533,7 +533,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                 </div>
 
                 {/* Footer CTA */}
-                <div className="p-4 md:px-6 md:py-4 bg-[#0a0a0a] border-t border-subtle shrink-0">
+                <div className="p-4 md:px-6 md:py-4 bg-surface-sunken border-t border-subtle shrink-0">
                     <button
                         onClick={calculate1RM}
                         className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-anvil-red hover:text-ink py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-[background-color,box-shadow,color,transform] active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"

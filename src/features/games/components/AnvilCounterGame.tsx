@@ -109,7 +109,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
     return (
         <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
-            <div className="p-4 border-b border-line flex justify-between items-center bg-[#0a0a0a] z-10">
+            <div className="p-4 border-b border-line flex justify-between items-center bg-surface-sunken z-10">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-info-quiet rounded-lg text-info">
                         <Eye size={20} />
@@ -134,7 +134,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                 {/* Flashing Area */}
                 <div 
                     ref={containerRef}
-                    className="flex-1 relative overflow-hidden bg-gradient-to-b from-[#161616] to-[#0a0a0a]"
+                    className="flex-1 relative overflow-hidden bg-gradient-to-b from-[#161616] to-surface-sunken"
                 >
                     {status === 'idle' && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20">
@@ -186,7 +186,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                 </div>
 
                 {/* Input Area (Keypad) */}
-                <div className={`p-6 bg-[#0a0a0a] border-t border-line transition-[background-color,border-color,opacity,transform] duration-slow ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
+                <div className={`p-6 bg-surface-sunken border-t border-line transition-[background-color,border-color,opacity,transform] duration-slow ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
                     <div className="flex items-center justify-between mb-4 bg-black p-4 rounded-xl border border-subtle">
                         <span className="text-xs text-ink-subtle font-bold uppercase tracking-widest">Respuesta:</span>
                         <span className="text-2xl font-black text-ink">{inputValue || '_'}</span>
@@ -197,7 +197,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                             <button
                                 key={`kp-${num}`}
                                 onClick={() => handleNumberClick(num.toString())}
-                                className="bg-[#0a0a0a] border border-subtle p-4 rounded-xl text-xl font-bold text-ink active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
+                                className="bg-surface-sunken border border-subtle p-4 rounded-xl text-xl font-bold text-ink active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
                             >
                                 {num}
                             </button>
@@ -210,7 +210,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                         </button>
                         <button
                             onClick={() => handleNumberClick('0')}
-                            className="bg-[#0a0a0a] border border-subtle p-4 rounded-xl text-xl font-bold text-ink active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
+                            className="bg-surface-sunken border border-subtle p-4 rounded-xl text-xl font-bold text-ink active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
                         >
                             0
                         </button>

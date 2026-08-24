@@ -164,7 +164,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
     return (
         <div className="fixed inset-0 z-[9999] flex bg-black/80 backdrop-blur-sm">
             {/* Left: Settings Panel */}
-            <div className="w-80 bg-[#0a0a0a] border-r border-line flex flex-col h-full overflow-hidden shrink-0">
+            <div className="w-80 bg-surface-sunken border-r border-line flex flex-col h-full overflow-hidden shrink-0">
                 <div className="p-4 border-b border-line flex justify-between items-center">
                     <h2 className="text-ink font-black uppercase text-sm tracking-wider">Editor PDF</h2>
                     <button onClick={onClose} className="text-ink-subtle hover:text-ink"><X size={20} /></button>

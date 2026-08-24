@@ -13,7 +13,7 @@ import { getDateRangeFromWeek, formatDateRange } from '../../../utils/dateUtils'
 import { competitionsService } from '../../../services/competitionsService';
 import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'sonner';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { EstadoDeDatos } from '../../../components/ui/EstadoDeDatos';
 import { Modal } from '../../../components/ui/Modal';
 
 /** Un botón de icono de 36px, en las cuatro variantes que usa la tarjeta. */
@@ -88,10 +88,11 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
      * no estar migrada) y no deben tumbar la lista de bloques, que es lo que
      * la pantalla existe para enseñar.
      */
-    const { data: blocks = [], isPending: cargandoBloques } = useQuery({
+    const consultaBloques = useQuery({
         queryKey: CLAVES.bloques.deAtleta(athleteId),
         queryFn: () => trainingService.getBlocksByAthlete(athleteId),
     });
+    const blocks = consultaBloques.data ?? [];
 
     const { data: macros = [] } = useQuery({
         queryKey: CLAVES.macros.deAtleta(athleteId),
@@ -335,12 +336,6 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
         );
     };
 
-    // Esqueleto con la forma de la lista, no un giro centrado: así el hueco
-    // que ocupa el contenido ya está reservado y nada salta al llegar.
-    if (cargandoBloques) {
-        return <SkeletonList filas={3} conAvatar={false} className="p-1" />;
-    }
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -371,28 +366,38 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 </div>
             </div>
 
-            {/* El estado vacío exige que NO haya ni bloques ni macros.
-                Antes bastaba con `blocks.length === 0`, así que un macrociclo
-                recién creado desaparecía de la pantalla hasta que se le metía
-                dentro un bloque: existía en la base, pero la rama del estado
-                vacío se comía todo el listado. */}
-            {blocks.length === 0 && macros.length === 0 ? (
-                <div className="rounded-card border border-[var(--border-default)] bg-surface-raised">
-                    <EmptyState
-                        icon={<FolderOpen size={20} aria-hidden="true" />}
-                        title="No hay planificaciones todavía"
-                        body="Crea el primer bloque de entrenamiento para este atleta."
-                        action={
-                            <button
-                                onClick={() => setIsCreateModalOpen(true)}
-                                className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
-                            >
-                                Crear bloque
-                            </button>
-                        }
-                    />
-                </div>
-            ) : (
+            {/* Los cuatro estados, y la cabecera de arriba SIEMPRE en pantalla.
+                Antes el esqueleto salía por una vuelta temprana, así que
+                mientras cargaba desaparecían el título y los tres botones y
+                volvían de golpe: la pantalla parecía otra durante un segundo.
+
+                El vacío exige que NO haya ni bloques ni macros. Antes bastaba
+                con `blocks.length === 0`, así que un macrociclo recién creado
+                desaparecía de la pantalla hasta que se le metía dentro un
+                bloque: existía en la base, pero la rama del estado vacío se
+                comía todo el listado.
+
+                Y ahora hay rama de ERROR, que no había: si la consulta falla,
+                `data` viene vacío y esto dibujaba "No hay planificaciones
+                todavía" —invitando a crear un bloque que ya existe— cuando lo
+                que pasaba era que se había caído la red. */}
+            <EstadoDeDatos
+                consulta={consultaBloques}
+                queEs="los bloques"
+                vacio={blocks.length === 0 && macros.length === 0}
+                esqueleto={<SkeletonList filas={3} conAvatar={false} className="p-1" />}
+                vacioIcono={<FolderOpen size={20} aria-hidden="true" />}
+                vacioTitulo="No hay planificaciones todavía"
+                vacioCuerpo="Crea el primer bloque de entrenamiento para este atleta."
+                vacioAccion={
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                    >
+                        Crear bloque
+                    </button>
+                }
+            >
                 <div className="space-y-6">
                     {/* Macros con sus bloques */}
                     {macros.map(macro => {
@@ -455,7 +460,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         );
                     })()}
                 </div>
-            )}
+            </EstadoDeDatos>
 
             <CreateBlockModal
                 isOpen={isCreateModalOpen}

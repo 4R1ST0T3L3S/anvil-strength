@@ -147,7 +147,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                                     style={{ maskImage: 'linear-gradient(to top, transparent 0%, black 12%)', WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 12%)' }}
                                 />
                             ) : (
-                                <div className="w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-[#252525] to-[#0a0a0a] border border-line flex items-center justify-center mb-12">
+                                <div className="w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-surface-raised to-surface-sunken border border-line flex items-center justify-center mb-12">
                                     <span className="text-7xl md:text-9xl font-black text-brand-text italic">
                                         {data.athleteName.split(' ').map(w => w[0]).slice(0, 2).join('')}
                                     </span>

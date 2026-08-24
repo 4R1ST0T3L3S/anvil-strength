@@ -75,12 +75,12 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                            <button onClick={() => setCurrentView('athletes')} className="bg-[#0a0a0a] border border-line p-8 rounded-2xl hover:border-anvil-red transition-colors group flex flex-col items-center text-center">
+                            <button onClick={() => setCurrentView('athletes')} className="bg-surface-sunken border border-line p-8 rounded-2xl hover:border-anvil-red transition-colors group flex flex-col items-center text-center">
                                 <Users size={48} className="text-ink-subtle group-hover:text-brand-text mb-4 transition-colors" />
                                 <h3 className="text-xl font-black text-ink uppercase mb-2">Gestionar Atletas</h3>
                                 <p className="text-ink-muted text-sm">Crea dietas, ajusta macros y añade comidas a los atletas del club.</p>
                             </button>
-                            <button onClick={() => setCurrentView('analytics')} className="bg-[#0a0a0a] border border-line p-8 rounded-2xl hover:border-blue-500 transition-colors group flex flex-col items-center text-center">
+                            <button onClick={() => setCurrentView('analytics')} className="bg-surface-sunken border border-line p-8 rounded-2xl hover:border-blue-500 transition-colors group flex flex-col items-center text-center">
                                 <LayoutDashboard size={48} className="text-ink-subtle group-hover:text-info mb-4 transition-colors" />
                                 <h3 className="text-xl font-black text-ink uppercase mb-2">Métricas y Gráficas</h3>
                                 <p className="text-ink-muted text-sm">Visualiza el promedio de calorías, distribución de macros y KPIs globales.</p>

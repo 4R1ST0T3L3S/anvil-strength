@@ -100,10 +100,10 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full h-full sm:h-[90vh] sm:max-w-5xl bg-[#0a0a0a] sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border sm:border-line"
+                        className="relative w-full h-full sm:h-[90vh] sm:max-w-5xl bg-surface-sunken sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border sm:border-line"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-4 bg-[#0a0a0a] border-b border-line shrink-0 z-10">
+                        <div className="flex items-center justify-between p-4 bg-surface-sunken border-b border-line shrink-0 z-10">
                             <h3 className="text-lg md:text-xl font-black text-ink uppercase italic tracking-wider truncate mr-4">
                                 {title}
                             </h3>
@@ -129,7 +129,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         <div className="bg-[#151515] p-2 flex items-center justify-between border-b border-subtle shrink-0 px-4">
                             <div className="flex items-center gap-2 text-ink text-sm font-medium">
                                 <span className="hidden sm:inline text-gray-400">Página</span>
-                                <span className="bg-[#0a0a0a] px-2 py-1 rounded border border-line min-w-[30px] text-center">
+                                <span className="bg-surface-sunken px-2 py-1 rounded border border-line min-w-[30px] text-center">
                                     {pageNumber}
                                 </span>
                                 <span className="text-gray-400">de {numPages || '--'}</span>
@@ -155,7 +155,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         </div>
 
                         {/* PDF Viewer Container */}
-                        <div className="flex-1 bg-[#0a0a0a] relative overflow-auto flex justify-center p-4 scrollbar-thin scrollbar-track-[#0a0a0a] scrollbar-thumb-anvil-red/50" ref={containerRef}>
+                        <div className="flex-1 bg-surface-sunken relative overflow-auto flex justify-center p-4 scrollbar-thin scrollbar-track-[#0a0a0a] scrollbar-thumb-anvil-red/50" ref={containerRef}>
                             <Document
                                 file={pdfUrl}
                                 onLoadSuccess={onDocumentLoadSuccess}
@@ -199,11 +199,11 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
 
                         {/* Footer Navigation */}
                         {numPages && numPages > 1 && (
-                            <div className="p-4 bg-[#0a0a0a] border-t border-line flex justify-center items-center gap-6 shrink-0 z-10 pb-8 sm:pb-4">
+                            <div className="p-4 bg-surface-sunken border-t border-line flex justify-center items-center gap-6 shrink-0 z-10 pb-8 sm:pb-4">
                                 <button
                                     disabled={pageNumber <= 1}
                                     onClick={previousPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-[#0a0a0a] text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-subtle"
+                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-subtle"
                                 >
                                     <ChevronLeft size={20} />
                                     <span className="hidden sm:inline">Anterior</span>
@@ -216,7 +216,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 <button
                                     disabled={pageNumber >= numPages}
                                     onClick={nextPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-[#0a0a0a] text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-subtle"
+                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-subtle"
                                 >
                                     <span className="hidden sm:inline">Siguiente</span>
                                     <ChevronRight size={20} />

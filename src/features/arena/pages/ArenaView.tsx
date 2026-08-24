@@ -206,7 +206,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-[#0a0a0a] text-ink">
+        <div className="min-h-[100dvh] bg-surface-sunken text-ink">
             {/* Header */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-subtle px-4 md:px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -319,7 +319,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         )}
 
                         {/* Rules / Legend Card */}
-                        <div className="bg-[#0a0a0a] border border-subtle p-8 rounded-[2rem] space-y-6">
+                        <div className="bg-surface-sunken border border-subtle p-8 rounded-[2rem] space-y-6">
                             <h3 className="text-sm font-black uppercase italic text-ink flex items-center gap-2">
                                 <Info size={16} className="text-brand-text" /> Reglas de La Arena
                             </h3>
@@ -365,7 +365,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         exit={{ y: 100, opacity: 0 }}
                         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-full max-w-md px-4"
                     >
-                        <div className="bg-[#0a0a0a] border border-anvil-red/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                        <div className="bg-surface-sunken border border-anvil-red/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
                             <div className="bg-anvil-red px-6 py-3 flex justify-between items-center">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-ink flex items-center gap-2">
                                     <Swords size={14} /> Boleto de Apuestas ({betSlip.length})

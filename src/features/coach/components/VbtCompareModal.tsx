@@ -204,10 +204,10 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/95 backdrop-blur-sm animate-fade">
-            <div className="bg-[#0a0a0a] max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-line shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
+            <div className="bg-surface-sunken max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-line shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
                 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-subtle bg-[#0a0a0a] gap-4 sm:gap-0 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-subtle bg-surface-sunken gap-4 sm:gap-0 flex-shrink-0">
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="p-2 bg-danger-quiet rounded-lg text-brand-text border border-danger/20">
                             <Activity size={24} />
@@ -316,12 +316,12 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
 
                             {/* Session Summary Table */}
                             <div className="sm:mt-8 bg-black/20 sm:rounded-xl border-y sm:border border-subtle -mx-4 sm:mx-0 overflow-hidden">
-                                <div className="px-4 py-3 border-b border-subtle bg-[#0a0a0a]">
+                                <div className="px-4 py-3 border-b border-subtle bg-surface-sunken">
                                     <h4 className="text-sm font-bold uppercase tracking-wider text-ink">Medias Acumuladas</h4>
                                 </div>
                                 <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto overflow-x-auto">
                                     <table className="w-full text-left text-xs sm:text-sm text-ink-muted relative">
-                                        <thead className="sticky top-0 z-10 text-t-2xs sm:text-xs uppercase bg-[#0a0a0a] text-ink-subtle font-bold border-b border-subtle shadow-sm">
+                                        <thead className="sticky top-0 z-10 text-t-2xs sm:text-xs uppercase bg-surface-sunken text-ink-subtle font-bold border-b border-subtle shadow-sm">
                                             <tr>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">Sesión</th>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">Med. Vm</th>

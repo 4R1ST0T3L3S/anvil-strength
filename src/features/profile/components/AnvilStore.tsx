@@ -72,7 +72,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                     return (
                         <div 
                             key={item.id}
-                            className={`relative group bg-[#0a0a0a] border rounded-3xl p-6 transition-[background-color,border-color,opacity] ${
+                            className={`relative group bg-surface-sunken border rounded-3xl p-6 transition-[background-color,border-color,opacity] ${
  item.available 
  ? 'border-subtle hover:border-anvil-red/30 cursor-pointer' 
  : 'border-subtle opacity-60 grayscale cursor-not-allowed'

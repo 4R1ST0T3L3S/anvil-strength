@@ -152,7 +152,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
             <div className="space-y-4">
                 <AnimatePresence>
                 {competitions.length === 0 ? (
-                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a0a0a] border border-subtle rounded-xl p-8 text-center flex flex-col items-center justify-center">
+                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-surface-sunken border border-subtle rounded-xl p-8 text-center flex flex-col items-center justify-center">
                         <Calendar size={24} className="text-gray-600 mb-3" />
                         <p className="text-sm font-medium text-ink-muted">No hay competiciones programadas.</p>
                     </m.div>
@@ -163,12 +163,12 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="bg-[#0a0a0a] rounded-xl overflow-hidden border border-subtle shadow-md flex flex-col md:flex-row relative"
+                            className="bg-surface-sunken rounded-xl overflow-hidden border border-subtle shadow-md flex flex-col md:flex-row relative"
                         >
                             <div className="p-4 md:pr-16 flex-1 flex flex-col xl:flex-row gap-6">
                                 {/* Competition Info */}
                                 <div className="xl:w-1/3 flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-[#0a0a0a] border border-line flex items-center justify-center shrink-0">
+                                    <div className="w-10 h-10 rounded-lg bg-surface-sunken border border-line flex items-center justify-center shrink-0">
                                         <Calendar size={20} className="text-brand-text" />
                                     </div>
                                     <div>
@@ -188,12 +188,12 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                     {comp.entries.map((entry: CompetitionEntry) => (
                                         <div 
                                             key={entry.id} 
-                                            className="flex items-center gap-2 p-2 bg-[#0a0a0a] hover:bg-[#111] transition-colors rounded-lg border border-transparent hover:border-line"
+                                            className="flex items-center gap-2 p-2 bg-surface-sunken hover:bg-[#111] transition-colors rounded-lg border border-transparent hover:border-line"
                                         >
                                             {entry.profiles?.avatar_url ? (
                                                 <img src={entry.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-[#0a0a0a] border border-line flex items-center justify-center font-bold text-xs text-ink">
+                                                <div className="w-8 h-8 rounded-full bg-surface-sunken border border-line flex items-center justify-center font-bold text-xs text-ink">
                                                     {entry.profiles?.full_name?.[0]?.toUpperCase()}
                                                 </div>
                                             )}

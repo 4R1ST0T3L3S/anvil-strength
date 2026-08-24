@@ -151,7 +151,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
     return (
         <div className="fixed inset-0 z-[9999] flex bg-black/80 backdrop-blur-sm">
             {/* Left: Settings Panel */}
-            <div className="w-80 bg-[#0a0a0a] border-r border-line flex flex-col h-full overflow-hidden shrink-0">
+            <div className="w-80 bg-surface-sunken border-r border-line flex flex-col h-full overflow-hidden shrink-0">
                 <div className="p-4 border-b border-line flex justify-between items-center">
                     <h2 className="text-ink font-black uppercase text-sm tracking-wider">Editor PDF (Entrenamiento)</h2>
                     <button onClick={onClose} className="text-ink-subtle hover:text-ink"><X size={20} /></button>
@@ -256,7 +256,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
             </div>
 
             {/* Right: PDF Preview (A4 ratio) */}
-            <div className="flex-1 overflow-y-auto p-8 flex justify-center items-start bg-[#0a0a0a]">
+            <div className="flex-1 overflow-y-auto p-8 flex justify-center items-start bg-surface-sunken">
                 <style>{`
                     .pdf-preview * { font-family: '${s.fontFamily}', sans-serif; color: ${s.textColor}; }
                     .pdf-accent { color: ${s.accentColor} !important; }

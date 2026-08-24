@@ -18,7 +18,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
         onClick={onClose}
       />
 
-      <div className="relative bg-[#0a0a0a] w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
+      <div className="relative bg-surface-sunken w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
         
         {/* Close Button Mobile */}
         <button
@@ -35,7 +35,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             alt={athlete.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent md:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-transparent to-transparent md:hidden" />
           <div className="absolute bottom-0 left-0 p-6 md:hidden">
             <h2 className="text-3xl font-black uppercase tracking-tighter text-ink leading-none mb-1 font-bebas italic">
               {athlete.name}
@@ -47,7 +47,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
         </div>
 
         {/* Details Section - Scrollable on Desktop */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar bg-gradient-to-b from-[#0a0a0a] to-[#0a0a0a]">
+        <div className="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar bg-gradient-to-b from-surface-sunken to-surface-sunken">
           {/* Close Button Desktop */}
           <div className="hidden md:flex justify-end mb-12">
             <button
@@ -71,14 +71,14 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
           <div className="space-y-12">
             {/* Main Stats */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-anvil-red/30 transition-colors">
+              <div className="bg-surface-sunken p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-anvil-red/30 transition-colors">
                 <div className="flex items-center gap-3 mb-4 text-ink-subtle">
                   <Activity size={18} />
                   <span className="text-t-2xs font-black uppercase tracking-widest">GL Points</span>
                 </div>
                 <p className="text-5xl font-black text-ink">{athlete.stats.glPoints}</p>
               </div>
-              <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-anvil-red/30 transition-colors">
+              <div className="bg-surface-sunken p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-anvil-red/30 transition-colors">
                 <div className="flex items-center gap-3 mb-4 text-ink-subtle">
                   <Trophy size={18} />
                   <span className="text-t-2xs font-black uppercase tracking-widest">Total</span>
@@ -99,7 +99,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
                   { label: 'Bench', value: athlete.stats.bench },
                   { label: 'Deadlift', value: athlete.stats.deadlift }
                 ].map((lift) => (
-                  <div key={lift.label} className="text-center p-6 bg-[#0a0a0a] rounded-2xl border border-subtle hover:border-anvil-red/20 transition-colors group">
+                  <div key={lift.label} className="text-center p-6 bg-surface-sunken rounded-2xl border border-subtle hover:border-anvil-red/20 transition-colors group">
                     <p className="text-t-2xs text-ink-subtle uppercase font-black tracking-widest mb-3 group-hover:text-brand-text transition-colors">{lift.label}</p>
                     <p className="text-3xl font-black text-ink">{lift.value}</p>
                   </div>

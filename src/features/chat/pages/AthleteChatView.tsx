@@ -21,7 +21,7 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
 
     if (!user.coach_id) {
         return (
-            <div className="min-h-[100dvh] bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center">
+            <div className="min-h-[100dvh] bg-surface-sunken flex flex-col items-center justify-center p-8 text-center">
                 <div className="p-6 bg-anvil-red/10 rounded-full text-brand-text mb-6">
                     <ShieldCheck size={48} />
                 </div>
@@ -34,7 +34,7 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
     }
 
     return (
-        <div className="fixed inset-0 z-[60] bg-[#0a0a0a] flex flex-col">
+        <div className="fixed inset-0 z-[60] bg-surface-sunken flex flex-col">
             {/* Header */}
             <header className="p-6 bg-black/60 backdrop-blur-xl border-b border-subtle flex items-center gap-4">
                 {/* `navigate(-1)` se quedaba sin sitio al que volver cuando no

@@ -57,7 +57,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             className={`relative p-4 rounded-2xl border text-left transition-[background-color,border-color,color,transform] active:scale-[0.97] ${
  done
  ? 'bg-green-500/5 border-success/20'
- : 'bg-[#1c1c1c] border-line hover:border-anvil-red/40'
+ : 'bg-surface-canvas border-line hover:border-anvil-red/40'
  }`}
                         >
                             <div className="flex items-center justify-between mb-2">
@@ -199,7 +199,7 @@ export function CheckInFormModal({
                     initial={{ opacity: 0, y: 60 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 60 }}
-                    className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[90vh]"
+                    className="relative bg-surface-canvas w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[90vh]"
                 >
                     <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
                         <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">

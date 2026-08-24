@@ -125,7 +125,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && handleClose?.()}
         >
-            <div className="bg-[#0a0a0a] border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1200px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col scale-in-center mt-0 relative">
+            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1200px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col scale-in-center mt-0 relative">
                 
                 {/* Ambient Background Gradient based on ranking type */}
                 <div 
@@ -137,7 +137,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                 />
 
                 {/* Header */}
-                <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-subtle flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
+                <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-subtle flex justify-between items-center bg-surface-sunken/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
                     <div className="flex items-center gap-3 md:gap-5">
                         <div className={`transition-colors origin-left ${rankingType === 'gl' ? 'text-brand-text' : 'text-cyan-400'}`}>
                             {rankingType === 'gl' ? <Trophy size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" /> : <Fish size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />}
@@ -177,7 +177,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                 </div>
 
                 {/* Mobile Ranking Selector */}
-                <div className="sm:hidden p-4 border-b border-subtle bg-[#0a0a0a] shrink-0 relative z-10">
+                <div className="sm:hidden p-4 border-b border-subtle bg-surface-sunken shrink-0 relative z-10">
                     <div className="flex p-1 bg-white/5 rounded-xl border border-line shadow-inner">
                         <button 
                             onClick={() => setRankingType('gl')}

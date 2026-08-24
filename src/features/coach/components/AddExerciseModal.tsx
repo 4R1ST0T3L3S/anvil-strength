@@ -76,10 +76,10 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-[#0a0a0a] w-full max-w-2xl h-[80vh] rounded-2xl border border-line shadow-2xl flex flex-col"
+                    className="relative bg-surface-sunken w-full max-w-2xl h-[80vh] rounded-2xl border border-line shadow-2xl flex flex-col"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-subtle bg-[#0a0a0a]">
+                    <div className="flex items-center justify-between p-6 border-b border-subtle bg-surface-sunken">
                         <h2 className="text-xl font-black uppercase text-ink">Librería de Ejercicios</h2>
                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
                             <X size={20} />
@@ -95,7 +95,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar por nombre o grupo muscular..."
-                                className="w-full bg-[#0a0a0a] border border-line rounded-xl pl-12 pr-4 py-4 text-ink placeholder-gray-600 focus:border-anvil-red/50 transition-colors font-medium"
+                                className="w-full bg-surface-sunken border border-line rounded-xl pl-12 pr-4 py-4 text-ink placeholder-gray-600 focus:border-anvil-red/50 transition-colors font-medium"
                                 autoFocus
                             />
                         </div>

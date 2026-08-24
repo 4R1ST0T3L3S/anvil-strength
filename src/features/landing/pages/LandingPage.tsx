@@ -760,7 +760,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
  * Antes era un lightbox propio: fondo negro al 90% con desenfoque, `z-[300]`
  * a mano (que es la capa del BACKDROP, no la del modal), sin trampa de foco,
  * sin Escape y sin bloqueo de scroll. Y dentro, el registro visual de otra
- * página — `bg-[#1c1c1c]`, `text-gray-400`, cursiva, `tracking-tighter` y un
+ * página — `bg-surface-canvas`, `text-gray-400`, cursiva, `tracking-tighter` y un
  * trofeo de 48px de adorno. Ahora usa el `Modal` del sistema, que ya trae los
  * tres comportamientos, y el color sale de los tokens.
  *

@@ -200,9 +200,9 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
             </div>
 
             {loading ? (
-                <div className="flex h-64 items-center justify-center rounded-xl border border-subtle bg-[#0a0a0a] font-black italic text-ink-subtle">CARGANDO...</div>
+                <div className="flex h-64 items-center justify-center rounded-xl border border-subtle bg-surface-sunken font-black italic text-ink-subtle">CARGANDO...</div>
             ) : competitions.length === 0 ? (
-                <div className="rounded-xl border border-subtle bg-[#0a0a0a] p-12 text-center">
+                <div className="rounded-xl border border-subtle bg-surface-sunken p-12 text-center">
                     <CalendarIcon size={40} className="mx-auto mb-4 text-gray-700" />
                     <p className="font-black uppercase tracking-wider text-ink-muted">Sin competiciones</p>
                     <p className="mx-auto mt-2 max-w-sm text-sm text-gray-600">
@@ -223,7 +223,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         const { esInvitado, level, color, bg, border, line, icon } = meta;
 
                         return (
-                            <div key={index} className={`relative bg-[#0a0a0a] border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-[background-color,border-color,opacity] hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
+                            <div key={index} className={`relative bg-surface-sunken border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-[background-color,border-color,opacity] hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
                                 <div className="flex flex-col gap-5 md:gap-6">
 
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}
