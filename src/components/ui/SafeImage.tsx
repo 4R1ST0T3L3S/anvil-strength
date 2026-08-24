@@ -51,7 +51,7 @@ export function SafeImage({
                 // Se hereda className para que el hueco ocupe exactamente lo
                 // mismo que habría ocupado la foto y no descuadre la rejilla.
                 className={cn(
-                    'flex items-center justify-center bg-surface-raised text-ink-faint',
+                    'flex items-center justify-center bg-surface-raised text-ink-subtle',
                     className,
                     fallbackClassName
                 )}

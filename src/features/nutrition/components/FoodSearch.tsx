@@ -86,7 +86,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         setSelectedFood(null);
                     }}
                     autoFocus
-                    className="w-full bg-[#111111] text-ink pl-10 pr-12 py-3 rounded-lg border border-line focus:border-brand focus:ring-1 focus:ring-brand transition-[border-color,box-shadow]"
+                    className="w-full bg-surface-raised text-ink pl-10 pr-12 py-3 rounded-lg border border-line focus:border-brand focus:ring-1 focus:ring-brand transition-[border-color,box-shadow]"
                 />
                 <button 
                     onClick={() => setIsEditingBrands(!isEditingBrands)}
@@ -99,7 +99,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
             {/* Favorite Brands Manager */}
             {isEditingBrands && (
-                <div className="bg-[#111111] border border-line rounded-lg p-3 animate-fade">
+                <div className="bg-surface-raised border border-line rounded-lg p-3 animate-fade">
                     <p className="text-xs text-ink-muted mb-2 font-bold uppercase flex items-center gap-1">
                         <Star size={12} /> Marcas Prioritarias
                     </p>
@@ -150,7 +150,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         <button
                             key={food.code}
                             onClick={() => setSelectedFood(food)}
-                            className="w-full text-left bg-[#111111] hover:bg-surface-raised border border-line hover:border-brand/50 rounded-lg p-3 transition-colors flex justify-between items-center group"
+                            className="w-full text-left bg-surface-raised hover:bg-surface-raised border border-line hover:border-brand/50 rounded-lg p-3 transition-colors flex justify-between items-center group"
                         >
                             <div>
                                 <h4 className="text-ink font-medium group-hover:text-brand-text transition-colors">{food.product_name}</h4>
@@ -171,7 +171,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
             {/* Add Grams Form */}
             {selectedFood && (
-                <div className="animate-fade bg-[#111111] p-4 rounded-lg border border-brand/30">
+                <div className="animate-fade bg-surface-raised p-4 rounded-lg border border-brand/30">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <h3 className="text-lg font-bold text-ink">{selectedFood.product_name}</h3>

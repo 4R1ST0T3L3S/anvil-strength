@@ -315,7 +315,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
 
                         {scanReport && <ScanSummary report={scanReport} onClose={() => setScanReport(null)} />}
 
-                        <p className="text-t-2xs leading-relaxed text-ink-faint">
+                        <p className="text-t-2xs leading-relaxed text-ink-subtle">
                             El PDF no se guarda en ningún sitio: se lee en tu navegador, se copia el diseño y se
                             descarta. La tipografía se sustituye por la más parecida de las tres que admite el
                             formato.
@@ -534,7 +534,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                 <div className="flex items-end justify-between gap-3">
                                     <div>
                                         <span className="block text-t-xs font-semibold text-ink-muted">Columnas de la tabla</span>
-                                        <span className="block text-t-2xs text-ink-faint">
+                                        <span className="block text-t-2xs text-ink-subtle">
                                             «Libre» dibuja la columna y la deja vacía para rellenar a mano.
                                         </span>
                                     </div>
@@ -582,7 +582,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                                     className="w-full bg-transparent text-t-2xs font-bold text-ink"
                                                     aria-label="Ancho relativo"
                                                 />
-                                                <span className="text-t-2xs text-ink-faint">%</span>
+                                                <span className="text-t-2xs text-ink-subtle">%</span>
                                             </div>
                                             <button
                                                 type="button"
@@ -729,7 +729,7 @@ function ScanSummary({ report, onClose }: { report: TemplateScanReport; onClose:
                 type="button"
                 onClick={onClose}
                 aria-label="Cerrar el resumen"
-                className="absolute right-2 top-2 rounded-chip p-1.5 text-ink-faint transition-colors hover:text-ink"
+                className="absolute right-2 top-2 rounded-chip p-1.5 text-ink-subtle transition-colors hover:text-ink"
             >
                 <X size={14} />
             </button>
@@ -768,7 +768,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
         <label className="block space-y-1.5">
             <span className="block text-t-xs font-semibold text-ink-muted">{label}</span>
             {children}
-            {hint && <span className="block text-t-2xs text-ink-faint">{hint}</span>}
+            {hint && <span className="block text-t-2xs text-ink-subtle">{hint}</span>}
         </label>
     );
 }

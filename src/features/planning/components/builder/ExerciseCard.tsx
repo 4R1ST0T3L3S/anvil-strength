@@ -239,7 +239,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Delete Exercise Button (Absolute Top Right) */}
             <button
                 onClick={onRemoveExercise}
-                className="absolute top-3 right-3 text-ink-faint hover:text-danger-text opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                className="absolute top-3 right-3 text-ink-subtle hover:text-danger-text opacity-0 group-hover:opacity-100 transition-opacity p-1"
             >
                 <Trash2 size={14} />
             </button>
@@ -374,7 +374,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             value={sessionExercise.round_count ?? ''}
                             onChange={(e) => commitRounds(e.target.value)}
                             placeholder="3"
-                            className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
+                            className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 text-center text-t-sm tabular-nums text-ink placeholder:text-ink-subtle focus:border-[var(--brand-line)]"
                         />
                     </label>
                 )}
@@ -397,9 +397,9 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 if (e.key === 'Escape') setEditingVideo(false);
                             }}
                             placeholder="https://youtube.com/watch?v=..."
-                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
+                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm text-ink placeholder:text-ink-subtle focus:border-[var(--brand-line)]"
                         />
-                        <p className="mt-1 text-t-2xs text-ink-faint">
+                        <p className="mt-1 text-t-2xs text-ink-subtle">
                             Vídeo de técnica del ejercicio. Lo verán todos tus atletas que lo tengan pautado.
                         </p>
                     </div>
@@ -732,7 +732,7 @@ function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
 
                     return (
                         <li key={set.id} className="flex items-baseline gap-2 text-t-2xs tabular-nums">
-                            <span className="w-3 shrink-0 text-ink-faint">{i + 1}</span>
+                            <span className="w-3 shrink-0 text-ink-subtle">{i + 1}</span>
                             <span className="text-ink">
                                 {set.actual_reps ?? '—'}
                                 <span className="text-ink-subtle"> reps</span>
@@ -885,10 +885,10 @@ function RestInput({
                 }}
                 placeholder="seg"
                 aria-label="Descanso entre series, en segundos"
-                className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
             />
             {asMinutes && (
-                <p className="mt-0.5 text-center text-t-2xs tabular-nums text-ink-faint">{asMinutes}</p>
+                <p className="mt-0.5 text-center text-t-2xs tabular-nums text-ink-subtle">{asMinutes}</p>
             )}
         </div>
     );
@@ -999,7 +999,7 @@ function SetTechniqueEditor({
                             key={`${set.id}_detail`}
                             onBlur={(e) => onUpdateSet(set.id, 'set_detail', e.target.value.trim() || null)}
                             placeholder={active.detailHint}
-                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 py-1 text-t-2xs text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                            className="w-full rounded-field border border-[var(--border-default)] bg-surface-sunken px-2 py-1 text-t-2xs text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
                         />
                     )}
                 </div>

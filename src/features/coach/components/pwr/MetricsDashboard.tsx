@@ -466,7 +466,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                 alguien compare desviaciones horizontales entre dos vídeos
                 grabados desde ángulos distintos. */}
             {quality.unreliableMetrics.length > 0 && quality.verdict !== 'blocked' && (
-              <p className="mt-1.5 text-t-2xs leading-relaxed text-ink-faint">
+              <p className="mt-1.5 text-t-2xs leading-relaxed text-ink-subtle">
                 Interpretar con cuidado: {quality.unreliableMetrics.map(k => UNRELIABLE_LABEL[k] ?? k).join(', ')}.
               </p>
             )}
@@ -501,7 +501,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
               adjetivo sin salida: con esto se sabe qué falta para dejar de
               serlo —tres mediciones más, o cargas más separadas—. */}
           {advMetrics.rm.source === 'generic' && advMetrics.rm.fallbackReason && athleteId && (
-              <p className="mt-1 text-t-2xs leading-relaxed text-ink-faint">
+              <p className="mt-1 text-t-2xs leading-relaxed text-ink-subtle">
                   Se usa el genérico porque {advMetrics.rm.fallbackReason}.
               </p>
           )}
@@ -795,7 +795,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
               Cuando dentro de un año se compare esta medición con otra, lo
               primero que hay que poder mirar es si las produjo el mismo
               algoritmo. */}
-          <p className="mt-2 text-right text-t-2xs text-ink-faint">
+          <p className="mt-2 text-right text-t-2xs text-ink-subtle">
             {PWR_ENGINE_LABEL}
           </p>
         </div>

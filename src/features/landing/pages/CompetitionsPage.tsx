@@ -215,7 +215,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex -space-x-3">
                                                         {event.athletes.slice(0, 4).map((athlete, i) => (
-                                                            <div key={i} className="w-10 h-10 rounded-full border-2 border-[#111] overflow-hidden bg-gray-800 shadow-lg">
+                                                            <div key={i} className="w-10 h-10 rounded-full border-2 border-surface-sunken overflow-hidden bg-gray-800 shadow-lg">
                                                                 {athlete.avatar_url ? (
                                                                     <img src={athlete.avatar_url} alt="" className="w-full h-full object-cover" />
                                                                 ) : (
@@ -226,7 +226,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                             </div>
                                                         ))}
                                                         {event.athletes.length > 4 && (
-                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-brand flex items-center justify-center text-t-2xs font-black text-ink">
+                                                            <div className="w-10 h-10 rounded-full border-2 border-surface-sunken bg-brand flex items-center justify-center text-t-2xs font-black text-ink">
                                                                 +{event.athletes.length - 4}
                                                             </div>
                                                         )}

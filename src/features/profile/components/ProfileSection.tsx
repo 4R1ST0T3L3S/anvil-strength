@@ -232,7 +232,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                             {imagePreview ? (
                                 <img src={imagePreview} alt="Avatar" className="h-full w-full object-cover" />
                             ) : (
-                                <span className="text-t-2xl font-black text-ink-faint">
+                                <span className="text-t-2xl font-black text-ink-subtle">
                                     {(formData.nickname?.[0] || formData.name?.[0] || 'U').toUpperCase()}
                                 </span>
                             )}

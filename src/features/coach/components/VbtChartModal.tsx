@@ -337,11 +337,11 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
                                                     <td className="px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-ink whitespace-nowrap">{row.name.replace('S', '').replace(' R', '/')}</td>
                                                     <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-ink">{row.Carga || '-'}</td>
                                                     <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#8b5cf6] hidden sm:table-cell">{row.ROM || '-'}</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#10b981] font-medium">{row.Vm?.toFixed(2) || '-'}</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-success font-medium">{row.Vm?.toFixed(2) || '-'}</td>
                                                     <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#0ea5e9] font-medium">{row.Vmp?.toFixed(2) || '-'}</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#3b82f6] hidden sm:table-cell">{row.Vmax?.toFixed(2) || '-'}</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#f59e0b] hidden lg:table-cell">{row.Potencia || '-'}</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#ef4444]">{row.Fatiga?.toFixed(1) || '-'}</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-info hidden sm:table-cell">{row.Vmax?.toFixed(2) || '-'}</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-warning hidden lg:table-cell">{row.Potencia || '-'}</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-danger-text">{row.Fatiga?.toFixed(1) || '-'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

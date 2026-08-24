@@ -1013,13 +1013,13 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-field bg-surface-sunken px-2.5 py-2">
                             <span className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">Escala</span>
                             <span className="font-mono text-t-xs font-bold text-ink">{ratioLabel}</span>
-                            <span className="text-t-2xs text-ink-faint">·</span>
+                            <span className="text-t-2xs text-ink-subtle">·</span>
                             <span className="text-t-2xs text-ink-subtle">
                                 disco de {Math.round(calibration.verticalExtentPx)} px de alto
                             </span>
                             {angle !== null && (
                                 <>
-                                    <span className="text-t-2xs text-ink-faint">·</span>
+                                    <span className="text-t-2xs text-ink-subtle">·</span>
                                     <span className={`text-t-2xs font-semibold ${angle > 25 ? 'text-warning' : 'text-success'}`}>
                                         cámara a {angle.toFixed(0)}°
                                     </span>

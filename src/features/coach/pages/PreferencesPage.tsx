@@ -342,14 +342,14 @@ function ColorField({ label, value, onChange }: {
                 aria-hidden="true"
             />
             <p className="mb-2 text-t-xs font-semibold text-ink">{label}</p>
-            <label className="mb-1 block text-t-2xs text-ink-faint">Matiz ({value.hue}°)</label>
+            <label className="mb-1 block text-t-2xs text-ink-subtle">Matiz ({value.hue}°)</label>
             <input
                 type="range" min={0} max={360} step={1}
                 value={value.hue}
                 onChange={(e) => onChange({ ...value, hue: Number(e.target.value) })}
                 className="mb-2 w-full"
             />
-            <label className="mb-1 block text-t-2xs text-ink-faint">Saturación ({value.saturation}%)</label>
+            <label className="mb-1 block text-t-2xs text-ink-subtle">Saturación ({value.saturation}%)</label>
             <input
                 type="range" min={0} max={100} step={1}
                 value={value.saturation}

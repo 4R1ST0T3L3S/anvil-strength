@@ -271,7 +271,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                             <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
                                 {getAnvilQuote()}
                             </p>
-                            <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                            <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                                 Anvil Strength Club
                             </p>
                         </div>

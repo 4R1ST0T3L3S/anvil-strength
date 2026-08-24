@@ -85,7 +85,7 @@ export function StatTile({
         >
             {icono && (
                 <span
-                    className="pointer-events-none absolute -right-3 -top-2 text-ink-faint opacity-20 [&>svg]:h-16 [&>svg]:w-16"
+                    className="pointer-events-none absolute -right-3 -top-2 text-ink-subtle opacity-20 [&>svg]:h-16 [&>svg]:w-16"
                     aria-hidden="true"
                 >
                     {icono}

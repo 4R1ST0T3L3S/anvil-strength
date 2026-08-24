@@ -243,7 +243,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                     </button>
 
                     {legacy.length > 0 && (
-                        <p className="mt-6 text-t-2xs text-ink-faint">
+                        <p className="mt-6 text-t-2xs text-ink-subtle">
                             Hay {legacy.length} archivos adjuntos a series del plan. Aparecen abajo,
                             en Mediciones.
                         </p>
@@ -608,7 +608,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                 style={{ color: z.color }}
                             >
                                 {z.label}
-                                <span className="ml-1 text-ink-faint">
+                                <span className="ml-1 text-ink-subtle">
                                     {z.max === Infinity ? '> 1.00' : `< ${z.max.toFixed(2)}`} m/s · {z.hint}
                                 </span>
                             </span>
@@ -641,7 +641,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         title="Descargar"
-                                        className="rounded-field p-1.5 text-ink-faint transition-colors hover:bg-surface-overlay hover:text-ink"
+                                        className="rounded-field p-1.5 text-ink-subtle transition-colors hover:bg-surface-overlay hover:text-ink"
                                     >
                                         <Download size={13} />
                                     </a>

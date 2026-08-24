@@ -55,7 +55,7 @@ const TONE = {
     good: { text: 'text-success', label: 'Buen acuerdo' },
     fair: { text: 'text-warning', label: 'Acuerdo aceptable' },
     poor: { text: 'text-danger-text', label: 'Desacuerdo alto' },
-    unknown: { text: 'text-ink-faint', label: 'Sin datos' },
+    unknown: { text: 'text-ink-subtle', label: 'Sin datos' },
 } as const;
 
 function fmt(value: number | null | undefined, decimals: number): string {
@@ -217,7 +217,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                         <label className="block text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                             Aparato de referencia
                         </label>
-                        <p className="mt-0.5 text-t-2xs text-ink-faint">
+                        <p className="mt-0.5 text-t-2xs text-ink-subtle">
                             Dos encoders distintos no son la misma vara de medir: el informe agrupa por aparato.
                         </p>
                         <input
@@ -318,7 +318,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
 
                                                 {/* La r va detrás y con la salvedad: un método que
                                                     devolviera siempre la mitad correlacionaría 1,00. */}
-                                                <p className="mt-1 text-t-2xs leading-relaxed text-ink-faint">
+                                                <p className="mt-1 text-t-2xs leading-relaxed text-ink-subtle">
                                                     r de Pearson {fmt(agreement.pearsonR, 3)} sobre {agreement.n}{' '}
                                                     repeticiones — mide asociación, no acuerdo: no sustituye a los
                                                     límites de arriba.
@@ -329,7 +329,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                                                 </p>
                                             </>
                                         ) : (
-                                            <p className="mt-1.5 text-t-2xs text-ink-faint">
+                                            <p className="mt-1.5 text-t-2xs text-ink-subtle">
                                                 El fichero del encoder no trae esta magnitud.
                                             </p>
                                         )}
@@ -383,9 +383,9 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
 function Stat({ label, value, unit }: { label: string; value: string; unit: string }) {
     return (
         <div className="min-w-0">
-            <dt className="text-t-2xs text-ink-faint">{label}</dt>
+            <dt className="text-t-2xs text-ink-subtle">{label}</dt>
             <dd className="text-t-2xs font-bold tabular-nums text-ink">
-                {value} <span className="font-normal text-ink-faint">{unit}</span>
+                {value} <span className="font-normal text-ink-subtle">{unit}</span>
             </dd>
         </div>
     );

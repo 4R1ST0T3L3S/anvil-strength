@@ -217,7 +217,7 @@ export function SessionFinish({
                     {done && summary.rpePairs > 0 && (
                         <div className="mt-3 rounded-field bg-surface-sunken p-3">
                             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                                <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                                     RPE medio
                                 </span>
                                 <span className="text-t-sm text-ink-muted">
@@ -245,7 +245,7 @@ export function SessionFinish({
                                     </span>
                                 )}
                             </div>
-                            <p className="mt-1.5 text-t-2xs text-ink-faint">
+                            <p className="mt-1.5 text-t-2xs text-ink-subtle">
                                 Sobre {summary.rpePairs} {summary.rpePairs === 1 ? 'serie' : 'series'} con los dos
                                 valores. Un rango pautado («7-8») se compara por su extremo alto.
                             </p>
@@ -273,7 +273,7 @@ export function SessionFinish({
                                 maxLength={1000}
                                 placeholder="Molestia en el hombro, la última serie se fue lenta…"
                                 // text-t-base (16px): por debajo, iOS hace zoom al enfocar.
-                                className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-base text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
+                                className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-base text-ink placeholder:text-ink-subtle focus:border-[var(--brand-line)]"
                             />
                             {done && (
                                 <Button
@@ -366,7 +366,7 @@ export function SessionFinish({
                 )}
 
                 {done && checkInDone === null && (
-                    <div className="flex items-center gap-2 border-t border-subtle bg-surface-sunken px-4 py-3 text-t-xs text-ink-faint md:px-5">
+                    <div className="flex items-center gap-2 border-t border-subtle bg-surface-sunken px-4 py-3 text-t-xs text-ink-subtle md:px-5">
                         <Loader size={13} className="animate-spin" aria-hidden="true" />
                         Comprobando tu check-in…
                     </div>
@@ -393,9 +393,9 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
         <div className="rounded-field bg-surface-sunken px-3 py-2.5">
             <p className="text-t-xl font-black tabular-nums leading-none text-ink">
                 {value}
-                {hint && <span className="ml-1 text-t-2xs font-bold text-ink-faint">{hint}</span>}
+                {hint && <span className="ml-1 text-t-2xs font-bold text-ink-subtle">{hint}</span>}
             </p>
-            <p className="mt-1 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">{label}</p>
+            <p className="mt-1 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
         </div>
     );
 }

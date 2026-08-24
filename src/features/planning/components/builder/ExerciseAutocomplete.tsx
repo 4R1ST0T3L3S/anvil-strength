@@ -103,7 +103,7 @@ export function ExerciseAutocomplete({
                     )}
                 </div>
             )}
-            <div className="mt-2 flex justify-between text-t-2xs text-ink-faint">
+            <div className="mt-2 flex justify-between text-t-2xs text-ink-subtle">
                 <span>Enter para añadir</span>
                 <span>Esc para cancelar</span>
             </div>

@@ -198,7 +198,7 @@ export function VolumePanel({
                 </div>
             )}
 
-            <p className="flex items-center gap-1.5 text-t-2xs text-ink-faint">
+            <p className="flex items-center gap-1.5 text-t-2xs text-ink-subtle">
                 <TrendingUp className="h-3 w-3" />
                 Directa = músculo motor. Indirecta = sinergista, también cuenta 1.
                 Los rangos de referencia se comparan con las directas.
@@ -220,7 +220,7 @@ function Metric({
         <div>
             <p className="text-t-2xs uppercase tracking-wide text-ink-subtle">{label}</p>
             <p className="text-xl font-semibold text-ink">{value}</p>
-            {hint && <p className="text-t-2xs text-ink-faint">{hint}</p>}
+            {hint && <p className="text-t-2xs text-ink-subtle">{hint}</p>}
         </div>
     );
 }
@@ -254,7 +254,7 @@ function MuscleBar({
                         <span className="text-ink-subtle"> + {indirect} ind.</span>
                     )}
                     {perWeek !== null && (
-                        <span className="ml-1.5 text-ink-faint">
+                        <span className="ml-1.5 text-ink-subtle">
                             · {ref.min}–{ref.max}/sem
                         </span>
                     )}

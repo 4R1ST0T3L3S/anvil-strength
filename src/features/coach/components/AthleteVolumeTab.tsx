@@ -507,7 +507,9 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                                                     // SEMANAL, que es la unidad en la que
                                                     // están definidas las referencias.
                                                     const tone =
-                                                        value === 0 ? 'text-ink-faint'
+                                                        // `subtle` y no `faint`: un cero es un DATO
+                                                        // de la tabla, y --ink-faint da 2,6:1.
+                                                        value === 0 ? 'text-ink-subtle'
                                                             : value < ref.min ? 'text-info'
                                                                 : value > ref.max ? 'text-warning'
                                                                     : 'text-ink-muted';
@@ -517,7 +519,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                                                         </td>
                                                     );
                                                 })}
-                                                <td className="px-2 py-1.5 text-right tabular-nums text-ink-faint">
+                                                <td className="px-2 py-1.5 text-right tabular-nums text-ink-subtle">
                                                     {ref.min}–{ref.max}
                                                 </td>
                                             </tr>
@@ -603,7 +605,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                         </li>
                     ))}
                 </ul>
-                <p className="mt-3 text-xs text-ink-faint">
+                <p className="mt-3 text-xs text-ink-subtle">
                     Los rangos son orientativos de hipertrofia. En un bloque de pico
                     es normal y correcto estar por debajo: sirven de contexto, no de
                     aprobado.

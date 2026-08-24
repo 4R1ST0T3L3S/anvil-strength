@@ -239,7 +239,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                             <div className="min-w-0">
                                 <span className="font-semibold text-ink">Hasta {new Date(`${p.paid_until}T00:00:00`).toLocaleDateString('es-ES')}</span>
                                 {p.amount != null && <span className="ml-2 text-ink-subtle">{p.amount} {p.currency}</span>}
-                                {p.note && <span className="ml-2 truncate text-ink-faint">· {p.note}</span>}
+                                {p.note && <span className="ml-2 truncate text-ink-subtle">· {p.note}</span>}
                             </div>
                             <button onClick={() => handleDelete(p.id)} className="shrink-0 text-ink-faint hover:text-danger-text" aria-label="Eliminar pago">
                                 <Trash2 size={13} />

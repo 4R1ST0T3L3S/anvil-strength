@@ -1658,7 +1658,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                         <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                                             ¿Cuántos días se entrena?
                                         </p>
-                                        <p className="mt-1 text-t-xs text-ink-faint">
+                                        <p className="mt-1 text-t-xs text-ink-subtle">
                                             Se crean en todas las semanas. No borra días que ya existan.
                                         </p>
                                         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -1705,7 +1705,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                         <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                                             ¿Cuándo ve el atleta cada semana?
                                         </p>
-                                        <p className="mt-1 text-t-xs text-ink-faint">
+                                        <p className="mt-1 text-t-xs text-ink-subtle">
                                             Antes de esa fecha la semana no existe para él. Vale para todo el bloque.
                                         </p>
                                         <div className="mt-3 space-y-0.5">
@@ -1764,7 +1764,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                             <p className="flex flex-wrap items-center gap-x-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                                 <FileText size={13} className="text-ink-faint" aria-hidden="true" />
                                 Descripción del bloque
-                                <span className="font-normal normal-case tracking-normal text-ink-faint">
+                                <span className="font-normal normal-case tracking-normal text-ink-subtle">
                                     (el atleta la ve en su planificación)
                                 </span>
                             </p>
@@ -1786,7 +1786,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                     maxLength={1000}
                                     autoFocus
                                     placeholder="Objetivos del bloque, por qué se hacen ciertas cosas, enfoque de las semanas..."
-                                    className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                                    className="w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
                                 />
                                 <div className="flex justify-end gap-2">
                                     <Button variant="ghost" size="sm" onClick={() => setIsEditingDescription(false)}>
@@ -1911,7 +1911,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                                     type="text"
                                                     value={weekNameInput}
                                                     onChange={(e) => setWeekNameInput(e.target.value)}
-                                                    className="flex-1 min-w-0 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-base text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                                                    className="flex-1 min-w-0 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-base text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
                                                     placeholder="Nombre de la semana"
                                                     autoFocus
                                                     onKeyDown={(e) => {

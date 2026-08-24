@@ -424,7 +424,7 @@ function Level({
                 onClick={() => { setOpen(true); onReopen(); }}
                 className="flex w-full items-center gap-2 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-2 text-left transition-colors duration-fast hover:border-[var(--border-strong)]"
             >
-                <span className="w-20 shrink-0 text-t-2xs font-semibold uppercase tracking-wide text-ink-faint">
+                <span className="w-20 shrink-0 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                     {label}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-t-xs font-semibold text-ink">{chosen}</span>
@@ -482,7 +482,7 @@ function Option({
             {hint && (
                 <span className={cn(
                     'truncate text-t-2xs',
-                    accent ? 'font-semibold text-brand-text' : 'text-ink-faint'
+                    accent ? 'font-semibold text-brand-text' : 'text-ink-subtle'
                 )}>
                     {hint}
                 </span>

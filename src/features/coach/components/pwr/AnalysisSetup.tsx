@@ -40,7 +40,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
             <label className="block text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                 {label}
             </label>
-            {hint && <p className="mt-0.5 text-t-2xs leading-relaxed text-ink-faint">{hint}</p>}
+            {hint && <p className="mt-0.5 text-t-2xs leading-relaxed text-ink-subtle">{hint}</p>}
             <div className="mt-1.5">{children}</div>
         </div>
     );
@@ -97,7 +97,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                     estimado se calculan multiplicando por la carga, así que salen de aquí.
                 </p>
                 {prefillNote && (
-                    <p className="mt-1.5 text-t-2xs leading-relaxed text-ink-faint">{prefillNote}</p>
+                    <p className="mt-1.5 text-t-2xs leading-relaxed text-ink-subtle">{prefillNote}</p>
                 )}
             </div>
 
@@ -192,7 +192,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                         ))}
                     </select>
                     {bar.massKg !== null && (
-                        <p className="mt-1 flex items-center gap-1.5 text-t-2xs text-ink-faint">
+                        <p className="mt-1 flex items-center gap-1.5 text-t-2xs text-ink-subtle">
                             <Dumbbell size={12} aria-hidden="true" />
                             Pesa {bar.massKg} kg vacía.
                         </p>
@@ -213,7 +213,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                                 <Check size={13} className="mt-0.5 shrink-0 text-ink-faint" aria-hidden="true" />
                                 <span className="min-w-0 text-t-2xs leading-relaxed text-ink-muted">
                                     {r.title}
-                                    <span className="block text-ink-faint">{r.why}</span>
+                                    <span className="block text-ink-subtle">{r.why}</span>
                                 </span>
                             </li>
                         ))}

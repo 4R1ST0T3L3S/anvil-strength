@@ -155,7 +155,7 @@ export function WeekMenu({
                                 </button>
                                 <div className="max-h-64 space-y-0.5 overflow-y-auto">
                                     {otherWeeks.length === 0 && (
-                                        <p className="px-2.5 py-2 text-t-xs italic text-ink-faint">
+                                        <p className="px-2.5 py-2 text-t-xs italic text-ink-subtle">
                                             No hay otra semana en el bloque.
                                         </p>
                                     )}

@@ -92,7 +92,7 @@ export function MobilePreview() {
                 dígitos de cuenta atrás y el contador a cero. Con "Nacional ·
                 Madrid" y 12 días todo cabe siempre y no se ve nada. */}
             <div className="mx-auto w-full max-w-6xl space-y-3 p-4">
-                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                     Panel del entrenador · cabecera
                 </p>
                 <div data-probe="home-cards" className="grid gap-3 md:grid-cols-2">
@@ -127,7 +127,7 @@ export function MobilePreview() {
                     renglón de contexto completo ("Viernes · Semana 6 de 12 ·
                     Día 3") con nombre de bloque largo, y los dos casos en que
                     no hay sesión y hay que explicar por qué. */}
-                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                     Hoy · entrenamiento del atleta
                 </p>
                 <div data-probe="hoy" className="grid gap-3 md:grid-cols-2">
@@ -207,7 +207,7 @@ export function MobilePreview() {
                     Sin sesión no hay plantilla que leer, así que cae al juego
                     predefinido y se puede medir la rejilla de campos —que es
                     lo que se estrecha— y el editor de "qué le pido". */}
-                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                     Información personal · vista del entrenador
                 </p>
                 <PersonalInfoSection
@@ -220,7 +220,7 @@ export function MobilePreview() {
                     editorId="00000000-0000-0000-0000-000000000000"
                 />
 
-                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                     Perfil · qué eres en Anvil
                 </p>
                 <RolesSection
@@ -300,7 +300,7 @@ export function MobilePreview() {
                         de series en la misma línea. Con "Rotación externa de
                         hombro con banda elástica" —un nombre largo de
                         verdad— es donde el truncado se pone a prueba. */}
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                         Propuesta de calentamiento estructurado
                     </p>
                     <WarmupConversionPanel
@@ -321,7 +321,7 @@ Movilidad de cadera 5'`}
                         exactamente el camino que se quiere comprobar, y el
                         único que hay hoy en producción mientras
                         `exercise_videos.sql` siga sin ejecutarse. */}
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                         Ficha de ejercicio · respaldo al enlace externo
                     </p>
                     <ExerciseVideoPanel
@@ -346,7 +346,7 @@ Movilidad de cadera 5'`}
                         ]}
                     />
 
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                         Cierre del día · sin terminar
                     </p>
                     <SessionFinish
@@ -358,7 +358,7 @@ Movilidad de cadera 5'`}
                         onChange={() => {}}
                     />
 
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                         Cierre del día · terminado
                     </p>
                     <SessionFinish

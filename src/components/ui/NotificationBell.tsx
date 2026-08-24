@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bell, CheckCheck, Loader, BellRing, BellOff } from 'lucide-react';
+import { Bell, CheckCheck, Loader, BellRing, BellOff, AlertTriangle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { notificationsService, AppNotification } from '../../services/notificationsService';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
@@ -62,7 +62,7 @@ export function NotificationBell({ userId }: { userId: string }) {
     const queryClient = useQueryClient();
     const claveAvisos = ['avisos-campana', userId] as const;
 
-    const { data: avisos, refetch, isPending: loading } = useQuery({
+    const consulta = useQuery({
         queryKey: ['avisos-campana', userId],
         queryFn: async () => {
             const [items, count] = await Promise.all([
@@ -73,6 +73,9 @@ export function NotificationBell({ userId }: { userId: string }) {
         },
         enabled: !!userId,
     });
+    const avisos = consulta.data;
+    const refetch = consulta.refetch;
+    const loading = consulta.isPending;
 
     const notifications: AppNotification[] = avisos?.items ?? [];
     const unreadCount = avisos?.count ?? 0;
@@ -200,7 +203,27 @@ export function NotificationBell({ userId }: { userId: string }) {
                         </div>
 
                         <div className="min-h-0 flex-1 overflow-y-auto">
-                            {loading ? (
+                            {/* Un fallo de red enseñaba "No tienes
+                                notificaciones", que es lo contrario de lo que
+                                pasa: puede haber un mensaje del entrenador sin
+                                leer. Aquí el estado vacío miente con
+                                consecuencias, así que el error va aparte. */}
+                            {consulta.isError ? (
+                                <div role="alert" className="px-6 py-10 text-center">
+                                    <AlertTriangle size={26} className="mx-auto mb-3 text-danger-text" aria-hidden="true" />
+                                    <p className="text-t-sm text-ink">No se han podido cargar tus avisos.</p>
+                                    <p className="mt-1 text-t-xs text-ink-subtle">
+                                        Puede que tengas alguno sin leer.
+                                    </p>
+                                    <button
+                                        onClick={() => refetch()}
+                                        className="mx-auto mt-4 flex min-h-[44px] items-center gap-2 rounded-field border border-[var(--border-default)] px-4 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                                    >
+                                        <RefreshCw size={14} aria-hidden="true" />
+                                        Reintentar
+                                    </button>
+                                </div>
+                            ) : loading ? (
                                 <div className="flex justify-center py-10">
                                     <Loader className="animate-spin text-brand-text" size={22} />
                                 </div>

@@ -335,7 +335,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                 value={rosterSearch}
                                 onChange={(e) => setRosterSearch(e.target.value)}
                                 placeholder="Buscar atleta…"
-                                className="w-full rounded-field bg-surface-sunken py-2 pl-8 pr-2 text-t-sm text-ink placeholder:text-ink-faint"
+                                className="w-full rounded-field bg-surface-sunken py-2 pl-8 pr-2 text-t-sm text-ink placeholder:text-ink-subtle"
                             />
                         </div>
                     )}
@@ -364,7 +364,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                             alt=""
                                             className="h-8 w-8 shrink-0 rounded-full object-cover"
                                             fallback={
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-t-xs font-bold text-ink-faint">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-sunken text-t-xs font-bold text-ink-subtle">
                                                     {a.full_name?.[0] ?? '?'}
                                                 </div>
                                             }
@@ -548,7 +548,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                                             </span>
                                                         )}
                                                         {isPast && (
-                                                            <span className="text-t-2xs font-black uppercase tracking-widest text-ink-faint px-2 py-1 rounded bg-surface-raised">
+                                                            <span className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle px-2 py-1 rounded bg-surface-raised">
                                                                 Disputada
                                                             </span>
                                                         )}

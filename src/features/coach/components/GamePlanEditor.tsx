@@ -101,7 +101,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
     return (
         <div className="fixed inset-0 z-[180] bg-[#141414] flex flex-col animate-fade">
             {/* Header */}
-            <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-4 border-b border-subtle bg-[#1a1a1a] shrink-0 print:hidden">
+            <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-4 border-b border-subtle bg-surface-raised shrink-0 print:hidden">
                 <div className="min-w-0">
                     <h2 className="text-lg md:text-2xl font-black uppercase text-ink flex items-center gap-2 tracking-tight truncate">
                         <Swords className="text-brand-text shrink-0" size={22} />
@@ -137,7 +137,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                     {LIFTS.map(({ key, label }) => {
                         const lift = plan[key];
                         return (
-                            <div key={key} className="bg-[#1a1a1a] border border-subtle rounded-2xl p-5 md:p-6">
+                            <div key={key} className="bg-surface-raised border border-subtle rounded-2xl p-5 md:p-6">
                                 <h3 className="text-xl font-black uppercase italic text-ink mb-5 flex items-center gap-3">
                                     <span className="text-brand-text">{label}</span>
                                 </h3>
@@ -234,7 +234,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                     })}
 
                     {/* Notas generales */}
-                    <div className="bg-[#1a1a1a] border border-subtle rounded-2xl p-5 md:p-6">
+                    <div className="bg-surface-raised border border-subtle rounded-2xl p-5 md:p-6">
                         <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">Notas generales del día</p>
                         <textarea
                             value={notes}

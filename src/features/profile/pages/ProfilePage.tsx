@@ -18,7 +18,7 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
         <div className="min-h-[100dvh] bg-surface-sunken font-sans selection:bg-brand flex flex-col">
             <PublicHeader onLoginClick={onLoginClick} />
             <div className="flex-1 pt-32 pb-20 px-4">
-                <div className="max-w-4xl mx-auto mb-8 bg-[#151515] border border-warning/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
+                <div className="max-w-4xl mx-auto mb-8 bg-surface-raised border border-warning/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500/10 via-amber-500 to-amber-500/10" />
                     <div className="w-16 h-16 bg-warning-quiet rounded-full flex items-center justify-center border border-warning/20 shrink-0">
                         <ShieldAlert className="w-8 h-8 text-warning" />

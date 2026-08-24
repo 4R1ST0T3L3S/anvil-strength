@@ -671,7 +671,7 @@ function AthleteCard({
                     {([['SQ', athlete.squat_pr], ['BP', athlete.bench_pr], ['DL', athlete.deadlift_pr]] as const).map(
                         ([label, value]) => (
                             <div key={label}>
-                                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-faint">{label}</p>
+                                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
                                 <p className="text-t-sm font-bold tabular-nums text-ink-muted">{value || '—'}</p>
                             </div>
                         )
@@ -931,7 +931,7 @@ export function ArchivedList({
                             // Atenuado: es un dato del pasado y se lee como tal.
                             className="h-10 w-10 shrink-0 rounded-pill object-cover opacity-60"
                             fallback={
-                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-surface-sunken text-t-xs font-bold text-ink-faint">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-surface-sunken text-t-xs font-bold text-ink-subtle">
                                     {(athlete.full_name ?? '?').charAt(0).toUpperCase()}
                                 </span>
                             }

@@ -354,7 +354,7 @@ function Bench() {
 
                 {stages.length > 0 && (
                     <table className="mt-4 w-full text-left text-t-2xs">
-                        <thead className="text-ink-faint">
+                        <thead className="text-ink-subtle">
                             <tr className="border-b border-subtle">
                                 <th className="py-1.5 font-bold">Etapa</th>
                                 <th className="py-1.5 text-right font-bold">ms/fotograma</th>
@@ -369,7 +369,7 @@ function Bench() {
                                     <tr key={s.label} className="border-b border-subtle/50 align-top">
                                         <td className="py-1.5 pr-3">
                                             {s.label}
-                                            {s.note && <p className="mt-0.5 text-ink-faint">{s.note}</p>}
+                                            {s.note && <p className="mt-0.5 text-ink-subtle">{s.note}</p>}
                                         </td>
                                         <td className="py-1.5 text-right font-bold">{(s.totalMs / s.frames).toFixed(1)}</td>
                                         <td className="py-1.5 text-right text-ink-muted">{s.totalMs.toFixed(0)} ms</td>

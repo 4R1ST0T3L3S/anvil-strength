@@ -223,7 +223,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         const { esInvitado, level, color, bg, border, line, icon } = meta;
 
                         return (
-                            <div key={index} className={`relative bg-surface-sunken border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-[background-color,border-color,opacity] hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
+                            <div key={index} className={`relative bg-surface-sunken border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-[background-color,border-color,opacity] hover:bg-surface-raised hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
                                 <div className="flex flex-col gap-5 md:gap-6">
 
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}

@@ -299,7 +299,7 @@ export function InviteAthleteModal({
                         </summary>
                         <ul className="mt-2 space-y-1.5">
                             {inactive.map(invite => (
-                                <li key={invite.id} className="flex items-center gap-2 px-1 text-t-xs text-ink-faint">
+                                <li key={invite.id} className="flex items-center gap-2 px-1 text-t-xs text-ink-subtle">
                                     <code className="font-mono font-bold tracking-widest line-through">{invite.code}</code>
                                     <span>· {inactiveReason(invite)}</span>
                                 </li>

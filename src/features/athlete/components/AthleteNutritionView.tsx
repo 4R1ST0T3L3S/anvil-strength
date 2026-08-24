@@ -46,7 +46,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                 </header>
 
                 <div className="bg-surface-sunken border border-subtle rounded-card p-12 text-center space-y-6">
-                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-ink-faint">
+                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-ink-subtle">
                         <Apple size={40} />
                     </div>
                     <div className="max-w-md mx-auto">

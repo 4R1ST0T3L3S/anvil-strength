@@ -59,7 +59,7 @@ export function WarmupConversionPanel({
             )}
 
             {unrecognised > 0 && (
-                <p className="mt-2 text-t-2xs text-ink-faint">
+                <p className="mt-2 text-t-2xs text-ink-subtle">
                     {unrecognised} {unrecognised === 1 ? 'línea queda' : 'líneas quedan'} sin series. Se
                     crean igual y puedes prescribirlas después.
                 </p>
@@ -81,7 +81,7 @@ export function WarmupConversionPanel({
                 </button>
             </div>
 
-            <p className="mt-2 text-t-2xs text-ink-faint">
+            <p className="mt-2 text-t-2xs text-ink-subtle">
                 El texto no se borra. Compáralo con el resultado y quítalo tú cuando te convenza.
             </p>
         </div>

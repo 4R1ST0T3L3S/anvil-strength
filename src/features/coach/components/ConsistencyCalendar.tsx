@@ -127,7 +127,7 @@ export function ConsistencyCalendar({ days }: { days: ConsistencyDay[] }) {
                         {monthLabels.map(({ col, text }) => (
                             <span
                                 key={`${col}-${text}`}
-                                className="absolute text-t-2xs text-ink-faint"
+                                className="absolute text-t-2xs text-ink-subtle"
                                 style={{ left: col * 16 }}
                             >
                                 {text}
@@ -160,7 +160,7 @@ export function ConsistencyCalendar({ days }: { days: ConsistencyDay[] }) {
             </div>
 
             {/* Leyenda */}
-            <div className="mt-3 flex items-center gap-1.5 text-t-2xs text-ink-faint">
+            <div className="mt-3 flex items-center gap-1.5 text-t-2xs text-ink-subtle">
                 <span>Menos</span>
                 {LEVEL_BG.map((bg, i) => (
                     <span key={i} className="h-3 w-3 rounded-[3px]" style={{ background: bg, border: '1px solid var(--border-subtle)' }} />

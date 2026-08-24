@@ -133,7 +133,7 @@ export function Field({
 const controlBase = (hayError: boolean) =>
     cn(
         'w-full min-h-[44px] rounded-field px-3 py-2',
-        'bg-surface-sunken text-t-base text-ink placeholder:text-ink-faint',
+        'bg-surface-sunken text-t-base text-ink placeholder:text-ink-subtle',
         'border transition-colors duration-fast ease-snap',
         'focus-visible:border-brand',
         'disabled:cursor-not-allowed disabled:opacity-45',

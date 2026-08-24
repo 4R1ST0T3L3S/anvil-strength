@@ -575,7 +575,7 @@ function SessionCard({ session, onSetPatched }: { session: LoggedSession; onSetP
                             <span>
                                 RPE {summary.actualRpe}
                                 {summary.plannedRpe != null && (
-                                    <span className="text-ink-faint"> · pautado {summary.plannedRpe}</span>
+                                    <span className="text-ink-subtle"> · pautado {summary.plannedRpe}</span>
                                 )}
                             </span>
                         )}
@@ -639,7 +639,7 @@ function ExerciseLog({
                     <span className="text-t-2xs font-semibold text-brand-text">{exercise.variantName}</span>
                 )}
                 {!anyLogged && (
-                    <span className="text-t-2xs text-ink-faint">sin registrar</span>
+                    <span className="text-t-2xs text-ink-subtle">sin registrar</span>
                 )}
             </p>
 
@@ -650,7 +650,7 @@ function ExerciseLog({
             <div className="mt-2 -mx-1 overflow-x-auto">
                 <table className="w-full min-w-[24rem] border-collapse text-t-2xs tabular-nums">
                     <thead>
-                        <tr className="text-ink-faint">
+                        <tr className="text-ink-subtle">
                             <th className="px-1 py-1 text-left font-medium">#</th>
                             <th className="px-1 py-1 text-left font-medium">Pautado</th>
                             <th className="px-1 py-1 text-left font-medium">Hecho</th>
@@ -674,7 +674,7 @@ function ExerciseLog({
                     {exercise.sets.map((set, i) =>
                         set.notes?.trim() ? (
                             <li key={set.id} className="flex gap-2 text-t-2xs leading-relaxed text-ink-muted">
-                                <span className="shrink-0 text-ink-faint">S{i + 1}</span>
+                                <span className="shrink-0 text-ink-subtle">S{i + 1}</span>
                                 <span className="italic">“{set.notes.trim()}”</span>
                             </li>
                         ) : null
@@ -762,7 +762,7 @@ function SetRow({
     if (editing) {
         return (
             <tr className="border-t border-[var(--border-subtle)] bg-[var(--brand-quiet)]">
-                <td className="px-1 py-1.5 text-ink-faint">{index + 1}</td>
+                <td className="px-1 py-1.5 text-ink-subtle">{index + 1}</td>
                 <td colSpan={3} className="px-1 py-1.5">
                     <div className="flex flex-wrap items-center gap-1.5">
                         <input
@@ -774,7 +774,7 @@ function SetRow({
                             aria-label={`Repeticiones corregidas, serie ${index + 1}`}
                             className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink focus:border-brand"
                         />
-                        <span className="text-ink-faint">×</span>
+                        <span className="text-ink-subtle">×</span>
                         <input
                             type="number"
                             inputMode="decimal"
@@ -785,7 +785,7 @@ function SetRow({
                             aria-label={`Kilos corregidos, serie ${index + 1}`}
                             className="w-16 rounded-chip border border-[var(--border-default)] bg-surface-canvas px-1.5 py-1 text-center text-t-2xs text-ink focus:border-brand"
                         />
-                        <span className="text-ink-faint">@</span>
+                        <span className="text-ink-subtle">@</span>
                         <input
                             type="number"
                             inputMode="decimal"
@@ -820,14 +820,14 @@ function SetRow({
 
     return (
         <tr className="border-t border-[var(--border-subtle)]">
-            <td className="px-1 py-1 text-ink-faint">{index + 1}</td>
+            <td className="px-1 py-1 text-ink-subtle">{index + 1}</td>
             <td className="px-1 py-1 text-ink-subtle">
                 {set.targetReps ?? '—'}
                 {kg != null && ` × ${kg} kg`}
                 {set.targetRpe && ` @${set.targetRpe}`}
                 {reps == null && kg == null && !set.targetRpe && '—'}
             </td>
-            <td className={cn('px-1 py-1', hasData ? 'font-semibold text-ink' : 'text-ink-faint')}>
+            <td className={cn('px-1 py-1', hasData ? 'font-semibold text-ink' : 'text-ink-subtle')}>
                 {hasData ? (
                     <>
                         {set.actualReps ?? '—'}
@@ -862,7 +862,7 @@ function SetRow({
                     // Siempre presente y a baja opacidad —no solo al pasar el
                     // ratón—: en un móvil no hay hover, y ocultarlo del todo
                     // hasta ese gesto lo habría dejado indescubrible ahí.
-                    className="flex h-6 w-6 items-center justify-center rounded-chip text-ink-faint/40 transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
+                    className="flex h-6 w-6 items-center justify-center rounded-chip text-ink-subtle/40 transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
                 >
                     <Pencil size={11} />
                 </button>
@@ -927,7 +927,7 @@ function DeviationsView({ rows }: { rows: DeviationRow[] }) {
                     const kg = prescribedKg(row.set);
                     return (
                         <li key={`${row.set.id}-${i}`} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2 text-t-xs">
-                            <span className="w-24 shrink-0 text-t-2xs text-ink-faint">
+                            <span className="w-24 shrink-0 text-t-2xs text-ink-subtle">
                                 S{row.weekNumber} · {row.sessionLabel}
                             </span>
                             <span className="min-w-0 flex-1 font-semibold text-ink">
@@ -963,7 +963,7 @@ function DeviationsView({ rows }: { rows: DeviationRow[] }) {
             </ul>
 
             {filtered.length > 120 && (
-                <p className="mt-3 text-t-2xs text-ink-faint">
+                <p className="mt-3 text-t-2xs text-ink-subtle">
                     Se muestran las 120 más recientes de {filtered.length}.
                 </p>
             )}
@@ -1030,12 +1030,12 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
  * en carga, más es mejor; en RPE, más significa que costó más de lo previsto.
  */
 function Delta({ value, unit, invert }: { value: number | null; unit: string; invert?: boolean }) {
-    if (value === null) return <span className="text-ink-faint">—</span>;
+    if (value === null) return <span className="text-ink-subtle">—</span>;
 
     const negligible = unit === '%' ? Math.abs(value) < 2 : Math.abs(value) < 0.5;
     if (negligible) {
         return (
-            <span className="inline-flex items-center gap-0.5 text-ink-faint">
+            <span className="inline-flex items-center gap-0.5 text-ink-subtle">
                 <Minus size={11} aria-hidden="true" />
             </span>
         );

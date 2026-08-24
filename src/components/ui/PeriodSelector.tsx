@@ -171,7 +171,7 @@ export function PeriodSelector({
                 {deBloque.length > 0 && (
                     <>
                         <div className="my-1.5 h-px bg-[var(--border-subtle)]" role="separator" />
-                        <p className="px-3 pb-1 pt-1 text-t-2xs font-bold uppercase tracking-wide text-ink-faint">
+                        <p className="px-3 pb-1 pt-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
                             Por bloque
                         </p>
                         {deBloque.map((o) => {
@@ -194,7 +194,7 @@ export function PeriodSelector({
                 {nota && (
                     <>
                         <div className="my-1.5 h-px bg-[var(--border-subtle)]" role="separator" />
-                        <p className="px-3 py-1.5 text-t-2xs leading-relaxed text-ink-faint">{nota}</p>
+                        <p className="px-3 py-1.5 text-t-2xs leading-relaxed text-ink-subtle">{nota}</p>
                     </>
                 )}
             </AnchoredMenu>

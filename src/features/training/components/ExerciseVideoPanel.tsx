@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Video, AlertTriangle, CheckCircle2, User, PlayCircle, Settings2 } from 'lucide-react';
+import { Video, AlertTriangle, CheckCircle2, User, PlayCircle, Settings2, RefreshCw } from 'lucide-react';
 import { VideoModal } from '../../../components/ui/VideoModal';
 import {
     exerciseVideoService,
@@ -105,12 +105,14 @@ export function ExerciseVideoPanel({
      * efecto, cada vez que un ejercicio volvia a entrar en pantalla se
      * resolvia otra vez su video; ahora se resuelve una vez por sesion.
      */
-    const { data: video = null, isPending: loading } = useQuery({
+    const consulta = useQuery({
         queryKey: ['video-ejercicio', exerciseId, athleteId],
         queryFn: () => exerciseVideoService.resolve(exerciseId, athleteId),
         // El video de un ejercicio no cambia a mitad de un entrenamiento.
         staleTime: 1000 * 60 * 30,
     });
+    const video = consulta.data ?? null;
+    const loading = consulta.isPending;
 
     const classification = classifyExercise(exerciseName);
 
@@ -151,7 +153,24 @@ export function ExerciseVideoPanel({
                 <div className="space-y-5">
                     <div>
                         <div className="relative aspect-video w-full overflow-hidden rounded-card bg-surface-sunken">
-                            {loading ? (
+                            {/* Si la consulta falla y no hay enlace externo,
+                                el hueco se quedaba negro y vacío: el atleta no
+                                sabe si su entrenador no ha puesto vídeo o si es
+                                que no ha cargado. Y hacer mal un ejercicio por
+                                no ver la referencia no es un detalle. */}
+                            {consulta.isError && !externalUrl ? (
+                                <div role="alert" className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center">
+                                    <AlertTriangle size={22} className="text-danger-text" aria-hidden="true" />
+                                    <p className="text-t-xs text-ink-muted">No se ha podido cargar el vídeo.</p>
+                                    <button
+                                        onClick={() => consulta.refetch()}
+                                        className="flex min-h-[44px] items-center gap-2 rounded-field border border-[var(--border-default)] px-4 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                                    >
+                                        <RefreshCw size={14} aria-hidden="true" />
+                                        Reintentar
+                                    </button>
+                                </div>
+                            ) : loading ? (
                                 <div className="h-full w-full animate-pulse bg-surface-raised" />
                             ) : video?.videoUrl ? (
                                 <video
@@ -193,7 +212,7 @@ export function ExerciseVideoPanel({
                                     </p>
                                 </button>
                             ) : (
-                                <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-faint">
+                                <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-subtle">
                                     <Video className="h-7 w-7" />
                                     <p className="text-xs font-medium uppercase tracking-wide">
                                         Sin vídeo todavía
@@ -304,7 +323,7 @@ export function ExerciseVideoPanel({
                                         )}
                                     >
                                         {kg}
-                                        <span className="text-xs text-ink-faint"> kg</span>
+                                        <span className="text-xs text-ink-subtle"> kg</span>
                                     </span>
                                 ))}
                             </div>

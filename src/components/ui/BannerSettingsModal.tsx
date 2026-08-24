@@ -77,7 +77,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-[#161616] border border-line rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+                className="bg-surface-raised border border-line rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 border-b border-subtle flex justify-between items-center bg-surface-sunken">

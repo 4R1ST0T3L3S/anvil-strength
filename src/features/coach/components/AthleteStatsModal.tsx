@@ -896,7 +896,7 @@ function CheckInsCard({
                             )}
                         >
                             {o.label}
-                            <span className="ml-1.5 tabular-nums text-ink-faint">{counts[o.value]}</span>
+                            <span className="ml-1.5 tabular-nums text-ink-subtle">{counts[o.value]}</span>
                         </button>
                     ))}
                 </div>
@@ -912,7 +912,7 @@ function CheckInsCard({
                         {data.groups.map(group => (
                             <div key={group.key}>
                                 <p className="text-t-xs font-semibold text-ink">{group.label}</p>
-                                <p className="mt-0.5 text-t-2xs text-ink-faint">{group.description}</p>
+                                <p className="mt-0.5 text-t-2xs text-ink-subtle">{group.description}</p>
                                 <div className="mt-3 h-56">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={data.points} margin={{ top: 5, right: 8, left: -12, bottom: 5 }}>
@@ -956,7 +956,7 @@ function CheckInsCard({
                                 </p>
                                 {data.comments.map((c, i) => (
                                     <p key={`${c.periodKey}-${i}`} className="text-t-sm leading-relaxed text-ink-muted">
-                                        <span className="mr-2 font-mono text-t-xs text-ink-faint">{c.label}</span>
+                                        <span className="mr-2 font-mono text-t-xs text-ink-subtle">{c.label}</span>
                                         {c.text}
                                     </p>
                                 ))}

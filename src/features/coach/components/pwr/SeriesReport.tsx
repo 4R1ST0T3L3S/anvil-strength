@@ -171,7 +171,7 @@ function ChartCard({
             <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                     <h4 className="truncate text-t-xs font-bold text-ink">{title}</h4>
-                    {subtitle && <p className="mt-0.5 text-t-2xs text-ink-faint">{subtitle}</p>}
+                    {subtitle && <p className="mt-0.5 text-t-2xs text-ink-subtle">{subtitle}</p>}
                 </div>
                 <button
                     type="button"
@@ -420,7 +420,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                 --------------------------------------------------------- */}
             {report && (
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="mr-1 text-t-2xs font-bold uppercase tracking-wide text-ink-faint">
+                    <span className="mr-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
                         Exportar
                     </span>
                     <button
@@ -466,10 +466,10 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                     { label: 'Tiempo bajo tensión', value: fmt(series.timeUnderTensionS, 2), unit: 's' },
                 ].map(card => (
                     <div key={card.label} className="rounded-card border border-subtle bg-surface-sunken px-2.5 py-2">
-                        <p className="truncate text-t-2xs font-bold uppercase tracking-wide text-ink-faint">{card.label}</p>
+                        <p className="truncate text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{card.label}</p>
                         <p className="mt-0.5 text-t-sm font-black text-ink">
                             {card.value}
-                            {card.unit && <span className="ml-1 text-t-2xs font-bold text-ink-faint">{card.unit}</span>}
+                            {card.unit && <span className="ml-1 text-t-2xs font-bold text-ink-subtle">{card.unit}</span>}
                         </p>
                     </div>
                 ))}
@@ -482,7 +482,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                 <div className="flex items-center gap-1.5 border-b border-subtle px-3 py-2">
                     <Table2 size={13} className="text-ink-faint" aria-hidden="true" />
                     <h4 className="text-t-xs font-bold text-ink">Repetición a repetición</h4>
-                    <span className="ml-auto text-t-2xs text-ink-faint">Toca una fila para resaltarla</span>
+                    <span className="ml-auto text-t-2xs text-ink-subtle">Toca una fila para resaltarla</span>
                 </div>
 
                 {/* El desbordamiento va en su propio contenedor: en un móvil la
@@ -490,7 +490,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                     página entera. */}
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[52rem] text-left text-t-2xs">
-                        <thead className="text-ink-faint">
+                        <thead className="text-ink-subtle">
                             <tr className="border-b border-subtle">
                                 <th className="px-2 py-1.5 font-bold">#</th>
                                 <th className="px-2 py-1.5 font-bold">ROM<span className="font-normal"> (m)</span></th>
@@ -555,7 +555,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                     </table>
                 </div>
 
-                <p className="border-t border-subtle px-3 py-1.5 text-t-2xs leading-relaxed text-ink-faint">
+                <p className="border-t border-subtle px-3 py-1.5 text-t-2xs leading-relaxed text-ink-subtle">
                     «Sticking» vacío significa que la barra subió de un tirón, no que no se haya podido medir.
                     La aceleración pico es la métrica menos fiable de la tabla (~17% de error sobre vídeo).
                 </p>

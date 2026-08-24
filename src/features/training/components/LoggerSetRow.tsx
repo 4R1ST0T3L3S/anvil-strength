@@ -341,7 +341,7 @@ export function LoggerSetRow({
                 <span
                     className={cn(
                         'text-t-xs font-extrabold tabular-nums',
-                        done ? 'text-success' : 'text-ink-faint'
+                        done ? 'text-success' : 'text-ink-subtle'
                     )}
                 >
                     {displayIndex}
@@ -448,7 +448,7 @@ export function LoggerSetRow({
                         'before:absolute before:-inset-y-1 before:-left-1 before:-right-2.5 before:content-[""]',
                         done
                             ? 'bg-success text-[var(--surface-sunken)]'
-                            : 'border border-[var(--border-default)] bg-surface-overlay text-ink-faint hover:text-ink'
+                            : 'border border-[var(--border-default)] bg-surface-overlay text-ink-subtle hover:text-ink'
                     )}
                 >
                     <Check size={17} strokeWidth={3.5} aria-hidden="true" />
@@ -487,7 +487,7 @@ export function LoggerSetRow({
                             'inline-flex items-center gap-1.5 rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold transition-colors duration-fast ease-snap',
                             set.vbt_mean_velocity != null
                                 ? 'bg-[var(--info-quiet)] text-info'
-                                : 'text-ink-faint hover:bg-surface-overlay hover:text-ink-muted'
+                                : 'text-ink-subtle hover:bg-surface-overlay hover:text-ink-muted'
                         )}
                     >
                         <Gauge size={11} aria-hidden="true" />

@@ -187,7 +187,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
+        <div className="flex flex-col h-full bg-surface-raised rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
             <div className="p-4 border-b border-line flex justify-between items-center bg-surface-sunken z-10">
                 <div className="flex items-center gap-2">
@@ -213,7 +213,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
             {/* Game Area */}
             <div className="flex-1 relative overflow-hidden" ref={containerRef}>
                 {status === 'idle' && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20 bg-gradient-to-b from-[#161616] to-surface-sunken">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20 bg-gradient-to-b from-surface-canvas to-surface-sunken">
                         <Target size={48} className="text-warning mb-6 mx-auto opacity-20" />
                         <h2 className="text-2xl font-black text-ink uppercase italic tracking-widest mb-2">Anvil Hunt</h2>
                         <p className="text-sm text-ink-muted mb-2 max-w-xs mx-auto">Encuentra y toca los logos de Anvil ROJOS ocultos entre los blancos.</p>

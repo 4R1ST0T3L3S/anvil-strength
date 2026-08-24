@@ -608,7 +608,7 @@ function CreateMacroModal({
 
                 <label className="block space-y-1.5">
                     <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                        Competición objetivo <span className="font-medium normal-case tracking-normal text-ink-faint">· opcional</span>
+                        Competición objetivo <span className="font-medium normal-case tracking-normal text-ink-subtle">· opcional</span>
                     </span>
                     <select
                         value={selectedCompId}

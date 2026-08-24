@@ -59,7 +59,7 @@ export function AppendixEditor({
                     {label}
                 </span>
                 {filled && !open && (
-                    <span className="ml-1 min-w-0 flex-1 truncate text-t-xs text-ink-faint">
+                    <span className="ml-1 min-w-0 flex-1 truncate text-t-xs text-ink-subtle">
                         {(value ?? '').replace(/\s+/g, ' ')}
                     </span>
                 )}
@@ -79,9 +79,9 @@ export function AppendixEditor({
                         rows={3}
                         maxLength={2000}
                         placeholder={placeholder}
-                        className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm leading-relaxed text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                        className="w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2 text-t-sm leading-relaxed text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
                     />
-                    <p className="mt-1 text-t-2xs text-ink-faint">
+                    <p className="mt-1 text-t-2xs text-ink-subtle">
                         Se guarda al salir del campo. Lo ve el atleta y sale en el PDF.
                     </p>
                 </div>

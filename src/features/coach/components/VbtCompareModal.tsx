@@ -337,10 +337,10 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                                                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: row.color }} />
                                                         {row.label}
                                                     </td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#10b981] font-medium">{row.avgVm}</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#3b82f6] font-medium">{row.avgVmax}</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#f59e0b] font-medium">{row.maxPotencia} W</td>
-                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-[#ef4444] font-medium">{row.maxFatiga} %</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-success font-medium">{row.avgVm}</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-info font-medium">{row.avgVmax}</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-warning font-medium">{row.maxPotencia} W</td>
+                                                    <td className="px-3 sm:px-4 py-2.5 sm:py-3 text-danger-text font-medium">{row.maxFatiga} %</td>
                                                 </tr>
                                             ))}
                                         </tbody>

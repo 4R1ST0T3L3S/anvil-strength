@@ -121,7 +121,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
 
                     <label className="block space-y-1.5">
                         <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                            Descripción y objetivos <span className="font-medium normal-case tracking-normal text-ink-faint">· el atleta la verá</span>
+                            Descripción y objetivos <span className="font-medium normal-case tracking-normal text-ink-subtle">· el atleta la verá</span>
                         </span>
                         <textarea
                             value={description}

@@ -494,7 +494,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     if (!block) {
         return (
             <div className="h-full flex flex-col items-center justify-center bg-transparent text-ink-muted p-8 text-center space-y-6">
-                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-ink-faint">
+                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-ink-subtle">
                     <AlertCircle size={64} />
                 </div>
                 <div className="max-w-xs">
@@ -838,7 +838,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
             <div className="space-y-5 p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] md:pb-8">
                 {emptyWeek ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center text-ink-muted">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-faint mb-4">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-subtle mb-4">
                             <Check size={32} />
                         </div>
                         <h3 className="text-xl font-black text-ink uppercase tracking-tighter mb-2">
@@ -1393,7 +1393,7 @@ function LoggerExerciseCard({
                         {/* El número del ejercicio en el día. Sin él, seis
                             tarjetas iguales en una pantalla de móvil no dicen
                             por dónde va uno al volver de un descanso largo. */}
-                        <span className="mt-1 shrink-0 text-t-2xs font-black tabular-nums text-ink-faint">
+                        <span className="mt-1 shrink-0 text-t-2xs font-black tabular-nums text-ink-subtle">
                             {position}
                         </span>
                         <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-brand-text transition-colors">{exerciseName}</h3>

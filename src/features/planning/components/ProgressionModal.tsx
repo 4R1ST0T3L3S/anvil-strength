@@ -176,11 +176,11 @@ export function ProgressionModal({
                             rows={Math.max(6, weekCount + 1)}
                             spellCheck={false}
                             placeholder={PLACEHOLDER}
-                            className="mt-1.5 w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken p-3 font-mono text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                            className="mt-1.5 w-full resize-y rounded-field border border-[var(--border-default)] bg-surface-sunken p-3 font-mono text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
                         />
                     </label>
 
-                    <p className="text-t-2xs leading-relaxed text-ink-faint">
+                    <p className="text-t-2xs leading-relaxed text-ink-subtle">
                         Formato: <span className="text-ink-subtle">4x6 70%</span> (porcentaje del 1RM),{' '}
                         <span className="text-ink-subtle">5x5 100kg</span>,{' '}
                         <span className="text-ink-subtle">3x5 @8</span> (RPE) o{' '}
@@ -222,7 +222,7 @@ export function ProgressionModal({
                                     value={templateName}
                                     onChange={(e) => setTemplateName(e.target.value)}
                                     placeholder="Guardar como…"
-                                    className="min-w-0 flex-1 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-faint focus:border-brand"
+                                    className="min-w-0 flex-1 rounded-field border border-[var(--border-default)] bg-surface-sunken px-2.5 py-1.5 text-t-sm text-ink transition-colors duration-fast ease-snap placeholder:text-ink-subtle focus:border-brand"
                                 />
                                 <Button
                                     size="sm"
@@ -242,7 +242,7 @@ export function ProgressionModal({
                                                 className="min-w-0 flex-1 truncate rounded-field px-2.5 py-1.5 text-left text-t-sm text-ink-muted transition-colors duration-fast ease-snap hover:bg-surface-raised hover:text-ink"
                                             >
                                                 {p.name}
-                                                <span className="ml-2 text-t-2xs text-ink-faint">
+                                                <span className="ml-2 text-t-2xs text-ink-subtle">
                                                     {p.steps.length} sem.
                                                 </span>
                                             </button>
@@ -266,7 +266,7 @@ export function ProgressionModal({
                     <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                         Cómo queda
                         {referenceMax && (
-                            <span className="ml-2 font-normal normal-case tracking-normal text-ink-faint">
+                            <span className="ml-2 font-normal normal-case tracking-normal text-ink-subtle">
                                 sobre 1RM {referenceMax} kg
                             </span>
                         )}

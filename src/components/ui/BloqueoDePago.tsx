@@ -81,7 +81,7 @@ export function BloqueoDePago({ resultado, queSeHaBloqueado, className }: Bloque
 
                 {/* El resto del panel sigue abierto y conviene decirlo: quien
                     llega aquí no sabe si ha perdido la aplicación entera. */}
-                <p className="max-w-[42ch] text-t-xs text-ink-faint">
+                <p className="max-w-[42ch] text-t-xs text-ink-subtle">
                     Tu perfil, tus competiciones y el resto del club siguen abiertos.
                 </p>
             </div>

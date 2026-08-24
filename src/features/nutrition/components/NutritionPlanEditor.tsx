@@ -209,7 +209,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             inputMode="decimal" 
                                 value={macrosForm.calories || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, calories: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-ink px-3 py-2 rounded border border-line focus:border-brand"
+                                className="w-full bg-surface-raised text-ink px-3 py-2 rounded border border-line focus:border-brand"
                             />
                         </div>
                         <div>
@@ -219,7 +219,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             inputMode="decimal" 
                                 value={macrosForm.protein || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, protein: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-info font-bold px-3 py-2 rounded border border-line focus:border-blue-500"
+                                className="w-full bg-surface-raised text-info font-bold px-3 py-2 rounded border border-line focus:border-blue-500"
                             />
                         </div>
                         <div>
@@ -229,7 +229,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             inputMode="decimal" 
                                 value={macrosForm.carbs || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, carbs: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-warning font-bold px-3 py-2 rounded border border-line focus:border-yellow-500"
+                                className="w-full bg-surface-raised text-warning font-bold px-3 py-2 rounded border border-line focus:border-yellow-500"
                             />
                         </div>
                         <div>
@@ -239,7 +239,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             inputMode="decimal" 
                                 value={macrosForm.fats || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, fats: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-orange-400 font-bold px-3 py-2 rounded border border-line focus:border-orange-500"
+                                className="w-full bg-surface-raised text-orange-400 font-bold px-3 py-2 rounded border border-line focus:border-orange-500"
                             />
                         </div>
                         <div className="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
@@ -263,7 +263,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         {/* Kcal */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-surface-raised p-4 rounded-xl border border-line flex flex-col">
                             <span className="text-ink-subtle text-xs font-bold uppercase mb-1">Calorías</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-ink">{Math.round(currentMacros.kcal)}</span>
@@ -280,7 +280,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         </m.div>
 
                         {/* Prot */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-surface-raised p-4 rounded-xl border border-line flex flex-col">
                             <span className="text-info/70 text-xs font-bold uppercase mb-1">Proteína</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-info">{Math.round(currentMacros.prot)}g</span>
@@ -297,7 +297,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         </m.div>
 
                         {/* Carbs */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-surface-raised p-4 rounded-xl border border-line flex flex-col">
                             <span className="text-warning/70 text-xs font-bold uppercase mb-1">Carbohidratos</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-warning">{Math.round(currentMacros.carbs)}g</span>
@@ -314,7 +314,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         </m.div>
 
                         {/* Fats */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-surface-raised p-4 rounded-xl border border-line flex flex-col">
                             <span className="text-orange-400/70 text-xs font-bold uppercase mb-1">Grasas</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-orange-400">{Math.round(currentMacros.fats)}g</span>
@@ -335,7 +335,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
 
             {/* Configuración de Portada */}
             {plan && isEditingConfig && (
-                <div className="bg-[#111111] border border-line rounded-xl p-6 animate-fade space-y-6">
+                <div className="bg-surface-raised border border-line rounded-xl p-6 animate-fade space-y-6">
                     <h3 className="text-lg font-bold text-ink uppercase tracking-wider mb-4 border-b border-line pb-2">Configuración del Plan (Portada)</h3>
                     
                     <div>
@@ -473,7 +473,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
             {/* Portada Resumen (visible cuando hay datos configurados) */}
             {plan && !isEditingConfig && !isEditingMacros && (
                 (plan.tags?.length || plan.general_guidelines?.length || plan.global_supplements?.length || plan.training_block_id) ? (
-                    <div className="bg-[#111111] border border-line rounded-xl p-5 space-y-3">
+                    <div className="bg-surface-raised border border-line rounded-xl p-5 space-y-3">
                         <div className="flex justify-between items-center">
                             <h3 className="text-sm font-black text-ink-muted uppercase tracking-wider">Portada del Plan</h3>
                         </div>

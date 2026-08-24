@@ -79,7 +79,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
+        <div className="flex flex-col h-full bg-surface-raised rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
             <div className="p-4 border-b border-line flex justify-between items-center bg-surface-sunken">
                 <div className="flex items-center gap-2">

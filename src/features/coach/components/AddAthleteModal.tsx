@@ -123,7 +123,7 @@ export function AddAthleteModal({
                 <div className="space-y-1.5">
                     <label htmlFor="atleta-correo" className="flex items-center gap-1.5 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                         Correo
-                        <span className="font-medium normal-case tracking-normal text-ink-faint">
+                        <span className="font-medium normal-case tracking-normal text-ink-subtle">
                             · opcional
                         </span>
                     </label>

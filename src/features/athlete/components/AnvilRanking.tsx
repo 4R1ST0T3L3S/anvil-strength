@@ -1,7 +1,8 @@
 import { useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../../../lib/supabase';
-import { X, Trophy, User as UserIcon, Fish, ArrowUpRight } from 'lucide-react';
+import { X, Trophy, User as UserIcon, Fish, ArrowUpRight, AlertTriangle, RefreshCw } from 'lucide-react';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { calculateGLPoints, getGenderAndWeightFromCategory } from '../../../lib/glPoints';
 import { m, AnimatePresence } from 'framer-motion';
 import { lockBodyScroll } from '../../../lib/scrollLock';
@@ -103,11 +104,13 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
      * en vez de con el giro de siempre. Ademas, el efecto llamaba a una
      * funcion declarada MAS ABAJO, que es lo que el analizador marcaba.
      */
-    const { data: athletes = [], isPending: loading } = useQuery({
+    const consulta = useQuery({
         queryKey: ['ranking-club'],
         queryFn: fetchRankings,
         enabled: isVisible,
     });
+    const athletes = consulta.data ?? [];
+    const loading = consulta.isPending;
 
     // Cerradura de scroll compartida y con contador: ver src/lib/scrollLock.ts.
     useEffect(() => {
@@ -196,11 +199,40 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
 
                 {/* List - Scrollable Area */}
                 <div className="relative z-10 flex-1 overflow-y-auto p-4 md:p-8 space-y-3 custom-scrollbar">
-                    {loading ? (
+                    {/* Sin esta rama, un fallo de red pintaba la lista VACÍA:
+                        un ranking de club sin una sola fila, que se lee como
+                        "aquí no compite nadie" en vez de como un error. */}
+                    {consulta.isError ? (
+                        <div className="mx-auto max-w-4xl">
+                            <EmptyState
+                                kind="error"
+                                icon={<AlertTriangle size={20} aria-hidden="true" />}
+                                title="No se ha podido cargar el ranking"
+                                body="Ha sido un fallo puntual: lo más probable es que reintentando funcione."
+                                action={
+                                    <button
+                                        onClick={() => consulta.refetch()}
+                                        className="flex min-h-[44px] items-center gap-2 rounded-field border border-[var(--border-default)] px-4 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                                    >
+                                        <RefreshCw size={14} aria-hidden="true" />
+                                        Reintentar
+                                    </button>
+                                }
+                            />
+                        </div>
+                    ) : loading ? (
                         <div className="max-w-4xl mx-auto space-y-4">
                             {[1, 2, 3, 4, 5].map(i => (
                                 <div key={i} className="h-20 md:h-28 bg-white/5 rounded-2xl md:rounded-[2rem] animate-pulse border border-subtle" />
                             ))}
+                        </div>
+                    ) : athletes.length === 0 ? (
+                        <div className="mx-auto max-w-4xl">
+                            <EmptyState
+                                icon={<Trophy size={20} aria-hidden="true" />}
+                                title="El ranking está vacío"
+                                body="Aparecerá en cuanto haya atletas con marcas registradas."
+                            />
                         </div>
                     ) : (
                         <div className="max-w-4xl mx-auto space-y-3 md:space-y-4 pb-12">

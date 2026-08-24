@@ -13,7 +13,7 @@ export function PendingApprovalPage() {
 
     return (
         <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center p-6 text-ink font-sans selection:bg-brand">
-            <div className="max-w-md w-full bg-[#151515] border border-line rounded-2xl p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden">
+            <div className="max-w-md w-full bg-surface-raised border border-line rounded-2xl p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden">
                 {/* Background Accent */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand/10 via-brand to-brand/10" />
 

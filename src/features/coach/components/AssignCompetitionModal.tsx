@@ -204,7 +204,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
 
                 <label className="block space-y-1.5">
                     <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                        Descripción pública <span className="font-medium normal-case tracking-normal text-ink-faint">· se muestra en la web al pinchar en el atleta</span>
+                        Descripción pública <span className="font-medium normal-case tracking-normal text-ink-subtle">· se muestra en la web al pinchar en el atleta</span>
                     </span>
                     <textarea
                         value={description}

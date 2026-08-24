@@ -152,7 +152,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     )}
 
                     {userName && (
-                        <p className="truncate px-3 pt-2 text-t-2xs font-bold uppercase tracking-[0.2em] text-ink-faint">
+                        <p className="truncate px-3 pt-2 text-t-2xs font-bold uppercase tracking-[0.2em] text-ink-subtle">
                             {userName}
                         </p>
                     )}

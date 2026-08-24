@@ -188,7 +188,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                     {comp.entries.map((entry: CompetitionEntry) => (
                                         <div 
                                             key={entry.id} 
-                                            className="flex items-center gap-2 p-2 bg-surface-sunken hover:bg-[#111] transition-colors rounded-lg border border-transparent hover:border-line"
+                                            className="flex items-center gap-2 p-2 bg-surface-sunken hover:bg-surface-raised transition-colors rounded-lg border border-transparent hover:border-line"
                                         >
                                             {entry.profiles?.avatar_url ? (
                                                 <img src={entry.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />

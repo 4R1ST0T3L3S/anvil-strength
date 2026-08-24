@@ -161,7 +161,7 @@ export const DayCard = memo(function DayCard({
                                 </li>
                             ))}
                             {names.length > 3 && (
-                                <li className="text-t-xs text-ink-faint">
+                                <li className="text-t-xs text-ink-subtle">
                                     +{names.length - 3} más
                                 </li>
                             )}

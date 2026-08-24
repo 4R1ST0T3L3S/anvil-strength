@@ -107,7 +107,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
+        <div className="flex flex-col h-full bg-surface-raised rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
             <div className="p-4 border-b border-line flex justify-between items-center bg-surface-sunken z-10">
                 <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                 {/* Flashing Area */}
                 <div 
                     ref={containerRef}
-                    className="flex-1 relative overflow-hidden bg-gradient-to-b from-[#161616] to-surface-sunken"
+                    className="flex-1 relative overflow-hidden bg-gradient-to-b from-surface-canvas to-surface-sunken"
                 >
                     {status === 'idle' && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20">

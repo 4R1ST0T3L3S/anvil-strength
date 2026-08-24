@@ -161,7 +161,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     {products.filter(p => p.id === 4).map((product) => (
                         <m.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={VISTA_REVELADO} className="mb-24 relative group cursor-pointer">
                             <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-surface-sunken border border-line">
-                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-raised">
                                     {/* Placeholder Content */}
                                     <div className="text-center group-hover:scale-105 transition-transform duration-slow">
                                         <Crown size={60} className="text-brand-text mb-6 mx-auto opacity-80 sm:w-20 sm:h-20" />
@@ -199,7 +199,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     {product.id === 3 ? (
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-slow" />
                                     ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-[#151515] group-hover:bg-surface-sunken transition-colors">
+                                        <div className="absolute inset-0 flex items-center justify-center bg-surface-raised group-hover:bg-surface-sunken transition-colors">
                                             <span className="text-2xl sm:text-3xl font-black text-white/10 uppercase tracking-tighter -rotate-12">WORKING<br />ON IT</span>
                                         </div>
                                     )}

@@ -126,7 +126,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         </div>
 
                         {/* Toolbar (Mobile & Desktop) */}
-                        <div className="bg-[#151515] p-2 flex items-center justify-between border-b border-subtle shrink-0 px-4">
+                        <div className="bg-surface-raised p-2 flex items-center justify-between border-b border-subtle shrink-0 px-4">
                             <div className="flex items-center gap-2 text-ink text-sm font-medium">
                                 <span className="hidden sm:inline text-gray-400">Página</span>
                                 <span className="bg-surface-sunken px-2 py-1 rounded border border-line min-w-[30px] text-center">

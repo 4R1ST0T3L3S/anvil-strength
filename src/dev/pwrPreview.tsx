@@ -179,7 +179,7 @@ function Preview() {
                     Cuatro repeticiones sintéticas con fatiga creciente y estancamiento, a 60 fps con
                     1 px de ruido de seguimiento, pasadas por el motor real. {PWR_ENGINE_LABEL}.
                 </p>
-                <p className="mt-1 text-t-2xs text-ink-faint">
+                <p className="mt-1 text-t-2xs text-ink-subtle">
                     Detectadas: {concentrics.length} concéntricas · {eccentrics.length} excéntricas.
                 </p>
             </header>

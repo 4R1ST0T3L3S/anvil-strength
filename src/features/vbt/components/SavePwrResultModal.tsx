@@ -337,7 +337,7 @@ export function SavePwrResultModal({
                                     <Link2 size={12} aria-hidden="true" />
                                     Serie a la que se asocia
                                 </p>
-                                <p className="mb-2 text-t-2xs leading-relaxed text-ink-faint">
+                                <p className="mb-2 text-t-2xs leading-relaxed text-ink-subtle">
                                     Baja por el plan hasta la serie exacta. Las métricas quedarán
                                     guardadas dentro de ella.
                                 </p>
@@ -357,7 +357,7 @@ export function SavePwrResultModal({
                                     <Link2 size={12} aria-hidden="true" />
                                     Enlazar con una serie <span className="font-normal normal-case opacity-70">(opcional)</span>
                                 </p>
-                                <p className="mb-2 text-t-2xs leading-relaxed text-ink-faint">
+                                <p className="mb-2 text-t-2xs leading-relaxed text-ink-subtle">
                                     Si la eliges, la velocidad aparecerá junto a esa serie en el registro
                                     del día. Si no, la medición se guarda igual en el historial del atleta.
                                 </p>

@@ -137,7 +137,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                             placeholder="Escribe el nombre de la comida..."
                             value={newMealName === 'Otros' ? '' : newMealName}
                             onChange={(e) => setNewMealName(e.target.value)}
-                            className="w-full bg-[#111111] text-ink px-4 py-2 rounded-lg border border-line focus:border-brand mt-2"
+                            className="w-full bg-surface-raised text-ink px-4 py-2 rounded-lg border border-line focus:border-brand mt-2"
                             autoFocus
                         />
                     )}
@@ -302,7 +302,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
 
             {/* Content */}
             {isExpanded && (
-                <div className="p-4 bg-[#161616]">
+                <div className="p-4 bg-surface-raised">
                     {/* Smart Adjuster Panel */}
                     <AnimatePresence>
                         {isAdjusting && (
@@ -383,7 +383,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => setSelectedProposalId(opt.id)}
-                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-brand/20 border-brand text-ink' : 'bg-[#111111] border-subtle text-ink-subtle hover:bg-white/5'}`}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-brand/20 border-brand text-ink' : 'bg-surface-raised border-subtle text-ink-subtle hover:bg-white/5'}`}
                                                     >
                                                         {opt.name}
                                                     </button>
@@ -426,7 +426,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
 
                     {/* Macro Progress Bar */}
                     {totals.kcal > 0 && (
-                        <div className="mb-4 bg-[#111111] p-3 rounded-lg border border-line">
+                        <div className="mb-4 bg-surface-raised p-3 rounded-lg border border-line">
                             <div className="flex justify-between text-xs mb-2">
                                 <span className="text-info">{Math.round(protPct)}% Prot</span>
                                 <span className="text-warning">{Math.round(carbsPct)}% Carb</span>

@@ -107,7 +107,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
             ) : (
                 <div className="space-y-3">
                     {responses.map(r => (
-                        <div key={r.id} className="bg-[#1a1a1a] border border-subtle rounded-2xl p-5">
+                        <div key={r.id} className="bg-surface-raised border border-subtle rounded-2xl p-5">
                             <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="min-w-0">
                                     <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle">

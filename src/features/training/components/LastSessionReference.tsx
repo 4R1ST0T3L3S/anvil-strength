@@ -23,7 +23,7 @@ export function LastSessionReference({ reference, unit = 'kg' }: { reference: La
                 {reps} × {weight != null ? formatLoad(weight, unit) : 'corporal'}
                 {rpe != null ? ` @${rpe}` : ''}
             </span>
-            <span className="text-ink-faint">· {formatDaysAgo(reference.completedAt)}</span>
+            <span className="text-ink-subtle">· {formatDaysAgo(reference.completedAt)}</span>
         </div>
     );
 }

@@ -213,7 +213,7 @@ function SummaryRow({ analytics }: { analytics: BlockAnalytics }) {
                         {it.label}
                     </p>
                     <p className="mt-1 text-t-2xl font-semibold text-ink">{it.value}</p>
-                    {it.sub && <p className="mt-0.5 text-t-xs text-ink-faint">{it.sub}</p>}
+                    {it.sub && <p className="mt-0.5 text-t-xs text-ink-subtle">{it.sub}</p>}
                 </div>
             ))}
         </div>
@@ -384,7 +384,7 @@ function WeeklyChart({
                                 S{w.ordinal}
                             </p>
                             {weekNames[w.week] && (
-                                <p className="truncate text-center text-t-2xs text-ink-faint">
+                                <p className="truncate text-center text-t-2xs text-ink-subtle">
                                     {weekNames[w.week]}
                                 </p>
                             )}
@@ -393,7 +393,7 @@ function WeeklyChart({
                 })}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-t-2xs text-ink-faint">
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-t-2xs text-ink-subtle">
                 <span>{metric.hint}</span>
                 {analytics.deloadWeeks.length > 0 && (
                     <span className="flex items-center gap-1.5 text-info">
@@ -455,7 +455,7 @@ function IntensityBreakdown({ analytics }: { analytics: BlockAnalytics }) {
                                     <span className="w-16 shrink-0 text-t-xs font-medium text-ink">
                                         {z.label}
                                     </span>
-                                    <span className="flex-1 text-t-xs text-ink-faint">{z.hint}</span>
+                                    <span className="flex-1 text-t-xs text-ink-subtle">{z.hint}</span>
                                     <span className="shrink-0 text-t-xs tabular-nums text-ink-muted">
                                         {sets === 0 ? '—' : `${sets} series`}
                                     </span>
@@ -569,7 +569,7 @@ function FrequencyBreakdown({ analytics }: { analytics: BlockAnalytics }) {
                 </ul>
             )}
 
-            <p className="mt-4 text-t-2xs text-ink-faint">
+            <p className="mt-4 text-t-2xs text-ink-subtle">
                 Días distintos por semana en los que se toca el patrón. Entrenar banca
                 tres días de una semana y ninguno de otra no son 1,5 días de estímulo.
             </p>
@@ -633,7 +633,7 @@ function MuscleSummary({
                                         )}
                                     >
                                         {r.perWeek}
-                                        <span className="text-ink-faint"> · ref {ref.min}–{ref.max}</span>
+                                        <span className="text-ink-subtle"> · ref {ref.min}–{ref.max}</span>
                                     </span>
                                 </div>
 
@@ -669,7 +669,7 @@ function MuscleSummary({
                 </ul>
             </div>
 
-            <p className="mt-4 text-t-2xs text-ink-faint">
+            <p className="mt-4 text-t-2xs text-ink-subtle">
                 Media sobre {weekCount} {weekCount === 1 ? 'semana' : 'semanas'}. La banda gris es
                 el rango semanal de referencia.
             </p>
@@ -766,7 +766,7 @@ function WeekTable({
                             </table>
                         </div>
 
-                        <p className="mt-3 text-t-2xs text-ink-faint">
+                        <p className="mt-3 text-t-2xs text-ink-subtle">
                             Un guion significa que falta el dato de partida, no que valga cero.
                         </p>
                     </m.div>

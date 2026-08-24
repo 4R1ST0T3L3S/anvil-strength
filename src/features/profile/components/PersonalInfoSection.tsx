@@ -244,7 +244,7 @@ function FieldRow({
     if (!editable) {
         return (
             <div className="rounded-field bg-surface-sunken px-3 py-2.5">
-                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                     {field.label}
                 </p>
                 <p className="mt-1 break-words text-t-sm text-ink">
@@ -254,7 +254,7 @@ function FieldRow({
                             {field.unit && <span className="ml-1 text-t-xs text-ink-subtle">{field.unit}</span>}
                         </>
                     ) : (
-                        <span className="text-ink-faint">Sin dato</span>
+                        <span className="text-ink-subtle">Sin dato</span>
                     )}
                 </p>
             </div>
@@ -268,7 +268,7 @@ function FieldRow({
                 className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle"
             >
                 {field.label}
-                {field.unit && <span className="ml-1 normal-case text-ink-faint">({field.unit})</span>}
+                {field.unit && <span className="ml-1 normal-case text-ink-subtle">({field.unit})</span>}
             </label>
 
             {field.type === 'select' ? (
@@ -290,7 +290,7 @@ function FieldRow({
                     onChange={e => onChange(e.target.value || null)}
                     rows={2}
                     maxLength={500}
-                    className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink placeholder:text-ink-faint focus:border-[var(--brand-line)]"
+                    className="mt-1.5 w-full resize-none rounded-field border border-[var(--border-default)] bg-surface-sunken px-3 py-2.5 text-t-sm text-ink placeholder:text-ink-subtle focus:border-[var(--brand-line)]"
                 />
             ) : (
                 <input
@@ -397,7 +397,7 @@ function FieldEditor({
                     >
                         <span className="min-w-0 flex-1 truncate text-t-sm font-medium text-ink">
                             {field.label}
-                            {field.unit && <span className="ml-1 text-t-xs text-ink-faint">({field.unit})</span>}
+                            {field.unit && <span className="ml-1 text-t-xs text-ink-subtle">({field.unit})</span>}
                         </span>
 
                         {/* Quién lo rellena. El caso que lo justifica: la
@@ -428,7 +428,7 @@ function FieldEditor({
 
                 {available.length > 0 && (
                     <div className="pt-2">
-                        <p className="mb-2 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                        <p className="mb-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                             Añadir
                         </p>
                         <div className="flex flex-wrap gap-1.5">

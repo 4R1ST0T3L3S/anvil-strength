@@ -55,7 +55,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 style={{ width: isMinimized ? 60 : width }}
-                className="fixed top-0 right-0 h-full bg-[#111111] border-l border-line z-[1000] shadow-2xl flex flex-col overflow-hidden"
+                className="fixed top-0 right-0 h-full bg-surface-raised border-l border-line z-[1000] shadow-2xl flex flex-col overflow-hidden"
             >
                 {/* Resize Handle */}
                 {!isMinimized && (

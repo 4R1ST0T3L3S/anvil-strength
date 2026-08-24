@@ -482,7 +482,7 @@ export function DayEditorModal({
                         >
                             {t.label}
                             {t.key === 'lista' && session.exercises.length > 0 && (
-                                <span className="ml-1.5 text-ink-faint">{session.exercises.length}</span>
+                                <span className="ml-1.5 text-ink-subtle">{session.exercises.length}</span>
                             )}
                             {mobileTab === t.key && (
                                 <m.span

@@ -68,7 +68,7 @@ export function MetricBagView({
         <div className={cn('space-y-3', className)}>
             {groups.map(g => (
                 <div key={g.category}>
-                    <p className="mb-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-faint">
+                    <p className="mb-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
                         {g.label}
                     </p>
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
@@ -93,7 +93,7 @@ function Cell({ label, value, title }: { label: string; value: string; title?: s
             title={title}
             className="min-w-0 rounded-field bg-surface-sunken px-2.5 py-1.5"
         >
-            <p className="truncate text-t-2xs text-ink-faint">{label}</p>
+            <p className="truncate text-t-2xs text-ink-subtle">{label}</p>
             {/* `tabular-nums`: sin él, una columna de cifras baila al cambiar
                 de dígito y cuesta compararlas de un vistazo. */}
             <p className="truncate text-t-xs font-semibold tabular-nums text-ink">{value}</p>

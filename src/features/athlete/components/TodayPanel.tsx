@@ -364,9 +364,9 @@ function Macro({ label, value, unit = '' }: { label: string; value: number; unit
         <div className="rounded-field bg-surface-sunken px-2 py-1.5 text-center">
             <p className="text-t-base font-black tabular-nums leading-none text-ink">
                 {Math.round(value || 0)}
-                {unit && <span className="text-t-2xs font-bold text-ink-faint">{unit}</span>}
+                {unit && <span className="text-t-2xs font-bold text-ink-subtle">{unit}</span>}
             </p>
-            <p className="mt-0.5 text-t-2xs font-bold uppercase tracking-wide text-ink-faint">{label}</p>
+            <p className="mt-0.5 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{label}</p>
         </div>
     );
 }

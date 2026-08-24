@@ -154,7 +154,7 @@ export function RolesSection({ user }: { user: UserProfile }) {
                             key={rol}
                             className="flex min-w-0 items-start gap-3 rounded-card border border-dashed border-[var(--border-default)] p-3.5"
                         >
-                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-ink-faint">
+                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-ink-subtle">
                                 <Lock size={13} aria-hidden="true" />
                             </span>
                             <span className="min-w-0">
