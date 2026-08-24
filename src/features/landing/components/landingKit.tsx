@@ -147,6 +147,47 @@ export function Fold({
  * El desplazamiento es de 14px. Lo suficiente para que se lea como
  * movimiento, no tanto como para que el texto "salte" al llegar.
  */
+/**
+ * LA VENTANA DE REVELADO, EN UN SOLO SITIO.
+ * =====================================================================
+ *
+ * Antes había cuatro configuraciones distintas repartidas en cuatro
+ * ficheros: `{ once: true }` a secas en ocho sitios, `{ once: true, amount:
+ * 0.15 }` en la lista escalonada y `{ once: true, amount: 0.2, margin: ... }`
+ * en `Reveal`. Tres ritmos de entrada distintos en la misma página, sin que
+ * ninguno fuera una decisión.
+ *
+ *
+ * EL MARGEN SUPERIOR ENORME NO ES UN DESCUIDO
+ *
+ * `whileInView` se apoya en `IntersectionObserver`, que solo dispara cuando
+ * el elemento TOCA la ventana. Con `once: true`, lo que se queda por encima
+ * sin haberla tocado nunca sigue en opacidad cero.
+ *
+ * Y hay dos formas normales de aterrizar en mitad de una página sin haber
+ * pasado por lo de arriba: la restauración de scroll —vuelves atrás y la
+ * página te deja donde estabas, ver `useScrollRestoration`— y un enlace con
+ * ancla. En los dos casos, al subir después te encuentras media página en
+ * blanco que va apareciendo, como si lo de arriba fuera lo nuevo.
+ *
+ * `9999px` arriba estira la caja del observador hacia arriba, así que todo lo
+ * que ya has dejado atrás cuenta como visto y aparece puesto. El `-80px` de
+ * abajo se queda: es lo que hace que una sección empiece a revelarse un poco
+ * ANTES de llegar del todo, que es lo que se siente natural.
+ *
+ * SIN VERIFICAR EN NAVEGADOR REAL. El panel de vistas previas con el que se
+ * desarrolló esto NO ENTREGA callbacks de `IntersectionObserver` — se
+ * comprobó observando `document.body`, que intersecta por definición, y
+ * tampoco llegó ninguno. Así que este comportamiento concreto está razonado
+ * pero no medido, y hay que mirarlo en un navegador de verdad: bajar en la
+ * portada, ir a otra página, volver atrás y subir.
+ */
+export const VISTA_REVELADO = {
+    once: true,
+    amount: 0.2,
+    margin: '9999px 0px -80px 0px',
+} as const;
+
 export function Reveal({
     children,
     delay = 0,
@@ -165,7 +206,7 @@ export function Reveal({
             className={className}
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2, margin: '0px 0px -80px 0px' }}
+            viewport={VISTA_REVELADO}
             transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
         >
             {children}
@@ -209,7 +250,7 @@ export function StaggerList({
             variants={staggerList}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, amount: 0.15 }}
+            viewport={VISTA_REVELADO}
         >
             {children}
         </m.div>

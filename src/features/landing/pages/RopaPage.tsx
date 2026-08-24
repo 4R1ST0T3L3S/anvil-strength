@@ -1,3 +1,4 @@
+import { VISTA_REVELADO } from '../components/landingKit';
 import { m, Variants } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
@@ -139,7 +140,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             {/* --- MANIFESTO --- */}
             <section className="py-16 sm:py-24 bg-surface-sunken relative overflow-hidden">
                 <div className="max-w-[1200px] mx-auto px-6 flex flex-col items-center text-center">
-                    <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-4xl">
+                    <m.div initial="hidden" whileInView="visible" viewport={VISTA_REVELADO} variants={fadeInUp} className="max-w-4xl">
                         <h2 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none mb-10">MORE THAN <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-600">JUST FABRIC.</span></h2>
                         <div className="space-y-6 text-base sm:text-lg md:text-xl text-gray-400 font-medium leading-relaxed">
                             <p><strong className="text-ink">Steezy Lifts</strong> no hace ropa de gimnasio. Crea cultura. Una colección exclusiva para <strong>Anvil Strength</strong>. Únete a la cultura.</p>
@@ -151,14 +152,14 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             {/* --- PRODUCT SHOWCASE --- */}
             <section className="py-20 bg-surface-sunken">
                 <div className="max-w-[1600px] mx-auto px-6">
-                    <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-line pb-8 text-left">
+                    <m.div initial="hidden" whileInView="visible" viewport={VISTA_REVELADO} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-line pb-8 text-left">
                         <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase italic tracking-tighter">THE <span className="text-brand-text">COLLECTION</span></h2>
                         <div className="mt-4 md:mt-0 text-right"><p className="text-gray-400 font-mono text-t-2xs sm:text-sm">STEEZY LIFTS x ANVIL STRENGTH</p><p className="text-ink font-bold text-lg sm:text-xl tracking-widest">OFFICIAL GEAR</p></div>
                     </m.div>
 
                     {/* --- PIEZA ANGULAR (SINGLET - ID 4) RESTAURADA --- */}
                     {products.filter(p => p.id === 4).map((product) => (
-                        <m.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mb-24 relative group cursor-pointer">
+                        <m.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={VISTA_REVELADO} className="mb-24 relative group cursor-pointer">
                             <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-surface-sunken border border-line">
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
                                     {/* Placeholder Content */}
@@ -193,7 +194,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     {/* GRID PRODUCTS (ID 1, 2, 3) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24">
                         {products.filter(p => p.id !== 4).map((product, index) => (
-                            <m.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
+                            <m.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={VISTA_REVELADO} className="group cursor-pointer">
                                 <div className="relative aspect-[3/4] bg-surface-sunken overflow-hidden mb-6 border border-subtle">
                                     {product.id === 3 ? (
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-slow" />
@@ -249,7 +250,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.8 }}
-                        viewport={{ once: true }}
+                        viewport={VISTA_REVELADO}
                     >
                         {/* Icono de rayo */}
                         <Zap size={48} className="text-black mx-auto mb-6 fill-current animate-pulse sm:w-16 sm:h-16" />

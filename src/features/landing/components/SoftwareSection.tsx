@@ -1,3 +1,4 @@
+import { VISTA_REVELADO } from './landingKit';
 import { m } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 
@@ -24,7 +25,7 @@ export function SoftwareSection() {
                     className="text-center mb-16"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
+                    viewport={VISTA_REVELADO}
                     transition={{ duration: 0.6 }}
                 >
                     <h2 className="text-5xl md:text-8xl font-black tracking-[0.05em] uppercase mb-6 text-ink font-bebas italic leading-[1.1] py-4">
@@ -43,7 +44,7 @@ export function SoftwareSection() {
                 <m.div
                     initial={{ opacity: 0, scale: 0.95, y: 30 }}
                     whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                    viewport={{ once: true }}
+                    viewport={VISTA_REVELADO}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="w-full max-w-5xl mb-24 relative group"
                 >

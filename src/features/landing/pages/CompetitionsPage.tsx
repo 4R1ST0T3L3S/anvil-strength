@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { VISTA_REVELADO } from '../components/landingKit';
 import { m, AnimatePresence, useMotionValue } from 'framer-motion';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
@@ -162,7 +163,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         key={event.name}
                                         initial={{ opacity: 0, x: -30 }}
                                         whileInView={{ opacity: 1, x: 0 }}
-                                        viewport={{ once: true }}
+                                        viewport={VISTA_REVELADO}
                                         transition={{ delay: index * 0.1 }}
                                         whileHover={{ scale: 1.01 }}
                                         onClick={() => setSelectedEvent(event)}
@@ -263,7 +264,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                     <m.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={VISTA_REVELADO}
                         className="flex justify-between items-end mb-16"
                     >
                         <h2 className="text-5xl md:text-9xl font-black uppercase font-bebas italic leading-none tracking-tight">
@@ -276,7 +277,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                 key={result.id}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={VISTA_REVELADO}
                                 transition={{ delay: i * 0.1 }}
                                 className="relative aspect-video bg-surface-sunken rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-anvil-red/30 transition-colors shadow-2xl"
                             >
