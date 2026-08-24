@@ -3,6 +3,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
 import { SelectorDeTema } from '../ui/SelectorDeTema';
+import { SelectorDeIdioma } from '../ui/SelectorDeIdioma';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 import { useUser } from '../../hooks/useUser';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -326,6 +327,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         cortesía que quien ya tiene cuenta. Se esconde por
                         debajo de lg porque ahí el sitio del icono lo ocupa el
                         menú, y dentro del menú vuelve a salir. */}
+                    <SelectorDeIdioma className="hidden lg:flex" />
                     <SelectorDeTema className="hidden lg:flex" />
 
                     {/* Menú móvil. 44x44 reales: medía 40 con el relleno. */}
@@ -398,11 +400,19 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             el botón del menú, así que si no estuviera dentro
                             del menú no habría forma de cambiarlo en móvil — que
                             es justo donde el sistema cambia solo al anochecer. */}
-                        <div className="flex items-center justify-between border-t border-subtle px-8 py-5">
-                            <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
-                                Tema
-                            </span>
-                            <SelectorDeTema />
+                        <div className="space-y-1 border-t border-subtle px-8 py-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
+                                    Idioma
+                                </span>
+                                <SelectorDeIdioma />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
+                                    Tema
+                                </span>
+                                <SelectorDeTema />
+                            </div>
                         </div>
 
                         {/* La zona segura: este bloque está pegado al borde

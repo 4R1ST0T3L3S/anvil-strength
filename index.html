@@ -22,6 +22,7 @@
   <link rel="icon" type="image/svg+xml" href="/logo-black.svg" media="(prefers-color-scheme: light)" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
   <!-- `viewport-fit=cover` es lo que ACTIVA las variables `env(safe-area-inset-*)`.
        Sin él valen cero siempre, y todas las reservas de espacio que hace la app
        para la barra de gestos del iPhone —la barra de pestañas del panel, el pie
@@ -61,6 +62,24 @@
   <script>
     (function () {
       try {
+        /* EL IDIOMA, ANTES QUE NADA TAMBIÉN.
+           `<html lang>` no es decorativo: decide con qué voz lee un lector de
+           pantalla —"Save" leído con fonética española no se entiende— y le
+           dice al navegador con qué reglas partir las palabras. Si se pusiera
+           desde React, el primer pintado saldría con el idioma equivocado.
+           La lógica es la misma que `detectarIdioma()` en src/lib/i18n. */
+        var idioma = localStorage.getItem('anvil_idioma');
+        if (idioma !== 'es' && idioma !== 'en') {
+          idioma = 'es';
+          var lenguas = navigator.languages || [navigator.language];
+          for (var i = 0; i < lenguas.length; i++) {
+            var base = String(lenguas[i]).toLowerCase().split('-')[0];
+            if (base === 'es') { idioma = 'es'; break; }
+            if (base === 'en') { idioma = 'en'; break; }
+          }
+        }
+        document.documentElement.setAttribute('lang', idioma);
+
         var t = localStorage.getItem('anvil_tema');
         var claro = t === 'claro' || (t !== 'oscuro' && window.matchMedia('(prefers-color-scheme: light)').matches);
         document.documentElement.setAttribute('data-theme', claro ? 'light' : 'dark');
@@ -110,7 +129,24 @@
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="author" content="Anvil Strength" />
   <link rel="canonical" href="https://anvilstrength.es/" />
+  <!-- IDIOMAS ALTERNATIVOS.
+       Se añade el inglés: ya existía `es-ES` y `x-default`, pero desde F8 la
+       aplicación también habla inglés y un buscador no tiene forma de saberlo
+       si no se le dice.
+
+       Las tres apuntan al MISMO sitio a propósito: el idioma vive en
+       `localStorage`, no en la ruta, así que no hay una URL inglesa a la que
+       apuntar. Lo que estas líneas declaran es "esta página sirve a quien
+       busca en español y a quien busca en inglés", que es verdad.
+
+       `x-default` va una sola vez. Duplicarla es un error que Google reporta,
+       y estuvo a punto de pasar añadiendo un segundo bloque arriba en vez de
+       ampliar este.
+
+       Si algún día el idioma pasa a la URL (/en/competiciones), estas líneas
+       son lo único que cambia, y entonces sí apuntarán a sitios distintos. -->
   <link rel="alternate" hreflang="es-ES" href="https://anvilstrength.es/" />
+  <link rel="alternate" hreflang="en" href="https://anvilstrength.es/" />
   <link rel="alternate" hreflang="x-default" href="https://anvilstrength.es/" />
 
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->

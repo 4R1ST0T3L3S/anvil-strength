@@ -2,6 +2,7 @@ import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { ProfileSection } from '../components/ProfileSection';
 import { SelectorDeTema } from '../../../components/ui/SelectorDeTema';
+import { SelectorDeIdioma } from '../../../components/ui/SelectorDeIdioma';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { ShieldAlert, RefreshCw } from 'lucide-react';
 
@@ -67,6 +68,17 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
                             </p>
                         </div>
                         <SelectorDeTema />
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between gap-4 rounded-field bg-surface-canvas px-4 py-3">
+                        <div className="min-w-0">
+                            <p className="text-t-sm font-bold text-ink">Idioma</p>
+                            <p className="text-t-xs text-ink-subtle">
+                                Cambia la voz de la aplicación. Lo que hayas escrito tú —nombres de
+                                ejercicio, notas, mensajes— se queda como está.
+                            </p>
+                        </div>
+                        <SelectorDeIdioma />
                     </div>
                 </section>
             </div>
