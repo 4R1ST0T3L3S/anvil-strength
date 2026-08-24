@@ -67,7 +67,7 @@ const TABLAS = [
     { tabla: 'profiles', columna: 'pdf_theme', archivo: 'pdf_theme.sql' },
     { tabla: 'coach_athletes', columna: 'status', archivo: 'athlete_lifecycle.sql' },
     { tabla: 'coach_athletes', columna: 'notes', archivo: 'REESTRUCTURACION_2026-08.sql' },
-    { tabla: 'coach_athletes', columna: 'billing_mode', archivo: 'CONTROL_PAGOS.sql', opcional: true,
+    { tabla: 'coach_athletes', columna: 'billing_mode', archivo: 'PAGOS_2026-08-23.sql',
       rompe: 'El control de pagos por atleta (exento / suspendido) no se puede fijar.' },
     { tabla: 'session_exercises', columna: 'section', archivo: 'CALENTAMIENTO_ESTRUCTURADO.sql',
       rompe: 'Resumen y Registro del atleta se quedan EN BLANCO: las dos consultas piden la columna sin guarda.' },
@@ -119,6 +119,8 @@ const FUNCIONES = [
       rompe: 'La puerta de pago (K1-K7) se queda SIN regla en el servidor: solo decide el navegador.' },
     { nombre: 'my_billing_status', args: {}, archivo: 'PAGOS_2026-08-23.sql',
       rompe: 'usePuertaDePago() no puede leer el estado y el atleta ve el panel sin puerta.' },
+    { nombre: 'chat_roster', args: {}, archivo: 'migrations/0002_chat_messages.sql', opcional: true,
+      rompe: 'El listado de chat del entrenador se descarga TODOS sus mensajes para pintar una lista.' },
 ];
 
 /**

@@ -52,3 +52,4 @@ rota.
 | # | Fichero | Qué trae |
 |---|---|---|
 | 0001 | `0001_bloque1_integridad.sql` | Borrado real del atleta gestionado (K2) y consolidación de las políticas duplicadas de `training_blocks` |
+| 0002 | `0002_chat_messages.sql` | El esquema y la RLS de `chat_messages`, que solo existían en el panel (K12); índices de conversación y `chat_roster()` |
