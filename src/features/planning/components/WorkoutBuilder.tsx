@@ -215,7 +215,6 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 setHistoryByExercise(map);
             })
             .catch(() => { /* sparklines no críticas */ });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editingSessionId, athleteId]);
 
     // Plantillas de día

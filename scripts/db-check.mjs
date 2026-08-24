@@ -115,8 +115,10 @@ const FUNCIONES = [
       rompe: 'La página pública /competiciones está ROTA: getPublicCompetitions() lanza PGRST202.' },
     { nombre: 'delete_managed_athlete', args: { p_athlete_id: UUID_NULO }, archivo: 'migrations/0001_bloque1_integridad.sql',
       rompe: 'El botón "Borrar la ficha" de un atleta ficticio falla; y training_blocks sigue con políticas duplicadas.' },
-    { nombre: 'atleta_al_corriente', args: { p_athlete_id: UUID_NULO }, archivo: 'CONTROL_PAGOS.sql', opcional: true,
-      rompe: 'El control de pagos no bloquea nada.' },
+    { nombre: 'athlete_is_current', args: { p_athlete_id: UUID_NULO, p_coach_id: UUID_NULO }, archivo: 'PAGOS_2026-08-23.sql',
+      rompe: 'La puerta de pago (K1-K7) se queda SIN regla en el servidor: solo decide el navegador.' },
+    { nombre: 'my_billing_status', args: {}, archivo: 'PAGOS_2026-08-23.sql',
+      rompe: 'usePuertaDePago() no puede leer el estado y el atleta ve el panel sin puerta.' },
 ];
 
 /**

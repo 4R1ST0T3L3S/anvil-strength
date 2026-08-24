@@ -50,20 +50,30 @@ verificado: `competitions?athlete_id=not.is.null` sin sesión → `[]`)
 > La nota `migraciones-pendientes` de la memoria estaba muy desactualizada y ella
 > misma lo advertía. **Esta sección la sustituye.**
 
-### Pendiente ❌
+### Pendiente ❌ — ninguno, desde el 24/08/2026
 
-| Fichero | Consecuencia hoy | Prioridad |
+Los dos que figuraban aquí **están aplicados** y verificados con
+`npm run db:check` el 24/08/2026:
+
+| Fichero | Estado | Qué arreglaba |
 |---|---|---|
-| `FIX_COMPETICIONES_CLUB.sql` | **La página pública de competiciones está ROTA.** `get_public_upcoming_competitions` no existe y [`CompetitionsPage.tsx:53`](../src/features/landing/pages/CompetitionsPage.tsx) la llama. Se endureció la RLS sin crear la función `SECURITY DEFINER` que la sustituía | **Urgente** |
-| `exercise_indications.sql` | El bloque "Cómo se hace" de la ficha del ejercicio no se pinta. Degrada con elegancia | Normal |
+| `FIX_COMPETICIONES_CLUB.sql` | ✅ Aplicado | La página pública de competiciones. `get_public_upcoming_competitions()` responde |
+| `exercise_indications.sql` | ✅ Aplicado | El bloque «Cómo se hace» de la ficha del ejercicio |
+
+> No quiere decir que `database/` esté ordenado: siguen los 79 ficheros
+> sueltos y sigue sin existir `schema_migrations`. Ver §6.4.
 
 ### Deuda de esquema descubierta
 
 - **`chat_messages` no está definida en ningún `.sql` del repositorio.** Existe en
   producción, creada a mano en el dashboard. Es la tabla que usa el chat vivo.
-- **`training_blocks` tiene políticas duplicadas** (`Coach manage own blocks` +
-  `Coach Manage Blocks`) con `auth.uid()` sin envolver en `(SELECT ...)`. Es el
-  mismo patrón que causó el timeout de `training_sets` y sigue sin arreglar.
+- **`training_blocks` tenía políticas duplicadas** (`Coach manage own blocks` +
+  `Coach Manage Blocks`) con `auth.uid()` sin envolver en `(SELECT ...)`. Era el
+  mismo patrón que causó el timeout de `training_sets`. **Arreglado en el bloque
+  1**, en `migrations/0001_bloque1_integridad.sql`. Los dos ficheros que las
+  creaban (`feature_efort_schema.sql`, `MASTER_DEPLOY_V3_CLEAN.sql`) siguen en
+  `database/` y volverían a crearlas si alguien los ejecutara: es una de las
+  razones de §6.4.
 
 ---
 
@@ -676,3 +686,119 @@ es una línea.
 **Deuda apuntada:** `invertPolarity` está en el contrato y en el tipo, pero
 todavía **no colorea nada**. Ponerlo a funcionar es trabajo del bloque 7
 (rediseño), donde vive la decisión de color.
+
+### Bloques 4 a 8 — se ejecutaron bajo el plan de UX · 23-24/08/2026
+
+**Por qué no estaban aquí, y por qué esto es un fallo del método.** El
+23/08/2026, la decisión **U1** de
+[`PLAN_UX_2026-08-23.md`](./PLAN_UX_2026-08-23.md) intercaló los bloques 4 y 5
+entre las fases F2 y F3 de aquel plan, y equiparó los bloques 6, 7 y 8 a las
+fases F2, F5 y F3. A partir de ahí, el registro de ejecución **siguió en aquel
+documento y dejó de escribirse en éste**.
+
+Resultado: durante tres días, este documento —que es el que manda sobre las
+quince decisiones— afirmaba por omisión que el trabajo estaba en el bloque 3.
+Es exactamente el fallo que la sección 0 diagnostica para la base de datos:
+*un inventario que hay que actualizar a mano es un inventario que miente.*
+
+**La regla, a partir de ahora:** el detalle de ejecución vive donde se hizo el
+trabajo, pero **el estado de cada bloque se escribe aquí**. Un solo sitio para
+la pregunta «¿por dónde vamos?».
+
+| # | Bloque | Estado | Detalle en |
+|---|---|---|---|
+| **4** | Periodo temporal (K10) | ✅ 23/08/2026 | PLAN_UX § *Bloque 4* |
+| **5** | Pagos (K1, K3, K5, K6, K7) | ✅ 23/08/2026, **en `warn`** | PLAN_UX § *Bloque 5* |
+| **6** | Fluidez | ✅ 23/08/2026 (= F2) | PLAN_UX § *F2* |
+| **7** | Rediseño (K14) | ⚠️ **Parcial** (= F5) | PLAN_UX § *F5* |
+| **8** | Móvil + widgets + PWA (K8, K11) | ✅ 24/08/2026 (= F3) | PLAN_UX § *F3* |
+| **9** | Producto | ❌ Sin empezar | — |
+
+**SQL ejecutado por Marc en estos bloques:** `database/PAGOS_2026-08-23.sql`
+(bloque 5). Los bloques 4, 6, 7 y 8 no llevan SQL.
+
+**Verificado contra producción el 24/08/2026** con `npm run db:check`: las
+catorce funciones y las veinticuatro tablas y columnas del inventario están
+aplicadas, incluidas `athlete_is_current()` y `my_billing_status()` del bloque
+5. La sección 0 de este documento **ya no tiene nada en «Pendiente»**:
+`FIX_COMPETICIONES_CLUB.sql` y `exercise_indications.sql` están los dos
+aplicados.
+
+> Ese mismo día se corrigió `scripts/db-check.mjs`, que sondeaba una función
+> `atleta_al_corriente` de un fichero `CONTROL_PAGOS.sql` — **ninguno de los
+> dos existió nunca**. Los nombres reales son `athlete_is_current` y
+> `my_billing_status`, en `PAGOS_2026-08-23.sql`. El script escrito para que el
+> inventario no mintiera daba un falso «no existe» sobre la regla de pago.
+
+---
+
+## 6. Lo que queda, medido el 24/08/2026
+
+Inventario real, contado sobre el código, no sobre la memoria de lo hecho.
+
+### 6.1 El escalón que falta de K1 — tiene fecha, no código
+
+`coach_prefs.billing.gate` sale en `'warn'`
+([`contract.ts:161`](../src/lib/prefs/contract.ts)). K1 exige una semana con
+datos reales comprobando que el semáforo dice la verdad **antes** de que el
+valor por defecto pase a `'block'`. El bloque 5 salió el 23/08/2026, así que la
+semana vence hacia el **30/08/2026**.
+
+No es trabajo de programación: es mirar datos de verdad. Y el despliegue en dos
+tiempos **no es negociable** — un fallo aquí deja sin entrenar a alguien que ha
+pagado.
+
+### 6.2 Bloque 7 / K14 — 63 ficheros
+
+Lo **sistémico** está hecho (1.863 utilidades a tokens, el rojo a L 0,58, cero
+avisos de contraste en los dos temas). Lo que queda es el barrido pantalla a
+pantalla: **63 ficheros `.tsx` fuera de la portada** siguen usando el sistema
+antiguo (`text-gray-*`, `bg-white/N`). Es cola larga: el peor tiene 13 usos.
+
+Tres cosas que se resuelven **dentro** de ese barrido, no como pasada aparte:
+
+- `EstadoDeDatos` está conectado en **3 pantallas** de 185.
+- `ErrorFallback` y `AnvilToast` —primitivas **compartidas**— siguen en el
+  sistema antiguo. `AnvilToast` mezcla los dos en la misma línea
+  (`bg-white/10 text-ink`), que es el patrón que K14 señala como causa de las
+  migraciones a medias. **Van primero**: todo lo demás las hereda.
+- `invertPolarity` (deuda de K9) sigue sin colorear nada.
+
+### 6.3 Las dos deudas del chat (K12)
+
+1. **`chat_messages` sigue sin estar en ningún `.sql` del repositorio.** Existe
+   en producción y `db:check` la ve. No se puede reconstruir ni auditar.
+2. **La consulta sin paginar no se arregló, y el bloque 6 está cerrado.**
+   [`useChat.ts:45`](../src/features/chat/hooks/useChat.ts) sigue trayendo
+   *todos* los mensajes del usuario con `.or(sender_id.eq…,receiver_id.eq…)`,
+   sin filtro de conversación ni paginación, y filtrando en el navegador. K12
+   la daba por hecha en el bloque 6.
+
+Las dos van **antes** del bloque 7 y no después: `CoachChatManager`,
+`AthleteChatView` y `ChatComponents` están en la lista de los 63, y migrarlas
+para luego reabrirlas a paginar es tocar la misma pantalla dos veces — lo que
+prohíbe la regla dura de K14.
+
+### 6.4 K4 a medias
+
+`database/migrations/` existe y `npm run db:check` funciona, pero:
+
+- Quedan **79 ficheros sueltos** en `database/`, con los nombres `FIX_`,
+  `MASTER_`, `00_DIAGNOSTICO_` que K4 identifica como la causa raíz.
+- Solo hay una migración numerada (`0001_bloque1_integridad.sql`).
+- La tabla **`schema_migrations` no existe** en ningún sitio.
+
+### 6.5 Deuda menor apuntada
+
+- La tabla `messages` no tiene ya ningún uso en `src/`, pero **sus filas siguen
+  sin contarse**. K12 dice que eso se decide antes de borrarla.
+- `estimate1RM` por **velocidad** sigue con tres implementaciones que se
+  solapan (`utils/vbtCalculator.ts`, `lib/cv/pwrMath.ts`, `lib/vbt/analysis.ts`).
+  Deuda abierta en el bloque 2 y sin revisar.
+
+### 6.6 Presupuesto de rendimiento — §4
+
+El criterio de **0 errores de eslint** se había cumplido en el bloque 6 y se
+rompió después: quedaba **1 error**, una directiva `eslint-disable` que ya no
+tapaba nada en `WorkoutBuilder.tsx`. Corregido el 24/08/2026. Los 73 avisos
+restantes son `no-explicit-any` y variables sin usar, que §4 no acota.
