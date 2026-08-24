@@ -151,7 +151,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
             'IPF': { color: 'text-[#e6c2a5]', border: 'border-subtle', line: 'border-l-[#e6c2a5]', bg: 'bg-[#e6c2a5]/10' },
         };
 
-        const theme = config[level] || { color: 'text-brand-text', border: 'border-subtle', line: 'border-l-anvil-red', bg: 'bg-anvil-red/10' };
+        const theme = config[level] || { color: 'text-brand-text', border: 'border-subtle', line: 'border-l-brand', bg: 'bg-brand/10' };
         return { ...theme, level, esInvitado };
     };
 
@@ -180,7 +180,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                     <button
                         onClick={() => load(true)}
                         disabled={refreshing || loading}
-                        className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-ink disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-brand/40 hover:text-ink disabled:opacity-40"
                     >
                         <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
                         {refreshing ? 'Actualizando' : 'Actualizar'}
@@ -269,7 +269,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                             {user?.role === 'coach' && (
                                                 <button
                                                     onClick={() => setSelectedCompetition(comp)}
-                                                    className="px-8 py-3 bg-anvil-red text-ink text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-[background-color,transform] shadow-lg active:scale-95"
+                                                    className="px-8 py-3 bg-brand text-ink text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-[background-color,transform] shadow-lg active:scale-95"
                                                 >
                                                     Asignar
                                                 </button>

@@ -165,7 +165,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                         ['advanced', LayoutTemplate, 'Estilo'],
                         ['ai', Sparkles, 'IA']
                     ] as const).map(([key, Icon, label]) => (
-                        <button key={key} onClick={() => setActiveTab(key as any)} className={`flex-1 min-w-[60px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-brand-text bg-surface-raised/50 border-b-2 border-anvil-red' : 'text-ink-subtle hover:text-ink'}`}>
+                        <button key={key} onClick={() => setActiveTab(key as any)} className={`flex-1 min-w-[60px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-brand-text bg-surface-raised/50 border-b-2 border-brand' : 'text-ink-subtle hover:text-ink'}`}>
                             <Icon size={16} />{label}
                         </button>
                     ))}
@@ -190,12 +190,12 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                     {activeTab === 'fonts' && (<>
                         <p className="text-xs text-ink-subtle uppercase font-bold mb-2">Nombre del Club / Entrenador</p>
                         <input type="text" value={s.clubName} onChange={e => update({ clubName: e.target.value })}
-                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-anvil-red" />
+                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-brand" />
                         <p className="text-xs text-ink-subtle uppercase font-bold mt-4 mb-2">Tipografía Principal</p>
                         <div className="grid grid-cols-2 gap-2">
                             {['Inter', 'Roboto', 'Outfit', 'Montserrat'].map(f => (
                                 <button key={f} onClick={() => update({ fontFamily: f })}
-                                    className={`py-2 px-3 rounded border text-sm ${s.fontFamily === f ? 'bg-anvil-red/10 border-anvil-red text-brand-text' : 'bg-surface-canvas border-line text-ink-muted hover:text-ink'}`}
+                                    className={`py-2 px-3 rounded border text-sm ${s.fontFamily === f ? 'bg-brand/10 border-brand text-brand-text' : 'bg-surface-canvas border-line text-ink-muted hover:text-ink'}`}
                                     style={{ fontFamily: f }}>{f}</button>
                             ))}
                         </div>
@@ -216,27 +216,27 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                     {activeTab === 'advanced' && (<>
                         <p className="text-xs text-ink-subtle uppercase font-bold mb-2">Redondeo de Bordes (px)</p>
                         <input type="range" min="0" max="32" value={s.borderRadius} onChange={e => update({ borderRadius: parseInt(e.target.value) })}
-                            className="w-full accent-anvil-red mb-2" />
+                            className="w-full accent-brand mb-2" />
                         <div className="text-right text-xs text-ink-muted font-mono mb-4">{s.borderRadius}px</div>
                         
                         <p className="text-xs text-ink-subtle uppercase font-bold mb-2">Espaciado de Tabla</p>
                         <div className="grid grid-cols-3 gap-2">
                             {['compact', 'normal', 'relaxed'].map(pad => (
                                 <button key={pad} onClick={() => update({ tablePadding: pad as any })}
-                                    className={`py-2 px-1 text-t-2xs font-bold uppercase rounded border transition-colors ${s.tablePadding === pad ? 'bg-anvil-red/10 border-anvil-red text-brand-text' : 'bg-surface-canvas border-line text-ink-muted hover:text-ink'}`}>
+                                    className={`py-2 px-1 text-t-2xs font-bold uppercase rounded border transition-colors ${s.tablePadding === pad ? 'bg-brand/10 border-brand text-brand-text' : 'bg-surface-canvas border-line text-ink-muted hover:text-ink'}`}>
                                     {pad}
                                 </button>
                             ))}
                         </div>
                     </>)}
                     {activeTab === 'ai' && (<>
-                        <div className="bg-anvil-red/5 border border-anvil-red/20 p-4 rounded-xl text-center">
+                        <div className="bg-brand/5 border border-brand/20 p-4 rounded-xl text-center">
                             <Sparkles className="mx-auto text-brand-text mb-3" size={32} />
                             <h3 className="text-brand-text font-black uppercase tracking-widest text-sm mb-2">Analizador IA</h3>
                             <p className="text-xs text-ink-muted mb-4 leading-relaxed">
                                 Sube un PDF antiguo que tengas y nuestra IA extraerá automáticamente la paleta de colores y configuración de fuentes para replicar tu estilo exacto.
                             </p>
-                            <button className="w-full bg-anvil-red hover:bg-red-600 text-black py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors">
+                            <button className="w-full bg-brand hover:bg-red-600 text-black py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors">
                                 Subir mi PDF (Próximamente)
                             </button>
                         </div>
@@ -247,9 +247,9 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                     <div>
                         <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Nombre del archivo</label>
                         <input type="text" value={pdfFileName} onChange={e => setPdfFileName(e.target.value)} placeholder="Plan_Entrenamiento"
-                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-anvil-red" />
+                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-brand" />
                     </div>
-                    <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-anvil-red hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+                    <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-brand hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         {isGenerating ? <><Loader2 size={18} className="animate-spin" /> Generando...</> : <><Download size={18} /> Descargar PDF</>}
                     </button>
                 </div>

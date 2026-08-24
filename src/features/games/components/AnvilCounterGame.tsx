@@ -204,7 +204,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                         ))}
                         <button
                             onClick={handleBackspace}
-                            className="bg-anvil-red/10 text-brand-text border border-anvil-red/20 p-4 rounded-xl text-xl font-bold active:bg-anvil-red active:text-ink active:scale-95 transition-[background-color,color,transform]"
+                            className="bg-brand/10 text-brand-text border border-brand/20 p-4 rounded-xl text-xl font-bold active:bg-brand active:text-ink active:scale-95 transition-[background-color,color,transform]"
                         >
                             ←
                         </button>

@@ -78,7 +78,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
+                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
                     >
                         <X size={24} />
                     </button>
@@ -198,7 +198,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                 <div className="flex bg-black/60 p-1 rounded-lg border border-subtle shrink-0">
                                     <button
                                         onClick={() => setHasCollars(true)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${hasCollars ? 'bg-anvil-red text-ink shadow-lg' : 'text-ink-subtle hover:text-ink'}`}
+                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${hasCollars ? 'bg-brand text-ink shadow-lg' : 'text-ink-subtle hover:text-ink'}`}
                                     >
                                         SÍ
                                     </button>
@@ -217,7 +217,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                             <div className="bg-surface-sunken rounded-2xl p-3 md:p-4 border border-subtle flex-1 flex flex-col md:overflow-hidden min-h-[200px]">
                                 <div className="flex items-center justify-between mb-4 md:mb-8 shrink-0">
                                     <h3 className="text-sm md:text-base font-black text-ink uppercase tracking-widest italic">Discos (Por lado)</h3>
-                                    <div className="px-3 py-1 bg-anvil-red/10 rounded-full border border-anvil-red/20">
+                                    <div className="px-3 py-1 bg-brand/10 rounded-full border border-brand/20">
                                         <span className="text-t-2xs md:text-xs font-black text-brand-text uppercase italic">IPF Standard</span>
                                     </div>
                                 </div>

@@ -124,7 +124,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             </div>
 
                             {amount > balance && (
-                                <div className="flex items-center gap-2 text-brand-text bg-anvil-red/10 p-3 rounded-xl border border-anvil-red/20">
+                                <div className="flex items-center gap-2 text-brand-text bg-brand/10 p-3 rounded-xl border border-brand/20">
                                     <AlertTriangle size={16} />
                                     <span className="text-t-2xs font-bold uppercase">Saldo insuficiente para esta apuesta</span>
                                 </div>

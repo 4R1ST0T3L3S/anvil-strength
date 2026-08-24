@@ -57,7 +57,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             className={`relative p-4 rounded-2xl border text-left transition-[background-color,border-color,color,transform] active:scale-[0.97] ${
  done
  ? 'bg-green-500/5 border-success/20'
- : 'bg-surface-canvas border-line hover:border-anvil-red/40'
+ : 'bg-surface-canvas border-line hover:border-brand/40'
  }`}
                         >
                             <div className="flex items-center justify-between mb-2">
@@ -213,7 +213,7 @@ export function CheckInFormModal({
 
                     <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {editedByCoach && (
-                            <p className="flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-brand-text bg-anvil-red/10 border border-anvil-red/20 rounded-xl px-3 py-2">
+                            <p className="flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-brand-text bg-brand/10 border border-brand/20 rounded-xl px-3 py-2">
                                 <UserCog size={13} /> Tu coach ha modificado este check-in
                             </p>
                         )}
@@ -239,7 +239,7 @@ export function CheckInFormModal({
                         <button
                             onClick={handleSubmit}
                             disabled={saving || loading || questions.length === 0}
-                            className="w-full py-3.5 rounded-xl bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                            className="w-full py-3.5 rounded-xl bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                         >
                             {saving ? <Loader className="animate-spin" size={16} /> : <Check size={16} />}
                             Enviar check-in

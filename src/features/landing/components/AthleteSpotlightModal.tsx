@@ -76,7 +76,7 @@ function SmokeLayer() {
                 />
             ))}
             {/* Resplandor rojo desde abajo */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[40%] bg-anvil-red/15 blur-[100px] rounded-full" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[40%] bg-brand/15 blur-[100px] rounded-full" />
         </div>
     );
 }
@@ -121,7 +121,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                     {/* Botón cerrar */}
                     <button
                         onClick={onClose}
-                        className="absolute top-6 right-6 z-30 p-3 bg-white/5 hover:bg-anvil-red rounded-full text-ink transition-colors"
+                        className="absolute top-6 right-6 z-30 p-3 bg-white/5 hover:bg-brand rounded-full text-ink transition-colors"
                         aria-label="Cerrar"
                     >
                         <X size={22} />
@@ -173,7 +173,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                                 <p className="text-gray-400 font-bold uppercase tracking-widest text-sm mb-6">{clubPhoto.category}</p>
                             )}
 
-                            <div className="w-20 h-1 bg-anvil-red mx-auto md:mx-0 my-6" />
+                            <div className="w-20 h-1 bg-brand mx-auto md:mx-0 my-6" />
 
                             <h3 className="text-xl md:text-2xl font-black text-ink uppercase mb-3">{data.competitionName}</h3>
 

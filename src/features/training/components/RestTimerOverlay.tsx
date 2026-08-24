@@ -42,13 +42,13 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
         <div className="fixed bottom-24 left-4 right-4 z-[100] animate-rise">
             <div className={cn(
                 "bg-surface-sunken border border-[var(--border-default)] rounded-card shadow-2xl p-4 flex items-center justify-between",
-                isFinished ? "border-green-500/50 bg-green-900/10" : "border-anvil-red/30"
+                isFinished ? "border-green-500/50 bg-green-900/10" : "border-brand/30"
             )}>
                 {/* Time Display */}
                 <div className="flex items-center gap-4">
                     <div className={cn(
                         "w-12 h-12 rounded-full flex items-center justify-center border-2",
-                        isFinished ? "border-green-500 text-success" : "border-anvil-red text-brand-text"
+                        isFinished ? "border-green-500 text-success" : "border-brand text-brand-text"
                     )}>
                         <Timer size={20} className={isFinished ? "animate-bounce" : ""} />
                     </div>

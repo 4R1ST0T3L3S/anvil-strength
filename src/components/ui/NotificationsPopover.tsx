@@ -33,7 +33,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
             >
                 <Bell size={20} className={unreadCount > 0 ? "text-brand-text animate-pulse" : "text-ink-muted group-hover:text-ink"} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-ink text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-surface-sunken">
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-brand text-ink text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-surface-sunken">
                         {unreadCount > 9 ? '+9' : unreadCount}
                     </span>
                 )}
@@ -84,7 +84,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-start mb-1">
                                                     <h4 className="text-xs font-black uppercase tracking-tight text-ink">{notif.title}</h4>
-                                                    {!notif.is_read && <div className="w-2 h-2 bg-anvil-red rounded-full shadow-[0_0_8px_rgba(220,38,38,0.5)]" />}
+                                                    {!notif.is_read && <div className="w-2 h-2 bg-brand rounded-full shadow-[0_0_8px_rgba(220,38,38,0.5)]" />}
                                                 </div>
                                                 <p className="text-xs text-ink-muted leading-relaxed mb-2">{notif.content}</p>
                                                 <span className="text-t-2xs font-bold text-gray-600 uppercase tracking-widest">

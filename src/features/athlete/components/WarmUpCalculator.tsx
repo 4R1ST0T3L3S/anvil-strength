@@ -156,7 +156,7 @@ export function WarmUpCalculator({ isOpen, onClose }: WarmUpCalculatorProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
+                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
                     >
                         <X className="w-6 h-6 md:w-7 md:h-7" />
                     </button>

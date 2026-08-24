@@ -70,7 +70,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           {/* Bio */}
           <div className="mb-12">
             <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
-              <span className="w-8 h-[1px] bg-anvil-red" />
+              <span className="w-8 h-[1px] bg-brand" />
               Presentación
             </h3>
             <p className="text-ink leading-relaxed whitespace-pre-line text-lg font-medium">
@@ -81,7 +81,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           {/* Contact */}
           <div className="mt-auto">
             <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
-              <span className="w-8 h-[1px] bg-anvil-red" />
+              <span className="w-8 h-[1px] bg-brand" />
               Contacto Directo
             </h3>
             <div className="flex flex-wrap gap-4">
@@ -89,7 +89,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                 href={coach.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
+                className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
               >
                 <Instagram size={20} className="group-hover:scale-110 transition-transform" />
                 <span className="font-black uppercase text-xs tracking-widest">Instagram</span>
@@ -99,7 +99,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   href={coach.contactForm}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
+                  className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <FileText size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Formulario</span>
@@ -108,7 +108,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
               {coach.email && (
                 <a
                   href={`mailto:${coach.email}`}
-                  className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
+                  className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <Mail size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Email</span>

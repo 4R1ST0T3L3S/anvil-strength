@@ -71,14 +71,14 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
           <div className="space-y-12">
             {/* Main Stats */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-surface-sunken p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-anvil-red/30 transition-colors">
+              <div className="bg-surface-sunken p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-brand/30 transition-colors">
                 <div className="flex items-center gap-3 mb-4 text-ink-subtle">
                   <Activity size={18} />
                   <span className="text-t-2xs font-black uppercase tracking-widest">GL Points</span>
                 </div>
                 <p className="text-5xl font-black text-ink">{athlete.stats.glPoints}</p>
               </div>
-              <div className="bg-surface-sunken p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-anvil-red/30 transition-colors">
+              <div className="bg-surface-sunken p-6 rounded-2xl border border-subtle shadow-2xl group hover:border-brand/30 transition-colors">
                 <div className="flex items-center gap-3 mb-4 text-ink-subtle">
                   <Trophy size={18} />
                   <span className="text-t-2xs font-black uppercase tracking-widest">Total</span>
@@ -90,7 +90,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             {/* Lifts */}
             <div>
               <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-8 flex items-center gap-4">
-                <span className="w-8 h-[1px] bg-anvil-red" />
+                <span className="w-8 h-[1px] bg-brand" />
                 Mejores Marcas
               </h3>
               <div className="grid grid-cols-3 gap-4">
@@ -99,7 +99,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
                   { label: 'Bench', value: athlete.stats.bench },
                   { label: 'Deadlift', value: athlete.stats.deadlift }
                 ].map((lift) => (
-                  <div key={lift.label} className="text-center p-6 bg-surface-sunken rounded-2xl border border-subtle hover:border-anvil-red/20 transition-colors group">
+                  <div key={lift.label} className="text-center p-6 bg-surface-sunken rounded-2xl border border-subtle hover:border-brand/20 transition-colors group">
                     <p className="text-t-2xs text-ink-subtle uppercase font-black tracking-widest mb-3 group-hover:text-brand-text transition-colors">{lift.label}</p>
                     <p className="text-3xl font-black text-ink">{lift.value}</p>
                   </div>
@@ -108,7 +108,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             </div>
 
             {/* Last Competition */}
-            <div className="bg-gradient-to-r from-anvil-red/20 to-transparent p-8 rounded-2xl border border-anvil-red/30 shadow-xl relative overflow-hidden group">
+            <div className="bg-gradient-to-r from-brand/20 to-transparent p-8 rounded-2xl border border-brand/30 shadow-xl relative overflow-hidden group">
               <div className="relative z-10">
                 <p className="text-t-2xs text-brand-text font-black uppercase tracking-[0.2em] mb-3">Última Competición</p>
                 <p className="text-2xl text-ink font-black uppercase font-bebas italic tracking-wider">{athlete.stats.lastCompetition}</p>

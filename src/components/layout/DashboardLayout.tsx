@@ -107,7 +107,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             {item.isActive && (
                                 <m.span
                                     layoutId="sidebar-active"
-                                    className="absolute inset-0 bg-anvil-red/10 border border-anvil-red/20 rounded-xl"
+                                    className="absolute inset-0 bg-brand/10 border border-brand/20 rounded-xl"
                                     transition={{ type: 'spring', stiffness: 500, damping: 38 }}
                                 />
                             )}
@@ -127,7 +127,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     {panelSwitch && (
                         <button
                             onClick={panelSwitch.onClick}
-                            className="mb-1 flex w-full items-center gap-3 rounded-xl border border-anvil-red/20 bg-anvil-red/10 px-3 py-2.5 text-sm font-bold text-brand-text transition-colors duration-fast hover:bg-anvil-red/[0.16] active:scale-[0.98]"
+                            className="mb-1 flex w-full items-center gap-3 rounded-xl border border-brand/20 bg-brand/10 px-3 py-2.5 text-sm font-bold text-brand-text transition-colors duration-fast hover:bg-brand/[0.16] active:scale-[0.98]"
                         >
                             <span className="shrink-0 [&>svg]:h-[17px] [&>svg]:w-[17px]" aria-hidden="true">{panelSwitch.icon}</span>
                             <span className="truncate">{panelSwitch.label}</span>
@@ -195,7 +195,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             <button
                                 onClick={panelSwitch.onClick}
                                 aria-label={panelSwitch.label}
-                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97] md:hidden"
+                                className="flex h-9 items-center gap-1.5 rounded-field border border-brand/25 bg-brand/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97] md:hidden"
                             >
                                 <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
                                 <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>

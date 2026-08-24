@@ -50,7 +50,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "w-full bg-surface-sunken border rounded px-2 py-1 text-center text-xs transition-colors flex items-center justify-center gap-1",
-                    isOpen ? "border-anvil-red text-ink" : "border-line text-ink hover:border-white/30",
+                    isOpen ? "border-brand text-ink" : "border-line text-ink hover:border-white/30",
                     !value && "text-gray-600"
                 )}
             >
@@ -77,7 +77,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
                                     onClick={() => handleSelect(m, seconds)}
                                     className={cn(
                                         "w-full text-center py-1 rounded text-xs font-bold transition-colors",
-                                        m === minutes ? "bg-anvil-red text-ink" : "text-ink-muted hover:bg-white/5"
+                                        m === minutes ? "bg-brand text-ink" : "text-ink-muted hover:bg-white/5"
                                     )}
                                 >
                                     {m}
@@ -99,7 +99,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
                                     onClick={() => handleSelect(minutes, s)}
                                     className={cn(
                                         "w-full text-center py-1 rounded text-xs font-bold transition-colors",
-                                        s === seconds ? "bg-anvil-red text-ink" : "text-ink-muted hover:bg-white/5"
+                                        s === seconds ? "bg-brand text-ink" : "text-ink-muted hover:bg-white/5"
                                     )}
                                 >
                                     :{s.toString().padStart(2, '0')}

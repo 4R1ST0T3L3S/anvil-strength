@@ -86,7 +86,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         setSelectedFood(null);
                     }}
                     autoFocus
-                    className="w-full bg-[#111111] text-ink pl-10 pr-12 py-3 rounded-lg border border-line focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-[border-color,box-shadow]"
+                    className="w-full bg-[#111111] text-ink pl-10 pr-12 py-3 rounded-lg border border-line focus:border-brand focus:ring-1 focus:ring-brand transition-[border-color,box-shadow]"
                 />
                 <button 
                     onClick={() => setIsEditingBrands(!isEditingBrands)}
@@ -110,7 +110,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                             onChange={(e) => setNewBrand(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addBrand()}
                             placeholder="Ej. Hacendado, Prozis..."
-                            className="flex-1 bg-surface-canvas text-sm text-ink px-3 py-1.5 rounded border border-line focus:border-anvil-red"
+                            className="flex-1 bg-surface-canvas text-sm text-ink px-3 py-1.5 rounded border border-line focus:border-brand"
                         />
                         <button onClick={addBrand} className="bg-surface-raised hover:bg-surface-overlay text-ink px-3 rounded text-sm transition-colors">
                             Añadir
@@ -136,7 +136,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                 <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                     {isLoading && query.length > 2 && (
                         <div className="text-center py-4 text-ink-subtle flex justify-center">
-                            <div className="w-5 h-5 border-2 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     )}
                     
@@ -150,7 +150,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         <button
                             key={food.code}
                             onClick={() => setSelectedFood(food)}
-                            className="w-full text-left bg-[#111111] hover:bg-surface-raised border border-line hover:border-anvil-red/50 rounded-lg p-3 transition-colors flex justify-between items-center group"
+                            className="w-full text-left bg-[#111111] hover:bg-surface-raised border border-line hover:border-brand/50 rounded-lg p-3 transition-colors flex justify-between items-center group"
                         >
                             <div>
                                 <h4 className="text-ink font-medium group-hover:text-brand-text transition-colors">{food.product_name}</h4>
@@ -171,7 +171,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
             {/* Add Grams Form */}
             {selectedFood && (
-                <div className="animate-fade bg-[#111111] p-4 rounded-lg border border-anvil-red/30">
+                <div className="animate-fade bg-[#111111] p-4 rounded-lg border border-brand/30">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <h3 className="text-lg font-bold text-ink">{selectedFood.product_name}</h3>
@@ -208,7 +208,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         <span className="text-xs text-ink-subtle self-center">Rápido:</span>
                         {[50, 100, 150, 200].map(g => (
                             <button key={g} onClick={() => setGrams(g)}
-                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${grams === g ? 'bg-anvil-red text-black' : 'bg-surface-raised text-ink hover:bg-surface-overlay'}`}>
+                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${grams === g ? 'bg-brand text-black' : 'bg-surface-raised text-ink hover:bg-surface-overlay'}`}>
                                 {g}g
                             </button>
                         ))}
@@ -226,14 +226,14 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                                 min="1"
                                 value={grams || ''}
                                 onChange={(e) => setGrams(parseInt(e.target.value) || 0)}
-                                className="w-full bg-surface-canvas text-ink font-bold text-lg px-4 py-3 rounded-lg border border-strong focus:border-anvil-red text-center"
+                                className="w-full bg-surface-canvas text-ink font-bold text-lg px-4 py-3 rounded-lg border border-strong focus:border-brand text-center"
                             />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle">gramos</span>
                         </div>
                         <button
                             onClick={handleAdd}
                             disabled={grams <= 0}
-                            className="bg-anvil-red hover:bg-red-600 text-black font-black px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="bg-brand hover:bg-red-600 text-black font-black px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             <Check size={20} />
                             AÑADIR

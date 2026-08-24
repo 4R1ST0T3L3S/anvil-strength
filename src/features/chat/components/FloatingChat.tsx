@@ -61,7 +61,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                 {!isMinimized && (
                     <div
                         onMouseDown={() => setIsResizing(true)}
-                        className="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-anvil-red transition-colors z-50"
+                        className="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-brand transition-colors z-50"
                     />
                 )}
 
@@ -72,7 +72,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                             {athlete.avatar_url ? (
                                 <img src={athlete.avatar_url} alt={athlete.full_name} className="w-10 h-10 rounded-full object-cover border border-line" />
                             ) : (
-                                <div className="w-10 h-10 rounded-full bg-anvil-red flex items-center justify-center text-ink font-black">
+                                <div className="w-10 h-10 rounded-full bg-brand flex items-center justify-center text-ink font-black">
                                     {athlete.full_name[0]}
                                 </div>
                             )}

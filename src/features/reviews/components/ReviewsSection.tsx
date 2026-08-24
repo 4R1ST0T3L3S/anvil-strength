@@ -102,7 +102,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                         </p>
                         <button
                             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                            className="bg-anvil-red text-ink font-bold px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                            className="bg-brand text-ink font-bold px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
                         >
                             Iniciar Sesión
                         </button>
@@ -113,7 +113,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                 <div className="space-y-6">
                     {isLoading ? (
                         <div className="text-center py-12">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-anvil-red"></div>
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
                             <p className="text-ink-muted mt-4">Cargando reseñas...</p>
                         </div>
                     ) : error ? (

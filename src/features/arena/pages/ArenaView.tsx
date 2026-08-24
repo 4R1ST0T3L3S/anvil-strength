@@ -213,7 +213,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
             {/* Header */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-subtle px-4 md:px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-anvil-red rounded-lg text-black shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+                    <div className="p-2 bg-brand rounded-lg text-black shadow-[0_0_15px_rgba(220,38,38,0.4)]">
                         <Swords size={18} />
                     </div>
                     <div>
@@ -244,7 +244,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             <button 
                                 onClick={() => setActiveTab('active')}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-t-2xs uppercase tracking-widest transition-[background-color,box-shadow,color] ${
- activeTab === 'active' ? 'bg-anvil-red text-ink shadow-lg shadow-red-900/20' : 'text-ink-subtle hover:text-ink'
+ activeTab === 'active' ? 'bg-brand text-ink shadow-lg shadow-red-900/20' : 'text-ink-subtle hover:text-ink'
  }`}
                             >
                                 <TrendingUp size={14} />
@@ -253,7 +253,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             <button 
                                 onClick={() => setActiveTab('history')}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-t-2xs uppercase tracking-widest transition-[background-color,box-shadow,color] ${
- activeTab === 'history' ? 'bg-anvil-red text-ink shadow-lg shadow-red-900/20' : 'text-ink-subtle hover:text-ink'
+ activeTab === 'history' ? 'bg-brand text-ink shadow-lg shadow-red-900/20' : 'text-ink-subtle hover:text-ink'
  }`}
                             >
                                 <History size={14} />
@@ -381,8 +381,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         exit={{ y: 100, opacity: 0 }}
                         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-full max-w-md px-4"
                     >
-                        <div className="bg-surface-sunken border border-anvil-red/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
-                            <div className="bg-anvil-red px-6 py-3 flex justify-between items-center">
+                        <div className="bg-surface-sunken border border-brand/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                            <div className="bg-brand px-6 py-3 flex justify-between items-center">
                                 <h3 className="text-xs font-black uppercase tracking-widest text-ink flex items-center gap-2">
                                     <Swords size={14} /> Boleto de Apuestas ({betSlip.length})
                                 </h3>
@@ -416,7 +416,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                         </div>
                                         <button 
                                             onClick={() => handlePlaceParlay(100)} // Valor por defecto o abrir modal de importe
-                                            className="w-full py-4 bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-widest rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
+                                            className="w-full py-4 bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-widest rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
                                         >
                                             Realizar Combinada (100 AC)
                                             <Send size={16} />

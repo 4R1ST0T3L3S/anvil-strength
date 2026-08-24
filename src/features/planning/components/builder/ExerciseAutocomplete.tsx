@@ -51,7 +51,7 @@ export function ExerciseAutocomplete({
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setHighlighted(0); }}
                 placeholder="Escribe el ejercicio... (ej: ba → Banca)"
-                className="w-full bg-black/40 text-ink font-bold p-3 rounded-xl border border-subtle focus:border-anvil-red placeholder-gray-600"
+                className="w-full bg-black/40 text-ink font-bold p-3 rounded-xl border border-subtle focus:border-brand placeholder-gray-600"
                 onKeyDown={(e) => {
                     if (e.key === 'ArrowDown') {
                         e.preventDefault();

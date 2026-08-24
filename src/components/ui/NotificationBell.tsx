@@ -162,7 +162,7 @@ export function NotificationBell({ userId }: { userId: string }) {
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-anvil-red px-1 text-t-2xs font-black text-ink">
+                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-brand px-1 text-t-2xs font-black text-ink">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
@@ -214,11 +214,11 @@ export function NotificationBell({ userId }: { userId: string }) {
                                     <div
                                         key={n.id}
                                         className={`p-4 border-b border-subtle last:border-b-0 transition-colors ${
- n.is_read ? 'opacity-60' : 'bg-anvil-red/5'
+ n.is_read ? 'opacity-60' : 'bg-brand/5'
  }`}
                                     >
                                         <div className="flex items-start gap-3">
-                                            {!n.is_read && <span className="w-2 h-2 bg-anvil-red rounded-full mt-1.5 shrink-0" />}
+                                            {!n.is_read && <span className="w-2 h-2 bg-brand rounded-full mt-1.5 shrink-0" />}
                                             <div className="min-w-0">
                                                 <p className="text-sm font-bold text-ink leading-tight">{n.title}</p>
                                                 <p className="text-xs text-ink-muted mt-1 leading-relaxed">{n.message}</p>
@@ -239,7 +239,7 @@ export function NotificationBell({ userId }: { userId: string }) {
                                     className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors disabled:opacity-50 ${
  push.isSubscribed
  ? 'bg-white/5 text-ink-muted hover:text-ink'
- : 'bg-anvil-red hover:bg-red-700 text-ink'
+ : 'bg-brand hover:bg-red-700 text-ink'
  }`}
                                 >
                                     {push.isLoading ? <Loader className="animate-spin" size={13} /> : push.isSubscribed ? <BellOff size={13} /> : <BellRing size={13} />}

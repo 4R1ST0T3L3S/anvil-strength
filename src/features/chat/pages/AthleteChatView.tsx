@@ -22,7 +22,7 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
     if (!user.coach_id) {
         return (
             <div className="min-h-[100dvh] bg-surface-sunken flex flex-col items-center justify-center p-8 text-center">
-                <div className="p-6 bg-anvil-red/10 rounded-full text-brand-text mb-6">
+                <div className="p-6 bg-brand/10 rounded-full text-brand-text mb-6">
                     <ShieldCheck size={48} />
                 </div>
                 <h2 className="text-2xl font-black uppercase italic text-ink mb-2">Sin Entrenador Asignado</h2>

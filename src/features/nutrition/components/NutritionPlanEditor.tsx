@@ -121,7 +121,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center p-12">
-                <div className="w-10 h-10 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -195,7 +195,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         <p className="text-ink-muted mb-4">Este atleta aún no tiene un plan nutricional activo.</p>
                         <button 
                             onClick={handleCreatePlan}
-                            className="bg-anvil-red hover:bg-red-600 text-black font-black px-6 py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
+                            className="bg-brand hover:bg-red-600 text-black font-black px-6 py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
                         >
                             Crear Plan Nutricional
                         </button>
@@ -209,7 +209,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             inputMode="decimal" 
                                 value={macrosForm.calories || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, calories: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-ink px-3 py-2 rounded border border-line focus:border-anvil-red"
+                                className="w-full bg-[#111111] text-ink px-3 py-2 rounded border border-line focus:border-brand"
                             />
                         </div>
                         <div>
@@ -254,7 +254,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             <button 
                                 onClick={handleSaveMacros}
                                 disabled={createPlanMutation.isPending || updatePlanMutation.isPending}
-                                className="bg-anvil-red text-black px-6 py-2 rounded font-black text-sm uppercase tracking-wide"
+                                className="bg-brand text-black px-6 py-2 rounded font-black text-sm uppercase tracking-wide"
                             >
                                 Guardar
                             </button>
@@ -345,7 +345,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                             placeholder="Ej. Hipertrofia Bloque 1, Fuerza Máxima..."
                             value={configForm.training_block_id} 
                             onChange={(e) => setConfigForm({...configForm, training_block_id: e.target.value})}
-                            className="w-full bg-surface-sunken text-ink px-4 py-3 rounded border border-line focus:border-anvil-red"
+                            className="w-full bg-surface-sunken text-ink px-4 py-3 rounded border border-line focus:border-brand"
                         />
                     </div>
 
@@ -363,7 +363,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewTag('');
                                     }
                                 }}
-                                className="flex-1 bg-surface-sunken text-ink px-4 py-2 rounded border border-line focus:border-anvil-red"
+                                className="flex-1 bg-surface-sunken text-ink px-4 py-2 rounded border border-line focus:border-brand"
                             />
                             <button 
                                 onClick={() => {
@@ -401,7 +401,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewGuideline('');
                                     }
                                 }}
-                                className="flex-1 bg-surface-sunken text-ink px-4 py-2 rounded border border-line focus:border-anvil-red"
+                                className="flex-1 bg-surface-sunken text-ink px-4 py-2 rounded border border-line focus:border-brand"
                             />
                             <button 
                                 onClick={() => {
@@ -439,7 +439,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewSupplement('');
                                     }
                                 }}
-                                className="flex-1 bg-surface-sunken text-ink px-4 py-2 rounded border border-line focus:border-anvil-red"
+                                className="flex-1 bg-surface-sunken text-ink px-4 py-2 rounded border border-line focus:border-brand"
                             />
                             <button 
                                 onClick={() => {
@@ -465,7 +465,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
 
                     <div className="flex justify-end gap-2 pt-4 border-t border-line">
                         <button onClick={() => setIsEditingConfig(false)} className="bg-surface-raised text-ink px-4 py-2 rounded font-bold text-sm">Cancelar</button>
-                        <button onClick={handleSaveConfig} className="bg-anvil-red text-black px-6 py-2 rounded font-black text-sm uppercase">Guardar Configuración</button>
+                        <button onClick={handleSaveConfig} className="bg-brand text-black px-6 py-2 rounded font-black text-sm uppercase">Guardar Configuración</button>
                     </div>
                 </div>
             )}
@@ -487,7 +487,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         {plan.tags && plan.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {plan.tags.map((tag, i) => (
-                                    <span key={i} className="bg-anvil-red/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-anvil-red/20 uppercase">{tag}</span>
+                                    <span key={i} className="bg-brand/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-brand/20 uppercase">{tag}</span>
                                 ))}
                             </div>
                         )}

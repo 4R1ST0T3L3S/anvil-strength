@@ -79,17 +79,15 @@ export default {
           "light-line": token("--fold-light-line"),
         },
 
-        // Alias heredados. Se mantienen para no romper las ~700 utilidades
-        // ya escritas; migrar por pantallas y borrarlos al terminar F5.
+        // Los tres alias heredados (`anvil-red`, `anvil-black`, `anvil-gray`)
+        // se retiraron el 24/08/2026 al llegar a cero usos, que era la
+        // condición que fijaba K14.
         //
-        // `anvil-red` pasa por token() igual que el resto: hay 172 usos de
-        // `anvil-red/10`, `/20`, `/50`... por toda la app que se escribieron
-        // cuando el alias era un hex, y que dejaron de pintar nada al
-        // apuntarlo a `var(--brand)`. Los dos siguientes son hex literales,
-        // donde el modificador de opacidad ya funciona por sí solo.
-        "anvil-black": "#0a0a0a",
-        "anvil-red": token("--brand"),
-        "anvil-gray": "#2b2d42",
+        // `anvil-red` era literalmente `token("--brand")`, así que renombrar
+        // sus 357 usos a `brand` fue un cambio de cero píxeles. `anvil-black`
+        // (#0a0a0a) y `anvil-gray` (#2b2d42) ya no los usaba nadie; el
+        // segundo, además, era un azul pizarra que nunca estuvo en la paleta.
+
       },
 
       /* ADITIVO, NUNCA SOBRESCRITO.

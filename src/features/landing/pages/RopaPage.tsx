@@ -72,7 +72,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-brand selection:text-ink overflow-x-hidden">
             {/* Shared Public Header */}
             <PublicHeader onLoginClick={onLoginClick} />
 
@@ -173,7 +173,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     {/* Overlay Info */}
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 sm:p-12 flex flex-col md:flex-row items-end justify-between">
                                         <div className="max-w-2xl text-left">
-                                            <div className="bg-anvil-red text-ink text-t-2xs font-black uppercase px-3 py-1 tracking-widest inline-block mb-4">
+                                            <div className="bg-brand text-ink text-t-2xs font-black uppercase px-3 py-1 tracking-widest inline-block mb-4">
                                                 {product.tag}
                                             </div>
                                             <h3 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic text-ink mb-4 leading-none">
@@ -181,7 +181,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                             </h3>
                                             <p className="text-gray-300 text-sm sm:text-lg md:text-xl max-w-xl">{product.description}</p>
                                         </div>
-                                        <button className="hidden md:flex bg-white text-black font-black uppercase px-10 py-5 hover:bg-anvil-red hover:text-ink transition-colors items-center gap-4">
+                                        <button className="hidden md:flex bg-white text-black font-black uppercase px-10 py-5 hover:bg-brand hover:text-ink transition-colors items-center gap-4">
                                             <span>Ver Detalles</span>
                                             <ArrowRight size={24} />
                                         </button>
@@ -216,9 +216,9 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             </section>
 
             {/* --- STEEZY STORE BANNER --- */}
-            <section className="py-12 bg-white text-black border-y-4 border-anvil-red overflow-hidden relative group cursor-pointer">
+            <section className="py-12 bg-white text-black border-y-4 border-brand overflow-hidden relative group cursor-pointer">
                 <a href="https://steezylifts.com/password" target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-20"></a>
-                <div className="absolute inset-0 bg-anvil-red/10 transform -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-slow z-10" />
+                <div className="absolute inset-0 bg-brand/10 transform -skew-x-12 translate-x-full group-hover:translate-x-0 transition-transform duration-slow z-10" />
 
                 <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
                     <div className="flex items-center gap-6">
@@ -241,7 +241,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             </section>
 
             {/* --- NEWSLETTER: HYPE STYLE (RESTAURADO) --- */}
-            <section className="py-24 sm:py-40 bg-anvil-red relative overflow-hidden flex items-center justify-center text-center">
+            <section className="py-24 sm:py-40 bg-brand relative overflow-hidden flex items-center justify-center text-center">
                 {/* Textura sutil de fondo para profundidad */}
                 <div className="absolute inset-0 bg-black/5 opacity-10"></div>
 

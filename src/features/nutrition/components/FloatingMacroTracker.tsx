@@ -33,7 +33,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                     <div className={`
  bg-black/90 backdrop-blur-2xl border-2 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto
  w-[280px] transition-colors duration-slow cursor-move relative
- ${isExceeded ? 'border-anvil-red shadow-red-900/20' : 'border-line shadow-black/40'}
+ ${isExceeded ? 'border-brand shadow-red-900/20' : 'border-line shadow-black/40'}
 `}>
                         {/* Drag Handle Area */}
                         <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-surface-raised px-3 py-0.5 rounded-full text-t-2xs font-black uppercase text-ink-subtle tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
@@ -118,7 +118,7 @@ function MacroItem({ label, current, target, color, isExceeded }: any) {
                 <m.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, (current / (target || 1)) * 100)}%` }}
-                    className={`h-full ${isExceeded ? 'bg-anvil-red' : color.replace('text-', 'bg-')}`}
+                    className={`h-full ${isExceeded ? 'bg-brand' : color.replace('text-', 'bg-')}`}
                 />
             </div>
         </div>

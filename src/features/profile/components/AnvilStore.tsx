@@ -74,7 +74,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                             key={item.id}
                             className={`relative group bg-surface-sunken border rounded-3xl p-6 transition-[background-color,border-color,opacity] ${
  item.available 
- ? 'border-subtle hover:border-anvil-red/30 cursor-pointer' 
+ ? 'border-subtle hover:border-brand/30 cursor-pointer' 
  : 'border-subtle opacity-60 grayscale cursor-not-allowed'
  }`}
                         >
@@ -106,7 +106,7 @@ export const AnvilStore: React.FC<AnvilStoreProps> = ({ userId }) => {
                                                 disabled={!canAfford}
                                                 className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${
  canAfford 
- ? 'bg-anvil-red text-ink hover:bg-red-700 shadow-lg shadow-red-900/20' 
+ ? 'bg-brand text-ink hover:bg-red-700 shadow-lg shadow-red-900/20' 
  : 'bg-white/5 text-ink-subtle'
  }`}
                                             >

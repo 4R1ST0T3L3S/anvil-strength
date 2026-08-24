@@ -173,7 +173,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                 {/* Tabs */}
                 <div className="flex flex-wrap border-b border-line">
                     {([['colors', Palette, 'Color'], ['fonts', Type, 'Fuente'], ['image', Image, 'Logo'], ['layout', LayoutTemplate, 'Layout'], ['ai', Sparkles, 'IA']] as const).map(([key, Icon, label]) => (
-                        <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 min-w-[56px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-brand-text bg-surface-raised/50 border-b-2 border-anvil-red' : 'text-ink-subtle hover:text-ink'}`}>
+                        <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 min-w-[56px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-brand-text bg-surface-raised/50 border-b-2 border-brand' : 'text-ink-subtle hover:text-ink'}`}>
                             <Icon size={16} />{label}
                         </button>
                     ))}
@@ -209,24 +209,24 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                         <p className="text-xs text-ink-subtle uppercase font-bold">Tipografía</p>
                         {FONTS.map(f => (
                             <button key={f.value} onClick={() => update({ fontFamily: f.value })}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.fontFamily === f.value ? 'border-anvil-red bg-anvil-red/10 text-ink' : 'border-line text-ink-muted hover:text-ink'}`}
+                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.fontFamily === f.value ? 'border-brand bg-brand/10 text-ink' : 'border-line text-ink-muted hover:text-ink'}`}
                                 style={{ fontFamily: f.value }}>
                                 {f.label} — Aa Bb 123
                             </button>
                         ))}
                         <p className="text-xs text-ink-subtle uppercase font-bold mt-4">Nombre del Club</p>
                         <input type="text" value={s.clubName} onChange={e => update({ clubName: e.target.value })}
-                            className="w-full bg-surface-canvas text-ink px-3 py-2 rounded border border-line focus:border-anvil-red text-sm" />
+                            className="w-full bg-surface-canvas text-ink px-3 py-2 rounded border border-line focus:border-brand text-sm" />
                         <p className="text-xs text-ink-subtle uppercase font-bold mt-4">Texto de Pie</p>
                         <input type="text" value={s.footerText} onChange={e => update({ footerText: e.target.value })} placeholder="Ej. Preparado por Dr. García"
-                            className="w-full bg-surface-canvas text-ink px-3 py-2 rounded border border-line focus:border-anvil-red text-sm" />
+                            className="w-full bg-surface-canvas text-ink px-3 py-2 rounded border border-line focus:border-brand text-sm" />
                     </>)}
 
                     {activeTab === 'image' && (<>
                         <p className="text-xs text-ink-subtle uppercase font-bold">Logo / Imagen de Cabecera</p>
                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                         <button onClick={() => fileInputRef.current?.click()}
-                            className="w-full py-8 border-2 border-dashed border-strong rounded-lg text-ink-muted hover:text-ink hover:border-anvil-red transition-colors text-sm text-center">
+                            className="w-full py-8 border-2 border-dashed border-strong rounded-lg text-ink-muted hover:text-ink hover:border-brand transition-colors text-sm text-center">
                             {s.showLogo && s.logoUrl ? 'Cambiar imagen' : 'Subir imagen'}
                         </button>
                         {s.showLogo && s.logoUrl && (
@@ -241,7 +241,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                         <p className="text-xs text-ink-subtle uppercase font-bold">Distribución</p>
                         {(['modern', 'classic', 'minimal'] as const).map(l => (
                             <button key={l} onClick={() => update({ layout: l })}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.layout === l ? 'border-anvil-red bg-anvil-red/10 text-ink' : 'border-line text-ink-muted hover:text-ink'}`}>
+                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.layout === l ? 'border-brand bg-brand/10 text-ink' : 'border-line text-ink-muted hover:text-ink'}`}>
                                 <span className="font-bold capitalize">{l}</span>
                                 <span className="block text-xs text-ink-subtle mt-0.5">
                                     {l === 'modern' && 'Tabla compacta con barras de macros'}
@@ -259,13 +259,13 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                         ))}
                     </>)}
                     {activeTab === 'ai' && (<>
-                        <div className="bg-anvil-red/5 border border-anvil-red/20 p-4 rounded-xl text-center">
+                        <div className="bg-brand/5 border border-brand/20 p-4 rounded-xl text-center">
                             <Sparkles className="mx-auto text-brand-text mb-3" size={32} />
                             <h3 className="text-brand-text font-black uppercase tracking-widest text-sm mb-2">Analizador IA</h3>
                             <p className="text-xs text-ink-muted mb-4 leading-relaxed">
                                 Sube un PDF antiguo que tengas y nuestra IA extraerá automáticamente la paleta de colores y configuración de fuentes para replicar tu estilo exacto.
                             </p>
-                            <button className="w-full bg-anvil-red hover:bg-red-600 text-black py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors">
+                            <button className="w-full bg-brand hover:bg-red-600 text-black py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors">
                                 Subir mi PDF (Próximamente)
                             </button>
                         </div>
@@ -277,9 +277,9 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                     <div>
                         <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Nombre del archivo</label>
                         <input type="text" value={pdfFileName} onChange={e => setPdfFileName(e.target.value)} placeholder="Plan_Nutricional"
-                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-anvil-red" />
+                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-brand" />
                     </div>
-                    <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-anvil-red hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+                    <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-brand hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         {isGenerating ? <><Loader2 size={18} className="animate-spin" /> Generando...</> : <><Download size={18} /> Descargar PDF</>}
                     </button>
                 </div>

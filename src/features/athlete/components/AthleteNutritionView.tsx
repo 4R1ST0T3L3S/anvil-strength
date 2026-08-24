@@ -31,7 +31,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-anvil-red"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
                 <p className="text-ink-subtle font-bold uppercase tracking-widest text-xs">Cargando Plan Nutricional...</p>
             </div>
         );
@@ -136,7 +136,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
             {plan.tags && plan.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {plan.tags.map((tag, i) => (
-                        <span key={i} className="bg-anvil-red/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-anvil-red/20 uppercase">
+                        <span key={i} className="bg-brand/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-brand/20 uppercase">
                             {tag}
                         </span>
                     ))}

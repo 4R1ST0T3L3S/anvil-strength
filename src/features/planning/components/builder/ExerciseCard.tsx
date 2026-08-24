@@ -415,7 +415,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             onChange={(e) => handleVariantChange(e.target.value)}
                             onBlur={handleVariantBlur}
                             placeholder="Variante (ej: Tempo 3&quot; · Gomas media)"
-                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-anvil-red rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
+                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-brand rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
                         />
                         {pendingModifier ? (
                             <div className="flex items-center gap-2 justify-center">
@@ -426,7 +426,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     value={modifierValue}
                                     onChange={(e) => setModifierValue(e.target.value)}
                                     placeholder={VARIANT_MODIFIERS.find(m => m.key === pendingModifier)?.prompt}
-                                    className="w-32 bg-black/40 text-xs text-center text-ink border border-anvil-red/40 rounded-lg py-1 px-2 placeholder-gray-600"
+                                    className="w-32 bg-black/40 text-xs text-center text-ink border border-brand/40 rounded-lg py-1 px-2 placeholder-gray-600"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') applyModifier(pendingModifier, modifierValue);
                                         if (e.key === 'Escape') { setPendingModifier(null); setModifierValue(''); }
@@ -445,7 +445,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     <button
                                         key={mod.key}
                                         onClick={() => setPendingModifier(mod.key)}
-                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-brand-text border border-transparent hover:border-anvil-red/30 transition-colors"
+                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-brand/10 hover:text-brand-text border border-transparent hover:border-brand/30 transition-colors"
                                     >
                                         + {mod.key}
                                     </button>
@@ -512,7 +512,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         onChange={(e) => handleNotesChange(e.target.value)}
                         onBlur={handleNotesBlur}
                         placeholder="Notas técnicas..."
-                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-anvil-red focus:text-gray-200 resize-none h-[40px] leading-tight transition-colors"
+                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-brand focus:text-gray-200 resize-none h-[40px] leading-tight transition-colors"
                     />
                 </div>
             </div>

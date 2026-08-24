@@ -103,7 +103,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 value={settings.customName || ''}
                                 onChange={e => setSettings({ ...settings, customName: e.target.value })}
                                 placeholder="Ej: Mi Próximo PR"
-                                className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-anvil-red/50 transition-colors"
+                                className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-brand/50 transition-colors"
                             />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -113,7 +113,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     type="date"
                                     value={settings.targetDate || ''}
                                     onChange={e => setSettings({ ...settings, targetDate: e.target.value })}
-                                    className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
+                                    className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-brand/50 transition-colors [color-scheme:dark]"
                                 />
                             </div>
                             <div>
@@ -124,7 +124,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     type="time"
                                     value={settings.targetTime || ''}
                                     onChange={e => setSettings({ ...settings, targetTime: e.target.value })}
-                                    className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
+                                    className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-brand/50 transition-colors [color-scheme:dark]"
                                 />
                             </div>
                         </div>
@@ -152,7 +152,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     { id: 'dark', name: 'Noche', class: 'bg-surface-canvas border-strong' },
                                     { id: 'blue', name: 'AEP 1', class: 'bg-blue-600 border-blue-400' },
                                     { id: 'gold', name: 'Nacional', class: 'bg-yellow-600 border-yellow-400' },
-                                    { id: 'red', name: 'Anvil', class: 'bg-anvil-red border-red-400' },
+                                    { id: 'red', name: 'Anvil', class: 'bg-brand border-red-400' },
                                     { id: 'neon', name: 'Cyber', class: 'bg-purple-600 border-purple-400' },
                                     { id: 'glass', name: 'Cristal', class: 'bg-white/10 border-strong backdrop-blur-md' },
                                     // Hidden themes
@@ -195,7 +195,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     <button
                                         key={s.id}
                                         onClick={() => setSettings({ ...settings, shape: s.id as any })}
-                                        className={`p-2 rounded-xl border-2 flex flex-col items-center gap-2 transition-colors ${settings.shape === s.id ? 'border-anvil-red bg-anvil-red/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+                                        className={`p-2 rounded-xl border-2 flex flex-col items-center gap-2 transition-colors ${settings.shape === s.id ? 'border-brand bg-brand/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
                                     >
                                         <div className={`w-full h-8 bg-surface-overlay ${s.class}`} />
                                         <span className="text-t-2xs font-bold text-ink-muted uppercase">{s.name}</span>
@@ -213,7 +213,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 <select
                                     value={settings.font || 'inter'}
                                     onChange={e => setSettings({ ...settings, font: e.target.value as any })}
-                                    className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-anvil-red/50 appearance-none"
+                                    className="w-full bg-black border border-subtle rounded-xl px-4 py-3 text-ink focus:border-brand/50 appearance-none"
                                 >
                                     <option value="inter">Inter (Moderno)</option>
                                     <option value="bebas">Bebas (Fuerte)</option>
@@ -235,7 +235,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="flex-1 bg-anvil-red text-ink px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500 transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]"
+                        className="flex-1 bg-brand text-ink px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500 transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]"
                     >
                         {isSaving ? (
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

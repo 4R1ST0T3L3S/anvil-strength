@@ -88,7 +88,7 @@ function PreviewAppendix({ label, body }: { label: string; body?: string | null 
 
     return (
         <div className="overflow-hidden rounded-card border border-subtle bg-surface-canvas">
-            <div className="border-l-2 border-anvil-red px-3.5 py-3">
+            <div className="border-l-2 border-brand px-3.5 py-3">
                 <p className="text-t-2xs font-black uppercase tracking-widest text-brand-text">{label}</p>
                 <p className="mt-1.5 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
                     {body.trim()}

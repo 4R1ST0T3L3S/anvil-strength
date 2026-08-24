@@ -26,7 +26,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
             <h2 className="text-3xl font-black uppercase tracking-tighter text-ink">
               Nuestro Equipo
             </h2>
-            <div className="w-12 h-1 bg-anvil-red mt-2" />
+            <div className="w-12 h-1 bg-brand mt-2" />
           </div>
           <button
             onClick={onClose}

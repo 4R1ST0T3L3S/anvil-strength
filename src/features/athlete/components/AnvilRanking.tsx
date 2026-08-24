@@ -153,7 +153,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         <div className="hidden sm:flex p-1 md:p-1.5 bg-white/5 rounded-xl md:rounded-2xl border border-line shadow-inner mr-2">
                             <button 
                                 onClick={() => setRankingType('gl')}
-                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${rankingType === 'gl' ? 'bg-anvil-red text-ink shadow-lg' : 'text-ink-subtle hover:text-ink hover:bg-white/5'}`}
+                                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl text-t-2xs md:text-t-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color] ${rankingType === 'gl' ? 'bg-brand text-ink shadow-lg' : 'text-ink-subtle hover:text-ink hover:bg-white/5'}`}
                             >
                                 <span className="flex items-center gap-2"><Trophy size={14} className="hidden md:block" /> GL Points</span>
                             </button>
@@ -168,7 +168,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                         {handleClose && (
                             <button
                                 onClick={handleClose}
-                                className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-ink rounded-xl md:rounded-2xl flex items-center justify-center text-ink-muted transition-colors font-black text-xl shadow-inner"
+                                className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-xl md:rounded-2xl flex items-center justify-center text-ink-muted transition-colors font-black text-xl shadow-inner"
                             >
                                 <X size={24} />
                             </button>
@@ -181,7 +181,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
                     <div className="flex p-1 bg-white/5 rounded-xl border border-line shadow-inner">
                         <button 
                             onClick={() => setRankingType('gl')}
-                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-colors ${rankingType === 'gl' ? 'bg-anvil-red text-ink' : 'text-ink-subtle hover:text-ink hover:bg-white/5'}`}
+                            className={`flex-1 py-3 flex justify-center items-center gap-2 rounded-lg text-t-2xs font-black uppercase tracking-widest transition-colors ${rankingType === 'gl' ? 'bg-brand text-ink' : 'text-ink-subtle hover:text-ink hover:bg-white/5'}`}
                         >
                             <Trophy size={14} /> GL Points
                         </button>

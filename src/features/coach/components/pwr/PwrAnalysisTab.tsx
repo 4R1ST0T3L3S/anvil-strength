@@ -126,7 +126,7 @@ export function PwrAnalysisTab({
                         : blocked ? 'La medición no alcanza la fiabilidad mínima'
                           : 'Guardar las métricas dentro de una serie del plan'
                     }
-                    className="flex items-center gap-2 rounded-lg bg-anvil-red px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                      <Link2 size={16} /> Asociar serie
                   </button>

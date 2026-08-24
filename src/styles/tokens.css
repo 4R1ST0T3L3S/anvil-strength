@@ -96,30 +96,51 @@
      selección actual y estado de error. Nunca decora.
      Si algo es rojo y no se puede pulsar ni indica un estado, sobra.    */
 
-  --brand: oklch(0.62 0.21 25); /* acción primaria, selección */
-  --brand-hover: oklch(0.67 0.21 25); /* se ACLARA en hover: sobre fondo
-                                          oscuro, oscurecer aleja del
-                                          usuario en vez de acercarlo   */
-  --brand-active: oklch(0.56 0.2 25); /* pulsado */
-  --brand-quiet: oklch(0.62 0.21 25 / 0.14); /* fondo de chip / badge */
-  --brand-line: oklch(0.62 0.21 25 / 0.35); /* borde de estado activo */
+  /* EL ROJO BAJÓ DE 0.62 A 0.58 EL 24/08/2026, Y ES UN CAMBIO DE IDENTIDAD.
+     Motivo, medido pintando el color en un canvas y leyendo el píxel: con
+     0.62 el texto blanco encima daba 3,86:1 y AA pide 4,5. No era una
+     esquina rara: es el botón primario, el control más usado de la app.
+
+     Y no había salida sin mover el rojo. A 0.62 el color cae en una ZONA
+     MUERTA donde no pasa AA ni con texto blanco (3,86) ni con texto negro
+     (3,87) — está justo en medio. Con 0.58 el blanco encima da 4,57.
+
+     Lo que se ve: de rgb(234,60,63) a rgb(219,43,51). Sigue siendo el mismo
+     rojo, un punto más profundo. */
+  --brand: oklch(0.58 0.21 25); /* acción primaria, selección */
+
+  /* EL HOVER YA NO ACLARA: SATURA. Y esto merece explicación, porque aquí
+     ponía justo lo contrario.
+
+     El argumento anterior era bueno: sobre fondo oscuro, aclarar acerca el
+     elemento al usuario y oscurecer lo aleja. El problema es que con la base
+     ya en el suelo del contraste, aclarar lo gasta — a 0.60 el blanco encima
+     cae a 4,21 y el botón deja de cumplir EN HOVER, que es exactamente
+     cuando el usuario lo está mirando.
+
+     Misma luminosidad y más croma: el rojo se vuelve más encendido, se lee
+     igual de "caliente" al pasar por encima, y el contraste incluso sube a
+     4,60. El efecto de acercarse ya lo da el canto físico del botón, que se
+     hunde al pulsar (ver --press-depth). */
+  --brand-hover: oklch(0.58 0.23 25);
+  --brand-active: oklch(0.52 0.2 25); /* pulsado: aquí SÍ oscurece, y el
+                                          blanco encima sube a 5,84 */
+  --brand-quiet: oklch(0.58 0.21 25 / 0.14); /* fondo de chip / badge */
+  --brand-line: oklch(0.58 0.21 25 / 0.35); /* borde de estado activo */
   --brand-ink: oklch(0.985 0 0); /* texto sobre --brand */
 
-  /* EL ROJO NO PUEDE HACER SUS DOS TRABAJOS CON UNA SOLA LUMINOSIDAD.
-     Medido: con L=0.62, como RELLENO con texto blanco encima da 3,86:1, y
-     como TEXTO sobre el lienzo da 4,23:1. Los dos por debajo de 4,5. Y no
-     hay un punto que arregle los dos, porque tiran en sentidos opuestos:
-     para el relleno haría falta L<=0.58 y para el texto L>=0.64.
+  /* EL ROJO NO PUEDE HACER SUS DOS TRABAJOS CON UNA SOLA LUMINOSIDAD, y por
+     eso son dos tokens y no uno.
 
-     Así que se parte en dos. `--brand` sigue siendo el rojo de siempre y
-     pinta rellenos; `--brand-text` es el mismo rojo un punto más claro y se
-     usa cuando el rojo ES el texto o el icono sobre fondo oscuro: 4,95:1
-     sobre lienzo y 4,45:1 sobre tarjeta.
+     Como RELLENO necesita ser oscuro para que el texto blanco de encima se
+     lea: de ahí que `--brand` esté en 0.58. Como TEXTO sobre el lienzo
+     necesita justo lo contrario, ser claro: a 0.58 daría 3,58:1 sobre el
+     lienzo oscuro, ilegible.
 
-     PENDIENTE DE DECISIÓN (Marc): el texto blanco sobre botón rojo sigue en
-     3,86:1. Arreglarlo pide oscurecer `--brand` a 0.58, y eso ya no es un
-     ajuste de contraste sino cambiar el rojo de la marca en todos los
-     botones de la aplicación. Ver el registro de F5 en docs/. */
+     Así que `--brand` pinta rellenos y `--brand-text` es el mismo rojo más
+     claro para cuando el rojo ES el texto o el icono: 4,95:1 sobre el lienzo
+     y 4,45:1 sobre la tarjeta. En el tema claro se invierte y baja a 0.52,
+     porque ahí lo que hay debajo es blanco. */
   --brand-text: oklch(0.66 0.21 25);
 
   /* -------------------------------------------------------------------
@@ -267,7 +288,7 @@
      sombra CON forma, no un desenfoque decorativo — cuenta hacia qué lado
      está la luz y hace que el botón parezca un objeto físico. */
   --press-depth: 4px;
-  --press-edge-brand: oklch(0.46 0.17 25);
+  --press-edge-brand: oklch(0.42 0.17 25); /* acompaña al rojo nuevo */
   --press-edge-light: oklch(0.78 0 0);
   --press-edge-dark: oklch(0.1 0 0);
 
@@ -361,8 +382,8 @@
   /* Marca. El relleno NO se mueve: es la identidad, y el mismo rojo tiene que
      leerse como el mismo rojo en los dos modos. Lo que se mueve es el rojo
      TEXTO, que sobre blanco tiene que bajar en vez de subir. */
-  --brand-quiet: oklch(0.62 0.21 25 / 0.1);
-  --brand-line: oklch(0.62 0.21 25 / 0.3);
+  --brand-quiet: oklch(0.58 0.21 25 / 0.1);
+  --brand-line: oklch(0.58 0.21 25 / 0.3);
   --brand-text: oklch(0.52 0.21 25);
 
   /* Estados. Todos bajan: sobre blanco, un color claro no se ve. */

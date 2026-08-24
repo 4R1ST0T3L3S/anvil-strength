@@ -60,7 +60,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                     placeholder="Buscar atleta por nombre o apodo..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#111111] text-ink pl-12 pr-4 py-4 rounded-xl border border-line focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-[border-color,box-shadow]"
+                    className="w-full bg-[#111111] text-ink pl-12 pr-4 py-4 rounded-xl border border-line focus:border-brand focus:ring-1 focus:ring-brand transition-[border-color,box-shadow]"
                 />
             </div>
 
@@ -99,7 +99,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                     {filteredAthletes.map((athlete) => (
                         <div 
                             key={athlete.id}
-                            className="bg-[#111111] border border-line rounded-xl p-5 hover:border-anvil-red transition-colors cursor-pointer group"
+                            className="bg-[#111111] border border-line rounded-xl p-5 hover:border-brand transition-colors cursor-pointer group"
                         >
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-3">

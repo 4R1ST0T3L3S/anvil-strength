@@ -114,14 +114,14 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                 <div className="flex items-center gap-2 shrink-0">
                     <button
                         onClick={handleExportPdf}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-line rounded-xl text-xs font-black uppercase text-ink hover:text-ink hover:border-anvil-red/40 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-line rounded-xl text-xs font-black uppercase text-ink hover:text-ink hover:border-brand/40 transition-colors"
                     >
                         <FileDown size={14} className="text-brand-text" /> PDF
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-anvil-red hover:bg-red-700 rounded-xl text-xs font-black uppercase text-ink transition-colors disabled:opacity-40"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-red-700 rounded-xl text-xs font-black uppercase text-ink transition-colors disabled:opacity-40"
                     >
                         {saving ? <Loader className="animate-spin" size={14} /> : <Save size={14} />} Guardar
                     </button>
@@ -154,7 +154,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.kg}
                                                         onChange={(e) => updateAttempt(key, i, 'kg', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm font-black text-center focus:border-anvil-red/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm font-black text-center focus:border-brand/50"
                                                     />
                                                 </div>
                                                 <div>
@@ -163,7 +163,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.rpe}
                                                         onChange={(e) => updateAttempt(key, i, 'rpe', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-anvil-red/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-brand/50"
                                                     />
                                                 </div>
                                                 <div>
@@ -172,7 +172,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                         value={att.velocity}
                                                         onChange={(e) => updateAttempt(key, i, 'velocity', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-anvil-red/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm text-center focus:border-brand/50"
                                                     />
                                                 </div>
                                             </div>
@@ -180,7 +180,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                 value={att.note}
                                                 onChange={(e) => updateAttempt(key, i, 'note', e.target.value)}
                                                 placeholder="Anotación (ej: solo si el 2º sube fácil)"
-                                                className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-3 text-ink text-xs focus:border-anvil-red/50"
+                                                className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-3 text-ink text-xs focus:border-brand/50"
                                             />
                                         </div>
                                     ))}
@@ -215,7 +215,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                         ))}
                                         <button
                                             onClick={() => updateLift(key, { warmups: [...lift.warmups, { kg: '', reps: '' }] })}
-                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red/10 text-ink-subtle hover:text-brand-text text-t-2xs font-black uppercase transition-colors border border-transparent hover:border-anvil-red/30"
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-brand/10 text-ink-subtle hover:text-brand-text text-t-2xs font-black uppercase transition-colors border border-transparent hover:border-brand/30"
                                         >
                                             <Plus size={11} /> Serie
                                         </button>
@@ -227,7 +227,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                     value={lift.liftNote}
                                     onChange={(e) => updateLift(key, { liftNote: e.target.value })}
                                     placeholder={`Notas de ${label.toLowerCase()} (setup, comandos, avisos...)`}
-                                    className="w-full bg-black/20 border border-subtle rounded-xl py-2.5 px-4 text-ink text-sm focus:border-anvil-red/50"
+                                    className="w-full bg-black/20 border border-subtle rounded-xl py-2.5 px-4 text-ink text-sm focus:border-brand/50"
                                 />
                             </div>
                         );
@@ -242,7 +242,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                             rows={4}
                             maxLength={2000}
                             placeholder="Pesaje, horarios, comida, equipación, mentalidad..."
-                            className="w-full bg-black/20 border border-subtle rounded-xl py-3 px-4 text-gray-200 text-sm focus:border-anvil-red/50 resize-none"
+                            className="w-full bg-black/20 border border-subtle rounded-xl py-3 px-4 text-gray-200 text-sm focus:border-brand/50 resize-none"
                         />
                     </div>
                 </div>

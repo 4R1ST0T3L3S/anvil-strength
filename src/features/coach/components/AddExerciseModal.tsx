@@ -95,7 +95,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar por nombre o grupo muscular..."
-                                className="w-full bg-surface-sunken border border-line rounded-xl pl-12 pr-4 py-4 text-ink placeholder-gray-600 focus:border-anvil-red/50 transition-colors font-medium"
+                                className="w-full bg-surface-sunken border border-line rounded-xl pl-12 pr-4 py-4 text-ink placeholder-gray-600 focus:border-brand/50 transition-colors font-medium"
                                 autoFocus
                             />
                         </div>

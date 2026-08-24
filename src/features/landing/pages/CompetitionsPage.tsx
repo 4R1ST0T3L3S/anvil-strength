@@ -114,7 +114,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
     ];
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-brand selection:text-ink overflow-x-hidden">
             <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* ── HERO ─────────────────────────────────────────────────────── */}
@@ -130,7 +130,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                 </div>
                 <div className="relative z-10 text-center px-4">
                     <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-                        <div className="inline-flex items-center gap-2 bg-anvil-red/10 border border-anvil-red/20 text-brand-text text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
+                        <div className="inline-flex items-center gap-2 bg-brand/10 border border-brand/20 text-brand-text text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
                             <Calendar className="w-3.5 h-3.5" />
                             Temporada 2025 – 2026
                         </div>
@@ -152,7 +152,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                 <div className="max-w-[1400px] mx-auto px-6">
                     {loading ? (
                         <div className="flex justify-center py-20">
-                            <div className="w-12 h-12 border-4 border-anvil-red border-t-transparent rounded-full animate-spin" />
+                            <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
                         </div>
                     ) : upcomingEvents.length > 0 ? (
                         <div className="space-y-8">
@@ -167,7 +167,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         transition={{ delay: index * 0.1 }}
                                         whileHover={{ scale: 1.01 }}
                                         onClick={() => setSelectedEvent(event)}
-                                        className="flex flex-col lg:flex-row bg-surface-sunken rounded-[2.5rem] overflow-hidden border border-subtle cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-anvil-red/30"
+                                        className="flex flex-col lg:flex-row bg-surface-sunken rounded-[2.5rem] overflow-hidden border border-subtle cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-brand/30"
                                     >
                                         {/* Cover Image */}
                                         <div className="w-full lg:w-[480px] h-64 lg:h-auto shrink-0 relative overflow-hidden">
@@ -181,7 +181,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
                                             <div className="absolute top-6 left-6">
-                                                <span className="bg-anvil-red text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
+                                                <span className="bg-brand text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
                                                     {event.level}
                                                 </span>
                                             </div>
@@ -226,7 +226,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                             </div>
                                                         ))}
                                                         {event.athletes.length > 4 && (
-                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-anvil-red flex items-center justify-center text-t-2xs font-black text-ink">
+                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-brand flex items-center justify-center text-t-2xs font-black text-ink">
                                                                 +{event.athletes.length - 4}
                                                             </div>
                                                         )}
@@ -279,7 +279,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={VISTA_REVELADO}
                                 transition={{ delay: i * 0.1 }}
-                                className="relative aspect-video bg-surface-sunken rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-anvil-red/30 transition-colors shadow-2xl"
+                                className="relative aspect-video bg-surface-sunken rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-brand/30 transition-colors shadow-2xl"
                             >
                                 <img
                                     src={result.image}
@@ -364,7 +364,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
         >
             {/* Background elements */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-anvil-red/[0.03] rounded-full blur-[150px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-brand/[0.03] rounded-full blur-[150px]" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(220,38,38,0.15),transparent_70%)]" />
             </div>
 
@@ -381,7 +381,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-4 bg-white/5 hover:bg-white/10 border border-line hover:border-anvil-red/40 rounded-full transition-colors group"
+                        className="p-4 bg-white/5 hover:bg-white/10 border border-line hover:border-brand/40 rounded-full transition-colors group"
                     >
                         <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </button>
@@ -445,10 +445,10 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                             {isCenter && (
                                                 <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[250%] h-[70%] pointer-events-none z-10">
                                                     {/* Primary Floor Glow */}
-                                                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[60%] h-40 bg-anvil-red/30 blur-[90px] rounded-full" />
+                                                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[60%] h-40 bg-brand/30 blur-[90px] rounded-full" />
                                                     
                                                     {/* Central Bright Spot */}
-                                                    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[30%] h-20 bg-anvil-red/50 blur-[50px] rounded-full" />
+                                                    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[30%] h-20 bg-brand/50 blur-[50px] rounded-full" />
 
                                                     {/* Animated Smoke Layers */}
                                                     <m.div 
@@ -476,13 +476,13 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                 <div className="absolute inset-x-0 top-[40%] -translate-y-1/2 px-4 md:px-10 flex justify-between pointer-events-none z-[70]">
                     <button
                         onClick={() => goTo(activeIndex - 1, -1)}
-                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-line hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
+                        className="p-5 bg-white/5 hover:bg-brand/20 border border-line hover:border-brand/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
                     >
                         <ChevronLeft className="w-8 h-8 group-hover:scale-110 transition-transform" />
                     </button>
                     <button
                         onClick={() => goTo(activeIndex + 1, 1)}
-                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-line hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
+                        className="p-5 bg-white/5 hover:bg-brand/20 border border-line hover:border-brand/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
                     >
                         <ChevronRight className="w-8 h-8 group-hover:scale-110 transition-transform" />
                     </button>
@@ -505,7 +505,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                             
                             {/* Badges / Stats */}
                             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                                <div className="inline-flex items-center gap-2 bg-anvil-red text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-line">
+                                <div className="inline-flex items-center gap-2 bg-brand text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-line">
                                     {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.category || 'Atleta Anvil'}
                                 </div>
                                 
@@ -555,7 +555,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                         <button
                             key={i}
                             onClick={() => goTo(i, i > activeIndex ? 1 : -1)}
-                            className={`h-1.5 transition-[background-color,box-shadow] duration-slow rounded-full ${i === activeIndex ? 'w-16 bg-anvil-red shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'w-2.5 bg-white/10 hover:bg-white/30'}`}
+                            className={`h-1.5 transition-[background-color,box-shadow] duration-slow rounded-full ${i === activeIndex ? 'w-16 bg-brand shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'w-2.5 bg-white/10 hover:bg-white/30'}`}
                         />
                     ))}
                 </div>

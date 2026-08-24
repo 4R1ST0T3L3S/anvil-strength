@@ -660,7 +660,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     className={cn(
                                         'flex shrink-0 items-center justify-center rounded-xl px-2.5 transition-colors',
                                         objectivesOpen
-                                            ? 'bg-anvil-red/15 text-brand-text'
+                                            ? 'bg-brand/15 text-brand-text'
                                             : 'bg-surface-raised text-ink-muted hover:bg-surface-overlay hover:text-ink'
                                     )}
                                 >
@@ -711,7 +711,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                             </span>
                                         </span>
                                         {w === getWeekNumber() && (
-                                            <span className="ml-2 shrink-0 rounded-full bg-anvil-red/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-brand-text">
+                                            <span className="ml-2 shrink-0 rounded-full bg-brand/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-brand-text">
                                                 Ahora
                                             </span>
                                         )}
@@ -766,7 +766,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     active
                                         ? 'border-white bg-white font-bold text-black'
                                         : 'border-transparent bg-surface-overlay text-ink-muted hover:text-ink',
-                                    !active && isToday && 'border-anvil-red/50'
+                                    !active && isToday && 'border-brand/50'
                                 )}
                             >
                                 {label ? (
@@ -1464,7 +1464,7 @@ function LoggerExerciseCard({
 
             {/* Selector: ¿a qué serie corresponde el archivo VBT? */}
             {pendingSetTag && (
-                <div className="px-4 py-3 bg-anvil-red/5 border-b border-anvil-red/20 animate-drop">
+                <div className="px-4 py-3 bg-brand/5 border-b border-brand/20 animate-drop">
                     <p className="text-t-2xs font-black uppercase tracking-wider text-brand-text mb-2">
                         ¿A qué serie corresponde el archivo?
                     </p>
@@ -1473,7 +1473,7 @@ function LoggerExerciseCard({
                             <button
                                 key={s.id}
                                 onClick={() => tagSetWithVbt(s.id)}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red hover:text-ink text-ink-muted text-xs font-black uppercase transition-colors border border-[var(--border-default)]"
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-brand hover:text-ink text-ink-muted text-xs font-black uppercase transition-colors border border-[var(--border-default)]"
                             >
                                 Serie {i + 1}
                             </button>

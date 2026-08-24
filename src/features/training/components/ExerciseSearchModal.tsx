@@ -105,7 +105,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     value={customName}
                                     onChange={(e) => setCustomName(e.target.value)}
                                     placeholder="Ej: Sentadilla con Pausa 3s"
-                                    className="w-full bg-surface-canvas border border-line text-ink p-3 rounded-lg focus:border-anvil-red transition-colors"
+                                    className="w-full bg-surface-canvas border border-line text-ink p-3 rounded-lg focus:border-brand transition-colors"
                                     autoFocus
                                 />
                             </div>
@@ -114,7 +114,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                 <select 
                                     value={customGroup}
                                     onChange={(e) => setCustomGroup(e.target.value)}
-                                    className="w-full bg-surface-canvas border border-line text-ink p-3 rounded-lg focus:border-anvil-red transition-colors"
+                                    className="w-full bg-surface-canvas border border-line text-ink p-3 rounded-lg focus:border-brand transition-colors"
                                 >
                                     {MUSCLE_GROUPS.filter(g => g !== 'Todos').map(g => (
                                         <option key={g} value={g}>{g}</option>
@@ -131,7 +131,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                 <button 
                                     onClick={handleCreateCustom}
                                     disabled={!customName.trim() || submitting}
-                                    className="flex-1 py-3 bg-anvil-red hover:bg-brand text-black rounded-lg font-black uppercase text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 bg-brand hover:bg-brand text-black rounded-lg font-black uppercase text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {submitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                                     Crear y Seleccionar
@@ -151,7 +151,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                         placeholder="Buscar ejercicio..."
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        className="w-full bg-surface-canvas border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
+                                        className="w-full bg-surface-canvas border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-brand transition-colors"
                                         autoFocus
                                     />
                                 </div>
@@ -172,7 +172,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     onClick={() => setActiveTab(group)}
                                     className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors mr-2 ${
  activeTab === group 
- ? 'bg-anvil-red text-black' 
+ ? 'bg-brand text-black' 
  : 'bg-surface-raised text-ink-muted hover:text-ink hover:bg-surface-overlay'
  }`}
                                 >
@@ -208,7 +208,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     <p className="text-sm">¿No encuentras lo que buscas? Puedes crear uno nuevo.</p>
                                     <button 
                                         onClick={() => setIsCreating(true)}
-                                        className="mt-4 px-6 py-2 bg-anvil-red/10 text-brand-text border border-anvil-red/20 hover:bg-anvil-red hover:text-black rounded-lg font-bold uppercase text-xs transition-colors"
+                                        className="mt-4 px-6 py-2 bg-brand/10 text-brand-text border border-brand/20 hover:bg-brand hover:text-black rounded-lg font-bold uppercase text-xs transition-colors"
                                     >
                                         Crear Ejercicio Custom
                                     </button>

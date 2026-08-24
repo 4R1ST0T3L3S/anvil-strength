@@ -288,7 +288,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                 type="text"
                 placeholder="Apodo (Ej: El Toro)"
                 autoComplete="nickname"
-                className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors font-bold"
+                className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-brand transition-colors font-bold"
                 value={formData.nickname}
                 onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                 required={!isLogin}
@@ -306,7 +306,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="email"
               placeholder="Email"
               autoComplete="username email"
-              className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
+              className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-brand transition-colors"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -324,7 +324,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="password"
               placeholder="Contraseña"
               autoComplete={isLogin ? "current-password" : "new-password"}
-              className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
+              className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-brand transition-colors"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -346,7 +346,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                   checked={acceptedTerms}
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
                   required
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-anvil-red"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                 />
                 <span>
                   He leído y acepto los{' '}

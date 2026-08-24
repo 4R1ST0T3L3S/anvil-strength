@@ -34,11 +34,11 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
         <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="group relative bg-surface-sunken border border-subtle rounded-[2rem] overflow-hidden hover:border-anvil-red/30 transition-colors duration-slow shadow-2xl"
+            className="group relative bg-surface-sunken border border-subtle rounded-[2rem] overflow-hidden hover:border-brand/30 transition-colors duration-slow shadow-2xl"
         >
             {/* Header / Type Badge */}
             <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 flex items-center gap-2">
-                <div className="p-1.5 md:p-2 bg-anvil-red/10 rounded-lg text-brand-text border border-anvil-red/20 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
+                <div className="p-1.5 md:p-2 bg-brand/10 rounded-lg text-brand-text border border-brand/20 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
                     {getIcon()}
                 </div>
                 <span className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-subtle">
@@ -117,7 +117,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                 >
                                     {/* Percentage bar background */}
                                     <div 
-                                        className={`absolute bottom-0 left-0 h-1 transition-colors duration-slow ${index === 0 ? 'bg-anvil-red' : 'bg-blue-600'}`} 
+                                        className={`absolute bottom-0 left-0 h-1 transition-colors duration-slow ${index === 0 ? 'bg-brand' : 'bg-blue-600'}`} 
                                         style={{ width: `${pct}%` }}
                                     />
 
@@ -136,7 +136,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                                     e.stopPropagation();
                                                     onBetClick(bet, option);
                                                 }}
-                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-anvil-red text-ink font-black text-t-2xs uppercase tracking-widest rounded-xl transition-colors border border-subtle hover:border-anvil-red shadow-lg"
+                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-brand text-ink font-black text-t-2xs uppercase tracking-widest rounded-xl transition-colors border border-subtle hover:border-brand shadow-lg"
                                             >
                                                 Apostar
                                             </button>
@@ -156,7 +156,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                     </div>
                                     
                                     {bet.status === 'open' && (
-                                        <div className="absolute inset-0 bg-gradient-to-t from-anvil-red/10 to-transparent opacity-0 group-hover/option:opacity-100 transition-opacity"></div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-brand/10 to-transparent opacity-0 group-hover/option:opacity-100 transition-opacity"></div>
                                     )}
                                 </div>
                             );
@@ -167,11 +167,11 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
 
             {/* Status Footer */}
             <div className={`px-8 py-3 border-t border-subtle flex items-center justify-between ${
- bet.status === 'open' ? 'bg-anvil-red/5' : 'bg-black/20'
+ bet.status === 'open' ? 'bg-brand/5' : 'bg-black/20'
  }`}>
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${
- bet.status === 'open' ? 'bg-anvil-red animate-pulse' : 'bg-gray-600'
+ bet.status === 'open' ? 'bg-brand animate-pulse' : 'bg-gray-600'
  }`} />
                     <span className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle">
                         {bet.status === 'open' ? 'En Vivo / Abierta' : bet.status === 'resolved' ? 'Resuelta' : 'Cerrada'}

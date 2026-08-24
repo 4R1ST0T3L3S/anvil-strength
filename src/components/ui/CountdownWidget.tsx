@@ -16,7 +16,7 @@ export interface CountdownTheme {
 
 export const COUNTDOWN_THEMES: CountdownTheme[] = [
     { id: 'auto', label: 'Nivel automático', className: '', swatch: 'bg-gradient-to-br from-blue-500 via-[#D4AF37] to-[#FF6B35]' },
-    { id: 'anvil', label: 'Anvil Red', className: 'bg-gradient-to-br from-anvil-red to-red-950', swatch: 'bg-gradient-to-br from-anvil-red to-red-950' },
+    { id: 'anvil', label: 'Anvil Red', className: 'bg-gradient-to-br from-brand to-red-950', swatch: 'bg-gradient-to-br from-brand to-red-950' },
     { id: 'gold', label: 'Oro', className: 'bg-gradient-to-br from-[#D4AF37] to-[#8a6d1f]', swatch: 'bg-gradient-to-br from-[#D4AF37] to-[#8a6d1f]' },
     { id: 'carbon', label: 'Carbón', className: 'bg-gradient-to-br from-[#2a2a2a] to-black border border-line', swatch: 'bg-gradient-to-br from-[#2a2a2a] to-black' },
     { id: 'electric', label: 'Azul eléctrico', className: 'bg-gradient-to-br from-blue-500 to-indigo-900', swatch: 'bg-gradient-to-br from-blue-500 to-indigo-900' },
@@ -272,7 +272,7 @@ function CountdownSettings({
                                         onClick={() => setDraft({ ...draft, source: tab.id })}
                                         className={`py-2.5 px-2 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors border ${
  draft.source === tab.id
- ? 'bg-anvil-red border-anvil-red text-ink'
+ ? 'bg-brand border-brand text-ink'
  : 'bg-surface-raised border-subtle text-ink-muted hover:text-ink hover:border-strong'
  } disabled:opacity-30 disabled:cursor-not-allowed`}
                                     >
@@ -303,11 +303,11 @@ function CountdownSettings({
                                                     })}
                                                     className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
  isSelected
- ? 'bg-anvil-red/10 border-anvil-red'
+ ? 'bg-brand/10 border-brand'
  : 'bg-surface-raised border-subtle hover:border-strong'
  }`}
                                                 >
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-anvil-red border-anvil-red' : 'border-gray-600'}`}>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-brand border-brand' : 'border-gray-600'}`}>
                                                         {isSelected && <Check size={10} className="text-ink" />}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
@@ -341,7 +341,7 @@ function CountdownSettings({
                                         maxLength={60}
                                         value={draft.custom?.name || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: e.target.value, date: draft.custom?.date || '' } })}
-                                        className="w-full bg-surface-sunken border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-surface-sunken border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-brand/50 transition-colors"
                                     />
                                 </div>
                                 <div className="relative">
@@ -351,7 +351,7 @@ function CountdownSettings({
                                         min={new Date().toISOString().split('T')[0]}
                                         value={draft.custom?.date || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: draft.custom?.name || '', date: e.target.value } })}
-                                        className="w-full bg-surface-sunken border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
+                                        className="w-full bg-surface-sunken border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-brand/50 transition-colors [color-scheme:dark]"
                                     />
                                 </div>
                             </div>
@@ -395,7 +395,7 @@ function CountdownSettings({
                                 (draft.source === 'aep' && !draft.aep) ||
                                 (draft.source === 'custom' && (!draft.custom?.name || !draft.custom?.date))
                             }
-                            className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="px-6 py-2.5 rounded-lg bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             Guardar
                         </button>

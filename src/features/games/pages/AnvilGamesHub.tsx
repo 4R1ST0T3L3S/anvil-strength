@@ -198,7 +198,7 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
             {/* Developer Mode: All Games */}
             {isDev && (
                 <section>
-                    <div className="flex items-center gap-2 mb-4 p-3 bg-anvil-red/10 border border-anvil-red/20 rounded-xl w-fit">
+                    <div className="flex items-center gap-2 mb-4 p-3 bg-brand/10 border border-brand/20 rounded-xl w-fit">
                         <AlertCircle size={14} className="text-brand-text" />
                         <h2 className="text-t-2xs font-black uppercase tracking-[0.2em] text-brand-text">Modo Developer: Todos los Juegos</h2>
                     </div>

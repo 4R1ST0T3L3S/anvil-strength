@@ -65,7 +65,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                 key={t}
                                 onClick={() => setType(t)}
                                 className={`px-4 py-1.5 rounded-md text-xs font-black uppercase transition-colors ${
- type === t ? 'bg-anvil-red text-ink' : 'text-ink-muted hover:text-ink'
+ type === t ? 'bg-brand text-ink' : 'text-ink-muted hover:text-ink'
  }`}
                             >
                                 {t === 'daily' ? 'Diario' : 'Semanal'}
@@ -74,14 +74,14 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                     </div>
                     <button
                         onClick={() => setEditing('new')}
-                        className="flex items-center gap-2 px-3 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-brand-text hover:bg-anvil-red hover:text-ink transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-brand/10 border border-brand/30 rounded-lg text-xs font-black uppercase text-brand-text hover:bg-brand hover:text-ink transition-colors"
                     >
                         <Plus size={14} />
                         Nuevo check-in
                     </button>
                     <button
                         onClick={() => setEditorOpen(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-line rounded-lg text-xs font-black uppercase text-ink hover:text-ink hover:border-anvil-red/40 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-line rounded-lg text-xs font-black uppercase text-ink hover:text-ink hover:border-brand/40 transition-colors"
                     >
                         <Settings2 size={14} className="text-brand-text" />
                         Editar formulario
@@ -99,7 +99,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                     </p>
                     <button
                         onClick={() => setEditing('new')}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-brand-text hover:bg-anvil-red hover:text-ink transition-colors"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand/10 border border-brand/30 rounded-lg text-xs font-black uppercase text-brand-text hover:bg-brand hover:text-ink transition-colors"
                     >
                         <Plus size={14} /> Rellenarlo por él
                     </button>
@@ -303,7 +303,7 @@ function CoachResponseEditorModal({
                                     type={type === 'daily' ? 'date' : 'week'}
                                     value={periodKey}
                                     onChange={(e) => setPeriodKey(e.target.value)}
-                                    className="w-full bg-surface-sunken border border-line rounded-xl py-3 px-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
+                                    className="w-full bg-surface-sunken border border-line rounded-xl py-3 px-4 text-ink text-sm focus:border-brand/50 transition-colors"
                                 />
                                 {overwrites && (
                                     <p className="text-t-2xs font-bold text-warning mt-2">
@@ -329,7 +329,7 @@ function CoachResponseEditorModal({
                     <button
                         onClick={handleSave}
                         disabled={saving || loading}
-                        className="w-full py-3.5 rounded-xl bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 rounded-xl bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                     >
                         {saving ? <Loader className="animate-spin" size={16} /> : <Save size={16} />}
                         Guardar check-in
@@ -437,7 +437,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                     placeholder='Ej: "Rellénalo la noche anterior. La escala es de 1 a 10."'
                                     rows={2}
                                     maxLength={500}
-                                    className="w-full resize-y bg-black/30 border border-subtle rounded-lg py-2 px-3 text-ink text-sm focus:border-anvil-red/50 transition-colors"
+                                    className="w-full resize-y bg-black/30 border border-subtle rounded-lg py-2 px-3 text-ink text-sm focus:border-brand/50 transition-colors"
                                 />
                                 <p className="mt-1 text-t-2xs text-gray-600">Aparece arriba del todo, antes de la primera pregunta.</p>
                             </div>
@@ -451,12 +451,12 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                             onChange={(e) => updateQuestion(i, { label: e.target.value })}
                                             placeholder="Texto de la pregunta..."
                                             maxLength={120}
-                                            className="flex-1 bg-black/30 border border-subtle rounded-lg py-2 px-3 text-ink text-sm focus:border-anvil-red/50 transition-colors min-w-0"
+                                            className="flex-1 bg-black/30 border border-subtle rounded-lg py-2 px-3 text-ink text-sm focus:border-brand/50 transition-colors min-w-0"
                                         />
                                         <select
                                             value={q.qtype}
                                             onChange={(e) => updateQuestion(i, { qtype: e.target.value as QuestionType })}
-                                            className="bg-black/30 border border-subtle rounded-lg py-2 px-2 text-ink text-xs focus:border-anvil-red/50 shrink-0"
+                                            className="bg-black/30 border border-subtle rounded-lg py-2 px-2 text-ink text-xs focus:border-brand/50 shrink-0"
                                         >
                                             {(Object.keys(QTYPE_LABELS) as QuestionType[]).map(t => (
                                                 <option key={t} value={t}>{QTYPE_LABELS[t]}</option>
@@ -476,7 +476,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         onChange={(e) => updateQuestion(i, { help: e.target.value || undefined })}
                                         placeholder="Ayuda bajo la pregunta (opcional): cómo se responde, qué escala usar..."
                                         maxLength={160}
-                                        className="w-full bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-brand/50 transition-colors"
                                     />
                                     {/* EN QUÉ GRÁFICA SE PINTA (K9).
                                         Dos preguntas solo comparten eje Y si
@@ -490,7 +490,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         <select
                                             value={q.axis ?? resolveAxis(q)}
                                             onChange={(e) => updateQuestion(i, { axis: e.target.value as FormAxis })}
-                                            className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-2 text-ink-muted text-xs focus:border-anvil-red/50"
+                                            className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-2 text-ink-muted text-xs focus:border-brand/50"
                                         >
                                             {SELECTABLE_AXES.map(a => (
                                                 <option key={a} value={a}>{AXIS_DEFINITIONS[a].label}</option>
@@ -502,7 +502,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                             onChange={(e) => updateQuestion(i, { unit: e.target.value || undefined })}
                                             placeholder="Unidad"
                                             maxLength={12}
-                                            className="w-24 shrink-0 bg-black/20 border border-subtle rounded-lg py-1.5 px-2 text-ink-muted text-xs focus:border-anvil-red/50"
+                                            className="w-24 shrink-0 bg-black/20 border border-subtle rounded-lg py-1.5 px-2 text-ink-muted text-xs focus:border-brand/50"
                                         />
                                     </div>
                                     {q.qtype === 'scale' && (
@@ -513,7 +513,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                                 onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, minLabel: e.target.value || undefined } })}
                                                 placeholder="Extremo bajo (1)"
                                                 maxLength={40}
-                                                className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-anvil-red/50"
+                                                className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-brand/50"
                                             />
                                             <input
                                                 type="text"
@@ -521,7 +521,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                                 onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, maxLabel: e.target.value || undefined } })}
                                                 placeholder="Extremo alto (10)"
                                                 maxLength={40}
-                                                className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-anvil-red/50"
+                                                className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-brand/50"
                                             />
                                         </div>
                                     )}
@@ -529,7 +529,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                             ))}
                             <button
                                 onClick={addQuestion}
-                                className="w-full py-3 border-2 border-dashed border-line hover:border-anvil-red/50 rounded-xl text-ink-subtle hover:text-brand-text text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                                className="w-full py-3 border-2 border-dashed border-line hover:border-brand/50 rounded-xl text-ink-subtle hover:text-brand-text text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                             >
                                 <Plus size={14} /> Añadir pregunta
                             </button>
@@ -547,7 +547,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                     <button
                         onClick={handleSave}
                         disabled={saving || loading}
-                        className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-lg bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
                     >
                         {saving ? <Loader className="animate-spin" size={14} /> : <Save size={14} />}
                         Guardar

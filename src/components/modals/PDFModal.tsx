@@ -155,13 +155,13 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         </div>
 
                         {/* PDF Viewer Container */}
-                        <div className="flex-1 bg-surface-sunken relative overflow-auto flex justify-center p-4 scrollbar-thin scrollbar-track-[#0a0a0a] scrollbar-thumb-anvil-red/50" ref={containerRef}>
+                        <div className="flex-1 bg-surface-sunken relative overflow-auto flex justify-center p-4 scrollbar-thin scrollbar-track-[#0a0a0a] scrollbar-thumb-brand/50" ref={containerRef}>
                             <Document
                                 file={pdfUrl}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 loading={
                                     <div className="flex flex-col items-center justify-center h-64 text-ink">
-                                        <div className="w-10 h-10 border-4 border-anvil-red border-t-transparent rounded-full animate-spin mb-4"></div>
+                                        <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4"></div>
                                         <p className="font-bold text-sm uppercase tracking-wider">Cargando documento...</p>
                                     </div>
                                 }
@@ -173,7 +173,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                             href={pdfUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="bg-anvil-red text-ink py-3 px-6 rounded-lg font-bold uppercase tracking-wider text-sm hover:bg-red-700 transition-colors"
+                                            className="bg-brand text-ink py-3 px-6 rounded-lg font-bold uppercase tracking-wider text-sm hover:bg-red-700 transition-colors"
                                         >
                                             Descargar y ver
                                         </a>
@@ -203,7 +203,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 <button
                                     disabled={pageNumber <= 1}
                                     onClick={previousPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-subtle"
+                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand transition-colors border border-subtle"
                                 >
                                     <ChevronLeft size={20} />
                                     <span className="hidden sm:inline">Anterior</span>
@@ -216,7 +216,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 <button
                                     disabled={pageNumber >= numPages}
                                     onClick={nextPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-anvil-red transition-colors border border-subtle"
+                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand transition-colors border border-subtle"
                                 >
                                     <span className="hidden sm:inline">Siguiente</span>
                                     <ChevronRight size={20} />

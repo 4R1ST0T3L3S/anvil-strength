@@ -12,13 +12,13 @@ export function PendingApprovalPage() {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center p-6 text-ink font-sans selection:bg-anvil-red">
+        <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center p-6 text-ink font-sans selection:bg-brand">
             <div className="max-w-md w-full bg-[#151515] border border-line rounded-2xl p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden">
                 {/* Background Accent */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-anvil-red/10 via-anvil-red to-anvil-red/10" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand/10 via-brand to-brand/10" />
 
                 <div className="flex justify-center mb-8">
-                    <div className="w-20 h-20 bg-anvil-red/10 rounded-full flex items-center justify-center border border-anvil-red/20 shadow-[0_0_30px_rgba(220,38,38,0.15)]">
+                    <div className="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center border border-brand/20 shadow-[0_0_30px_rgba(220,38,38,0.15)]">
                         <ShieldAlert className="w-10 h-10 text-brand-text" />
                     </div>
                 </div>

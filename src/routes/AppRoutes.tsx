@@ -199,7 +199,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             <Route path="/competiciones" element={
                 <Suspense fallback={
                     <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center">
-                        <div className="w-12 h-12 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 }>
                     <CompetitionsPage onLoginClick={onLoginClick} user={user} />

@@ -35,7 +35,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
     if (!competitions || competitions.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 max-w-lg mx-auto mt-12 bg-surface-sunken border border-subtle rounded-3xl">
-                <div className="w-24 h-24 bg-anvil-red/10 rounded-full flex items-center justify-center text-brand-text mb-4">
+                <div className="w-24 h-24 bg-brand/10 rounded-full flex items-center justify-center text-brand-text mb-4">
                     <Trophy size={48} />
                 </div>
                 <h3 className="text-2xl font-black text-ink uppercase tracking-tight">Sin Competiciones</h3>
@@ -74,7 +74,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
             {/* Upcoming Competitions */}
             {upcoming.length > 0 && (
                 <section className="space-y-6">
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-brand-text border-l-2 border-anvil-red pl-3">
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-brand-text border-l-2 border-brand pl-3">
                         Próximos Eventos
                     </h2>
                     <div className="grid grid-cols-1 gap-6">
@@ -82,7 +82,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                             const daysRemaining = getDaysRemaining(comp.date);
                             return (
                                 <div key={comp.id} className="relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-anvil-red/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] -z-10 blur-xl"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-brand/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem] -z-10 blur-xl"></div>
                                     <div className={`${getCompetitionColorClass(comp.level)} rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center justify-between transition-[box-shadow,transform] hover:scale-[1.01] hover:shadow-2xl`}>
                                         <div className="space-y-4">
                                             <div className="flex flex-wrap items-center gap-3">

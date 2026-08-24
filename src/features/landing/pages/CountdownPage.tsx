@@ -37,7 +37,7 @@ export function CountdownPage() {
     ];
 
     return (
-        <div className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-ink">
+        <div className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-brand selection:text-ink">
             {/* Background Texture/Gradient */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-surface-sunken to-surface-sunken" />
@@ -83,7 +83,7 @@ export function CountdownPage() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + (index * 0.1), duration: 0.6 }}
-                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-subtle rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-colors duration-slow"
+                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-subtle rounded-xl backdrop-blur-sm group hover:border-brand/30 transition-colors duration-slow"
                         >
                             <span className="text-2xl sm:text-3xl md:text-7xl font-black text-ink group-hover:text-brand-text transition-colors duration-slow tabular-nums leading-none">
                                 {item.value.toString().padStart(2, '0')}
@@ -110,13 +110,13 @@ export function CountdownPage() {
                             href="https://instagram.com/anvilstrength_"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-ink hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
+                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-ink hover:bg-brand/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
                         >
                             <Instagram size={24} />
                         </a>
                         <a
                             href="mailto:info@anvilstrength.com"
-                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-ink hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
+                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-ink hover:bg-brand/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
                         >
                             <Mail size={24} />
                         </a>
@@ -125,7 +125,7 @@ export function CountdownPage() {
             </div>
 
             {/* Bottom Gradient Line */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-anvil-red to-transparent opacity-50" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-brand to-transparent opacity-50" />
         </div>
     );
 }

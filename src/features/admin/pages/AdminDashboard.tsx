@@ -273,7 +273,7 @@ export function AdminDashboard() {
                                     placeholder="Buscar por nombre o email..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-2 rounded-lg focus:border-anvil-red transition-colors"
+                                    className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-2 rounded-lg focus:border-brand transition-colors"
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={18} />
                             </div>
@@ -292,7 +292,7 @@ export function AdminDashboard() {
                                 onClick={() => setActiveTab(tab.id as TabType)}
                                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color] ${
  isActive 
- ? 'bg-anvil-red text-ink shadow-lg shadow-anvil-red/20' 
+ ? 'bg-brand text-ink shadow-lg shadow-brand/20' 
  : 'bg-surface-sunken text-ink-muted border border-subtle hover:border-strong hover:text-ink'
  }`}
                             >
@@ -432,7 +432,7 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.coach_id || 'unassigned'}
                                                                     onChange={(e) => changeCoach(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-surface-sunken border border-line rounded-lg px-3 py-2 text-sm text-ink font-semibold cursor-pointer focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-surface-sunken border border-line rounded-lg px-3 py-2 text-sm text-ink font-semibold cursor-pointer focus:border-brand transition-colors"
                                                                 >
                                                                     <option value="unassigned" className="bg-surface-sunken text-ink-subtle">Sin asignar</option>
                                                                     {coaches.map(c => (
@@ -449,7 +449,7 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.nutritionist_id || 'unassigned'}
                                                                     onChange={(e) => changeNutritionist(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-surface-sunken border border-line rounded-lg px-3 py-2 text-sm text-ink font-semibold cursor-pointer focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-surface-sunken border border-line rounded-lg px-3 py-2 text-sm text-ink font-semibold cursor-pointer focus:border-brand transition-colors"
                                                                 >
                                                                     <option value="unassigned" className="bg-surface-sunken text-ink-subtle">Sin asignar</option>
                                                                     {nutritionists.map(n => (

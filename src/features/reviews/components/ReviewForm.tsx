@@ -82,7 +82,7 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
                     required
                     minLength={10}
                     maxLength={1000}
-                    className="w-full bg-surface-sunken border border-line rounded-lg p-4 text-ink placeholder-gray-500 focus:border-anvil-red transition-colors resize-none"
+                    className="w-full bg-surface-sunken border border-line rounded-lg p-4 text-ink placeholder-gray-500 focus:border-brand transition-colors resize-none"
                 />
                 <p className={`text-xs mt-2 ${!isValid && characterCount > 0
  ? 'text-red-500'
@@ -112,7 +112,7 @@ export function ReviewForm({ onSubmitSuccess }: ReviewFormProps) {
             <button
                 type="submit"
                 disabled={isSubmitting || !isValid}
-                className="w-full bg-anvil-red text-ink font-bold py-3 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-brand text-ink font-bold py-3 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
                 {isSubmitting ? 'Publicando...' : 'Publicar Reseña'}
             </button>

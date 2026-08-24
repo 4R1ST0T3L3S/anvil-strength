@@ -18,14 +18,14 @@ export function PublicFooter() {
                                 href="https://www.instagram.com/anvilstrength_"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-ink-muted hover:text-ink transition-colors"
+                                className="p-2 bg-white/5 hover:bg-brand rounded-lg text-ink-muted hover:text-ink transition-colors"
                                 aria-label="Instagram de Anvil Strength"
                             >
                                 <Instagram size={18} />
                             </a>
                             <a
                                 href="mailto:anvilstrengthclub@gmail.com"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-ink-muted hover:text-ink transition-colors"
+                                className="p-2 bg-white/5 hover:bg-brand rounded-lg text-ink-muted hover:text-ink transition-colors"
                                 aria-label="Email de Anvil Strength"
                             >
                                 <Mail size={18} />
@@ -34,7 +34,7 @@ export function PublicFooter() {
                                 href="https://wa.me/34640761674"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-ink-muted hover:text-ink transition-colors"
+                                className="p-2 bg-white/5 hover:bg-brand rounded-lg text-ink-muted hover:text-ink transition-colors"
                                 aria-label="WhatsApp de Anvil Strength"
                             >
                                 <MessageCircle size={18} />

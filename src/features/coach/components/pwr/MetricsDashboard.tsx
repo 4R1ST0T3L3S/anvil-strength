@@ -524,7 +524,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
       {/* Summary Cards */}
       <div className={`grid grid-cols-3 gap-3 shrink-0 ${dimmed}`}>
          <div className="bg-[#241b1b] border border-[#ff3333]/10 p-3 rounded-xl flex items-center gap-2 overflow-hidden shadow-[0_4px_20px_rgba(255,51,51,0.05)]">
-             <div className="p-2 bg-anvil-red/10 rounded-lg text-brand-text shrink-0">
+             <div className="p-2 bg-brand/10 rounded-lg text-brand-text shrink-0">
                  <Activity size={18} />
              </div>
              <div className="min-w-0">
@@ -747,7 +747,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
               extrapolación no significa nada. Antes se saturaba al 15% y salía
               un 1RM de casi siete veces la carga con la misma tipografía que
               uno bueno. */}
-          <div className={`bg-gradient-to-br from-anvil-red/20 to-orange-500/20 border-2 border-anvil-red/40 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_0_30px_rgba(220,38,38,0.1)] ${advMetrics.rm.reliable ? '' : 'opacity-60'}`}>
+          <div className={`bg-gradient-to-br from-brand/20 to-orange-500/20 border-2 border-brand/40 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_0_30px_rgba(220,38,38,0.1)] ${advMetrics.rm.reliable ? '' : 'opacity-60'}`}>
               <div className="flex items-center gap-1 mb-1">
                  <Award size={12} className="text-ink" />
                  <p className="text-t-2xs font-bold text-ink tracking-widest uppercase truncate">1RM Est.</p>

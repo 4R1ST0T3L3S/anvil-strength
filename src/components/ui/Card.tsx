@@ -14,7 +14,7 @@ import { cn } from '../../lib/utils';
  * `Card` es otra cosa: una FILA de una lista que se puede pulsar. Un atleta
  * del equipo, un bloque de entrenamiento, una competición. Hay unas 150
  * escritas a mano por la aplicación y cada una inventa su propio hover
- * (`hover:bg-white/5`, `hover:border-anvil-red/30`, `hover:scale-105`), o no
+ * (`hover:bg-white/5`, `hover:border-brand/30`, `hover:scale-105`), o no
  * tiene ninguno.
  *
  *

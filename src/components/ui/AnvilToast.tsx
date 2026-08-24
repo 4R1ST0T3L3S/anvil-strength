@@ -31,7 +31,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                         <div className={`
  relative flex gap-4 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-[background-color,border-color,box-shadow]
  ${notif.type === 'success' ? 'bg-success-quiet border-success/20' : 
- notif.type === 'error' ? 'bg-anvil-red/10 border-anvil-red/20' :
+ notif.type === 'error' ? 'bg-brand/10 border-brand/20' :
  notif.type === 'reward' ? 'bg-warning-quiet border-warning/20' :
  'bg-white/5 border-line'}
 `}>
@@ -39,7 +39,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                             <div className={`
  shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg
  ${notif.type === 'success' ? 'bg-green-500 text-ink' : 
- notif.type === 'error' ? 'bg-anvil-red text-ink' :
+ notif.type === 'error' ? 'bg-brand text-ink' :
  notif.type === 'reward' ? 'bg-yellow-500 text-black' :
  'bg-white/10 text-ink'}
 `}>
@@ -74,7 +74,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                                 transition={{ duration: 5, ease: "linear" }}
                                 className={`absolute bottom-0 left-0 h-1 ${
  notif.type === 'success' ? 'bg-green-500' : 
- notif.type === 'error' ? 'bg-anvil-red' :
+ notif.type === 'error' ? 'bg-brand' :
  notif.type === 'reward' ? 'bg-yellow-500' :
  'bg-white/20'
  }`}

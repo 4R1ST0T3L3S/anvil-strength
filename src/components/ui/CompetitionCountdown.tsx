@@ -120,7 +120,7 @@ export function CompetitionBanner({
         blue: 'bg-gradient-to-br from-blue-700 to-blue-900',
         gold: 'bg-gradient-to-br from-[#D4AF37] to-[#B3902A]',
         neon: 'bg-gradient-to-br from-purple-700 to-fuchsia-900 shadow-[0_0_50px_rgba(168,85,247,0.3)]',
-        red: 'bg-gradient-to-br from-anvil-red to-red-950',
+        red: 'bg-gradient-to-br from-brand to-red-950',
         dark: 'bg-surface-canvas border border-line',
         glass: 'bg-white/5 backdrop-blur-xl border border-line',
         brutalist: 'bg-white border-[4px] border-black text-black',

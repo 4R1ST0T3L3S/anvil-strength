@@ -141,7 +141,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                         </button>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-ink rounded-xl md:rounded-2xl flex items-center justify-center text-ink-muted transition-colors font-black text-xl shadow-inner"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-xl md:rounded-2xl flex items-center justify-center text-ink-muted transition-colors font-black text-xl shadow-inner"
                         >
                             <X size={24} />
                         </button>

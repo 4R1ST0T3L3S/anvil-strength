@@ -62,14 +62,14 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between bg-anvil-red/10 border border-anvil-red/20 p-6 rounded-3xl">
+            <div className="flex items-center justify-between bg-brand/10 border border-brand/20 p-6 rounded-3xl">
                 <div>
                     <h3 className="text-xl font-black uppercase italic text-ink leading-none mb-2">Panel de Control Arena</h3>
                     <p className="text-t-2xs font-bold text-brand-text uppercase tracking-widest">Solo visible para Marc (Developer)</p>
                 </div>
                 <button 
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="p-4 bg-anvil-red text-ink rounded-2xl hover:bg-red-500 transition-colors shadow-lg shadow-red-900/40"
+                    className="p-4 bg-brand text-ink rounded-2xl hover:bg-red-500 transition-colors shadow-lg shadow-red-900/40"
                 >
                     <Plus size={24} />
                 </button>
@@ -91,7 +91,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         type="button"
                                         onClick={() => setNewBet({ ...newBet, type })}
                                         className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors ${
- newBet.type === type ? 'border-anvil-red bg-anvil-red/10 text-ink' : 'border-subtle bg-black/40 text-ink-subtle'
+ newBet.type === type ? 'border-brand bg-brand/10 text-ink' : 'border-subtle bg-black/40 text-ink-subtle'
  }`}
                                     >
                                         {type === '1vs1' ? <Swords size={18} /> : type === 'pool' ? <Users size={18} /> : type === 'event' ? <HelpCircle size={18} /> : <TrendingUp size={18} />}
@@ -103,14 +103,14 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                             <input 
                                 required
                                 placeholder="TÍTULO (EJ: ¿QUIÉN HARÁ MÁS TOTAL?)"
-                                className="w-full bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50"
+                                className="w-full bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-brand/50"
                                 value={newBet.title}
                                 onChange={e => setNewBet({ ...newBet, title: e.target.value })}
                             />
 
                             <textarea 
                                 placeholder="DESCRIPCIÓN (OPCIONAL)"
-                                className="w-full bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50 min-h-[100px]"
+                                className="w-full bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-brand/50 min-h-[100px]"
                                 value={newBet.description}
                                 onChange={e => setNewBet({ ...newBet, description: e.target.value })}
                             />
@@ -123,7 +123,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                             <input 
                                                 required
                                                 placeholder={`OPCIÓN ${i + 1}`}
-                                                className="flex-1 bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50"
+                                                className="flex-1 bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-brand/50"
                                                 value={opt}
                                                 onChange={e => handleOptionChange(i, e.target.value)}
                                             />
@@ -159,7 +159,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                 </div>
                             )}
 
-                            <button type="submit" className="w-full py-5 bg-anvil-red text-ink font-black uppercase italic rounded-2xl hover:bg-red-500 shadow-xl shadow-red-900/20">
+                            <button type="submit" className="w-full py-5 bg-brand text-ink font-black uppercase italic rounded-2xl hover:bg-red-500 shadow-xl shadow-red-900/20">
                                 LANZAR APUESTA
                             </button>
                         </form>

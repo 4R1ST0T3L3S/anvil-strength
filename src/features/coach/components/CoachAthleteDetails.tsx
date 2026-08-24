@@ -533,7 +533,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                         case 'NACIONAL': meta = { color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10' }; break;
                                         case 'EPF': meta = { color: 'text-success', border: 'border-green-500/50', bg: 'bg-success-quiet' }; break;
                                         case 'IPF': meta = { color: 'text-[#e6c2a5]', border: 'border-[#e6c2a5]/50', bg: 'bg-[#e6c2a5]/10' }; break;
-                                        default: meta = { color: 'text-brand-text', border: 'border-anvil-red/50', bg: 'bg-anvil-red/10' }; break;
+                                        default: meta = { color: 'text-brand-text', border: 'border-brand/50', bg: 'bg-brand/10' }; break;
                                     }
                                     const result = results[comp.id];
 

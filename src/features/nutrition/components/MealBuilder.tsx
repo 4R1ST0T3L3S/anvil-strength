@@ -111,14 +111,14 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
             </div>
 
             {isAddingMeal && (
-                <div className="bg-surface-sunken border border-anvil-red/50 p-4 rounded-xl space-y-4">
+                <div className="bg-surface-sunken border border-brand/50 p-4 rounded-xl space-y-4">
                     <p className="text-sm text-ink-muted">Selecciona el tipo de comida:</p>
                     <div className="flex flex-wrap gap-2">
                         {['Desayuno', 'Comida', 'Cena', 'Almuerzo', 'Merienda', 'Pre-entreno', 'Post-entreno', 'Pre-cama'].map(mealName => (
                             <button
                                 key={mealName}
                                 onClick={() => setNewMealName(mealName)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === mealName ? 'bg-anvil-red text-black border-anvil-red' : 'bg-surface-raised text-ink border-strong hover:border-anvil-red'}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === mealName ? 'bg-brand text-black border-brand' : 'bg-surface-raised text-ink border-strong hover:border-brand'}`}
                             >
                                 {mealName}
                             </button>
@@ -137,7 +137,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                             placeholder="Escribe el nombre de la comida..."
                             value={newMealName === 'Otros' ? '' : newMealName}
                             onChange={(e) => setNewMealName(e.target.value)}
-                            className="w-full bg-[#111111] text-ink px-4 py-2 rounded-lg border border-line focus:border-anvil-red mt-2"
+                            className="w-full bg-[#111111] text-ink px-4 py-2 rounded-lg border border-line focus:border-brand mt-2"
                             autoFocus
                         />
                     )}
@@ -155,7 +155,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                         <button
                             onClick={handleCreateMeal}
                             disabled={!newMealName.trim() || newMealName === 'Otros' || createMealMutation.isPending}
-                            className="bg-anvil-red hover:bg-red-600 text-black font-black px-6 py-2 rounded-lg transition-colors disabled:opacity-50 text-sm uppercase"
+                            className="bg-brand hover:bg-red-600 text-black font-black px-6 py-2 rounded-lg transition-colors disabled:opacity-50 text-sm uppercase"
                         >
                             Crear
                         </button>
@@ -285,7 +285,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsAdjusting(!isAdjusting); }}
-                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-anvil-red text-black' : 'text-ink-muted hover:text-ink hover:bg-white/5'}`}
+                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-brand text-black' : 'text-ink-muted hover:text-ink hover:bg-white/5'}`}
                             title="Ajuste Inteligente"
                         >
                             <Wand2 size={18} />
@@ -312,7 +312,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                 exit={{ height: 0, opacity: 0 }}
                                 className="mb-4 overflow-hidden"
                             >
-                                <div className="bg-surface-sunken border border-anvil-red/30 rounded-xl p-4 space-y-4">
+                                <div className="bg-surface-sunken border border-brand/30 rounded-xl p-4 space-y-4">
                                     <div className="flex justify-between items-center">
                                         <h5 className="text-t-2xs font-black uppercase tracking-[0.2em] text-brand-text flex items-center gap-2">
                                             <Calculator size={14} /> Smart Adjuster
@@ -383,7 +383,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => setSelectedProposalId(opt.id)}
-                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-ink' : 'bg-[#111111] border-subtle text-ink-subtle hover:bg-white/5'}`}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-brand/20 border-brand text-ink' : 'bg-[#111111] border-subtle text-ink-subtle hover:bg-white/5'}`}
                                                     >
                                                         {opt.name}
                                                     </button>

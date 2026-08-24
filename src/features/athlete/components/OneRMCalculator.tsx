@@ -376,7 +376,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
-                            className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
+                            className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
                         >
                             <X className="w-6 h-6 md:w-7 md:h-7" />
                         </button>
@@ -478,7 +478,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
 
                         {/* RIGHT COLUMN: Result Display (Reduced Size) */}
                         <div className="col-span-12 md:col-span-6 relative group shrink-0 order-1 md:order-2 flex flex-col items-center justify-center p-6 md:p-8 min-h-[250px] md:min-h-auto bg-[#181818] border-2 border-subtle rounded-[2rem] shadow-inner mb-8 md:mb-0">
-                            <div className="absolute inset-0 bg-gradient-to-br from-anvil-red/5 to-transparent rounded-[2rem]"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent rounded-[2rem]"></div>
                             <div className="relative flex flex-col items-center justify-center text-center z-10">
                                 <p className="text-ink-subtle text-xs md:text-sm font-black uppercase tracking-[0.3em] mb-2 md:mb-4">1RM Estimado</p>
                                 <div className="flex items-baseline gap-2">
@@ -536,7 +536,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                 <div className="p-4 md:px-6 md:py-4 bg-surface-sunken border-t border-subtle shrink-0">
                     <button
                         onClick={calculate1RM}
-                        className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-anvil-red hover:text-ink py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-[background-color,box-shadow,color,transform] active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-anvil-red/20"
+                        className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-brand hover:text-ink py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-[background-color,box-shadow,color,transform] active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-brand/20"
                     >
                         <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         Calcular 1RM

@@ -54,7 +54,7 @@ export function NutritionAnalytics() {
     if (loading) {
         return (
             <div className="flex justify-center p-20">
-                <div className="w-10 h-10 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
@@ -86,7 +86,7 @@ export function NutritionAnalytics() {
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {kpiCards.map((card, idx) => (
-                    <div key={idx} className="bg-surface-sunken border border-line p-6 rounded-2xl flex items-center gap-4 hover:border-anvil-red/50 transition-colors">
+                    <div key={idx} className="bg-surface-sunken border border-line p-6 rounded-2xl flex items-center gap-4 hover:border-brand/50 transition-colors">
                         <div className="bg-surface-sunken p-4 rounded-xl">
                             {card.icon}
                         </div>

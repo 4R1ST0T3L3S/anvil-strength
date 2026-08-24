@@ -104,7 +104,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                         onClick={() => setShowAll(!showAll)}
                         className={`px-6 py-3 rounded-2xl font-black text-t-2xs uppercase tracking-widest transition-colors border ${
  showAll 
- ? 'bg-anvil-red border-anvil-red text-ink' 
+ ? 'bg-brand border-brand text-ink' 
  : 'bg-white/5 border-line text-ink-subtle hover:text-ink'
  }`}
                     >
@@ -120,7 +120,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                     <input 
                         type="text"
                         placeholder="BUSCAR POR NOMBRE..."
-                        className="w-full bg-surface-sunken border border-subtle rounded-2xl py-4 pl-12 pr-6 text-ink font-bold uppercase text-xs focus:border-anvil-red/50 transition-colors"
+                        className="w-full bg-surface-sunken border border-subtle rounded-2xl py-4 pl-12 pr-6 text-ink font-bold uppercase text-xs focus:border-brand/50 transition-colors"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -145,15 +145,15 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                             <button
                                 key={athlete.id}
                                 onClick={() => setSelectedAthlete(athlete)}
-                                className="w-full bg-surface-sunken border border-subtle p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-surface-sunken transition-[background-color,border-color,transform] active:scale-[0.98]"
+                                className="w-full bg-surface-sunken border border-subtle p-6 rounded-3xl flex items-center justify-between group hover:border-brand/30 hover:bg-surface-sunken transition-[background-color,border-color,transform] active:scale-[0.98]"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
-                                        <div className="w-14 h-14 bg-gradient-to-br from-anvil-red to-red-900 rounded-2xl flex items-center justify-center text-ink font-black text-xl italic uppercase">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-brand to-red-900 rounded-2xl flex items-center justify-center text-ink font-black text-xl italic uppercase">
                                             {athlete.full_name?.substring(0, 1)}
                                         </div>
                                         {athlete.unreadCount > 0 && (
-                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-anvil-red text-ink text-t-2xs font-black rounded-full flex items-center justify-center border-2 border-surface-sunken">
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-brand text-ink text-t-2xs font-black rounded-full flex items-center justify-center border-2 border-surface-sunken">
                                                 {athlete.unreadCount}
                                             </div>
                                         )}
