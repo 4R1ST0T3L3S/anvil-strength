@@ -383,7 +383,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 que pasaba era que se había caído la red. */}
             <EstadoDeDatos
                 consulta={consultaBloques}
-                queEs="los bloques"
+                queEs="que.bloques"
                 vacio={blocks.length === 0 && macros.length === 0}
                 esqueleto={<SkeletonList filas={3} conAvatar={false} className="p-1" />}
                 vacioIcono={<FolderOpen size={20} aria-hidden="true" />}

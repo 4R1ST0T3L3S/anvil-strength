@@ -4,6 +4,8 @@ import { AnchoredMenu } from './AnchoredMenu';
 import { useTema } from '../../hooks/useTema';
 import type { Tema } from '../../lib/tema';
 import { cn } from '../../lib/utils';
+import { useIdioma } from '../../hooks/useIdioma';
+import type { ClaveDeTraduccion } from '../../lib/i18n/es';
 
 /**
  * ANVIL STRENGTH — ELEGIR TEMA
@@ -25,14 +27,15 @@ import { cn } from '../../lib/utils';
  * queda abierto invita a seguir tocando, y no hay nada más que hacer.
  */
 
-const OPCIONES: { valor: Tema; etiqueta: string; icono: typeof Sun; pista: string }[] = [
-    { valor: 'sistema', etiqueta: 'Sistema', icono: Monitor, pista: 'Sigue al dispositivo' },
-    { valor: 'claro', etiqueta: 'Claro', icono: Sun, pista: 'Siempre claro' },
-    { valor: 'oscuro', etiqueta: 'Oscuro', icono: Moon, pista: 'Siempre oscuro' },
+const OPCIONES: { valor: Tema; etiqueta: ClaveDeTraduccion; icono: typeof Sun; pista: ClaveDeTraduccion }[] = [
+    { valor: 'sistema', etiqueta: 'tema.sistema', icono: Monitor, pista: 'tema.sistemaPista' },
+    { valor: 'claro', etiqueta: 'tema.claro', icono: Sun, pista: 'tema.claroPista' },
+    { valor: 'oscuro', etiqueta: 'tema.oscuro', icono: Moon, pista: 'tema.oscuroPista' },
 ];
 
 export function SelectorDeTema({ className }: { className?: string }) {
     const { tema, efectivo, establecer } = useTema();
+    const { t } = useIdioma();
     const [abierto, setAbierto] = useState(false);
     const anclaRef = useRef<HTMLButtonElement>(null);
 
@@ -50,8 +53,8 @@ export function SelectorDeTema({ className }: { className?: string }) {
                 // El nombre dice las dos cosas: qué hace el botón y en qué
                 // estado está. Un lector de pantalla que solo oiga "Tema" no
                 // sabe si hay que tocarlo o no.
-                aria-label={`Tema: ${elegida.etiqueta}. Cambiar`}
-                title={`Tema: ${elegida.etiqueta}`}
+                aria-label={t('tema.cambiar', { actual: t(elegida.etiqueta) })}
+                title={t('tema.cambiar', { actual: t(elegida.etiqueta) })}
                 className={cn(
                     'flex h-11 w-11 items-center justify-center rounded-field',
                     'text-ink-muted transition-colors duration-fast ease-snap',
@@ -93,8 +96,8 @@ export function SelectorDeTema({ className }: { className?: string }) {
                         >
                             <Icono className="h-4 w-4 shrink-0" aria-hidden="true" />
                             <span className="min-w-0 flex-1">
-                                <span className="block text-t-sm font-bold">{o.etiqueta}</span>
-                                <span className="block text-t-2xs text-ink-subtle">{o.pista}</span>
+                                <span className="block text-t-sm font-bold">{t(o.etiqueta)}</span>
+                                <span className="block text-t-2xs text-ink-subtle">{t(o.pista)}</span>
                             </span>
                             {/* La marca es un icono, no solo un fondo de color:
                                 el estado nunca se codifica solo con color. */}

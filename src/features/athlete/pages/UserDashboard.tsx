@@ -24,6 +24,7 @@ import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
 import { AthleteVbtView } from '../components/AthleteVbtView';
 import { BloqueoDePago } from '../../../components/ui/BloqueoDePago';
 import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
+import { useIdioma } from '../../../hooks/useIdioma';
 import { vistaBloqueada } from '../../../lib/billing';
 import { AnvilRanking } from '../components/AnvilRanking';
 
@@ -85,6 +86,9 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     // Antes de los `return` de mas abajo: los hooks se llaman siempre, en el
     // mismo orden, o React pierde la cuenta.
     const puerta = usePuertaDePago(user.id);
+    // Arriba del todo, con el resto de hooks: más abajo hay vueltas tempranas
+    // (`<Navigate>`), y un hook detrás de un `return` rompe las reglas de React.
+    const { t } = useIdioma();
 
     // Una ruta inventada (`/dashboard/loquesea`) no puede dejar la pantalla en
     // blanco: se corrige a la de inicio antes de renderizar nada.
@@ -110,25 +114,25 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const menuItems = [
         {
             icon: <LayoutDashboard size={20} />,
-            label: 'Inicio',
+            label: t('nav.inicio'),
             onClick: () => go(''),
             isActive: slug === '',
         },
         {
             icon: <FileText size={20} />,
-            label: 'Entrenar',
+            label: t('nav.entrenar'),
             onClick: () => go('planificacion'),
             isActive: slug === 'planificacion',
         },
         {
             icon: <Utensils size={20} />,
-            label: 'Nutrición',
+            label: t('nav.nutricion'),
             onClick: () => go('nutricion'),
             isActive: slug === 'nutricion',
         },
         {
             icon: <Trophy size={20} />,
-            label: 'Competiciones',
+            label: t('nav.competiciones'),
             // En la barra del móvil una pestaña mide 73px y "Competiciones"
             // se cortaba. "Competir" cabe entero y además rima con "Entrenar":
             // las cinco pestañas quedan en el mismo registro verbal.
@@ -138,7 +142,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         },
         {
             icon: <User size={20} />,
-            label: 'Perfil',
+            label: t('nav.perfil'),
             onClick: () => go('perfil'),
             isActive: slug === 'perfil',
         },
@@ -146,21 +150,21 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         // pestañas es el techo antes de que los iconos dejen de ser pulsables.
         {
             icon: <Activity size={20} />,
-            label: 'Velocidad',
+            label: t('nav.velocidad'),
             onClick: () => go('velocidad'),
             isActive: slug === 'velocidad',
             hideOnMobileBar: true,
         },
         {
             icon: <Calendar size={20} />,
-            label: 'Calendario AEP',
+            label: t('nav.calendarioAep'),
             onClick: () => go('calendario'),
             isActive: slug === 'calendario',
             hideOnMobileBar: true,
         },
         {
             icon: <Medal size={20} />,
-            label: 'Ranking',
+            label: t('nav.ranking'),
             onClick: () => go('ranking'),
             isActive: slug === 'ranking',
             hideOnMobileBar: true,
@@ -171,7 +175,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         ...(FEATURES.anvilStore
             ? [{
                 icon: <ShoppingBag size={20} />,
-                label: 'Tienda Anvil',
+                label: t('nav.tienda'),
                 onClick: () => go('tienda'),
                 isActive: slug === 'tienda',
                 hideOnMobileBar: true,
@@ -189,7 +193,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const panelSwitch = tieneAmbosPaneles(user)
         ? {
             icon: <Users size={20} />,
-            label: isCoach(user) ? 'Cambiar a entrenador' : 'Cambiar a nutrición',
+            label: isCoach(user) ? t('nav.cambiarAEntrenador') : t('nav.cambiarANutricion'),
             shortLabel: isCoach(user) ? 'Entrenador' : 'Nutrición',
             onClick: () => navigate('/coach-dashboard'),
         }

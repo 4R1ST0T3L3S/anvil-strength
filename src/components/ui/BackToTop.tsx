@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { escucharScroll, irAScroll, posicionDeScroll, recorridoDeScroll } from '../../lib/scrollHost';
+import { useIdioma } from '../../hooks/useIdioma';
 
 /**
  * ANVIL STRENGTH — VOLVER ARRIBA
@@ -48,6 +49,7 @@ const UMBRAL = () => window.innerHeight * 2;
 export function BackToTop() {
     const [visible, setVisible] = useState(false);
     const reduce = useReducedMotion();
+    const { t } = useIdioma();
 
     useEffect(() => {
         let ultimo = posicionDeScroll();
@@ -88,8 +90,8 @@ export function BackToTop() {
                 <m.button
                     type="button"
                     onClick={() => irAScroll(0, reduce ? 'instant' : 'smooth')}
-                    aria-label="Volver arriba"
-                    title="Volver arriba"
+                    aria-label={t('accion.volverArriba')}
+                    title={t('accion.volverArriba')}
                     initial={reduce ? false : { opacity: 0, y: 12, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.9 }}

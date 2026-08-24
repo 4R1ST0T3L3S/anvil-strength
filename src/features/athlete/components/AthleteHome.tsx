@@ -14,6 +14,8 @@ import { PlateCalculator } from './PlateCalculator';
 import { SushiCounter } from './SushiCounter';
 import { AnvilRanking } from './AnvilRanking';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
+import { useIdioma } from '../../../hooks/useIdioma';
+import type { ClaveDeTraduccion } from '../../../lib/i18n/es';
 import { competitionsService, CompetitionAssignment } from '../../../services/competitionsService';
 import { CountdownWidget } from '../../../components/ui/CountdownWidget';
 import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
@@ -25,11 +27,18 @@ interface AthleteHomeProps {
     onNavigate: (view: string) => void;
 }
 
-const getGreeting = () => {
+/**
+ * Devuelve la CLAVE del saludo, no la frase.
+ *
+ * La franja horaria la decide el reloj del dispositivo; la palabra, el idioma.
+ * Son dos cosas distintas y mezclarlas dejaba "Buenos días" en una pantalla
+ * inglesa.
+ */
+const getGreeting = (): ClaveDeTraduccion => {
     const hour = new Date().getHours();
-    if (hour >= 6 && hour < 14) return 'Buenos días';
-    if (hour >= 14 && hour < 21) return 'Buenas tardes';
-    return 'Buenas noches';
+    if (hour >= 6 && hour < 14) return 'inicio.saludoManana';
+    if (hour >= 14 && hour < 21) return 'inicio.saludoTarde';
+    return 'inicio.saludoNoche';
 };
 
 const getTeamName = (coachName?: string | null): string | null => {
@@ -151,6 +160,7 @@ function NavTile({
 export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     const navigate = useNavigate();
     const puerta = usePuertaDePago(user.id);
+    const { t } = useIdioma();
     const [loading, setLoading] = useState(true);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
@@ -218,7 +228,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                         </div>
                     )}
                     <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
-                        {getGreeting()},{' '}
+                        {t(getGreeting())},{' '}
                         <span style={{ color: accent }}>{firstName}</span>
                     </h1>
                     <p className="mt-1.5 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
@@ -235,7 +245,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                     lo único con tratamiento de acción primaria en toda la
                     pantalla, y ocupa el ancho que le corresponde.        */}
                 <section>
-                    <SectionLabel icon={Dumbbell}>Hoy</SectionLabel>
+                    <SectionLabel icon={Dumbbell}>{t('inicio.hoy')}</SectionLabel>
 
                     {/* El entrenamiento pautado y los macros del día, con datos
                         de verdad. Antes eran dos botones que no decían nada de
@@ -279,7 +289,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
 
                     {nextCompetition && (
                         <div>
-                            <SectionLabel icon={Trophy}>Próxima competición</SectionLabel>
+                            <SectionLabel icon={Trophy}>{t('inicio.proximaCompeticion')}</SectionLabel>
                             <CountdownWidget assigned={nextCompetition} userId={user.id} />
                         </div>
                     )}
@@ -288,25 +298,25 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                 {/* ---------------------------------------------------------
                     PANEL DE CONTROL                                      */}
                 <section>
-                    <SectionLabel icon={FileText}>Tu carrera</SectionLabel>
+                    <SectionLabel icon={FileText}>{t('inicio.tuCarrera')}</SectionLabel>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        <NavTile area="train" icon={FileText} title="Planificación" hint="Bloques y sesiones" onClick={() => onNavigate('planning')} />
-                        <NavTile area="club" icon={Trophy} title="Competiciones" hint="Marcas y eventos" onClick={() => onNavigate('competitions')} />
-                        <NavTile area="train" icon={Calendar} title="Calendario" hint="Tu año de un vistazo" onClick={() => onNavigate('calendar')} />
-                        <NavTile area="tool" icon={User} title="Mi perfil" hint="Marcas, categoría y datos" onClick={() => onNavigate('profile')} />
+                        <NavTile area="train" icon={FileText} title={t('inicio.planificacion')} hint={t('inicio.planificacionPista')} onClick={() => onNavigate('planning')} />
+                        <NavTile area="club" icon={Trophy} title={t('nav.competiciones')} hint={t('inicio.competicionesPista')} onClick={() => onNavigate('competitions')} />
+                        <NavTile area="train" icon={Calendar} title={t('nav.calendario')} hint={t('inicio.calendarioPista')} onClick={() => onNavigate('calendar')} />
+                        <NavTile area="tool" icon={User} title={t('inicio.miPerfil')} hint={t('inicio.miPerfilPista')} onClick={() => onNavigate('profile')} />
                         <NavTile
                             area="club"
                             icon={Swords}
-                            title="La Arena"
-                            hint={locked ? 'Necesitas acceso completo' : 'Apuestas del club'}
+                            title={t('nav.arena')}
+                            hint={locked ? t('inicio.necesitasAcceso') : t('inicio.arenaPista')}
                             onClick={() => navigate('/dashboard/community')}
                             disabled={locked}
                         />
                         <NavTile
                             area="club"
                             icon={Users}
-                            title="Ranking"
-                            hint={locked ? 'Necesitas acceso completo' : 'Clasificación de atletas'}
+                            title={t('nav.ranking')}
+                            hint={locked ? t('inicio.necesitasAcceso') : t('inicio.rankingPista')}
                             onClick={() => setIsRankingOpen(true)}
                             disabled={locked}
                         />
@@ -318,10 +328,10 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                 <section>
                     <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
                     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
-                        <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
-                        <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
-                        <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
+                        <NavTile icon={Weight} title={t('inicio.cargaDeBarra')} hint={t('inicio.cargaDeBarraPista')} onClick={() => setIsPlateCalcOpen(true)} />
+                        <NavTile icon={List} title={t('inicio.aproximaciones')} hint={t('inicio.aproximacionesPista')} onClick={() => setIsWarmUpCalcOpen(true)} />
+                        <NavTile icon={Calculator} title={t('inicio.unRm')} hint={t('inicio.unRmPista')} onClick={() => setIs1RMCalcOpen(true)} />
+                        <NavTile icon={Fish} title={t('inicio.sushi')} hint={t('inicio.sushiPista')} onClick={() => setIsSushiCounterOpen(true)} />
                     </div>
                 </section>
             </div>

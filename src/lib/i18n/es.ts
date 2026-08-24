@@ -63,6 +63,12 @@ export const es = {
     'nav.perfil': 'Perfil',
     'nav.arena': 'La Arena',
     'nav.ranking': 'Ranking',
+    'nav.entrenar': 'Entrenar',
+    'nav.velocidad': 'Velocidad',
+    'nav.calendarioAep': 'Calendario AEP',
+    'nav.tienda': 'Tienda Anvil',
+    'nav.cambiarAEntrenador': 'Cambiar a entrenador',
+    'nav.cambiarANutricion': 'Cambiar a nutrición',
 
     // --- Los cuatro estados. Ver `EstadoDeDatos`. ---
     'estado.cargando': 'Cargando…',
@@ -73,6 +79,17 @@ export const es = {
     'estado.errorSesion': 'Tu sesión ha caducado. Vuelve a entrar y lo tendrás todo como estaba.',
     'estado.errorLento': 'El servidor ha tardado demasiado en responder.',
     'estado.errorGenerico': 'Ha sido un fallo puntual: lo más probable es que reintentando funcione.',
+    // El COMPLEMENTO de «No se han podido cargar ___». Va por clave y no como
+    // texto suelto: si el que llama pasara «los atletas» a mano, la frase
+    // inglesa saldría medio traducida — "Couldn't load los atletas".
+    'que.datos': 'los datos',
+    'que.atletas': 'los atletas',
+    'que.bloques': 'los bloques',
+    'que.combates': 'los combates',
+    'que.sesiones': 'las sesiones',
+    'que.competiciones': 'las competiciones',
+    'que.cuestionarios': 'los cuestionarios',
+    'que.ranking': 'el ranking',
 
     // --- Validación. Dicen QUÉ FALTA, no qué hace falta. ---
     'validacion.requerido': 'Falta rellenar esto',
@@ -124,6 +141,30 @@ export const es = {
     'periodo.todo': 'Desde siempre',
     'periodo.sinFecha': 'Este bloque no tiene fecha de inicio',
     'periodo.ponerFecha': 'Poner fecha de inicio',
+
+    'inicio.saludoManana': 'Buenos días',
+    'inicio.saludoTarde': 'Buenas tardes',
+    'inicio.saludoNoche': 'Buenas noches',
+    'inicio.hoy': 'Hoy',
+    'inicio.proximaCompeticion': 'Próxima competición',
+    'inicio.tuCarrera': 'Tu carrera',
+    'inicio.planificacion': 'Planificación',
+    'inicio.planificacionPista': 'Bloques y sesiones',
+    'inicio.competicionesPista': 'Marcas y eventos',
+    'inicio.calendarioPista': 'Tu año de un vistazo',
+    'inicio.miPerfil': 'Mi perfil',
+    'inicio.miPerfilPista': 'Marcas, categoría y datos',
+    'inicio.arenaPista': 'Apuestas del club',
+    'inicio.rankingPista': 'Clasificación de atletas',
+    'inicio.necesitasAcceso': 'Necesitas acceso completo',
+    'inicio.cargaDeBarra': 'Carga de barra',
+    'inicio.cargaDeBarraPista': 'Qué discos poner',
+    'inicio.aproximaciones': 'Aproximaciones',
+    'inicio.aproximacionesPista': 'Escalera de calentamiento',
+    'inicio.unRm': '1RM',
+    'inicio.unRmPista': 'Desde RPE o velocidad',
+    'inicio.sushi': 'Sushi',
+    'inicio.sushiPista': 'Recuento post-competición',
 
     // --- Entrenamiento ---
     'entreno.serie_una': '{n} serie',

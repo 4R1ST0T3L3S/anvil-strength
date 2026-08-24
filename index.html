@@ -129,24 +129,19 @@
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="author" content="Anvil Strength" />
   <link rel="canonical" href="https://anvilstrength.es/" />
-  <!-- IDIOMAS ALTERNATIVOS.
-       Se añade el inglés: ya existía `es-ES` y `x-default`, pero desde F8 la
-       aplicación también habla inglés y un buscador no tiene forma de saberlo
-       si no se le dice.
+  <!-- AQUÍ NO HAY UN `hreflang="en"`, Y ES DELIBERADO.
+       La aplicación habla inglés desde F8, así que la tentación es declararlo.
+       Pero el idioma vive en `localStorage`, no en la ruta: no existe una URL
+       inglesa distinta a la que apuntar. Un `hreflang="en"` hacia esta misma
+       dirección le promete a Google una versión que no puede indexar por
+       separado, y lo que consigue es que trate las dos como duplicadas.
 
-       Las tres apuntan al MISMO sitio a propósito: el idioma vive en
-       `localStorage`, no en la ruta, así que no hay una URL inglesa a la que
-       apuntar. Lo que estas líneas declaran es "esta página sirve a quien
-       busca en español y a quien busca en inglés", que es verdad.
-
-       `x-default` va una sola vez. Duplicarla es un error que Google reporta,
-       y estuvo a punto de pasar añadiendo un segundo bloque arriba en vez de
-       ampliar este.
-
-       Si algún día el idioma pasa a la URL (/en/competiciones), estas líneas
-       son lo único que cambia, y entonces sí apuntarán a sitios distintos. -->
+       Decisión de Marc, 24/08/2026: el idioma se queda en el dispositivo. La
+       alternativa era `/en/competiciones` con rutas propias —lo único que da
+       SEO real en inglés— y sale cara: toca el enrutador, los enlaces internos
+       y el canonical. Si algún día se hace, la etiqueta vuelve aquí, y
+       entonces sí apuntando a otro sitio. -->
   <link rel="alternate" hreflang="es-ES" href="https://anvilstrength.es/" />
-  <link rel="alternate" hreflang="en" href="https://anvilstrength.es/" />
   <link rel="alternate" hreflang="x-default" href="https://anvilstrength.es/" />
 
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->

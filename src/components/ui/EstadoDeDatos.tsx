@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
+import type { ClaveDeTraduccion } from '../../lib/i18n/es';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { EmptyState } from './EmptyState';
 import { Button } from './Button';
 import { useEsqueletoDiferido } from '../../hooks/useEsqueletoDiferido';
+import { useIdioma } from '../../hooks/useIdioma';
 
 /**
  * ANVIL STRENGTH — LOS CUATRO ESTADOS, EN UN SITIO
@@ -60,12 +62,17 @@ export interface EstadoDeDatosProps {
 
     /** Qué se ofrece cuando no hay nada todavía. */
     vacioIcono?: ReactNode;
+    /** Si no se pasa, se usa el texto genérico del diccionario. */
     vacioTitulo?: string;
     vacioCuerpo?: string;
     vacioAccion?: ReactNode;
 
-    /** Qué se estaba cargando, en una palabra: «los atletas», «el bloque». */
-    queEs?: string;
+    /**
+     * Qué se estaba cargando, como CLAVE del diccionario (`que.atletas`).
+     * No como texto: si se pasara «los atletas» a mano, la frase inglesa
+     * saldría medio traducida — "Couldn't load los atletas".
+     */
+    queEs?: Extract<ClaveDeTraduccion, `que.${string}`>;
 
     children: ReactNode;
 }
@@ -75,12 +82,13 @@ export function EstadoDeDatos({
     vacio = false,
     esqueleto,
     vacioIcono,
-    vacioTitulo = 'Todavía no hay nada aquí',
+    vacioTitulo,
     vacioCuerpo,
     vacioAccion,
     queEs,
     children,
 }: EstadoDeDatosProps) {
+    const { t } = useIdioma();
     // `isPending` es el nombre de TanStack Query v5; `isLoading` el de v4 y el
     // de los hooks propios. Se aceptan los dos para que esto valga en toda la
     // app sin obligar a migrar nada primero.
@@ -93,13 +101,13 @@ export function EstadoDeDatos({
             <EmptyState
                 kind="error"
                 icon={<AlertTriangle className="h-5 w-5" aria-hidden="true" />}
-                title={queEs ? `No se han podido cargar ${queEs}` : 'No se han podido cargar los datos'}
-                body={mensajeDeError(consulta.error)}
+                title={queEs ? t('estado.errorTituloDe', { que: queEs }) : t('estado.errorTitulo')}
+                body={t(mensajeDeError(consulta.error))}
                 action={
                     consulta.refetch && (
                         <Button variant="secondary" onClick={() => consulta.refetch?.()}>
                             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                            Reintentar
+                            {t('accion.reintentar')}
                         </Button>
                     )
                 }
@@ -116,7 +124,7 @@ export function EstadoDeDatos({
         return (
             <EmptyState
                 icon={vacioIcono}
-                title={vacioTitulo}
+                title={vacioTitulo ?? t('estado.vacioTitulo')}
                 body={vacioCuerpo}
                 action={vacioAccion}
             />
@@ -129,23 +137,20 @@ export function EstadoDeDatos({
 /**
  * Qué se le cuenta al usuario cuando algo falla.
  *
- * Nunca el mensaje crudo de Postgres: «duplicate key value violates unique
- * constraint "coach_athletes_pkey"» no le dice nada a un entrenador y le
- * dice demasiado a quien no debería estar mirando. Se traduce lo que se
- * reconoce y, para el resto, se dice que se puede reintentar — que es la
- * única información accionable que hay.
+ * Devuelve una CLAVE, no una frase: así el mensaje se traduce con el resto de
+ * la interfaz en vez de quedarse en español dentro de una pantalla inglesa.
+ *
+ * Y nunca el mensaje crudo de Postgres: «duplicate key value violates unique
+ * constraint "coach_athletes_pkey"» no le dice nada a un entrenador y le dice
+ * demasiado a quien no debería estar mirando. Se reconoce lo que se puede y,
+ * para el resto, se dice que se puede reintentar — que es la única
+ * información accionable que hay.
  */
-function mensajeDeError(error: unknown): string {
+function mensajeDeError(error: unknown): ClaveDeTraduccion {
     const texto = error instanceof Error ? error.message : String(error ?? '');
 
-    if (/Failed to fetch|NetworkError|network/i.test(texto)) {
-        return 'Parece que no hay conexión. Compruébala y vuelve a intentarlo.';
-    }
-    if (/JWT|401|not authenticated/i.test(texto)) {
-        return 'Tu sesión ha caducado. Vuelve a entrar y lo tendrás todo como estaba.';
-    }
-    if (/timeout|timed out/i.test(texto)) {
-        return 'El servidor ha tardado demasiado en responder.';
-    }
-    return 'Ha sido un fallo puntual: lo más probable es que reintentando funcione.';
+    if (/Failed to fetch|NetworkError|network/i.test(texto)) return 'estado.errorSinRed';
+    if (/JWT|401|not authenticated/i.test(texto)) return 'estado.errorSesion';
+    if (/timeout|timed out/i.test(texto)) return 'estado.errorLento';
+    return 'estado.errorGenerico';
 }

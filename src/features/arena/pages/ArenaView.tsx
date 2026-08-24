@@ -273,7 +273,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             datos nada salta. */}
                         <EstadoDeDatos
                             consulta={consultaApuestas}
-                            queEs="los combates"
+                            queEs="que.combates"
                             vacio={(activeTab === 'active' ? activeBets : historyBets).length === 0}
                             esqueleto={
                                 <div className="grid grid-cols-1 gap-6">

@@ -74,7 +74,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                 pidiendo que te asignen atletas, el otro borrando lo escrito. */}
             <EstadoDeDatos
                 consulta={consulta}
-                queEs="los atletas"
+                queEs="que.atletas"
                 vacio={filteredAthletes.length === 0}
                 esqueleto={<SkeletonList filas={6} />}
                 vacioIcono={<Users size={20} aria-hidden="true" />}
