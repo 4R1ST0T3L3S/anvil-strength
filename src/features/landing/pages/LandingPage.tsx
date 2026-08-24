@@ -7,7 +7,7 @@ import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsMo
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
 import { ReviewsSection } from '../../reviews/components/ReviewsSection';
 import { StatsSection } from '../components/StatsSection';
-import { Fold, PressButton, Reveal, StaggerList, StaggerItem } from '../components/landingKit';
+import { BandaDeEntrada, Fold, PressButton, Reveal, StaggerList, StaggerItem } from '../components/landingKit';
 import { HowItWorksSection } from '../components/HowItWorksSection';
 import { FAQSection } from '../components/FAQSection';
 import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
@@ -337,6 +337,12 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                    real, no un adorno de sección. */}
             <HowItWorksSection />
 
+            {/* Aquí NO va una banda de entrada, aunque el hueco lo pedía.
+                `HowItWorksSection` ya termina con su propio "Empezar — es
+                gratis" en y=3.956, y la banda caía en 4.281: dos llamadas a
+                325px una de otra no son refuerzo, son ruido. Se descubrió
+                midiendo, porque la primera búsqueda no cazaba "Empezar". */}
+
             {/* =====================================================
                 5. QUÉ TRAE LA APP
                 ===================================================== */}
@@ -463,6 +469,16 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     ))}
                 </div>
             </Fold>
+
+            {/* Segunda puerta: acabas de leer quién te va a entrenar, que es
+                la sección que más convence, y todavía quedan cuatro pantallas
+                hasta el cierre. Ver `BandaDeEntrada`. */}
+            <BandaDeEntrada
+                texto="¿Te has visto ahí?"
+                remate="Se entra gratis y se sale cuando quieras."
+                hayUsuario={!!user}
+                onCrearCuenta={onSignupClick ?? onLoginClick}
+            />
 
             {/* =====================================================
                 7. ATLETAS — carrusel infinito

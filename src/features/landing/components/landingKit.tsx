@@ -274,3 +274,66 @@ export function StaggerItem({
         </m.div>
     );
 }
+
+/**
+ * BANDA DE ENTRADA — la llamada a la acción intermedia.
+ * =====================================================================
+ *
+ * POR QUÉ HACE FALTA MÁS DE UNA
+ *
+ * Medido en el navegador a 375px, que es donde está la mayoría: la portada
+ * mide 12.694px —quince pantallas y media— y las formas de entrar estaban en
+ * 491 y en 10.753. Eso son **casi nueve pantallas seguidas sin una sola
+ * puerta**. Quien se convence a mitad tiene que seguir bajando hasta el final
+ * o volver arriba, y lo normal es que no haga ninguna de las dos.
+ *
+ * En escritorio la cabecera fija lleva su propio «Crear cuenta» siempre a la
+ * vista, así que ahí el problema es menor. En móvil ese botón se mete dentro
+ * del menú y desaparece — comprobado bajando a 6.000px y buscando cualquier
+ * elemento fijo con una llamada dentro: ninguno.
+ *
+ *
+ * DÓNDE SE PONEN, QUE NO ES CADA X PANTALLAS
+ *
+ * En los dos momentos en que a alguien le acaba de encajar algo:
+ *
+ *   · Después de **cómo se empieza**: acabas de leer los pasos. La acción
+ *     siguiente evidente es darlos.
+ *   · Después de **quién te entrena**: es la sección que más convence, y
+ *     todavía quedan cuatro pantallas hasta el cierre.
+ *
+ * Estrecha a propósito —una línea y un botón, sin titular— para que no
+ * compita con el cierre de abajo. No es un segundo final: es una salida para
+ * quien ya lo tiene decidido.
+ */
+export function BandaDeEntrada({
+    texto,
+    remate,
+    onCrearCuenta,
+    hayUsuario,
+}: {
+    /** La frase, en dos partes: la segunda va en tinta apagada. */
+    texto: string;
+    remate: string;
+    onCrearCuenta?: () => void;
+    hayUsuario: boolean;
+}) {
+    return (
+        <Fold tone="black" className="py-14 md:py-16">
+            <Reveal className="mx-auto flex max-w-[1180px] flex-col items-center gap-5 px-6 text-center md:flex-row md:justify-between md:px-10 md:text-left">
+                <p className="text-t-lg font-black uppercase leading-tight tracking-display text-ink md:text-t-xl">
+                    {texto} <span className="text-ink-muted">{remate}</span>
+                </p>
+                {hayUsuario ? (
+                    <PressButton href="https://typebot.co/lead-generation-hhwa24t" className="w-full shrink-0 sm:w-auto">
+                        Ficha de inscripción
+                    </PressButton>
+                ) : (
+                    <PressButton onClick={onCrearCuenta} className="w-full shrink-0 sm:w-auto">
+                        Crear cuenta gratis
+                    </PressButton>
+                )}
+            </Reveal>
+        </Fold>
+    );
+}
