@@ -204,14 +204,14 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <Loader className="animate-spin text-brand" size={28} />
+                <Loader className="animate-spin text-brand-text" size={28} />
             </div>
         );
     }
 
     if (error) {
         return (
-            <p className="mx-auto max-w-lg rounded-card bg-[var(--danger-quiet)] px-4 py-3 text-t-sm text-danger">
+            <p className="mx-auto max-w-lg rounded-card bg-[var(--danger-quiet)] px-4 py-3 text-t-sm text-danger-text">
                 {error}
             </p>
         );
@@ -261,7 +261,7 @@ export function AthleteLogTab({ athleteId }: { athleteId: string }) {
                             'max-w-[13rem] rounded-field border px-3 py-2 text-t-sm',
                             activeExercise === 'all'
                                 ? 'border-[var(--border-default)] bg-surface-raised text-ink'
-                                : 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand'
+                                : 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text'
                         )}
                     >
                         <option value="all">Todos los ejercicios</option>
@@ -583,7 +583,7 @@ function SessionCard({ session, onSetPatched }: { session: LoggedSession; onSetP
                             <span className="text-warning">{summary.deviations} desviaciones</span>
                         )}
                         {session.athleteNotes?.trim() && (
-                            <MessageSquareText size={12} className="text-brand" aria-label="Con notas del atleta" />
+                            <MessageSquareText size={12} className="text-brand-text" aria-label="Con notas del atleta" />
                         )}
                     </p>
                 </div>
@@ -636,7 +636,7 @@ function ExerciseLog({
             <p className="flex flex-wrap items-baseline gap-x-2">
                 <span className="text-t-xs font-bold text-ink">{exercise.name}</span>
                 {exercise.variantName && (
-                    <span className="text-t-2xs font-semibold text-brand">{exercise.variantName}</span>
+                    <span className="text-t-2xs font-semibold text-brand-text">{exercise.variantName}</span>
                 )}
                 {!anyLogged && (
                     <span className="text-t-2xs text-ink-faint">sin registrar</span>

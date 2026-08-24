@@ -232,7 +232,7 @@ export function SetVideoAnalysisModal({
                     <header className="flex shrink-0 items-start justify-between gap-3 border-b border-subtle px-4 py-3">
                         <div className="min-w-0">
                             <h3 className="flex items-center gap-2 text-t-sm font-bold text-ink">
-                                <Video size={15} className="shrink-0 text-brand" aria-hidden="true" />
+                                <Video size={15} className="shrink-0 text-brand-text" aria-hidden="true" />
                                 Analizar vídeo · Serie {setNumber}
                             </h3>
                             <p className="mt-0.5 truncate text-t-2xs text-ink-subtle">
@@ -326,7 +326,7 @@ export function SetVideoAnalysisModal({
 
                     <footer className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-subtle px-4 py-3">
                         {blocked && (
-                            <p className="mr-auto max-w-[22rem] text-t-2xs leading-relaxed text-danger">
+                            <p className="mr-auto max-w-[22rem] text-t-2xs leading-relaxed text-danger-text">
                                 Vuelve a grabar corrigiendo lo que indica el aviso de arriba. Un número
                                 mal medido hace más daño que ninguno.
                             </p>

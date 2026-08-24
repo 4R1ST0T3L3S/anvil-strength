@@ -16,22 +16,22 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
         <div className="min-h-[100dvh] bg-[#0a0a0a] font-sans selection:bg-anvil-red flex flex-col">
             <PublicHeader onLoginClick={onLoginClick} />
             <div className="flex-1 pt-32 pb-20 px-4">
-                <div className="max-w-4xl mx-auto mb-8 bg-[#151515] border border-amber-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
+                <div className="max-w-4xl mx-auto mb-8 bg-[#151515] border border-warning/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500/10 via-amber-500 to-amber-500/10" />
-                    <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/20 shrink-0">
-                        <ShieldAlert className="w-8 h-8 text-amber-500" />
+                    <div className="w-16 h-16 bg-warning-quiet rounded-full flex items-center justify-center border border-warning/20 shrink-0">
+                        <ShieldAlert className="w-8 h-8 text-warning" />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
                         <div>
-                            <h2 className="text-xl font-black uppercase tracking-tight text-white mb-1">Cuenta en Revisión</h2>
-                            <p className="text-gray-400 text-sm">
+                            <h2 className="text-xl font-black uppercase tracking-tight text-ink mb-1">Cuenta en Revisión</h2>
+                            <p className="text-ink-muted text-sm">
                                 Tu cuenta está pendiente de aprobación por el equipo de Anvil Strength. Mientras tanto, puedes configurar tu perfil.
                             </p>
                         </div>
                         <button
                             onClick={() => refetch()}
                             disabled={isFetching}
-                            className="shrink-0 flex items-center justify-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold uppercase text-sm transition-colors disabled:opacity-50"
+                            className="shrink-0 flex items-center justify-center gap-2 bg-warning-quiet hover:bg-amber-500/20 text-warning border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold uppercase text-sm transition-colors disabled:opacity-50"
                         >
                             <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
                             Comprobar estado

@@ -30,18 +30,18 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                     >
                         <div className={`
  relative flex gap-4 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl transition-[background-color,border-color,box-shadow]
- ${notif.type === 'success' ? 'bg-green-500/10 border-green-500/20' : 
+ ${notif.type === 'success' ? 'bg-success-quiet border-success/20' : 
  notif.type === 'error' ? 'bg-anvil-red/10 border-anvil-red/20' :
- notif.type === 'reward' ? 'bg-yellow-500/10 border-yellow-500/20' :
- 'bg-white/5 border-white/10'}
+ notif.type === 'reward' ? 'bg-warning-quiet border-warning/20' :
+ 'bg-white/5 border-line'}
 `}>
                             {/* Icon */}
                             <div className={`
  shrink-0 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg
- ${notif.type === 'success' ? 'bg-green-500 text-white' : 
- notif.type === 'error' ? 'bg-anvil-red text-white' :
+ ${notif.type === 'success' ? 'bg-green-500 text-ink' : 
+ notif.type === 'error' ? 'bg-anvil-red text-ink' :
  notif.type === 'reward' ? 'bg-yellow-500 text-black' :
- 'bg-white/10 text-white'}
+ 'bg-white/10 text-ink'}
 `}>
                                 {notif.type === 'success' && <CheckCircle size={24} />}
                                 {notif.type === 'error' && <XCircle size={24} />}
@@ -51,10 +51,10 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
 
                             {/* Content */}
                             <div className="flex-1 min-w-0 pr-6">
-                                <h4 className="text-sm font-black uppercase italic text-white leading-tight mb-1 truncate">
+                                <h4 className="text-sm font-black uppercase italic text-ink leading-tight mb-1 truncate">
                                     {notif.title}
                                 </h4>
-                                <p className="text-t-2xs font-bold text-gray-400 uppercase leading-tight tracking-wider">
+                                <p className="text-t-2xs font-bold text-ink-muted uppercase leading-tight tracking-wider">
                                     {notif.message}
                                 </p>
                             </div>
@@ -62,7 +62,7 @@ export function AnvilToast({ notifications, removeNotification }: AnvilToastProp
                             {/* Close Button */}
                             <button 
                                 onClick={() => removeNotification(notif.id)}
-                                className="absolute top-2 right-2 p-1 text-gray-600 hover:text-white transition-colors"
+                                className="absolute top-2 right-2 p-1 text-gray-600 hover:text-ink transition-colors"
                             >
                                 <X size={14} />
                             </button>

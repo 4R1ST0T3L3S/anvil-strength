@@ -157,12 +157,12 @@ export function NotificationBell({ userId }: { userId: string }) {
                 aria-haspopup="dialog"
                 // 44x44 reales, como el resto de controles de la barra: medía
                 // 36 y es vecino del menú de cuenta, que sí los tiene.
-                className="relative flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white"
+                className="relative flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-ink"
                 aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-anvil-red px-1 text-t-2xs font-black text-white">
+                    <span className="absolute right-1.5 top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[var(--surface-canvas)] bg-anvil-red px-1 text-t-2xs font-black text-ink">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
@@ -187,12 +187,12 @@ export function NotificationBell({ userId }: { userId: string }) {
                 className="z-tooltip flex max-h-[min(75vh,32rem)] flex-col overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-overlay shadow-overlay"
             >
                 <div className="flex min-h-0 flex-col">
-                        <div className="flex shrink-0 items-center justify-between p-4 border-b border-white/5">
-                            <h3 className="font-black uppercase text-white text-sm tracking-wider">Notificaciones</h3>
+                        <div className="flex shrink-0 items-center justify-between p-4 border-b border-subtle">
+                            <h3 className="font-black uppercase text-ink text-sm tracking-wider">Notificaciones</h3>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={handleMarkAllRead}
-                                    className="flex items-center gap-1.5 text-t-2xs font-bold text-gray-400 hover:text-anvil-red uppercase tracking-wide transition-colors"
+                                    className="flex items-center gap-1.5 text-t-2xs font-bold text-ink-muted hover:text-brand-text uppercase tracking-wide transition-colors"
                                 >
                                     <CheckCheck size={14} /> Marcar leídas
                                 </button>
@@ -202,10 +202,10 @@ export function NotificationBell({ userId }: { userId: string }) {
                         <div className="min-h-0 flex-1 overflow-y-auto">
                             {loading ? (
                                 <div className="flex justify-center py-10">
-                                    <Loader className="animate-spin text-anvil-red" size={22} />
+                                    <Loader className="animate-spin text-brand-text" size={22} />
                                 </div>
                             ) : notifications.length === 0 ? (
-                                <div className="py-12 text-center text-gray-500 text-sm">
+                                <div className="py-12 text-center text-ink-subtle text-sm">
                                     <Bell size={28} className="mx-auto mb-3 opacity-30" />
                                     No tienes notificaciones.
                                 </div>
@@ -213,15 +213,15 @@ export function NotificationBell({ userId }: { userId: string }) {
                                 notifications.map(n => (
                                     <div
                                         key={n.id}
-                                        className={`p-4 border-b border-white/5 last:border-b-0 transition-colors ${
+                                        className={`p-4 border-b border-subtle last:border-b-0 transition-colors ${
  n.is_read ? 'opacity-60' : 'bg-anvil-red/5'
  }`}
                                     >
                                         <div className="flex items-start gap-3">
                                             {!n.is_read && <span className="w-2 h-2 bg-anvil-red rounded-full mt-1.5 shrink-0" />}
                                             <div className="min-w-0">
-                                                <p className="text-sm font-bold text-white leading-tight">{n.title}</p>
-                                                <p className="text-xs text-gray-400 mt-1 leading-relaxed">{n.message}</p>
+                                                <p className="text-sm font-bold text-ink leading-tight">{n.title}</p>
+                                                <p className="text-xs text-ink-muted mt-1 leading-relaxed">{n.message}</p>
                                                 <p className="text-t-2xs text-gray-600 font-bold uppercase mt-1.5">{timeAgo(n.created_at)}</p>
                                             </div>
                                         </div>
@@ -232,14 +232,14 @@ export function NotificationBell({ userId }: { userId: string }) {
 
                         {/* Push toggle */}
                         {push.isSupported && (
-                            <div className="shrink-0 p-3 border-t border-white/5 bg-black/20">
+                            <div className="shrink-0 p-3 border-t border-subtle bg-black/20">
                                 <button
                                     onClick={handleTogglePush}
                                     disabled={push.isLoading}
                                     className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors disabled:opacity-50 ${
  push.isSubscribed
- ? 'bg-white/5 text-gray-400 hover:text-white'
- : 'bg-anvil-red hover:bg-red-700 text-white'
+ ? 'bg-white/5 text-ink-muted hover:text-ink'
+ : 'bg-anvil-red hover:bg-red-700 text-ink'
  }`}
                                 >
                                     {push.isLoading ? <Loader className="animate-spin" size={13} /> : push.isSubscribed ? <BellOff size={13} /> : <BellRing size={13} />}

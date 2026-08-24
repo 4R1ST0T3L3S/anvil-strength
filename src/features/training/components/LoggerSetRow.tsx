@@ -423,7 +423,7 @@ export function LoggerSetRow({
                         'relative flex h-10 w-9 items-center justify-center rounded-field transition-colors duration-fast ease-snap',
                         'before:absolute before:-inset-y-0.5 before:inset-x-0 before:content-[""]',
                         hasNote
-                            ? 'text-brand hover:bg-[var(--brand-quiet)]'
+                            ? 'text-brand-text hover:bg-[var(--brand-quiet)]'
                             : 'text-ink-faint hover:bg-surface-overlay hover:text-ink-muted',
                         noteOpen && 'bg-surface-overlay text-ink'
                     )}
@@ -608,7 +608,7 @@ function SetInput({
                 'h-11 w-full rounded-field border bg-surface-sunken px-0 text-center text-t-base font-extrabold tabular-nums transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
                 filled
                     ? tone === 'brand'
-                        ? 'border-[var(--brand-line)] text-brand'
+                        ? 'border-[var(--brand-line)] text-brand-text'
                         : 'border-[var(--border-strong)] text-ink'
                     : 'border-subtle text-ink-muted',
                 !filled && bigPlaceholder

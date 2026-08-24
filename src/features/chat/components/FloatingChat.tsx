@@ -55,7 +55,7 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 style={{ width: isMinimized ? 60 : width }}
-                className="fixed top-0 right-0 h-full bg-[#111111] border-l border-white/10 z-[1000] shadow-2xl flex flex-col overflow-hidden"
+                className="fixed top-0 right-0 h-full bg-[#111111] border-l border-line z-[1000] shadow-2xl flex flex-col overflow-hidden"
             >
                 {/* Resize Handle */}
                 {!isMinimized && (
@@ -66,13 +66,13 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                 )}
 
                 {/* Header */}
-                <div className="p-4 bg-[#0a0a0a] border-b border-white/5 flex items-center justify-between">
+                <div className="p-4 bg-[#0a0a0a] border-b border-subtle flex items-center justify-between">
                     <div className="flex items-center gap-3 overflow-hidden">
                         <div className="relative">
                             {athlete.avatar_url ? (
-                                <img src={athlete.avatar_url} alt={athlete.full_name} className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                                <img src={athlete.avatar_url} alt={athlete.full_name} className="w-10 h-10 rounded-full object-cover border border-line" />
                             ) : (
-                                <div className="w-10 h-10 rounded-full bg-anvil-red flex items-center justify-center text-white font-black">
+                                <div className="w-10 h-10 rounded-full bg-anvil-red flex items-center justify-center text-ink font-black">
                                     {athlete.full_name[0]}
                                 </div>
                             )}
@@ -80,8 +80,8 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                         </div>
                         {!isMinimized && (
                             <div className="flex flex-col truncate">
-                                <h3 className="text-white font-black text-sm uppercase italic truncate">{athlete.full_name}</h3>
-                                <span className="text-t-2xs text-green-500 font-bold uppercase tracking-widest">En línea</span>
+                                <h3 className="text-ink font-black text-sm uppercase italic truncate">{athlete.full_name}</h3>
+                                <span className="text-t-2xs text-success font-bold uppercase tracking-widest">En línea</span>
                             </div>
                         )}
                     </div>
@@ -89,13 +89,13 @@ export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatPr
                     <div className="flex items-center gap-1">
                         <button 
                             onClick={() => setIsMinimized(!isMinimized)}
-                            className="p-2 text-zinc-500 hover:text-white transition-colors"
+                            className="p-2 text-ink-subtle hover:text-ink transition-colors"
                         >
                             {isMinimized ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
                         </button>
                         <button 
                             onClick={onClose}
-                            className="p-2 text-zinc-500 hover:text-white transition-colors"
+                            className="p-2 text-ink-subtle hover:text-ink transition-colors"
                         >
                             <X size={20} />
                         </button>

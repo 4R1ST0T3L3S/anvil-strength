@@ -36,24 +36,24 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
         <div className="p-6 md:p-10 space-y-8 animate-fade">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-white uppercase italic tracking-wider mb-2 flex items-center gap-3">
-                        <Users className="text-anvil-red" size={32} />
+                    <h1 className="text-3xl font-black text-ink uppercase italic tracking-wider mb-2 flex items-center gap-3">
+                        <Users className="text-brand-text" size={32} />
                         MIS ATLETAS (NUTRICIÓN)
                     </h1>
-                    <p className="text-zinc-400">
+                    <p className="text-ink-muted">
                         Selecciona un atleta para gestionar su plan nutricional.
                     </p>
                 </div>
             </div>
 
             <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-subtle" size={20} />
                 <input
                     type="text"
                     placeholder="Buscar atleta por nombre o apodo..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#111111] text-white pl-12 pr-4 py-4 rounded-xl border border-zinc-800 focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-[border-color,box-shadow]"
+                    className="w-full bg-[#111111] text-ink pl-12 pr-4 py-4 rounded-xl border border-line focus:border-anvil-red focus:ring-1 focus:ring-anvil-red transition-[border-color,box-shadow]"
                 />
             </div>
 
@@ -62,43 +62,43 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                     <div className="w-10 h-10 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
                 </div>
             ) : filteredAthletes.length === 0 ? (
-                <div className="bg-[#111111] border border-zinc-800 rounded-xl p-8 text-center">
-                    <p className="text-zinc-400">No se encontraron atletas.</p>
+                <div className="bg-[#111111] border border-line rounded-xl p-8 text-center">
+                    <p className="text-ink-muted">No se encontraron atletas.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredAthletes.map((athlete) => (
                         <div 
                             key={athlete.id}
-                            className="bg-[#111111] border border-zinc-800 rounded-xl p-5 hover:border-anvil-red transition-colors cursor-pointer group"
+                            className="bg-[#111111] border border-line rounded-xl p-5 hover:border-anvil-red transition-colors cursor-pointer group"
                         >
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden border border-zinc-700">
+                                    <div className="w-12 h-12 rounded-full bg-surface-raised overflow-hidden border border-strong">
                                         {athlete.avatar_url ? (
                                             <img src={athlete.avatar_url} alt={athlete.full_name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-zinc-500 font-bold">
+                                            <div className="w-full h-full flex items-center justify-center text-ink-subtle font-bold">
                                                 {athlete.full_name.charAt(0)}
                                             </div>
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="text-white font-bold group-hover:text-anvil-red transition-colors">
+                                        <h3 className="text-ink font-bold group-hover:text-brand-text transition-colors">
                                             {athlete.full_name}
                                         </h3>
                                         {athlete.nickname && (
-                                            <p className="text-sm text-zinc-500">"{athlete.nickname}"</p>
+                                            <p className="text-sm text-ink-subtle">"{athlete.nickname}"</p>
                                         )}
                                     </div>
                                 </div>
-                                <ChevronRight className="text-zinc-600 group-hover:text-anvil-red transition-colors" />
+                                <ChevronRight className="text-zinc-600 group-hover:text-brand-text transition-colors" />
                             </div>
                             
-                            <div className="flex justify-between items-center pt-4 border-t border-zinc-800/50">
-                                <span className="text-xs text-zinc-500 uppercase tracking-wider">Plan Nutricional</span>
+                            <div className="flex justify-between items-center pt-4 border-t border-line">
+                                <span className="text-xs text-ink-subtle uppercase tracking-wider">Plan Nutricional</span>
                                 {/* This will eventually show if they have an active plan */}
-                                <span className="text-xs bg-zinc-800 text-zinc-300 px-2 py-1 rounded-md">
+                                <span className="text-xs bg-surface-raised text-ink px-2 py-1 rounded-md">
                                     Ver Plan
                                 </span>
                             </div>

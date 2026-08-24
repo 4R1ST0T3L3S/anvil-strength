@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils';
  *
  * QUÉ SUSTITUYE: 112 `animate-spin` repartidos por la aplicación, contra 5
  * ficheros que usaban el esqueleto que había (y que pintaba
- * `bg-gray-700/50`, un gris que no está en el sistema).
+ * `bg-surface-overlay/50`, un gris que no está en el sistema).
  *
  *
  * LAS DOS REGLAS QUE HACEN QUE UN ESQUELETO SIRVA

@@ -160,7 +160,7 @@ export function RolesSection({ user }: { user: UserProfile }) {
                             <span className="min-w-0">
                                 <span className="flex items-center gap-2 text-t-sm font-bold text-ink">
                                     {ROL_INFO[rol].nombre}
-                                    <ShieldCheck size={13} aria-hidden="true" className="shrink-0 text-brand" />
+                                    <ShieldCheck size={13} aria-hidden="true" className="shrink-0 text-brand-text" />
                                 </span>
                                 <span className="mt-0.5 block text-t-xs leading-relaxed text-ink-subtle">
                                     {ROL_INFO[rol].descripcion}

@@ -11,8 +11,8 @@ export const ChatBubble: React.FC<{ message: ChatMessage; isOwn: boolean }> = ({
         >
             <div className={`max-w-[80%] md:max-w-[70%] p-4 rounded-[1.5rem] relative ${
  isOwn 
- ? 'bg-anvil-red text-white rounded-br-none shadow-[0_4px_20px_rgba(220,38,38,0.2)]' 
- : 'bg-[#0a0a0a] text-gray-200 border border-white/5 rounded-bl-none shadow-xl'
+ ? 'bg-anvil-red text-ink rounded-br-none shadow-[0_4px_20px_rgba(220,38,38,0.2)]' 
+ : 'bg-[#0a0a0a] text-gray-200 border border-subtle rounded-bl-none shadow-xl'
  }`}>
                 <p className="text-sm font-bold leading-relaxed whitespace-pre-wrap">
                     {message.content}
@@ -41,20 +41,20 @@ export const ChatInput: React.FC<{ onSend: (val: string) => void }> = ({ onSend 
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-4 bg-black/40 backdrop-blur-xl border-t border-white/5 flex items-center gap-3">
-            <button type="button" className="p-3 text-gray-500 hover:text-white transition-colors">
+        <form onSubmit={handleSubmit} className="p-4 bg-black/40 backdrop-blur-xl border-t border-subtle flex items-center gap-3">
+            <button type="button" className="p-3 text-ink-subtle hover:text-ink transition-colors">
                 <ImageIcon size={20} />
             </button>
             <input 
                 value={text}
                 onChange={e => setText(e.target.value)}
                 placeholder="Escribe un mensaje..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white focus:border-anvil-red/50 transition-colors placeholder:text-gray-600"
+                className="flex-1 bg-white/5 border border-line rounded-2xl px-6 py-4 text-sm font-bold text-ink focus:border-anvil-red/50 transition-colors placeholder:text-gray-600"
             />
             <button 
                 type="submit"
                 disabled={!text.trim()}
-                className="p-4 bg-anvil-red text-white rounded-2xl hover:bg-red-500 transition-[background-color,opacity] shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:grayscale"
+                className="p-4 bg-anvil-red text-ink rounded-2xl hover:bg-red-500 transition-[background-color,opacity] shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:grayscale"
             >
                 <Send size={20} />
             </button>

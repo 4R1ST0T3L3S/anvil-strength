@@ -33,25 +33,25 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                     <div className={`
  bg-black/90 backdrop-blur-2xl border-2 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto
  w-[280px] transition-colors duration-slow cursor-move relative
- ${isExceeded ? 'border-anvil-red shadow-red-900/20' : 'border-zinc-800 shadow-black/40'}
+ ${isExceeded ? 'border-anvil-red shadow-red-900/20' : 'border-line shadow-black/40'}
 `}>
                         {/* Drag Handle Area */}
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-zinc-800 px-3 py-0.5 rounded-full text-t-2xs font-black uppercase text-zinc-500 tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-surface-raised px-3 py-0.5 rounded-full text-t-2xs font-black uppercase text-ink-subtle tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
                             Mover
                         </div>
 
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <Target size={14} className={isExceeded ? 'text-anvil-red' : 'text-zinc-500'} />
-                                <span className={`text-t-2xs font-black uppercase tracking-widest ${isExceeded ? 'text-anvil-red' : 'text-zinc-500'}`}>
+                                <Target size={14} className={isExceeded ? 'text-brand-text' : 'text-ink-subtle'} />
+                                <span className={`text-t-2xs font-black uppercase tracking-widest ${isExceeded ? 'text-brand-text' : 'text-ink-subtle'}`}>
                                     Total Planificado
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                {isExceeded && <AlertCircle size={14} className="text-anvil-red animate-pulse" />}
+                                {isExceeded && <AlertCircle size={14} className="text-brand-text animate-pulse" />}
                                 <button 
                                     onClick={() => setShow(false)}
-                                    className="p-1 hover:bg-white/10 rounded-lg text-zinc-500 hover:text-white transition-colors"
+                                    className="p-1 hover:bg-white/10 rounded-lg text-ink-subtle hover:text-ink transition-colors"
                                 >
                                     <X size={14} />
                                 </button>
@@ -64,14 +64,14 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                                     label="Calorías" 
                                     current={current.kcal} 
                                     target={targets.kcal} 
-                                    color="text-white"
+                                    color="text-ink"
                                     isExceeded={current.kcal > targets.kcal}
                                 />
                                 <MacroItem 
                                     label="Proteína" 
                                     current={current.prot} 
                                     target={targets.prot} 
-                                    color="text-blue-400"
+                                    color="text-info"
                                     isExceeded={current.prot > targets.prot}
                                 />
                             </div>
@@ -80,7 +80,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                                     label="Carbos" 
                                     current={current.carbs} 
                                     target={targets.carbs} 
-                                    color="text-yellow-400"
+                                    color="text-warning"
                                     isExceeded={current.carbs > targets.carbs}
                                 />
                                 <MacroItem 
@@ -103,18 +103,18 @@ function MacroItem({ label, current, target, color, isExceeded }: any) {
     return (
         <div className="space-y-1">
             <div className="flex justify-between items-baseline">
-                <span className="text-t-2xs font-bold text-zinc-500 uppercase">{label}</span>
-                <span className={`text-xs font-black ${isExceeded ? 'text-anvil-red' : color}`}>
+                <span className="text-t-2xs font-bold text-ink-subtle uppercase">{label}</span>
+                <span className={`text-xs font-black ${isExceeded ? 'text-brand-text' : color}`}>
                     {Math.round(current)}g
                 </span>
             </div>
             <div className="flex justify-between items-center text-t-2xs">
                 <span className="text-zinc-600">Obj: {target}</span>
-                <span className={isExceeded ? 'text-anvil-red font-bold' : 'text-zinc-500'}>
+                <span className={isExceeded ? 'text-brand-text font-bold' : 'text-ink-subtle'}>
                     {Math.round(current - target) > 0 ? `+${Math.round(current - target)}` : ''}
                 </span>
             </div>
-            <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-surface-raised rounded-full overflow-hidden">
                 <m.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, (current / (target || 1)) * 100)}%` }}

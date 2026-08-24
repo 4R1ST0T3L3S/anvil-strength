@@ -249,7 +249,7 @@ export function ProgressionModal({
                                             <button
                                                 onClick={() => handleDeleteTemplate(p.id)}
                                                 aria-label={`Eliminar ${p.name}`}
-                                                className="shrink-0 rounded-field p-1.5 text-ink-faint transition-colors duration-fast ease-snap hover:text-danger"
+                                                className="shrink-0 rounded-field p-1.5 text-ink-faint transition-colors duration-fast ease-snap hover:text-danger-text"
                                             >
                                                 <Trash2 size={14} aria-hidden="true" />
                                             </button>

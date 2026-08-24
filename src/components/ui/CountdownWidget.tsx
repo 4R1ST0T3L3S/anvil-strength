@@ -18,7 +18,7 @@ export const COUNTDOWN_THEMES: CountdownTheme[] = [
     { id: 'auto', label: 'Nivel automático', className: '', swatch: 'bg-gradient-to-br from-blue-500 via-[#D4AF37] to-[#FF6B35]' },
     { id: 'anvil', label: 'Anvil Red', className: 'bg-gradient-to-br from-anvil-red to-red-950', swatch: 'bg-gradient-to-br from-anvil-red to-red-950' },
     { id: 'gold', label: 'Oro', className: 'bg-gradient-to-br from-[#D4AF37] to-[#8a6d1f]', swatch: 'bg-gradient-to-br from-[#D4AF37] to-[#8a6d1f]' },
-    { id: 'carbon', label: 'Carbón', className: 'bg-gradient-to-br from-[#2a2a2a] to-black border border-white/10', swatch: 'bg-gradient-to-br from-[#2a2a2a] to-black' },
+    { id: 'carbon', label: 'Carbón', className: 'bg-gradient-to-br from-[#2a2a2a] to-black border border-line', swatch: 'bg-gradient-to-br from-[#2a2a2a] to-black' },
     { id: 'electric', label: 'Azul eléctrico', className: 'bg-gradient-to-br from-blue-500 to-indigo-900', swatch: 'bg-gradient-to-br from-blue-500 to-indigo-900' },
     { id: 'emerald', label: 'Esmeralda', className: 'bg-gradient-to-br from-emerald-500 to-emerald-950', swatch: 'bg-gradient-to-br from-emerald-500 to-emerald-950' },
     { id: 'royal', label: 'Púrpura', className: 'bg-gradient-to-br from-purple-500 to-purple-950', swatch: 'bg-gradient-to-br from-purple-500 to-purple-950' },
@@ -118,10 +118,10 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
         return (
             <div className="relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-center md:p-6">
                 <Trophy size={32} className="text-ink-faint mb-3" />
-                <h3 className="text-sm font-bold text-gray-400 italic leading-tight mb-1">No hay competiciones a la vista.</h3>
+                <h3 className="text-sm font-bold text-ink-muted italic leading-tight mb-1">No hay competiciones a la vista.</h3>
                 <button
                     onClick={() => setSettingsOpen(true)}
-                    className="text-xs text-anvil-red font-bold mt-2 uppercase tracking-wider hover:text-white transition-colors"
+                    className="text-xs text-brand-text font-bold mt-2 uppercase tracking-wider hover:text-ink transition-colors"
                 >
                     Elegir del calendario AEP →
                 </button>
@@ -137,13 +137,13 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
     }
 
     return (
-        <div className={`${colorClass} relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card p-5 text-center text-white md:p-6`}>
+        <div className={`${colorClass} relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card p-5 text-center text-ink md:p-6`}>
             <div className="pointer-events-none absolute -mr-24 -mt-24 right-0 top-0 h-56 w-56 rounded-full bg-white/10"></div>
 
             {/* Botón de ajustes */}
             <button
                 onClick={() => setSettingsOpen(true)}
-                className="absolute top-3 right-3 z-20 p-2 bg-black/20 hover:bg-black/40 rounded-full text-white/70 hover:text-white transition-colors"
+                className="absolute top-3 right-3 z-20 p-2 bg-black/20 hover:bg-black/40 rounded-full text-ink-muted hover:text-ink transition-colors"
                 aria-label="Personalizar contador"
             >
                 <Settings size={16} />
@@ -161,7 +161,7 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
                         <MapPin size={12} /> {event.location}
                     </div>
                 )}
-                <div className="mt-4 w-full max-w-xl bg-black/10 rounded-2xl pb-2 px-2 border border-white/5 flex justify-center">
+                <div className="mt-4 w-full max-w-xl bg-black/10 rounded-2xl pb-2 px-2 border border-subtle flex justify-center">
                     <LiveCountdown targetDate={event.date} />
                 </div>
             </div>
@@ -248,14 +248,14 @@ function CountdownSettings({
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 40 }}
-                    className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh] text-left"
+                    className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh] text-left"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
-                        <h2 className="text-lg font-black uppercase text-white flex items-center gap-2">
-                            <Settings className="text-anvil-red" size={18} /> Personalizar contador
+                    <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
+                        <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">
+                            <Settings className="text-brand-text" size={18} /> Personalizar contador
                         </h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
                             <X size={18} />
                         </button>
                     </div>
@@ -263,7 +263,7 @@ function CountdownSettings({
                     <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {/* Fuente del evento */}
                         <div>
-                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">¿A qué cuenta atrás?</p>
+                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">¿A qué cuenta atrás?</p>
                             <div className="grid grid-cols-3 gap-2">
                                 {sourceTabs.map(tab => (
                                     <button
@@ -272,8 +272,8 @@ function CountdownSettings({
                                         onClick={() => setDraft({ ...draft, source: tab.id })}
                                         className={`py-2.5 px-2 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors border ${
  draft.source === tab.id
- ? 'bg-anvil-red border-anvil-red text-white'
- : 'bg-[#252525] border-white/5 text-gray-400 hover:text-white hover:border-white/20'
+ ? 'bg-anvil-red border-anvil-red text-ink'
+ : 'bg-[#252525] border-subtle text-ink-muted hover:text-ink hover:border-strong'
  } disabled:opacity-30 disabled:cursor-not-allowed`}
                                     >
                                         {tab.label}
@@ -285,11 +285,11 @@ function CountdownSettings({
                         {/* Lista AEP */}
                         {draft.source === 'aep' && (
                             <div>
-                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Calendario oficial AEP</p>
+                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">Calendario oficial AEP</p>
                                 {loadingAep ? (
-                                    <div className="flex justify-center py-8"><Loader className="animate-spin text-anvil-red" size={24} /></div>
+                                    <div className="flex justify-center py-8"><Loader className="animate-spin text-brand-text" size={24} /></div>
                                 ) : aepError ? (
-                                    <p className="text-sm text-red-400 py-4">{aepError}</p>
+                                    <p className="text-sm text-danger-text py-4">{aepError}</p>
                                 ) : (
                                     <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                                         {aepCompetitions.map((comp, i) => {
@@ -304,25 +304,25 @@ function CountdownSettings({
                                                     className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
  isSelected
  ? 'bg-anvil-red/10 border-anvil-red'
- : 'bg-[#252525] border-white/5 hover:border-white/20'
+ : 'bg-[#252525] border-subtle hover:border-strong'
  }`}
                                                 >
                                                     <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-anvil-red border-anvil-red' : 'border-gray-600'}`}>
-                                                        {isSelected && <Check size={10} className="text-white" />}
+                                                        {isSelected && <Check size={10} className="text-ink" />}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="text-sm font-bold text-white truncate">{comp.campeonato}</p>
-                                                        <p className="text-t-2xs text-gray-500 font-bold flex items-center gap-2">
+                                                        <p className="text-sm font-bold text-ink truncate">{comp.campeonato}</p>
+                                                        <p className="text-t-2xs text-ink-subtle font-bold flex items-center gap-2">
                                                             <span className="flex items-center gap-1"><Calendar size={10} /> {comp.fecha}</span>
                                                             <span className="flex items-center gap-1 truncate"><MapPin size={10} /> {comp.sede}</span>
                                                         </p>
                                                     </div>
-                                                    <span className="text-t-2xs font-black uppercase px-2 py-0.5 rounded bg-white/5 text-gray-400 shrink-0">{comp.level}</span>
+                                                    <span className="text-t-2xs font-black uppercase px-2 py-0.5 rounded bg-white/5 text-ink-muted shrink-0">{comp.level}</span>
                                                 </button>
                                             );
                                         })}
                                         {aepCompetitions.length === 0 && (
-                                            <p className="text-sm text-gray-500 py-4 text-center">No hay competiciones próximas en el calendario.</p>
+                                            <p className="text-sm text-ink-subtle py-4 text-center">No hay competiciones próximas en el calendario.</p>
                                         )}
                                     </div>
                                 )}
@@ -332,26 +332,26 @@ function CountdownSettings({
                         {/* Evento personalizado */}
                         {draft.source === 'custom' && (
                             <div className="space-y-3">
-                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500">Tu propio objetivo</p>
+                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle">Tu propio objetivo</p>
                                 <div className="relative">
-                                    <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                    <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={16} />
                                     <input
                                         type="text"
                                         placeholder="Nombre (ej: Mock meet, Test de fuerza...)"
                                         maxLength={60}
                                         value={draft.custom?.name || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: e.target.value, date: draft.custom?.date || '' } })}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
                                     />
                                 </div>
                                 <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={16} />
                                     <input
                                         type="date"
                                         min={new Date().toISOString().split('T')[0]}
                                         value={draft.custom?.date || ''}
                                         onChange={(e) => setDraft({ ...draft, custom: { name: draft.custom?.name || '', date: e.target.value } })}
-                                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
+                                        className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 pl-10 pr-4 text-ink text-sm focus:border-anvil-red/50 transition-colors [color-scheme:dark]"
                                     />
                                 </div>
                             </div>
@@ -359,7 +359,7 @@ function CountdownSettings({
 
                         {/* Temas */}
                         <div>
-                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500 mb-3">Estilo</p>
+                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">Estilo</p>
                             <div className="grid grid-cols-4 gap-3">
                                 {COUNTDOWN_THEMES.map(theme => (
                                     <button
@@ -370,9 +370,9 @@ function CountdownSettings({
                                         <div className={`w-full aspect-square rounded-xl ${theme.swatch} border-2 transition-[border-color,box-shadow,transform] ${
  draft.themeId === theme.id ? 'border-white scale-105 shadow-lg' : 'border-transparent group-hover:border-white/30'
  } flex items-center justify-center`}>
-                                            {draft.themeId === theme.id && <Check size={16} className="text-white drop-shadow" />}
+                                            {draft.themeId === theme.id && <Check size={16} className="text-ink drop-shadow" />}
                                         </div>
-                                        <span className={`text-t-2xs font-bold uppercase tracking-wide text-center leading-tight ${draft.themeId === theme.id ? 'text-white' : 'text-gray-500'}`}>
+                                        <span className={`text-t-2xs font-bold uppercase tracking-wide text-center leading-tight ${draft.themeId === theme.id ? 'text-ink' : 'text-ink-subtle'}`}>
                                             {theme.label}
                                         </span>
                                     </button>
@@ -382,10 +382,10 @@ function CountdownSettings({
                     </div>
 
                     {/* Footer */}
-                    <div className="p-5 border-t border-white/5 shrink-0 flex justify-end gap-3">
+                    <div className="p-5 border-t border-subtle shrink-0 flex justify-end gap-3">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 font-bold uppercase tracking-wider text-xs transition-colors"
+                            className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-ink font-bold uppercase tracking-wider text-xs transition-colors"
                         >
                             Cancelar
                         </button>
@@ -395,7 +395,7 @@ function CountdownSettings({
                                 (draft.source === 'aep' && !draft.aep) ||
                                 (draft.source === 'custom' && (!draft.custom?.name || !draft.custom?.date))
                             }
-                            className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             Guardar
                         </button>

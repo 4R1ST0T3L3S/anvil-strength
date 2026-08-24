@@ -223,7 +223,7 @@ function OpcionPeriodo({
                 'flex min-h-[44px] w-full items-center gap-2 rounded-field px-3 text-left',
                 'text-t-sm font-semibold transition-colors duration-fast ease-snap',
                 'hover:bg-surface-raised',
-                activa ? 'text-brand' : 'text-ink-muted hover:text-ink'
+                activa ? 'text-brand-text' : 'text-ink-muted hover:text-ink'
             )}
         >
             <Check

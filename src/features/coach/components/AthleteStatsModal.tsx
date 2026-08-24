@@ -303,7 +303,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                 {!embedded && (
                     <div className="flex items-center justify-between gap-4 px-4 py-4 md:px-8">
                         <h2 className="flex min-w-0 items-center gap-2.5 text-t-lg font-black uppercase tracking-display text-ink md:text-t-2xl">
-                            <TrendingUp className="shrink-0 text-brand" size={20} aria-hidden="true" />
+                            <TrendingUp className="shrink-0 text-brand-text" size={20} aria-hidden="true" />
                             <span className="truncate">{athleteName}</span>
                         </h2>
                         <button
@@ -338,11 +338,11 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
 
             {loading ? (
                 <div className="flex flex-1 items-center justify-center">
-                    <Loader className="animate-spin text-brand" size={28} />
+                    <Loader className="animate-spin text-brand-text" size={28} />
                 </div>
             ) : loadError ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-                    <p className="text-t-sm font-bold text-danger">No se pudo cargar</p>
+                    <p className="text-t-sm font-bold text-danger-text">No se pudo cargar</p>
                     <p className="max-w-md text-t-sm text-ink-subtle">{loadError}</p>
                 </div>
             ) : history.length === 0 ? (

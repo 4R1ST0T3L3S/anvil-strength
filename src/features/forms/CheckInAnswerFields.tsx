@@ -20,8 +20,8 @@ export function CheckInAnswerFields({
         <>
             {questions.map(q => (
                 <div key={q.id}>
-                    <label className={`block text-sm font-bold text-white ${q.help ? 'mb-1' : 'mb-3'}`}>{q.label}</label>
-                    {q.help && <p className="mb-3 text-xs text-gray-500">{q.help}</p>}
+                    <label className={`block text-sm font-bold text-ink ${q.help ? 'mb-1' : 'mb-3'}`}>{q.label}</label>
+                    {q.help && <p className="mb-3 text-xs text-ink-subtle">{q.help}</p>}
 
                     {q.qtype === 'scale' && (
                         <>
@@ -33,8 +33,8 @@ export function CheckInAnswerFields({
                                         onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
                                         className={`aspect-square rounded-lg text-xs font-black transition-[background-color,box-shadow,color,transform] ${
  values[q.id] === i
- ? 'bg-anvil-red text-white scale-110 shadow-lg shadow-anvil-red/30'
- : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'
+ ? 'bg-anvil-red text-ink scale-110 shadow-lg shadow-anvil-red/30'
+ : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
  }`}
                                     >
                                         {i}
@@ -57,7 +57,7 @@ export function CheckInAnswerFields({
                             value={values[q.id] ?? ''}
                             onChange={(e) => onChange(q.id, e.target.value === '' ? null : Number(e.target.value))}
                             placeholder="0"
-                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-anvil-red/50 transition-colors"
+                            className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 px-4 text-ink text-base focus:border-anvil-red/50 transition-colors"
                         />
                     )}
 
@@ -68,7 +68,7 @@ export function CheckInAnswerFields({
                             rows={3}
                             maxLength={1000}
                             placeholder="Escribe aquí..."
-                            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-base focus:border-anvil-red/50 transition-colors resize-none"
+                            className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 px-4 text-ink text-base focus:border-anvil-red/50 transition-colors resize-none"
                         />
                     )}
                 </div>

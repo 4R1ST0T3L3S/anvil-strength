@@ -50,7 +50,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "w-full bg-[#0a0a0a] border rounded px-2 py-1 text-center text-xs transition-colors flex items-center justify-center gap-1",
-                    isOpen ? "border-anvil-red text-white" : "border-white/10 text-gray-300 hover:border-white/30",
+                    isOpen ? "border-anvil-red text-ink" : "border-line text-ink hover:border-white/30",
                     !value && "text-gray-600"
                 )}
             >
@@ -65,11 +65,11 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
             {/* Dropdown Popover */}
             {isOpen && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl z-50 p-2 flex gap-2 animate-pop">
+                <div className="absolute top-full left-0 mt-1 w-48 bg-[#0a0a0a] border border-line rounded-xl shadow-2xl z-50 p-2 flex gap-2 animate-pop">
 
                     {/* Minutes Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pr-1">
-                        <div className="text-t-2xs uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Min</div>
+                        <div className="text-t-2xs uppercase text-ink-subtle font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Min</div>
                         <div className="space-y-1">
                             {minuteOptions.map(m => (
                                 <button
@@ -77,7 +77,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
                                     onClick={() => handleSelect(m, seconds)}
                                     className={cn(
                                         "w-full text-center py-1 rounded text-xs font-bold transition-colors",
-                                        m === minutes ? "bg-anvil-red text-white" : "text-gray-400 hover:bg-white/5"
+                                        m === minutes ? "bg-anvil-red text-ink" : "text-ink-muted hover:bg-white/5"
                                     )}
                                 >
                                     {m}
@@ -91,7 +91,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
 
                     {/* Seconds Col */}
                     <div className="flex-1 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 pl-1">
-                        <div className="text-t-2xs uppercase text-gray-500 font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Seg</div>
+                        <div className="text-t-2xs uppercase text-ink-subtle font-bold mb-1 text-center sticky top-0 bg-[#0a0a0a]">Seg</div>
                         <div className="space-y-1">
                             {fineSecondOptions.map(s => (
                                 <button
@@ -99,7 +99,7 @@ export function DurationPicker({ value, onChange, onBlur }: DurationPickerProps)
                                     onClick={() => handleSelect(minutes, s)}
                                     className={cn(
                                         "w-full text-center py-1 rounded text-xs font-bold transition-colors",
-                                        s === seconds ? "bg-anvil-red text-white" : "text-gray-400 hover:bg-white/5"
+                                        s === seconds ? "bg-anvil-red text-ink" : "text-ink-muted hover:bg-white/5"
                                     )}
                                 >
                                     :{s.toString().padStart(2, '0')}

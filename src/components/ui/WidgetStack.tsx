@@ -191,7 +191,10 @@ export function WidgetStack({ widgets, id, 'aria-label': ariaLabel, className }:
                                 'text-t-xs font-bold whitespace-nowrap',
                                 'transition-colors duration-fast ease-snap',
                                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-canvas)]',
-                                i === activo ? 'text-ink' : 'text-ink-faint hover:text-ink-muted'
+                                // `ink-subtle` y no `ink-faint`: el nombre de una
+                                // pestaña es TEXTO, y --ink-faint da 2,6:1. El
+                                // propio tokens.css dice que no es para texto.
+                                i === activo ? 'text-ink' : 'text-ink-subtle hover:text-ink'
                             )}
                         >
                             <span

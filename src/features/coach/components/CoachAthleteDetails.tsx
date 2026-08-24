@@ -233,7 +233,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
 
     if (loading) return <div className="p-8 text-center">Cargando perfil...</div>;
-    if (!athlete) return <div className="p-8 text-center text-danger">Atleta no encontrado</div>;
+    if (!athlete) return <div className="p-8 text-center text-danger-text">Atleta no encontrado</div>;
 
     // El panel se recorta a lo que ESTE profesional puede hacer con el
     // atleta. `activeTab` arranca en 'planning', que un nutricionista puro no
@@ -258,7 +258,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 dejan de competir por la misma línea. */}
             <div className="flex items-center justify-between gap-3 p-4 md:p-6 border-b border-subtle bg-surface-sunken shrink-0">
                 <div className="flex min-w-0 items-center gap-2 md:gap-3">
-                    <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-white transition-colors shrink-0">
+                    <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-ink transition-colors shrink-0">
                         <ArrowLeft size={20} />
                     </button>
 
@@ -279,7 +279,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         {athlete.avatar_url ? (
                             <img src={athlete.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                         ) : (
-                            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-surface-overlay flex items-center justify-center font-bold shrink-0">
                                 {athlete.full_name?.[0]}
                             </div>
                         )}
@@ -370,7 +370,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                             }
                                         />
                                         <div className="min-w-0 flex-1">
-                                            <p className={`truncate text-t-sm font-semibold ${isCurrent ? 'text-brand' : 'text-ink'}`}>
+                                            <p className={`truncate text-t-sm font-semibold ${isCurrent ? 'text-brand-text' : 'text-ink'}`}>
                                                 {a.full_name ?? 'Sin nombre'}
                                             </p>
                                             <p className="truncate text-t-2xs text-ink-subtle">
@@ -442,7 +442,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                             <div className="h-full flex flex-col">
                                 <button
                                     onClick={() => setSelectedBlockId(null)}
-                                    className="self-start mb-2 text-sm text-ink-subtle hover:text-white flex items-center gap-1 transition-colors"
+                                    className="self-start mb-2 text-sm text-ink-subtle hover:text-ink flex items-center gap-1 transition-colors"
                                 >
                                     &larr; Ver todos los bloques
                                 </button>
@@ -474,8 +474,8 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 {shownTab === 'competitions' && (
                     <div className={`${TAB_WIDTH} space-y-6`}>
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-                                <Trophy className="text-anvil-red" />
+                            <h3 className="text-xl font-black uppercase tracking-tight text-ink flex items-center gap-2">
+                                <Trophy className="text-brand-text" />
                                 Competiciones
                             </h3>
                             <Button size="sm" variant="secondary" icon={<Plus size={14} />} onClick={() => setAddingCompetition(v => !v)}>
@@ -528,12 +528,12 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     let meta: { color: string; border: string; bg: string };
                                     switch (level) {
                                         case 'AEP 3': meta = { color: 'text-orange-400', border: 'border-orange-500/50', bg: 'bg-orange-500/10' }; break;
-                                        case 'AEP 2': meta = { color: 'text-yellow-400', border: 'border-yellow-500/50', bg: 'bg-yellow-500/10' }; break;
-                                        case 'AEP 1': meta = { color: 'text-blue-400', border: 'border-blue-500/50', bg: 'bg-blue-500/10' }; break;
+                                        case 'AEP 2': meta = { color: 'text-warning', border: 'border-yellow-500/50', bg: 'bg-warning-quiet' }; break;
+                                        case 'AEP 1': meta = { color: 'text-info', border: 'border-blue-500/50', bg: 'bg-info-quiet' }; break;
                                         case 'NACIONAL': meta = { color: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/10' }; break;
-                                        case 'EPF': meta = { color: 'text-green-400', border: 'border-green-500/50', bg: 'bg-green-500/10' }; break;
+                                        case 'EPF': meta = { color: 'text-success', border: 'border-green-500/50', bg: 'bg-success-quiet' }; break;
                                         case 'IPF': meta = { color: 'text-[#e6c2a5]', border: 'border-[#e6c2a5]/50', bg: 'bg-[#e6c2a5]/10' }; break;
-                                        default: meta = { color: 'text-anvil-red', border: 'border-anvil-red/50', bg: 'bg-anvil-red/10' }; break;
+                                        default: meta = { color: 'text-brand-text', border: 'border-anvil-red/50', bg: 'bg-anvil-red/10' }; break;
                                     }
                                     const result = results[comp.id];
 
@@ -552,7 +552,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                                                 Disputada
                                                             </span>
                                                         )}
-                                                        <h4 className="text-lg font-bold text-white uppercase leading-tight">
+                                                        <h4 className="text-lg font-bold text-ink uppercase leading-tight">
                                                             {comp.name}
                                                         </h4>
                                                     </div>
@@ -578,7 +578,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                                                 <button
                                                     onClick={() => handleRemoveCompetition(comp.id, comp.name)}
-                                                    className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] text-danger rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group shrink-0"
+                                                    className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] text-danger-text rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group shrink-0"
                                                 >
                                                     <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
                                                     Eliminar

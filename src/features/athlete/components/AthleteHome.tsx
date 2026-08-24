@@ -55,7 +55,7 @@ const getTeamName = (coachName?: string | null): string | null => {
  * área, así que el color enseña a orientarse en vez de decorar.
  */
 const AREA = {
-    train: { icon: 'text-brand', chip: 'bg-brand-quiet', ring: 'group-hover:border-[var(--brand-line)]' },
+    train: { icon: 'text-brand-text', chip: 'bg-brand-quiet', ring: 'group-hover:border-[var(--brand-line)]' },
     food: { icon: 'text-success', chip: 'bg-success-quiet', ring: 'group-hover:border-[var(--border-strong)]' },
     club: { icon: 'text-warning', chip: 'bg-warning-quiet', ring: 'group-hover:border-[var(--border-strong)]' },
     tool: { icon: 'text-ink-muted', chip: 'bg-surface-overlay', ring: 'group-hover:border-[var(--border-strong)]' },
@@ -172,7 +172,7 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader className="animate-spin text-brand" size={28} />
+                <Loader className="animate-spin text-brand-text" size={28} />
             </div>
         );
     }

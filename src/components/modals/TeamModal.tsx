@@ -19,18 +19,18 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
         onClick={onClose}
       />
 
-      <div className="relative bg-[#0a0a0a] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl">
+      <div className="relative bg-[#0a0a0a] w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-line shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 p-6 flex justify-between items-center">
+        <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-line p-6 flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-white">
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-ink">
               Nuestro Equipo
             </h2>
             <div className="w-12 h-1 bg-anvil-red mt-2" />
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white transition-colors"
+            className="p-2 text-ink-muted hover:text-ink transition-colors"
           >
             <X size={24} />
           </button>
@@ -51,8 +51,8 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-colors duration-slow"
                 />
                 <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-slow">
-                  <p className="text-white font-bold uppercase tracking-wider text-lg">{athlete.name}</p>
-                  <p className="text-xs text-anvil-red font-bold uppercase tracking-widest">{athlete.category}</p>
+                  <p className="text-ink font-bold uppercase tracking-wider text-lg">{athlete.name}</p>
+                  <p className="text-xs text-brand-text font-bold uppercase tracking-widest">{athlete.category}</p>
                 </div>
               </div>
             ))}

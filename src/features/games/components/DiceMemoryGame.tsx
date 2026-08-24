@@ -79,24 +79,24 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-white/10 relative">
+        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0a0a0a]">
+            <div className="p-4 border-b border-line flex justify-between items-center bg-[#0a0a0a]">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                         <Dices size={20} />
                     </div>
                     <div>
-                        <h3 className="text-white font-black uppercase italic tracking-wider leading-none">Dice Memory</h3>
-                        <p className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Nivel: {sequence.length}</p>
+                        <h3 className="text-ink font-black uppercase italic tracking-wider leading-none">Dice Memory</h3>
+                        <p className="text-t-2xs text-ink-subtle font-bold uppercase tracking-widest mt-1">Nivel: {sequence.length}</p>
                     </div>
                 </div>
                 <div className="flex gap-4 items-center">
                     <div className="text-right">
-                        <span className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest block">Puntos</span>
-                        <span className="text-anvil-red font-black text-xl leading-none">{score}</span>
+                        <span className="text-t-2xs text-ink-subtle font-bold uppercase tracking-widest block">Puntos</span>
+                        <span className="text-brand-text font-black text-xl leading-none">{score}</span>
                     </div>
-                    <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white bg-black/20 rounded-xl">X</button>
+                    <button onClick={onClose} className="p-2 text-ink-subtle hover:text-ink bg-black/20 rounded-xl">X</button>
                 </div>
             </div>
 
@@ -105,11 +105,11 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                 {status === 'idle' && (
                     <div className="text-center">
                         <Trophy size={48} className="text-purple-500 mb-6 mx-auto opacity-20" />
-                        <h2 className="text-2xl font-black text-white uppercase italic tracking-widest mb-2">Memoria de Dados</h2>
-                        <p className="text-sm text-zinc-400 mb-8 max-w-xs mx-auto">Memoriza la secuencia de dados. Cada ronda se añade un dado más. ¡Un solo error y se acabó!</p>
+                        <h2 className="text-2xl font-black text-ink uppercase italic tracking-widest mb-2">Memoria de Dados</h2>
+                        <p className="text-sm text-ink-muted mb-8 max-w-xs mx-auto">Memoriza la secuencia de dados. Cada ronda se añade un dado más. ¡Un solo error y se acabó!</p>
                         <button 
                             onClick={startGame}
-                            className="bg-purple-600 text-white font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-purple-500 transition-colors active:scale-95 shadow-[0_0_30px_rgba(147,51,234,0.3)]"
+                            className="bg-purple-600 text-ink font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-purple-500 transition-colors active:scale-95 shadow-[0_0_30px_rgba(147,51,234,0.3)]"
                         >
                             Jugar Ahora
                         </button>
@@ -118,8 +118,8 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
 
                 {status === 'gameover' && (
                     <div className="text-center z-10">
-                        <h2 className="text-4xl font-black text-anvil-red uppercase italic tracking-widest mb-2">Game Over</h2>
-                        <p className="text-lg text-white mb-8">Puntuación Final: <span className="font-black text-purple-400">{score}</span></p>
+                        <h2 className="text-4xl font-black text-brand-text uppercase italic tracking-widest mb-2">Game Over</h2>
+                        <p className="text-lg text-ink mb-8">Puntuación Final: <span className="font-black text-purple-400">{score}</span></p>
                         <button 
                             onClick={startGame}
                             className="bg-white text-black font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-zinc-200 transition-colors active:scale-95 flex items-center gap-2 mx-auto"
@@ -151,7 +151,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                                     <m.p
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="text-zinc-500 font-bold uppercase tracking-widest text-sm text-center"
+                                        className="text-ink-subtle font-bold uppercase tracking-widest text-sm text-center"
                                     >
                                         Tu turno. Faltan {sequence.length - playerSequence.length} dados.
                                     </m.p>
@@ -165,7 +165,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
                                 <button
                                     key={`btn-${num}`}
                                     onClick={() => handleNumberClick(num)}
-                                    className="aspect-square bg-[#0a0a0a] border border-white/5 rounded-2xl flex items-center justify-center active:bg-purple-600 active:scale-95 transition-[background-color,transform]"
+                                    className="aspect-square bg-[#0a0a0a] border border-subtle rounded-2xl flex items-center justify-center active:bg-purple-600 active:scale-95 transition-[background-color,transform]"
                                 >
                                     <DieFace number={num} size="small" />
                                 </button>
@@ -190,7 +190,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
 // Helper to draw die dots
 function DieFace({ number, size = 'large' }: { number: number, size?: 'small' | 'large' }) {
     const dotSize = size === 'large' ? 'w-6 h-6' : 'w-3 h-3';
-    const dotClass = `${dotSize} bg-zinc-900 rounded-full`;
+    const dotClass = `${dotSize} bg-surface-canvas rounded-full`;
 
     const getDots = () => {
         switch (number) {

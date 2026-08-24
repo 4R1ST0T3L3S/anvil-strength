@@ -33,9 +33,9 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
     }, [queryClient, athleteId, type]);
 
     const scaleColor = (v: number) => {
-        if (v <= 3) return 'text-red-400 bg-red-500/10 border-red-500/20';
-        if (v <= 6) return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
-        return 'text-green-400 bg-green-500/10 border-green-500/20';
+        if (v <= 3) return 'text-danger-text bg-danger-quiet border-danger/20';
+        if (v <= 6) return 'text-warning bg-warning-quiet border-warning/20';
+        return 'text-success bg-success-quiet border-success/20';
     };
 
     const handleDelete = async () => {
@@ -54,8 +54,8 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-                    <ClipboardCheck className="text-anvil-red" />
+                <h3 className="text-xl font-black uppercase tracking-tight text-ink flex items-center gap-2">
+                    <ClipboardCheck className="text-brand-text" />
                     Check-ins
                 </h3>
                 <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                 key={t}
                                 onClick={() => setType(t)}
                                 className={`px-4 py-1.5 rounded-md text-xs font-black uppercase transition-colors ${
- type === t ? 'bg-anvil-red text-white' : 'text-gray-400 hover:text-white'
+ type === t ? 'bg-anvil-red text-ink' : 'text-ink-muted hover:text-ink'
  }`}
                             >
                                 {t === 'daily' ? 'Diario' : 'Semanal'}
@@ -74,32 +74,32 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                     </div>
                     <button
                         onClick={() => setEditing('new')}
-                        className="flex items-center gap-2 px-3 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-anvil-red hover:bg-anvil-red hover:text-white transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-brand-text hover:bg-anvil-red hover:text-ink transition-colors"
                     >
                         <Plus size={14} />
                         Nuevo check-in
                     </button>
                     <button
                         onClick={() => setEditorOpen(true)}
-                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-black uppercase text-gray-300 hover:text-white hover:border-anvil-red/40 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-line rounded-lg text-xs font-black uppercase text-ink hover:text-ink hover:border-anvil-red/40 transition-colors"
                     >
-                        <Settings2 size={14} className="text-anvil-red" />
+                        <Settings2 size={14} className="text-brand-text" />
                         Editar formulario
                     </button>
                 </div>
             </div>
 
             {loading ? (
-                <div className="flex justify-center py-16"><Loader className="animate-spin text-anvil-red" size={26} /></div>
+                <div className="flex justify-center py-16"><Loader className="animate-spin text-brand-text" size={26} /></div>
             ) : responses.length === 0 ? (
-                <div className="text-center py-16 bg-[#252525] border border-white/5 rounded-xl">
+                <div className="text-center py-16 bg-[#252525] border border-subtle rounded-xl">
                     <ClipboardCheck size={40} className="mx-auto text-gray-600 mb-4" />
-                    <p className="text-gray-400 font-medium">
+                    <p className="text-ink-muted font-medium">
                         El atleta aún no ha respondido ningún check-in {type === 'daily' ? 'diario' : 'semanal'}.
                     </p>
                     <button
                         onClick={() => setEditing('new')}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-anvil-red hover:bg-anvil-red hover:text-white transition-colors"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-anvil-red/10 border border-anvil-red/30 rounded-lg text-xs font-black uppercase text-brand-text hover:bg-anvil-red hover:text-ink transition-colors"
                     >
                         <Plus size={14} /> Rellenarlo por él
                     </button>
@@ -107,14 +107,14 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
             ) : (
                 <div className="space-y-3">
                     {responses.map(r => (
-                        <div key={r.id} className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-5">
+                        <div key={r.id} className="bg-[#1a1a1a] border border-subtle rounded-2xl p-5">
                             <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="min-w-0">
-                                    <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-gray-500">
+                                    <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle">
                                         {periodLabel(r.type, r.period_key)}
                                     </p>
                                     {r.updated_by === coachId && (
-                                        <span className="mt-1 inline-flex items-center gap-1 text-t-2xs font-black uppercase tracking-wider text-anvil-red">
+                                        <span className="mt-1 inline-flex items-center gap-1 text-t-2xs font-black uppercase tracking-wider text-brand-text">
                                             <UserCog size={10} /> Editado por ti
                                         </span>
                                     )}
@@ -123,14 +123,14 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                     <button
                                         onClick={() => setEditing(r)}
                                         title="Editar respuestas"
-                                        className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
+                                        className="p-2 rounded-lg text-ink-subtle hover:text-ink hover:bg-white/10 transition-colors"
                                     >
                                         <Pencil size={15} />
                                     </button>
                                     <button
                                         onClick={() => setDeleting(r)}
                                         title="Eliminar check-in"
-                                        className="p-2 rounded-lg text-gray-600 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                        className="p-2 rounded-lg text-gray-600 hover:text-danger-text hover:bg-danger-quiet transition-colors"
                                     >
                                         <Trash2 size={15} />
                                     </button>
@@ -141,10 +141,10 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                     <div
                                         key={a.id}
                                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold ${
- a.qtype === 'scale' ? scaleColor(Number(a.value)) : 'text-gray-300 bg-white/5 border-white/10'
+ a.qtype === 'scale' ? scaleColor(Number(a.value)) : 'text-ink bg-white/5 border-line'
  }`}
                                     >
-                                        <span className="text-gray-400 font-medium">{a.label}:</span>
+                                        <span className="text-ink-muted font-medium">{a.label}:</span>
                                         <span className="font-black">
                                             {a.qtype === 'number' ? Number(a.value).toLocaleString('es-ES') : `${a.value}/10`}
                                         </span>
@@ -152,7 +152,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
                                 ))}
                             </div>
                             {r.answers.filter(a => a.qtype === 'text' && a.value).map(a => (
-                                <p key={a.id} className="text-sm text-gray-300 mt-3 bg-black/20 border border-white/5 rounded-xl p-3 leading-relaxed">
+                                <p key={a.id} className="text-sm text-ink mt-3 bg-black/20 border border-subtle rounded-xl p-3 leading-relaxed">
                                     💬 {a.value}
                                 </p>
                             ))}
@@ -272,29 +272,29 @@ function CoachResponseEditorModal({
     return (
         <div className="fixed inset-0 z-[200] flex items-end md:items-center justify-center">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[90vh]">
-                <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
+            <div className="relative bg-[#1c1c1c] w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[90vh]">
+                <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
                     <div className="min-w-0">
-                        <h2 className="text-lg font-black uppercase text-white flex items-center gap-2">
-                            <UserCog className="text-anvil-red" size={18} />
+                        <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">
+                            <UserCog className="text-brand-text" size={18} />
                             {response ? 'Editar check-in' : 'Nuevo check-in'}
                         </h2>
-                        <p className="text-t-2xs font-bold uppercase tracking-wider text-gray-500 mt-1">
+                        <p className="text-t-2xs font-bold uppercase tracking-wider text-ink-subtle mt-1">
                             {type === 'daily' ? 'Diario' : 'Semanal'} · en nombre del atleta
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors shrink-0">
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors shrink-0">
                         <X size={18} />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5 space-y-6">
                     <div>
-                        <label className="block text-sm font-bold text-white mb-3">
+                        <label className="block text-sm font-bold text-ink mb-3">
                             {type === 'daily' ? 'Fecha' : 'Semana'}
                         </label>
                         {response ? (
-                            <p className="text-sm text-gray-400 bg-black/30 border border-white/5 rounded-xl py-3 px-4">
+                            <p className="text-sm text-ink-muted bg-black/30 border border-subtle rounded-xl py-3 px-4">
                                 {periodLabel(type, periodKey)}
                             </p>
                         ) : (
@@ -303,10 +303,10 @@ function CoachResponseEditorModal({
                                     type={type === 'daily' ? 'date' : 'week'}
                                     value={periodKey}
                                     onChange={(e) => setPeriodKey(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-anvil-red/50 transition-colors"
+                                    className="w-full bg-[#0a0a0a] border border-line rounded-xl py-3 px-4 text-ink text-sm focus:border-anvil-red/50 transition-colors"
                                 />
                                 {overwrites && (
-                                    <p className="text-t-2xs font-bold text-yellow-400 mt-2">
+                                    <p className="text-t-2xs font-bold text-warning mt-2">
                                         Ya existe un check-in en ese periodo: al guardar lo reemplazarás.
                                     </p>
                                 )}
@@ -315,7 +315,7 @@ function CoachResponseEditorModal({
                     </div>
 
                     {loading ? (
-                        <div className="flex justify-center py-10"><Loader className="animate-spin text-anvil-red" size={24} /></div>
+                        <div className="flex justify-center py-10"><Loader className="animate-spin text-brand-text" size={24} /></div>
                     ) : (
                         <CheckInAnswerFields
                             questions={questions}
@@ -325,11 +325,11 @@ function CoachResponseEditorModal({
                     )}
                 </div>
 
-                <div className="p-5 border-t border-white/5 shrink-0">
+                <div className="p-5 border-t border-subtle shrink-0">
                     <button
                         onClick={handleSave}
                         disabled={saving || loading}
-                        className="w-full py-3.5 rounded-xl bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 rounded-xl bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                     >
                         {saving ? <Loader className="animate-spin" size={16} /> : <Save size={16} />}
                         Guardar check-in
@@ -411,24 +411,24 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-[#1c1c1c] w-full max-w-xl rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[85vh]">
-                <div className="flex items-center justify-between p-5 border-b border-white/5 shrink-0">
-                    <h2 className="text-lg font-black uppercase text-white flex items-center gap-2">
-                        <Settings2 className="text-anvil-red" size={18} />
+            <div className="relative bg-[#1c1c1c] w-full max-w-xl rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh]">
+                <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
+                    <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">
+                        <Settings2 className="text-brand-text" size={18} />
                         Formulario {type === 'daily' ? 'diario' : 'semanal'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
                         <X size={18} />
                     </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5 space-y-3">
                     {loading ? (
-                        <div className="flex justify-center py-10"><Loader className="animate-spin text-anvil-red" size={24} /></div>
+                        <div className="flex justify-center py-10"><Loader className="animate-spin text-brand-text" size={24} /></div>
                     ) : (
                         <>
                             <div>
-                                <label className="mb-1.5 block text-t-2xs font-black uppercase tracking-widest text-gray-500">
+                                <label className="mb-1.5 block text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
                                     Indicación general (opcional)
                                 </label>
                                 <textarea
@@ -437,13 +437,13 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                     placeholder='Ej: "Rellénalo la noche anterior. La escala es de 1 a 10."'
                                     rows={2}
                                     maxLength={500}
-                                    className="w-full resize-y bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:border-anvil-red/50 transition-colors"
+                                    className="w-full resize-y bg-black/30 border border-subtle rounded-lg py-2 px-3 text-ink text-sm focus:border-anvil-red/50 transition-colors"
                                 />
                                 <p className="mt-1 text-t-2xs text-gray-600">Aparece arriba del todo, antes de la primera pregunta.</p>
                             </div>
 
                             {questions.map((q, i) => (
-                                <div key={i} className="space-y-2 bg-[#252525] border border-white/5 rounded-xl p-3">
+                                <div key={i} className="space-y-2 bg-[#252525] border border-subtle rounded-xl p-3">
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="text"
@@ -451,12 +451,12 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                             onChange={(e) => updateQuestion(i, { label: e.target.value })}
                                             placeholder="Texto de la pregunta..."
                                             maxLength={120}
-                                            className="flex-1 bg-black/30 border border-white/5 rounded-lg py-2 px-3 text-white text-sm focus:border-anvil-red/50 transition-colors min-w-0"
+                                            className="flex-1 bg-black/30 border border-subtle rounded-lg py-2 px-3 text-ink text-sm focus:border-anvil-red/50 transition-colors min-w-0"
                                         />
                                         <select
                                             value={q.qtype}
                                             onChange={(e) => updateQuestion(i, { qtype: e.target.value as QuestionType })}
-                                            className="bg-black/30 border border-white/5 rounded-lg py-2 px-2 text-gray-300 text-xs focus:border-anvil-red/50 shrink-0"
+                                            className="bg-black/30 border border-subtle rounded-lg py-2 px-2 text-ink text-xs focus:border-anvil-red/50 shrink-0"
                                         >
                                             {(Object.keys(QTYPE_LABELS) as QuestionType[]).map(t => (
                                                 <option key={t} value={t}>{QTYPE_LABELS[t]}</option>
@@ -464,7 +464,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         </select>
                                         <button
                                             onClick={() => removeQuestion(i)}
-                                            className="p-2 text-gray-600 hover:text-red-500 transition-colors shrink-0"
+                                            className="p-2 text-gray-600 hover:text-danger-text transition-colors shrink-0"
                                             title="Eliminar pregunta"
                                         >
                                             <Trash2 size={15} />
@@ -476,7 +476,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         onChange={(e) => updateQuestion(i, { help: e.target.value || undefined })}
                                         placeholder="Ayuda bajo la pregunta (opcional): cómo se responde, qué escala usar..."
                                         maxLength={160}
-                                        className="w-full bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:border-anvil-red/50 transition-colors"
+                                        className="w-full bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-anvil-red/50 transition-colors"
                                     />
                                     {/* EN QUÉ GRÁFICA SE PINTA (K9).
                                         Dos preguntas solo comparten eje Y si
@@ -484,13 +484,13 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                         "pasos" (~9.000) aplastaba a "sueño"
                                         (0-10) contra el suelo. */}
                                     <div className="flex items-center gap-2">
-                                        <span className="shrink-0 text-t-2xs font-black uppercase tracking-widest text-gray-500">
+                                        <span className="shrink-0 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
                                             Gráfica
                                         </span>
                                         <select
                                             value={q.axis ?? resolveAxis(q)}
                                             onChange={(e) => updateQuestion(i, { axis: e.target.value as FormAxis })}
-                                            className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:border-anvil-red/50"
+                                            className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-2 text-ink-muted text-xs focus:border-anvil-red/50"
                                         >
                                             {SELECTABLE_AXES.map(a => (
                                                 <option key={a} value={a}>{AXIS_DEFINITIONS[a].label}</option>
@@ -502,7 +502,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                             onChange={(e) => updateQuestion(i, { unit: e.target.value || undefined })}
                                             placeholder="Unidad"
                                             maxLength={12}
-                                            className="w-24 shrink-0 bg-black/20 border border-white/5 rounded-lg py-1.5 px-2 text-gray-400 text-xs focus:border-anvil-red/50"
+                                            className="w-24 shrink-0 bg-black/20 border border-subtle rounded-lg py-1.5 px-2 text-ink-muted text-xs focus:border-anvil-red/50"
                                         />
                                     </div>
                                     {q.qtype === 'scale' && (
@@ -513,7 +513,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                                 onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, minLabel: e.target.value || undefined } })}
                                                 placeholder="Extremo bajo (1)"
                                                 maxLength={40}
-                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:border-anvil-red/50"
+                                                className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-anvil-red/50"
                                             />
                                             <input
                                                 type="text"
@@ -521,7 +521,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                                                 onChange={(e) => updateQuestion(i, { scale: { min: 1, max: 10, ...q.scale, maxLabel: e.target.value || undefined } })}
                                                 placeholder="Extremo alto (10)"
                                                 maxLength={40}
-                                                className="flex-1 bg-black/20 border border-white/5 rounded-lg py-1.5 px-3 text-gray-400 text-xs focus:border-anvil-red/50"
+                                                className="flex-1 bg-black/20 border border-subtle rounded-lg py-1.5 px-3 text-ink-muted text-xs focus:border-anvil-red/50"
                                             />
                                         </div>
                                     )}
@@ -529,7 +529,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                             ))}
                             <button
                                 onClick={addQuestion}
-                                className="w-full py-3 border-2 border-dashed border-white/10 hover:border-anvil-red/50 rounded-xl text-gray-500 hover:text-anvil-red text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                                className="w-full py-3 border-2 border-dashed border-line hover:border-anvil-red/50 rounded-xl text-ink-subtle hover:text-brand-text text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                             >
                                 <Plus size={14} /> Añadir pregunta
                             </button>
@@ -537,17 +537,17 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                     )}
                 </div>
 
-                <div className="p-5 border-t border-white/5 shrink-0 flex items-center justify-between gap-3">
+                <div className="p-5 border-t border-subtle shrink-0 flex items-center justify-between gap-3">
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-wide transition-colors"
+                        className="flex items-center gap-2 text-xs font-bold text-ink-subtle hover:text-ink uppercase tracking-wide transition-colors"
                     >
                         <RotateCcw size={13} /> Restablecer predefinido
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving || loading}
-                        className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-lg bg-anvil-red hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
                     >
                         {saving ? <Loader className="animate-spin" size={14} /> : <Save size={14} />}
                         Guardar

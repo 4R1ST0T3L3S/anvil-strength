@@ -64,12 +64,12 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
         <div className="space-y-6">
             <div className="flex items-center justify-between bg-anvil-red/10 border border-anvil-red/20 p-6 rounded-3xl">
                 <div>
-                    <h3 className="text-xl font-black uppercase italic text-white leading-none mb-2">Panel de Control Arena</h3>
-                    <p className="text-t-2xs font-bold text-anvil-red uppercase tracking-widest">Solo visible para Marc (Developer)</p>
+                    <h3 className="text-xl font-black uppercase italic text-ink leading-none mb-2">Panel de Control Arena</h3>
+                    <p className="text-t-2xs font-bold text-brand-text uppercase tracking-widest">Solo visible para Marc (Developer)</p>
                 </div>
                 <button 
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="p-4 bg-anvil-red text-white rounded-2xl hover:bg-red-500 transition-colors shadow-lg shadow-red-900/40"
+                    className="p-4 bg-anvil-red text-ink rounded-2xl hover:bg-red-500 transition-colors shadow-lg shadow-red-900/40"
                 >
                     <Plus size={24} />
                 </button>
@@ -78,11 +78,11 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
             {/* Create Bet Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/98 backdrop-blur-xl">
-                    <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] w-full max-w-lg relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-                        <button onClick={() => setIsCreateModalOpen(false)} className="absolute top-10 right-10 text-gray-500 hover:text-white"><X /></button>
+                    <div className="bg-[#0a0a0a] border border-line p-10 rounded-[3rem] w-full max-w-lg relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+                        <button onClick={() => setIsCreateModalOpen(false)} className="absolute top-10 right-10 text-ink-subtle hover:text-ink"><X /></button>
                         
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <h2 className="text-3xl font-black uppercase italic text-anvil-red mb-8">Nueva Apuesta</h2>
+                            <h2 className="text-3xl font-black uppercase italic text-brand-text mb-8">Nueva Apuesta</h2>
                             
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {(['1vs1', 'pool', 'event', 'prediction'] as BetType[]).map(type => (
@@ -91,7 +91,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         type="button"
                                         onClick={() => setNewBet({ ...newBet, type })}
                                         className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors ${
- newBet.type === type ? 'border-anvil-red bg-anvil-red/10 text-white' : 'border-white/5 bg-black/40 text-gray-500'
+ newBet.type === type ? 'border-anvil-red bg-anvil-red/10 text-ink' : 'border-subtle bg-black/40 text-ink-subtle'
  }`}
                                     >
                                         {type === '1vs1' ? <Swords size={18} /> : type === 'pool' ? <Users size={18} /> : type === 'event' ? <HelpCircle size={18} /> : <TrendingUp size={18} />}
@@ -103,14 +103,14 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                             <input 
                                 required
                                 placeholder="TÍTULO (EJ: ¿QUIÉN HARÁ MÁS TOTAL?)"
-                                className="w-full bg-black border border-white/10 p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50"
+                                className="w-full bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50"
                                 value={newBet.title}
                                 onChange={e => setNewBet({ ...newBet, title: e.target.value })}
                             />
 
                             <textarea 
                                 placeholder="DESCRIPCIÓN (OPCIONAL)"
-                                className="w-full bg-black border border-white/10 p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50 min-h-[100px]"
+                                className="w-full bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50 min-h-[100px]"
                                 value={newBet.description}
                                 onChange={e => setNewBet({ ...newBet, description: e.target.value })}
                             />
@@ -123,7 +123,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                             <input 
                                                 required
                                                 placeholder={`OPCIÓN ${i + 1}`}
-                                                className="flex-1 bg-black border border-white/10 p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50"
+                                                className="flex-1 bg-black border border-line p-4 rounded-xl font-bold uppercase text-xs focus:border-anvil-red/50"
                                                 value={opt}
                                                 onChange={e => handleOptionChange(i, e.target.value)}
                                             />
@@ -131,7 +131,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                                 <button 
                                                     type="button" 
                                                     onClick={() => handleRemoveOption(i)}
-                                                    className="p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+                                                    className="p-3 text-danger-text hover:bg-danger-quiet rounded-xl transition-colors"
                                                 >
                                                     <X size={16} />
                                                 </button>
@@ -141,7 +141,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                     <button 
                                         type="button"
                                         onClick={handleAddOption}
-                                        className="w-full py-3 border border-dashed border-white/10 rounded-xl text-gray-500 hover:text-white hover:border-white/20 transition-colors font-black text-t-2xs uppercase tracking-widest"
+                                        className="w-full py-3 border border-dashed border-line rounded-xl text-ink-subtle hover:text-ink hover:border-strong transition-colors font-black text-t-2xs uppercase tracking-widest"
                                     >
                                         + AÑADIR OPCIÓN
                                     </button>
@@ -149,17 +149,17 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                             )}
 
                             {newBet.type === 'prediction' && (
-                                <div className="p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-2xl">
-                                    <p className="text-t-2xs font-black text-yellow-500 uppercase italic mb-2 flex items-center gap-2">
+                                <div className="p-4 bg-yellow-500/5 border border-warning/20 rounded-2xl">
+                                    <p className="text-t-2xs font-black text-warning uppercase italic mb-2 flex items-center gap-2">
                                         <TrendingUp size={14} /> Modo Predicción Numérica
                                     </p>
-                                    <p className="text-t-2xs font-bold text-gray-500 uppercase leading-tight tracking-wider">
+                                    <p className="text-t-2xs font-bold text-ink-subtle uppercase leading-tight tracking-wider">
                                         Los usuarios podrán indicar cualquier número. El bote se repartirá proporcionalmente a la cercanía con el resultado final.
                                     </p>
                                 </div>
                             )}
 
-                            <button type="submit" className="w-full py-5 bg-anvil-red text-white font-black uppercase italic rounded-2xl hover:bg-red-500 shadow-xl shadow-red-900/20">
+                            <button type="submit" className="w-full py-5 bg-anvil-red text-ink font-black uppercase italic rounded-2xl hover:bg-red-500 shadow-xl shadow-red-900/20">
                                 LANZAR APUESTA
                             </button>
                         </form>
@@ -170,14 +170,14 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
             {/* List of active bets for resolution */}
             <div className="space-y-4">
                 {bets.filter(b => b.status === 'open' || b.status === 'locked').map(bet => (
-                    <div key={bet.id} className="bg-black/40 border border-white/5 p-6 rounded-2xl flex items-center justify-between gap-4">
+                    <div key={bet.id} className="bg-black/40 border border-subtle p-6 rounded-2xl flex items-center justify-between gap-4">
                         <div className="min-w-0 flex-1">
-                            <h4 className="font-black text-white uppercase italic truncate text-sm">{bet.title}</h4>
+                            <h4 className="font-black text-ink uppercase italic truncate text-sm">{bet.title}</h4>
                             <div className="flex gap-2 mt-2 overflow-x-auto pb-2 scrollbar-hide">
                                 {bet.type === 'prediction' ? (
                                     <button 
                                         onClick={() => handleResolve(bet.id)}
-                                        className="px-4 py-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-yellow-500 hover:text-black transition-colors"
+                                        className="px-4 py-2 bg-warning-quiet text-warning border border-warning/20 rounded-full text-t-2xs font-black uppercase hover:bg-yellow-500 hover:text-black transition-colors"
                                     >
                                         Resolver con Valor Real
                                     </button>
@@ -186,7 +186,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                                         <button 
                                             key={opt.id}
                                             onClick={() => handleResolve(bet.id, opt.id)}
-                                            className="px-3 py-1 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full text-t-2xs font-black uppercase hover:bg-green-500 hover:text-black transition-colors whitespace-nowrap"
+                                            className="px-3 py-1 bg-success-quiet text-success border border-success/20 rounded-full text-t-2xs font-black uppercase hover:bg-green-500 hover:text-black transition-colors whitespace-nowrap"
                                         >
                                             Resolver: {opt.name}
                                         </button>
@@ -197,7 +197,7 @@ export const ArenaAdminPanel: React.FC<ArenaAdminPanelProps> = ({
                         <div className="flex gap-2">
                             <button 
                                 onClick={() => onDeleteBet(bet.id)}
-                                className="p-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-colors"
+                                className="p-3 bg-danger-quiet text-danger-text border border-danger/20 rounded-xl hover:bg-red-500 hover:text-ink transition-colors"
                             >
                                 <Trash2 size={16} />
                             </button>

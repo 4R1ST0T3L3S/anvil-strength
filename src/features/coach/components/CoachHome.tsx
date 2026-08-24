@@ -23,7 +23,7 @@ import { AnvilRanking } from '../../athlete/components/AnvilRanking';
  * rojo es programar, ambar es la comunidad, neutro son las herramientas.
  */
 const AREA = {
-    coach: { icon: 'text-brand', chip: 'bg-brand-quiet' },
+    coach: { icon: 'text-brand-text', chip: 'bg-brand-quiet' },
     club: { icon: 'text-warning', chip: 'bg-warning-quiet' },
     tool: { icon: 'text-ink-muted', chip: 'bg-surface-overlay' },
 } as const;
@@ -169,7 +169,7 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center">
-                <Loader className="animate-spin text-brand" size={28} />
+                <Loader className="animate-spin text-brand-text" size={28} />
             </div>
         );
     }

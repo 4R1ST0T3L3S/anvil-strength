@@ -33,7 +33,7 @@ export function LoadingSpinner({
             role="status"
             aria-live="polite"
         >
-            <Loader className="animate-spin text-brand" size={40} aria-hidden="true" />
+            <Loader className="animate-spin text-brand-text" size={40} aria-hidden="true" />
             <p className="text-t-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
                 {message}
             </p>

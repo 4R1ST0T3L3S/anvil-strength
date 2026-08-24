@@ -152,7 +152,7 @@ export function Tabs<T extends string>({
 
                         {p.insignia != null && p.insignia > 0 && (
                             <span
-                                className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-pill bg-[var(--brand-quiet)] px-1 text-t-2xs font-black tabular-nums text-brand"
+                                className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-pill bg-[var(--brand-quiet)] px-1 text-t-2xs font-black tabular-nums text-brand-text"
                                 aria-label={`${p.insignia} pendientes`}
                             >
                                 {p.insignia > 99 ? '99+' : p.insignia}

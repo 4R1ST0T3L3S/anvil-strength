@@ -69,7 +69,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                         setSelectedAthlete(null);
                         fetchAthletes();
                     }}
-                    className="absolute top-6 left-6 z-[80] p-3 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-white hover:bg-white/10 transition-colors"
+                    className="absolute top-6 left-6 z-[80] p-3 bg-black/60 backdrop-blur-xl border border-line rounded-full text-ink hover:bg-white/10 transition-colors"
                 >
                     <ChevronLeft size={24} />
                 </button>
@@ -87,13 +87,13 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                 <div className="flex items-center gap-4">
                     <button 
                         onClick={() => navigate('/dashboard')}
-                        className="p-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-colors"
+                        className="p-3 bg-white/5 border border-line rounded-2xl text-ink-muted hover:text-ink transition-colors"
                     >
                         <ChevronLeft size={24} />
                     </button>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-black uppercase italic text-white leading-none">Mensajería</h1>
-                        <p className="text-t-2xs font-bold text-anvil-red uppercase tracking-[0.3em] mt-1">Gestión de Atletas Anvil Strength</p>
+                        <h1 className="text-2xl md:text-3xl font-black uppercase italic text-ink leading-none">Mensajería</h1>
+                        <p className="text-t-2xs font-bold text-brand-text uppercase tracking-[0.3em] mt-1">Gestión de Atletas Anvil Strength</p>
                     </div>
                 </div>
                 
@@ -104,8 +104,8 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                         onClick={() => setShowAll(!showAll)}
                         className={`px-6 py-3 rounded-2xl font-black text-t-2xs uppercase tracking-widest transition-colors border ${
  showAll 
- ? 'bg-anvil-red border-anvil-red text-white' 
- : 'bg-white/5 border-white/10 text-gray-500 hover:text-white'
+ ? 'bg-anvil-red border-anvil-red text-ink' 
+ : 'bg-white/5 border-line text-ink-subtle hover:text-ink'
  }`}
                     >
                         {showAll ? 'VIENDO TODOS LOS ATLETAS' : 'VER SOLO MIS ATLETAS'}
@@ -116,11 +116,11 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-subtle" size={20} />
                     <input 
                         type="text"
                         placeholder="BUSCAR POR NOMBRE..."
-                        className="w-full bg-[#0a0a0a] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white font-bold uppercase text-xs focus:border-anvil-red/50 transition-colors"
+                        className="w-full bg-[#0a0a0a] border border-subtle rounded-2xl py-4 pl-12 pr-6 text-ink font-bold uppercase text-xs focus:border-anvil-red/50 transition-colors"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -129,12 +129,12 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                 {/* Athlete List */}
                 <div className="space-y-3">
                     {loading ? (
-                        <div className="flex justify-center py-20"><Loader className="animate-spin text-anvil-red" /></div>
+                        <div className="flex justify-center py-20"><Loader className="animate-spin text-brand-text" /></div>
                     ) : filteredAthletes.length === 0 ? (
-                        <div className="text-center py-20 bg-white/5 rounded-[2.5rem] border border-dashed border-white/10 px-8">
+                        <div className="text-center py-20 bg-white/5 rounded-[2.5rem] border border-dashed border-line px-8">
                             <MessageSquare className="mx-auto text-gray-700 mb-4" size={48} />
-                            <h4 className="text-white font-black uppercase italic mb-2">No hay atletas disponibles</h4>
-                            <p className="text-t-2xs font-bold text-gray-500 uppercase tracking-widest leading-relaxed max-w-xs mx-auto">
+                            <h4 className="text-ink font-black uppercase italic mb-2">No hay atletas disponibles</h4>
+                            <p className="text-t-2xs font-bold text-ink-subtle uppercase tracking-widest leading-relaxed max-w-xs mx-auto">
                                 {showAll 
                                     ? "No se han encontrado perfiles con el rol de atleta en la base de datos."
                                     : "No tienes atletas asignados a tu cuenta. Activa 'Ver todos' para buscar a cualquier atleta."}
@@ -145,22 +145,22 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                             <button
                                 key={athlete.id}
                                 onClick={() => setSelectedAthlete(athlete)}
-                                className="w-full bg-[#0a0a0a] border border-white/5 p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-[#0a0a0a] transition-[background-color,border-color,transform] active:scale-[0.98]"
+                                className="w-full bg-[#0a0a0a] border border-subtle p-6 rounded-3xl flex items-center justify-between group hover:border-anvil-red/30 hover:bg-[#0a0a0a] transition-[background-color,border-color,transform] active:scale-[0.98]"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
-                                        <div className="w-14 h-14 bg-gradient-to-br from-anvil-red to-red-900 rounded-2xl flex items-center justify-center text-white font-black text-xl italic uppercase">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-anvil-red to-red-900 rounded-2xl flex items-center justify-center text-ink font-black text-xl italic uppercase">
                                             {athlete.full_name?.substring(0, 1)}
                                         </div>
                                         {athlete.unreadCount > 0 && (
-                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-anvil-red text-white text-t-2xs font-black rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
+                                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-anvil-red text-ink text-t-2xs font-black rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
                                                 {athlete.unreadCount}
                                             </div>
                                         )}
                                     </div>
                                     <div className="text-left">
-                                        <h4 className="font-black text-white uppercase italic text-lg leading-none mb-1 group-hover:text-anvil-red transition-colors">{athlete.full_name}</h4>
-                                        <p className="text-t-2xs font-bold text-gray-500 uppercase truncate max-w-[200px]">
+                                        <h4 className="font-black text-ink uppercase italic text-lg leading-none mb-1 group-hover:text-brand-text transition-colors">{athlete.full_name}</h4>
+                                        <p className="text-t-2xs font-bold text-ink-subtle uppercase truncate max-w-[200px]">
                                             {athlete.lastMessage ? athlete.lastMessage.content : 'Sin mensajes previos'}
                                         </p>
                                     </div>
@@ -171,7 +171,7 @@ export function CoachChatManager({ coach }: { coach: UserProfile }) {
                                             {new Date(athlete.lastMessage.created_at).toLocaleDateString()}
                                         </span>
                                     )}
-                                    <MessageSquare size={20} className="text-gray-700 group-hover:text-anvil-red transition-colors" />
+                                    <MessageSquare size={20} className="text-gray-700 group-hover:text-brand-text transition-colors" />
                                 </div>
                             </button>
                         ))

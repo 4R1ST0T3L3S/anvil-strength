@@ -363,7 +363,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                             type="button"
                                             onClick={() => setLogoUrl(null)}
                                             aria-label="Quitar logotipo"
-                                            className="rounded-field p-2 text-ink-faint transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger"
+                                            className="rounded-field p-2 text-ink-faint transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text"
                                         >
                                             <Trash2 size={15} />
                                         </button>
@@ -589,7 +589,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                                                 onClick={() => setColumns(columns.filter((_, j) => j !== i))}
                                                 disabled={columns.length <= 2}
                                                 aria-label={`Quitar la columna ${col.label}`}
-                                                className="shrink-0 rounded-chip p-2 text-ink-faint transition-colors duration-fast hover:text-danger disabled:opacity-30"
+                                                className="shrink-0 rounded-chip p-2 text-ink-faint transition-colors duration-fast hover:text-danger-text disabled:opacity-30"
                                             >
                                                 <Trash2 size={14} />
                                             </button>

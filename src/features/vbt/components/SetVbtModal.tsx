@@ -236,7 +236,7 @@ export function SetVbtModal({
                     <header className="flex shrink-0 items-start justify-between gap-3 border-b border-subtle px-4 py-3">
                         <div className="min-w-0">
                             <h3 className="flex items-center gap-2 text-t-sm font-bold text-ink">
-                                <Activity size={15} className="shrink-0 text-brand" aria-hidden="true" />
+                                <Activity size={15} className="shrink-0 text-brand-text" aria-hidden="true" />
                                 Velocidad · Serie {setNumber}
                             </h3>
                             <p className="mt-0.5 truncate text-t-2xs text-ink-subtle">
@@ -400,7 +400,7 @@ export function SetVbtModal({
                             <button
                                 onClick={clear}
                                 disabled={busy}
-                                className="flex items-center gap-1.5 rounded-field px-2.5 py-2 text-t-2xs font-semibold text-ink-muted transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger disabled:opacity-50"
+                                className="flex items-center gap-1.5 rounded-field px-2.5 py-2 text-t-2xs font-semibold text-ink-muted transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text disabled:opacity-50"
                             >
                                 <Trash2 size={13} aria-hidden="true" /> Borrar
                             </button>

@@ -82,7 +82,7 @@ export function ClaimAthletePage() {
                 className="w-full max-w-sm rounded-sheet border border-[var(--border-default)] bg-surface-raised p-7 text-center"
             >
                 {preview === null ? (
-                    <Loader className="mx-auto animate-spin text-brand" size={26} />
+                    <Loader className="mx-auto animate-spin text-brand-text" size={26} />
                 ) : claimed ? (
                     <>
                         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-[var(--success-quiet)]">
@@ -142,7 +142,7 @@ export function ClaimAthletePage() {
                             </div>
 
                             {error && (
-                                <p className="rounded-field bg-[var(--danger-quiet)] px-3 py-2 text-t-xs text-danger">
+                                <p className="rounded-field bg-[var(--danger-quiet)] px-3 py-2 text-t-xs text-danger-text">
                                     {error}
                                 </p>
                             )}

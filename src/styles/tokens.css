@@ -36,20 +36,34 @@
   --border-strong: oklch(1 0 0 / 0.18); /* hover, elemento enfocado */
 
   /* -------------------------------------------------------------------
-     2. TINTA — todos los niveles cumplen WCAG AA sobre --surface-canvas
+     2. TINTA — medida contra la superficie donde el texto ESTÁ, no contra
+        la del fondo de la aplicación
      -------------------------------------------------------------------
-     Contraste medido contra #1c1c1c:
-       ink          21.0:1
-       ink-muted     7.0:1   <- por defecto para texto secundario
-       ink-subtle    4.7:1   <- suelo absoluto para texto legible
-       ink-faint     2.6:1   <- SOLO decorativo: iconos, marcas de agua
+     La versión anterior de este bloque medía todo contra --surface-canvas
+     y anunciaba que --ink-subtle daba 4,7:1, "suelo absoluto para texto
+     legible". Es verdad, y es engañoso: casi ningún texto vive sobre el
+     lienzo. Vive dentro de TARJETAS (--surface-raised) y de MENÚS
+     (--surface-overlay), que son más claros, y ahí el mismo gris daba
+     4,21:1 y 3,63:1 — o sea que no llegaba a AA justo en los dos sitios
+     donde de verdad se lee.
 
-     El antiguo `text-gray-500` (304 usos) daba 3.4:1 y no llegaba al
-     mínimo de 4.5:1. Su reemplazo es --ink-subtle o --ink-muted.        */
+     Medido en el navegador pintando el color y leyendo el pixel, que es la
+     única forma de convertir oklch sin inventarse la fórmula:
+
+                    lienzo   tarjeta   menú     ¿AA en los tres?
+       ink            18,9     16,6    13,7     sí
+       ink-muted       7,7      6,9     5,9     sí
+       ink-subtle      5,9      5,3     4,6     sí  <- suelo real
+       ink-faint       2,6      2,3     2,0     NO, y por eso no es texto
+
+     Los dos de en medio suben (0,72 -> 0,76 y 0,62 -> 0,68) para que el
+     suelo se cumpla en las tres superficies y no solo en una. Se mueven los
+     DOS y no solo el de abajo: subir únicamente `subtle` lo dejaría pegado
+     a `muted` y la rampa se quedaría en dos escalones útiles.            */
 
   --ink: oklch(0.985 0 0); /* titulares, cifras, texto principal */
-  --ink-muted: oklch(0.72 0 0); /* texto secundario, labels */
-  --ink-subtle: oklch(0.62 0 0); /* metadatos, placeholders */
+  --ink-muted: oklch(0.76 0 0); /* texto secundario, labels */
+  --ink-subtle: oklch(0.68 0 0); /* metadatos, placeholders */
   --ink-faint: oklch(0.48 0 0); /* NUNCA texto — solo adorno */
   --ink-inverse: oklch(0.145 0 0); /* texto sobre superficie roja o blanca */
 
@@ -69,6 +83,23 @@
   --brand-line: oklch(0.62 0.21 25 / 0.35); /* borde de estado activo */
   --brand-ink: oklch(0.985 0 0); /* texto sobre --brand */
 
+  /* EL ROJO NO PUEDE HACER SUS DOS TRABAJOS CON UNA SOLA LUMINOSIDAD.
+     Medido: con L=0.62, como RELLENO con texto blanco encima da 3,86:1, y
+     como TEXTO sobre el lienzo da 4,23:1. Los dos por debajo de 4,5. Y no
+     hay un punto que arregle los dos, porque tiran en sentidos opuestos:
+     para el relleno haría falta L<=0.58 y para el texto L>=0.64.
+
+     Así que se parte en dos. `--brand` sigue siendo el rojo de siempre y
+     pinta rellenos; `--brand-text` es el mismo rojo un punto más claro y se
+     usa cuando el rojo ES el texto o el icono sobre fondo oscuro: 4,95:1
+     sobre lienzo y 4,45:1 sobre tarjeta.
+
+     PENDIENTE DE DECISIÓN (Marc): el texto blanco sobre botón rojo sigue en
+     3,86:1. Arreglarlo pide oscurecer `--brand` a 0.58, y eso ya no es un
+     ajuste de contraste sino cambiar el rojo de la marca en todos los
+     botones de la aplicación. Ver el registro de F5 en docs/. */
+  --brand-text: oklch(0.66 0.21 25);
+
   /* -------------------------------------------------------------------
      4. ESTADOS SEMÁNTICOS
      -------------------------------------------------------------------
@@ -87,6 +118,11 @@
      — guardar y borrar no pueden reaccionar igual al pasar por encima. */
   --danger-hover: oklch(0.71 0.2 25);
   --danger-quiet: oklch(0.65 0.2 25 / 0.14);
+  /* Mismo desdoble que la marca, y por el mismo motivo medido: --danger a
+     0.65 da 4,31:1 como TEXTO sobre una tarjeta, por debajo de AA. Como
+     RELLENO con texto blanco encima, en cambio, aclararlo empeoraría. Así
+     que el relleno se queda donde está y el texto sube. */
+  --danger-text: oklch(0.7 0.2 25);
   --info: oklch(0.7 0.13 240);
   --info-quiet: oklch(0.7 0.13 240 / 0.14);
 

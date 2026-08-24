@@ -46,7 +46,7 @@ const VARIANT: Record<Variant, string> = {
     // Destructiva. Distinta de `primary` pese a compartir familia de color:
     // borrar un bloque de entrenamiento no puede parecerse a guardarlo.
     danger:
-        'bg-transparent text-danger border border-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] active:border-danger',
+        'bg-transparent text-danger-text border border-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] active:border-danger',
 };
 
 /**

@@ -113,7 +113,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
     ];
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
             <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* ── HERO ─────────────────────────────────────────────────────── */}
@@ -129,13 +129,13 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                 </div>
                 <div className="relative z-10 text-center px-4">
                     <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-                        <div className="inline-flex items-center gap-2 bg-anvil-red/10 border border-anvil-red/20 text-anvil-red text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
+                        <div className="inline-flex items-center gap-2 bg-anvil-red/10 border border-anvil-red/20 text-brand-text text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
                             <Calendar className="w-3.5 h-3.5" />
                             Temporada 2025 – 2026
                         </div>
                         <h1 className="text-6xl sm:text-8xl md:text-[11rem] font-black uppercase italic mb-6 font-bebas leading-none tracking-tight">
                             PRÓXIMAS{' '}
-                            <span className="text-anvil-red drop-shadow-[0_0_40px_rgba(220,38,38,0.4)]">
+                            <span className="text-brand-text drop-shadow-[0_0_40px_rgba(220,38,38,0.4)]">
                                 COMPETICIONES
                             </span>
                         </h1>
@@ -166,7 +166,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         transition={{ delay: index * 0.1 }}
                                         whileHover={{ scale: 1.01 }}
                                         onClick={() => setSelectedEvent(event)}
-                                        className="flex flex-col lg:flex-row bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-white/5 cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-anvil-red/30"
+                                        className="flex flex-col lg:flex-row bg-[#0a0a0a] rounded-[2.5rem] overflow-hidden border border-subtle cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-anvil-red/30"
                                     >
                                         {/* Cover Image */}
                                         <div className="w-full lg:w-[480px] h-64 lg:h-auto shrink-0 relative overflow-hidden">
@@ -180,7 +180,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
                                             <div className="absolute top-6 left-6">
-                                                <span className="bg-anvil-red text-white text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
+                                                <span className="bg-anvil-red text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
                                                     {event.level}
                                                 </span>
                                             </div>
@@ -190,21 +190,21 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                         <div className="p-8 lg:p-12 flex-1 flex flex-col justify-center">
                                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                                                 <div>
-                                                    <h3 className="text-4xl md:text-6xl font-black uppercase font-bebas italic leading-none mb-4 group-hover:text-anvil-red transition-colors duration-slow">
+                                                    <h3 className="text-4xl md:text-6xl font-black uppercase font-bebas italic leading-none mb-4 group-hover:text-brand-text transition-colors duration-slow">
                                                         {event.name}
                                                     </h3>
                                                     <div className="flex flex-wrap gap-6 text-gray-500 font-bold uppercase tracking-widest text-xs">
                                                         <div className="flex items-center gap-2">
-                                                            <Calendar size={13} className="text-anvil-red" />
+                                                            <Calendar size={13} className="text-brand-text" />
                                                             {formatDate(event.date)}
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <MapPin size={13} className="text-anvil-red" />
+                                                            <MapPin size={13} className="text-brand-text" />
                                                             {event.location}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="shrink-0 bg-[#0a0a0a] backdrop-blur-md rounded-2xl p-4 border border-white/5">
+                                                <div className="shrink-0 bg-[#0a0a0a] backdrop-blur-md rounded-2xl p-4 border border-subtle">
                                                     <LiveCountdown targetDate={event.date} />
                                                 </div>
                                             </div>
@@ -225,7 +225,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                             </div>
                                                         ))}
                                                         {event.athletes.length > 4 && (
-                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-anvil-red flex items-center justify-center text-t-2xs font-black text-white">
+                                                            <div className="w-10 h-10 rounded-full border-2 border-[#111] bg-anvil-red flex items-center justify-center text-t-2xs font-black text-ink">
                                                                 +{event.athletes.length - 4}
                                                             </div>
                                                         )}
@@ -234,7 +234,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                                         {event.athletes.length} {event.athletes.length === 1 ? 'Atleta convocado' : 'Atletas convocados'}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-anvil-red font-black uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-[opacity,transform] translate-x-4 group-hover:translate-x-0 duration-slow">
+                                                <div className="flex items-center gap-2 text-brand-text font-black uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-[opacity,transform] translate-x-4 group-hover:translate-x-0 duration-slow">
                                                     Ver Roster <ChevronRight size={16} />
                                                 </div>
                                             </div>
@@ -244,7 +244,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                             })}
                         </div>
                     ) : (
-                        <div className="relative text-center py-32 px-6 border border-dashed border-white/10 rounded-[2.5rem] overflow-hidden">
+                        <div className="relative text-center py-32 px-6 border border-dashed border-line rounded-[2.5rem] overflow-hidden">
                             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.05)_0%,transparent_70%)]" />
                             <p className="relative text-4xl sm:text-6xl font-black font-bebas italic text-gray-700 uppercase tracking-wide mb-3">
                                 No Upcoming Meets
@@ -267,7 +267,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                         className="flex justify-between items-end mb-16"
                     >
                         <h2 className="text-5xl md:text-9xl font-black uppercase font-bebas italic leading-none tracking-tight">
-                            Resultados <span className="text-anvil-red">Anteriores</span>
+                            Resultados <span className="text-brand-text">Anteriores</span>
                         </h2>
                     </m.div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -278,7 +278,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: i * 0.1 }}
-                                className="relative aspect-video bg-[#0a0a0a] rounded-3xl overflow-hidden group cursor-pointer border border-white/5 hover:border-anvil-red/30 transition-colors shadow-2xl"
+                                className="relative aspect-video bg-[#0a0a0a] rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-anvil-red/30 transition-colors shadow-2xl"
                             >
                                 <img
                                     src={result.image}
@@ -286,8 +286,8 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
                                     className="w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-[opacity,transform] duration-slow"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-8 flex flex-col justify-end">
-                                    <h3 className="text-4xl font-black uppercase font-bebas italic text-white mb-1">{result.title}</h3>
-                                    <p className="text-anvil-red font-black uppercase tracking-widest text-sm">{result.result}</p>
+                                    <h3 className="text-4xl font-black uppercase font-bebas italic text-ink mb-1">{result.title}</h3>
+                                    <p className="text-brand-text font-black uppercase tracking-widest text-sm">{result.result}</p>
                                 </div>
                             </m.div>
                         ))}
@@ -370,17 +370,17 @@ function RosterModal({ event, onClose }: RosterModalProps) {
             {/* Header bar */}
             <div className="relative z-[60] flex items-center justify-between px-8 py-6 flex-shrink-0">
                 <m.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                    <p className="text-anvil-red text-t-2xs font-black uppercase tracking-[0.4em] mb-1">Roster Oficial</p>
-                    <h2 className="text-2xl md:text-5xl font-black uppercase font-bebas italic text-white leading-none tracking-tight">{event.name}</h2>
+                    <p className="text-brand-text text-t-2xs font-black uppercase tracking-[0.4em] mb-1">Roster Oficial</p>
+                    <h2 className="text-2xl md:text-5xl font-black uppercase font-bebas italic text-ink leading-none tracking-tight">{event.name}</h2>
                 </m.div>
                 <m.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-6">
                     <div className="hidden md:flex items-center gap-2 text-gray-500 text-t-2xs font-black uppercase tracking-widest">
-                        <Calendar size={12} className="text-anvil-red" />
+                        <Calendar size={12} className="text-brand-text" />
                         {formatDate(event.date)}
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-anvil-red/40 rounded-full transition-colors group"
+                        className="p-4 bg-white/5 hover:bg-white/10 border border-line hover:border-anvil-red/40 rounded-full transition-colors group"
                     >
                         <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     </button>
@@ -434,7 +434,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                                         draggable={false}
                                                     />
                                                 ) : (
-                                                    <div className="w-64 h-64 rounded-full bg-gradient-to-br from-white/5 to-transparent border border-white/10 flex items-center justify-center text-8xl font-black text-gray-800 font-bebas italic mb-10">
+                                                    <div className="w-64 h-64 rounded-full bg-gradient-to-br from-white/5 to-transparent border border-line flex items-center justify-center text-8xl font-black text-gray-800 font-bebas italic mb-10">
                                                         {athlete.full_name.charAt(0)}
                                                     </div>
                                                 )}
@@ -475,13 +475,13 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                 <div className="absolute inset-x-0 top-[40%] -translate-y-1/2 px-4 md:px-10 flex justify-between pointer-events-none z-[70]">
                     <button
                         onClick={() => goTo(activeIndex - 1, -1)}
-                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-white/10 hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
+                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-line hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
                     >
                         <ChevronLeft className="w-8 h-8 group-hover:scale-110 transition-transform" />
                     </button>
                     <button
                         onClick={() => goTo(activeIndex + 1, 1)}
-                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-white/10 hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
+                        className="p-5 bg-white/5 hover:bg-anvil-red/20 border border-line hover:border-anvil-red/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
                     >
                         <ChevronRight className="w-8 h-8 group-hover:scale-110 transition-transform" />
                     </button>
@@ -498,26 +498,26 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                             className="text-center w-full flex flex-col items-center"
                         >
                             {/* Giant Name */}
-                            <h3 className="text-6xl md:text-[7rem] font-black uppercase font-bebas italic text-white leading-none mb-6 tracking-wide drop-shadow-2xl">
+                            <h3 className="text-6xl md:text-[7rem] font-black uppercase font-bebas italic text-ink leading-none mb-6 tracking-wide drop-shadow-2xl">
                                 {athletes[activeIndex].full_name}
                             </h3>
                             
                             {/* Badges / Stats */}
                             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                                <div className="inline-flex items-center gap-2 bg-anvil-red text-white text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-white/10">
+                                <div className="inline-flex items-center gap-2 bg-anvil-red text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-line">
                                     {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.category || 'Atleta Anvil'}
                                 </div>
                                 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.competitionDate && (
-                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-white/10 shadow-xl">
-                                        <Calendar size={14} className="text-anvil-red" />
+                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
+                                        <Calendar size={14} className="text-brand-text" />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.competitionDate}
                                     </div>
                                 )}
 
                                 {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.stats?.total ? (
-                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-white/10 shadow-xl">
-                                        Total: <span className="text-white text-sm">{athletesData.find(a => a.name === athletes[activeIndex].full_name)!.stats!.total} KG</span>
+                                    <div className="inline-flex items-center gap-2 bg-[#0a0a0a]/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
+                                        Total: <span className="text-ink text-sm">{athletesData.find(a => a.name === athletes[activeIndex].full_name)!.stats!.total} KG</span>
                                     </div>
                                 ) : null}
                             </div>
@@ -535,7 +535,7 @@ function RosterModal({ event, onClose }: RosterModalProps) {
                                         href={athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 text-gray-300 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 px-8 py-4 rounded-2xl transition-colors font-black uppercase tracking-[0.2em] text-xs shadow-xl"
+                                        className="inline-flex items-center gap-3 text-gray-300 bg-[#0a0a0a]/80 backdrop-blur-xl border border-line px-8 py-4 rounded-2xl transition-colors font-black uppercase tracking-[0.2em] text-xs shadow-xl"
                                     >
                                         <Instagram size={20} />
                                         {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram!.replace('https://www.instagram.com/', '@').replace('/', '')}

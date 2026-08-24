@@ -159,7 +159,7 @@ export function SessionFinish({
                     <div className="flex items-start gap-3">
                         <span
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-field ${
- done ? 'bg-success-quiet text-success' : 'bg-brand-quiet text-brand'
+ done ? 'bg-success-quiet text-success' : 'bg-brand-quiet text-brand-text'
  }`}
                         >
                             <Check size={18} strokeWidth={3} aria-hidden="true" />
@@ -345,7 +345,7 @@ export function SessionFinish({
                 {done && checkInDone === false && (
                     <div className="border-t border-subtle bg-surface-sunken p-4 md:p-5">
                         <p className="flex items-center gap-2 text-t-sm font-bold text-ink">
-                            <ClipboardCheck size={16} className="shrink-0 text-brand" aria-hidden="true" />
+                            <ClipboardCheck size={16} className="shrink-0 text-brand-text" aria-hidden="true" />
                             Antes de irte, completa tu check-in diario.
                         </p>
                         <p className="mt-1 text-t-xs text-ink-subtle">

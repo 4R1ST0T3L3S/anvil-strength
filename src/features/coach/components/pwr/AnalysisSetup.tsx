@@ -167,7 +167,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                         <span className="text-t-2xs font-semibold text-ink-subtle">kg</span>
                     </div>
                     {errorFor('loadKg') && (
-                        <p className="mt-1.5 text-t-2xs font-semibold leading-relaxed text-danger">
+                        <p className="mt-1.5 text-t-2xs font-semibold leading-relaxed text-danger-text">
                             {errorFor('loadKg')!.message}
                         </p>
                     )}
@@ -231,7 +231,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                         </span>
                     </label>
                     {errorFor('lateralConfirmed') && (
-                        <p className="mt-1.5 text-t-2xs font-semibold leading-relaxed text-danger">
+                        <p className="mt-1.5 text-t-2xs font-semibold leading-relaxed text-danger-text">
                             {errorFor('lateralConfirmed')!.message}
                         </p>
                     )}
@@ -291,7 +291,7 @@ export function SetupSummary({ setup, onEdit }: { setup: PwrSetup; onEdit?: () =
     return (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-field border border-subtle bg-surface-sunken px-3 py-2">
             <span className="text-t-2xs font-bold text-ink">{EXERCISE_LABEL[setup.exerciseType]}</span>
-            <span className="text-t-2xs font-bold tabular-nums text-brand">{setup.loadKg} kg</span>
+            <span className="text-t-2xs font-bold tabular-nums text-brand-text">{setup.loadKg} kg</span>
             <span className="text-t-2xs text-ink-subtle">{bar.label}</span>
             {onEdit && (
                 <button

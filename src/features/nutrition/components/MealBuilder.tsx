@@ -16,12 +16,12 @@ const CATEGORY_COLORS: Record<string, string> = {
     'Otros': 'border-zinc-600/40 bg-zinc-500/5',
 };
 const CATEGORY_TEXT: Record<string, string> = {
-    'Carbohidratos': 'text-yellow-400',
-    'Proteínas': 'text-blue-400',
+    'Carbohidratos': 'text-warning',
+    'Proteínas': 'text-info',
     'Grasas': 'text-orange-400',
-    'Verduras': 'text-green-400',
+    'Verduras': 'text-success',
     'Frutas': 'text-pink-400',
-    'Otros': 'text-zinc-400',
+    'Otros': 'text-ink-muted',
 };
 
 interface MealBuilderProps {
@@ -99,11 +99,11 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-white uppercase tracking-tight">Comidas</h3>
+                <h3 className="text-xl font-bold text-ink uppercase tracking-tight">Comidas</h3>
                 {!isAddingMeal && (
                     <button
                         onClick={() => setIsAddingMeal(true)}
-                        className="flex items-center gap-2 text-sm bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg transition-colors"
+                        className="flex items-center gap-2 text-sm bg-surface-raised hover:bg-surface-overlay text-ink px-3 py-2 rounded-lg transition-colors"
                     >
                         <Plus size={16} /> Nueva Comida
                     </button>
@@ -112,20 +112,20 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
 
             {isAddingMeal && (
                 <div className="bg-[#0a0a0a] border border-anvil-red/50 p-4 rounded-xl space-y-4">
-                    <p className="text-sm text-zinc-400">Selecciona el tipo de comida:</p>
+                    <p className="text-sm text-ink-muted">Selecciona el tipo de comida:</p>
                     <div className="flex flex-wrap gap-2">
                         {['Desayuno', 'Comida', 'Cena', 'Almuerzo', 'Merienda', 'Pre-entreno', 'Post-entreno', 'Pre-cama'].map(mealName => (
                             <button
                                 key={mealName}
                                 onClick={() => setNewMealName(mealName)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === mealName ? 'bg-anvil-red text-black border-anvil-red' : 'bg-zinc-800 text-white border-zinc-700 hover:border-anvil-red'}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === mealName ? 'bg-anvil-red text-black border-anvil-red' : 'bg-surface-raised text-ink border-strong hover:border-anvil-red'}`}
                             >
                                 {mealName}
                             </button>
                         ))}
                         <button
                             onClick={() => setNewMealName('Otros')}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === 'Otros' || (newMealName && !['Desayuno', 'Comida', 'Cena', 'Almuerzo', 'Merienda', 'Pre-entreno', 'Post-entreno', 'Pre-cama'].includes(newMealName)) ? 'bg-zinc-700 text-white border-zinc-500' : 'bg-zinc-800 text-white border-zinc-700'}`}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === 'Otros' || (newMealName && !['Desayuno', 'Comida', 'Cena', 'Almuerzo', 'Merienda', 'Pre-entreno', 'Post-entreno', 'Pre-cama'].includes(newMealName)) ? 'bg-surface-overlay text-ink border-zinc-500' : 'bg-surface-raised text-ink border-strong'}`}
                         >
                             Otros...
                         </button>
@@ -137,18 +137,18 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                             placeholder="Escribe el nombre de la comida..."
                             value={newMealName === 'Otros' ? '' : newMealName}
                             onChange={(e) => setNewMealName(e.target.value)}
-                            className="w-full bg-[#111111] text-white px-4 py-2 rounded-lg border border-zinc-800 focus:border-anvil-red mt-2"
+                            className="w-full bg-[#111111] text-ink px-4 py-2 rounded-lg border border-line focus:border-anvil-red mt-2"
                             autoFocus
                         />
                     )}
 
-                    <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-zinc-800">
+                    <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-line">
                         <button
                             onClick={() => {
                                 setIsAddingMeal(false);
                                 setNewMealName('');
                             }}
-                            className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+                            className="bg-surface-raised hover:bg-surface-overlay text-ink px-4 py-2 rounded-lg font-bold text-sm transition-colors"
                         >
                             Cancelar
                         </button>
@@ -186,7 +186,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                 ))}
                 
                 {meals.length === 0 && !isAddingMeal && (
-                    <div className="text-center py-8 text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
+                    <div className="text-center py-8 text-ink-subtle border border-dashed border-line rounded-xl">
                         Aún no hay comidas en este plan.
                     </div>
                 )}
@@ -262,14 +262,14 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
     const fatsPct = totalMacroKcal > 0 ? ((totals.fats * 9) / totalMacroKcal) * 100 : 0;
 
     return (
-        <div className="bg-[#0a0a0a] border border-zinc-800 rounded-xl overflow-hidden">
+        <div className="bg-[#0a0a0a] border border-line rounded-xl overflow-hidden">
             {/* Header */}
-            <div className="bg-[#0a0a0a] p-4 flex justify-between items-center cursor-pointer select-none border-b border-zinc-800" onClick={() => setIsExpanded(!isExpanded)}>
+            <div className="bg-[#0a0a0a] p-4 flex justify-between items-center cursor-pointer select-none border-b border-line" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex items-center gap-4">
-                    {isExpanded ? <ChevronUp size={20} className="text-zinc-400" /> : <ChevronDown size={20} className="text-zinc-400" />}
-                    <h4 className="text-lg font-black text-white">{meal.name}</h4>
+                    {isExpanded ? <ChevronUp size={20} className="text-ink-muted" /> : <ChevronDown size={20} className="text-ink-muted" />}
+                    <h4 className="text-lg font-black text-ink">{meal.name}</h4>
                     {meal.meal_supplements && meal.meal_supplements.length > 0 && (
-                        <span className="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded-full border border-blue-500/20">
+                        <span className="bg-info-quiet text-info text-xs px-2 py-0.5 rounded-full border border-info/20">
                             💊 {meal.meal_supplements.length}
                         </span>
                     )}
@@ -277,22 +277,22 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                 
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex gap-4 text-sm">
-                        <span className="font-bold text-white">{Math.round(totals.kcal)} <span className="text-zinc-500 font-normal">kcal</span></span>
-                        <span className="text-blue-400">{Math.round(totals.prot)}g P</span>
-                        <span className="text-yellow-400">{Math.round(totals.carbs)}g HC</span>
+                        <span className="font-bold text-ink">{Math.round(totals.kcal)} <span className="text-ink-subtle font-normal">kcal</span></span>
+                        <span className="text-info">{Math.round(totals.prot)}g P</span>
+                        <span className="text-warning">{Math.round(totals.carbs)}g HC</span>
                         <span className="text-orange-400">{Math.round(totals.fats)}g G</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsAdjusting(!isAdjusting); }}
-                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-anvil-red text-black' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-anvil-red text-black' : 'text-ink-muted hover:text-ink hover:bg-white/5'}`}
                             title="Ajuste Inteligente"
                         >
                             <Wand2 size={18} />
                         </button>
                         <button 
                             onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                            className="text-zinc-500 hover:text-red-500 transition-colors p-1"
+                            className="text-ink-subtle hover:text-danger-text transition-colors p-1"
                         >
                             <Trash2 size={18} />
                         </button>
@@ -314,47 +314,47 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                             >
                                 <div className="bg-[#0a0a0a] border border-anvil-red/30 rounded-xl p-4 space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h5 className="text-t-2xs font-black uppercase tracking-[0.2em] text-anvil-red flex items-center gap-2">
+                                        <h5 className="text-t-2xs font-black uppercase tracking-[0.2em] text-brand-text flex items-center gap-2">
                                             <Calculator size={14} /> Smart Adjuster
                                         </h5>
-                                        <button onClick={() => { setIsAdjusting(false); setOptimizedProposals(null); setSelectedProposalId(null); }} className="text-zinc-600 hover:text-white"><XIcon size={16} /></button>
+                                        <button onClick={() => { setIsAdjusting(false); setOptimizedProposals(null); setSelectedProposalId(null); }} className="text-zinc-600 hover:text-ink"><XIcon size={16} /></button>
                                     </div>
                                     
                                     <div className="grid grid-cols-3 gap-3">
                                         <div>
-                                            <label className="block text-t-2xs font-bold text-zinc-500 uppercase mb-1">Proteína Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-ink-subtle uppercase mb-1">Proteína Obj.</label>
                                             <input 
                                                 type="number"
                             inputMode="decimal" 
                                                 value={adjustTargets.protein || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, protein: Number(e.target.value)})}
-                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-blue-400 font-bold text-sm focus:border-blue-500/50"
+                                                className="w-full bg-black border border-line rounded px-2 py-1.5 text-info font-bold text-sm focus:border-blue-500/50"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-t-2xs font-bold text-zinc-500 uppercase mb-1">Carbos Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-ink-subtle uppercase mb-1">Carbos Obj.</label>
                                             <input 
                                                 type="number"
                             inputMode="decimal" 
                                                 value={adjustTargets.carbs || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, carbs: Number(e.target.value)})}
-                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-yellow-400 font-bold text-sm focus:border-yellow-500/50"
+                                                className="w-full bg-black border border-line rounded px-2 py-1.5 text-warning font-bold text-sm focus:border-yellow-500/50"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-t-2xs font-bold text-zinc-500 uppercase mb-1">Grasas Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-ink-subtle uppercase mb-1">Grasas Obj.</label>
                                             <input 
                                                 type="number"
                             inputMode="decimal" 
                                                 value={adjustTargets.fats || ''} 
                                                 onChange={e => setAdjustTargets({...adjustTargets, fats: Number(e.target.value)})}
-                                                className="w-full bg-black border border-zinc-800 rounded px-2 py-1.5 text-orange-400 font-bold text-sm focus:border-orange-500/50"
+                                                className="w-full bg-black border border-line rounded px-2 py-1.5 text-orange-400 font-bold text-sm focus:border-orange-500/50"
                                             />
                                         </div>
                                     </div>
 
                                     {adjustError && (
-                                        <p className="text-t-2xs font-bold text-anvil-red uppercase animate-pulse">{adjustError}</p>
+                                        <p className="text-t-2xs font-bold text-brand-text uppercase animate-pulse">{adjustError}</p>
                                     )}
 
                                     {!optimizedProposals ? (
@@ -376,14 +376,14 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                         </button>
                                     ) : (
                                         <div className="space-y-3">
-                                            <p className="text-t-2xs font-bold text-zinc-400 uppercase italic">Revisa las opciones y aplica la que prefieras:</p>
+                                            <p className="text-t-2xs font-bold text-ink-muted uppercase italic">Revisa las opciones y aplica la que prefieras:</p>
                                             
                                             <div className="flex gap-2">
                                                 {optimizedProposals.map(opt => (
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => setSelectedProposalId(opt.id)}
-                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-white' : 'bg-[#111111] border-white/5 text-zinc-500 hover:bg-white/5'}`}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-anvil-red/20 border-anvil-red text-ink' : 'bg-[#111111] border-subtle text-ink-subtle hover:bg-white/5'}`}
                                                     >
                                                         {opt.name}
                                                     </button>
@@ -404,14 +404,14 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                         setOptimizedProposals(null);
                                                         setSelectedProposalId(null);
                                                     }}
-                                                    className="flex-1 bg-green-500 text-white font-black py-2 rounded-lg text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-600 transition-colors disabled:opacity-50"
+                                                    className="flex-1 bg-green-500 text-ink font-black py-2 rounded-lg text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-600 transition-colors disabled:opacity-50"
                                                     disabled={!selectedProposalId}
                                                 >
                                                     <Check size={14} /> Aplicar Ajuste
                                                 </button>
                                                 <button 
                                                     onClick={() => { setOptimizedProposals(null); setSelectedProposalId(null); }}
-                                                    className="flex-1 bg-zinc-800 text-white font-black py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+                                                    className="flex-1 bg-surface-raised text-ink font-black py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-surface-overlay transition-colors"
                                                 >
                                                     Descartar
                                                 </button>
@@ -426,10 +426,10 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
 
                     {/* Macro Progress Bar */}
                     {totals.kcal > 0 && (
-                        <div className="mb-4 bg-[#111111] p-3 rounded-lg border border-zinc-800/50">
+                        <div className="mb-4 bg-[#111111] p-3 rounded-lg border border-line">
                             <div className="flex justify-between text-xs mb-2">
-                                <span className="text-blue-400">{Math.round(protPct)}% Prot</span>
-                                <span className="text-yellow-400">{Math.round(carbsPct)}% Carb</span>
+                                <span className="text-info">{Math.round(protPct)}% Prot</span>
+                                <span className="text-warning">{Math.round(carbsPct)}% Carb</span>
                                 <span className="text-orange-400">{Math.round(fatsPct)}% Grasa</span>
                             </div>
                             <div className="w-full h-2 rounded-full overflow-hidden flex">
@@ -456,12 +456,12 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                             className={`rounded-lg border ${CATEGORY_COLORS[group.category] || CATEGORY_COLORS['Otros']} overflow-hidden`}
                                         >
                                             {/* Category label */}
-                                            <div className="px-3 py-1.5 flex justify-between items-center border-b border-zinc-800/30">
+                                            <div className="px-3 py-1.5 flex justify-between items-center border-b border-line">
                                                 <span className={`text-xs font-bold uppercase ${CATEGORY_TEXT[group.category] || CATEGORY_TEXT['Otros']}`}>
                                                     {group.category} {totalCatCounts[group.category] > 1 ? `(OPCIÓN ${group.catIndex})` : ''}
                                                 </span>
                                                 {group.items.length > 1 && (
-                                                    <span className="text-xs font-black text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
+                                                    <span className="text-xs font-black text-success bg-success-quiet px-2 py-0.5 rounded border border-success/20">
                                                         ELIGE 1 OPCIÓN
                                                     </span>
                                                 )}
@@ -473,47 +473,47 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                 if (!f) return null;
                                                 const mult = mf.amount_g / 100;
                                                 return (
-                                                    <div key={mf.id} className={`flex justify-between items-center p-3 ${idx > 0 ? 'border-t border-zinc-800/20 bg-green-500/5' : ''}`}>
+                                                    <div key={mf.id} className={`flex justify-between items-center p-3 ${idx > 0 ? 'border-t border-line bg-green-500/5' : ''}`}>
                                                         <div>
                                                             <div className="flex items-center gap-2">
-                                                                {idx > 0 && <span className="text-green-500 text-xs font-bold">ó</span>}
-                                                                <p className="text-white font-medium">{f.product_name}</p>
+                                                                {idx > 0 && <span className="text-success text-xs font-bold">ó</span>}
+                                                                <p className="text-ink font-medium">{f.product_name}</p>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <p className={`text-xs ${selectedProposalId ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                                                                <p className={`text-xs ${selectedProposalId ? 'text-ink-subtle' : 'text-ink-subtle'}`}>
                                                                     {mf.amount_g}g
                                                                 </p>
                                                                 {selectedProposalId && optimizedProposals && optimizedProposals.find(o => o.id === selectedProposalId)?.amounts[f.code] !== mf.amount_g && (
                                                                     <>
-                                                                        <ChevronUp size={12} className="text-green-500 rotate-90" />
-                                                                        <p className="text-xs font-black text-green-400">
+                                                                        <ChevronUp size={12} className="text-success rotate-90" />
+                                                                        <p className="text-xs font-black text-success">
                                                                             {optimizedProposals.find(o => o.id === selectedProposalId)?.amounts[f.code]}g
                                                                         </p>
                                                                     </>
                                                                 )}
                                                                 <span className="text-zinc-700">·</span>
-                                                                <p className="text-xs text-zinc-500">{f.brands || ''}</p>
+                                                                <p className="text-xs text-ink-subtle">{f.brands || ''}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             <div className="text-right text-sm flex gap-3">
-                                                                <span className="text-zinc-400 w-14">{Math.round(f['energy-kcal_100g'] * mult)} kcal</span>
-                                                                <span className="text-blue-400/80 w-10">{Math.round(f.proteins_100g * mult)}g</span>
-                                                                <span className="text-yellow-400/80 w-10">{Math.round(f.carbohydrates_100g * mult)}g</span>
+                                                                <span className="text-ink-muted w-14">{Math.round(f['energy-kcal_100g'] * mult)} kcal</span>
+                                                                <span className="text-info/80 w-10">{Math.round(f.proteins_100g * mult)}g</span>
+                                                                <span className="text-warning/80 w-10">{Math.round(f.carbohydrates_100g * mult)}g</span>
                                                                 <span className="text-orange-400/80 w-10">{Math.round(f.fat_100g * mult)}g</span>
                                                             </div>
                                                             {idx === 0 && (
                                                                 <button 
                                                                     onClick={() => onAlternativeSearch(f, group.groupId)}
                                                                     title="Añadir alternativa"
-                                                                    className="text-zinc-600 hover:text-green-500 transition-colors"
+                                                                    className="text-zinc-600 hover:text-success transition-colors"
                                                                 >
                                                                     <Copy size={14} />
                                                                 </button>
                                                             )}
                                                             <button 
                                                                 onClick={() => onRemoveFood(mf.id)}
-                                                                className="text-zinc-600 hover:text-red-500 transition-colors"
+                                                                className="text-zinc-600 hover:text-danger-text transition-colors"
                                                             >
                                                                 <Trash2 size={14} />
                                                             </button>
@@ -531,7 +531,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="text-sm text-zinc-500 text-center py-2 mb-2"
+                                className="text-sm text-ink-subtle text-center py-2 mb-2"
                             >
                                 No hay alimentos en esta comida.
                             </m.div>
@@ -540,21 +540,21 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
 
                     {/* Supplements for this meal */}
                     {meal.meal_supplements && meal.meal_supplements.length > 0 && (
-                        <div className="mb-4 bg-blue-500/5 border border-blue-500/20 rounded-lg p-3">
-                            <p className="text-xs text-blue-400 font-bold uppercase mb-1">💊 Suplementación</p>
+                        <div className="mb-4 bg-blue-500/5 border border-info/20 rounded-lg p-3">
+                            <p className="text-xs text-info font-bold uppercase mb-1">💊 Suplementación</p>
                             <div className="flex flex-wrap gap-2">
                                 {meal.meal_supplements.map((s, i) => (
-                                    <span key={i} className="text-xs text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded">{s}</span>
+                                    <span key={i} className="text-xs text-blue-300 bg-info-quiet px-2 py-0.5 rounded">{s}</span>
                                 ))}
                             </div>
                         </div>
                     )}
 
                     {/* Mobile Totals (visible only on small screens) */}
-                    <div className="md:hidden flex justify-between bg-zinc-900 p-3 rounded-lg mb-4 text-xs">
-                        <span className="font-bold text-white">{Math.round(totals.kcal)} kcal</span>
-                        <span className="text-blue-400">{Math.round(totals.prot)}g P</span>
-                        <span className="text-yellow-400">{Math.round(totals.carbs)}g HC</span>
+                    <div className="md:hidden flex justify-between bg-surface-canvas p-3 rounded-lg mb-4 text-xs">
+                        <span className="font-bold text-ink">{Math.round(totals.kcal)} kcal</span>
+                        <span className="text-info">{Math.round(totals.prot)}g P</span>
+                        <span className="text-warning">{Math.round(totals.carbs)}g HC</span>
                         <span className="text-orange-400">{Math.round(totals.fats)}g G</span>
                     </div>
 
@@ -565,7 +565,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     ) : (
                         <div>
                             {/* Category quick-add buttons */}
-                            <p className="text-xs text-zinc-500 uppercase font-bold mb-2">Añadir por categoría:</p>
+                            <p className="text-xs text-ink-subtle uppercase font-bold mb-2">Añadir por categoría:</p>
                             <div className="flex flex-wrap gap-2">
                                 {FOOD_CATEGORIES.map(cat => (
                                     <button 

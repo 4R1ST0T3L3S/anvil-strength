@@ -50,7 +50,7 @@ export function EmptyState({
                     className={cn(
                         'mb-4 flex h-11 w-11 items-center justify-center rounded-card',
                         kind === 'error'
-                            ? 'bg-[var(--danger-quiet)] text-danger'
+                            ? 'bg-[var(--danger-quiet)] text-danger-text'
                             : 'bg-surface-raised text-ink-faint'
                     )}
                     aria-hidden="true"

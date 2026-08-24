@@ -25,12 +25,12 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
             {/* ===== PORTADA ===== */}
             <div className="text-center mb-8 border-b-4 border-black pb-6">
                 <h1 className="text-4xl font-black uppercase tracking-widest mb-1">ANVIL POWER CLUB</h1>
-                <p className="text-lg text-gray-500 uppercase tracking-wider">Plan Nutricional Personalizado</p>
+                <p className="text-lg text-ink-subtle uppercase tracking-wider">Plan Nutricional Personalizado</p>
 
                 {plan.tags && plan.tags.length > 0 && (
                     <div className="flex justify-center gap-2 mt-4">
                         {plan.tags.map((tag, i) => (
-                            <span key={i} className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full uppercase">{tag}</span>
+                            <span key={i} className="bg-black text-ink text-xs font-bold px-3 py-1 rounded-full uppercase">{tag}</span>
                         ))}
                     </div>
                 )}
@@ -45,9 +45,9 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
             {/* Objetivos */}
             <div className="grid grid-cols-4 gap-4 mb-8">
                 <div className="border border-gray-300 rounded p-3 text-center">
-                    <p className="text-xs text-gray-500 uppercase font-bold">Calorías</p>
+                    <p className="text-xs text-ink-subtle uppercase font-bold">Calorías</p>
                     <p className="text-2xl font-black">{plan.calories_target}</p>
-                    <p className="text-xs text-gray-400">kcal/día</p>
+                    <p className="text-xs text-ink-muted">kcal/día</p>
                 </div>
                 <div className="border border-gray-300 rounded p-3 text-center">
                     <p className="text-xs text-blue-600 uppercase font-bold">Proteína</p>
@@ -70,7 +70,7 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
                     <ul className="space-y-1">
                         {plan.general_guidelines.map((g, i) => (
                             <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-                                <span className="text-gray-400 mt-0.5">•</span> {g}
+                                <span className="text-ink-muted mt-0.5">•</span> {g}
                             </li>
                         ))}
                     </ul>
@@ -84,7 +84,7 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
                     <ul className="space-y-1">
                         {plan.global_supplements.map((s, i) => (
                             <li key={i} className="text-sm text-blue-800 flex items-start gap-2">
-                                <span className="text-blue-400 mt-0.5">•</span> {s}
+                                <span className="text-info mt-0.5">•</span> {s}
                             </li>
                         ))}
                     </ul>
@@ -122,7 +122,7 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
 
                         <table className="w-full text-sm border border-gray-300 border-collapse">
                             <thead>
-                                <tr className="bg-gray-50 text-xs text-gray-500 uppercase">
+                                <tr className="bg-gray-50 text-xs text-ink-subtle uppercase">
                                     <th className="text-left px-3 py-1 border-b border-gray-200">Categoría</th>
                                     <th className="text-left px-3 py-1 border-b border-gray-200">Alimento</th>
                                     <th className="text-right px-3 py-1 border-b border-gray-200">Cantidad</th>
@@ -139,13 +139,13 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
                                         const mult = mf.amount_g / 100;
                                         return (
                                             <tr key={mf.id} className={`${idx > 0 ? 'bg-green-50 text-green-800' : ''} border-b border-gray-100`}>
-                                                <td className="px-3 py-1.5 text-xs text-gray-500">
+                                                <td className="px-3 py-1.5 text-xs text-ink-subtle">
                                                     {idx === 0 ? (mf.category || 'Otros') : '↳ Alternativa'}
                                                 </td>
                                                 <td className="px-3 py-1.5 font-medium">
                                                     {idx > 0 && <span className="text-green-600 mr-1">ó</span>}
                                                     {mf.food.product_name}
-                                                    {mf.food.brands && <span className="text-gray-400 text-xs ml-1">({mf.food.brands})</span>}
+                                                    {mf.food.brands && <span className="text-ink-muted text-xs ml-1">({mf.food.brands})</span>}
                                                 </td>
                                                 <td className="text-right px-3 py-1.5">{mf.amount_g}g</td>
                                                 <td className="text-right px-3 py-1.5">{Math.round(mf.food['energy-kcal_100g'] * mult)}</td>
@@ -170,9 +170,9 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
             })}
 
             {/* Footer */}
-            <div className="mt-12 pt-4 border-t border-gray-300 text-center text-xs text-gray-400">
+            <div className="mt-12 pt-4 border-t border-gray-300 text-center text-xs text-ink-muted">
                 <p>Generado por <strong>Anvil Power Club</strong> — {new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                {plan.notes && <p className="mt-1 text-gray-500 italic">{plan.notes}</p>}
+                {plan.notes && <p className="mt-1 text-ink-subtle italic">{plan.notes}</p>}
             </div>
         </div>
     );

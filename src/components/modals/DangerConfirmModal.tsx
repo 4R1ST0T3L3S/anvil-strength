@@ -64,7 +64,7 @@ export function DangerConfirmModal({
         <Modal open={open} onClose={onClose} title={title} size="sm" dismissible={!working}>
             <div className="space-y-4">
                 <div className="flex items-start gap-3 rounded-card bg-[var(--danger-quiet)] p-3.5">
-                    <AlertTriangle size={18} className="mt-0.5 shrink-0 text-danger" aria-hidden="true" />
+                    <AlertTriangle size={18} className="mt-0.5 shrink-0 text-danger-text" aria-hidden="true" />
                     <div className="min-w-0 text-t-sm leading-relaxed text-ink">{description}</div>
                 </div>
 

@@ -71,7 +71,7 @@ export interface ExerciseVideoPanelProps {
 const SCOPE_LABEL: Record<ResolvedVideo['scope'], { text: string; className: string }> = {
     athlete: {
         text: 'Versión personalizada para ti',
-        className: 'bg-[var(--brand-quiet)] text-brand',
+        className: 'bg-[var(--brand-quiet)] text-brand-text',
     },
     coach: {
         text: 'Versión de tu entrenador',
@@ -139,7 +139,7 @@ export function ExerciseVideoPanel({
                 esta ficha que se ha escrito pensando en esta sesión. */}
             {coachNotes && (
                 <div className="rounded-field bg-[var(--brand-quiet)] px-3 py-2.5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-brand">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-text">
                         Nota de tu entrenador
                     </p>
                     <p className="mt-1 text-sm text-ink">{coachNotes}</p>
@@ -187,7 +187,7 @@ export function ExerciseVideoPanel({
                                     onClick={() => setExternalOpen(true)}
                                     className="group flex h-full w-full flex-col items-center justify-center gap-2 text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
                                 >
-                                    <PlayCircle className="h-9 w-9 text-brand" />
+                                    <PlayCircle className="h-9 w-9 text-brand-text" />
                                     <p className="text-xs font-semibold uppercase tracking-wide">
                                         Ver vídeo de técnica
                                     </p>
@@ -340,7 +340,7 @@ function Tag({ children, tone }: { children: React.ReactNode; tone: 'strong' | '
             className={cn(
                 'rounded-chip px-2 py-0.5 text-xs',
                 tone === 'strong'
-                    ? 'bg-[var(--brand-quiet)] text-brand'
+                    ? 'bg-[var(--brand-quiet)] text-brand-text'
                     : 'bg-surface-overlay text-ink-subtle'
             )}
         >

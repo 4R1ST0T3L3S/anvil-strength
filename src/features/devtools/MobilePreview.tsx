@@ -237,7 +237,7 @@ export function MobilePreview() {
             <div className="mx-auto w-full max-w-md">
                 <div data-probe="cabecera" className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 pb-2 backdrop-blur">
                     <div className="p-4">
-                        <h1 className="text-t-2xs font-bold uppercase tracking-wider text-anvil-red">Bloque de fuerza</h1>
+                        <h1 className="text-t-2xs font-bold uppercase tracking-wider text-brand-text">Bloque de fuerza</h1>
                     </div>
                     <div data-probe="progreso" className="flex items-center gap-2.5 px-4 pt-1">
                         <div className="h-1 flex-1 overflow-hidden rounded-pill bg-surface-sunken">
@@ -388,7 +388,7 @@ Movilidad de cadera 5'`}
                             ref={menuAnchor}
                             onClick={() => setMenuOpen(v => !v)}
                             aria-expanded={menuOpen}
-                            className="rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-semibold uppercase tracking-wide text-brand"
+                            className="rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-semibold uppercase tracking-wide text-brand-text"
                         >
                             Agendar día
                         </button>

@@ -92,7 +92,7 @@ export function Field({
                 {obligatorio && (
                     // `aria-hidden` porque quien navega con lector ya lo sabe
                     // por el `required` del control: oírlo dos veces molesta.
-                    <span className="ml-1 text-brand" aria-hidden="true">*</span>
+                    <span className="ml-1 text-brand-text" aria-hidden="true">*</span>
                 )}
             </label>
 
@@ -110,7 +110,7 @@ export function Field({
                 <p
                     id={ids.error}
                     role="alert"
-                    className="flex items-start gap-1.5 text-t-xs font-medium text-danger"
+                    className="flex items-start gap-1.5 text-t-xs font-medium text-danger-text"
                 >
                     <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span>{error}</span>
@@ -446,7 +446,7 @@ export function Checkbox({ label, campo, ayuda, contenedorClassName, className, 
                 <p
                     id={campo.ids.error}
                     role="alert"
-                    className="flex items-start gap-1.5 pl-8 text-t-xs font-medium text-danger"
+                    className="flex items-start gap-1.5 pl-8 text-t-xs font-medium text-danger-text"
                 >
                     <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span>{campo.errorVisible}</span>

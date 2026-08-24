@@ -239,7 +239,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Delete Exercise Button (Absolute Top Right) */}
             <button
                 onClick={onRemoveExercise}
-                className="absolute top-3 right-3 text-ink-faint hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                className="absolute top-3 right-3 text-ink-faint hover:text-danger-text opacity-0 group-hover:opacity-100 transition-opacity p-1"
             >
                 <Trash2 size={14} />
             </button>
@@ -321,7 +321,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     {sessionExercise.vbt_file_url && (
                         <button
                             onClick={() => onOpenVbtChart(sessionExercise.vbt_file_url!, exerciseName)}
-                            className="shrink-0 bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
+                            className="shrink-0 bg-success-quiet text-success border border-success/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
                             title="Ver Gráfica VBT"
                         >
                             <Activity size={12} />
@@ -347,7 +347,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         className={cn(
                             'ml-auto shrink-0 cursor-pointer rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast',
                             (sessionExercise.section ?? 'main') === 'warmup'
-                                ? 'border-[var(--brand-line)] bg-brand-quiet text-brand'
+                                ? 'border-[var(--brand-line)] bg-brand-quiet text-brand-text'
                                 : 'border-transparent bg-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
                         )}
                     >
@@ -415,7 +415,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             onChange={(e) => handleVariantChange(e.target.value)}
                             onBlur={handleVariantBlur}
                             placeholder="Variante (ej: Tempo 3&quot; · Gomas media)"
-                            className="w-full bg-black/20 text-xs text-center text-anvil-red border border-subtle focus:border-anvil-red rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
+                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-anvil-red rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
                         />
                         {pendingModifier ? (
                             <div className="flex items-center gap-2 justify-center">
@@ -426,7 +426,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     value={modifierValue}
                                     onChange={(e) => setModifierValue(e.target.value)}
                                     placeholder={VARIANT_MODIFIERS.find(m => m.key === pendingModifier)?.prompt}
-                                    className="w-32 bg-black/40 text-xs text-center text-white border border-anvil-red/40 rounded-lg py-1 px-2 placeholder-gray-600"
+                                    className="w-32 bg-black/40 text-xs text-center text-ink border border-anvil-red/40 rounded-lg py-1 px-2 placeholder-gray-600"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') applyModifier(pendingModifier, modifierValue);
                                         if (e.key === 'Escape') { setPendingModifier(null); setModifierValue(''); }
@@ -434,7 +434,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 />
                                 <button
                                     onClick={() => applyModifier(pendingModifier, modifierValue)}
-                                    className="text-t-2xs font-black uppercase text-anvil-red hover:text-white transition-colors"
+                                    className="text-t-2xs font-black uppercase text-brand-text hover:text-ink transition-colors"
                                 >
                                     OK
                                 </button>
@@ -445,7 +445,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     <button
                                         key={mod.key}
                                         onClick={() => setPendingModifier(mod.key)}
-                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-anvil-red border border-transparent hover:border-anvil-red/30 transition-colors"
+                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-anvil-red/10 hover:text-brand-text border border-transparent hover:border-anvil-red/30 transition-colors"
                                     >
                                         + {mod.key}
                                     </button>
@@ -486,7 +486,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 className={cn(
                                     'flex h-[34px] w-full items-center justify-center gap-1.5 rounded-field border text-t-2xs font-semibold transition-colors duration-fast ease-snap',
                                     hasMuscleOverride
-                                        ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand'
+                                        ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text'
                                         : 'border-[var(--border-default)] bg-surface-sunken text-ink-subtle hover:text-ink'
                                 )}
                             >
@@ -602,8 +602,8 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                         ? `Velocidad registrada: ${set.vbt_mean_velocity} m/s`
                                         : 'Añadir datos de velocidad (VBT) a esta serie'}
                                     className={`p-0.5 transition-colors ${set.vbt_mean_velocity != null
- ? 'text-green-400 hover:text-green-300'
- : 'text-ink-faint opacity-100 hover:text-brand md:opacity-0 group-hover/row:opacity-100'
+ ? 'text-success hover:text-green-300'
+ : 'text-ink-faint opacity-100 hover:text-brand-text md:opacity-0 group-hover/row:opacity-100'
  }`}
                                 >
                                     <Activity size={11} />
@@ -611,15 +611,15 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 {set.vbt_file_url && (
                                     <button
                                         onClick={() => onOpenVbtChart(set.vbt_file_url!, `${exerciseName} · Serie ${setIndex + 1}`)}
-                                        className="p-0.5 text-green-400 hover:text-green-300"
+                                        className="p-0.5 text-success hover:text-green-300"
                                         title="Ver la gráfica del archivo de esta serie"
                                     >
                                         <BarChart3 size={11} />
                                     </button>
                                 )}
                                 <span className="flex gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
-                                    <button onClick={() => onDuplicateSet(set.id)} className="text-ink-faint hover:text-blue-400 p-0.5" title="Duplicar serie"><Copy size={11} /></button>
-                                    <button onClick={() => onRemoveSet(set.id)} className="text-ink-faint hover:text-danger p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
+                                    <button onClick={() => onDuplicateSet(set.id)} className="text-ink-faint hover:text-info p-0.5" title="Duplicar serie"><Copy size={11} /></button>
+                                    <button onClick={() => onRemoveSet(set.id)} className="text-ink-faint hover:text-danger-text p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
                                 </span>
                             </div>
                             </div>
@@ -646,7 +646,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     <button
                         onClick={onOpenProgression}
                         title="Definir cómo progresa este ejercicio a lo largo del bloque"
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-field bg-brand-quiet py-2 text-t-xs font-medium text-brand transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink active:scale-95"
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-field bg-brand-quiet py-2 text-t-xs font-medium text-brand-text transition-colors duration-fast ease-snap hover:bg-brand hover:text-brand-ink active:scale-95"
                     >
                         <TrendingUp size={12} aria-hidden="true" /> Progresión
                     </button>
@@ -1036,7 +1036,7 @@ function CompactInput({ value, onChange, placeholder, type = "text" }: CompactIn
                 }
             }}
             onWheel={(e) => e.currentTarget.blur()} // Prevent accidental scroll changes
-            className="w-full bg-surface-overlay border border-transparent hover:border-[var(--border-default)] focus:border-blue-500 rounded px-1 py-1 text-xs text-center text-white transition-colors placeholder:text-ink-subtle"
+            className="w-full bg-surface-overlay border border-transparent hover:border-[var(--border-default)] focus:border-blue-500 rounded px-1 py-1 text-xs text-center text-ink transition-colors placeholder:text-ink-subtle"
             placeholder={placeholder}
         />
     )

@@ -219,7 +219,7 @@ export function InviteAthleteModal({
                 {/* --- Activas ----------------------------------------- */}
                 {invites === null ? (
                     <div className="flex justify-center py-8">
-                        <Loader className="animate-spin text-brand" size={20} />
+                        <Loader className="animate-spin text-brand-text" size={20} />
                     </div>
                 ) : active.length > 0 ? (
                     <div>
@@ -264,7 +264,7 @@ export function InviteAthleteModal({
                                         <button
                                             onClick={() => handleRevoke(invite)}
                                             aria-label="Anular el enlace"
-                                            className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger"
+                                            className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger-text"
                                         >
                                             <Trash2 size={15} aria-hidden="true" />
                                         </button>

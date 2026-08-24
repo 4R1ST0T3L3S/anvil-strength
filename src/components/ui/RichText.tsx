@@ -42,7 +42,7 @@ export function RichText({
                             key={i}
                             type="button"
                             onClick={() => onPlayVideo(segment.url, segment.text)}
-                            className="mx-0.5 inline-flex items-baseline gap-1 rounded-field font-semibold text-brand underline decoration-[var(--brand-line)] underline-offset-2 transition-colors duration-fast hover:text-brand-hover hover:decoration-current"
+                            className="mx-0.5 inline-flex items-baseline gap-1 rounded-field font-semibold text-brand-text underline decoration-[var(--brand-line)] underline-offset-2 transition-colors duration-fast hover:text-brand-hover hover:decoration-current"
                         >
                             <PlayCircle size={13} className="translate-y-0.5 shrink-0" aria-hidden="true" />
                             {segment.text}
@@ -56,7 +56,7 @@ export function RichText({
                         href={segment.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mx-0.5 inline-flex items-baseline gap-1 font-semibold text-brand underline decoration-[var(--brand-line)] underline-offset-2 transition-colors duration-fast hover:text-brand-hover hover:decoration-current"
+                        className="mx-0.5 inline-flex items-baseline gap-1 font-semibold text-brand-text underline decoration-[var(--brand-line)] underline-offset-2 transition-colors duration-fast hover:text-brand-hover hover:decoration-current"
                     >
                         {segment.text}
                         <ExternalLink size={11} className="translate-y-0.5 shrink-0" aria-hidden="true" />

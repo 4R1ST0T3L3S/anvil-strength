@@ -103,8 +103,8 @@ export function paymentStatusLabel(status: PaymentStatus): string {
 export const PAYMENT_STATE_STYLE: Record<PaymentState, { text: string; bg: string; border: string }> = {
     ok: { text: 'text-ink-subtle', bg: 'bg-surface-sunken', border: 'border-[var(--border-default)]' },
     soon: { text: 'text-warning', bg: 'bg-[var(--warning-quiet)]', border: 'border-warning/40' },
-    urgent: { text: 'text-danger', bg: 'bg-[var(--danger-quiet)]', border: 'border-danger/40' },
-    expired: { text: 'text-danger', bg: 'bg-[var(--danger-quiet)]', border: 'border-danger/40' },
+    urgent: { text: 'text-danger-text', bg: 'bg-[var(--danger-quiet)]', border: 'border-danger/40' },
+    expired: { text: 'text-danger-text', bg: 'bg-[var(--danger-quiet)]', border: 'border-danger/40' },
     unset: { text: 'text-ink-faint', bg: 'bg-surface-sunken', border: 'border-[var(--border-subtle)]' },
 };
 

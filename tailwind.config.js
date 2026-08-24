@@ -56,10 +56,12 @@ export default {
           quiet: token("--brand-quiet"),
           line: token("--brand-line"),
           ink: token("--brand-ink"),
+          // El rojo cuando ES el texto, no el relleno. Ver tokens.css.
+          text: token("--brand-text"),
         },
         success: { DEFAULT: token("--success"), quiet: token("--success-quiet") },
         warning: { DEFAULT: token("--warning"), quiet: token("--warning-quiet") },
-        danger: { DEFAULT: token("--danger"), hover: token("--danger-hover"), quiet: token("--danger-quiet") },
+        danger: { DEFAULT: token("--danger"), hover: token("--danger-hover"), quiet: token("--danger-quiet"), text: token("--danger-text") },
         info: { DEFAULT: token("--info"), quiet: token("--info-quiet") },
         effort: {
           low: token("--effort-low"),

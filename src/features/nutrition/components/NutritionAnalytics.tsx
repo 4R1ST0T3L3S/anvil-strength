@@ -66,19 +66,19 @@ export function NutritionAnalytics() {
     ];
 
     const kpiCards = [
-        { title: 'Planes Activos', value: metrics.totalPlans, icon: <Users className="text-anvil-red" /> },
-        { title: 'Kcal Promedio', value: metrics.avgCalories, icon: <Zap className="text-yellow-400" /> },
-        { title: 'Prot. Promedio', value: `${metrics.avgProtein}g`, icon: <Activity className="text-blue-400" /> },
-        { title: 'Objetivo Global', value: 'Mantenimiento', icon: <Target className="text-green-400" /> },
+        { title: 'Planes Activos', value: metrics.totalPlans, icon: <Users className="text-brand-text" /> },
+        { title: 'Kcal Promedio', value: metrics.avgCalories, icon: <Zap className="text-warning" /> },
+        { title: 'Prot. Promedio', value: `${metrics.avgProtein}g`, icon: <Activity className="text-info" /> },
+        { title: 'Objetivo Global', value: 'Mantenimiento', icon: <Target className="text-success" /> },
     ];
 
     return (
         <div className="p-6 md:p-10 space-y-8 animate-fade pb-24">
             <div>
-                <h1 className="text-3xl font-black text-white uppercase italic tracking-wider mb-2">
+                <h1 className="text-3xl font-black text-ink uppercase italic tracking-wider mb-2">
                     Métricas del Club
                 </h1>
-                <p className="text-zinc-400">
+                <p className="text-ink-muted">
                     Resumen global de los planes nutricionales asignados a los atletas.
                 </p>
             </div>
@@ -86,13 +86,13 @@ export function NutritionAnalytics() {
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {kpiCards.map((card, idx) => (
-                    <div key={idx} className="bg-[#0a0a0a] border border-zinc-800 p-6 rounded-2xl flex items-center gap-4 hover:border-anvil-red/50 transition-colors">
+                    <div key={idx} className="bg-[#0a0a0a] border border-line p-6 rounded-2xl flex items-center gap-4 hover:border-anvil-red/50 transition-colors">
                         <div className="bg-[#0a0a0a] p-4 rounded-xl">
                             {card.icon}
                         </div>
                         <div>
-                            <p className="text-zinc-400 text-sm font-bold uppercase">{card.title}</p>
-                            <p className="text-2xl font-black text-white">{card.value}</p>
+                            <p className="text-ink-muted text-sm font-bold uppercase">{card.title}</p>
+                            <p className="text-2xl font-black text-ink">{card.value}</p>
                         </div>
                     </div>
                 ))}
@@ -101,8 +101,8 @@ export function NutritionAnalytics() {
             {metrics.totalPlans > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Gráfico Circular de Macros */}
-                    <div className="bg-[#0a0a0a] border border-zinc-800 p-6 rounded-2xl">
-                        <h3 className="text-lg font-black text-white uppercase mb-6">Distribución Calórica Promedio</h3>
+                    <div className="bg-[#0a0a0a] border border-line p-6 rounded-2xl">
+                        <h3 className="text-lg font-black text-ink uppercase mb-6">Distribución Calórica Promedio</h3>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -132,8 +132,8 @@ export function NutritionAnalytics() {
                     </div>
 
                     {/* Gráfico de Barras - Gramos */}
-                    <div className="bg-[#0a0a0a] border border-zinc-800 p-6 rounded-2xl">
-                        <h3 className="text-lg font-black text-white uppercase mb-6">Gramos Promedio por Macro</h3>
+                    <div className="bg-[#0a0a0a] border border-line p-6 rounded-2xl">
+                        <h3 className="text-lg font-black text-ink uppercase mb-6">Gramos Promedio por Macro</h3>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={macroData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -156,8 +156,8 @@ export function NutritionAnalytics() {
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-dashed border-zinc-800">
-                    <p className="text-zinc-500 font-medium">No hay suficientes datos. Crea algunos planes nutricionales para ver las métricas.</p>
+                <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-dashed border-line">
+                    <p className="text-ink-subtle font-medium">No hay suficientes datos. Crea algunos planes nutricionales para ver las métricas.</p>
                 </div>
             )}
         </div>

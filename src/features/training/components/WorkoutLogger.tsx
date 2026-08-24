@@ -489,7 +489,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         setActiveSessionId(pickSessionForToday(allSessions.filter(s => s.week_number === week)));
     };
 
-    if (loading) return <div className="h-[100dvh] flex items-center justify-center bg-black"><Loader className="animate-spin text-white" /></div>;
+    if (loading) return <div className="h-[100dvh] flex items-center justify-center bg-black"><Loader className="animate-spin text-ink" /></div>;
 
     if (!block) {
         return (
@@ -498,7 +498,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                     <AlertCircle size={64} />
                 </div>
                 <div className="max-w-xs">
-                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Sin Plan Activo</h3>
+                    <h3 className="text-2xl font-black text-ink uppercase tracking-tighter mb-2">Sin Plan Activo</h3>
                     <p className="text-sm leading-relaxed">
                         Tu entrenador aún no ha activado tu próximo mesociclo. Contacta con él para empezar a registrar tus marcas.
                     </p>
@@ -576,7 +576,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
          * arriba con `sticky`. Es lo que hace que el gesto de deslizar se
          * comporte igual en toda la pantalla.
          */
-        <div className="mx-auto w-full max-w-md text-white">
+        <div className="mx-auto w-full max-w-md text-ink">
 
             {/* 1. CABECERA Y NAVEGACIÓN.
                 =========================================================
@@ -616,9 +616,9 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-surface-raised px-2.5 py-1.5 text-left transition-colors hover:bg-surface-overlay disabled:hover:bg-surface-raised md:px-3 md:py-2.5"
                             >
                                 <span className="flex min-w-0 items-center gap-2">
-                                    <CalendarDays size={14} className="shrink-0 text-anvil-red" aria-hidden="true" />
+                                    <CalendarDays size={14} className="shrink-0 text-brand-text" aria-hidden="true" />
                                     <span className="min-w-0">
-                                        <span className="block truncate text-t-2xs font-bold uppercase leading-tight tracking-widest text-anvil-red">
+                                        <span className="block truncate text-t-2xs font-bold uppercase leading-tight tracking-widest text-brand-text">
                                             {block.name}
                                         </span>
                                         <span className="block truncate text-t-sm font-bold leading-tight">
@@ -660,8 +660,8 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     className={cn(
                                         'flex shrink-0 items-center justify-center rounded-xl px-2.5 transition-colors',
                                         objectivesOpen
-                                            ? 'bg-anvil-red/15 text-anvil-red'
-                                            : 'bg-surface-raised text-ink-muted hover:bg-surface-overlay hover:text-white'
+                                            ? 'bg-anvil-red/15 text-brand-text'
+                                            : 'bg-surface-raised text-ink-muted hover:bg-surface-overlay hover:text-ink'
                                     )}
                                 >
                                     <Info size={16} />
@@ -675,7 +675,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 onClick={handlePrintWeek}
                                 title="Descargar esta semana en PDF"
                                 aria-label="Descargar esta semana en PDF"
-                                className="flex shrink-0 items-center justify-center rounded-xl bg-surface-raised px-2.5 text-ink-muted transition-colors hover:bg-surface-overlay hover:text-white"
+                                className="flex shrink-0 items-center justify-center rounded-xl bg-surface-raised px-2.5 text-ink-muted transition-colors hover:bg-surface-overlay hover:text-ink"
                             >
                                 <Download size={16} />
                             </button>
@@ -695,7 +695,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                         onClick={() => changeWeek(w)}
                                         className={cn(
                                             'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors',
-                                            w === selectedWeek ? 'bg-white/10 text-white' : 'text-ink-muted hover:bg-white/5'
+                                            w === selectedWeek ? 'bg-white/10 text-ink' : 'text-ink-muted hover:bg-white/5'
                                         )}
                                     >
                                         <span className="min-w-0">
@@ -711,7 +711,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                             </span>
                                         </span>
                                         {w === getWeekNumber() && (
-                                            <span className="ml-2 shrink-0 rounded-full bg-anvil-red/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-anvil-red">
+                                            <span className="ml-2 shrink-0 rounded-full bg-anvil-red/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-brand-text">
                                                 Ahora
                                             </span>
                                         )}
@@ -721,7 +721,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         )}
                     </div>
                 ) : (
-                    <h1 className="px-3 pt-2 text-t-xs font-bold uppercase tracking-widest text-anvil-red md:px-4 md:pt-3">
+                    <h1 className="px-3 pt-2 text-t-xs font-bold uppercase tracking-widest text-brand-text md:px-4 md:pt-3">
                         {block.name}
                     </h1>
                 )}
@@ -765,7 +765,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     'relative flex h-11 min-w-[3.75rem] shrink-0 flex-col items-center justify-center rounded-xl border px-2.5 leading-none transition-colors duration-fast',
                                     active
                                         ? 'border-white bg-white font-bold text-black'
-                                        : 'border-transparent bg-surface-overlay text-ink-muted hover:text-white',
+                                        : 'border-transparent bg-surface-overlay text-ink-muted hover:text-ink',
                                     !active && isToday && 'border-anvil-red/50'
                                 )}
                             >
@@ -841,7 +841,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-faint mb-4">
                             <Check size={32} />
                         </div>
-                        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">
+                        <h3 className="text-xl font-black text-ink uppercase tracking-tighter mb-2">
                             {availableWeeks.length === 0 ? 'Aún no disponible' : 'Semana sin sesiones'}
                         </h3>
                         <p className="max-w-xs text-sm leading-relaxed">
@@ -890,7 +890,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     texto libre de arriba: dos veces "Calentamiento"
                                     seguidas sobran. */}
                                 {!activeSession?.warmup?.trim() && (
-                                    <h3 className="text-t-2xs font-bold uppercase tracking-widest text-brand">
+                                    <h3 className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">
                                         Calentamiento
                                     </h3>
                                 )}
@@ -1007,7 +1007,7 @@ function AppendixBlock({
     if (!body?.trim()) return null;
 
     const tone = accent === 'warm'
-        ? { bar: 'bg-brand', text: 'text-brand' }
+        ? { bar: 'bg-brand', text: 'text-brand-text' }
         : { bar: 'bg-info', text: 'text-info' };
 
     return (
@@ -1396,8 +1396,8 @@ function LoggerExerciseCard({
                         <span className="mt-1 shrink-0 text-t-2xs font-black tabular-nums text-ink-faint">
                             {position}
                         </span>
-                        <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-anvil-red transition-colors">{exerciseName}</h3>
-                        <PlayCircle size={15} className="mt-1.5 text-ink-subtle group-hover:text-anvil-red transition-colors shrink-0" />
+                        <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-brand-text transition-colors">{exerciseName}</h3>
+                        <PlayCircle size={15} className="mt-1.5 text-ink-subtle group-hover:text-brand-text transition-colors shrink-0" />
                     </button>
 
                     {/* LA VARIANTE PRESCRITA.
@@ -1416,7 +1416,7 @@ function LoggerExerciseCard({
                         vista previa del entrenador, así que lo que él revisa y
                         lo que el atleta ve por fin coinciden. */}
                     {sessionExercise.variant_name?.trim() && (
-                        <p className="mt-1 text-t-xs font-bold leading-snug text-anvil-red">
+                        <p className="mt-1 text-t-xs font-bold leading-snug text-brand-text">
                             {sessionExercise.variant_name.trim()}
                         </p>
                     )}
@@ -1424,7 +1424,7 @@ function LoggerExerciseCard({
                     {sessionExercise.notes && (
                         <button
                             onClick={() => setNoteOpen(!noteOpen)}
-                            className="text-xs text-anvil-red mt-1 flex items-center gap-1 hover:underline"
+                            className="text-xs text-brand-text mt-1 flex items-center gap-1 hover:underline"
                         >
                             {noteOpen ? 'Ocultar notas' : 'Ver notas'} {noteOpen ? '▲' : '▼'}
                         </button>
@@ -1441,7 +1441,7 @@ function LoggerExerciseCard({
                         accept=".csv,.xlsx,.txt,.vbt"
                     />
                     {vbtUrl ? (
-                         <div className="flex items-center gap-1 text-t-2xs text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
+                         <div className="flex items-center gap-1 text-t-2xs text-success font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
                             <FileCheck size={12} /> VBT SUBIDO
                             {taggedSetId && (
                                 <span className="text-green-300/70 normal-case font-medium">
@@ -1453,7 +1453,7 @@ function LoggerExerciseCard({
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading}
-                            className="flex items-center gap-1 text-t-2xs text-ink-muted hover:text-white bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
+                            className="flex items-center gap-1 text-t-2xs text-ink-muted hover:text-ink bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
                         >
                             {uploading ? <Loader size={12} className="animate-spin" /> : <UploadCloud size={12} />}
                             {uploading ? "SUBIENDO..." : "+ VBT"}
@@ -1465,7 +1465,7 @@ function LoggerExerciseCard({
             {/* Selector: ¿a qué serie corresponde el archivo VBT? */}
             {pendingSetTag && (
                 <div className="px-4 py-3 bg-anvil-red/5 border-b border-anvil-red/20 animate-drop">
-                    <p className="text-t-2xs font-black uppercase tracking-wider text-anvil-red mb-2">
+                    <p className="text-t-2xs font-black uppercase tracking-wider text-brand-text mb-2">
                         ¿A qué serie corresponde el archivo?
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1473,14 +1473,14 @@ function LoggerExerciseCard({
                             <button
                                 key={s.id}
                                 onClick={() => tagSetWithVbt(s.id)}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red hover:text-white text-ink-muted text-xs font-black uppercase transition-colors border border-[var(--border-default)]"
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-anvil-red hover:text-ink text-ink-muted text-xs font-black uppercase transition-colors border border-[var(--border-default)]"
                             >
                                 Serie {i + 1}
                             </button>
                         ))}
                         <button
                             onClick={() => tagSetWithVbt(null)}
-                            className="px-3 py-1.5 rounded-lg text-ink-subtle hover:text-white text-xs font-bold uppercase transition-colors"
+                            className="px-3 py-1.5 rounded-lg text-ink-subtle hover:text-ink text-xs font-bold uppercase transition-colors"
                         >
                             Todo el ejercicio
                         </button>

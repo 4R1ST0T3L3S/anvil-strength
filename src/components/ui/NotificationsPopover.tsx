@@ -12,12 +12,12 @@ interface NotificationsPopoverProps {
 
 const getIcon = (type: AppNotification['type']) => {
     switch (type) {
-        case 'chat': return <MessageSquare className="text-blue-400" size={16} />;
-        case 'arena': return <Trophy className="text-yellow-400" size={16} />;
-        case 'training': return <Dumbbell className="text-anvil-red" size={16} />;
-        case 'nutrition': return <Apple className="text-green-400" size={16} />;
-        case 'points': return <Trophy className="text-yellow-500" size={16} />;
-        default: return <Info className="text-gray-400" size={16} />;
+        case 'chat': return <MessageSquare className="text-info" size={16} />;
+        case 'arena': return <Trophy className="text-warning" size={16} />;
+        case 'training': return <Dumbbell className="text-brand-text" size={16} />;
+        case 'nutrition': return <Apple className="text-success" size={16} />;
+        case 'points': return <Trophy className="text-warning" size={16} />;
+        default: return <Info className="text-ink-muted" size={16} />;
     }
 };
 
@@ -31,9 +31,9 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                 onClick={() => setIsOpen(!isOpen)}
                 className="relative p-2 rounded-lg hover:bg-white/5 transition-colors group"
             >
-                <Bell size={20} className={unreadCount > 0 ? "text-anvil-red animate-pulse" : "text-gray-400 group-hover:text-white"} />
+                <Bell size={20} className={unreadCount > 0 ? "text-brand-text animate-pulse" : "text-ink-muted group-hover:text-ink"} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-white text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-anvil-red text-ink text-t-2xs font-bold rounded-full flex items-center justify-center border-2 border-[#0a0a0a]">
                         {unreadCount > 9 ? '+9' : unreadCount}
                     </span>
                 )}
@@ -49,15 +49,15 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                         ejecutaba nunca—, lo que en la variante de arriba
                         habría hecho que el panel entrara alejándose del botón
                         que lo abre. */}
-                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2 animate-rise' : 'top-full mt-2 animate-drop'} w-80 max-h-[480px] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl z-[110] overflow-hidden`}>
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
+                    <div className={`absolute right-0 ${placement === 'top' ? 'bottom-full mb-2 animate-rise' : 'top-full mt-2 animate-drop'} w-80 max-h-[480px] bg-[#0a0a0a] border border-line rounded-2xl shadow-2xl z-[110] overflow-hidden`}>
+                        <div className="p-4 border-b border-subtle flex justify-between items-center bg-[#0a0a0a]">
                             <h3 className="font-black uppercase tracking-widest text-xs flex items-center gap-2">
-                                <Bell size={14} className="text-anvil-red" /> Notificaciones
+                                <Bell size={14} className="text-brand-text" /> Notificaciones
                             </h3>
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="text-t-2xs font-bold text-gray-500 hover:text-white uppercase transition-colors"
+                                    className="text-t-2xs font-bold text-ink-subtle hover:text-ink uppercase transition-colors"
                                 >
                                     Marcar todo leído
                                 </button>
@@ -68,14 +68,14 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                             {notifications.length === 0 ? (
                                 <div className="p-8 text-center">
                                     <Bell size={32} className="mx-auto text-gray-700 mb-2 opacity-20" />
-                                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">No hay notificaciones</p>
+                                    <p className="text-ink-subtle text-xs font-bold uppercase tracking-wider">No hay notificaciones</p>
                                 </div>
                             ) : (
                                 notifications.map((notif) => (
                                     <div
                                         key={notif.id}
                                         onClick={() => markAsRead(notif.id)}
-                                        className={`p-4 border-b border-white/5 cursor-pointer transition-colors ${notif.is_read ? 'opacity-60 bg-transparent' : 'bg-white/5 hover:bg-white/10'}`}
+                                        className={`p-4 border-b border-subtle cursor-pointer transition-colors ${notif.is_read ? 'opacity-60 bg-transparent' : 'bg-white/5 hover:bg-white/10'}`}
                                     >
                                         <div className="flex gap-3">
                                             <div className="mt-1 shrink-0 p-2 rounded-lg bg-black/20">
@@ -83,10 +83,10 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ user
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-start mb-1">
-                                                    <h4 className="text-xs font-black uppercase tracking-tight text-white">{notif.title}</h4>
+                                                    <h4 className="text-xs font-black uppercase tracking-tight text-ink">{notif.title}</h4>
                                                     {!notif.is_read && <div className="w-2 h-2 bg-anvil-red rounded-full shadow-[0_0_8px_rgba(220,38,38,0.5)]" />}
                                                 </div>
-                                                <p className="text-xs text-gray-400 leading-relaxed mb-2">{notif.content}</p>
+                                                <p className="text-xs text-ink-muted leading-relaxed mb-2">{notif.content}</p>
                                                 <span className="text-t-2xs font-bold text-gray-600 uppercase tracking-widest">
                                                     {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true, locale: es })}
                                                 </span>

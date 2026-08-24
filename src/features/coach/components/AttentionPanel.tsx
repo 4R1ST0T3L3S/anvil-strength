@@ -200,7 +200,7 @@ export function AttentionPanel({ coachId }: { coachId: string }) {
                         >
                             <item.icon
                                 size={15}
-                                className={item.severity === 'high' ? 'text-danger' : 'text-warning'}
+                                className={item.severity === 'high' ? 'text-danger-text' : 'text-warning'}
                                 aria-hidden="true"
                             />
                         </span>

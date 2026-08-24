@@ -29,7 +29,7 @@ type PressTone = 'brand' | 'light' | 'dark';
 const PRESS_TONES: Record<PressTone, { face: string; edge: string }> = {
     brand: { face: 'bg-brand text-brand-ink', edge: 'var(--press-edge-brand)' },
     light: { face: 'bg-white text-fold-light-ink', edge: 'var(--press-edge-light)' },
-    dark: { face: 'bg-fold-light-ink text-white', edge: 'var(--press-edge-dark)' },
+    dark: { face: 'bg-fold-light-ink text-ink', edge: 'var(--press-edge-dark)' },
 };
 
 /**

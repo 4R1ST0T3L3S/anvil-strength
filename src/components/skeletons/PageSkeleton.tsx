@@ -31,7 +31,7 @@ export function PageSkeleton() {
                 evita que el contenido salte hacia abajo al montarse. */}
             <div className="flex h-16 items-center justify-between border-b border-subtle px-6">
                 <span className="select-none text-t-lg font-black tracking-tight text-ink">
-                    ANVIL<span className="text-brand">.</span>
+                    ANVIL<span className="text-brand-text">.</span>
                 </span>
                 <Skeleton className="h-9 w-24" />
             </div>

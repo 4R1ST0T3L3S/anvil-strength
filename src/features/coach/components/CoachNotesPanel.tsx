@@ -57,7 +57,7 @@ export function CoachNotesPanel({ coachId, athleteId }: { coachId: string; athle
     return (
         <section className="space-y-3 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
             <h3 className="flex items-center gap-2 text-t-base font-semibold text-ink">
-                <StickyNote size={16} className="text-brand" />
+                <StickyNote size={16} className="text-brand-text" />
                 Notas del entrenador
                 {saving && <Loader size={13} className="animate-spin text-ink-faint" />}
             </h3>

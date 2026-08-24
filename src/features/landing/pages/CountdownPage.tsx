@@ -37,7 +37,7 @@ export function CountdownPage() {
     ];
 
     return (
-        <div className="min-h-[100dvh] bg-[#0a0a0a] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-white">
+        <div className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex flex-col items-center justify-center relative overflow-hidden font-sans selection:bg-anvil-red selection:text-ink">
             {/* Background Texture/Gradient */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-900/40 via-[#0a0a0a] to-[#0a0a0a]" />
@@ -68,7 +68,7 @@ export function CountdownPage() {
                     className="mb-8 md:mb-12"
                 >
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase italic tracking-tighter mb-2">
-                        SOMOS <span className="text-anvil-red">ANVIL</span>
+                        SOMOS <span className="text-brand-text">ANVIL</span>
                     </h1>
                     <p className="text-sm md:text-2xl text-gray-400 font-bold uppercase tracking-[0.2em]">
                         Opening soon:
@@ -83,9 +83,9 @@ export function CountdownPage() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + (index * 0.1), duration: 0.6 }}
-                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-white/5 rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-colors duration-slow"
+                            className="flex flex-col items-center p-2 md:p-6 bg-white/5 border border-subtle rounded-xl backdrop-blur-sm group hover:border-anvil-red/30 transition-colors duration-slow"
                         >
-                            <span className="text-2xl sm:text-3xl md:text-7xl font-black text-white group-hover:text-anvil-red transition-colors duration-slow tabular-nums leading-none">
+                            <span className="text-2xl sm:text-3xl md:text-7xl font-black text-ink group-hover:text-brand-text transition-colors duration-slow tabular-nums leading-none">
                                 {item.value.toString().padStart(2, '0')}
                             </span>
                             <span className="text-t-2xs md:text-sm font-bold text-gray-500 mt-1 md:mt-2 tracking-widest uppercase">
@@ -110,13 +110,13 @@ export function CountdownPage() {
                             href="https://instagram.com/anvilstrength_"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
+                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-ink hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
                         >
                             <Instagram size={24} />
                         </a>
                         <a
                             href="mailto:info@anvilstrength.com"
-                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-white hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
+                            className="p-3 bg-white/5 rounded-full text-white/70 hover:text-ink hover:bg-anvil-red/20 hover:scale-110 transition-[background-color,color,transform] duration-slow"
                         >
                             <Mail size={24} />
                         </a>

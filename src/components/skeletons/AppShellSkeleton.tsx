@@ -57,7 +57,7 @@ export function AppShellSkeleton() {
                         frame es lo que hace que esto se lea como la misma
                         aplicación y no como otra pantalla. */}
                     <span className="select-none text-t-lg font-black tracking-tight text-ink">
-                        ANVIL<span className="text-brand">.</span>
+                        ANVIL<span className="text-brand-text">.</span>
                     </span>
                 </div>
 
@@ -83,7 +83,7 @@ export function AppShellSkeleton() {
                 <header className="z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-subtle bg-surface-canvas/90 px-4 backdrop-blur md:h-16 md:px-6">
                     <div className="flex min-w-0 items-center gap-2">
                         <span className="select-none text-t-base font-black tracking-tight text-ink md:hidden">
-                            ANVIL<span className="text-brand">.</span>
+                            ANVIL<span className="text-brand-text">.</span>
                         </span>
                         <Skeleton className="hidden h-4 w-32 md:block" />
                     </div>

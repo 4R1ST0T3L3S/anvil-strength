@@ -83,7 +83,7 @@ export function PiezasPreview() {
         <div className="min-h-[100dvh] bg-surface-canvas px-4 py-8 md:px-8">
             <div className="mx-auto w-full max-w-3xl space-y-10">
                 <header>
-                    <p className="text-t-2xs font-bold uppercase tracking-widest text-brand">
+                    <p className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">
                         Solo desarrollo
                     </p>
                     <h1 className="mt-1 text-t-3xl font-black uppercase tracking-display text-ink">

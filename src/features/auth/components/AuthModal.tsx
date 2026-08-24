@@ -216,31 +216,31 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-[#0a0a0a] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 shadow-2xl p-8">
+      <div className="relative bg-[#0a0a0a] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl border border-line shadow-2xl p-8">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-ink-muted hover:text-ink transition-colors"
         >
           <X size={24} />
         </button>
 
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">
+          <h2 className="text-3xl font-black text-ink uppercase tracking-tighter mb-2">
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h2>
-          <p className="text-gray-400 text-sm">
+          <p className="text-ink-muted text-sm">
             {isLogin ? 'Bienvenido de nuevo, atleta.' : 'Tres datos y estás dentro.'}
           </p>
         </div>
 
         {error && (
           <div>
-            <div data-testid="auth-error-message" className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 mb-6 text-sm text-center font-bold rounded-lg">
+            <div data-testid="auth-error-message" className="bg-danger-quiet border border-danger/20 text-danger-text p-3 mb-6 text-sm text-center font-bold rounded-lg">
               {error}
             </div>
 
             {(error.includes('Sin conexión') || error.includes('permiso')) && (
-              <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-3 mb-6 text-xs rounded-lg">
+              <div className="bg-warning-quiet border border-warning/20 text-warning p-3 mb-6 text-xs rounded-lg">
                 <div className="flex items-start gap-2">
                   <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
                   <div>
@@ -259,10 +259,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                       </button>
                     )}
                     {supabaseStatus === 'online' && (
-                      <p className="text-emerald-400 font-bold mt-2">✓ Servidor online. Es un problema de tu red.</p>
+                      <p className="text-success font-bold mt-2">✓ Servidor online. Es un problema de tu red.</p>
                     )}
                     {supabaseStatus === 'offline' && (
-                      <p className="text-red-400 font-bold mt-2">✗ Servidor no responde. Intenta más tarde.</p>
+                      <p className="text-danger-text font-bold mt-2">✗ Servidor no responde. Intenta más tarde.</p>
                     )}
                   </div>
                 </div>
@@ -272,7 +272,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
         )}
 
         {notice && (
-          <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 mb-6 text-sm text-center font-bold rounded-lg">
+          <div className="bg-success-quiet border border-success/20 text-success p-3 mb-6 text-sm text-center font-bold rounded-lg">
             {notice}
           </div>
         )}
@@ -281,14 +281,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           {!isLogin && (
             <div className="relative">
               <label htmlFor="nickname" className="sr-only">Apodo</label>
-              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-anvil-red" size={20} />
+              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text" size={20} />
               <input
                 id="nickname"
                 name="nickname"
                 type="text"
                 placeholder="Apodo (Ej: El Toro)"
                 autoComplete="nickname"
-                className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors font-bold"
+                className="w-full bg-[#0a0a0a] border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors font-bold"
                 value={formData.nickname}
                 onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
                 required={!isLogin}
@@ -298,7 +298,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
           <div className="relative">
             <label htmlFor="email" className="sr-only">Correo electrónico</label>
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={20} />
             <input
               data-testid="auth-email-input"
               id="email"
@@ -306,7 +306,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="email"
               placeholder="Email"
               autoComplete="username email"
-              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
+              className="w-full bg-[#0a0a0a] border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -315,7 +315,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
           <div className="relative">
             <label htmlFor="password" className="sr-only">Contraseña</label>
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={20} />
             <input
               data-testid="auth-password-input"
               key={isLogin ? 'login-password' : 'register-password'}
@@ -324,7 +324,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               type="password"
               placeholder="Contraseña"
               autoComplete={isLogin ? "current-password" : "new-password"}
-              className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
+              className="w-full bg-[#0a0a0a] border border-line text-ink pl-10 pr-4 py-3 rounded-lg focus:border-anvil-red transition-colors"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
@@ -333,14 +333,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
           {!isLogin && (
             <>
-              <p className="text-center text-xs leading-relaxed text-gray-500">
+              <p className="text-center text-xs leading-relaxed text-ink-subtle">
                 Tus marcas, categoría y foto se añaden luego desde tu perfil, y solo si quieres.
               </p>
 
               {/* Sin premarcar: el RGPD exige un acto positivo, no una casilla
                   que el usuario tenga que desmarcar. `required` bloquea el
                   envío del formulario de forma nativa si no se marca. */}
-              <label className="flex items-start gap-2.5 text-xs leading-relaxed text-gray-400">
+              <label className="flex items-start gap-2.5 text-xs leading-relaxed text-ink-muted">
                 <input
                   type="checkbox"
                   checked={acceptedTerms}
@@ -350,11 +350,11 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
                 />
                 <span>
                   He leído y acepto los{' '}
-                  <a href="/legal/terminos" target="_blank" rel="noopener noreferrer" className="text-anvil-red hover:underline">
+                  <a href="/legal/terminos" target="_blank" rel="noopener noreferrer" className="text-brand-text hover:underline">
                     Términos y Condiciones
                   </a>{' '}
                   y la{' '}
-                  <a href="/legal/privacidad" target="_blank" rel="noopener noreferrer" className="text-anvil-red hover:underline">
+                  <a href="/legal/privacidad" target="_blank" rel="noopener noreferrer" className="text-brand-text hover:underline">
                     Política de Privacidad
                   </a>
                   .
@@ -375,10 +375,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
         <div className="relative mt-8 mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10"></div>
+            <div className="w-full border-t border-line"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-[#0a0a0a] text-gray-500 font-bold uppercase tracking-wider">O continuar con</span>
+            <span className="px-4 bg-[#0a0a0a] text-ink-subtle font-bold uppercase tracking-wider">O continuar con</span>
           </div>
         </div>
 
@@ -386,7 +386,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-[#0a0a0a] hover:bg-[#303030] text-white border border-white/10 font-black uppercase py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
+          className="w-full bg-[#0a0a0a] hover:bg-[#303030] text-ink border border-line font-black uppercase py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
         >
           {isGoogleLoading ? (
             <Loader className="animate-spin" size={20} />
@@ -406,7 +406,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
         <div className="mt-8 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-gray-400 hover:text-white text-sm font-bold uppercase tracking-wide transition-colors"
+            className="text-ink-muted hover:text-ink text-sm font-bold uppercase tracking-wide transition-colors"
           >
             {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
           </button>

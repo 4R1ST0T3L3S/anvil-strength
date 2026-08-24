@@ -35,9 +35,9 @@ export function IconAction({
             title={label}
             aria-label={label}
             className={`rounded-field p-2 transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${active
- ? 'bg-brand-quiet text-brand'
+ ? 'bg-brand-quiet text-brand-text'
  : danger
- ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger'
+ ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger-text'
  : 'text-ink-subtle hover:bg-surface-overlay hover:text-ink'
  }`}
         >
@@ -216,7 +216,7 @@ function MenuItem({
         <button
             onClick={onClick}
             className={`flex w-full items-center gap-2.5 rounded-field px-2.5 py-2.5 text-left text-t-sm transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand ${danger
- ? 'text-danger hover:bg-[var(--danger-quiet)]'
+ ? 'text-danger-text hover:bg-[var(--danger-quiet)]'
  : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
  }`}
         >

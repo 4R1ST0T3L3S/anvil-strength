@@ -341,7 +341,7 @@ function Bench() {
                 >
                     {running ? 'Midiendo…' : cvReady ? 'Medir' : 'Cargando OpenCV…'}
                 </button>
-                {cvError && <p className="mt-2 text-t-xs font-bold text-danger">{cvError}</p>}
+                {cvError && <p className="mt-2 text-t-xs font-bold text-danger-text">{cvError}</p>}
 
                 {/* VISIBLE A PROPÓSITO, y no `hidden`.
                     Un `<video>` en `display: none` no presenta fotogramas, así

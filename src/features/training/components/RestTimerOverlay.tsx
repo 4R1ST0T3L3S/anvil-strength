@@ -48,7 +48,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                 <div className="flex items-center gap-4">
                     <div className={cn(
                         "w-12 h-12 rounded-full flex items-center justify-center border-2",
-                        isFinished ? "border-green-500 text-green-500" : "border-anvil-red text-anvil-red"
+                        isFinished ? "border-green-500 text-success" : "border-anvil-red text-brand-text"
                     )}>
                         <Timer size={20} className={isFinished ? "animate-bounce" : ""} />
                     </div>
@@ -58,7 +58,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                         </p>
                         <p className={cn(
                             "text-2xl font-black tabular-nums leading-none",
-                            isFinished ? "text-green-500" : "text-white"
+                            isFinished ? "text-success" : "text-ink"
                         )}>
                             {formatTime(timeLeft)}
                         </p>
@@ -71,13 +71,13 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                         <>
                             <button
                                 onClick={() => onAddSeconds(-10)}
-                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-[color,transform]"
+                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
                             >
                                 <Minus size={14} />
                             </button>
                             <button
                                 onClick={() => onAddSeconds(10)}
-                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-[color,transform]"
+                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
                             >
                                 <Plus size={14} />
                             </button>
@@ -85,7 +85,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                     )}
                     <button
                         onClick={onClose}
-                        className="ml-2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-ink-muted hover:text-white border border-subtle active:scale-95 transition-[color,transform]"
+                        className="ml-2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
                     >
                         <X size={16} />
                     </button>

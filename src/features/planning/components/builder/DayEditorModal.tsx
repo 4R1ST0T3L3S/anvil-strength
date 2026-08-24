@@ -223,11 +223,11 @@ export function DayEditorModal({
             <div className="flex items-center justify-between gap-4 px-4 md:px-8 py-4 border-b border-subtle bg-surface-canvas shrink-0">
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div className="w-11 h-11 bg-anvil-red/10 border border-anvil-red/30 rounded-xl flex flex-col items-center justify-center shrink-0">
-                        <span className="text-t-2xs text-anvil-red font-black uppercase leading-none">Día</span>
-                        <span className="text-lg font-black text-anvil-red leading-none">{session.day_number}</span>
+                        <span className="text-t-2xs text-brand-text font-black uppercase leading-none">Día</span>
+                        <span className="text-lg font-black text-brand-text leading-none">{session.day_number}</span>
                     </div>
                     <input
-                        className="bg-transparent font-black text-xl md:text-2xl text-white w-full placeholder-gray-600 uppercase tracking-tight border-b-2 border-transparent focus:border-anvil-red/50 transition-colors min-w-0"
+                        className="bg-transparent font-black text-xl md:text-2xl text-ink w-full placeholder-gray-600 uppercase tracking-tight border-b-2 border-transparent focus:border-anvil-red/50 transition-colors min-w-0"
                         value={session.name ?? ''}
                         onChange={(e) => onUpdateName(session.id, e.target.value)}
                         placeholder={`DÍA ${session.day_number}`}
@@ -239,7 +239,7 @@ export function DayEditorModal({
                     <div className="relative">
                         <button
                             onClick={() => { setOpenMenu(openMenu === 'copy' ? null : 'copy'); setCopySourceId(null); }}
-                            className={`hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-black uppercase transition-colors border ${openMenu === 'copy' ? 'bg-anvil-red/10 border-anvil-red/40 text-anvil-red' : 'bg-white/5 border-[var(--border-default)] text-ink-muted hover:text-white'}`}
+                            className={`hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-black uppercase transition-colors border ${openMenu === 'copy' ? 'bg-anvil-red/10 border-anvil-red/40 text-brand-text' : 'bg-white/5 border-[var(--border-default)] text-ink-muted hover:text-ink'}`}
                             title="Copiar ejercicio de otro día"
                         >
                             <CopyPlus size={14} /> Copiar de otro día
@@ -254,7 +254,7 @@ export function DayEditorModal({
                                                 <button
                                                     key={s.id}
                                                     onClick={() => setCopySourceId(s.id)}
-                                                    className="w-full flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm font-bold text-ink-muted hover:bg-white/5 hover:text-white transition-colors"
+                                                    className="w-full flex items-center justify-between text-left px-3 py-2 rounded-lg text-sm font-bold text-ink-muted hover:bg-white/5 hover:text-ink transition-colors"
                                                 >
                                                     <span className="truncate">S{s.week_number} · {s.name || `Día ${s.day_number}`}</span>
                                                     <ChevronDown size={13} className="-rotate-90 text-ink-subtle shrink-0" />
@@ -267,10 +267,10 @@ export function DayEditorModal({
                                     </>
                                 ) : (
                                     <>
-                                        <button onClick={() => setCopySourceId(null)} className="text-t-2xs font-black uppercase text-ink-subtle hover:text-white mb-2 transition-colors">← Otro día</button>
+                                        <button onClick={() => setCopySourceId(null)} className="text-t-2xs font-black uppercase text-ink-subtle hover:text-ink mb-2 transition-colors">← Otro día</button>
                                         <button
                                             onClick={() => { onCopyWholeDay(copySourceId); setOpenMenu(null); setCopySourceId(null); }}
-                                            className="mb-2 flex w-full items-center gap-2 rounded-lg border border-anvil-red/30 bg-anvil-red/10 px-3 py-2 text-left text-xs font-black uppercase tracking-wide text-anvil-red transition-colors hover:bg-anvil-red/20"
+                                            className="mb-2 flex w-full items-center gap-2 rounded-lg border border-anvil-red/30 bg-anvil-red/10 px-3 py-2 text-left text-xs font-black uppercase tracking-wide text-brand-text transition-colors hover:bg-anvil-red/20"
                                         >
                                             <CopyPlus size={13} /> Traer el día entero (sustituye este)
                                         </button>
@@ -280,7 +280,7 @@ export function DayEditorModal({
                                                 <button
                                                     key={ex.id}
                                                     onClick={() => { onCopyExercise(ex); setOpenMenu(null); }}
-                                                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-anvil-red hover:text-white text-ink-muted transition-colors"
+                                                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-anvil-red hover:text-ink text-ink-muted transition-colors"
                                                 >
                                                     <span className="text-sm font-bold block truncate">{ex.exercise?.name}</span>
                                                     <span className="text-t-2xs font-mono opacity-60">{summarizeSets(ex.sets)}</span>
@@ -297,7 +297,7 @@ export function DayEditorModal({
                     <div className="relative">
                         <button
                             onClick={() => setOpenMenu(openMenu === 'templates' ? null : 'templates')}
-                            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-black uppercase transition-colors border ${openMenu === 'templates' ? 'bg-anvil-red/10 border-anvil-red/40 text-anvil-red' : 'bg-white/5 border-[var(--border-default)] text-ink-muted hover:text-white'}`}
+                            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-black uppercase transition-colors border ${openMenu === 'templates' ? 'bg-anvil-red/10 border-anvil-red/40 text-brand-text' : 'bg-white/5 border-[var(--border-default)] text-ink-muted hover:text-ink'}`}
                             title="Plantillas de día"
                         >
                             <LayoutTemplate size={14} /> <span className="hidden md:inline">Plantillas</span>
@@ -313,7 +313,7 @@ export function DayEditorModal({
                                                 onChange={(e) => setTemplateName(e.target.value)}
                                                 placeholder='Ej: "Día pesado SQ"'
                                                 maxLength={80}
-                                                className="flex-1 bg-black/40 border border-[var(--border-default)] rounded-lg py-2 px-3 text-white text-xs focus:border-anvil-red/50 min-w-0"
+                                                className="flex-1 bg-black/40 border border-[var(--border-default)] rounded-lg py-2 px-3 text-ink text-xs focus:border-anvil-red/50 min-w-0"
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' && templateName.trim()) {
                                                         onSaveTemplate(templateName.trim());
@@ -330,7 +330,7 @@ export function DayEditorModal({
                                                     setOpenMenu(null);
                                                 }}
                                                 disabled={!templateName.trim()}
-                                                className="px-3 py-2 rounded-lg bg-brand hover:bg-brand-hover text-white text-t-2xs font-black uppercase transition-colors disabled:opacity-40 shrink-0"
+                                                className="px-3 py-2 rounded-lg bg-brand hover:bg-brand-hover text-ink text-t-2xs font-black uppercase transition-colors disabled:opacity-40 shrink-0"
                                             >
                                                 <Save size={12} />
                                             </button>
@@ -346,14 +346,14 @@ export function DayEditorModal({
                                         <div key={tpl.id} className="flex items-center gap-1 group/tpl">
                                             <button
                                                 onClick={() => { onApplyTemplate(tpl); setOpenMenu(null); }}
-                                                className="flex-1 text-left px-3 py-2 rounded-lg hover:bg-anvil-red hover:text-white text-ink-muted transition-colors min-w-0"
+                                                className="flex-1 text-left px-3 py-2 rounded-lg hover:bg-anvil-red hover:text-ink text-ink-muted transition-colors min-w-0"
                                             >
                                                 <span className="text-sm font-bold block truncate">{tpl.name}</span>
                                                 <span className="text-t-2xs opacity-60">{tpl.payload.length} ejercicios</span>
                                             </button>
                                             <button
                                                 onClick={() => onDeleteTemplate(tpl.id)}
-                                                className="p-1.5 text-ink-faint hover:text-danger opacity-0 group-hover/tpl:opacity-100 transition-opacity shrink-0"
+                                                className="p-1.5 text-ink-faint hover:text-danger-text opacity-0 group-hover/tpl:opacity-100 transition-opacity shrink-0"
                                                 title="Eliminar plantilla"
                                             >
                                                 <Trash2 size={13} />
@@ -368,7 +368,7 @@ export function DayEditorModal({
                     {/* Vista atleta */}
                     <button
                         onClick={() => setOpenMenu(openMenu === 'preview' ? null : 'preview')}
-                        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-black uppercase transition-colors border ${openMenu === 'preview' ? 'bg-anvil-red/10 border-anvil-red/40 text-anvil-red' : 'bg-white/5 border-[var(--border-default)] text-ink-muted hover:text-white'}`}
+                        className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-black uppercase transition-colors border ${openMenu === 'preview' ? 'bg-anvil-red/10 border-anvil-red/40 text-brand-text' : 'bg-white/5 border-[var(--border-default)] text-ink-muted hover:text-ink'}`}
                         title="Ver como lo verá el atleta"
                     >
                         <Eye size={14} /> <span className="hidden md:inline">Vista atleta</span>
@@ -386,7 +386,7 @@ export function DayEditorModal({
                     )}
                     <button
                         onClick={onClose}
-                        className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-ink-muted hover:text-white transition-colors"
+                        className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-ink-muted hover:text-ink transition-colors"
                         aria-label="Cerrar editor"
                     >
                         <X size={20} />
@@ -407,9 +407,9 @@ export function DayEditorModal({
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(220,38,38,0.12),transparent_60%)] pointer-events-none" />
                     <div className="relative z-10 w-full max-w-md text-center">
                         <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-anvil-red/20 to-transparent border border-anvil-red/30 flex items-center justify-center">
-                            <Dumbbell size={36} className="text-anvil-red" />
+                            <Dumbbell size={36} className="text-brand-text" />
                         </div>
-                        <h3 className="text-2xl font-black uppercase italic text-white mb-2">Diseña el día</h3>
+                        <h3 className="text-2xl font-black uppercase italic text-ink mb-2">Diseña el día</h3>
                         <p className="text-sm text-ink-subtle mb-8">Empieza con un básico o busca cualquier ejercicio de la biblioteca.</p>
 
                         {/* Arranque en un toque */}
@@ -559,7 +559,7 @@ export function DayEditorModal({
                         {session.warmup?.trim() && !converting && (
                             <button
                                 onClick={() => setConverting(true)}
-                                className="flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-field border border-dashed border-[var(--border-default)] px-3 py-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast hover:border-[var(--brand-line)] hover:text-brand"
+                                className="flex min-h-[36px] w-full items-center justify-center gap-1.5 rounded-field border border-dashed border-[var(--border-default)] px-3 py-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast hover:border-[var(--brand-line)] hover:text-brand-text"
                             >
                                 <Wand2 size={13} aria-hidden="true" />
                                 Convertir a ejercicios
@@ -608,10 +608,10 @@ export function DayEditorModal({
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={`text-t-2xs font-black px-1.5 py-0.5 rounded ${theme.bg} ${theme.accent}`}>{theme.key}</span>
                                                 <span className="text-t-2xs font-bold text-ink-subtle uppercase">#{i + 1}</span>
-                                                {ex.vbt_file_url && <Activity size={10} className="text-green-400" />}
+                                                {ex.vbt_file_url && <Activity size={10} className="text-success" />}
                                                 <span className="ml-auto"><Sparkline values={spark} /></span>
                                             </div>
-                                            <p className={`font-black uppercase text-sm leading-tight truncate ${isSelected ? 'text-white' : 'text-ink-muted'}`}>
+                                            <p className={`font-black uppercase text-sm leading-tight truncate ${isSelected ? 'text-ink' : 'text-ink-muted'}`}>
                                                 {ex.exercise?.name || 'Ejercicio'}
                                             </p>
                                             {ex.variant_name && (
@@ -634,7 +634,7 @@ export function DayEditorModal({
                             {!isAddingEx ? (
                                 <button
                                     onClick={() => setIsAddingEx(true)}
-                                    className="w-full py-3.5 border-2 border-dashed border-[var(--border-default)] hover:border-anvil-red/50 hover:bg-anvil-red/5 rounded-card text-ink-subtle hover:text-anvil-red transition-colors text-t-2xs font-black tracking-widest uppercase flex items-center justify-center gap-2"
+                                    className="w-full py-3.5 border-2 border-dashed border-[var(--border-default)] hover:border-anvil-red/50 hover:bg-anvil-red/5 rounded-card text-ink-subtle hover:text-brand-text transition-colors text-t-2xs font-black tracking-widest uppercase flex items-center justify-center gap-2"
                                 >
                                     <Plus size={14} /> Ejercicio
                                 </button>
@@ -724,23 +724,23 @@ export function DayEditorModal({
                         className="w-1/3 shrink-0 space-y-4 overflow-y-auto border-subtle bg-surface-canvas p-4 min-h-0 lg:w-[var(--panel-w)] lg:border-l"
                     >
                         <p className="text-t-2xs font-black uppercase tracking-[0.25em] text-ink-subtle flex items-center gap-2">
-                            <BarChart3 size={13} className="text-anvil-red" /> Resumen del día
+                            <BarChart3 size={13} className="text-brand-text" /> Resumen del día
                         </p>
 
                         <div className="grid grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-2">
                             <div className="bg-surface-raised border border-subtle rounded-xl p-3 text-center">
-                                <Dumbbell size={14} className="mx-auto text-anvil-red mb-1" />
-                                <p className="text-xl font-black text-white leading-none">{session.exercises.length}</p>
+                                <Dumbbell size={14} className="mx-auto text-brand-text mb-1" />
+                                <p className="text-xl font-black text-ink leading-none">{session.exercises.length}</p>
                                 <p className="text-t-2xs font-bold uppercase text-ink-subtle mt-1">Ejercicios</p>
                             </div>
                             <div className="bg-surface-raised border border-subtle rounded-xl p-3 text-center">
-                                <Timer size={14} className="mx-auto text-sky-400 mb-1" />
-                                <p className="text-xl font-black text-white leading-none">{metrics.totalSeries}</p>
+                                <Timer size={14} className="mx-auto text-info mb-1" />
+                                <p className="text-xl font-black text-ink leading-none">{metrics.totalSeries}</p>
                                 <p className="text-t-2xs font-bold uppercase text-ink-subtle mt-1">Series</p>
                             </div>
                             <div className="bg-surface-raised border border-subtle rounded-xl p-3 text-center">
                                 <Flame size={14} className="mx-auto text-orange-400 mb-1" />
-                                <p className="text-xl font-black text-white leading-none">
+                                <p className="text-xl font-black text-ink leading-none">
                                     {metrics.tonnage >= 1000 ? `${(metrics.tonnage / 1000).toFixed(1)}t` : `${metrics.tonnage}`}
                                 </p>
                                 <p className="text-t-2xs font-bold uppercase text-ink-subtle mt-1">{metrics.tonnage >= 1000 ? 'Tonelaje' : 'Kg totales'}</p>
@@ -791,7 +791,7 @@ export function DayEditorModal({
                         {metrics.maxLoad > 0 && (
                             <div className="bg-gradient-to-br from-anvil-red/10 to-transparent border border-anvil-red/20 rounded-xl p-3.5 text-center">
                                 <p className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle mb-1">Carga más pesada del día</p>
-                                <p className="text-2xl font-black text-anvil-red italic">{metrics.maxLoad}<span className="text-sm text-ink-subtle not-italic"> kg</span></p>
+                                <p className="text-2xl font-black text-brand-text italic">{metrics.maxLoad}<span className="text-sm text-ink-subtle not-italic"> kg</span></p>
                             </div>
                         )}
 

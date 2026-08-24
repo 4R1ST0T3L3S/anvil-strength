@@ -160,7 +160,7 @@ export function VideoTrimmer({
         <div className="flex flex-col gap-2.5 rounded-card border border-subtle bg-surface-raised p-3">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="flex items-center gap-1.5 text-t-xs font-semibold text-ink">
-                    <Scissors size={14} className="shrink-0 text-brand" aria-hidden="true" />
+                    <Scissors size={14} className="shrink-0 text-brand-text" aria-hidden="true" />
                     Acota la repetición
                 </span>
                 <span className="text-t-2xs text-ink-subtle">

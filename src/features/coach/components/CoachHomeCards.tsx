@@ -117,7 +117,7 @@ export function NextCompCard({
             className="group flex min-h-[124px] min-w-0 items-center gap-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-4 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay sm:min-h-[132px] sm:gap-5 sm:p-5"
         >
             <span className="shrink-0 text-center">
-                <span className="block text-t-3xl font-black leading-none tabular-nums text-brand sm:text-metric">
+                <span className="block text-t-3xl font-black leading-none tabular-nums text-brand-text sm:text-metric">
                     {days}
                 </span>
                 <span className="mt-1 block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">

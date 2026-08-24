@@ -33,9 +33,9 @@ function IconAction({
             title={label}
             className={`rounded-field p-2 transition-colors duration-fast ease-snap ${
  active
- ? 'bg-brand-quiet text-brand'
+ ? 'bg-brand-quiet text-brand-text'
  : danger
- ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger'
+ ? 'text-ink-subtle hover:bg-[var(--danger-quiet)] hover:text-danger-text'
  : 'text-ink-subtle hover:bg-surface-sunken hover:text-ink'
  }`}
         >
@@ -175,7 +175,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
      * ==================================================================
      * Antes era italic uppercase tracking-tighter en rojo neón, con un
      * halo (`ring`) alrededor de los bloques activos, botones en cinco
-     * grises distintos (`bg-white/10`, `bg-white/5`, `text-white`…) y un
+     * grises distintos (`bg-white/10`, `bg-white/5`, `text-ink`…) y un
      * popover con su propia paleta. Nada de eso viene del sistema de
      * diseño que usan ya el resto de pantallas del panel.
      *
@@ -201,13 +201,13 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:gap-4 md:px-5 md:py-4">
                     <div className="flex min-w-0 items-center gap-3 md:gap-4">
                         {isActive && (
-                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-black uppercase tracking-wider text-brand">
+                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-black uppercase tracking-wider text-brand-text">
                                 Activo
                             </span>
                         )}
 
                         <div className="flex min-w-0 flex-col gap-0.5">
-                            <h4 className="truncate text-t-base font-bold text-ink transition-colors duration-fast group-hover:text-brand md:text-t-lg">
+                            <h4 className="truncate text-t-base font-bold text-ink transition-colors duration-fast group-hover:text-brand-text md:text-t-lg">
                                 {block.name}
                             </h4>
 
@@ -312,7 +312,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                             key={m.id}
                                             onClick={() => handleAssignMacro(block.id, m.id)}
                                             className={`w-full rounded-field px-2.5 py-2 text-left text-t-sm font-semibold transition-colors duration-fast ${
- block.macro_id === m.id ? 'bg-brand-quiet text-brand' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
+ block.macro_id === m.id ? 'bg-brand-quiet text-brand-text' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
  }`}
                                         >
                                             {m.name}
@@ -401,7 +401,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                             <div key={macro.id} className="rounded-card border border-[var(--border-default)] bg-surface-sunken p-3.5 md:p-4">
                                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
                                     <div className="flex min-w-0 items-center gap-3">
-                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand">
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand-text">
                                             <Layers size={16} aria-hidden="true" />
                                         </span>
                                         <div className="min-w-0">
@@ -508,7 +508,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
             >
                 <div className="space-y-5">
                     <div className="flex items-start gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-[var(--danger-quiet)] text-danger">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field bg-[var(--danger-quiet)] text-danger-text">
                             <AlertTriangle size={17} aria-hidden="true" />
                         </span>
                         <p className="text-t-sm leading-relaxed text-ink-muted">

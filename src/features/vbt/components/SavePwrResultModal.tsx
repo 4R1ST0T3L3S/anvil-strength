@@ -305,7 +305,7 @@ export function SavePwrResultModal({
                                                 ? <img src={a.avatar_url} alt="" className="h-6 w-6 shrink-0 rounded-pill object-cover" />
                                                 : <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-surface-overlay"><User size={12} /></span>}
                                             <span className="truncate font-semibold">{a.full_name}</span>
-                                            {athleteId === a.id && <Check size={13} className="ml-auto shrink-0 text-brand" />}
+                                            {athleteId === a.id && <Check size={13} className="ml-auto shrink-0 text-brand-text" />}
                                         </button>
                                     ))}
                                     {filteredAthletes.length === 0 && (

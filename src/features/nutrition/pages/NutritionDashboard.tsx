@@ -46,13 +46,13 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
             isActive: currentView === 'profile'
         },
         {
-            icon: <Globe size={20} className="text-blue-400" />,
+            icon: <Globe size={20} className="text-info" />,
             label: 'Ver Web',
             onClick: () => navigate('/web'),
             isActive: false
         },
         {
-            icon: <LogOut size={20} className="text-red-500" />,
+            icon: <LogOut size={20} className="text-danger-text" />,
             label: 'Salir',
             onClick: onLogout,
             isActive: false
@@ -65,25 +65,25 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
                 return (
                     <div className="p-6 md:p-10 space-y-8 animate-fade">
                         <div>
-                            <h1 className="text-3xl font-black text-white uppercase italic tracking-wider mb-2 flex items-center gap-3">
-                                <Apple className="text-anvil-red" size={32} />
+                            <h1 className="text-3xl font-black text-ink uppercase italic tracking-wider mb-2 flex items-center gap-3">
+                                <Apple className="text-brand-text" size={32} />
                                 PANEL DE NUTRICIÓN
                             </h1>
-                            <p className="text-zinc-400">
+                            <p className="text-ink-muted">
                                 Gestiona las dietas, planes nutricionales y visualiza el progreso de tus atletas.
                             </p>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                            <button onClick={() => setCurrentView('athletes')} className="bg-[#0a0a0a] border border-zinc-800 p-8 rounded-2xl hover:border-anvil-red transition-colors group flex flex-col items-center text-center">
-                                <Users size={48} className="text-zinc-500 group-hover:text-anvil-red mb-4 transition-colors" />
-                                <h3 className="text-xl font-black text-white uppercase mb-2">Gestionar Atletas</h3>
-                                <p className="text-zinc-400 text-sm">Crea dietas, ajusta macros y añade comidas a los atletas del club.</p>
+                            <button onClick={() => setCurrentView('athletes')} className="bg-[#0a0a0a] border border-line p-8 rounded-2xl hover:border-anvil-red transition-colors group flex flex-col items-center text-center">
+                                <Users size={48} className="text-ink-subtle group-hover:text-brand-text mb-4 transition-colors" />
+                                <h3 className="text-xl font-black text-ink uppercase mb-2">Gestionar Atletas</h3>
+                                <p className="text-ink-muted text-sm">Crea dietas, ajusta macros y añade comidas a los atletas del club.</p>
                             </button>
-                            <button onClick={() => setCurrentView('analytics')} className="bg-[#0a0a0a] border border-zinc-800 p-8 rounded-2xl hover:border-blue-500 transition-colors group flex flex-col items-center text-center">
-                                <LayoutDashboard size={48} className="text-zinc-500 group-hover:text-blue-500 mb-4 transition-colors" />
-                                <h3 className="text-xl font-black text-white uppercase mb-2">Métricas y Gráficas</h3>
-                                <p className="text-zinc-400 text-sm">Visualiza el promedio de calorías, distribución de macros y KPIs globales.</p>
+                            <button onClick={() => setCurrentView('analytics')} className="bg-[#0a0a0a] border border-line p-8 rounded-2xl hover:border-blue-500 transition-colors group flex flex-col items-center text-center">
+                                <LayoutDashboard size={48} className="text-ink-subtle group-hover:text-info mb-4 transition-colors" />
+                                <h3 className="text-xl font-black text-ink uppercase mb-2">Métricas y Gráficas</h3>
+                                <p className="text-ink-muted text-sm">Visualiza el promedio de calorías, distribución de macros y KPIs globales.</p>
                             </button>
                         </div>
                     </div>

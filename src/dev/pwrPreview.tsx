@@ -193,7 +193,7 @@ function Preview() {
                         report={report}
                     />
                 ) : (
-                    <p className="rounded-card border border-danger/30 bg-danger/10 p-4 text-t-sm font-bold text-danger">
+                    <p className="rounded-card border border-danger/30 bg-danger/10 p-4 text-t-sm font-bold text-danger-text">
                         No se ha segmentado ninguna repetición: el generador o el motor están rotos.
                     </p>
                 )}

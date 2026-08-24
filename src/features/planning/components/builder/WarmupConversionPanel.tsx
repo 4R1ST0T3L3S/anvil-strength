@@ -26,7 +26,7 @@ export function WarmupConversionPanel({
 
     return (
         <div className="rounded-card border border-[var(--brand-line)] bg-surface-raised p-3">
-            <h4 className="text-t-2xs font-bold uppercase tracking-widest text-brand">
+            <h4 className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">
                 Se crearán {items.length} ejercicios
             </h4>
 

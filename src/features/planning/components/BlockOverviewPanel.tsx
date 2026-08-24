@@ -225,7 +225,7 @@ function SummaryRow({ analytics }: { analytics: BlockAnalytics }) {
 // ---------------------------------------------------------------------
 
 const ISSUE_STYLE = {
-    error: { icon: XCircle, className: 'text-danger', bg: 'bg-[var(--danger-quiet)]' },
+    error: { icon: XCircle, className: 'text-danger-text', bg: 'bg-[var(--danger-quiet)]' },
     warning: { icon: AlertTriangle, className: 'text-warning', bg: 'bg-[var(--warning-quiet)]' },
     info: { icon: Info, className: 'text-info', bg: 'bg-[var(--info-quiet)]' },
 } as const;

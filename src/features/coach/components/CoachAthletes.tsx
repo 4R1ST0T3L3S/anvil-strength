@@ -586,7 +586,7 @@ function AthleteCard({
                                     onClick={(e) => { e.stopPropagation(); onInvite(); }}
                                     aria-label={`Enviar el acceso por correo a ${athlete.full_name}`}
                                     title="Mandarle el acceso por correo"
-                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand disabled:opacity-40"
+                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand-text disabled:opacity-40"
                                 >
                                     <Mail size={16} aria-hidden="true" />
                                 </button>
@@ -599,7 +599,7 @@ function AthleteCard({
                                     disabled={copyingClaimLink}
                                     aria-label={`Copiar enlace de acceso de ${athlete.full_name}`}
                                     title="Copiar enlace de acceso"
-                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand disabled:opacity-40"
+                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand-text disabled:opacity-40"
                                 >
                                     {copyingClaimLink
                                         ? <Loader size={16} className="animate-spin" aria-hidden="true" />
@@ -619,7 +619,7 @@ function AthleteCard({
                             onClick={(e) => { e.stopPropagation(); onRemove(); }}
                             aria-label={`Quitar a ${athlete.full_name} del equipo`}
                             title="Quitar del equipo"
-                            className="rounded-field p-2 text-ink-faint opacity-100 transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
+                            className="rounded-field p-2 text-ink-faint opacity-100 transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger-text [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
                         >
                             <UserMinus size={16} aria-hidden="true" />
                         </button>

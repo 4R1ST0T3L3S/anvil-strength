@@ -188,7 +188,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 <div className={`mb-6 flex items-center gap-3 rounded-card border p-4 ${
  message.type === 'success'
  ? 'border-[var(--success-line,var(--border-strong))] bg-[var(--success-quiet)] text-success'
- : 'border-[var(--danger-line,var(--border-strong))] bg-[var(--danger-quiet)] text-danger'
+ : 'border-[var(--danger-line,var(--border-strong))] bg-[var(--danger-quiet)] text-danger-text'
  }`}>
                     {message.type === 'success' ? <CheckCircle2 size={18} aria-hidden="true" /> : <AlertCircle size={18} aria-hidden="true" />}
                     <p className="text-t-sm font-bold">{message.text}</p>
@@ -211,7 +211,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                     onClick={() => setScreen('pdf')}
                     className="group mb-6 flex w-full items-center gap-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-4 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay"
                 >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand-text">
                         <FileText size={18} aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -246,7 +246,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 type="button"
                                 onClick={removePhoto}
                                 aria-label="Quitar foto"
-                                className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-pill bg-surface-overlay text-ink-muted shadow-raise transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger"
+                                className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-pill bg-surface-overlay text-ink-muted shadow-raise transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text"
                             >
                                 <Trash2 size={13} aria-hidden="true" />
                             </button>
@@ -430,7 +430,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 <button
                     type="button"
                     onClick={() => setShowLogoutConfirm(true)}
-                    className="flex w-full items-center justify-center gap-2 rounded-field border border-[var(--border-default)] px-6 py-3 text-t-sm font-bold text-danger transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)]"
+                    className="flex w-full items-center justify-center gap-2 rounded-field border border-[var(--border-default)] px-6 py-3 text-t-sm font-bold text-danger-text transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)]"
                 >
                     <LogOut size={17} aria-hidden="true" />
                     Cerrar sesión

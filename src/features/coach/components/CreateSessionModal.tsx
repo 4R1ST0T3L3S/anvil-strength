@@ -105,8 +105,8 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                     className="relative bg-surface-sunken w-full max-w-sm rounded-card border border-[var(--border-default)] shadow-2xl overflow-hidden"
                 >
                     <div className="flex items-center justify-between p-6 border-b border-subtle bg-surface-sunken">
-                        <h2 className="text-xl font-black uppercase text-white">Añadir Día</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
+                        <h2 className="text-xl font-black uppercase text-ink">Añadir Día</h2>
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
                             <X size={20} />
                         </button>
                     </div>
@@ -127,7 +127,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                     max="30"
                                     value={dayNumber}
                                     onChange={(e) => setDayNumber(parseInt(e.target.value))}
-                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl pl-12 pr-4 py-3 text-white font-bold text-lg focus:border-anvil-red/50 transition-colors text-center"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl pl-12 pr-4 py-3 text-ink font-bold text-lg focus:border-anvil-red/50 transition-colors text-center"
                                 />
                             </div>
                         </div>
@@ -140,7 +140,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                             <select
                                 value={dayOfWeek}
                                 onChange={(e) => setDayOfWeek(e.target.value as Weekday | '')}
-                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white font-bold focus:border-anvil-red/50 transition-colors appearance-none cursor-pointer"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-ink font-bold focus:border-anvil-red/50 transition-colors appearance-none cursor-pointer"
                             >
                                 <option value="">Seleccionar día (Opcional)</option>
                                 <option value="monday">Lunes</option>
@@ -163,13 +163,13 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ej: Torso Pesado, Pierna..."
-                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-anvil-red/50 transition-colors"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-ink placeholder-gray-600 focus:border-anvil-red/50 transition-colors"
                             />
                         </div>
 
                         {/* Info Alert */}
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex gap-3 items-start">
-                            <AlertCircle className="text-blue-400 flex-shrink-0 mt-0.5" size={16} />
+                        <div className="bg-info-quiet border border-info/20 rounded-lg p-3 flex gap-3 items-start">
+                            <AlertCircle className="text-info flex-shrink-0 mt-0.5" size={16} />
                             <p className="text-xs text-blue-300 leading-relaxed">
                                 {dayOfWeek
                                     ? <span>Planificado para el <strong>{translateDay(dayOfWeek)}</strong> del microciclo.</span>

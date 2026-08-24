@@ -133,7 +133,7 @@ export function DuplicateBlockModal({
 
                 {candidates === null ? (
                     <div className="flex justify-center py-10">
-                        <Loader className="animate-spin text-brand" size={22} />
+                        <Loader className="animate-spin text-brand-text" size={22} />
                     </div>
                 ) : candidates.length === 0 ? (
                     <p className="rounded-card border border-dashed border-[var(--border-default)] px-4 py-8 text-center text-t-sm text-ink-subtle">

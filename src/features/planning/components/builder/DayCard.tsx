@@ -81,7 +81,7 @@ export const DayCard = memo(function DayCard({
                     onClick={() => onRemove(session.id)}
                     title="Eliminar día"
                     aria-label={`Eliminar ${dayLabel}`}
-                    className="rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
+                    className="rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
                 >
                     <Trash2 size={14} aria-hidden="true" />
                 </button>
@@ -96,7 +96,7 @@ export const DayCard = memo(function DayCard({
                     aria-haspopup="menu"
                     title="Agendar en un día de la semana"
                     className={`rounded-chip px-1.5 py-0.5 text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
- ? 'bg-brand-quiet font-semibold text-brand'
+ ? 'bg-brand-quiet font-semibold text-brand-text'
  : 'text-ink-subtle hover:text-ink'
  }`}
                 >
@@ -206,17 +206,17 @@ const NOT_THE_MAIN_LIFT = /bulgara|búlgara|frontal|hack|goblet|sissy|jaca|zerch
  */
 export function getLiftTheme(name: string) {
     const n = name.toLowerCase();
-    const accessory = { key: 'ACC', accent: 'text-emerald-400', border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' };
+    const accessory = { key: 'ACC', accent: 'text-success', border: 'border-emerald-500/40', bg: 'bg-success-quiet', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' };
 
     if (NOT_THE_MAIN_LIFT.test(n)) return accessory;
 
     if (n.includes('sentadilla') || n.includes('squat')) {
-        return { key: 'SQ', accent: 'text-red-400', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-red-500', gradient: 'from-red-500/15 to-transparent' };
+        return { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-red-500', gradient: 'from-red-500/15 to-transparent' };
     }
     // "press" a secas ya no basta: arrastraba press militar, press francés y
     // cualquier press de máquina a la etiqueta de banca.
     if (n.includes('banca') || n.includes('bench')) {
-        return { key: 'BP', accent: 'text-sky-400', border: 'border-sky-500/40', bg: 'bg-sky-500/10', bar: 'bg-sky-500', gradient: 'from-sky-500/15 to-transparent' };
+        return { key: 'BP', accent: 'text-info', border: 'border-sky-500/40', bg: 'bg-info-quiet', bar: 'bg-sky-500', gradient: 'from-sky-500/15 to-transparent' };
     }
     if (n.includes('peso muerto') || n.includes('deadlift')) {
         return { key: 'DL', accent: 'text-purple-400', border: 'border-purple-500/40', bg: 'bg-purple-500/10', bar: 'bg-purple-500', gradient: 'from-purple-500/15 to-transparent' };

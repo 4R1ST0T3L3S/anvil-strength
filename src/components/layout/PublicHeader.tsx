@@ -248,7 +248,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             onClick={(e) => handleNavClick(e, link.href)}
                             aria-current={esActivo(link.href) ? 'page' : undefined}
                             className={`pointer-events-auto flex h-11 items-center rounded-field px-2.5 text-t-xs font-bold uppercase leading-none tracking-[0.06em] transition-colors duration-fast ease-snap hover:text-ink ${
- esActivo(link.href) ? 'text-brand' : 'text-ink-muted'
+ esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                         >
                             {link.name}
@@ -261,7 +261,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         aria-expanded={masAbierto}
                         aria-haspopup="menu"
                         className={`pointer-events-auto flex h-11 items-center gap-1 rounded-field px-2.5 text-t-xs font-bold uppercase leading-none tracking-[0.06em] transition-colors duration-fast ease-snap hover:text-ink ${
- hayActivoEnMas ? 'text-brand' : 'text-ink-muted'
+ hayActivoEnMas ? 'text-brand-text' : 'text-ink-muted'
  }`}
                     >
                         MÁS
@@ -287,7 +287,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             role="menuitem"
                             onClick={(e) => handleNavClick(e, link.href)}
                             className={`flex h-11 items-center rounded-field px-3 text-t-xs font-bold uppercase tracking-[0.06em] transition-colors duration-fast ease-snap hover:bg-surface-raised hover:text-ink ${
- esActivo(link.href) ? 'text-brand' : 'text-ink-muted'
+ esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                         >
                             {link.name}
@@ -376,8 +376,8 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                                     transition={{ delay: Math.min(index, 8) * 0.04 }}
                                     onClick={(e) => handleNavClick(e, link.href)}
                                     aria-current={esActivo(link.href) ? 'page' : undefined}
-                                    className={`flex min-h-[44px] items-center font-bebas text-[clamp(1.75rem,7vw,2.5rem)] font-black uppercase italic leading-none tracking-tighter transition-colors duration-fast ease-snap hover:text-brand ${
- esActivo(link.href) ? 'text-brand' : 'text-ink-muted'
+                                    className={`flex min-h-[44px] items-center font-bebas text-[clamp(1.75rem,7vw,2.5rem)] font-black uppercase italic leading-none tracking-tighter transition-colors duration-fast ease-snap hover:text-brand-text ${
+ esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                                 >
                                     {link.name}

@@ -88,7 +88,7 @@ const FILAS = [
 let montajes = 0;
 
 const TONO_DEMO: Record<string, string> = {
-    brand: 'text-brand',
+    brand: 'text-brand-text',
     success: 'text-success',
     info: 'text-info',
     warning: 'text-warning',
@@ -165,7 +165,7 @@ export function SistemaPreview() {
         <div className="min-h-[100dvh] bg-surface-canvas px-4 py-8 md:px-8">
             <div className="mx-auto w-full max-w-4xl space-y-12">
                 <header>
-                    <p className="text-t-2xs font-bold uppercase tracking-widest text-brand">Solo desarrollo</p>
+                    <p className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">Solo desarrollo</p>
                     <h1 className="mt-1 text-t-3xl font-black uppercase tracking-display text-ink">
                         Sistema de diseño
                     </h1>

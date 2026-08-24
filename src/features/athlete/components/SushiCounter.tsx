@@ -109,7 +109,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-[#0a0a0a] border-x-0 md:border-2 border-t-0 md:border-t border-white/10 w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1200px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col scale-in-center mt-0 relative">
+            <div className="bg-[#0a0a0a] border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1200px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,255,255,0.05)] overflow-hidden flex flex-col scale-in-center mt-0 relative">
 
                 {/* Ambient Background Gradient based on totals */}
                 <div 
@@ -121,27 +121,27 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 />
 
                 {/* Header */}
-                <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
+                <div className="relative z-10 p-4 md:px-6 md:py-4 border-b border-subtle flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-sm shrink-0 h-16 md:h-24">
                     <div className="flex items-center gap-3 md:gap-5">
                         <div className="text-cyan-400 origin-left">
                             <Fish size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />
                         </div>
                         <div>
-                            <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter text-white italic">Sushi Counter</h2>
+                            <h2 className="text-xl md:text-4xl font-black uppercase tracking-tighter text-ink italic">Sushi Counter</h2>
                             <p className="hidden md:block text-t-2xs md:text-t-xs font-black text-cyan-400 uppercase tracking-[0.3em]">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3">
                         <button
                             onClick={resetCounts}
-                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition-colors shadow-inner"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-ink-muted hover:text-ink transition-colors shadow-inner"
                             title="Resetear contador"
                         >
                             <RotateCcw size={18} />
                         </button>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-white rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 transition-colors font-black text-xl shadow-inner"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white/5 hover:bg-anvil-red hover:text-ink rounded-xl md:rounded-2xl flex items-center justify-center text-ink-muted transition-colors font-black text-xl shadow-inner"
                         >
                             <X size={24} />
                         </button>
@@ -149,22 +149,22 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 </div>
 
                 {/* Centered Total Pieces Viewer */}
-                <div className="relative z-10 bg-[#0a0a0a]/50 border-b border-white/5 w-full shrink-0 flex items-center justify-center py-4 md:py-10">
+                <div className="relative z-10 bg-[#0a0a0a]/50 border-b border-subtle w-full shrink-0 flex items-center justify-center py-4 md:py-10">
                     <div className="flex flex-col items-center justify-center text-center">
-                        <p className="text-gray-500 text-t-2xs md:text-sm font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Piezas Consumidas</p>
+                        <p className="text-ink-subtle text-t-2xs md:text-sm font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Piezas Consumidas</p>
                         <m.div 
                             key={totals.piezas}
                             initial={{ scale: 1.5, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             className="flex flex-col items-center gap-1 md:gap-2"
                         >
-                            <span className="text-6xl md:text-9xl font-black text-white italic tracking-tighter leading-none drop-shadow-lg">
+                            <span className="text-6xl md:text-9xl font-black text-ink italic tracking-tighter leading-none drop-shadow-lg">
                                 {totals.piezas}
                             </span>
 
                             {user && (
                                 <div className="mt-1 md:mt-2 flex flex-col items-center gap-2 h-[60px] md:h-[80px]">
-                                    <div className="flex items-center gap-1.5 md:gap-2 text-yellow-500 bg-yellow-500/10 px-3 md:px-4 py-1 md:py-1.5 rounded-full border border-yellow-500/20">
+                                    <div className="flex items-center gap-1.5 md:gap-2 text-warning bg-warning-quiet px-3 md:px-4 py-1 md:py-1.5 rounded-full border border-warning/20">
                                         <Trophy size={12} className="md:w-3.5 md:h-3.5" />
                                         <span className="text-t-2xs md:text-t-xs font-black uppercase tracking-widest">Récord: {user.max_sushi_pieces || 0}</span>
                                     </div>
@@ -200,15 +200,15 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                         {SUSHI_TYPES.map(type => (
                             <div key={type.id} className={`bg-gradient-to-br ${type.bgStyle} border-2 rounded-2xl md:rounded-[2rem] p-3 md:p-6 flex items-center justify-between shadow-inner backdrop-blur-md`}>
                                 <div className="flex-1 pr-2">
-                                    <h3 className="text-lg md:text-2xl font-black uppercase italic text-white leading-none mb-1">{type.name}</h3>
-                                    <p className="text-t-2xs md:text-t-xs font-bold text-gray-400 uppercase tracking-widest leading-tight">
+                                    <h3 className="text-lg md:text-2xl font-black uppercase italic text-ink leading-none mb-1">{type.name}</h3>
+                                    <p className="text-t-2xs md:text-t-xs font-bold text-ink-muted uppercase tracking-widest leading-tight">
                                         ~{type.kcal} kcal • {type.protein}g P / {type.carbs}g C / {type.fat}g G
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-2 md:gap-4 bg-black/40 p-1.5 md:p-3 rounded-xl md:rounded-2xl border border-white/5">
+                                <div className="flex items-center gap-2 md:gap-4 bg-black/40 p-1.5 md:p-3 rounded-xl md:rounded-2xl border border-subtle">
                                     <button
                                         onClick={() => handleSubtract(type.id)}
-                                        className="w-11 h-11 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-white rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-[background-color,transform]"
+                                        className="w-11 h-11 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 text-ink rounded-lg md:rounded-xl flex items-center justify-center active:scale-95 transition-[background-color,transform]"
                                     >
                                         <Minus size={16} className="md:w-5 md:h-5" />
                                     </button>
@@ -218,7 +218,7 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                                                 key={counts[type.id]}
                                                 initial={{ y: -20, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
-                                                className="text-2xl md:text-4xl font-black text-white italic block"
+                                                className="text-2xl md:text-4xl font-black text-ink italic block"
                                                 style={{ color: type.color }}
                                             >
                                                 {counts[type.id]}
@@ -239,24 +239,24 @@ export function SushiCounter({ isOpen, onClose }: SushiCounterProps) {
                 </div>
 
                 {/* Footer Macros Panel */}
-        <div className="relative z-10 p-3 md:p-6 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-white/5 shrink-0">
+        <div className="relative z-10 p-3 md:p-6 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-subtle shrink-0">
                     <div className="max-w-4xl mx-auto">
                         <div className="grid grid-cols-4 gap-1.5 md:gap-4">
-                            <div className="bg-white/5 border border-white/10 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-t-2xs font-black text-gray-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Cals</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.kcal}</span>
+                            <div className="bg-white/5 border border-line rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
+                                <span className="text-t-2xs md:text-t-2xs font-black text-ink-subtle uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Cals</span>
+                                <span className="text-sm md:text-3xl font-black text-ink italic">{totals.kcal}</span>
                             </div>
-                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-t-2xs font-black text-blue-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Protes</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.protein.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
+                            <div className="bg-info-quiet border border-info/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
+                                <span className="text-t-2xs md:text-t-2xs font-black text-info uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Protes</span>
+                                <span className="text-sm md:text-3xl font-black text-ink italic">{totals.protein.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
                             </div>
-                            <div className="bg-green-500/10 border border-green-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-t-2xs font-black text-green-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Carbos</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.carbs.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
+                            <div className="bg-success-quiet border border-success/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
+                                <span className="text-t-2xs md:text-t-2xs font-black text-success uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Carbos</span>
+                                <span className="text-sm md:text-3xl font-black text-ink italic">{totals.carbs.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
                             </div>
-                            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
-                                <span className="text-t-2xs md:text-t-2xs font-black text-yellow-500 uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Grasas</span>
-                                <span className="text-sm md:text-3xl font-black text-white italic">{totals.fat.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
+                            <div className="bg-warning-quiet border border-warning/20 rounded-lg md:rounded-xl p-2 md:p-4 text-center flex flex-col justify-center shadow-inner">
+                                <span className="text-t-2xs md:text-t-2xs font-black text-warning uppercase tracking-widest md:tracking-widest mb-0.5 md:mb-1">Grasas</span>
+                                <span className="text-sm md:text-3xl font-black text-ink italic">{totals.fat.toFixed(1)}<span className="text-t-2xs md:text-base">g</span></span>
                             </div>
                         </div>
                     </div>

@@ -71,7 +71,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-white selection:bg-anvil-red selection:text-white overflow-x-hidden">
+        <div className="font-sans min-h-[100dvh] bg-[#0a0a0a] text-ink selection:bg-anvil-red selection:text-ink overflow-x-hidden">
             {/* Shared Public Header */}
             <PublicHeader onLoginClick={onLoginClick} />
 
@@ -113,7 +113,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                             initial={{ rotate: -25, opacity: 0 }}
                             animate={{ rotate: 0, opacity: 1 }}
                             transition={{ delay: 0.5, duration: 0.8 }}
-                            className="text-3xl md:text-8xl text-anvil-red font-black z-10 flex items-center"
+                            className="text-3xl md:text-8xl text-brand-text font-black z-10 flex items-center"
                         >
                             <XIcon strokeWidth={3} className="w-6 h-6 sm:w-10 sm:h-10 md:w-16 md:h-16" />
                         </m.div>
@@ -124,13 +124,13 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                         </div>
                     </m.div>
 
-                    <m.h1 variants={staggerContainer} initial="hidden" animate="visible" className="text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] font-black tracking-tighter text-white uppercase italic mb-8 sm:mb-10">
+                    <m.h1 variants={staggerContainer} initial="hidden" animate="visible" className="text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] font-black tracking-tighter text-ink uppercase italic mb-8 sm:mb-10">
                         <m.span variants={fadeInUp} className="block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500 mb-2">STREETWEAR</m.span>
-                        <m.span variants={fadeInUp} className="block text-anvil-red drop-shadow-[0_0_25px_rgba(220,38,38,0.6)]">POWERLIFTING</m.span>
+                        <m.span variants={fadeInUp} className="block text-brand-text drop-shadow-[0_0_25px_rgba(220,38,38,0.6)]">POWERLIFTING</m.span>
                     </m.h1>
 
                     <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 1 }} className="space-y-4 max-w-4xl mx-auto px-4">
-                        <p className="text-sm sm:text-lg md:text-2xl text-white font-bold tracking-widest uppercase">EL ÚNICO CLUB DONDE EL ESTILO LO LLEVAS EN TARIMA Y EN EL PODIO.</p>
+                        <p className="text-sm sm:text-lg md:text-2xl text-ink font-bold tracking-widest uppercase">EL ÚNICO CLUB DONDE EL ESTILO LO LLEVAS EN TARIMA Y EN EL PODIO.</p>
                         <p className="text-t-2xs sm:text-sm md:text-lg text-gray-400 font-mono tracking-[0.2em] uppercase">The First Spanish Powerlifting Streetwear Brand</p>
                     </m.div>
                 </div>
@@ -142,7 +142,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="max-w-4xl">
                         <h2 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic tracking-tighter leading-none mb-10">MORE THAN <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-600">JUST FABRIC.</span></h2>
                         <div className="space-y-6 text-base sm:text-lg md:text-xl text-gray-400 font-medium leading-relaxed">
-                            <p><strong className="text-white">Steezy Lifts</strong> no hace ropa de gimnasio. Crea cultura. Una colección exclusiva para <strong>Anvil Strength</strong>. Únete a la cultura.</p>
+                            <p><strong className="text-ink">Steezy Lifts</strong> no hace ropa de gimnasio. Crea cultura. Una colección exclusiva para <strong>Anvil Strength</strong>. Únete a la cultura.</p>
                         </div>
                     </m.div>
                 </div>
@@ -151,19 +151,19 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
             {/* --- PRODUCT SHOWCASE --- */}
             <section className="py-20 bg-[#0a0a0a]">
                 <div className="max-w-[1600px] mx-auto px-6">
-                    <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-white/10 pb-8 text-left">
-                        <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase italic tracking-tighter">THE <span className="text-anvil-red">COLLECTION</span></h2>
-                        <div className="mt-4 md:mt-0 text-right"><p className="text-gray-400 font-mono text-t-2xs sm:text-sm">STEEZY LIFTS x ANVIL STRENGTH</p><p className="text-white font-bold text-lg sm:text-xl tracking-widest">OFFICIAL GEAR</p></div>
+                    <m.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-line pb-8 text-left">
+                        <h2 className="text-4xl sm:text-5xl md:text-8xl font-black uppercase italic tracking-tighter">THE <span className="text-brand-text">COLLECTION</span></h2>
+                        <div className="mt-4 md:mt-0 text-right"><p className="text-gray-400 font-mono text-t-2xs sm:text-sm">STEEZY LIFTS x ANVIL STRENGTH</p><p className="text-ink font-bold text-lg sm:text-xl tracking-widest">OFFICIAL GEAR</p></div>
                     </m.div>
 
                     {/* --- PIEZA ANGULAR (SINGLET - ID 4) RESTAURADA --- */}
                     {products.filter(p => p.id === 4).map((product) => (
                         <m.div key={product.id} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mb-24 relative group cursor-pointer">
-                            <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#0a0a0a] border border-white/10">
+                            <div className="relative h-[500px] sm:h-[600px] md:h-[800px] w-full overflow-hidden bg-[#0a0a0a] border border-line">
                                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#151515]">
                                     {/* Placeholder Content */}
                                     <div className="text-center group-hover:scale-105 transition-transform duration-slow">
-                                        <Crown size={60} className="text-anvil-red mb-6 mx-auto opacity-80 sm:w-20 sm:h-20" />
+                                        <Crown size={60} className="text-brand-text mb-6 mx-auto opacity-80 sm:w-20 sm:h-20" />
                                         <span className="text-5xl sm:text-6xl md:text-9xl font-black text-white/10 uppercase tracking-tighter">
                                             PIEZA<br />ANGULAR
                                         </span>
@@ -172,15 +172,15 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                     {/* Overlay Info */}
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 sm:p-12 flex flex-col md:flex-row items-end justify-between">
                                         <div className="max-w-2xl text-left">
-                                            <div className="bg-anvil-red text-white text-t-2xs font-black uppercase px-3 py-1 tracking-widest inline-block mb-4">
+                                            <div className="bg-anvil-red text-ink text-t-2xs font-black uppercase px-3 py-1 tracking-widest inline-block mb-4">
                                                 {product.tag}
                                             </div>
-                                            <h3 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic text-white mb-4 leading-none">
+                                            <h3 className="text-3xl sm:text-4xl md:text-7xl font-black uppercase italic text-ink mb-4 leading-none">
                                                 {product.name}
                                             </h3>
                                             <p className="text-gray-300 text-sm sm:text-lg md:text-xl max-w-xl">{product.description}</p>
                                         </div>
-                                        <button className="hidden md:flex bg-white text-black font-black uppercase px-10 py-5 hover:bg-anvil-red hover:text-white transition-colors items-center gap-4">
+                                        <button className="hidden md:flex bg-white text-black font-black uppercase px-10 py-5 hover:bg-anvil-red hover:text-ink transition-colors items-center gap-4">
                                             <span>Ver Detalles</span>
                                             <ArrowRight size={24} />
                                         </button>
@@ -194,7 +194,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24">
                         {products.filter(p => p.id !== 4).map((product, index) => (
                             <m.div key={product.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} viewport={{ once: true }} className="group cursor-pointer">
-                                <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-6 border border-white/5">
+                                <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-6 border border-subtle">
                                     {product.id === 3 ? (
                                         <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-slow" />
                                     ) : (
@@ -202,10 +202,10 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                                             <span className="text-2xl sm:text-3xl font-black text-white/10 uppercase tracking-tighter -rotate-12">WORKING<br />ON IT</span>
                                         </div>
                                     )}
-                                    <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md text-white text-t-2xs sm:text-t-2xs font-bold uppercase px-2 py-1 tracking-widest">{product.tag}</div>
+                                    <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md text-ink text-t-2xs sm:text-t-2xs font-bold uppercase px-2 py-1 tracking-widest">{product.tag}</div>
                                 </div>
                                 <div className="space-y-1 text-left">
-                                    <h3 className="text-lg sm:text-xl font-black uppercase italic group-hover:text-anvil-red transition-colors">{product.name}</h3>
+                                    <h3 className="text-lg sm:text-xl font-black uppercase italic group-hover:text-brand-text transition-colors">{product.name}</h3>
                                     <p className="text-gray-500 text-t-2xs sm:text-xs font-mono uppercase tracking-wide">{product.description}</p>
                                 </div>
                             </m.div>
@@ -221,7 +221,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
                 <div className="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
                     <div className="flex items-center gap-6">
-                        <Crown size={42} className="text-anvil-red animate-pulse" />
+                        <Crown size={42} className="text-brand-text animate-pulse" />
                         <div className="text-left">
                             <h3 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-none">
                                 TIENDA OFICIAL
@@ -234,7 +234,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
 
                     <div className="flex items-center gap-4 group-hover:gap-8 transition-colors duration-slow">
                         <span className="text-xl md:text-2xl font-black uppercase tracking-tight">VISITAR WEB</span>
-                        <ArrowRight size={32} className="text-anvil-red" />
+                        <ArrowRight size={32} className="text-brand-text" />
                     </div>
                 </div>
             </section>
@@ -255,7 +255,7 @@ export function RopaPage({ onLoginClick }: RopaPageProps) {
                         <Zap size={48} className="text-black mx-auto mb-6 fill-current animate-pulse sm:w-16 sm:h-16" />
 
                         {/* Titular Principal */}
-                        <h2 className="text-5xl sm:text-7xl md:text-[8.5rem] font-black tracking-tighter mb-8 text-white uppercase italic leading-[0.85]">
+                        <h2 className="text-5xl sm:text-7xl md:text-[8.5rem] font-black tracking-tighter mb-8 text-ink uppercase italic leading-[0.85]">
                             DON'T MISS THE DROP <br />
                         </h2>
 

@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 
 export function PublicFooter() {
     return (
-        <footer className="bg-black border-t border-white/10">
+        <footer className="bg-black border-t border-line">
             {/* Main footer */}
             <div className="max-w-[1400px] mx-auto px-6 py-16">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {/* Brand */}
                     <div>
-                        <span className="font-black text-2xl tracking-tighter text-white">ANVIL STRENGTH</span>
-                        <p className="text-gray-500 text-sm mt-3 leading-relaxed max-w-xs">
+                        <span className="font-black text-2xl tracking-tighter text-ink">ANVIL STRENGTH</span>
+                        <p className="text-ink-subtle text-sm mt-3 leading-relaxed max-w-xs">
                             Club de powerlifting digital de España. Afiliado AEP e IPF. Gratuito, para toda España.
                         </p>
                         <div className="flex items-center gap-3 mt-5">
@@ -18,14 +18,14 @@ export function PublicFooter() {
                                 href="https://www.instagram.com/anvilstrength_"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-colors"
+                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-ink-muted hover:text-ink transition-colors"
                                 aria-label="Instagram de Anvil Strength"
                             >
                                 <Instagram size={18} />
                             </a>
                             <a
                                 href="mailto:anvilstrengthclub@gmail.com"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-colors"
+                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-ink-muted hover:text-ink transition-colors"
                                 aria-label="Email de Anvil Strength"
                             >
                                 <Mail size={18} />
@@ -34,7 +34,7 @@ export function PublicFooter() {
                                 href="https://wa.me/34640761674"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-gray-400 hover:text-white transition-colors"
+                                className="p-2 bg-white/5 hover:bg-anvil-red rounded-lg text-ink-muted hover:text-ink transition-colors"
                                 aria-label="WhatsApp de Anvil Strength"
                             >
                                 <MessageCircle size={18} />
@@ -57,7 +57,7 @@ export function PublicFooter() {
                                 <a
                                     key={link.label}
                                     href={link.href}
-                                    className="text-gray-500 hover:text-white text-sm font-medium transition-colors"
+                                    className="text-ink-subtle hover:text-ink text-sm font-medium transition-colors"
                                 >
                                     {link.label}
                                 </a>
@@ -79,19 +79,19 @@ export function PublicFooter() {
 
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600 mb-3">Legal</p>
                         <div className="flex flex-col gap-2">
-                            <Link to="/legal/aviso-legal" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            <Link to="/legal/aviso-legal" className="text-gray-600 hover:text-ink-muted text-xs transition-colors">
                                 Aviso Legal
                             </Link>
-                            <Link to="/legal/privacidad" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            <Link to="/legal/privacidad" className="text-gray-600 hover:text-ink-muted text-xs transition-colors">
                                 Política de Privacidad
                             </Link>
-                            <Link to="/legal/cookies" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            <Link to="/legal/cookies" className="text-gray-600 hover:text-ink-muted text-xs transition-colors">
                                 Política de Cookies
                             </Link>
-                            <Link to="/legal/terminos" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            <Link to="/legal/terminos" className="text-gray-600 hover:text-ink-muted text-xs transition-colors">
                                 Términos y Condiciones
                             </Link>
-                            <a href="/normativa_equipo.pdf" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">
+                            <a href="/normativa_equipo.pdf" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-ink-muted text-xs transition-colors">
                                 Normativa del Equipo
                             </a>
                         </div>
@@ -100,7 +100,7 @@ export function PublicFooter() {
             </div>
 
             {/* Bottom bar */}
-            <div className="border-t border-white/5 py-5">
+            <div className="border-t border-subtle py-5">
                 <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-3">
                     <p className="text-xs text-gray-700 font-medium uppercase tracking-widest">
                         © 2026 Anvil Strength Powerlifting Club. Todos los derechos reservados.

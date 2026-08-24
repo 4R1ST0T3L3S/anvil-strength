@@ -82,7 +82,7 @@ export function ConfirmationModal({
                         <div className="space-y-4 p-6 text-center">
                             <div
                                 className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${danger
- ? 'bg-danger-quiet text-danger'
+ ? 'bg-danger-quiet text-danger-text'
  : 'bg-info/15 text-info'
  }`}
                             >

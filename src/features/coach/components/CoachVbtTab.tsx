@@ -203,7 +203,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <Loader className="animate-spin text-brand" size={28} />
+                <Loader className="animate-spin text-brand-text" size={28} />
             </div>
         );
     }
@@ -214,7 +214,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
         <div className="mx-auto max-w-5xl space-y-6">
             <header className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="flex items-center gap-2 text-t-lg font-black uppercase tracking-tight text-ink">
-                    <Activity className="text-brand" size={20} aria-hidden="true" />
+                    <Activity className="text-brand-text" size={20} aria-hidden="true" />
                     Velocidad
                 </h3>
 
@@ -575,7 +575,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                                                 <button
                                                                     onClick={() => setChartUrl({ url: m.file_url!, name: m.exercise_name })}
                                                                     title="Ver la gráfica del archivo"
-                                                                    className="p-1 text-ink-faint transition-colors hover:text-brand"
+                                                                    className="p-1 text-ink-faint transition-colors hover:text-brand-text"
                                                                 >
                                                                     <Activity size={12} />
                                                                 </button>
@@ -583,7 +583,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                                             <button
                                                                 onClick={() => remove(m.id)}
                                                                 title="Borrar medición"
-                                                                className="p-1 text-ink-faint transition-colors hover:text-danger"
+                                                                className="p-1 text-ink-faint transition-colors hover:text-danger-text"
                                                             >
                                                                 <Trash2 size={12} />
                                                             </button>
@@ -647,7 +647,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                     </a>
                                     <button
                                         onClick={() => setChartUrl({ url: ex.vbt_file_url!, name: ex.exercise?.name ?? 'Ejercicio' })}
-                                        className="rounded-field px-2.5 py-1.5 text-t-2xs font-semibold text-brand transition-colors hover:bg-[var(--brand-quiet)]"
+                                        className="rounded-field px-2.5 py-1.5 text-t-2xs font-semibold text-brand-text transition-colors hover:bg-[var(--brand-quiet)]"
                                     >
                                         Ver gráfica
                                     </button>

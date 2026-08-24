@@ -31,9 +31,9 @@ const GAMES = [
         name: 'Anvil Flash',
         description: 'Cuenta los yunques en una fracción de segundo.',
         icon: Eye,
-        color: 'text-blue-500',
-        bg: 'bg-blue-500/10',
-        border: 'border-blue-500/20',
+        color: 'text-info',
+        bg: 'bg-info-quiet',
+        border: 'border-info/20',
         component: AnvilCounterGame,
         scoreType: 'points',
         scoreUnit: 'rondas'
@@ -43,9 +43,9 @@ const GAMES = [
         name: 'Anvil Hunt',
         description: 'Caza los logos de Anvil ocultos en movimiento.',
         icon: Target,
-        color: 'text-yellow-500',
-        bg: 'bg-yellow-500/10',
-        border: 'border-yellow-500/20',
+        color: 'text-warning',
+        bg: 'bg-warning-quiet',
+        border: 'border-warning/20',
         component: AnvilHuntGame,
         scoreType: 'time', // lower is better
         scoreUnit: 's'
@@ -143,12 +143,12 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
             <div className="flex items-center gap-4 mb-8">
                 <button 
                     onClick={() => navigate(-1)}
-                    className="p-3 bg-white/5 rounded-xl text-gray-400 hover:text-white transition-colors"
+                    className="p-3 bg-white/5 rounded-xl text-ink-muted hover:text-ink transition-colors"
                 >
                     <ChevronLeft size={24} />
                 </button>
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black uppercase italic text-white leading-none">Anvil Games</h1>
+                    <h1 className="text-3xl md:text-4xl font-black uppercase italic text-ink leading-none">Anvil Games</h1>
                     <p className="text-xs font-bold text-purple-400 uppercase tracking-[0.3em] mt-1 flex items-center gap-2">
                         <Gamepad2 size={12} /> Reto Diario
                     </p>
@@ -158,13 +158,13 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
             {/* Juego del Día */}
             <section className="mb-12">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white">Juego del Día</h2>
-                    <span className="text-t-2xs font-bold text-zinc-500 uppercase tracking-widest">{today}</span>
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-ink">Juego del Día</h2>
+                    <span className="text-t-2xs font-bold text-ink-subtle uppercase tracking-widest">{today}</span>
                 </div>
 
                 <div 
                     onClick={() => setActiveGameId(gameOfTheDay.id)}
-                    className="relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-white/10 cursor-pointer group hover:border-purple-500/50 transition-[border-color,transform] active:scale-[0.98]"
+                    className="relative overflow-hidden rounded-3xl bg-[#0a0a0a] border border-line cursor-pointer group hover:border-purple-500/50 transition-[border-color,transform] active:scale-[0.98]"
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent z-0"></div>
                     
@@ -174,8 +174,8 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
                         </div>
                         
                         <div className="flex-1 text-center md:text-left">
-                            <h3 className="text-3xl font-black uppercase italic text-white mb-2">{gameOfTheDay.name}</h3>
-                            <p className="text-zinc-400 text-sm mb-6 max-w-md">{gameOfTheDay.description}</p>
+                            <h3 className="text-3xl font-black uppercase italic text-ink mb-2">{gameOfTheDay.name}</h3>
+                            <p className="text-ink-muted text-sm mb-6 max-w-md">{gameOfTheDay.description}</p>
                             
                             <div className="flex flex-col md:flex-row items-center gap-4">
                                 <button className="bg-white text-black font-black uppercase tracking-[0.2em] px-8 py-3 rounded-xl hover:bg-zinc-200 transition-colors shadow-lg">
@@ -183,10 +183,10 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
                                 </button>
                                 
                                 {bestScores[gameOfTheDay.id] !== undefined && (
-                                    <div className="flex items-center gap-2 text-sm bg-black/30 px-4 py-2 rounded-lg border border-white/5">
-                                        <Trophy size={14} className="text-yellow-500" />
-                                        <span className="text-zinc-400 uppercase font-bold text-t-2xs tracking-widest">Tu Mejor Hoy:</span>
-                                        <span className="text-white font-black">{formatScore(gameOfTheDay.id, bestScores[gameOfTheDay.id])}</span>
+                                    <div className="flex items-center gap-2 text-sm bg-black/30 px-4 py-2 rounded-lg border border-subtle">
+                                        <Trophy size={14} className="text-warning" />
+                                        <span className="text-ink-muted uppercase font-bold text-t-2xs tracking-widest">Tu Mejor Hoy:</span>
+                                        <span className="text-ink font-black">{formatScore(gameOfTheDay.id, bestScores[gameOfTheDay.id])}</span>
                                     </div>
                                 )}
                             </div>
@@ -199,8 +199,8 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
             {isDev && (
                 <section>
                     <div className="flex items-center gap-2 mb-4 p-3 bg-anvil-red/10 border border-anvil-red/20 rounded-xl w-fit">
-                        <AlertCircle size={14} className="text-anvil-red" />
-                        <h2 className="text-t-2xs font-black uppercase tracking-[0.2em] text-anvil-red">Modo Developer: Todos los Juegos</h2>
+                        <AlertCircle size={14} className="text-brand-text" />
+                        <h2 className="text-t-2xs font-black uppercase tracking-[0.2em] text-brand-text">Modo Developer: Todos los Juegos</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -214,16 +214,16 @@ export function AnvilGamesHub({ user }: AnvilGamesHubProps) {
                                     <div className={`p-3 rounded-xl ${game.bg} ${game.color} w-fit mb-4`}>
                                         <game.icon size={24} />
                                     </div>
-                                    <h4 className="text-xl font-black uppercase italic text-white mb-1">{game.name}</h4>
-                                    <p className="text-xs text-zinc-500 mb-4">{game.description}</p>
+                                    <h4 className="text-xl font-black uppercase italic text-ink mb-1">{game.name}</h4>
+                                    <p className="text-xs text-ink-subtle mb-4">{game.description}</p>
                                 </div>
                                 
-                                <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-auto">
+                                <div className="flex items-center justify-between border-t border-subtle pt-4 mt-auto">
                                     <span className="text-t-2xs font-bold text-zinc-600 uppercase tracking-widest">
                                         {game.id === gameOfTheDay.id ? '★ JUEGO DEL DÍA' : 'PRUEBA DEV'}
                                     </span>
                                     {bestScores[game.id] !== undefined && (
-                                        <span className="text-xs font-black text-white">{formatScore(game.id, bestScores[game.id])}</span>
+                                        <span className="text-xs font-black text-ink">{formatScore(game.id, bestScores[game.id])}</span>
                                     )}
                                 </div>
                             </div>

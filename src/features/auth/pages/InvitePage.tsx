@@ -103,7 +103,7 @@ export function InvitePage({
                 className="w-full max-w-sm rounded-sheet border border-[var(--border-default)] bg-surface-raised p-7 text-center"
             >
                 {preview === null ? (
-                    <Loader className="mx-auto animate-spin text-brand" size={26} />
+                    <Loader className="mx-auto animate-spin text-brand-text" size={26} />
                 ) : done ? (
                     <Success
                         coachName={done.coachName}

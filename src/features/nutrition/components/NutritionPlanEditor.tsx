@@ -151,38 +151,38 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
     return (
         <div className="space-y-8 animate-fade">
             {/* Cabecera / Resumen de Macros */}
-            <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
+            <div className="bg-[#0a0a0a] border border-line rounded-2xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
                     <Apple size={120} />
                 </div>
                 
                 <div className="flex justify-between items-start mb-6 relative z-10">
                     <div>
-                        <h2 className="text-2xl font-black text-white uppercase italic tracking-wider flex items-center gap-2">
-                            <Target className="text-anvil-red" />
+                        <h2 className="text-2xl font-black text-ink uppercase italic tracking-wider flex items-center gap-2">
+                            <Target className="text-brand-text" />
                             Objetivos Diarios
                         </h2>
                         {plan && (
-                            <p className="text-zinc-400 text-sm mt-1">Comparativa entre lo planificado y el objetivo.</p>
+                            <p className="text-ink-muted text-sm mt-1">Comparativa entre lo planificado y el objetivo.</p>
                         )}
                     </div>
                     {plan && !isEditingMacros && (
                         <div className="flex gap-4">
                             <button 
                                 onClick={handlePrint}
-                                className="text-sm font-bold text-zinc-400 hover:text-white transition-colors uppercase flex items-center gap-1"
+                                className="text-sm font-bold text-ink-muted hover:text-ink transition-colors uppercase flex items-center gap-1"
                             >
                                 <Download size={16} /> PDF
                             </button>
                             <button 
                                 onClick={handleConfigClick}
-                                className="text-sm font-bold text-zinc-400 hover:text-white transition-colors uppercase flex items-center gap-1"
+                                className="text-sm font-bold text-ink-muted hover:text-ink transition-colors uppercase flex items-center gap-1"
                             >
                                 <Settings size={16} /> Config
                             </button>
                             <button 
                                 onClick={handleEditClick}
-                                className="text-sm font-bold text-anvil-red hover:text-white transition-colors uppercase tracking-wide"
+                                className="text-sm font-bold text-brand-text hover:text-ink transition-colors uppercase tracking-wide"
                             >
                                 Editar Macros
                             </button>
@@ -192,7 +192,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
 
                 {!plan && !isEditingMacros ? (
                     <div className="text-center py-8">
-                        <p className="text-zinc-400 mb-4">Este atleta aún no tiene un plan nutricional activo.</p>
+                        <p className="text-ink-muted mb-4">Este atleta aún no tiene un plan nutricional activo.</p>
                         <button 
                             onClick={handleCreatePlan}
                             className="bg-anvil-red hover:bg-red-600 text-black font-black px-6 py-3 rounded-lg transition-colors uppercase tracking-widest text-sm"
@@ -203,50 +203,50 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                 ) : isEditingMacros ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         <div>
-                            <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Calorías</label>
+                            <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Calorías</label>
                             <input 
                                 type="number"
                             inputMode="decimal" 
                                 value={macrosForm.calories || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, calories: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red"
+                                className="w-full bg-[#111111] text-ink px-3 py-2 rounded border border-line focus:border-anvil-red"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Proteína (g)</label>
+                            <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Proteína (g)</label>
                             <input 
                                 type="number"
                             inputMode="decimal" 
                                 value={macrosForm.protein || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, protein: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-blue-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-blue-500"
+                                className="w-full bg-[#111111] text-info font-bold px-3 py-2 rounded border border-line focus:border-blue-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Carbos (g)</label>
+                            <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Carbos (g)</label>
                             <input 
                                 type="number"
                             inputMode="decimal" 
                                 value={macrosForm.carbs || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, carbs: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-yellow-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-yellow-500"
+                                className="w-full bg-[#111111] text-warning font-bold px-3 py-2 rounded border border-line focus:border-yellow-500"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Grasas (g)</label>
+                            <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Grasas (g)</label>
                             <input 
                                 type="number"
                             inputMode="decimal" 
                                 value={macrosForm.fats || ''} 
                                 onChange={(e) => setMacrosForm({...macrosForm, fats: Number(e.target.value)})}
-                                className="w-full bg-[#111111] text-orange-400 font-bold px-3 py-2 rounded border border-zinc-800 focus:border-orange-500"
+                                className="w-full bg-[#111111] text-orange-400 font-bold px-3 py-2 rounded border border-line focus:border-orange-500"
                             />
                         </div>
                         <div className="col-span-2 md:col-span-4 flex justify-end gap-2 mt-2">
                             {plan && (
                                 <button 
                                     onClick={() => setIsEditingMacros(false)}
-                                    className="bg-zinc-800 text-white px-4 py-2 rounded font-bold text-sm"
+                                    className="bg-surface-raised text-ink px-4 py-2 rounded font-bold text-sm"
                                 >
                                     Cancelar
                                 </button>
@@ -263,13 +263,13 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         {/* Kcal */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
-                            <span className="text-zinc-500 text-xs font-bold uppercase mb-1">Calorías</span>
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                            <span className="text-ink-subtle text-xs font-bold uppercase mb-1">Calorías</span>
                             <div className="flex items-baseline gap-1 mt-auto">
-                                <span className="text-2xl font-black text-white">{Math.round(currentMacros.kcal)}</span>
-                                <span className="text-sm text-zinc-500">/ {plan?.calories_target} kcal</span>
+                                <span className="text-2xl font-black text-ink">{Math.round(currentMacros.kcal)}</span>
+                                <span className="text-sm text-ink-subtle">/ {plan?.calories_target} kcal</span>
                             </div>
-                            <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
+                            <div className="w-full bg-surface-raised h-1 mt-2 rounded-full overflow-hidden">
                                 <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.kcal / (plan?.calories_target || 1)) * 100)}%` }}
@@ -280,13 +280,13 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         </m.div>
 
                         {/* Prot */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
-                            <span className="text-blue-400/70 text-xs font-bold uppercase mb-1">Proteína</span>
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                            <span className="text-info/70 text-xs font-bold uppercase mb-1">Proteína</span>
                             <div className="flex items-baseline gap-1 mt-auto">
-                                <span className="text-2xl font-black text-blue-400">{Math.round(currentMacros.prot)}g</span>
-                                <span className="text-sm text-zinc-500">/ {plan?.protein_target}g</span>
+                                <span className="text-2xl font-black text-info">{Math.round(currentMacros.prot)}g</span>
+                                <span className="text-sm text-ink-subtle">/ {plan?.protein_target}g</span>
                             </div>
-                            <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
+                            <div className="w-full bg-surface-raised h-1 mt-2 rounded-full overflow-hidden">
                                 <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.prot / (plan?.protein_target || 1)) * 100)}%` }}
@@ -297,13 +297,13 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         </m.div>
 
                         {/* Carbs */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
-                            <span className="text-yellow-400/70 text-xs font-bold uppercase mb-1">Carbohidratos</span>
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
+                            <span className="text-warning/70 text-xs font-bold uppercase mb-1">Carbohidratos</span>
                             <div className="flex items-baseline gap-1 mt-auto">
-                                <span className="text-2xl font-black text-yellow-400">{Math.round(currentMacros.carbs)}g</span>
-                                <span className="text-sm text-zinc-500">/ {plan?.carbs_target}g</span>
+                                <span className="text-2xl font-black text-warning">{Math.round(currentMacros.carbs)}g</span>
+                                <span className="text-sm text-ink-subtle">/ {plan?.carbs_target}g</span>
                             </div>
-                            <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
+                            <div className="w-full bg-surface-raised h-1 mt-2 rounded-full overflow-hidden">
                                 <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.carbs / (plan?.carbs_target || 1)) * 100)}%` }}
@@ -314,13 +314,13 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                         </m.div>
 
                         {/* Fats */}
-                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#111111] p-4 rounded-xl border border-zinc-800/50 flex flex-col">
+                        <m.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#111111] p-4 rounded-xl border border-line flex flex-col">
                             <span className="text-orange-400/70 text-xs font-bold uppercase mb-1">Grasas</span>
                             <div className="flex items-baseline gap-1 mt-auto">
                                 <span className="text-2xl font-black text-orange-400">{Math.round(currentMacros.fats)}g</span>
-                                <span className="text-sm text-zinc-500">/ {plan?.fats_target}g</span>
+                                <span className="text-sm text-ink-subtle">/ {plan?.fats_target}g</span>
                             </div>
-                            <div className="w-full bg-zinc-800 h-1 mt-2 rounded-full overflow-hidden">
+                            <div className="w-full bg-surface-raised h-1 mt-2 rounded-full overflow-hidden">
                                 <m.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (currentMacros.fats / (plan?.fats_target || 1)) * 100)}%` }}
@@ -335,22 +335,22 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
 
             {/* Configuración de Portada */}
             {plan && isEditingConfig && (
-                <div className="bg-[#111111] border border-zinc-800 rounded-xl p-6 animate-fade space-y-6">
-                    <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-4 border-b border-zinc-800 pb-2">Configuración del Plan (Portada)</h3>
+                <div className="bg-[#111111] border border-line rounded-xl p-6 animate-fade space-y-6">
+                    <h3 className="text-lg font-bold text-ink uppercase tracking-wider mb-4 border-b border-line pb-2">Configuración del Plan (Portada)</h3>
                     
                     <div>
-                        <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Bloque de Entrenamiento Asociado</label>
+                        <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Bloque de Entrenamiento Asociado</label>
                         <input 
                             type="text" 
                             placeholder="Ej. Hipertrofia Bloque 1, Fuerza Máxima..."
                             value={configForm.training_block_id} 
                             onChange={(e) => setConfigForm({...configForm, training_block_id: e.target.value})}
-                            className="w-full bg-[#0a0a0a] text-white px-4 py-3 rounded border border-zinc-800 focus:border-anvil-red"
+                            className="w-full bg-[#0a0a0a] text-ink px-4 py-3 rounded border border-line focus:border-anvil-red"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Etiquetas (Tags)</label>
+                        <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Etiquetas (Tags)</label>
                         <div className="flex gap-2 mb-2">
                             <input 
                                 type="text" 
@@ -363,7 +363,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewTag('');
                                     }
                                 }}
-                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red"
+                                className="flex-1 bg-[#0a0a0a] text-ink px-4 py-2 rounded border border-line focus:border-anvil-red"
                             />
                             <button 
                                 onClick={() => {
@@ -372,23 +372,23 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewTag('');
                                     }
                                 }}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 rounded transition-colors"
+                                className="bg-surface-raised hover:bg-surface-overlay text-ink px-4 rounded transition-colors"
                             >
                                 <Plus size={18} />
                             </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {configForm.tags.map((tag, i) => (
-                                <span key={i} className="bg-zinc-800 text-white text-xs px-3 py-1 rounded-full flex items-center gap-2">
+                                <span key={i} className="bg-surface-raised text-ink text-xs px-3 py-1 rounded-full flex items-center gap-2">
                                     {tag}
-                                    <button onClick={() => setConfigForm({...configForm, tags: configForm.tags.filter((_, idx) => idx !== i)})} className="hover:text-red-500"><X size={12} /></button>
+                                    <button onClick={() => setConfigForm({...configForm, tags: configForm.tags.filter((_, idx) => idx !== i)})} className="hover:text-danger-text"><X size={12} /></button>
                                 </span>
                             ))}
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Pautas Generales</label>
+                        <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Pautas Generales</label>
                         <div className="flex gap-2 mb-2">
                             <input 
                                 type="text" 
@@ -401,7 +401,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewGuideline('');
                                     }
                                 }}
-                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red"
+                                className="flex-1 bg-[#0a0a0a] text-ink px-4 py-2 rounded border border-line focus:border-anvil-red"
                             />
                             <button 
                                 onClick={() => {
@@ -410,23 +410,23 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewGuideline('');
                                     }
                                 }}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 rounded transition-colors"
+                                className="bg-surface-raised hover:bg-surface-overlay text-ink px-4 rounded transition-colors"
                             >
                                 <Plus size={18} />
                             </button>
                         </div>
                         <div className="space-y-1">
                             {configForm.general_guidelines.map((g, i) => (
-                                <div key={i} className="bg-zinc-800 text-white text-sm px-4 py-2 rounded flex justify-between items-center">
+                                <div key={i} className="bg-surface-raised text-ink text-sm px-4 py-2 rounded flex justify-between items-center">
                                     <span>• {g}</span>
-                                    <button onClick={() => setConfigForm({...configForm, general_guidelines: configForm.general_guidelines.filter((_, idx) => idx !== i)})} className="hover:text-red-500"><X size={14} /></button>
+                                    <button onClick={() => setConfigForm({...configForm, general_guidelines: configForm.general_guidelines.filter((_, idx) => idx !== i)})} className="hover:text-danger-text"><X size={14} /></button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Suplementación</label>
+                        <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Suplementación</label>
                         <div className="flex gap-2 mb-2">
                             <input 
                                 type="text" 
@@ -439,7 +439,7 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewSupplement('');
                                     }
                                 }}
-                                className="flex-1 bg-[#0a0a0a] text-white px-4 py-2 rounded border border-zinc-800 focus:border-anvil-red"
+                                className="flex-1 bg-[#0a0a0a] text-ink px-4 py-2 rounded border border-line focus:border-anvil-red"
                             />
                             <button 
                                 onClick={() => {
@@ -448,23 +448,23 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
                                         setNewSupplement('');
                                     }
                                 }}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-white px-4 rounded transition-colors"
+                                className="bg-surface-raised hover:bg-surface-overlay text-ink px-4 rounded transition-colors"
                             >
                                 <Plus size={18} />
                             </button>
                         </div>
                         <div className="space-y-1">
                             {configForm.global_supplements.map((s, i) => (
-                                <div key={i} className="bg-zinc-800/50 border border-blue-500/30 text-blue-100 text-sm px-4 py-2 rounded flex justify-between items-center">
+                                <div key={i} className="bg-surface-raised/50 border border-blue-500/30 text-blue-100 text-sm px-4 py-2 rounded flex justify-between items-center">
                                     <span>💊 {s}</span>
-                                    <button onClick={() => setConfigForm({...configForm, global_supplements: configForm.global_supplements.filter((_, idx) => idx !== i)})} className="hover:text-red-500"><X size={14} /></button>
+                                    <button onClick={() => setConfigForm({...configForm, global_supplements: configForm.global_supplements.filter((_, idx) => idx !== i)})} className="hover:text-danger-text"><X size={14} /></button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-4 border-t border-zinc-800">
-                        <button onClick={() => setIsEditingConfig(false)} className="bg-zinc-800 text-white px-4 py-2 rounded font-bold text-sm">Cancelar</button>
+                    <div className="flex justify-end gap-2 pt-4 border-t border-line">
+                        <button onClick={() => setIsEditingConfig(false)} className="bg-surface-raised text-ink px-4 py-2 rounded font-bold text-sm">Cancelar</button>
                         <button onClick={handleSaveConfig} className="bg-anvil-red text-black px-6 py-2 rounded font-black text-sm uppercase">Guardar Configuración</button>
                     </div>
                 </div>
@@ -473,40 +473,40 @@ export function NutritionPlanEditor({ athleteId }: NutritionPlanEditorProps) {
             {/* Portada Resumen (visible cuando hay datos configurados) */}
             {plan && !isEditingConfig && !isEditingMacros && (
                 (plan.tags?.length || plan.general_guidelines?.length || plan.global_supplements?.length || plan.training_block_id) ? (
-                    <div className="bg-[#111111] border border-zinc-800 rounded-xl p-5 space-y-3">
+                    <div className="bg-[#111111] border border-line rounded-xl p-5 space-y-3">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-black text-zinc-400 uppercase tracking-wider">Portada del Plan</h3>
+                            <h3 className="text-sm font-black text-ink-muted uppercase tracking-wider">Portada del Plan</h3>
                         </div>
                         
                         {plan.training_block_id && (
-                            <p className="text-sm text-zinc-300">
-                                <span className="text-zinc-500">Bloque:</span> <span className="font-bold">{plan.training_block_id}</span>
+                            <p className="text-sm text-ink">
+                                <span className="text-ink-subtle">Bloque:</span> <span className="font-bold">{plan.training_block_id}</span>
                             </p>
                         )}
 
                         {plan.tags && plan.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {plan.tags.map((tag, i) => (
-                                    <span key={i} className="bg-anvil-red/10 text-anvil-red text-xs font-bold px-3 py-1 rounded-full border border-anvil-red/20 uppercase">{tag}</span>
+                                    <span key={i} className="bg-anvil-red/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-anvil-red/20 uppercase">{tag}</span>
                                 ))}
                             </div>
                         )}
 
                         {plan.general_guidelines && plan.general_guidelines.length > 0 && (
                             <div className="space-y-1">
-                                <p className="text-xs text-zinc-500 uppercase font-bold">📋 Pautas</p>
+                                <p className="text-xs text-ink-subtle uppercase font-bold">📋 Pautas</p>
                                 {plan.general_guidelines.map((g, i) => (
-                                    <p key={i} className="text-sm text-zinc-300 pl-2">• {g}</p>
+                                    <p key={i} className="text-sm text-ink pl-2">• {g}</p>
                                 ))}
                             </div>
                         )}
 
                         {plan.global_supplements && plan.global_supplements.length > 0 && (
                             <div className="space-y-1">
-                                <p className="text-xs text-zinc-500 uppercase font-bold">💊 Suplementación</p>
+                                <p className="text-xs text-ink-subtle uppercase font-bold">💊 Suplementación</p>
                                 <div className="flex flex-wrap gap-2">
                                     {plan.global_supplements.map((s, i) => (
-                                        <span key={i} className="bg-blue-500/10 text-blue-300 text-xs px-2 py-1 rounded border border-blue-500/20">{s}</span>
+                                        <span key={i} className="bg-info-quiet text-blue-300 text-xs px-2 py-1 rounded border border-info/20">{s}</span>
                                     ))}
                                 </div>
                             </div>

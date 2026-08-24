@@ -175,7 +175,7 @@ export function RemoveAthleteModal({ open, onClose, athlete, onDone }: RemoveAth
  } ${esperandoConfirmacion ? 'border-[var(--border-strong)] bg-surface-overlay' : ''}`}
                                 >
                                     <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-field ${
- peligro ? 'bg-[var(--danger-quiet)] text-danger' : 'bg-surface-sunken text-ink-muted'
+ peligro ? 'bg-[var(--danger-quiet)] text-danger-text' : 'bg-surface-sunken text-ink-muted'
  }`}>
                                         {ocupado
                                             ? <Loader size={16} className="animate-spin" aria-hidden="true" />
@@ -183,7 +183,7 @@ export function RemoveAthleteModal({ open, onClose, athlete, onDone }: RemoveAth
                                     </span>
 
                                     <span className="min-w-0 flex-1">
-                                        <span className={`block text-t-sm font-bold ${peligro ? 'text-danger' : 'text-ink'}`}>
+                                        <span className={`block text-t-sm font-bold ${peligro ? 'text-danger-text' : 'text-ink'}`}>
                                             {label}
                                         </span>
                                         <span className="mt-0.5 block text-t-xs leading-relaxed text-ink-muted">

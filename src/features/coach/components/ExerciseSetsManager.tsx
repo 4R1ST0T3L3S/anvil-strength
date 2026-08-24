@@ -75,7 +75,7 @@ function SetTextInput({
                 onChange(e.target.value);
             }}
             onBlur={onBlur}
-            className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 transition-colors"
+            className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-ink focus:border-anvil-red/50 transition-colors"
         />
     );
 }
@@ -222,7 +222,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                     onChange={(e) => handleUpdateSet(set.id, 'target_rpe', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_rpe: e.target.value })}
                                     placeholder="@"
-                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 transition-colors"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-ink focus:border-anvil-red/50 transition-colors"
                                 />
                             </div>
 
@@ -235,7 +235,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                                     onChange={(e) => handleUpdateSet(set.id, 'target_load', e.target.value)}
                                     onBlur={(e) => handleBlur(set.id, { target_load: e.target.value ? parseFloat(e.target.value) : null })}
                                     placeholder="kg"
-                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-white focus:border-anvil-red/50 transition-colors"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-ink focus:border-anvil-red/50 transition-colors"
                                 />
                             </div>
 
@@ -251,11 +251,11 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
                             {/* Actions */}
                             <div className="col-span-1 flex justify-end gap-1">
                                 {savingId === set.id ? (
-                                    <Loader size={12} className="text-anvil-red animate-spin mx-auto" />
+                                    <Loader size={12} className="text-brand-text animate-spin mx-auto" />
                                 ) : (
                                     <button
                                         onClick={() => handleDeleteSet(set.id)}
-                                        className="p-1.5 text-ink-subtle hover:text-danger hover:bg-[var(--danger-quiet)] rounded transition-colors mx-auto"
+                                        className="p-1.5 text-ink-subtle hover:text-danger-text hover:bg-[var(--danger-quiet)] rounded transition-colors mx-auto"
                                     >
                                         <Trash2 size={12} />
                                     </button>
@@ -268,7 +268,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
 
             <button
                 onClick={handleAddSet}
-                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-white hover:border-[var(--border-strong)] transition-colors"
+                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-ink hover:border-[var(--border-strong)] transition-colors"
             >
                 <Plus size={14} />
                 Prescribir Series

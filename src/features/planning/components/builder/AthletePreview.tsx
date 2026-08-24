@@ -29,10 +29,10 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
 
                 <div className="shrink-0 px-5 py-3 bg-surface-canvas border-b border-subtle flex items-center justify-between">
                     <div>
-                        <p className="text-t-2xs font-black uppercase tracking-widest text-anvil-red">Así lo verá el atleta</p>
-                        <h3 className="font-black text-white uppercase text-lg leading-tight">{session.name || `Día ${session.day_number}`}</h3>
+                        <p className="text-t-2xs font-black uppercase tracking-widest text-brand-text">Así lo verá el atleta</p>
+                        <h3 className="font-black text-ink uppercase text-lg leading-tight">{session.name || `Día ${session.day_number}`}</h3>
                     </div>
-                    <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-ink-muted hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
                         <X size={16} />
                     </button>
                 </div>
@@ -52,7 +52,7 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
                             <div key={ex.id} className="bg-surface-canvas rounded-card overflow-hidden border border-subtle">
                                 <div className="p-4 bg-surface-raised">
                                     <h4 className="font-bold text-base leading-tight text-gray-100">{ex.exercise?.name}</h4>
-                                    {ex.variant_name && <p className="text-xs text-anvil-red font-bold mt-0.5">{ex.variant_name}</p>}
+                                    {ex.variant_name && <p className="text-xs text-brand-text font-bold mt-0.5">{ex.variant_name}</p>}
                                     {(ex.rpe || ex.velocity_avg || ex.rest_seconds) && (
                                         <div className="flex gap-3 mt-2 text-t-2xs font-bold text-ink-subtle uppercase">
                                             {ex.rpe && <span>RPE {ex.rpe}</span>}
@@ -66,7 +66,7 @@ export function AthletePreview({ session, onClose }: { session: ExtendedSession;
                                     {ex.sets.map((set, i) => (
                                         <div key={set.id} className="flex items-center justify-between bg-black/20 rounded-lg px-3 py-2 text-sm">
                                             <span className="text-t-2xs font-black text-ink-subtle uppercase">Serie {i + 1}</span>
-                                            <span className="font-bold text-white font-mono">
+                                            <span className="font-bold text-ink font-mono">
                                                 {set.target_reps || '—'}{set.target_load ? ` @ ${set.target_load}kg` : ''}{set.target_rpe ? ` RPE ${set.target_rpe}` : ''}
                                             </span>
                                         </div>
@@ -89,7 +89,7 @@ function PreviewAppendix({ label, body }: { label: string; body?: string | null 
     return (
         <div className="overflow-hidden rounded-card border border-subtle bg-surface-canvas">
             <div className="border-l-2 border-anvil-red px-3.5 py-3">
-                <p className="text-t-2xs font-black uppercase tracking-widest text-anvil-red">{label}</p>
+                <p className="text-t-2xs font-black uppercase tracking-widest text-brand-text">{label}</p>
                 <p className="mt-1.5 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
                     {body.trim()}
                 </p>

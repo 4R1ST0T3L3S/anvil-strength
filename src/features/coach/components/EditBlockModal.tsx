@@ -109,7 +109,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                 <div className="flex-1 space-y-6">
                     <label className="block space-y-1.5">
                         <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                            Nombre del bloque <span className="text-brand">*</span>
+                            Nombre del bloque <span className="text-brand-text">*</span>
                         </span>
                         <input
                             type="text"

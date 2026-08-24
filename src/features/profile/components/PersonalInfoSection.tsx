@@ -130,7 +130,7 @@ export function PersonalInfoSection({ athleteId, mode, coachId, editorId }: Pers
     if (loading) {
         return (
             <div className="flex items-center justify-center rounded-card border border-[var(--border-default)] bg-surface-raised py-12">
-                <Loader className="animate-spin text-brand" size={22} />
+                <Loader className="animate-spin text-brand-text" size={22} />
             </div>
         );
     }
@@ -419,7 +419,7 @@ function FieldEditor({
                         <button
                             onClick={() => setDraft(d => d.filter((_, j) => j !== i))}
                             aria-label={`Quitar ${field.label}`}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field text-ink-faint transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-field text-ink-faint transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text"
                         >
                             <Trash2 size={15} />
                         </button>

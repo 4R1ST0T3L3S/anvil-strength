@@ -952,12 +952,12 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
     const STATUS: Partial<Record<TrackerState, { icon: React.ReactNode; text: string }>> = {
         loading_video: { icon: <Loader size={16} className="shrink-0 animate-spin text-info" />, text: 'Cargando el vídeo…' },
         preparing: { icon: <Loader size={16} className="shrink-0 animate-spin text-info" />, text: 'Midiendo la cadencia del vídeo…' },
-        trim: { icon: <Scissors size={16} className="shrink-0 text-brand" />, text: 'Acota la repetición y continúa' },
+        trim: { icon: <Scissors size={16} className="shrink-0 text-brand-text" />, text: 'Acota la repetición y continúa' },
         detecting: { icon: <ScanSearch size={16} className="shrink-0 animate-pulse text-info" />, text: 'Buscando el disco…' },
         confirm: { icon: <Check size={16} className="shrink-0 text-success" />, text: 'Disco encontrado. ¿El contorno encaja?' },
         tap: { icon: <Crosshair size={16} className="shrink-0 text-warning" />, text: 'No lo encuentro: toca el disco' },
         span: { icon: <Target size={16} className="shrink-0 text-warning" />, text: 'Marca el borde de arriba y el de abajo del disco' },
-        select_point: { icon: <Target size={16} className="shrink-0 text-brand" />, text: 'Toca el punto que quieres seguir' },
+        select_point: { icon: <Target size={16} className="shrink-0 text-brand-text" />, text: 'Toca el punto que quieres seguir' },
         ready: { icon: <Play size={16} className="shrink-0 text-success" />, text: 'Listo para analizar' },
         done: { icon: <Check size={16} className="shrink-0 text-success" />, text: 'Análisis terminado' },
     };
@@ -975,7 +975,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
             )}
 
             {cvError && (
-                <div className="flex items-center gap-3 rounded-card border border-danger/30 bg-danger/10 p-3 text-danger">
+                <div className="flex items-center gap-3 rounded-card border border-danger/30 bg-danger/10 p-3 text-danger-text">
                     <span className="flex-1 text-t-xs font-semibold">{cvError}</span>
                     <button onClick={() => window.location.reload()} className="shrink-0 text-t-2xs font-bold underline">
                         Reintentar
@@ -985,7 +985,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
 
             {fatal && (
                 <div className="rounded-card border border-danger/30 bg-danger/10 p-3">
-                    <p className="text-t-xs leading-relaxed text-danger">{fatal}</p>
+                    <p className="text-t-xs leading-relaxed text-danger-text">{fatal}</p>
                 </div>
             )}
 
@@ -1182,7 +1182,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                     {state === 'tracking' && progress && (
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
-                                <RefreshCw size={16} className="shrink-0 animate-spin text-brand" />
+                                <RefreshCw size={16} className="shrink-0 animate-spin text-brand-text" />
                                 <span className="text-t-xs font-semibold text-ink">
                                     Analizando fotograma {progress.done} de {progress.total}
                                 </span>
@@ -1205,7 +1205,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                     {state === 'done' && (
                         <div className="flex flex-col gap-2">
                             {path.length < 5 && (
-                                <p className="rounded-field bg-danger/10 px-2.5 py-2 text-t-2xs leading-relaxed text-danger">
+                                <p className="rounded-field bg-danger/10 px-2.5 py-2 text-t-2xs leading-relaxed text-danger-text">
                                     Solo se han podido seguir {path.length} fotogramas. Con tan pocos no salen
                                     métricas: vuelve a calibrar marcando un punto con más contraste, o amplía el recorte.
                                 </p>

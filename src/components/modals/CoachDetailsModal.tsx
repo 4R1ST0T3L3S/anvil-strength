@@ -18,12 +18,12 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
         onClick={onClose}
       />
 
-      <div className="relative bg-[#0a0a0a] w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 shadow-2xl flex flex-col md:flex-row">
+      <div className="relative bg-[#0a0a0a] w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
         
         {/* Close Button Mobile */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-[80] p-2 bg-black/50 rounded-full text-white md:hidden"
+          className="absolute top-4 right-4 z-[80] p-2 bg-black/50 rounded-full text-ink md:hidden"
         >
           <X size={24} />
         </button>
@@ -37,10 +37,10 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent md:hidden" />
           <div className="absolute bottom-0 left-0 p-6 md:hidden">
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-white leading-none mb-1 font-bebas italic">
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-ink leading-none mb-1 font-bebas italic">
               {coach.name}
             </h2>
-            <p className="text-anvil-red font-bold uppercase tracking-wider text-xs">
+            <p className="text-brand-text font-bold uppercase tracking-wider text-xs">
               {coach.role}
             </p>
           </div>
@@ -52,35 +52,35 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           <div className="hidden md:flex justify-end mb-12">
             <button
               onClick={onClose}
-              className="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors rounded-full border border-white/10"
+              className="p-3 bg-white/5 hover:bg-white/10 text-ink-muted hover:text-ink transition-colors rounded-full border border-line"
             >
               <X size={24} />
             </button>
           </div>
 
           <div className="hidden md:block mb-12">
-            <h2 className="text-6xl font-black uppercase tracking-tighter text-white leading-[1.1] mb-2 font-bebas italic py-2">
+            <h2 className="text-6xl font-black uppercase tracking-tighter text-ink leading-[1.1] mb-2 font-bebas italic py-2">
               {coach.name}
             </h2>
-            <p className="text-anvil-red font-black uppercase tracking-widest text-lg">
+            <p className="text-brand-text font-black uppercase tracking-widest text-lg">
               {coach.role}
             </p>
           </div>
 
           {/* Bio */}
           <div className="mb-12">
-            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-4">
+            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-anvil-red" />
               Presentación
             </h3>
-            <p className="text-gray-300 leading-relaxed whitespace-pre-line text-lg font-medium">
+            <p className="text-ink leading-relaxed whitespace-pre-line text-lg font-medium">
               {coach.bio}
             </p>
           </div>
 
           {/* Contact */}
           <div className="mt-auto">
-            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-4">
+            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-anvil-red" />
               Contacto Directo
             </h3>
@@ -89,7 +89,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                 href={coach.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-colors rounded-2xl group border border-white/5"
+                className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
               >
                 <Instagram size={20} className="group-hover:scale-110 transition-transform" />
                 <span className="font-black uppercase text-xs tracking-widest">Instagram</span>
@@ -99,7 +99,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   href={coach.contactForm}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-colors rounded-2xl group border border-white/5"
+                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <FileText size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Formulario</span>
@@ -108,7 +108,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
               {coach.email && (
                 <a
                   href={`mailto:${coach.email}`}
-                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-white transition-colors rounded-2xl group border border-white/5"
+                  className="flex items-center gap-3 px-6 py-4 bg-[#0a0a0a] hover:bg-anvil-red text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <Mail size={20} className="group-hover:scale-110 transition-transform" />
                   <span className="font-black uppercase text-xs tracking-widest">Email</span>

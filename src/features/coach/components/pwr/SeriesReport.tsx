@@ -529,7 +529,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                                                 />
                                                 {rep.index}
                                                 {isBest && <span className="text-success" title="Mejor repetición">▲</span>}
-                                                {isWorst && series.repCount > 1 && <span className="text-danger" title="Peor repetición">▼</span>}
+                                                {isWorst && series.repCount > 1 && <span className="text-danger-text" title="Peor repetición">▼</span>}
                                             </span>
                                         </td>
                                         <td className="px-2 py-1.5 text-ink-muted">{fmt(rep.rom, 3)}</td>

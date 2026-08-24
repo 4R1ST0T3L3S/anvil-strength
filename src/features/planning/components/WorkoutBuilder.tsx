@@ -1588,7 +1588,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     if (loading) {
         return (
             <div className="flex h-full items-center justify-center">
-                <Loader className="animate-spin text-anvil-red" />
+                <Loader className="animate-spin text-brand-text" />
             </div>
         );
     }
@@ -1998,7 +1998,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
                                 <div className="flex shrink-0 items-center gap-1">
                                     {isCurrent && (
-                                        <span className="mr-1 hidden rounded-chip bg-brand-quiet px-2 py-0.5 text-t-2xs font-semibold text-brand sm:inline">
+                                        <span className="mr-1 hidden rounded-chip bg-brand-quiet px-2 py-0.5 text-t-2xs font-semibold text-brand-text sm:inline">
                                             En curso
                                         </span>
                                     )}
@@ -2063,7 +2063,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                                             {/* Añadir día */}
                                             <button
                                                 onClick={() => addSession(week)}
-                                                className="group flex min-h-[150px] flex-col items-center justify-center gap-2 rounded-card border border-dashed border-[var(--border-default)] text-ink-subtle transition-colors duration-fast ease-snap hover:border-[var(--brand-line)] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                                                className="group flex min-h-[150px] flex-col items-center justify-center gap-2 rounded-card border border-dashed border-[var(--border-default)] text-ink-subtle transition-colors duration-fast ease-snap hover:border-[var(--brand-line)] hover:text-brand-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                                             >
                                                 <Plus size={20} aria-hidden="true" />
                                                 <span className="text-t-xs font-medium">Añadir día</span>

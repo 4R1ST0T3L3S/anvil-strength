@@ -109,7 +109,7 @@ export function StatTile({
                         <span
                             className={cn(
                                 'inline-flex items-center gap-0.5 font-bold tabular-nums',
-                                bueno === null ? 'text-ink-subtle' : bueno ? 'text-success' : 'text-danger'
+                                bueno === null ? 'text-ink-subtle' : bueno ? 'text-success' : 'text-danger-text'
                             )}
                         >
                             <Flecha className="h-3.5 w-3.5" aria-hidden="true" />

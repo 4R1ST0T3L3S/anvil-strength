@@ -164,16 +164,16 @@ export function PDFEditorModal({ plan, onClose }: Props) {
     return (
         <div className="fixed inset-0 z-[9999] flex bg-black/80 backdrop-blur-sm">
             {/* Left: Settings Panel */}
-            <div className="w-80 bg-[#0a0a0a] border-r border-zinc-800 flex flex-col h-full overflow-hidden shrink-0">
-                <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
-                    <h2 className="text-white font-black uppercase text-sm tracking-wider">Editor PDF</h2>
-                    <button onClick={onClose} className="text-zinc-500 hover:text-white"><X size={20} /></button>
+            <div className="w-80 bg-[#0a0a0a] border-r border-line flex flex-col h-full overflow-hidden shrink-0">
+                <div className="p-4 border-b border-line flex justify-between items-center">
+                    <h2 className="text-ink font-black uppercase text-sm tracking-wider">Editor PDF</h2>
+                    <button onClick={onClose} className="text-ink-subtle hover:text-ink"><X size={20} /></button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex flex-wrap border-b border-zinc-800">
+                <div className="flex flex-wrap border-b border-line">
                     {([['colors', Palette, 'Color'], ['fonts', Type, 'Fuente'], ['image', Image, 'Logo'], ['layout', LayoutTemplate, 'Layout'], ['ai', Sparkles, 'IA']] as const).map(([key, Icon, label]) => (
-                        <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 min-w-[56px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-anvil-red bg-zinc-800/50 border-b-2 border-anvil-red' : 'text-zinc-500 hover:text-white'}`}>
+                        <button key={key} onClick={() => setActiveTab(key)} className={`flex-1 min-w-[56px] py-2.5 text-t-2xs font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-brand-text bg-surface-raised/50 border-b-2 border-anvil-red' : 'text-ink-subtle hover:text-ink'}`}>
                             <Icon size={16} />{label}
                         </button>
                     ))}
@@ -182,87 +182,87 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                 {/* Tab Content */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {activeTab === 'colors' && (<>
-                        <p className="text-xs text-zinc-500 uppercase font-bold">Presets</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold">Presets</p>
                         <div className="grid grid-cols-1 gap-2">
                             {PRESETS.map(p => (
                                 <button key={p.label} onClick={() => update({ accentColor: p.accent, bgColor: p.bg, textColor: p.text })}
-                                    className="flex items-center gap-3 bg-zinc-900 hover:bg-zinc-800 p-2.5 rounded-lg border border-zinc-800 transition-colors text-left">
+                                    className="flex items-center gap-3 bg-surface-canvas hover:bg-surface-raised p-2.5 rounded-lg border border-line transition-colors text-left">
                                     <div className="flex gap-1">
-                                        <div className="w-4 h-4 rounded-full border border-zinc-700" style={{ background: p.bg }} />
+                                        <div className="w-4 h-4 rounded-full border border-strong" style={{ background: p.bg }} />
                                         <div className="w-4 h-4 rounded-full" style={{ background: p.accent }} />
                                         <div className="w-4 h-4 rounded-full" style={{ background: p.text }} />
                                     </div>
-                                    <span className="text-white text-xs font-bold">{p.label}</span>
+                                    <span className="text-ink text-xs font-bold">{p.label}</span>
                                 </button>
                             ))}
                         </div>
-                        <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Personalizado</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold mt-4">Personalizado</p>
                         {[['Acento', 'accentColor'], ['Fondo', 'bgColor'], ['Texto', 'textColor']].map(([label, key]) => (
                             <div key={key} className="flex items-center gap-3">
                                 <input type="color" value={(s as any)[key]} onChange={e => update({ [key]: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                                <span className="text-zinc-300 text-sm">{label}</span>
+                                <span className="text-ink text-sm">{label}</span>
                             </div>
                         ))}
                     </>)}
 
                     {activeTab === 'fonts' && (<>
-                        <p className="text-xs text-zinc-500 uppercase font-bold">Tipografía</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold">Tipografía</p>
                         {FONTS.map(f => (
                             <button key={f.value} onClick={() => update({ fontFamily: f.value })}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.fontFamily === f.value ? 'border-anvil-red bg-anvil-red/10 text-white' : 'border-zinc-800 text-zinc-400 hover:text-white'}`}
+                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.fontFamily === f.value ? 'border-anvil-red bg-anvil-red/10 text-ink' : 'border-line text-ink-muted hover:text-ink'}`}
                                 style={{ fontFamily: f.value }}>
                                 {f.label} — Aa Bb 123
                             </button>
                         ))}
-                        <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Nombre del Club</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold mt-4">Nombre del Club</p>
                         <input type="text" value={s.clubName} onChange={e => update({ clubName: e.target.value })}
-                            className="w-full bg-zinc-900 text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red text-sm" />
-                        <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Texto de Pie</p>
+                            className="w-full bg-surface-canvas text-ink px-3 py-2 rounded border border-line focus:border-anvil-red text-sm" />
+                        <p className="text-xs text-ink-subtle uppercase font-bold mt-4">Texto de Pie</p>
                         <input type="text" value={s.footerText} onChange={e => update({ footerText: e.target.value })} placeholder="Ej. Preparado por Dr. García"
-                            className="w-full bg-zinc-900 text-white px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red text-sm" />
+                            className="w-full bg-surface-canvas text-ink px-3 py-2 rounded border border-line focus:border-anvil-red text-sm" />
                     </>)}
 
                     {activeTab === 'image' && (<>
-                        <p className="text-xs text-zinc-500 uppercase font-bold">Logo / Imagen de Cabecera</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold">Logo / Imagen de Cabecera</p>
                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                         <button onClick={() => fileInputRef.current?.click()}
-                            className="w-full py-8 border-2 border-dashed border-zinc-700 rounded-lg text-zinc-400 hover:text-white hover:border-anvil-red transition-colors text-sm text-center">
+                            className="w-full py-8 border-2 border-dashed border-strong rounded-lg text-ink-muted hover:text-ink hover:border-anvil-red transition-colors text-sm text-center">
                             {s.showLogo && s.logoUrl ? 'Cambiar imagen' : 'Subir imagen'}
                         </button>
                         {s.showLogo && s.logoUrl && (
                             <div className="relative">
-                                <img src={s.logoUrl} alt="Logo" className="w-full h-24 object-contain bg-zinc-900 rounded-lg p-2" />
-                                <button onClick={() => update({ showLogo: false, logoUrl: '' })} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"><X size={12} /></button>
+                                <img src={s.logoUrl} alt="Logo" className="w-full h-24 object-contain bg-surface-canvas rounded-lg p-2" />
+                                <button onClick={() => update({ showLogo: false, logoUrl: '' })} className="absolute top-1 right-1 bg-red-500 text-ink p-1 rounded-full"><X size={12} /></button>
                             </div>
                         )}
                     </>)}
 
                     {activeTab === 'layout' && (<>
-                        <p className="text-xs text-zinc-500 uppercase font-bold">Distribución</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold">Distribución</p>
                         {(['modern', 'classic', 'minimal'] as const).map(l => (
                             <button key={l} onClick={() => update({ layout: l })}
-                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.layout === l ? 'border-anvil-red bg-anvil-red/10 text-white' : 'border-zinc-800 text-zinc-400 hover:text-white'}`}>
+                                className={`w-full text-left p-3 rounded-lg border transition-colors ${s.layout === l ? 'border-anvil-red bg-anvil-red/10 text-ink' : 'border-line text-ink-muted hover:text-ink'}`}>
                                 <span className="font-bold capitalize">{l}</span>
-                                <span className="block text-xs text-zinc-500 mt-0.5">
+                                <span className="block text-xs text-ink-subtle mt-0.5">
                                     {l === 'modern' && 'Tabla compacta con barras de macros'}
                                     {l === 'classic' && 'Tabla tradicional con bordes'}
                                     {l === 'minimal' && 'Listado limpio sin bordes'}
                                 </span>
                             </button>
                         ))}
-                        <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Opciones</p>
+                        <p className="text-xs text-ink-subtle uppercase font-bold mt-4">Opciones</p>
                         {[['showMacroBar', 'Barras de macros'], ['showAlternatives', 'Mostrar alternativas']].map(([key, label]) => (
                             <label key={key} className="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" checked={(s as any)[key]} onChange={e => update({ [key]: e.target.checked })} className="accent-red-500 w-4 h-4" />
-                                <span className="text-zinc-300 text-sm">{label}</span>
+                                <span className="text-ink text-sm">{label}</span>
                             </label>
                         ))}
                     </>)}
                     {activeTab === 'ai' && (<>
                         <div className="bg-anvil-red/5 border border-anvil-red/20 p-4 rounded-xl text-center">
-                            <Sparkles className="mx-auto text-anvil-red mb-3" size={32} />
-                            <h3 className="text-anvil-red font-black uppercase tracking-widest text-sm mb-2">Analizador IA</h3>
-                            <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+                            <Sparkles className="mx-auto text-brand-text mb-3" size={32} />
+                            <h3 className="text-brand-text font-black uppercase tracking-widest text-sm mb-2">Analizador IA</h3>
+                            <p className="text-xs text-ink-muted mb-4 leading-relaxed">
                                 Sube un PDF antiguo que tengas y nuestra IA extraerá automáticamente la paleta de colores y configuración de fuentes para replicar tu estilo exacto.
                             </p>
                             <button className="w-full bg-anvil-red hover:bg-red-600 text-black py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-colors">
@@ -273,11 +273,11 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                 </div>
 
                 {/* Filename + Download */}
-                <div className="p-4 border-t border-zinc-800 space-y-3">
+                <div className="p-4 border-t border-line space-y-3">
                     <div>
-                        <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Nombre del archivo</label>
+                        <label className="block text-xs text-ink-subtle uppercase font-bold mb-1">Nombre del archivo</label>
                         <input type="text" value={pdfFileName} onChange={e => setPdfFileName(e.target.value)} placeholder="Plan_Nutricional"
-                            className="w-full bg-zinc-900 text-white text-sm px-3 py-2 rounded border border-zinc-800 focus:border-anvil-red" />
+                            className="w-full bg-surface-canvas text-ink text-sm px-3 py-2 rounded border border-line focus:border-anvil-red" />
                     </div>
                     <button onClick={handleDownloadPDF} disabled={isGenerating} className="w-full bg-anvil-red hover:bg-red-600 text-black font-black py-3 rounded-lg transition-colors uppercase tracking-wider flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         {isGenerating ? <><Loader2 size={18} className="animate-spin" /> Generando...</> : <><Download size={18} /> Descargar PDF</>}

@@ -29,8 +29,8 @@ type Tamano = 'sm' | 'md';
 
 const TONO: Record<Tono, string> = {
     neutro: 'text-ink-muted hover:bg-surface-raised hover:text-ink',
-    marca: 'text-brand hover:bg-[var(--brand-quiet)]',
-    peligro: 'text-ink-muted hover:bg-[var(--danger-quiet)] hover:text-danger',
+    marca: 'text-brand-text hover:bg-[var(--brand-quiet)]',
+    peligro: 'text-ink-muted hover:bg-[var(--danger-quiet)] hover:text-danger-text',
 };
 
 /**

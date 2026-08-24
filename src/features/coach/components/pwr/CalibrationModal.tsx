@@ -54,7 +54,7 @@ import type { PwrResult } from './MetricsDashboard';
 const TONE = {
     good: { text: 'text-success', label: 'Buen acuerdo' },
     fair: { text: 'text-warning', label: 'Acuerdo aceptable' },
-    poor: { text: 'text-danger', label: 'Desacuerdo alto' },
+    poor: { text: 'text-danger-text', label: 'Desacuerdo alto' },
     unknown: { text: 'text-ink-faint', label: 'Sin datos' },
 } as const;
 
@@ -177,7 +177,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                 <header className="flex shrink-0 items-start justify-between gap-3 border-b border-subtle px-4 py-3">
                     <div className="min-w-0">
                         <h3 className="flex items-center gap-2 text-t-sm font-bold text-ink">
-                            <Ruler size={15} className="shrink-0 text-brand" aria-hidden="true" />
+                            <Ruler size={15} className="shrink-0 text-brand-text" aria-hidden="true" />
                             Calibrar contra un encoder
                         </h3>
                         <p className="mt-0.5 text-t-2xs text-ink-subtle">

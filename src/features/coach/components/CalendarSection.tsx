@@ -142,16 +142,16 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
         }
 
         const config: Record<string, CompetitionTheme> = {
-            'AEP 3': { color: 'text-orange-400', border: 'border-white/5', line: 'border-l-orange-500', bg: 'bg-orange-500/10' },
-            'AEP 2': { color: 'text-yellow-400', border: 'border-white/5', line: 'border-l-yellow-500', bg: 'bg-yellow-500/10' },
-            'AEP 1': { color: 'text-blue-400', border: 'border-white/5', line: 'border-l-blue-500', bg: 'bg-blue-500/10' },
-            'CLASIFICATORIO': { color: 'text-purple-400', border: 'border-white/5', line: 'border-l-purple-500', bg: 'bg-purple-500/10', icon: <Award size={12} /> },
-            'EVENTO PATROCINADO': { color: 'text-pink-400', border: 'border-white/5', line: 'border-l-pink-500', bg: 'bg-pink-500/10', icon: <Star size={12} /> },
-            'EPF': { color: 'text-green-400', border: 'border-white/5', line: 'border-l-green-500', bg: 'bg-green-500/10' },
-            'IPF': { color: 'text-[#e6c2a5]', border: 'border-white/5', line: 'border-l-[#e6c2a5]', bg: 'bg-[#e6c2a5]/10' },
+            'AEP 3': { color: 'text-orange-400', border: 'border-subtle', line: 'border-l-orange-500', bg: 'bg-orange-500/10' },
+            'AEP 2': { color: 'text-warning', border: 'border-subtle', line: 'border-l-yellow-500', bg: 'bg-warning-quiet' },
+            'AEP 1': { color: 'text-info', border: 'border-subtle', line: 'border-l-blue-500', bg: 'bg-info-quiet' },
+            'CLASIFICATORIO': { color: 'text-purple-400', border: 'border-subtle', line: 'border-l-purple-500', bg: 'bg-purple-500/10', icon: <Award size={12} /> },
+            'EVENTO PATROCINADO': { color: 'text-pink-400', border: 'border-subtle', line: 'border-l-pink-500', bg: 'bg-pink-500/10', icon: <Star size={12} /> },
+            'EPF': { color: 'text-success', border: 'border-subtle', line: 'border-l-green-500', bg: 'bg-success-quiet' },
+            'IPF': { color: 'text-[#e6c2a5]', border: 'border-subtle', line: 'border-l-[#e6c2a5]', bg: 'bg-[#e6c2a5]/10' },
         };
 
-        const theme = config[level] || { color: 'text-anvil-red', border: 'border-white/5', line: 'border-l-anvil-red', bg: 'bg-anvil-red/10' };
+        const theme = config[level] || { color: 'text-brand-text', border: 'border-subtle', line: 'border-l-anvil-red', bg: 'bg-anvil-red/10' };
         return { ...theme, level, esInvitado };
     };
 
@@ -161,15 +161,15 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="self-start flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2"
+                        className="self-start flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-2"
                     >
                         ← Volver al Dashboard
                     </button>
                 )}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <CalendarIcon className="h-6 w-6 text-anvil-red" />
-                        <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">
+                        <CalendarIcon className="h-6 w-6 text-brand-text" />
+                        <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-ink">
                             Calendario AEP 2026
                         </h2>
                     </div>
@@ -180,7 +180,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                     <button
                         onClick={() => load(true)}
                         disabled={refreshing || loading}
-                        className="flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-t-2xs font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-white disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-ink disabled:opacity-40"
                     >
                         <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
                         {refreshing ? 'Actualizando' : 'Actualizar'}
@@ -190,27 +190,27 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                 {/* De donde salen los datos. Solo se dice cuando NO vienen
                     frescos de la federacion: en el caso normal es ruido. */}
                 {warning && (
-                    <div className="flex items-start gap-3 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3.5">
+                    <div className="flex items-start gap-3 rounded-xl border border-warning/20 bg-yellow-500/5 p-3.5">
                         {source === 'local'
-                            ? <CloudOff size={16} className="mt-0.5 shrink-0 text-yellow-500" />
-                            : <AlertTriangle size={16} className="mt-0.5 shrink-0 text-yellow-500" />}
+                            ? <CloudOff size={16} className="mt-0.5 shrink-0 text-warning" />
+                            : <AlertTriangle size={16} className="mt-0.5 shrink-0 text-warning" />}
                         <p className="text-xs leading-relaxed text-yellow-200/90">{warning}</p>
                     </div>
                 )}
             </div>
 
             {loading ? (
-                <div className="flex h-64 items-center justify-center rounded-xl border border-white/5 bg-[#0a0a0a] font-black italic text-gray-500">CARGANDO...</div>
+                <div className="flex h-64 items-center justify-center rounded-xl border border-subtle bg-[#0a0a0a] font-black italic text-ink-subtle">CARGANDO...</div>
             ) : competitions.length === 0 ? (
-                <div className="rounded-xl border border-white/5 bg-[#0a0a0a] p-12 text-center">
+                <div className="rounded-xl border border-subtle bg-[#0a0a0a] p-12 text-center">
                     <CalendarIcon size={40} className="mx-auto mb-4 text-gray-700" />
-                    <p className="font-black uppercase tracking-wider text-gray-400">Sin competiciones</p>
+                    <p className="font-black uppercase tracking-wider text-ink-muted">Sin competiciones</p>
                     <p className="mx-auto mt-2 max-w-sm text-sm text-gray-600">
                         No se ha podido leer el calendario de la federacion y no hay ninguna copia guardada.
                     </p>
                     <button
                         onClick={() => load(true)}
-                        className="mt-6 text-xs font-black uppercase tracking-widest text-anvil-red transition-colors hover:text-red-400"
+                        className="mt-6 text-xs font-black uppercase tracking-widest text-brand-text transition-colors hover:text-danger-text"
                     >
                         Reintentar &rarr;
                     </button>
@@ -234,14 +234,14 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                                 {level}
                                             </div>
                                             {esInvitado && (
-                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-t-2xs font-black px-3 py-1.5 rounded-lg uppercase border border-white/5`}>
+                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-t-2xs font-black px-3 py-1.5 rounded-lg uppercase border border-subtle`}>
                                                     <Users size={12} /> Atleta Invitado
                                                 </div>
                                             )}
                                         </div>
 
                                         {/* CAJA DE FECHA ESTILO CLEAN */}
-                                        <div className="flex items-center gap-2 text-white font-black uppercase tracking-widest bg-white/5 border border-white/5 px-4 py-2.5 rounded-xl shrink-0 text-xs md:text-sm shadow-inner">
+                                        <div className="flex items-center gap-2 text-ink font-black uppercase tracking-widest bg-white/5 border border-subtle px-4 py-2.5 rounded-xl shrink-0 text-xs md:text-sm shadow-inner">
                                             <CalendarIcon size={16} className={color.replace('text-', 'text-')} />
                                             <span>{comp.fecha}</span>
                                         </div>
@@ -249,7 +249,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
 
                                     {/* SECCIÓN CENTRAL: NOMBRE DEL CAMPEONATO */}
                                     <div className="mt-1">
-                                        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter leading-tight italic">
+                                        <h3 className="text-2xl md:text-3xl font-black text-ink uppercase tracking-tighter leading-tight italic">
                                             {comp.campeonato}
                                         </h3>
                                     </div>
@@ -258,7 +258,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
 
                                     {/* SECCIÓN INFERIOR: UBICACIÓN Y BOTÓN */}
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-0">
-                                        <div className="flex items-center gap-3 text-white font-black uppercase text-xs md:text-sm tracking-widest">
+                                        <div className="flex items-center gap-3 text-ink font-black uppercase text-xs md:text-sm tracking-widest">
                                             <div className={`p-2 rounded-lg ${bg}`}>
                                                 <MapPin size={18} className={color} />
                                             </div>
@@ -269,7 +269,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                             {user?.role === 'coach' && (
                                                 <button
                                                     onClick={() => setSelectedCompetition(comp)}
-                                                    className="px-8 py-3 bg-anvil-red text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-[background-color,transform] shadow-lg active:scale-95"
+                                                    className="px-8 py-3 bg-anvil-red text-ink text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-[background-color,transform] shadow-lg active:scale-95"
                                                 >
                                                     Asignar
                                                 </button>

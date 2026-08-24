@@ -121,7 +121,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                     {/* Botón cerrar */}
                     <button
                         onClick={onClose}
-                        className="absolute top-6 right-6 z-30 p-3 bg-white/5 hover:bg-anvil-red rounded-full text-white transition-colors"
+                        className="absolute top-6 right-6 z-30 p-3 bg-white/5 hover:bg-anvil-red rounded-full text-ink transition-colors"
                         aria-label="Cerrar"
                     >
                         <X size={22} />
@@ -147,8 +147,8 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                                     style={{ maskImage: 'linear-gradient(to top, transparent 0%, black 12%)', WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 12%)' }}
                                 />
                             ) : (
-                                <div className="w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-[#252525] to-[#0a0a0a] border border-white/10 flex items-center justify-center mb-12">
-                                    <span className="text-7xl md:text-9xl font-black text-anvil-red italic">
+                                <div className="w-64 h-64 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-[#252525] to-[#0a0a0a] border border-line flex items-center justify-center mb-12">
+                                    <span className="text-7xl md:text-9xl font-black text-brand-text italic">
                                         {data.athleteName.split(' ').map(w => w[0]).slice(0, 2).join('')}
                                     </span>
                                 </div>
@@ -163,10 +163,10 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
                             transition={{ delay: 0.25, duration: 0.6 }}
                             className="order-1 md:order-2 w-full md:w-1/2 text-center md:text-left pt-24 md:pt-0 md:pl-12"
                         >
-                            <p className="text-anvil-red font-black uppercase tracking-[0.3em] text-xs md:text-sm mb-3">
+                            <p className="text-brand-text font-black uppercase tracking-[0.3em] text-xs md:text-sm mb-3">
                                 {data.level || 'Competición'} · {formatDate(data.date)}
                             </p>
-                            <h2 className="text-4xl md:text-7xl font-black text-white uppercase italic tracking-tighter leading-[0.9] mb-2">
+                            <h2 className="text-4xl md:text-7xl font-black text-ink uppercase italic tracking-tighter leading-[0.9] mb-2">
                                 {data.athleteName}
                             </h2>
                             {clubPhoto?.category && (
@@ -175,7 +175,7 @@ export function AthleteSpotlightModal({ data, onClose }: { data: SpotlightData |
 
                             <div className="w-20 h-1 bg-anvil-red mx-auto md:mx-0 my-6" />
 
-                            <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-3">{data.competitionName}</h3>
+                            <h3 className="text-xl md:text-2xl font-black text-ink uppercase mb-3">{data.competitionName}</h3>
 
                             <div className="flex items-center justify-center md:justify-start gap-5 text-gray-400 text-sm font-bold mb-6">
                                 <span className="flex items-center gap-2"><Calendar size={15} /> {formatDate(data.date)}</span>

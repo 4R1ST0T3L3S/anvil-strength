@@ -214,7 +214,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         initial={{ opacity: 0, y: 24 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                        className="text-d-lg font-black uppercase text-white"
+                        className="text-d-lg font-black uppercase text-ink"
                     >
                         Anvil Strength
                     </m.h1>
@@ -250,7 +250,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         <a
                             href="#filosofia"
                             onClick={(e) => scrollToSection(e, '#filosofia')}
-                            className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-white hover:underline"
+                            className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
                         >
                             Ver de qué va
                         </a>
@@ -399,10 +399,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
                             <div className="absolute inset-x-0 bottom-0 p-6">
-                                <span className="text-t-2xs font-black uppercase tracking-widest text-brand">
+                                <span className="text-t-2xs font-black uppercase tracking-widest text-brand-text">
                                     Entrenador
                                 </span>
-                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-white">
+                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-ink">
                                     {coach.name}
                                 </h3>
                                 <p className="mt-1.5 text-t-sm font-medium text-white/70">{coach.role}</p>
@@ -434,7 +434,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                 <span className="text-t-2xs font-black uppercase tracking-widest text-success">
                                     Nutrición
                                 </span>
-                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-white">
+                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-ink">
                                     {nutri.name}
                                 </h3>
                                 <p className="mt-1.5 text-t-sm font-medium text-white/70">{nutri.role}</p>
@@ -444,7 +444,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={`Instagram de ${nutri.name}`}
-                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-ink transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
                                     >
                                         <Instagram size={16} />
                                     </a>
@@ -453,7 +453,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         aria-label={`Formulario de contacto de ${nutri.name}`}
-                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-white transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-ink transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
                                     >
                                         <FileText size={16} />
                                     </a>
@@ -522,7 +522,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                         loading="lazy"
                                     />
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-sunken to-transparent p-4 pt-12">
-                                        <p className="text-t-base font-black uppercase leading-tight text-white">
+                                        <p className="text-t-base font-black uppercase leading-tight text-ink">
                                             {athlete.name}
                                         </p>
                                         <p className="text-t-xs uppercase tracking-wide text-white/60">
@@ -562,11 +562,11 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                 onClick={() => setSelectedAchievement(item)}
                                 className="flex h-full w-full flex-col rounded-sheet bg-surface-canvas p-8 text-left transition-transform duration-base ease-snap hover:-translate-y-1"
                             >
-                                <Trophy className="h-8 w-8 text-brand" aria-hidden="true" />
+                                <Trophy className="h-8 w-8 text-brand-text" aria-hidden="true" />
                                 <h3 className="mt-8 text-t-2xl font-black uppercase leading-tight tracking-display text-ink">
                                     {item.title}
                                 </h3>
-                                <p className="mt-auto pt-8 text-t-lg font-black uppercase tracking-display text-brand">
+                                <p className="mt-auto pt-8 text-t-lg font-black uppercase tracking-display text-brand-text">
                                     {item.result}
                                 </p>
                             </button>
@@ -666,7 +666,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                             {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                             className="group flex flex-col gap-3 bg-surface-canvas p-7 transition-colors duration-fast hover:bg-surface-raised"
                         >
-                            <Icon size={20} className="text-ink-subtle transition-colors duration-fast group-hover:text-brand" aria-hidden="true" />
+                            <Icon size={20} className="text-ink-subtle transition-colors duration-fast group-hover:text-brand-text" aria-hidden="true" />
                             <span className="text-t-lg font-black uppercase tracking-display text-ink">{label}</span>
                             <span className="break-all text-t-sm text-ink-muted">{value}</span>
                         </a>
@@ -867,7 +867,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
                         </div>
                     )}
 
-                    <p className={`text-t-lg font-black uppercase tracking-display text-brand ${many ? 'mt-4' : 'mt-6'}`}>
+                    <p className={`text-t-lg font-black uppercase tracking-display text-brand-text ${many ? 'mt-4' : 'mt-6'}`}>
                         {shown.result}
                     </p>
                     <p className="mt-3 max-w-[62ch] text-t-base leading-relaxed text-ink-muted">
@@ -912,7 +912,7 @@ function AllAchievementsModal({ isOpen, onClose, achievements, onSelect }: { isO
                                 <span className="block text-t-base font-bold leading-snug text-ink">
                                     {item.title}
                                 </span>
-                                <span className="mt-1 block text-t-sm font-black uppercase tracking-display text-brand">
+                                <span className="mt-1 block text-t-sm font-black uppercase tracking-display text-brand-text">
                                     {item.result}
                                 </span>
                             </span>

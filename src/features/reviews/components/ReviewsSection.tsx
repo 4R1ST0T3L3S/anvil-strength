@@ -43,7 +43,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">
-                        Opiniones de <span className="text-anvil-red">Nuestros Atletas</span>
+                        Opiniones de <span className="text-brand-text">Nuestros Atletas</span>
                     </h2>
                     <p className="text-ink-muted text-lg max-w-2xl mx-auto">
                         Descubre lo que nuestros atletas piensan sobre su experiencia con Anvil Strength
@@ -53,7 +53,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                     {reviews.length > 0 && (
                         <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-6">
                             <div className="text-center">
-                                <div className="text-5xl font-black text-anvil-red">
+                                <div className="text-5xl font-black text-brand-text">
                                     {averageRating.toFixed(1)}
                                 </div>
                                 <StarRating rating={Math.round(averageRating)} readonly size={28} />
@@ -95,14 +95,14 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                 {/* Info box for non-authenticated users */}
                 {!isAuthenticated && reviews.length > 0 && (
                     <div className="mb-12 max-w-3xl mx-auto bg-surface-raised p-6 rounded-card border border-line text-center">
-                        <MessageCircle className="inline-block mb-3 text-anvil-red" size={32} />
+                        <MessageCircle className="inline-block mb-3 text-brand-text" size={32} />
                         <h3 className="text-lg font-bold mb-2">¿Quieres dejar tu opinión?</h3>
                         <p className="text-ink-muted mb-4">
                             Inicia sesión o regístrate para compartir tu experiencia con la comunidad
                         </p>
                         <button
                             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                            className="bg-anvil-red text-white font-bold px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                            className="bg-anvil-red text-ink font-bold px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
                         >
                             Iniciar Sesión
                         </button>
@@ -121,7 +121,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                             <p className="text-red-500">{error}</p>
                             <button
                                 onClick={loadReviews}
-                                className="mt-4 text-anvil-red hover:underline"
+                                className="mt-4 text-brand-text hover:underline"
                             >
                                 Reintentar
                             </button>

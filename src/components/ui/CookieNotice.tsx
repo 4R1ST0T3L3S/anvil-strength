@@ -58,11 +58,11 @@ export function CookieNotice() {
         >
             <div className="mx-auto flex max-w-[1400px] flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
                 <div className="flex items-start gap-3">
-                    <Cookie size={18} className="mt-0.5 shrink-0 text-brand" aria-hidden="true" />
+                    <Cookie size={18} className="mt-0.5 shrink-0 text-brand-text" aria-hidden="true" />
                     <p className="text-t-xs leading-relaxed text-ink-muted sm:text-t-sm">
                         Usamos solo las cookies técnicas necesarias para que la sesión funcione —
                         ninguna de seguimiento ni publicidad.{' '}
-                        <Link to="/legal/cookies" className="text-brand hover:underline">
+                        <Link to="/legal/cookies" className="text-brand-text hover:underline">
                             Más información
                         </Link>
                     </p>

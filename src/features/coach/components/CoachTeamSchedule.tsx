@@ -135,16 +135,16 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-3 text-xs font-bold uppercase tracking-wider"
+                        className="flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-3 text-xs font-bold uppercase tracking-wider"
                     >
                         ← Volver al Dashboard
                     </button>
                 )}
                 <div className="flex items-center gap-3">
-                    <Calendar size={28} className="text-anvil-red" />
+                    <Calendar size={28} className="text-brand-text" />
                     <div>
-                        <h1 className="text-2xl font-black uppercase tracking-tight text-white">Agenda del Equipo</h1>
-                        <p className="text-sm text-gray-400">Próximas competiciones y asistencia</p>
+                        <h1 className="text-2xl font-black uppercase tracking-tight text-ink">Agenda del Equipo</h1>
+                        <p className="text-sm text-ink-muted">Próximas competiciones y asistencia</p>
                     </div>
                 </div>
             </header>
@@ -152,9 +152,9 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
             <div className="space-y-4">
                 <AnimatePresence>
                 {competitions.length === 0 ? (
-                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-8 text-center flex flex-col items-center justify-center">
+                    <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#0a0a0a] border border-subtle rounded-xl p-8 text-center flex flex-col items-center justify-center">
                         <Calendar size={24} className="text-gray-600 mb-3" />
-                        <p className="text-sm font-medium text-gray-400">No hay competiciones programadas.</p>
+                        <p className="text-sm font-medium text-ink-muted">No hay competiciones programadas.</p>
                     </m.div>
                 ) : (
                     competitions.map((comp: CompetitionGroup, index: number) => (
@@ -163,17 +163,17 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/5 shadow-md flex flex-col md:flex-row relative"
+                            className="bg-[#0a0a0a] rounded-xl overflow-hidden border border-subtle shadow-md flex flex-col md:flex-row relative"
                         >
                             <div className="p-4 md:pr-16 flex-1 flex flex-col xl:flex-row gap-6">
                                 {/* Competition Info */}
                                 <div className="xl:w-1/3 flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-[#0a0a0a] border border-white/10 flex items-center justify-center shrink-0">
-                                        <Calendar size={20} className="text-anvil-red" />
+                                    <div className="w-10 h-10 rounded-lg bg-[#0a0a0a] border border-line flex items-center justify-center shrink-0">
+                                        <Calendar size={20} className="text-brand-text" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-white uppercase leading-tight mb-1">{comp.name}</h3>
-                                        <p className="text-xs text-gray-400 font-medium tracking-wide">
+                                        <h3 className="text-lg font-bold text-ink uppercase leading-tight mb-1">{comp.name}</h3>
+                                        <p className="text-xs text-ink-muted font-medium tracking-wide">
                                             {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
                                                 year: 'numeric',
                                                 month: 'short',
@@ -184,26 +184,26 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                 </div>
 
                                 {/* Athletes List */}
-                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 border-t xl:border-t-0 border-white/5 pt-4 xl:pt-0">
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 border-t xl:border-t-0 border-subtle pt-4 xl:pt-0">
                                     {comp.entries.map((entry: CompetitionEntry) => (
                                         <div 
                                             key={entry.id} 
-                                            className="flex items-center gap-2 p-2 bg-[#0a0a0a] hover:bg-[#111] transition-colors rounded-lg border border-transparent hover:border-white/10"
+                                            className="flex items-center gap-2 p-2 bg-[#0a0a0a] hover:bg-[#111] transition-colors rounded-lg border border-transparent hover:border-line"
                                         >
                                             {entry.profiles?.avatar_url ? (
                                                 <img src={entry.profiles.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center font-bold text-xs text-gray-300">
+                                                <div className="w-8 h-8 rounded-full bg-[#0a0a0a] border border-line flex items-center justify-center font-bold text-xs text-ink">
                                                     {entry.profiles?.full_name?.[0]?.toUpperCase()}
                                                 </div>
                                             )}
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-xs text-white truncate">{entry.profiles?.full_name}</p>
-                                                <p className="text-t-2xs text-gray-500 uppercase truncate">{entry.category || 'N/A'}</p>
+                                                <p className="font-semibold text-xs text-ink truncate">{entry.profiles?.full_name}</p>
+                                                <p className="text-t-2xs text-ink-subtle uppercase truncate">{entry.category || 'N/A'}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
-                                                className="p-1.5 text-gray-500 hover:text-danger rounded-md transition-colors"
+                                                className="p-1.5 text-ink-subtle hover:text-danger-text rounded-md transition-colors"
                                                 title="Desasignar atleta"
                                             >
                                                 <Trash2 size={14} />
@@ -214,9 +214,9 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             </div>
                             
                             {/* Side tag */}
-                            <div className="absolute right-0 top-0 h-full w-14 bg-black/40 hidden md:flex flex-col items-center justify-center border-l border-white/5">
-                                <span className="text-xl font-black text-anvil-red">{comp.entries.length}</span>
-                                <span className="text-t-2xs font-bold text-gray-500 uppercase tracking-widest mt-1">Convoc.</span>
+                            <div className="absolute right-0 top-0 h-full w-14 bg-black/40 hidden md:flex flex-col items-center justify-center border-l border-subtle">
+                                <span className="text-xl font-black text-brand-text">{comp.entries.length}</span>
+                                <span className="text-t-2xs font-bold text-ink-subtle uppercase tracking-widest mt-1">Convoc.</span>
                             </div>
                         </m.div>
                     ))

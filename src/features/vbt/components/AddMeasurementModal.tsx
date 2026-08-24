@@ -297,7 +297,7 @@ export function AddMeasurementModal({
                             className={cn(
                                 'flex cursor-pointer items-center justify-center gap-2 rounded-field border border-dashed px-3 py-3 text-t-xs font-semibold transition-colors duration-fast',
                                 file
-                                    ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand'
+                                    ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text'
                                     : 'border-[var(--border-default)] text-ink-muted hover:bg-surface-overlay hover:text-ink'
                             )}
                         >
@@ -367,7 +367,7 @@ export function AddMeasurementModal({
                                                         <button
                                                             onClick={() => setRows(prev => prev.filter(r => r.key !== row.key))}
                                                             aria-label={`Quitar la serie ${row.setNumber}`}
-                                                            className="p-1 text-ink-faint transition-colors hover:text-danger"
+                                                            className="p-1 text-ink-faint transition-colors hover:text-danger-text"
                                                         >
                                                             <Trash2 size={12} />
                                                         </button>

@@ -110,7 +110,7 @@ export function FAQSection() {
                     ¿Te falta alguna?{' '}
                     <a
                         href="mailto:anvilstrengthclub@gmail.com"
-                        className="font-bold text-brand underline-offset-4 hover:underline"
+                        className="font-bold text-brand-text underline-offset-4 hover:underline"
                     >
                         Escríbenos
                     </a>

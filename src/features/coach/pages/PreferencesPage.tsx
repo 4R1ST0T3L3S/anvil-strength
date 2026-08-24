@@ -83,7 +83,7 @@ export function PreferencesPage({ coachId, onOpenPdfTheme }: {
                     onClick={onOpenPdfTheme}
                     className="group flex w-full items-center gap-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay md:p-6"
                 >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field bg-brand-quiet text-brand-text">
                         <FileText size={18} aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -293,7 +293,7 @@ function Card({ icon: Icon, title, hint, children }: { icon: React.ComponentType
     return (
         <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
             <div className="mb-1 flex items-center gap-2">
-                <Icon size={16} className="text-brand" />
+                <Icon size={16} className="text-brand-text" />
                 <h3 className="text-t-base font-semibold text-ink">{title}</h3>
             </div>
             {hint && <p className="mb-4 text-t-xs text-ink-subtle">{hint}</p>}

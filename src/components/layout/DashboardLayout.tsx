@@ -82,14 +82,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const overflowItems = visibleItems.filter(item => item.hideOnMobileBar);
 
     return (
-        <div className="flex h-[100dvh] bg-surface-canvas text-white overflow-hidden font-sans">
+        <div className="flex h-[100dvh] bg-surface-canvas text-ink overflow-hidden font-sans">
 
             {/* ============ SIDEBAR (escritorio) ============ */}
             <aside className="hidden md:flex flex-col w-56 shrink-0 bg-surface-sunken border-r border-subtle">
                 {/* Marca */}
                 <div className="h-16 flex items-center px-5 border-b border-subtle shrink-0">
-                    <span className="font-black text-lg tracking-tight text-white select-none">
-                        ANVIL<span className="text-anvil-red">.</span>
+                    <span className="font-black text-lg tracking-tight text-ink select-none">
+                        ANVIL<span className="text-brand-text">.</span>
                     </span>
                 </div>
 
@@ -100,7 +100,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             key={item.label}
                             onClick={item.onClick}
                             className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-colors duration-fast active:scale-[0.98] ${
- item.isActive ? 'text-white' : 'text-ink-subtle hover:text-white hover:bg-white/[0.04]'
+ item.isActive ? 'text-ink' : 'text-ink-subtle hover:text-ink hover:bg-white/[0.04]'
  }`}
                         >
                             {item.isActive && (
@@ -110,7 +110,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                     transition={{ type: 'spring', stiffness: 500, damping: 38 }}
                                 />
                             )}
-                            <span className={`relative shrink-0 ${item.isActive ? 'text-anvil-red' : ''}`}>{item.icon}</span>
+                            <span className={`relative shrink-0 ${item.isActive ? 'text-brand-text' : ''}`}>{item.icon}</span>
                             <span className="relative truncate">{item.label}</span>
                         </button>
                     ))}
@@ -126,7 +126,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     {panelSwitch && (
                         <button
                             onClick={panelSwitch.onClick}
-                            className="mb-1 flex w-full items-center gap-3 rounded-xl border border-anvil-red/20 bg-anvil-red/10 px-3 py-2.5 text-sm font-bold text-anvil-red transition-colors duration-fast hover:bg-anvil-red/[0.16] active:scale-[0.98]"
+                            className="mb-1 flex w-full items-center gap-3 rounded-xl border border-anvil-red/20 bg-anvil-red/10 px-3 py-2.5 text-sm font-bold text-brand-text transition-colors duration-fast hover:bg-anvil-red/[0.16] active:scale-[0.98]"
                         >
                             <span className="shrink-0 [&>svg]:h-[17px] [&>svg]:w-[17px]" aria-hidden="true">{panelSwitch.icon}</span>
                             <span className="truncate">{panelSwitch.label}</span>
@@ -134,7 +134,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     )}
                     <Link
                         to="/web"
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-white/[0.04] hover:text-white"
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-white/[0.04] hover:text-ink"
                     >
                         <Globe size={17} className="shrink-0" aria-hidden="true" />
                         <span className="truncate">Ver la web</span>
@@ -143,7 +143,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     {onLogout && (
                         <button
                             onClick={onLogout}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger active:scale-[0.98]"
+                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text active:scale-[0.98]"
                         >
                             <LogOut size={17} className="shrink-0" aria-hidden="true" />
                             <span className="truncate">Cerrar sesión</span>
@@ -167,19 +167,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         {onBack ? (
                             <button
                                 onClick={onBack}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 -ml-1 rounded-lg text-ink-muted hover:text-white hover:bg-white/[0.06] text-xs font-bold uppercase tracking-wide transition-colors duration-fast active:scale-[0.97]"
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 -ml-1 rounded-lg text-ink-muted hover:text-ink hover:bg-white/[0.06] text-xs font-bold uppercase tracking-wide transition-colors duration-fast active:scale-[0.97]"
                                 aria-label="Volver"
                             >
                                 <ArrowLeft size={16} />
                                 <span className="hidden sm:inline">Volver</span>
                             </button>
                         ) : (
-                            <span className="md:hidden font-black text-base tracking-tight text-white select-none">
-                                ANVIL<span className="text-anvil-red">.</span>
+                            <span className="md:hidden font-black text-base tracking-tight text-ink select-none">
+                                ANVIL<span className="text-brand-text">.</span>
                             </span>
                         )}
                         {title && (
-                            <h1 className="font-black uppercase tracking-tight text-sm md:text-base text-white truncate">
+                            <h1 className="font-black uppercase tracking-tight text-sm md:text-base text-ink truncate">
                                 {title}
                             </h1>
                         )}
@@ -194,7 +194,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             <button
                                 onClick={panelSwitch.onClick}
                                 aria-label={panelSwitch.label}
-                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97] md:hidden"
+                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97] md:hidden"
                             >
                                 <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
                                 <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
@@ -250,7 +250,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         // de lo que acierta, y esta barra se usa de pie, con una
                         // mano y el movil moviendose.
                         className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-card px-1 py-1.5 transition-colors duration-fast ${
- item.isActive ? 'text-brand' : 'text-ink-subtle'
+ item.isActive ? 'text-brand-text' : 'text-ink-subtle'
  }`}
                     >
                         {item.isActive && (
@@ -311,7 +311,7 @@ function AccountMenu({
                 // 44x44. Medía 34 y es la única puerta a "cerrar sesión" y a
                 // las pestañas que no caben en la barra inferior: fallarlo deja
                 // al usuario sin salida visible del panel.
-                className="flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors duration-fast hover:bg-white/[0.06] hover:text-white"
+                className="flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors duration-fast hover:bg-white/[0.06] hover:text-ink"
             >
                 <MoreVertical size={20} aria-hidden="true" />
             </button>
@@ -349,7 +349,7 @@ function AccountMenu({
                                 role="menuitem"
                                 onClick={() => { setOpen(false); item.onClick(); }}
                                 className={`flex w-full items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-semibold transition-colors duration-fast ease-snap hover:bg-surface-raised ${
- item.isActive ? 'text-brand' : 'text-ink-muted hover:text-ink'
+ item.isActive ? 'text-brand-text' : 'text-ink-muted hover:text-ink'
  }`}
                             >
                                 <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>
@@ -373,7 +373,7 @@ function AccountMenu({
                             <button
                                 role="menuitem"
                                 onClick={() => { setOpen(false); onLogout(); }}
-                                className="flex w-full items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-medium text-ink-muted transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger"
+                                className="flex w-full items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-medium text-ink-muted transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger-text"
                             >
                                 <LogOut size={16} aria-hidden="true" />
                                 Cerrar sesión

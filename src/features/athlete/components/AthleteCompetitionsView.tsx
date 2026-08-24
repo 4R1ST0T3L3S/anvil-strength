@@ -21,11 +21,11 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
     if (isError) {
         return (
             <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-anvil-red">
+                <div className="w-16 h-16 bg-danger-quiet rounded-full flex items-center justify-center text-brand-text">
                     <AlertCircle size={32} />
                 </div>
-                <h3 className="text-xl font-bold text-white">Error al cargar</h3>
-                <p className="text-gray-400 max-w-md">
+                <h3 className="text-xl font-bold text-ink">Error al cargar</h3>
+                <p className="text-ink-muted max-w-md">
                     No pudimos obtener tu lista de competiciones. Por favor, intenta de nuevo más tarde.
                 </p>
             </div>
@@ -34,12 +34,12 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
 
     if (!competitions || competitions.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 max-w-lg mx-auto mt-12 bg-[#0a0a0a] border border-white/5 rounded-3xl">
-                <div className="w-24 h-24 bg-anvil-red/10 rounded-full flex items-center justify-center text-anvil-red mb-4">
+            <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 max-w-lg mx-auto mt-12 bg-[#0a0a0a] border border-subtle rounded-3xl">
+                <div className="w-24 h-24 bg-anvil-red/10 rounded-full flex items-center justify-center text-brand-text mb-4">
                     <Trophy size={48} />
                 </div>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tight">Sin Competiciones</h3>
-                <p className="text-gray-400 text-lg leading-relaxed">
+                <h3 className="text-2xl font-black text-ink uppercase tracking-tight">Sin Competiciones</h3>
+                <p className="text-ink-muted text-lg leading-relaxed">
                     Aún no tienes competiciones asignadas. Tu entrenador te asignará una cuando sea el momento.
                 </p>
             </div>
@@ -64,17 +64,17 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-12">
             <header>
-                <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-white flex items-center gap-4">
-                    <Trophy className="text-anvil-red" size={40} />
+                <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-ink flex items-center gap-4">
+                    <Trophy className="text-brand-text" size={40} />
                     Mis Competiciones
                 </h1>
-                <p className="text-gray-400 text-lg">Visualiza tus próximos objetivos y tu historial competitivo.</p>
+                <p className="text-ink-muted text-lg">Visualiza tus próximos objetivos y tu historial competitivo.</p>
             </header>
 
             {/* Upcoming Competitions */}
             {upcoming.length > 0 && (
                 <section className="space-y-6">
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-anvil-red border-l-2 border-anvil-red pl-3">
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-brand-text border-l-2 border-anvil-red pl-3">
                         Próximos Eventos
                     </h2>
                     <div className="grid grid-cols-1 gap-6">
@@ -86,22 +86,22 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                     <div className={`${getCompetitionColorClass(comp.level)} rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center justify-between transition-[box-shadow,transform] hover:scale-[1.01] hover:shadow-2xl`}>
                                         <div className="space-y-4">
                                             <div className="flex flex-wrap items-center gap-3">
-                                                <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-black px-3 py-1 rounded uppercase tracking-wider">
+                                                <span className="bg-white/20 backdrop-blur-sm text-ink text-xs font-black px-3 py-1 rounded uppercase tracking-wider">
                                                     Próximamente
                                                 </span>
                                                 {comp.level && (
-                                                    <span className="bg-black/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded uppercase tracking-wider border border-white/10">
+                                                    <span className="bg-black/20 backdrop-blur-sm text-ink text-xs font-bold px-3 py-1 rounded uppercase tracking-wider border border-line">
                                                         {comp.level}
                                                     </span>
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-2">
+                                                <h3 className="text-2xl md:text-3xl font-black text-ink uppercase tracking-tight mb-2">
                                                     {comp.name}
                                                 </h3>
                                                 <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 text-white/80">
                                                     <div className="flex items-center gap-2">
-                                                        <Calendar size={18} className="text-white" />
+                                                        <Calendar size={18} className="text-ink" />
                                                         <span className="font-semibold">
                                                             {comp.end_date ? (
                                                                 formatDateRange(new Date(comp.date + 'T00:00:00'), new Date(comp.end_date + 'T00:00:00'))
@@ -117,7 +117,7 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                                     </div>
                                                     {comp.location && (
                                                         <div className="flex items-center gap-2">
-                                                            <MapPin size={18} className="text-white" />
+                                                            <MapPin size={18} className="text-ink" />
                                                             <span className="font-semibold">{comp.location}</span>
                                                         </div>
                                                     )}
@@ -125,10 +125,10 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
                                             </div>
                                         </div>
 
-                                        <div className="bg-black/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center min-w-[220px]">
+                                        <div className="bg-black/10 backdrop-blur-sm p-4 rounded-2xl border border-subtle flex flex-col items-center justify-center min-w-[220px]">
                                             <LiveCountdown targetDate={comp.date} />
                                             {daysRemaining <= 0 && comp.end_date && getDaysRemaining(comp.end_date) >= 0 && (
-                                                <div className="text-xs font-bold text-green-400 uppercase tracking-widest mt-3 flex items-center justify-center gap-1.5 bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
+                                                <div className="text-xs font-bold text-success uppercase tracking-widest mt-3 flex items-center justify-center gap-1.5 bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
                                                     <Clock size={12} />
                                                     En Curso
                                                 </div>
@@ -145,20 +145,20 @@ export function AthleteCompetitionsView({ user }: AthleteCompetitionsViewProps) 
             {/* Past Competitions */}
             {past.length > 0 && (
                 <section className="space-y-6">
-                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 border-l-2 border-gray-600 pl-3">
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-ink-subtle border-l-2 border-gray-600 pl-3">
                         Historial
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {past.map((comp) => (
-                            <div key={comp.id} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 flex items-start gap-4 hover:bg-[#0a0a0a] transition-colors">
-                                <div className="mt-1 bg-gray-800/50 p-3 rounded-xl text-gray-500">
+                            <div key={comp.id} className="bg-[#0a0a0a] border border-subtle rounded-2xl p-6 flex items-start gap-4 hover:bg-[#0a0a0a] transition-colors">
+                                <div className="mt-1 bg-surface-raised/50 p-3 rounded-xl text-ink-subtle">
                                     <Medal size={24} />
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="text-lg font-bold text-gray-300 uppercase tracking-tight">
+                                    <h3 className="text-lg font-bold text-ink uppercase tracking-tight">
                                         {comp.name}
                                     </h3>
-                                    <div className="space-y-1 text-sm text-gray-500">
+                                    <div className="space-y-1 text-sm text-ink-subtle">
                                         <div className="flex items-center gap-2">
                                             <Calendar size={14} />
                                             <span>

@@ -38,34 +38,34 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
     // Show brief message while reloading
     if (isChunkError) {
         return (
-            <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
-                <div className="bg-[#0a0a0a] p-8 rounded-xl border border-white/10 max-w-md w-full text-center shadow-2xl">
+            <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex flex-col items-center justify-center p-4">
+                <div className="bg-[#0a0a0a] p-8 rounded-xl border border-line max-w-md w-full text-center shadow-2xl">
                     <div className="mx-auto bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                        <RefreshCw className="text-white h-8 w-8 animate-spin" />
+                        <RefreshCw className="text-ink h-8 w-8 animate-spin" />
                     </div>
-                    <h2 className="text-xl font-black uppercase tracking-tighter mb-2 text-white">Actualizando...</h2>
-                    <p className="text-gray-400 text-sm">Detectamos una nueva versión. Recargando la app.</p>
+                    <h2 className="text-xl font-black uppercase tracking-tighter mb-2 text-ink">Actualizando...</h2>
+                    <p className="text-ink-muted text-sm">Detectamos una nueva versión. Recargando la app.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
-            <div className="bg-[#0a0a0a] p-8 rounded-xl border border-red-500/20 max-w-md w-full text-center shadow-2xl">
-                <div className="mx-auto bg-red-500/10 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                    <AlertTriangle className="text-anvil-red h-8 w-8" />
+        <div role="alert" className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex flex-col items-center justify-center p-4">
+            <div className="bg-[#0a0a0a] p-8 rounded-xl border border-danger/20 max-w-md w-full text-center shadow-2xl">
+                <div className="mx-auto bg-danger-quiet w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <AlertTriangle className="text-brand-text h-8 w-8" />
                 </div>
 
-                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 text-white">
+                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 text-ink">
                     Algo salió mal
                 </h2>
 
-                <p className="text-gray-400 mb-6">
+                <p className="text-ink-muted mb-6">
                     Ha ocurrido un error inesperado en esta sección.
                 </p>
 
-                <pre className="text-xs text-red-400 bg-black/50 p-4 rounded mb-8 overflow-auto text-left">
+                <pre className="text-xs text-danger-text bg-black/50 p-4 rounded mb-8 overflow-auto text-left">
                     {errorMessage}
                 </pre>
 

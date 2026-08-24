@@ -59,20 +59,20 @@ export default function Predictions({ user }: PredictionsProps) {
     }
   ];
 
-  if (!user) return <div className="p-10 text-white">Cargando perfil...</div>;
+  if (!user) return <div className="p-10 text-ink">Cargando perfil...</div>;
 
   return (
     <DashboardLayout
       menuItems={menuItems}
     >
-      <div className="p-4 md:p-8 text-white min-h-[100dvh]">
+      <div className="p-4 md:p-8 text-ink min-h-[100dvh]">
         {/* CABECERA */}
         <header className="mb-10 border-b border-gray-800 pb-6">
-          <h1 className="text-4xl md:text-5xl font-black text-yellow-500 tracking-tighter uppercase mb-2 flex items-center gap-3">
+          <h1 className="text-4xl md:text-5xl font-black text-warning tracking-tighter uppercase mb-2 flex items-center gap-3">
             <Trophy className="h-10 w-10 md:h-12 md:w-12" />
             LA ARENA
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-ink-muted text-lg">
             Usa tus <strong>Anvil Coins</strong> para apostar en los grandes eventos y ganar premios.
           </p>
         </header>
@@ -81,36 +81,36 @@ export default function Predictions({ user }: PredictionsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* TARJETA DE ESTADO (MONEDERO) */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
+          <div className="bg-surface-canvas border border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
 
-            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-warning-quiet rounded-full blur-3xl" />
 
-            <div className="p-4 bg-gray-800 rounded-full border border-gray-700 relative z-10">
-              <AlertCircle size={48} className="text-gray-500" />
+            <div className="p-4 bg-surface-raised rounded-full border border-gray-700 relative z-10">
+              <AlertCircle size={48} className="text-ink-subtle" />
             </div>
 
             <div className="relative z-10">
-              <h2 className="text-2xl font-bold text-white mb-2">Zona de Apuestas</h2>
-              <p className="text-gray-400 text-sm max-w-xs mx-auto">
+              <h2 className="text-2xl font-bold text-ink mb-2">Zona de Apuestas</h2>
+              <p className="text-ink-muted text-sm max-w-xs mx-auto">
                 Pronto podrás multiplicar tus monedas acertando los resultados de la AEP.
               </p>
             </div>
 
             <div className="bg-gradient-to-r from-yellow-900/20 to-yellow-600/20 px-8 py-4 rounded-2xl border border-yellow-500/30 flex flex-col items-center w-full max-w-sm relative z-10">
-              <span className="text-yellow-500/80 text-xs font-bold tracking-widest uppercase mb-1">SALDO ACTUAL</span>
+              <span className="text-warning/80 text-xs font-bold tracking-widest uppercase mb-1">SALDO ACTUAL</span>
               <div className="flex items-center gap-3">
-                <Coins className={`h-8 w-8 text-yellow-400 ${loading ? 'animate-pulse' : ''}`} />
+                <Coins className={`h-8 w-8 text-warning ${loading ? 'animate-pulse' : ''}`} />
 
                 {/* AQUÍ MOSTRAMOS EL SALDO REAL O UN SPINNER */}
                 {loading ? (
                   <span className="text-2xl font-black text-gray-600">...</span>
                 ) : (
-                  <span className="text-5xl font-black text-white tracking-tighter drop-shadow-lg animate-rise">
+                  <span className="text-5xl font-black text-ink tracking-tighter drop-shadow-lg animate-rise">
                     {balance}
                   </span>
                 )}
 
-                <span className="text-yellow-500 font-bold text-xl mt-2">AC</span>
+                <span className="text-warning font-bold text-xl mt-2">AC</span>
               </div>
             </div>
 
@@ -118,26 +118,26 @@ export default function Predictions({ user }: PredictionsProps) {
 
           {/* PRÓXIMOS EVENTOS */}
           <div className="space-y-4 opacity-50 pointer-events-none select-none">
-            <h3 className="text-xl font-bold text-gray-300 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-ink flex items-center gap-2">
               <TrendingUp size={20} /> Próximos Eventos
             </h3>
 
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+            <div className="bg-surface-raised p-4 rounded-xl border border-gray-700">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs text-green-400 font-bold bg-green-400/10 px-2 py-1 rounded">EN VIVO</span>
-                <span className="text-xs text-gray-500">Marzo 2026</span>
+                <span className="text-xs text-success font-bold bg-green-400/10 px-2 py-1 rounded">EN VIVO</span>
+                <span className="text-xs text-ink-subtle">Marzo 2026</span>
               </div>
               <div className="font-bold text-lg">Mundial Sheffield 2026</div>
-              <div className="text-sm text-gray-400">Ganador Absoluto Masculino</div>
+              <div className="text-sm text-ink-muted">Ganador Absoluto Masculino</div>
             </div>
 
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+            <div className="bg-surface-raised p-4 rounded-xl border border-gray-700">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs text-gray-500 font-bold bg-gray-700 px-2 py-1 rounded">PRÓXIMAMENTE</span>
-                <span className="text-xs text-gray-500">Abril 2026</span>
+                <span className="text-xs text-ink-subtle font-bold bg-surface-overlay px-2 py-1 rounded">PRÓXIMAMENTE</span>
+                <span className="text-xs text-ink-subtle">Abril 2026</span>
               </div>
               <div className="font-bold text-lg">Nacionales AEP</div>
-              <div className="text-sm text-gray-400">Récord de Total - Javi Bou</div>
+              <div className="text-sm text-ink-muted">Récord de Total - Javi Bou</div>
             </div>
           </div>
 

@@ -114,7 +114,7 @@ export function MuscleMappingEditor({
                     <header className="flex shrink-0 items-start justify-between gap-3 border-b border-subtle px-4 py-3">
                         <div className="min-w-0">
                             <h3 className="flex items-center gap-2 text-t-sm font-bold text-ink">
-                                <Target size={15} className="shrink-0 text-brand" aria-hidden="true" />
+                                <Target size={15} className="shrink-0 text-brand-text" aria-hidden="true" />
                                 Volumen de este ejercicio
                             </h3>
                             <p className="mt-0.5 truncate text-t-2xs text-ink-subtle">{exerciseName}</p>
@@ -130,7 +130,7 @@ export function MuscleMappingEditor({
 
                     <p className="shrink-0 px-4 pt-3 text-t-2xs leading-relaxed text-ink-subtle">
                         Pulsa un músculo para recorrer{' '}
-                        <span className="font-semibold text-brand">directo</span> →{' '}
+                        <span className="font-semibold text-brand-text">directo</span> →{' '}
                         <span className="font-semibold text-ink-muted">indirecto</span> → fuera.
                         {!hasOverride && ' Parte de la clasificación automática por el nombre.'}
                     </p>
@@ -149,7 +149,7 @@ export function MuscleMappingEditor({
                                             level === 'direct' &&
                                                 'border-transparent bg-brand text-brand-ink',
                                             level === 'indirect' &&
-                                                'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand',
+                                                'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text',
                                             level === 'off' &&
                                                 'border-[var(--border-default)] bg-surface-sunken text-ink-subtle hover:text-ink'
                                         )}

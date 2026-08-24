@@ -41,9 +41,9 @@ export function SmartAuthButton({
     const baseStyles = `inline-flex items-center justify-center gap-2 font-black uppercase tracking-wider transition-opacity rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`;
 
     const variantStyles = {
-        primary: 'bg-anvil-red hover:bg-red-700 text-white px-8 py-4 text-lg shadow-lg shadow-anvil-red/20 hover:shadow-anvil-red/40',
+        primary: 'bg-anvil-red hover:bg-red-700 text-ink px-8 py-4 text-lg shadow-lg shadow-anvil-red/20 hover:shadow-anvil-red/40',
         secondary: 'bg-white hover:bg-gray-200 text-black px-6 py-3 text-base',
-        ghost: 'bg-transparent hover:bg-white/10 text-white border-2 border-white/20 hover:border-white px-6 py-2 text-sm'
+        ghost: 'bg-transparent hover:bg-white/10 text-ink border-2 border-strong hover:border-white px-6 py-2 text-sm'
     };
 
     const buttonText = isLoading

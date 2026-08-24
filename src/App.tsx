@@ -95,7 +95,7 @@ function App() {
   if (isError) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-surface-sunken p-4 text-ink">
-        <h2 className="mb-2 text-t-xl font-bold text-danger">Error de conexión</h2>
+        <h2 className="mb-2 text-t-xl font-bold text-danger-text">Error de conexión</h2>
         <p className="mb-4 max-w-md text-center text-ink-muted">
           {error instanceof Error ? error.message : 'No se pudo cargar el perfil.'}
         </p>

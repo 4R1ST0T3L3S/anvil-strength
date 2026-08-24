@@ -107,24 +107,24 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-white/10 relative">
+        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0a0a0a] z-10">
+            <div className="p-4 border-b border-line flex justify-between items-center bg-[#0a0a0a] z-10">
                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                    <div className="p-2 bg-info-quiet rounded-lg text-info">
                         <Eye size={20} />
                     </div>
                     <div>
-                        <h3 className="text-white font-black uppercase italic tracking-wider leading-none">Anvil Flash</h3>
-                        <p className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Ojo de Águila</p>
+                        <h3 className="text-ink font-black uppercase italic tracking-wider leading-none">Anvil Flash</h3>
+                        <p className="text-t-2xs text-ink-subtle font-bold uppercase tracking-widest mt-1">Ojo de Águila</p>
                     </div>
                 </div>
                 <div className="flex gap-4 items-center">
                     <div className="text-right">
-                        <span className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest block">Rondas</span>
-                        <span className="text-blue-400 font-black text-xl leading-none">{score}</span>
+                        <span className="text-t-2xs text-ink-subtle font-bold uppercase tracking-widest block">Rondas</span>
+                        <span className="text-info font-black text-xl leading-none">{score}</span>
                     </div>
-                    <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white bg-black/20 rounded-xl">X</button>
+                    <button onClick={onClose} className="p-2 text-ink-subtle hover:text-ink bg-black/20 rounded-xl">X</button>
                 </div>
             </div>
 
@@ -138,12 +138,12 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                 >
                     {status === 'idle' && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20">
-                            <Eye size={48} className="text-blue-500 mb-6 mx-auto opacity-20" />
-                            <h2 className="text-2xl font-black text-white uppercase italic tracking-widest mb-2">Anvil Flash</h2>
-                            <p className="text-sm text-zinc-400 mb-8 max-w-xs mx-auto">Varios yunques aparecerán durante un instante. Acierta cuántos había. Cada ronda será más rápida.</p>
+                            <Eye size={48} className="text-info mb-6 mx-auto opacity-20" />
+                            <h2 className="text-2xl font-black text-ink uppercase italic tracking-widest mb-2">Anvil Flash</h2>
+                            <p className="text-sm text-ink-muted mb-8 max-w-xs mx-auto">Varios yunques aparecerán durante un instante. Acierta cuántos había. Cada ronda será más rápida.</p>
                             <button 
                                 onClick={startGame}
-                                className="bg-blue-600 text-white font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-blue-500 transition-colors active:scale-95 shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+                                className="bg-blue-600 text-ink font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-blue-500 transition-colors active:scale-95 shadow-[0_0_30px_rgba(59,130,246,0.3)]"
                             >
                                 Jugar Ahora
                             </button>
@@ -152,9 +152,9 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
 
                     {status === 'gameover' && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20 backdrop-blur-md bg-black/50">
-                            <h2 className="text-4xl font-black text-anvil-red uppercase italic tracking-widest mb-2">Game Over</h2>
-                            <p className="text-sm text-zinc-400 mb-2">Había exactamente <span className="text-white font-bold">{anvils.length}</span> yunques.</p>
-                            <p className="text-lg text-white mb-8">Rondas Superadas: <span className="font-black text-blue-400">{score}</span></p>
+                            <h2 className="text-4xl font-black text-brand-text uppercase italic tracking-widest mb-2">Game Over</h2>
+                            <p className="text-sm text-ink-muted mb-2">Había exactamente <span className="text-ink font-bold">{anvils.length}</span> yunques.</p>
+                            <p className="text-lg text-ink mb-8">Rondas Superadas: <span className="font-black text-info">{score}</span></p>
                             <button 
                                 onClick={startGame}
                                 className="bg-white text-black font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-zinc-200 transition-colors active:scale-95 flex items-center gap-2 mx-auto"
@@ -179,17 +179,17 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                                     transform: `translate(-50%, -50%) rotate(${anvil.rotation}deg)`
                                 }}
                             >
-                                <AnvilLogoSVG width={anvil.size} height={anvil.size} className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+                                <AnvilLogoSVG width={anvil.size} height={anvil.size} className="text-ink drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
                             </m.div>
                         ))}
                     </AnimatePresence>
                 </div>
 
                 {/* Input Area (Keypad) */}
-                <div className={`p-6 bg-[#0a0a0a] border-t border-white/10 transition-[background-color,border-color,opacity,transform] duration-slow ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
-                    <div className="flex items-center justify-between mb-4 bg-black p-4 rounded-xl border border-white/5">
-                        <span className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Respuesta:</span>
-                        <span className="text-2xl font-black text-white">{inputValue || '_'}</span>
+                <div className={`p-6 bg-[#0a0a0a] border-t border-line transition-[background-color,border-color,opacity,transform] duration-slow ${status === 'guessing' ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 absolute bottom-0 w-full'}`}>
+                    <div className="flex items-center justify-between mb-4 bg-black p-4 rounded-xl border border-subtle">
+                        <span className="text-xs text-ink-subtle font-bold uppercase tracking-widest">Respuesta:</span>
+                        <span className="text-2xl font-black text-ink">{inputValue || '_'}</span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
@@ -197,27 +197,27 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
                             <button
                                 key={`kp-${num}`}
                                 onClick={() => handleNumberClick(num.toString())}
-                                className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
+                                className="bg-[#0a0a0a] border border-subtle p-4 rounded-xl text-xl font-bold text-ink active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
                             >
                                 {num}
                             </button>
                         ))}
                         <button
                             onClick={handleBackspace}
-                            className="bg-anvil-red/10 text-anvil-red border border-anvil-red/20 p-4 rounded-xl text-xl font-bold active:bg-anvil-red active:text-white active:scale-95 transition-[background-color,color,transform]"
+                            className="bg-anvil-red/10 text-brand-text border border-anvil-red/20 p-4 rounded-xl text-xl font-bold active:bg-anvil-red active:text-ink active:scale-95 transition-[background-color,color,transform]"
                         >
                             ←
                         </button>
                         <button
                             onClick={() => handleNumberClick('0')}
-                            className="bg-[#0a0a0a] border border-white/5 p-4 rounded-xl text-xl font-bold text-white active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
+                            className="bg-[#0a0a0a] border border-subtle p-4 rounded-xl text-xl font-bold text-ink active:bg-blue-600 active:scale-95 transition-[background-color,transform]"
                         >
                             0
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={!inputValue}
-                            className={`p-4 rounded-xl text-sm font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${inputValue ? 'bg-blue-600 text-white active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}
+                            className={`p-4 rounded-xl text-sm font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${inputValue ? 'bg-blue-600 text-ink active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'bg-surface-raised text-zinc-600 cursor-not-allowed'}`}
                         >
                             OK
                         </button>

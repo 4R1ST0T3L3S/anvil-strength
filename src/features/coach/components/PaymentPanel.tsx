@@ -133,7 +133,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
         <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
             <div className="flex items-center justify-between gap-3">
                 <h3 className="flex items-center gap-2 text-t-base font-semibold text-ink">
-                    <CreditCard size={16} className="text-brand" />
+                    <CreditCard size={16} className="text-brand-text" />
                     Pagos
                 </h3>
                 <Button size="sm" variant="secondary" icon={<Plus size={14} />} onClick={() => setAdding(v => !v)}>
@@ -173,7 +173,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                             disabled={guardandoModo}
                             className={`min-h-[44px] rounded-field border px-3 text-t-xs font-bold transition-colors duration-fast ease-snap disabled:opacity-50 ${
                                 modoActual === modo
-                                    ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand'
+                                    ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text'
                                     : 'border-[var(--border-default)] text-ink-muted hover:border-[var(--border-strong)] hover:text-ink'
                             }`}
                         >
@@ -241,7 +241,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                                 {p.amount != null && <span className="ml-2 text-ink-subtle">{p.amount} {p.currency}</span>}
                                 {p.note && <span className="ml-2 truncate text-ink-faint">· {p.note}</span>}
                             </div>
-                            <button onClick={() => handleDelete(p.id)} className="shrink-0 text-ink-faint hover:text-danger" aria-label="Eliminar pago">
+                            <button onClick={() => handleDelete(p.id)} className="shrink-0 text-ink-faint hover:text-danger-text" aria-label="Eliminar pago">
                                 <Trash2 size={13} />
                             </button>
                         </div>

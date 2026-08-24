@@ -470,7 +470,7 @@ function Option({
         >
             <span className="flex items-center gap-1 truncate text-t-xs font-semibold">
                 <span className="truncate">{title}</span>
-                {active && <Check size={11} className="shrink-0 text-brand" aria-hidden="true" />}
+                {active && <Check size={11} className="shrink-0 text-brand-text" aria-hidden="true" />}
                 {warn && !active && (
                     <span
                         className="ml-auto h-1.5 w-1.5 shrink-0 rounded-pill bg-warning"
@@ -482,7 +482,7 @@ function Option({
             {hint && (
                 <span className={cn(
                     'truncate text-t-2xs',
-                    accent ? 'font-semibold text-brand' : 'text-ink-faint'
+                    accent ? 'font-semibold text-brand-text' : 'text-ink-faint'
                 )}>
                     {hint}
                 </span>

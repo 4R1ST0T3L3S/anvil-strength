@@ -187,26 +187,26 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-white/10 relative">
+        <div className="flex flex-col h-full bg-[#111111] rounded-3xl overflow-hidden border border-line relative">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#0a0a0a] z-10">
+            <div className="p-4 border-b border-line flex justify-between items-center bg-[#0a0a0a] z-10">
                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-yellow-500/10 rounded-lg text-yellow-500">
+                    <div className="p-2 bg-warning-quiet rounded-lg text-warning">
                         <Target size={20} />
                     </div>
                     <div>
-                        <h3 className="text-white font-black uppercase italic tracking-wider leading-none">Anvil Hunt</h3>
-                        <p className="text-t-2xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Nivel {Math.min(level + 1, 3)}/3</p>
+                        <h3 className="text-ink font-black uppercase italic tracking-wider leading-none">Anvil Hunt</h3>
+                        <p className="text-t-2xs text-ink-subtle font-bold uppercase tracking-widest mt-1">Nivel {Math.min(level + 1, 3)}/3</p>
                     </div>
                 </div>
                 <div className="flex gap-4 items-center">
                     <div className="text-right flex items-center gap-2">
-                        <Timer size={14} className="text-zinc-500" />
-                        <span className={`font-black text-xl leading-none font-mono w-[80px] text-right ${status === 'gameover' ? 'text-green-400' : 'text-white'}`}>
+                        <Timer size={14} className="text-ink-subtle" />
+                        <span className={`font-black text-xl leading-none font-mono w-[80px] text-right ${status === 'gameover' ? 'text-success' : 'text-ink'}`}>
                             {formatTime(elapsedTime)}
                         </span>
                     </div>
-                    <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white bg-black/20 rounded-xl">X</button>
+                    <button onClick={onClose} className="p-2 text-ink-subtle hover:text-ink bg-black/20 rounded-xl">X</button>
                 </div>
             </div>
 
@@ -214,10 +214,10 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
             <div className="flex-1 relative overflow-hidden" ref={containerRef}>
                 {status === 'idle' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20 bg-gradient-to-b from-[#161616] to-[#0a0a0a]">
-                        <Target size={48} className="text-yellow-500 mb-6 mx-auto opacity-20" />
-                        <h2 className="text-2xl font-black text-white uppercase italic tracking-widest mb-2">Anvil Hunt</h2>
-                        <p className="text-sm text-zinc-400 mb-2 max-w-xs mx-auto">Encuentra y toca los logos de Anvil ROJOS ocultos entre los blancos.</p>
-                        <p className="text-xs text-anvil-red font-bold uppercase tracking-widest mb-8">Tocar un anvil blanco = +2s penalización</p>
+                        <Target size={48} className="text-warning mb-6 mx-auto opacity-20" />
+                        <h2 className="text-2xl font-black text-ink uppercase italic tracking-widest mb-2">Anvil Hunt</h2>
+                        <p className="text-sm text-ink-muted mb-2 max-w-xs mx-auto">Encuentra y toca los logos de Anvil ROJOS ocultos entre los blancos.</p>
+                        <p className="text-xs text-brand-text font-bold uppercase tracking-widest mb-8">Tocar un anvil blanco = +2s penalización</p>
                         <button 
                             onClick={startGame}
                             className="bg-yellow-600 text-black font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-yellow-500 transition-colors active:scale-95 shadow-[0_0_30px_rgba(202,138,4,0.3)]"
@@ -229,9 +229,9 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
 
                 {status === 'gameover' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-20 backdrop-blur-md bg-black/80">
-                        <h2 className="text-4xl font-black text-green-500 uppercase italic tracking-widest mb-2">¡Completado!</h2>
-                        <p className="text-lg text-white mb-2">Tiempo Total</p>
-                        <p className="text-4xl font-mono text-yellow-400 font-black mb-8">{formatTime(elapsedTime)}</p>
+                        <h2 className="text-4xl font-black text-success uppercase italic tracking-widest mb-2">¡Completado!</h2>
+                        <p className="text-lg text-ink mb-2">Tiempo Total</p>
+                        <p className="text-4xl font-mono text-warning font-black mb-8">{formatTime(elapsedTime)}</p>
                         <button 
                             onClick={startGame}
                             className="bg-white text-black font-black uppercase tracking-[0.2em] px-8 py-4 rounded-xl hover:bg-zinc-200 transition-colors active:scale-95 flex items-center gap-2 mx-auto"
@@ -244,7 +244,7 @@ export function AnvilHuntGame({ user: _user, onSaveScore, onClose }: AnvilHuntGa
                 {status === 'playing' && squares.map(sq => !sq.clicked && (
                     <m.div
                         key={`sq-${sq.id}`}
-                        className={`absolute w-[40px] h-[40px] flex items-center justify-center cursor-pointer active:scale-90 transition-transform ${sq.isAnvil ? 'text-anvil-red drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'}`}
+                        className={`absolute w-[40px] h-[40px] flex items-center justify-center cursor-pointer active:scale-90 transition-transform ${sq.isAnvil ? 'text-brand-text drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'text-ink drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]'}`}
                         style={{ left: sq.x, top: sq.y }}
                         onPointerDown={(e) => {
                             e.preventDefault();

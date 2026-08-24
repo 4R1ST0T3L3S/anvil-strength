@@ -192,8 +192,8 @@ export function AdminDashboard() {
     // Auth protection check
     if (isUserLoading) {
         return (
-            <div className="min-h-[100dvh] bg-[#0a0a0a] text-white flex items-center justify-center p-4">
-                <Loader className="animate-spin text-anvil-red h-8 w-8" />
+            <div className="min-h-[100dvh] bg-[#0a0a0a] text-ink flex items-center justify-center p-4">
+                <Loader className="animate-spin text-brand-text h-8 w-8" />
             </div>
         );
     }
@@ -205,19 +205,19 @@ export function AdminDashboard() {
     // Render helpers
     const renderUserAvatar = (user: UserProfile) => (
         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-black/50 overflow-hidden border border-white/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-black/50 overflow-hidden border border-line flex items-center justify-center flex-shrink-0">
                 {user.avatar_url ? (
                     <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                 ) : (
-                    <span className="font-bold text-gray-500">{user.full_name?.charAt(0) || '?'}</span>
+                    <span className="font-bold text-ink-subtle">{user.full_name?.charAt(0) || '?'}</span>
                 )}
             </div>
             <div>
-                <p className="font-bold text-white leading-tight">
+                <p className="font-bold text-ink leading-tight">
                     {user.full_name}
                 </p>
                 {user.nickname && (
-                    <p className="text-xs text-anvil-red font-semibold">
+                    <p className="text-xs text-brand-text font-semibold">
                         "{user.nickname}"
                     </p>
                 )}
@@ -233,18 +233,18 @@ export function AdminDashboard() {
     ];
 
     return (
-        <div className="min-h-[100dvh] bg-[#0a0a0a] text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-[100dvh] bg-[#0a0a0a] text-ink pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
 
                 {/* Header Section */}
-                <div className="mb-8 border-b border-white/10 pb-6">
+                <div className="mb-8 border-b border-line pb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-black uppercase flex items-center gap-3">
-                                <ShieldAlert className="text-anvil-red" size={32} />
-                                Panel de <span className="text-anvil-red">Administración</span>
+                                <ShieldAlert className="text-brand-text" size={32} />
+                                Panel de <span className="text-brand-text">Administración</span>
                             </h1>
-                            <p className="text-gray-400 mt-2">
+                            <p className="text-ink-muted mt-2">
                                 Gestión oficial exclusiva para administradores
                             </p>
                         </div>
@@ -252,7 +252,7 @@ export function AdminDashboard() {
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
                             <button
                                 onClick={() => navigate('/web')}
-                                className="flex items-center justify-center gap-2 bg-[#0a0a0a] hover:bg-white/5 text-blue-400 border border-white/10 px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg active:scale-95"
+                                className="flex items-center justify-center gap-2 bg-[#0a0a0a] hover:bg-white/5 text-info border border-line px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg active:scale-95"
                             >
                                 <Globe size={18} />
                                 Ver Web
@@ -261,7 +261,7 @@ export function AdminDashboard() {
                                 <button
                                     onClick={handleSaveChanges}
                                     disabled={isSaving}
-                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50"
+                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-ink px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50"
                                 >
                                     {isSaving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
                                     Guardar Cambios ({pendingChanges.length})
@@ -273,9 +273,9 @@ export function AdminDashboard() {
                                     placeholder="Buscar por nombre o email..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-[#0a0a0a] border border-white/10 text-white pl-10 pr-4 py-2 rounded-lg focus:border-anvil-red transition-colors"
+                                    className="w-full bg-[#0a0a0a] border border-line text-ink pl-10 pr-4 py-2 rounded-lg focus:border-anvil-red transition-colors"
                                 />
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={18} />
                             </div>
                         </div>
                     </div>
@@ -292,8 +292,8 @@ export function AdminDashboard() {
                                 onClick={() => setActiveTab(tab.id as TabType)}
                                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color] ${
  isActive 
- ? 'bg-anvil-red text-white shadow-lg shadow-anvil-red/20' 
- : 'bg-[#0a0a0a] text-gray-400 border border-white/5 hover:border-white/20 hover:text-white'
+ ? 'bg-anvil-red text-ink shadow-lg shadow-anvil-red/20' 
+ : 'bg-[#0a0a0a] text-ink-muted border border-subtle hover:border-strong hover:text-ink'
  }`}
                             >
                                 <Icon size={18} />
@@ -305,14 +305,14 @@ export function AdminDashboard() {
 
                 {/* Alerts */}
                 {errorVisible && (
-                    <div className="mb-6 bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-lg flex items-center gap-3 font-bold">
+                    <div className="mb-6 bg-danger-quiet border border-danger/20 text-danger-text p-4 rounded-lg flex items-center gap-3 font-bold">
                         <X size={20} />
                         {errorVisible}
                     </div>
                 )}
 
                 {successMsg && (
-                    <div className="mb-6 bg-green-500/10 border border-green-500/20 text-green-500 p-4 rounded-lg flex items-center gap-3 font-bold">
+                    <div className="mb-6 bg-success-quiet border border-success/20 text-success p-4 rounded-lg flex items-center gap-3 font-bold">
                         <Check size={20} />
                         {successMsg}
                     </div>
@@ -321,14 +321,14 @@ export function AdminDashboard() {
                 {/* Users Table / List */}
                 {isLoading ? (
                     <div className="flex items-center justify-center p-12">
-                        <Loader className="animate-spin text-anvil-red h-12 w-12" />
+                        <Loader className="animate-spin text-brand-text h-12 w-12" />
                     </div>
                 ) : (
-                    <div className="bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                    <div className="bg-[#0a0a0a] border border-line rounded-xl overflow-hidden shadow-2xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-black/40 border-b border-white/10 text-sm font-bold text-gray-400 uppercase tracking-wider">
+                                    <tr className="bg-black/40 border-b border-line text-sm font-bold text-ink-muted uppercase tracking-wider">
                                         <th className="p-4 pl-6 w-1/4">Usuario</th>
                                         <th className="p-4 w-1/4">Email</th>
                                         
@@ -361,10 +361,10 @@ export function AdminDashboard() {
                                         )}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
+                                <tbody className="divide-y divide-subtle">
                                     {filteredUsers.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="p-8 text-center text-gray-500 italic">
+                                            <td colSpan={5} className="p-8 text-center text-ink-subtle italic">
                                                 No se encontraron usuarios
                                             </td>
                                         </tr>
@@ -375,7 +375,7 @@ export function AdminDashboard() {
                                                     {renderUserAvatar(user)}
                                                 </td>
                                                 <td className="p-4">
-                                                    <span className="text-gray-300 text-sm">{user.email || 'N/A'}</span>
+                                                    <span className="text-ink text-sm">{user.email || 'N/A'}</span>
                                                 </td>
 
                                                 {/* Columnas para Todos */}
@@ -389,15 +389,15 @@ export function AdminDashboard() {
                                                                     className={`w-full appearance-none bg-[#0a0a0a] border rounded-lg px-3 py-1.5 text-sm font-bold uppercase cursor-pointer transition-colors ${user.role === 'coach'
  ? 'border-indigo-500/30 text-indigo-400 hover:border-indigo-500/60'
  : user.role === 'nutritionist'
- ? 'border-emerald-500/30 text-emerald-400 hover:border-emerald-500/60'
- : 'border-white/10 text-gray-300 hover:border-white/30'
+ ? 'border-emerald-500/30 text-success hover:border-emerald-500/60'
+ : 'border-line text-ink hover:border-white/30'
  }`}
                                                                 >
-                                                                    <option value="athlete" className="bg-[#0a0a0a] text-gray-300">Atleta</option>
+                                                                    <option value="athlete" className="bg-[#0a0a0a] text-ink">Atleta</option>
                                                                     <option value="coach" className="bg-[#0a0a0a] text-indigo-400">Entrenador</option>
-                                                                    <option value="nutritionist" className="bg-[#0a0a0a] text-emerald-400">Nutricionista</option>
+                                                                    <option value="nutritionist" className="bg-[#0a0a0a] text-success">Nutricionista</option>
                                                                 </select>
-                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-ink-subtle">
                                                                     <Shield size={14} />
                                                                 </div>
                                                             </div>
@@ -406,8 +406,8 @@ export function AdminDashboard() {
                                                             <button
                                                                 onClick={() => toggleAccess(user.id, user.has_access)}
                                                                 className={`mx-auto flex items-center justify-center gap-2 px-4 py-2 w-full max-w-[120px] rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color,transform] shadow-md active:scale-95 ${user.has_access
- ? 'bg-green-500/10 text-green-500 border border-green-500/30 hover:bg-green-500/20 shadow-green-500/5'
- : 'bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20 shadow-red-500/5'
+ ? 'bg-success-quiet text-success border border-green-500/30 hover:bg-green-500/20 shadow-green-500/5'
+ : 'bg-danger-quiet text-danger-text border border-red-500/30 hover:bg-red-500/20 shadow-red-500/5'
  }`}
                                                             >
                                                                 {user.has_access ? (
@@ -432,14 +432,14 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.coach_id || 'unassigned'}
                                                                     onChange={(e) => changeCoach(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-line rounded-lg px-3 py-2 text-sm text-ink font-semibold cursor-pointer focus:border-anvil-red transition-colors"
                                                                 >
-                                                                    <option value="unassigned" className="bg-[#0a0a0a] text-gray-500">Sin asignar</option>
+                                                                    <option value="unassigned" className="bg-[#0a0a0a] text-ink-subtle">Sin asignar</option>
                                                                     {coaches.map(c => (
                                                                         <option key={c.id} value={c.id} className="bg-[#0a0a0a] text-indigo-400">{c.full_name}</option>
                                                                     ))}
                                                                 </select>
-                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink-subtle">
                                                                     <Dumbbell size={14} />
                                                                 </div>
                                                             </div>
@@ -449,14 +449,14 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.nutritionist_id || 'unassigned'}
                                                                     onChange={(e) => changeNutritionist(user.id, e.target.value)}
-                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-white/10 rounded-lg px-3 py-2 text-sm text-gray-300 font-semibold cursor-pointer focus:border-anvil-red transition-colors"
+                                                                    className="w-full appearance-none bg-[#0a0a0a] border border-line rounded-lg px-3 py-2 text-sm text-ink font-semibold cursor-pointer focus:border-anvil-red transition-colors"
                                                                 >
-                                                                    <option value="unassigned" className="bg-[#0a0a0a] text-gray-500">Sin asignar</option>
+                                                                    <option value="unassigned" className="bg-[#0a0a0a] text-ink-subtle">Sin asignar</option>
                                                                     {nutritionists.map(n => (
-                                                                        <option key={n.id} value={n.id} className="bg-[#0a0a0a] text-emerald-400">{n.full_name}</option>
+                                                                        <option key={n.id} value={n.id} className="bg-[#0a0a0a] text-success">{n.full_name}</option>
                                                                     ))}
                                                                 </select>
-                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink-subtle">
                                                                     <Apple size={14} />
                                                                 </div>
                                                             </div>
@@ -481,7 +481,7 @@ export function AdminDashboard() {
                                                                 {user.logo_url && (
                                                                     <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-white/5 rounded flex-shrink-0" />
                                                                 )}
-                                                                <label className="text-t-2xs font-bold uppercase bg-[#0a0a0a] hover:bg-white/10 px-2 py-1.5 border border-white/20 rounded cursor-pointer transition-colors whitespace-nowrap text-gray-300">
+                                                                <label className="text-t-2xs font-bold uppercase bg-[#0a0a0a] hover:bg-white/10 px-2 py-1.5 border border-strong rounded cursor-pointer transition-colors whitespace-nowrap text-ink">
                                                                     Subir
                                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
                                                                 </label>
@@ -496,7 +496,7 @@ export function AdminDashboard() {
                                                                         </span>
                                                                     ))
                                                                 ) : (
-                                                                    <span className="text-gray-500 text-sm italic">Ningún atleta asignado</span>
+                                                                    <span className="text-ink-subtle text-sm italic">Ningún atleta asignado</span>
                                                                 )}
                                                             </div>
                                                         </td>
@@ -509,12 +509,12 @@ export function AdminDashboard() {
                                                         <div className="flex flex-wrap gap-2">
                                                             {users.filter(u => u.nutritionist_id === user.id).length > 0 ? (
                                                                 users.filter(u => u.nutritionist_id === user.id).map(athlete => (
-                                                                    <span key={athlete.id} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded text-xs font-bold">
+                                                                    <span key={athlete.id} className="bg-success-quiet text-success border border-success/20 px-2 py-1 rounded text-xs font-bold">
                                                                         {athlete.full_name}
                                                                     </span>
                                                                 ))
                                                             ) : (
-                                                                <span className="text-gray-500 text-sm italic">Ningún atleta asignado</span>
+                                                                <span className="text-ink-subtle text-sm italic">Ningún atleta asignado</span>
                                                             )}
                                                         </div>
                                                     </td>
