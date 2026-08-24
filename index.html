@@ -31,11 +31,49 @@
        donde no hay barra del navegador que disimule. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <!-- El tema es oscuro únicamente: se declara para que el navegador pinte los
-       controles nativos y la barra de estado en oscuro desde el primer frame,
-       en vez de dar un destello blanco antes de que cargue el CSS. -->
-  <meta name="color-scheme" content="dark" />
+  <!-- `dark light` y en ese orden: el primero es el que se usa cuando no hay
+       preferencia. Esto es lo que hace que el navegador pinte en el tono
+       correcto lo que NO controla el CSS —barras de scroll, selectores de
+       fecha, el fondo detrás del rebote elástico— desde el primer frame.
+       El script de abajo lo afina al tema real. -->
+  <meta name="color-scheme" content="dark light" />
   <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- EL DESTELLO, QUE HAY QUE MATAR ANTES DE QUE REACT EXISTA.
+       =================================================================
+       Si el tema se decidiera en React, la secuencia sería: se pinta la
+       página con el tema por defecto, se descarga el bundle, arranca React,
+       lee `localStorage` y CAMBIA EL TEMA A LA VISTA. Quien tiene modo claro
+       ve un fogonazo negro de medio segundo cada vez que abre la app, y quien
+       tiene oscuro ve uno blanco, que es peor.
+
+       Este script corre SÍNCRONO en el `<head>`, antes de que el navegador
+       pinte un solo pixel, así que no hay dos estados: solo el bueno.
+
+       Va escrito a mano y no importado de `src/lib/tema.ts` a propósito: un
+       `<script type="module">` es diferido por definición y llegaría tarde,
+       que es justo el problema que viene a resolver. La duplicación es de
+       cinco líneas y está anotada en los dos sitios.
+
+       El `try` no sobra: `localStorage` lanza en modo privado de algunos
+       navegadores, y un error aquí dejaría la página EN BLANCO — este script
+       corre antes que nada. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('anvil_tema');
+        var claro = t === 'claro' || (t !== 'oscuro' && window.matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.setAttribute('data-theme', claro ? 'light' : 'dark');
+        document.documentElement.style.colorScheme = claro ? 'light' : 'dark';
+        if (claro) {
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', '#e6e6e6');
+        }
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
 
   <!-- TIPOGRAFÍA — Plus Jakarta Sans.
        El CSS declaraba `font-family: Inter` pero Inter no se cargaba en ningún

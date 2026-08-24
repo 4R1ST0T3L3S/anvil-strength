@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
+import { SelectorDeTema } from '../ui/SelectorDeTema';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 import { useUser } from '../../hooks/useUser';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -320,6 +321,13 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         Un control que parece pulsable y no hace nada cuesta
                         más que no tenerlo. Cuando la tienda exista, vuelve. */}
 
+                    {/* El tema, también en la web pública: quien llega desde
+                        Google con el móvil en claro se merece la misma
+                        cortesía que quien ya tiene cuenta. Se esconde por
+                        debajo de lg porque ahí el sitio del icono lo ocupa el
+                        menú, y dentro del menú vuelve a salir. */}
+                    <SelectorDeTema className="hidden lg:flex" />
+
                     {/* Menú móvil. 44x44 reales: medía 40 con el relleno. */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
@@ -384,6 +392,18 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                                 </m.a>
                             ))}
                         </nav>
+
+                        {/* El tema, también aquí. En la barra el icono está
+                            oculto por debajo de `lg` porque ese sitio lo ocupa
+                            el botón del menú, así que si no estuviera dentro
+                            del menú no habría forma de cambiarlo en móvil — que
+                            es justo donde el sistema cambia solo al anochecer. */}
+                        <div className="flex items-center justify-between border-t border-subtle px-8 py-5">
+                            <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
+                                Tema
+                            </span>
+                            <SelectorDeTema />
+                        </div>
 
                         {/* La zona segura: este bloque está pegado al borde
                             inferior y en un iPhone cae bajo la barra de gestos. */}

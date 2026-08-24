@@ -8,10 +8,32 @@
    REGLA: ningún componente nuevo escribe un hex a mano. Si un valor no
    está aquí, o falta un token o el componente se está saliendo del sistema.
 
-   Tema: oscuro únicamente. No es una preferencia estética sino de contexto
-   de uso — el atleta consulta la sesión en el gimnasio entre series, a
-   menudo con poca luz, y el coach programa bloques por la noche. Un tema
-   claro obligaría a mirar una pantalla en blanco en ambos casos.
+   DOS TEMAS, Y EL OSCURO ES EL DE CASA.
+
+   Aquí ponía "tema: oscuro únicamente", con un motivo que sigue siendo
+   bueno: el atleta consulta la sesión en el gimnasio entre series, a menudo
+   con poca luz, y el entrenador programa bloques por la noche. Una pantalla
+   en blanco en cualquiera de los dos casos deslumbra.
+
+   Lo que ese razonamiento justifica es el VALOR POR DEFECTO, no la ausencia
+   de alternativa. Un gimnasio a mediodía con luz de ventanal es el caso
+   contrario, y ahí el oscuro es el que se lee mal. Quien mira una pantalla
+   sabe mejor que nosotros qué luz tiene delante.
+
+   Así que la estructura es:
+
+     · Este bloque `:root` ES EL TEMA OSCURO. No hay un `[data-theme="dark"]`
+       aparte, y no lo hay a propósito: si el oscuro fuera una rama más, un
+       token nuevo que alguien olvide declarar en las dos dejaría media app
+       sin color. Siendo la base, lo peor que puede pasar es que el modo
+       claro herede un valor oscuro — feo, pero visible al instante.
+     · `:root[data-theme="light"]`, más abajo, PISA lo que cambia.
+
+   El atributo lo escribe un script en línea del `<head>`, antes del primer
+   pintado, y lo mantiene `src/lib/tema.ts`. Por defecto se sigue al sistema.
+
+   Los comentarios de este bloque que dicen "sobre fondo oscuro" hablan de
+   este bloque, que es el oscuro. El bloque claro trae los suyos.
 
    Color en OKLCH: interpolación perceptualmente uniforme, así que aclarar
    u oscurecer un tono no lo desatura ni lo vira, cosa que sí ocurre en HSL.
@@ -147,7 +169,12 @@
      todo caía a la fuente del sistema. De ahí que se viera genérica.
 
      El peso base es 500, no 400: sobre fondo oscuro el texto adelgaza
-     ópticamente, y a 400 esta familia se queda fina de más.             */
+     ópticamente, y a 400 esta familia se queda fina de más.
+
+     En claro pasa lo contrario —el texto engorda— así que 500 va justo al
+     límite de parecer seminegrita. Se deja igual en los dos temas: bajar a
+     400 solo en claro haría que el texto CAMBIE DE PESO al cambiar de tema,
+     y eso se nota mucho más que medio punto de grosor.                   */
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif;
 
@@ -265,6 +292,111 @@
   :root {
     --tabbar-alto: 0px;
   }
+}
+
+/* ===================================================================
+   MODO CLARO
+   ===================================================================
+
+   NO ES "EL OSCURO CON LOS COLORES AL REVES".
+
+   Invertir la rampa da un resultado que se lee mal por dos motivos que se
+   notan enseguida:
+
+     · Sobre fondo claro el texto ENGORDA opticamente, al contrario que sobre
+       oscuro. Los mismos pesos se ven pastosos, y por eso el gris de texto
+       secundario no puede ser el complementario del de arriba.
+     · Las sombras cambian de papel. En oscuro casi no se ven y la elevacion
+       la da el COLOR: una tarjeta es mas clara que el lienzo. En claro pasa
+       lo contrario — una tarjeta es BLANCA sobre un lienzo gris — y la
+       sombra es lo unico que la despega.
+
+   La rampa de superficies se invierte de sentido, no de valores: `raised`
+   sigue significando "un paso mas cerca del usuario", solo que aqui eso se
+   consigue subiendo a blanco en vez de aclarando el gris.
+
+   LOS GRISES NO SON INVENTADOS. Salen de `--fold-light-*`, que es la paleta
+   clara que la portada ya usa en sus secciones de fondo claro y que lleva
+   tiempo en pantalla. Reutilizarlos hace que las dos mitades de la
+   aplicacion se parezcan en vez de ser dos disenos distintos.
+
+   LO QUE HAY QUE MOVER SI o SI: los colores saturados. Un ambar de 0.78
+   sobre blanco es practicamente invisible, y el mismo ambar sobre negro era
+   perfectamente legible. Todos los tonos semanticos bajan de luminosidad
+   aqui, y los `-text` bajan mas que los rellenos, exactamente por el mismo
+   motivo medido que obligo a partir el rojo en dos: un color no puede ser a
+   la vez buen relleno y buen texto. */
+
+:root[data-theme="light"] {
+  /* Superficies. `raised` es BLANCO y el lienzo es gris: al reves que en
+     oscuro, porque en claro lo que se acerca al usuario se ilumina. */
+  --surface-sunken: oklch(0.9 0 0); /* pozos, code, letterbox */
+  --surface-canvas: oklch(0.95 0 0); /* fondo de la aplicacion */
+  --surface-raised: oklch(1 0 0); /* tarjetas, paneles, modales */
+  --surface-overlay: oklch(1 0 0); /* menus y popovers: los separa la sombra */
+
+  /* Bordes: transparencias del NEGRO. Sobre claro, un borde blanco no existe. */
+  --border-subtle: oklch(0 0 0 / 0.07);
+  --border-default: oklch(0 0 0 / 0.13);
+  --border-strong: oklch(0 0 0 / 0.24);
+
+  /* Tinta. Medida pintando cada color en un canvas y leyendo el pixel, sobre
+     las TRES superficies claras, no solo sobre la tarjeta:
+
+                    tarjeta   lienzo   pozo    AA en las tres
+       ink            15,9     14,4    12,6    si
+       ink-muted       8,3      7,5     6,6    si
+       ink-subtle      6,3      5,4     4,7    si  <- suelo real
+       ink-faint       2,9      2,6     2,3    NO, y por eso no es texto
+
+     El primer intento puso `subtle` en 0.52 y daba 4,08 sobre el pozo: la
+     sonda lo caza en cuanto un metadato cae dentro de un `bg-surface-sunken`,
+     que es donde viven las fichas de datos. */
+  --ink: oklch(0.22 0 0);
+  --ink-muted: oklch(0.42 0 0);
+  --ink-subtle: oklch(0.49 0 0);
+  --ink-faint: oklch(0.68 0 0); /* NUNCA texto — solo adorno */
+  --ink-inverse: oklch(0.985 0 0); /* texto sobre superficie roja u oscura */
+
+  /* Marca. El relleno NO se mueve: es la identidad, y el mismo rojo tiene que
+     leerse como el mismo rojo en los dos modos. Lo que se mueve es el rojo
+     TEXTO, que sobre blanco tiene que bajar en vez de subir. */
+  --brand-quiet: oklch(0.62 0.21 25 / 0.1);
+  --brand-line: oklch(0.62 0.21 25 / 0.3);
+  --brand-text: oklch(0.52 0.21 25);
+
+  /* Estados. Todos bajan: sobre blanco, un color claro no se ve. */
+  --success: oklch(0.47 0.15 150); /* 0.48 se quedaba en 4,48 sobre el pozo */
+  --success-quiet: oklch(0.47 0.15 150 / 0.12);
+  --warning: oklch(0.5 0.13 78);
+  --warning-quiet: oklch(0.5 0.13 78 / 0.14);
+  --danger: oklch(0.55 0.2 25);
+  --danger-hover: oklch(0.49 0.2 25); /* en claro, el hover OSCURECE */
+  --danger-quiet: oklch(0.55 0.2 25 / 0.11);
+  --danger-text: oklch(0.52 0.2 25);
+  --info: oklch(0.48 0.15 240);
+  --info-quiet: oklch(0.48 0.15 240 / 0.11);
+
+  /* Esfuerzo percibido: mismo recorrido verde -> ambar -> rojo, bajado en
+     bloque para que se lea sobre claro sin perder el orden entre los cuatro. */
+  --effort-low: oklch(0.47 0.15 150);
+  --effort-mid: oklch(0.5 0.13 78);
+  --effort-high: oklch(0.55 0.17 45);
+  --effort-max: oklch(0.52 0.21 25);
+
+  /* El anillo de foco se invierte: blanco sobre claro no se ve. */
+  --focus-ring: oklch(0.22 0 0);
+
+  /* Sombras de verdad. Aqui son el unico separador entre una tarjeta blanca
+     y un lienzo casi blanco, asi que existen; en oscuro casi no se veian. */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.08);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.1);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.14);
+
+  /* El canto fisico de los botones. En claro la sombra propia va por debajo
+     del color base, no por encima. */
+  --press-edge-light: oklch(0.82 0 0);
+  --press-edge-dark: oklch(0.35 0 0);
 }
 
 /* Quien desactiva animaciones en su sistema recibe transiciones

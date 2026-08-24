@@ -136,6 +136,22 @@ button:not([data-no-press]),
   }
 }
 
+/* 4c. EL CAMBIO DE TEMA NO SE ANIMA.
+      Medio proyecto lleva `transition-colors` para que el hover se sienta
+      suave. Al cambiar de tema todos animan a la vez y, en vez de un cambio
+      limpio, se ve una mancha reptando por la página durante 200ms con cada
+      elemento llegando a destiempo.
+
+      Un tema no es un cambio de estado de un control: es como encender la luz
+      de la habitación. Ocurre de golpe. La clase la pone y la quita
+      `aplicarTema` en src/lib/tema.ts, con un frame de por medio. */
+.cambiando-tema,
+.cambiando-tema *,
+.cambiando-tema *::before,
+.cambiando-tema *::after {
+  transition: none !important;
+}
+
 /* 5. FOCO VISIBLE, PERO SOLO PARA QUIEN NAVEGA CON TECLADO.
       `:focus-visible` y no `:focus`: el anillo tras un clic de ratón es
       ruido, tras un tabulador es lo único que te dice dónde estás. */

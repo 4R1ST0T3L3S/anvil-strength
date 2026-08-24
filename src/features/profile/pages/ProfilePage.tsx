@@ -1,6 +1,7 @@
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
 import { ProfileSection } from '../components/ProfileSection';
+import { SelectorDeTema } from '../../../components/ui/SelectorDeTema';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { ShieldAlert, RefreshCw } from 'lucide-react';
 
@@ -39,6 +40,35 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
                     </div>
                 </div>
                 <ProfileSection user={user} onUpdate={() => refetch()} />
+
+                {/* PREFERENCIAS DEL DISPOSITIVO.
+                    El tema no se guarda en la cuenta sino en el aparato: el
+                    mismo entrenador puede querer claro en el portátil del
+                    gimnasio y oscuro en el móvil, y sincronizarlo se lo
+                    impediría. Por eso vive aquí y no entre los datos del
+                    perfil, que sí viajan con la persona.
+
+                    Y por eso está: en la cabecera del panel el icono se oculta
+                    por debajo de `sm`, donde ya conviven el conmutador de
+                    panel, los avisos y la ⋮. Sin esta fila no habría forma de
+                    cambiar el tema desde un móvil dentro del panel. */}
+                <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                    <h2 className="mb-1 text-t-lg font-black uppercase tracking-display text-ink">
+                        Este dispositivo
+                    </h2>
+                    <p className="mb-5 text-t-sm text-ink-muted">
+                        Ajustes que se quedan en este aparato y no viajan con tu cuenta.
+                    </p>
+                    <div className="flex items-center justify-between gap-4 rounded-field bg-surface-canvas px-4 py-3">
+                        <div className="min-w-0">
+                            <p className="text-t-sm font-bold text-ink">Tema</p>
+                            <p className="text-t-xs text-ink-subtle">
+                                Por defecto sigue al sistema, y cambia con él al anochecer.
+                            </p>
+                        </div>
+                        <SelectorDeTema />
+                    </div>
+                </section>
             </div>
             <PublicFooter />
         </div>

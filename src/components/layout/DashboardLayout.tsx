@@ -3,6 +3,7 @@ import { m } from 'framer-motion';
 import { ArrowLeft, Globe, LogOut, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
+import { SelectorDeTema } from '../ui/SelectorDeTema';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 
 interface MenuItem {
@@ -200,6 +201,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
                             </button>
                         )}
+                        {/* El tema, junto a los avisos y a la salida: es un
+                            ajuste del dispositivo, no de la pantalla, así que
+                            vive en el armazón y no dentro de ninguna vista.
+                            Se esconde por debajo de sm — a 375px la cabecera
+                            ya lleva el conmutador de panel, los avisos y la ⋮,
+                            y el tema es lo que menos se toca de los cuatro.
+                            En móvil se cambia desde Perfil → Este dispositivo,
+                            que es donde vive la misma pieza. */}
+                        <SelectorDeTema className="hidden sm:flex" />
                         {userId && <NotificationBell userId={userId} />}
                         {/* En móvil la barra inferior ya va llena de pestañas, así
                             que la salida vive aquí arriba en vez de robarle un
