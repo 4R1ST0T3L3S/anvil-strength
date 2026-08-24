@@ -18,6 +18,7 @@ import { AppRoutes } from './routes/AppRoutes';
 import { CountdownPage } from './features/landing/pages/CountdownPage';
 import { NotificationProvider } from './components/ui/NotificationProvider';
 import { CookieNotice } from './components/ui/CookieNotice';
+import { BackToTop } from './components/ui/BackToTop';
 
 
 /**
@@ -133,6 +134,13 @@ function App() {
           onClose={() => setIsAuthModalOpen(false)}
           initialMode={authMode}
         />
+
+        {/* UNO para toda la aplicación, y por eso vive aquí arriba en vez de
+            dentro de cada pantalla: se pinta solo cuando hay recorrido de
+            sobra, así que en las cortas no existe. Sabe apartarse de la barra
+            de pestañas y sabe que el panel desplaza un <main> y no la ventana.
+            Ver src/lib/scrollHost.ts. */}
+        <BackToTop />
 
         {/* Solo fuera del panel: dentro, la barra de pestañas móvil ya vive en
             el mismo borde inferior (ver DashboardLayout.tsx) y las dos

@@ -207,6 +207,28 @@
   --press-edge-brand: oklch(0.46 0.17 25);
   --press-edge-light: oklch(0.78 0 0);
   --press-edge-dark: oklch(0.1 0 0);
+
+/* ---------------------------------------------------------------
+   ALTURA DE LA BARRA INFERIOR
+   ---------------------------------------------------------------
+   La barra de pestañas del móvil vive pegada al borde de abajo, así que
+   cualquier cosa que flote ahí (el botón de volver arriba, un aviso, una
+   hoja) se queda ENCIMA de "Perfil" si no se aparta.
+
+   Aquí se declara una vez lo que mide, y quien flote la resta. Son 52px de
+   botón + 4px de `pt-1` + 1px de borde. NO incluye el área segura del
+   iPhone: esa se suma aparte con `env(safe-area-inset-bottom)`, porque
+   depende del dispositivo y no del diseño.
+
+   A partir de `md` la barra es `md:hidden` y esto pasa a valer cero. Si un
+   día cambia el alto del botón, cambia AQUÍ y se mueve todo lo que flota. */
+   --tabbar-alto: 57px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --tabbar-alto: 0px;
+  }
 }
 
 /* Quien desactiva animaciones en su sistema recibe transiciones

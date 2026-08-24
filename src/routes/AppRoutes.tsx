@@ -5,6 +5,7 @@ import { isStaff, isAdmin, isAthlete, puede } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { AppShellSkeleton } from '../components/skeletons/AppShellSkeleton';
+import { useScrollRestoration } from '../hooks/useScrollRestoration';
 import { PageSkeleton } from '../components/skeletons/PageSkeleton';
 // Lazy Load Pages
 const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
@@ -67,6 +68,11 @@ interface AppRoutesProps {
 export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRoutesProps) {
     const location = useLocation();
     const { session } = useAuth();
+
+    // Ruta nueva → arriba. Volver atrás → donde estabas. Ver el hook: hasta
+    // ahora no había ninguna de las dos, y cambiar de pantalla te dejaba a
+    // media página en la siguiente.
+    useScrollRestoration();
 
     const hasActiveSession = !!session;
 

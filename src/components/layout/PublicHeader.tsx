@@ -165,10 +165,21 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
         setIsMobileMenuOpen(false);
         setMasAbierto(false);
 
-        // Ruta de verdad: navega y se sube arriba.
+        // Ruta de verdad: navegar y ya está.
+        //
+        // Aquí había un `window.scrollTo(0, 0)` justo después del `navigate`, y
+        // hacía daño de una forma difícil de ver: corre SÍNCRONO, dentro del
+        // manejador del clic, cuando la portada todavía está entera en
+        // pantalla. O sea que borraba la posición de scroll de la página que se
+        // abandona antes de que nadie pudiera apuntarla — y con ella, la
+        // posibilidad de volver atrás a donde estabas.
+        //
+        // Subir arriba al cambiar de ruta lo hace ahora `useScrollRestoration`,
+        // para TODA la aplicación y no solo para los enlaces de esta cabecera,
+        // y distinguiendo lo que este `scrollTo` no distinguía: ruta nueva
+        // arriba, volver atrás a donde estabas.
         if (!href.startsWith('#')) {
             navigate(href);
-            window.scrollTo(0, 0);
             return;
         }
 
@@ -207,7 +218,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                 <div className="flex-shrink-0 flex items-center">
                     <a
                         href="/"
-                        onClick={(e) => { e.preventDefault(); navigate('/'); window.scrollTo(0, 0); }}
+                        onClick={(e) => { e.preventDefault(); navigate('/'); }}
                         aria-label="Anvil Strength — ir al inicio"
                         className="block rounded-field"
                     >

@@ -218,7 +218,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     ficha, los días de la semana) traen su propio
                     `overflow-x-auto` y siguen funcionando igual: esto solo
                     impide que el desbordamiento se propague al armazón. */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24 md:pb-6 scrollbar-hide bg-surface-canvas">
+                {/* `data-scroll-host`: aquí dentro `window.scrollY` vale SIEMPRE cero,
+                    porque quien se desplaza es este <main> y no la ventana. Lo que
+                    necesita el scroll (volver arriba, restaurar la posición al
+                    volver atrás) pregunta por este atributo. Ver src/lib/scrollHost.ts. */}
+                <main
+                    data-scroll-host
+                    // `--tabbar-h`: la altura que ocupa la barra inferior del
+                    // móvil. Lo que flote abajo la lee para apartarse en vez de
+                    // quedarse encima de "Perfil". Fuera del panel no existe, y
+                    // ahí el `fallback` la deja en cero.
+                    style={{ ['--tabbar-h' as string]: 'var(--tabbar-alto)' }}
+                    className="flex-1 overflow-y-auto overflow-x-hidden pb-24 md:pb-6 scrollbar-hide bg-surface-canvas"
+                >
                     {children}
                 </main>
             </div>
