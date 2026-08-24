@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { UserProfile } from '../../../hooks/useUser';
 import { Users, Search, ChevronRight } from 'lucide-react';
+import { EstadoDeDatos } from '../../../components/ui/EstadoDeDatos';
+import { SkeletonList } from '../../../components/ui/Skeleton';
 import { supabase } from '../../../lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 
@@ -12,7 +14,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
     const [searchTerm, setSearchTerm] = useState('');
 
     // Fetch athletes assigned to this coach/nutritionist
-    const { data: athletes, isLoading } = useQuery({
+    const consulta = useQuery({
         queryKey: ['nutrition-athletes', user.id],
         queryFn: async () => {
             const field = user.role === 'coach' ? 'coach_id' : 'nutritionist_id';
@@ -26,11 +28,16 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
             return data as UserProfile[];
         }
     });
+    const athletes = consulta.data;
 
     const filteredAthletes = athletes?.filter(a => 
         a.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
         (a.nickname && a.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
     ) || [];
+
+    // Distinguir "no hay nada" de "el filtro lo esconde todo": son estados
+    // distintos con salidas distintas.
+    const busqueda = searchTerm.trim().length > 0;
 
     return (
         <div className="p-6 md:p-10 space-y-8 animate-fade">
@@ -57,15 +64,37 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                 />
             </div>
 
-            {isLoading ? (
-                <div className="flex justify-center p-12">
-                    <div className="w-10 h-10 border-4 border-anvil-red border-t-transparent rounded-full animate-spin"></div>
-                </div>
-            ) : filteredAthletes.length === 0 ? (
-                <div className="bg-[#111111] border border-line rounded-xl p-8 text-center">
-                    <p className="text-ink-muted">No se encontraron atletas.</p>
-                </div>
-            ) : (
+            {/* Los cuatro estados. Antes eran dos, y faltaba el que importa:
+                si la consulta fallaba, `athletes` venía vacío y esto decía "No
+                se encontraron atletas" — o sea, culpaba al buscador de una
+                caída de red.
+
+                Y el vacío tampoco distinguía "no tienes atletas" de "el filtro
+                no encuentra ninguno", que se arreglan de formas opuestas: uno
+                pidiendo que te asignen atletas, el otro borrando lo escrito. */}
+            <EstadoDeDatos
+                consulta={consulta}
+                queEs="los atletas"
+                vacio={filteredAthletes.length === 0}
+                esqueleto={<SkeletonList filas={6} />}
+                vacioIcono={<Users size={20} aria-hidden="true" />}
+                vacioTitulo={busqueda ? 'Ningún atleta coincide' : 'Todavía no tienes atletas'}
+                vacioCuerpo={
+                    busqueda
+                        ? `No hay nadie que se llame o se apode «${searchTerm}».`
+                        : 'Cuando te asignen atletas para llevarles la nutrición, aparecerán aquí.'
+                }
+                vacioAccion={
+                    busqueda && (
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            className="rounded-field border border-[var(--border-default)] px-4 py-2.5 text-t-xs font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                        >
+                            Quitar el filtro
+                        </button>
+                    )
+                }
+            >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredAthletes.map((athlete) => (
                         <div 
@@ -105,7 +134,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                         </div>
                     ))}
                 </div>
-            )}
+            </EstadoDeDatos>
         </div>
     );
 }

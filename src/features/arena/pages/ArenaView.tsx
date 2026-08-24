@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Swords, X, TrendingUp, History, Info, Loader, Trash2, Send } from 'lucide-react';
+import { Swords, X, TrendingUp, History, Info, Trash2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
@@ -12,6 +12,8 @@ import { ArenaAdminPanel } from '../components/ArenaAdminPanel';
 import { m, AnimatePresence } from 'framer-motion';
 import { puede } from '../../../lib/roles';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { EstadoDeDatos } from '../../../components/ui/EstadoDeDatos';
+import { SkeletonCard } from '../../../components/ui/Skeleton';
 
 interface ExtendedProfile extends UserProfile {
     is_developer?: boolean;
@@ -54,7 +56,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
      * los mensajes, pero si que las apuestas de los demas aparezcan mientras
      * se esta mirando.
      */
-    const { data: bets = [], isPending: loading } = useQuery({
+    const consultaApuestas = useQuery({
         queryKey: ['apuestas-arena'],
         queryFn: async () => {
             const { data, error } = await supabase
@@ -66,6 +68,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         },
         refetchInterval: 3000,
     });
+    const bets = consultaApuestas.data ?? [];
 
     /** Tras apostar, resolver o borrar: se pide ya, sin esperar al sondeo. */
     const fetchBets = useCallback(() => {
@@ -258,12 +261,34 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             </button>
                         </div>
 
-                        {loading ? (
-                            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                <Loader className="animate-spin text-brand-text" size={32} />
-                                <p className="text-t-2xs font-black text-ink-subtle uppercase tracking-widest">Cargando combates...</p>
-                            </div>
-                        ) : (
+                        {/* Los cuatro estados.
+                            Antes eran dos y ninguno era el error: si la
+                            consulta fallaba, `bets` venía vacío y la pantalla
+                            decía "No hay apuestas activas en este momento",
+                            que es una frase que suena a que la Arena está
+                            tranquila — no a que no ha podido cargar.
+
+                            El giro también se va: un esqueleto con la forma de
+                            las tarjetas reserva el hueco, así que al llegar los
+                            datos nada salta. */}
+                        <EstadoDeDatos
+                            consulta={consultaApuestas}
+                            queEs="los combates"
+                            vacio={(activeTab === 'active' ? activeBets : historyBets).length === 0}
+                            esqueleto={
+                                <div className="grid grid-cols-1 gap-6">
+                                    <SkeletonCard />
+                                    <SkeletonCard />
+                                </div>
+                            }
+                            vacioIcono={<Info size={20} aria-hidden="true" />}
+                            vacioTitulo={activeTab === 'active' ? 'No hay combates abiertos' : 'El historial está vacío'}
+                            vacioCuerpo={
+                                activeTab === 'active'
+                                    ? 'Cuando alguien abra una apuesta, aparecerá aquí.'
+                                    : 'Aquí irán quedando los combates que ya se hayan resuelto.'
+                            }
+                        >
                             <div className="grid grid-cols-1 gap-6">
                                 <AnimatePresence mode="popLayout">
                                     {(activeTab === 'active' ? activeBets : historyBets).map(bet => (
@@ -278,17 +303,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                         />
                                     ))}
                                 </AnimatePresence>
-                                
-                                {(activeTab === 'active' ? activeBets : historyBets).length === 0 && (
-                                    <div className="bg-white/5 border border-dashed border-line rounded-[2.5rem] p-12 text-center">
-                                        <Info className="mx-auto text-gray-600 mb-4" size={32} />
-                                        <p className="text-sm font-bold text-ink-subtle uppercase tracking-widest italic">
-                                            No hay apuestas {activeTab === 'active' ? 'activas en este momento' : 'en el historial'}
-                                        </p>
-                                    </div>
-                                )}
                             </div>
-                        )}
+                        </EstadoDeDatos>
                     </div>
 
                     {/* Sidebar */}
