@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { NotificationBell } from '../ui/NotificationBell';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 
-interface MenuItem {
+export interface MenuItem {
     icon: React.ReactNode;
     label: string;
     /**
@@ -41,7 +41,7 @@ interface MenuItem {
  * control propio: un botón fijo en la cabecera del móvil y en el pie de la
  * barra lateral de escritorio. Siempre visible, nunca escondido.
  */
-interface PanelSwitch {
+export interface PanelSwitch {
     /** Texto completo (escritorio y etiqueta accesible). */
     label: string;
     /** Versión corta para la píldora del móvil, donde no cabe todo. */
@@ -50,7 +50,7 @@ interface PanelSwitch {
     onClick: () => void;
 }
 
-interface DashboardLayoutProps {
+export interface DashboardLayoutProps {
     menuItems: MenuItem[];
     children: ReactNode;
     /** Si se pasa, muestra la campana de notificaciones en la barra superior */
@@ -65,7 +65,11 @@ interface DashboardLayoutProps {
     userName?: string | null;
     /** Conmutador entre panel de gestión y panel de atleta. Ver `PanelSwitch`. */
     panelSwitch?: PanelSwitch;
+    /** Oculta la cabecera superior en escritorio. Útil para que la Home la integre sola. */
+    hideHeaderOnDesktop?: boolean;
 }
+
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     menuItems,
@@ -76,7 +80,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     onLogout,
     userName,
     panelSwitch,
+    hideHeaderOnDesktop = false,
 }) => {
+    const isDesktop = useMediaQuery('(min-width: 768px)');
     const visibleItems = menuItems.filter(item => item.label !== 'QA: Test DB');
     const barItems = visibleItems.filter(item => !item.hideOnMobileBar);
     const overflowItems = visibleItems.filter(item => item.hideOnMobileBar);
@@ -84,85 +90,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return (
         <div className="flex h-screen bg-surface-canvas text-white overflow-hidden font-sans">
 
-            {/* ============ SIDEBAR (escritorio) ============ */}
-            <aside className="hidden md:flex flex-col w-56 shrink-0 bg-surface-sunken border-r border-subtle">
-                {/* Marca */}
-                <div className="h-16 flex items-center px-5 border-b border-subtle shrink-0">
-                    <span className="font-black text-lg tracking-tight text-white select-none">
-                        ANVIL<span className="text-anvil-red">.</span>
-                    </span>
-                </div>
-
-                {/* Navegación */}
-                <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-hide">
-                    {visibleItems.map((item) => (
-                        <button
-                            key={item.label}
-                            onClick={item.onClick}
-                            className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-colors duration-fast active:scale-[0.98] ${
-                                item.isActive ? 'text-white' : 'text-ink-subtle hover:text-white hover:bg-white/[0.04]'
-                            }`}
-                        >
-                            {item.isActive && (
-                                <motion.span
-                                    layoutId="sidebar-active"
-                                    className="absolute inset-0 bg-anvil-red/10 border border-anvil-red/20 rounded-xl"
-                                    transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                                />
-                            )}
-                            <span className={`relative shrink-0 ${item.isActive ? 'text-anvil-red' : ''}`}>{item.icon}</span>
-                            <span className="relative truncate">{item.label}</span>
-                        </button>
-                    ))}
-                </nav>
-
-                {/* Pie: salida del panel.
-                    Vive al fondo de la barra lateral y no en un menú escondido
-                    porque hasta ahora NO existía ninguna forma de cerrar sesión
-                    ni de volver a la web desde dentro del panel. */}
-                <div className="border-t border-subtle p-3 shrink-0 space-y-0.5">
-                    {/* Conmutador de panel: acento de marca porque cambia TODO
-                        el contexto, no una vista dentro del mismo. */}
-                    {panelSwitch && (
-                        <button
-                            onClick={panelSwitch.onClick}
-                            className="mb-1 flex w-full items-center gap-3 rounded-xl border border-anvil-red/20 bg-anvil-red/10 px-3 py-2.5 text-sm font-bold text-anvil-red transition-colors duration-fast hover:bg-anvil-red/[0.16] active:scale-[0.98]"
-                        >
-                            <span className="shrink-0 [&>svg]:h-[17px] [&>svg]:w-[17px]" aria-hidden="true">{panelSwitch.icon}</span>
-                            <span className="truncate">{panelSwitch.label}</span>
-                        </button>
-                    )}
-                    <Link
-                        to="/web"
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-white/[0.04] hover:text-white"
-                    >
-                        <Globe size={17} className="shrink-0" aria-hidden="true" />
-                        <span className="truncate">Ver la web</span>
-                    </Link>
-
-                    {onLogout && (
-                        <button
-                            onClick={onLogout}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink-subtle transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger active:scale-[0.98]"
-                        >
-                            <LogOut size={17} className="shrink-0" aria-hidden="true" />
-                            <span className="truncate">Cerrar sesión</span>
-                        </button>
-                    )}
-
-                    {userName && (
-                        <p className="truncate px-3 pt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-                            {userName}
-                        </p>
-                    )}
-                </div>
-            </aside>
-
             {/* ============ COLUMNA PRINCIPAL ============ */}
             <div className="flex-1 flex flex-col min-w-0">
 
                 {/* Barra superior */}
-                <header className="h-14 md:h-16 shrink-0 flex items-center justify-between gap-3 px-4 md:px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40">
+                <header className={`h-14 md:h-16 shrink-0 flex items-center justify-between gap-3 px-4 md:px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40 ${hideHeaderOnDesktop ? 'md:hidden' : ''}`}>
                     <div className="flex items-center gap-2 min-w-0">
                         {onBack ? (
                             <button
@@ -174,7 +106,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                 <span className="hidden sm:inline">Volver</span>
                             </button>
                         ) : (
-                            <span className="md:hidden font-black text-base tracking-tight text-white select-none">
+                            <span className="font-black text-base tracking-tight text-white select-none">
                                 ANVIL<span className="text-anvil-red">.</span>
                             </span>
                         )}
@@ -186,25 +118,24 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                        {/* Conmutador de panel en móvil: píldora fija en la
-                            cabecera, visible siempre, en vez de enterrada en el
-                            menú de la ⋮. Solo móvil: en escritorio vive en el
-                            pie de la barra lateral. */}
-                        {panelSwitch && (
+                        {/* Conmutador de panel: píldora fija en la cabecera, visible siempre */}
+                        {panelSwitch && (!hideHeaderOnDesktop || !isDesktop) && (
                             <button
                                 onClick={panelSwitch.onClick}
                                 aria-label={panelSwitch.label}
-                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97] md:hidden"
+                                className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97]"
                             >
                                 <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
                                 <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
                             </button>
                         )}
-                        {userId && <NotificationBell userId={userId} />}
+                        {userId && (!hideHeaderOnDesktop || !isDesktop) && <NotificationBell userId={userId} />}
                         {/* En móvil la barra inferior ya va llena de pestañas, así
                             que la salida vive aquí arriba en vez de robarle un
                             hueco a la navegación. */}
-                        <AccountMenu onLogout={onLogout} userName={userName} items={overflowItems} />
+                        {(!hideHeaderOnDesktop || !isDesktop) && (
+                            <AccountMenu onLogout={onLogout} userName={userName} items={overflowItems} />
+                        )}
                     </div>
                 </header>
 
@@ -274,7 +205,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
  * plegado porque la barra inferior topa en cinco pestañas: por encima de eso
  * cada icono baja de los 44px de zona pulsable que necesita un pulgar.
  */
-function AccountMenu({
+export function AccountMenu({
     onLogout,
     userName,
     items = [],
@@ -289,7 +220,7 @@ function AccountMenu({
     // Cerrar al pulsar fuera o con Escape lo resuelve `AnchoredMenu`.
 
     return (
-        <div className="md:hidden">
+        <div>
             <button
                 ref={buttonRef}
                 onClick={() => setOpen(v => !v)}

@@ -18,6 +18,9 @@ import { WorkoutLogger } from '../../training/components/WorkoutLogger';
 import { CalendarSection } from '../../coach/components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AnvilStore } from '../../profile/components/AnvilStore';
+import { NotificationBell } from '../../../components/ui/NotificationBell';
+import { AccountMenu } from '../../../components/layout/DashboardLayout';
+import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
@@ -79,6 +82,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     const navigate = useNavigate();
     const { view } = useParams<{ view: string }>();
     const { refetch } = useUser();
+    const isDesktop = useMediaQuery('(min-width: 768px)');
 
     // Una ruta inventada (`/dashboard/loquesea`) no puede dejar la pantalla en
     // blanco: se corrige a la de inicio antes de renderizar nada.
@@ -217,7 +221,30 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 return <AnvilStore userId={user.id} />;
             case 'home':
             default:
-                return <AthleteHome user={user} onNavigate={(v) => go(viewToSlug(v))} />;
+                return (
+                    <AthleteHome 
+                        user={user} 
+                        onNavigate={(v) => go(viewToSlug(v))} 
+                        headerActions={
+                            isDesktop ? (
+                                <div className="flex items-center gap-1">
+                                    {panelSwitch && (
+                                        <button
+                                            onClick={panelSwitch.onClick}
+                                            aria-label={panelSwitch.label}
+                                            className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97]"
+                                        >
+                                            <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
+                                            <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
+                                        </button>
+                                    )}
+                                    <NotificationBell userId={user.id} />
+                                    <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
+                                </div>
+                            ) : undefined
+                        }
+                    />
+                );
         }
     };
 
@@ -231,6 +258,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 panelSwitch={panelSwitch}
                 title={TITLES[slug]}
                 onBack={slug === '' ? undefined : () => go('')}
+                hideHeaderOnDesktop={slug === ''}
             >
                 {/* La clave hace que el contenido se funda al cambiar de
                     pestaña. Sin ella el cambio es un salto seco y la pantalla

@@ -57,21 +57,21 @@ function NavTile({
     return (
         <button
             onClick={onClick}
-            className="group relative flex min-h-[104px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-4 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay active:bg-surface-raised"
+            className="group relative flex h-full min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay active:bg-surface-raised"
         >
             <Icon
                 size={72}
                 aria-hidden="true"
                 className="pointer-events-none absolute -right-4 -top-3 text-ink opacity-[0.04] transition-transform duration-base ease-snap group-hover:scale-110"
             />
-            <span className={`flex h-9 w-9 items-center justify-center rounded-field ${a.chip}`}>
-                <Icon size={17} className={a.icon} aria-hidden="true" />
+            <span className={`flex h-8 w-8 xl:h-7 xl:w-7 shrink-0 items-center justify-center rounded-field ${a.chip}`}>
+                <Icon size={16} className={a.icon} aria-hidden="true" />
             </span>
-            <span className="relative">
-                <span className="block text-t-base font-bold leading-tight text-ink">{title}</span>
-                <span className="mt-0.5 flex items-center gap-1 text-t-xs text-ink-subtle">
-                    {hint}
-                    <ChevronRight size={12} aria-hidden="true" className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+            <span className="relative mt-1.5 xl:mt-1 flex flex-col min-h-0 overflow-hidden">
+                <span className="block text-t-sm xl:text-t-base font-bold leading-tight text-ink truncate">{title}</span>
+                <span className="mt-0.5 flex items-center gap-1 text-[10px] xl:text-t-xs text-ink-subtle truncate">
+                    <span className="truncate">{hint}</span>
+                    <ChevronRight size={12} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
                 </span>
             </span>
         </button>
@@ -86,7 +86,7 @@ function NavTile({
  * alguien que viene a programar, así que "Mis atletas" es lo único con
  * tratamiento de acción primaria.
  */
-export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate: (view: string) => void }) {
+export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfile; onNavigate: (view: string) => void; headerActions?: React.ReactNode }) {
     const navigate = useNavigate();
 
     const getGreeting = () => {
@@ -179,84 +179,99 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
 
     return (
         <>
-            <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 pb-24 md:px-8 md:py-10">
-                <header>
-                    <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
-                        {getGreeting()}, {firstName}
-                    </h1>
-                    <p className="mt-1.5 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
-                        <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
-                        {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </p>
+            <div className="mx-auto flex h-[100dvh] md:h-[calc(100vh-64px)] w-full max-w-none flex-col px-4 py-4 md:px-8 xl:px-12 xl:py-4 overflow-hidden">
+                <header className="mb-4 shrink-0 flex items-start justify-between gap-4">
+                    <div>
+                        <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
+                            {getGreeting()}, {firstName}
+                        </h1>
+                        <p className="mt-1 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
+                            <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
+                            {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </p>
+                    </div>
+                    {headerActions && (
+                        <div className="hidden md:flex items-center gap-1">
+                            {headerActions}
+                        </div>
+                    )}
                 </header>
 
-                {/* -----------------------------------------------------
-                    ACCIÓN PRINCIPAL + PRÓXIMA COMPETICIÓN
-                    Las dos cosas que un entrenador quiere saber al entrar:
-                    a quién tiene que atender y cuánto queda para la
-                    siguiente tarima.                                    */}
-                <section>
-                    <SectionLabel icon={Users}>Tu equipo</SectionLabel>
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
+                <div className="flex flex-1 flex-col xl:flex-row gap-4 min-h-0">
+                    {/* COLUMNA IZQUIERDA (Principal) */}
+                    <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-hidden">
+                        {/* -----------------------------------------------------
+                            ACCIÓN PRINCIPAL + PRÓXIMA COMPETICIÓN
+                            Las dos cosas que un entrenador quiere saber al entrar:
+                            a quién tiene que atender y cuánto queda para la
+                            siguiente tarima.                                    */}
+                        <section className="shrink-0 flex flex-col min-h-0">
+                            <SectionLabel icon={Users}>Tu equipo</SectionLabel>
+                            <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-2 min-h-0">
+                                <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
 
-                        {nextComp
-                            ? <NextCompCard comp={nextComp} onClick={() => onNavigate('calendar')} />
-                            : <NoCompCard />}
+                                {nextComp
+                                    ? <NextCompCard comp={nextComp} onClick={() => onNavigate('calendar')} />
+                                    : <NoCompCard />}
+                            </div>
+                        </section>
+
+                        {/* -----------------------------------------------------
+                            QUÉ REQUIERE TU ATENCIÓN
+                            Va justo después de la acción principal y por delante de
+                            la rejilla de herramientas: es lo que decide a qué se
+                            dedica el coach hoy, y las calculadoras no. */}
+                        <section className="flex flex-col min-h-0 shrink-0">
+                            <SectionLabel icon={AlertTriangle}>Requiere tu atención</SectionLabel>
+                            <AttentionPanel coachId={user.id} />
+                        </section>
+
+                        <section className="flex flex-1 flex-col min-h-0">
+                            <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
+                            <div className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                                <Quote
+                                    size={112}
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
+                                />
+                                <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
+                                    {getAnvilQuote()}
+                                </p>
+                                <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                                    Anvil Strength Club
+                                </p>
+                            </div>
+                        </section>
                     </div>
-                </section>
 
-                {/* -----------------------------------------------------
-                    QUÉ REQUIERE TU ATENCIÓN
-                    Va justo después de la acción principal y por delante de
-                    la rejilla de herramientas: es lo que decide a qué se
-                    dedica el coach hoy, y las calculadoras no. */}
-                <section>
-                    <SectionLabel icon={AlertTriangle}>Requiere tu atención</SectionLabel>
-                    <AttentionPanel coachId={user.id} />
-                </section>
+                    {/* COLUMNA DERECHA (Secundaria) */}
+                    <div className="flex shrink-0 flex-col gap-4 xl:w-[50%] 2xl:w-[45%] min-h-0 overflow-hidden">
+                        {/* ----------------------------------------------------- */}
+                        <section className="flex flex-[3] flex-col min-h-0">
+                            <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
+                            <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2 min-h-0">
+                                <NavTile area="coach" icon={Calendar} title="Mis competiciones" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
+                                <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
+                                {!isNutritionist && (
+                                    <NavTile area="coach" icon={Activity} title="Análisis PWR" hint="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
+                                )}
+                                <NavTile icon={User} title="Mi perfil" hint="Marca, logo y datos" onClick={() => onNavigate('profile')} />
+                                <NavTile area="club" icon={Swords} title="La Arena" hint="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
+                                <NavTile area="club" icon={Users} title="Ranking" hint="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
+                            </div>
+                        </section>
 
-                {/* ----------------------------------------------------- */}
-                <section>
-                    <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
-                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                        <NavTile area="coach" icon={Calendar} title="Mis competiciones" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
-                        <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
-                        {!isNutritionist && (
-                            <NavTile area="coach" icon={Activity} title="Análisis PWR" hint="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
-                        )}
-                        <NavTile icon={User} title="Mi perfil" hint="Marca, logo y datos" onClick={() => onNavigate('profile')} />
-                        <NavTile area="club" icon={Swords} title="La Arena" hint="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
-                        <NavTile area="club" icon={Users} title="Ranking" hint="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
+                        <section className="flex flex-[2] flex-col min-h-0">
+                            <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
+                            <div className="grid flex-1 grid-cols-2 gap-2 min-h-0">
+                                <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
+                                <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
+                                <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
+                                <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
+                            </div>
+                        </section>
                     </div>
-                </section>
-
-                <section>
-                    <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
-                    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-                        <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
-                        <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
-                        <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
-                        <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
-                    </div>
-                </section>
-
-                <section>
-                    <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
-                    <div className="relative flex min-h-[140px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                        <Quote
-                            size={112}
-                            aria-hidden="true"
-                            className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
-                        />
-                        <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
-                            {getAnvilQuote()}
-                        </p>
-                        <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
-                            Anvil Strength Club
-                        </p>
-                    </div>
-                </section>
+                </div>
             </div>
 
             <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
