@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ClipboardCheck, Loader, Settings2, Plus, Trash2, X, Save, RotateCcw, Pencil, UserCog } from 'lucide-react';
+import { ClipboardCheck, Loader, Settings2, Plus, Trash2, X, Save, RotateCcw, Pencil, UserCog, AlertTriangle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     formsService, FormType, FormQuestion, FormResponse, QuestionType, FormAnswer,
@@ -347,10 +347,37 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
     const [intro, setIntro] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    /**
+     * Si la carga falla, NO se rellena con la plantilla predefinida.
+     *
+     * `getTemplate` sí lo hace —correcto para el atleta, que necesita un
+     * cuestionario aunque sea genérico—, pero aquí sería la plantilla real
+     * quedando invisible: el coach vería la predefinida sin saber que es un
+     * error de carga, y "Guardar" la escribiría encima de la suya. Con
+     * `loadError` el editor se queda vacío y avisa, y `handleSave` se niega
+     * a guardar hasta que una recarga funcione.
+     */
+    const [loadError, setLoadError] = useState(false);
+
+    /**
+     * `setLoading(true)` solo lo dispara este manejador, nunca el efecto de
+     * carga: un efecto que escribe estado de forma síncrona en su cuerpo
+     * dispara un render en cascada y el compilador de React lo rechaza. La
+     * carga inicial se apoya en que `loading` YA empieza en `true`; volver a
+     * cargar (el botón "Reintentar") pasa por aquí, que sube `reloadKey` y
+     * dispara el efecto de abajo.
+     */
+    const [reloadKey, setReloadKey] = useState(0);
+    const retry = useCallback(() => {
+        setLoading(true);
+        setLoadError(false);
+        setReloadKey(k => k + 1);
+    }, []);
 
     useEffect(() => {
+        let alive = true;
         Promise.all([
-            formsService.getTemplate(coachId, type),
+            formsService.getTemplateOrThrow(coachId, type),
             formsService.getIntro(coachId, type),
         ])
             // `withResolvedAxes` escribe el eje que la heurística deduce en las
@@ -358,10 +385,11 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
             // aquí es un dato editable y no una adivinanza que se rehace en
             // cada pintado: el coach lo ve, lo puede corregir, y su
             // corrección no se la pisa nadie.
-            .then(([qs, i]) => { setQuestions(withResolvedAxes(qs)); setIntro(i ?? ''); })
-            .catch(() => setQuestions(withResolvedAxes(type === 'daily' ? DEFAULT_DAILY_QUESTIONS : DEFAULT_WEEKLY_QUESTIONS)))
-            .finally(() => setLoading(false));
-    }, [coachId, type]);
+            .then(([qs, i]) => { if (alive) { setQuestions(withResolvedAxes(qs)); setIntro(i ?? ''); } })
+            .catch((e) => { if (alive) { console.error(e); setLoadError(true); } })
+            .finally(() => { if (alive) setLoading(false); });
+        return () => { alive = false; };
+    }, [coachId, type, reloadKey]);
 
     const updateQuestion = (i: number, updates: Partial<FormQuestion>) => {
         setQuestions(prev => prev.map((q, idx) => idx === i ? { ...q, ...updates } : q));
@@ -376,6 +404,10 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
     };
 
     const handleSave = async () => {
+        if (loadError) {
+            toast.error('No se pudo cargar el formulario actual. Reintenta antes de guardar: guardar ahora lo sustituiría por lo que ves aquí, que puede no ser lo que tienen tus atletas.');
+            return;
+        }
         const valid = questions.filter(q => q.label.trim());
         if (valid.length === 0) {
             toast.error('Añade al menos una pregunta');
@@ -383,8 +415,7 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
         }
         setSaving(true);
         try {
-            await formsService.saveTemplate(coachId, type, valid);
-            await formsService.saveIntro(coachId, type, intro);
+            await formsService.saveTemplate(coachId, type, valid, intro);
             toast.success('Formulario guardado. Se aplicará a todos tus atletas.');
             onClose();
         } catch (e) {
@@ -425,6 +456,20 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                 <div className="flex-1 overflow-y-auto p-5 space-y-3">
                     {loading ? (
                         <div className="flex justify-center py-10"><Loader className="animate-spin text-brand-text" size={24} /></div>
+                    ) : loadError ? (
+                        <div className="flex flex-col items-center gap-3 py-10 text-center">
+                            <AlertTriangle size={28} className="text-danger-text" />
+                            <p className="text-sm font-bold text-ink">No se pudo cargar el formulario actual</p>
+                            <p className="max-w-xs text-t-2xs text-ink-subtle">
+                                Guardar ahora lo sustituiría a ciegas. Reintenta antes de tocar nada.
+                            </p>
+                            <button
+                                onClick={retry}
+                                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-raised px-3 py-2 text-t-2xs font-black uppercase tracking-wide text-ink hover:border-brand/40 transition-colors"
+                            >
+                                <RefreshCw size={13} /> Reintentar
+                            </button>
+                        </div>
                     ) : (
                         <>
                             <div>
@@ -540,13 +585,14 @@ function TemplateEditorModal({ coachId, type, onClose }: { coachId: string; type
                 <div className="p-5 border-t border-subtle shrink-0 flex items-center justify-between gap-3">
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-2 text-xs font-bold text-ink-subtle hover:text-ink uppercase tracking-wide transition-colors"
+                        disabled={loadError}
+                        className="flex items-center gap-2 text-xs font-bold text-ink-subtle hover:text-ink uppercase tracking-wide transition-colors disabled:opacity-40"
                     >
                         <RotateCcw size={13} /> Restablecer predefinido
                     </button>
                     <button
                         onClick={handleSave}
-                        disabled={saving || loading}
+                        disabled={saving || loading || loadError}
                         className="px-6 py-2.5 rounded-lg bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 flex items-center gap-2"
                     >
                         {saving ? <Loader className="animate-spin" size={14} /> : <Save size={14} />}

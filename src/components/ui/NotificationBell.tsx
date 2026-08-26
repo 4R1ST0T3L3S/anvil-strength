@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, CheckCheck, Loader, BellRing, BellOff, AlertTriangle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { notificationsService, AppNotification } from '../../services/notificationsService';
+import { supabase } from '../../lib/supabase';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { AnchoredMenu } from './AnchoredMenu';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -124,7 +125,10 @@ export function NotificationBell({ userId }: { userId: string }) {
             );
             toast(n.title, { description: n.message, duration: 6000 });
         });
-        return () => { channel.unsubscribe(); };
+        // `removeChannel` y no `channel.unsubscribe()`: lo segundo cierra el
+        // socket pero deja el canal registrado en el cliente, así que el
+        // siguiente montaje lo recupera todavía "joined" y `.on(...)` explota.
+        return () => { supabase.removeChannel(channel); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId, queryClient]);
 

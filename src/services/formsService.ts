@@ -105,7 +105,14 @@ export function mergeQuestions(template: FormQuestion[], answers: FormAnswer[] =
 }
 
 export const formsService = {
-    /** Plantilla efectiva: la personalizada del coach, o la predefinida. */
+    /**
+     * Plantilla efectiva: la personalizada del coach, o la predefinida.
+     *
+     * Se traga el error a propósito: la usa el ATLETA para saber qué
+     * contestar, y ante un fallo de red es mejor servirle el cuestionario
+     * predefinido que dejarlo sin ninguno. El editor del coach NO debe usar
+     * esta función — ver `getTemplateOrThrow`.
+     */
     async getTemplate(coachId: string | null, type: FormType): Promise<FormQuestion[]> {
         const defaults = type === 'daily' ? DEFAULT_DAILY_QUESTIONS : DEFAULT_WEEKLY_QUESTIONS;
         if (!coachId) return defaults;
@@ -122,12 +129,62 @@ export const formsService = {
         return Array.isArray(qs) && qs.length > 0 ? qs : defaults;
     },
 
-    /** Guarda la plantilla personalizada del coach. */
-    async saveTemplate(coachId: string, type: FormType, questions: FormQuestion[]): Promise<void> {
+    /**
+     * Igual que `getTemplate`, pero para el EDITOR del coach: ahí un fallo de
+     * red no puede disfrazarse de "no tienes plantilla personalizada".
+     *
+     * `getTemplate` se traga cualquier error y sirve los valores por
+     * defecto — correcto para el atleta, que necesita un cuestionario aunque
+     * sea genérico, pero mortal para el editor: cargaba la plantilla
+     * predefinida sin avisar, y si el coach pulsaba "Guardar" sin fijarse,
+     * eso mismo sustituía a la plantilla personalizada de verdad en el
+     * servidor. Aquí el error se propaga para que el editor lo muestre y
+     * bloquee el guardado hasta que la carga real llegue.
+     */
+    async getTemplateOrThrow(coachId: string, type: FormType): Promise<FormQuestion[]> {
+        const { data, error } = await supabase
+            .from('form_templates')
+            .select('questions')
+            .eq('coach_id', coachId)
+            .eq('type', type)
+            .maybeSingle();
+
+        if (error) throw error;
+        const defaults = type === 'daily' ? DEFAULT_DAILY_QUESTIONS : DEFAULT_WEEKLY_QUESTIONS;
+        if (!data?.questions) return defaults;
+        const qs = data.questions as FormQuestion[];
+        return Array.isArray(qs) && qs.length > 0 ? qs : defaults;
+    },
+
+    /**
+     * Guarda la plantilla personalizada del coach y, si se pasa, su
+     * indicación general en la MISMA escritura.
+     *
+     * Antes eran dos upserts seguidos (`saveTemplate` y luego `saveIntro`), y
+     * `saveIntro` releía la plantilla con `getTemplate` para no perderla al
+     * escribir solo la intro. Esa relectura es la mitad del bug: si fallaba
+     * silenciosamente o llegaba antes de que el primer upsert se confirmara,
+     * devolvía la plantilla PREDEFINIDA (`getTemplate` cae a los valores por
+     * defecto ante cualquier error), y el segundo upsert la escribía ENCIMA
+     * de las preguntas que el coach acababa de guardar. El coach veía
+     * "Formulario guardado" dos veces y el atleta seguía contestando el
+     * cuestionario de siempre.
+     *
+     * Con una sola escritura no hay ventana en la que la plantilla nueva
+     * exista a medias. `intro` es opcional y, si no se pasa, NO se incluye en
+     * el upsert — así no borra una intro ya guardada al tocar solo preguntas.
+     */
+    async saveTemplate(coachId: string, type: FormType, questions: FormQuestion[], intro?: string): Promise<void> {
         const { error } = await supabase
             .from('form_templates')
             .upsert(
-                { coach_id: coachId, type, questions, updated_at: new Date().toISOString() },
+                {
+                    coach_id: coachId,
+                    type,
+                    questions,
+                    ...(intro !== undefined ? { intro: intro.trim() || null } : {}),
+                    updated_at: new Date().toISOString(),
+                },
                 { onConflict: 'coach_id, type' }
             );
         if (error) throw error;
@@ -148,24 +205,6 @@ export const formsService = {
             .maybeSingle();
         if (error) return null;
         return data?.intro ?? null;
-    },
-
-    /**
-     * `questions` es NOT NULL en `form_templates`: si el coach nunca ha
-     * tocado sus preguntas, no hay fila todavía, y guardar SOLO la intro
-     * mediante un upsert intentaría un INSERT sin esa columna. Se manda la
-     * plantilla efectiva de siempre junto con la intro para que la primera
-     * vez cree la fila entera.
-     */
-    async saveIntro(coachId: string, type: FormType, intro: string): Promise<void> {
-        const questions = await this.getTemplate(coachId, type);
-        const { error } = await supabase
-            .from('form_templates')
-            .upsert(
-                { coach_id: coachId, type, questions, intro: intro.trim() || null, updated_at: new Date().toISOString() },
-                { onConflict: 'coach_id, type' }
-            );
-        if (error) throw error;
     },
 
     /** Restablece la plantilla predefinida (borra la personalizada). */

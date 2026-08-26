@@ -239,28 +239,46 @@ export const personalInfoService = {
 
     /**
      * Guarda la plantilla. `athleteId` null = la que vale para todos.
+     *
+     * NO es un `.upsert()`. Los índices de unicidad de esta tabla son
+     * PARCIALES (`WHERE athlete_id IS NULL` / `WHERE athlete_id IS NOT NULL`
+     * — ver database/INFORMACION_PERSONAL.sql), y PostgREST traduce
+     * `onConflict` a un `ON CONFLICT (columnas)` SIN predicado. Postgres no
+     * puede inferir un índice parcial a partir de eso: la sentencia falla
+     * con 42P10 ("no unique or exclusion constraint matching the ON CONFLICT
+     * specification") SIEMPRE, tanto para la plantilla por defecto como para
+     * la de un atleta concreto. De ahí que guardar diera error y que, en el
+     * caso en que no diera, no persistiera nada.
+     *
+     * Se resuelve a mano: se busca la fila con el mismo ámbito y se actualiza
+     * por `id`, o se inserta si no existe.
      */
     async saveFields(
         coachId: string,
         athleteId: string | null,
         fields: PersonalField[]
     ): Promise<void> {
-        const { error } = await supabase
+        let query = supabase
             .from('athlete_profile_schemas')
-            .upsert(
-                {
-                    coach_id: coachId,
-                    athlete_id: athleteId,
-                    fields,
-                    updated_at: new Date().toISOString(),
-                },
-                // Los índices de unicidad son PARCIALES (uno para el ámbito por
-                // defecto y otro para el de un atleta), así que hay que decirle
-                // a PostgREST cuál mirar en cada caso.
-                { onConflict: athleteId ? 'coach_id,athlete_id' : 'coach_id' }
-            );
+            .select('id')
+            .eq('coach_id', coachId);
+        query = athleteId ? query.eq('athlete_id', athleteId) : query.is('athlete_id', null);
 
-        if (error) throw error;
+        const { data: existing, error: findError } = await query.maybeSingle();
+        if (findError) throw findError;
+
+        if (existing) {
+            const { error } = await supabase
+                .from('athlete_profile_schemas')
+                .update({ fields, updated_at: new Date().toISOString() })
+                .eq('id', existing.id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase
+                .from('athlete_profile_schemas')
+                .insert({ coach_id: coachId, athlete_id: athleteId, fields });
+            if (error) throw error;
+        }
     },
 
     /** Vuelve al juego predefinido borrando la plantilla guardada. */

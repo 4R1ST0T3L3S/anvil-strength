@@ -54,10 +54,24 @@ export const notificationsService = {
         if (error) throw error;
     },
 
-    /** Suscripción en tiempo real a nuevas notificaciones del usuario. */
+    /**
+     * Suscripción en tiempo real a nuevas notificaciones del usuario.
+     *
+     * El topic lleva un sufijo aleatorio y no solo `userId` porque React
+     * StrictMode (y cualquier remontado normal, como cambiar de panel)
+     * monta el efecto dos veces. Con un topic fijo, `supabase.channel()`
+     * devuelve el canal VIEJO si sigue registrado — y limpiar con
+     * `.unsubscribe()` en vez de `supabase.removeChannel()` es justo lo que
+     * lo dejaba registrado: `unsubscribe()` cierra el socket pero no saca el
+     * canal de la lista interna, así que el siguiente `.channel()` con el
+     * mismo nombre recupera ese canal todavía en estado `joined`, y
+     * `.on('postgres_changes', …)` lanza "cannot add callbacks … after
+     * subscribe()". Con nombre único cada montaje es un canal nuevo de
+     * verdad, y `removeChannel` es lo que de verdad lo da de baja.
+     */
     subscribe(userId: string, onNotification: (n: AppNotification) => void): RealtimeChannel {
         return supabase
-            .channel(`notifications_${userId}`)
+            .channel(`notifications_${userId}_${Math.random().toString(36).substring(7)}`)
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
