@@ -1640,7 +1640,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
             {/* Cabecera. El nombre del bloque manda; los metadatos son contexto y
                 por eso van en una sola línea de texto en vez de en píldoras que
                 compiten en peso visual con el título. */}
-            <div className="mx-auto w-full max-w-[1560px] px-5 pt-10 md:px-8 lg:px-12">
+            <div className="w-full px-5 pt-10 md:px-8 lg:px-12">
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
                         <div className="min-w-0">
@@ -1868,7 +1868,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
             {/* Análisis del bloque. Solo se monta cuando se pide: recalcula sobre
                 todas las sesiones y no tiene sentido pagarlo mientras se edita. */}
             {view === 'overview' && (
-                <div className="mx-auto w-full max-w-[1560px] px-5 pb-24 pt-8 md:px-8 lg:px-12">
+                <div className="w-full px-5 pb-24 pt-8 md:px-8 lg:px-12">
                     <BlockOverviewPanel
                         sessions={blockVolumeSessions}
                         weekNames={weekNames}
@@ -1878,7 +1878,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
             )}
 
             {/* Weeks List */}
-            <div className={`mx-auto w-full max-w-[1560px] space-y-4 px-5 pb-24 md:px-8 lg:px-12 ${view === 'plan' ? '' : 'hidden'}`}>
+            <div className={`w-full space-y-4 px-5 pb-24 md:px-8 lg:px-12 ${view === 'plan' ? '' : 'hidden'}`}>
                 {weeks.map((week, index) => {
                     const isExpanded = expandedWeeks.includes(week);
                     const weekSessions = sortSessions(blockData.sessions.filter(s => s.week_number === week));

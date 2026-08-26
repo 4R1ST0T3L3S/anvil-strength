@@ -75,9 +75,12 @@ const TAB_WIDTH = 'mx-auto w-full max-w-6xl pb-6';
 /**
  * La única excepción, y a propósito: el constructor de rutinas es una tabla
  * de semanas por días. Ahí el ancho no es estética, es cuántos días caben sin
- * desplazamiento lateral.
+ * desplazamiento lateral, así que ocupa TODO el ancho disponible en vez de
+ * quedarse en una columna centrada — antes, `max-w-7xl` dejaba el fondo
+ * `bg-surface-sunken` del contenedor visible a los lados como una franja
+ * oscura flanqueando el panel en cualquier pantalla más ancha que 1280px.
  */
-const BUILDER_WIDTH = 'mx-auto w-full max-w-7xl pb-6';
+const BUILDER_WIDTH = 'w-full pb-6';
 
 export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthleteDetailsProps) {
     const navigate = useNavigate();

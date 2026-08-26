@@ -1437,25 +1437,48 @@ export const trainingService = {
 
         if (deleteError) throw deleteError;
 
-        // 3. Shift subsequent weeks (week > weekNumber) down by 1
-        // We need to do this carefully. Since there's no unique constraint on (block_id, week_number, day_number) that strictly prevents temp duplicates, 
-        // we might be okay. But safer to fetch and update or use RPC. 
-        // For now, client-side loop is easiest but less atomic. 
-        // Let's fetch all sessions with week > weekNumber
+        /**
+         * 3. DESPLAZAR LAS SEMANAS SIGUIENTES (week > weekNumber) UNA HACIA ATRÁS.
+         *
+         * `training_sessions` SÍ tiene un índice único sobre
+         * (block_id, week_number, day_number) — ver
+         * database/FIX_COPIA_SEMANAS.sql. El comentario que había aquí decía
+         * lo contrario, y ese error es la causa de que borrar una semana
+         * DISTINTA de la última pudiera dejar a la última sin contenido.
+         *
+         * El motivo: cada sesión se desplaza a `week_number - 1` en una
+         * llamada UPDATE por fila, y la consulta que las trae NO pedía ningún
+         * orden. Si Postgres devolvía primero, por ejemplo, la semana 4
+         * (antes de la 3), su `día 1` intentaba ocupar el hueco `semana 3, día
+         * 1` MIENTRAS la semana 3 seguía ahí todavía sin moverse — y el
+         * índice único rechazaba esa fila con un choque. El error se
+         * descartaba en silencio (no se comprobaba `error` en el bucle), así
+         * que esa fila se quedaba con su `week_number` ORIGINAL, sin que nada
+         * lo avisara. El resultado visible: la semana intermedia se movía
+         * bien, `end_week` bajaba en uno igualmente, y la ÚLTIMA semana —la
+         * que no llegó a desplazarse— quedaba fuera del rango que pinta el
+         * constructor. Parecía que se había borrado la última en vez de la
+         * indicada.
+         *
+         * Se corrige igual que ya se hacía dos bloques más abajo para
+         * `training_weeks`: orden ASCENDENTE, para que cada hueco quede libre
+         * ANTES de que la semana de detrás lo reclame, y comprobando el error
+         * de cada UPDATE en vez de tragárselo.
+         */
         const { data: sessionsToShift } = await supabase
             .from('training_sessions')
             .select('id, week_number')
             .eq('block_id', blockId)
-            .gt('week_number', weekNumber);
+            .gt('week_number', weekNumber)
+            .order('week_number', { ascending: true });
 
         if (sessionsToShift && sessionsToShift.length > 0) {
-            // Update each session (or batch via upsert if we had full objects, but we only have IDs)
-            // A simple way is to loop. For small number of sessions (max 4-8 weeks usually), this is fine.
             for (const s of sessionsToShift) {
-                await supabase
+                const { error: shiftError } = await supabase
                     .from('training_sessions')
                     .update({ week_number: s.week_number - 1 })
                     .eq('id', s.id);
+                if (shiftError) throw shiftError;
             }
         }
 
@@ -1492,10 +1515,11 @@ export const trainingService = {
 
         if (weekMetaToShift && weekMetaToShift.length > 0) {
             for (const w of weekMetaToShift) {
-                await supabase
+                const { error: metaShiftError } = await supabase
                     .from('training_weeks')
                     .update({ week_number: w.week_number - 1 })
                     .eq('id', w.id);
+                if (metaShiftError) throw metaShiftError;
             }
         }
 
