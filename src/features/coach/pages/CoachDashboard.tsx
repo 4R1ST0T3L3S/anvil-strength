@@ -15,6 +15,10 @@ import { CoachAthletes } from '../components/CoachAthletes';
 import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
+import { NotificationBell } from '../../../components/ui/NotificationBell';
+import { SelectorDeTema } from '../../../components/ui/SelectorDeTema';
+import { AccountMenu } from '../../../components/layout/DashboardLayout';
+import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { ViewTransition } from '../../../components/layout/ViewTransition';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
@@ -72,6 +76,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const { view, athleteId } = useParams<{ view: string; athleteId: string }>();
     const { refetch } = useUser();
     const [chatAthlete, setChatAthlete] = useState<{ id: string; full_name: string; avatar_url?: string } | null>(null);
+    const isDesktop = useMediaQuery('(min-width: 768px)');
 
     const slug: Slug = isSlug(view) ? ((view ?? '') as Slug) : '';
 
@@ -194,7 +199,31 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 return <PdfThemeSettings user={user} onBack={() => go('preferencias')} />;
             case 'home':
             default:
-                return <CoachHome user={user} onNavigate={(v) => go(viewToSlug(v))} />;
+                return (
+                    <CoachHome 
+                        user={user} 
+                        onNavigate={(v) => go(viewToSlug(v))}
+                        headerActions={
+                            isDesktop ? (
+                                <div className="flex items-center gap-1">
+                                    {panelSwitch && (
+                                        <button
+                                            onClick={panelSwitch.onClick}
+                                            aria-label={panelSwitch.label}
+                                            className="flex h-9 items-center gap-1.5 rounded-field border border-brand/25 bg-brand/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97]"
+                                        >
+                                            <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
+                                            <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
+                                        </button>
+                                    )}
+                                    <SelectorDeTema />
+                                    <NotificationBell userId={user.id} />
+                                    <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
+                                </div>
+                            ) : undefined
+                        }
+                    />
+                );
         }
     };
 
@@ -211,6 +240,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                     ? undefined
                     : () => go(athleteId ? 'atletas' : slug === 'documento' ? 'preferencias' : '')
             }
+            hideHeaderOnDesktop={slug === '' && !athleteId}
         >
             <ViewTransition transitionKey={athleteId ?? slug}>{renderContent()}</ViewTransition>
 

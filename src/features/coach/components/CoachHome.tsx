@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
@@ -86,7 +87,7 @@ function NavTile({
  * alguien que viene a programar, así que "Mis atletas" es lo único con
  * tratamiento de acción primaria.
  */
-export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate: (view: string) => void }) {
+export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfile; onNavigate: (view: string) => void; headerActions?: ReactNode }) {
     const navigate = useNavigate();
 
     const getGreeting = () => {
@@ -180,14 +181,23 @@ export function CoachHome({ user, onNavigate }: { user: UserProfile; onNavigate:
     return (
         <>
             <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-6 pb-24 md:px-8 md:py-10">
-                <header>
-                    <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
-                        {getGreeting()}, {firstName}
-                    </h1>
-                    <p className="mt-1.5 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
-                        <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
-                        {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                    </p>
+                <header className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                        <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
+                            {getGreeting()}, {firstName}
+                        </h1>
+                        <p className="mt-1.5 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
+                            <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
+                            {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </p>
+                    </div>
+                    {/* Ver AthleteHome: en el inicio de escritorio la barra superior
+                        del armazon se oculta y sus acciones se pintan aqui. */}
+                    {headerActions && (
+                        <div className="hidden shrink-0 items-center gap-1 md:flex">
+                            {headerActions}
+                        </div>
+                    )}
                 </header>
 
                 {/* -----------------------------------------------------

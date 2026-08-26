@@ -56,3 +56,5 @@ assets-originales/
 # que `supabase functions deploy` funcione recién clonado, y no es un secreto
 # (el ref va en la URL del proyecto y en el bundle del cliente).
 supabase/.temp/cli-latest
+.vercel
+.env*

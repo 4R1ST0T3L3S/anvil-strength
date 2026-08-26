@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Calendar, ChevronRight, Trophy, Weight, List, Calculator, Users, Swords,
@@ -25,6 +26,15 @@ import { AvisoDePago } from '../../../components/ui/BloqueoDePago';
 interface AthleteHomeProps {
     user: UserProfile;
     onNavigate: (view: string) => void;
+    /**
+     * Acciones de la cabecera en ESCRITORIO.
+     *
+     * En el inicio de escritorio la barra superior del armazon se oculta
+     * (hideHeaderOnDesktop), asi que la campana, el conmutador de panel y
+     * el menu de cuenta se sirven desde aqui. En movil llega undefined y
+     * manda la barra superior de siempre.
+     */
+    headerActions?: ReactNode;
 }
 
 /**
@@ -157,7 +167,7 @@ function NavTile({
  * El orden es el de un día real: lo que toca hacer hoy, lo que viene después,
  * y al final las herramientas que se abren de vez en cuando.
  */
-export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
+export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProps) {
     const navigate = useNavigate();
     const puerta = usePuertaDePago(user.id);
     const { t } = useIdioma();
@@ -208,35 +218,46 @@ export function AthleteHome({ user, onNavigate }: AthleteHomeProps) {
                 <AvisoDePago resultado={puerta.resultado} />
                 {/* ---------------------------------------------------------
                     CABECERA                                              */}
-                <header>
-                    {teamName && (
-                        <div className="mb-2.5 flex items-center gap-2.5">
-                            {user.coach_logo_url && (
-                                <img
-                                    src={user.coach_logo_url}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="h-7 w-auto rounded-chip object-contain"
-                                />
-                            )}
-                            <p
-                                className="text-t-2xs font-bold uppercase tracking-widest"
-                                style={{ color: accent }}
-                            >
-                                {teamName}
-                            </p>
+                <header className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                        {teamName && (
+                            <div className="mb-2.5 flex items-center gap-2.5">
+                                {user.coach_logo_url && (
+                                    <img
+                                        src={user.coach_logo_url}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="h-7 w-auto rounded-chip object-contain"
+                                    />
+                                )}
+                                <p
+                                    className="text-t-2xs font-bold uppercase tracking-widest"
+                                    style={{ color: accent }}
+                                >
+                                    {teamName}
+                                </p>
+                            </div>
+                        )}
+                        <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
+                            {t(getGreeting())},{' '}
+                            <span style={{ color: accent }}>{firstName}</span>
+                        </h1>
+                        <p className="mt-1.5 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
+                            <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
+                            {new Date().toLocaleDateString('es-ES', {
+                                weekday: 'long', day: 'numeric', month: 'long',
+                            })}
+                        </p>
+                    </div>
+                    {/* En el inicio de escritorio la barra superior del armazon se
+                        oculta, asi que sus acciones (avisos, conmutador de panel,
+                        cuenta) se pintan aqui. En movil llega undefined y manda la
+                        barra superior de siempre. */}
+                    {headerActions && (
+                        <div className="hidden shrink-0 items-center gap-1 md:flex">
+                            {headerActions}
                         </div>
                     )}
-                    <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
-                        {t(getGreeting())},{' '}
-                        <span style={{ color: accent }}>{firstName}</span>
-                    </h1>
-                    <p className="mt-1.5 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
-                        <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
-                        {new Date().toLocaleDateString('es-ES', {
-                            weekday: 'long', day: 'numeric', month: 'long',
-                        })}
-                    </p>
                 </header>
 
                 {/* ---------------------------------------------------------
