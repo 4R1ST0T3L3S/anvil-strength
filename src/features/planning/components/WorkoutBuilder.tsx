@@ -47,6 +47,18 @@ interface WorkoutBuilderProps {
     blockId?: string | null;
     /** Solo para la cabecera de la hoja exportada a PDF. */
     athleteName?: string | null;
+    /**
+     * Avisa a quien lo monta de si hay cambios sin guardar.
+     *
+     * Añadir una serie, tocar reps/kilos/RPE/descanso/notas de una NO se
+     * escribe en el servidor al momento — vive solo en memoria hasta pulsar
+     * "Guardar cambios" (ver `handleSaveChanges`). Sin esto, quien renderiza
+     * el constructor no tiene forma de saber que cerrar la pestaña, recargar
+     * o navegar a otra sección se lleva por delante lo que se acaba de
+     * teclear. `CoachAthleteDetails` lo usa para confirmar antes de salir
+     * del constructor por "← Ver todos los bloques" o por otra pestaña.
+     */
+    onDirtyChange?: (dirty: boolean) => void;
 }
 
 // ==========================================
@@ -55,7 +67,7 @@ interface WorkoutBuilderProps {
 // ==========================================
 // COMPONENT: WORKOUT BUILDER
 // ==========================================
-export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuilderProps) {
+export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange }: WorkoutBuilderProps) {
     const athleteDisplayName = athleteName?.trim() || 'Atleta';
     const [loading, setLoading] = useState(true);
     const [blockData, setBlockData] = useState<FullBlockData | null>(null);
@@ -64,6 +76,28 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     const pdfTheme = useCoachPdfTheme(blockData?.coach_id);
     const [isSaving, setIsSaving] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+    // Avisa al padre de cada cambio, y se lo dice también al desmontar: quien
+    // cierra este panel con cambios sin guardar tiene que enterarse de que ya
+    // no hay nada pendiente una vez que el propio constructor desaparece.
+    useEffect(() => {
+        onDirtyChange?.(hasUnsavedChanges);
+    }, [hasUnsavedChanges, onDirtyChange]);
+    useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
+
+    // Cerrar la pestaña, recargar o teclear otra URL no pasa por React: nada
+    // de lo de arriba lo detecta. `beforeunload` es el único gancho que
+    // cubre esas tres salidas, y es justo lo que faltaba en todo el
+    // proyecto — no hay ni un solo guardián de navegación en ningún sitio.
+    useEffect(() => {
+        if (!hasUnsavedChanges) return;
+        const handler = (e: BeforeUnloadEvent) => {
+            e.preventDefault();
+            e.returnValue = '';
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [hasUnsavedChanges]);
     /**
      * Foto de cada serie tal y como está EN EL SERVIDOR, serializada.
      *

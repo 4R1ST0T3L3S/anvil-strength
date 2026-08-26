@@ -95,6 +95,16 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
     const [rosterSearch, setRosterSearch] = useState('');
     const rosterAnchorRef = useRef<HTMLButtonElement>(null);
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+    /**
+     * Si el `WorkoutBuilder` montado tiene series sin guardar.
+     *
+     * El propio constructor solo escribe en el servidor al pulsar "Guardar
+     * cambios" — añadir una serie, o tocar reps/kilos/RPE/descanso/notas de
+     * una, vive solo en memoria hasta entonces. Sin esto, salir por "← Ver
+     * todos los bloques", cambiar de pestaña o saltar a otro atleta desde el
+     * selector de arriba se llevaba ese trabajo por delante sin avisar.
+     */
+    const [builderDirty, setBuilderDirty] = useState(false);
     const [addingCompetition, setAddingCompetition] = useState(false);
     const [newCompetition, setNewCompetition] = useState({ name: '', date: '', location: '' });
     const [savingCompetition, setSavingCompetition] = useState(false);
@@ -105,6 +115,40 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         description: string;
         onConfirm: () => void;
     }>({ isOpen: false, title: '', description: '', onConfirm: () => { } });
+
+    /**
+     * Distinta del `confirmModal` de arriba a propósito: ese tiene
+     * `confirmText`/`variant` fijos en el render ("Eliminar" / danger) porque
+     * hasta ahora solo lo usaban borrados. "Salir sin guardar" no es un
+     * borrado — reutilizarlo habría puesto el botón "Eliminar" delante de
+     * una acción que no elimina nada.
+     */
+    const [leaveBuilderConfirm, setLeaveBuilderConfirm] = useState<{ isOpen: boolean; onConfirm: () => void }>(
+        { isOpen: false, onConfirm: () => { } }
+    );
+
+    /**
+     * Ejecuta `then` directamente, o pide confirmación antes si el
+     * constructor de bloques tiene series sin guardar.
+     *
+     * Cubre las TRES formas de salir del constructor que son un cambio de
+     * estado local y no una navegación real: "← Ver todos los bloques",
+     * cambiar de pestaña, y saltar a otro atleta desde el selector de la
+     * cabecera. Ninguna de las tres dispara `beforeunload` — eso solo cubre
+     * cerrar la pestaña, recargar o teclear otra URL, que `WorkoutBuilder`
+     * ya gestiona por su cuenta.
+     */
+    const confirmLeaveBuilder = useCallback((then: () => void) => {
+        if (!builderDirty) { then(); return; }
+        setLeaveBuilderConfirm({
+            isOpen: true,
+            onConfirm: () => {
+                setLeaveBuilderConfirm(prev => ({ ...prev, isOpen: false }));
+                setBuilderDirty(false);
+                then();
+            },
+        });
+    }, [builderDirty]);
 
     /**
      * Las competiciones del atleta y sus resultados, en una sola consulta.
@@ -353,7 +397,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                         role="menuitem"
                                         onClick={() => {
                                             setRosterOpen(false);
-                                            if (!isCurrent) navigate(`/coach-dashboard/atletas/${a.id}`);
+                                            if (!isCurrent) confirmLeaveBuilder(() => navigate(`/coach-dashboard/atletas/${a.id}`));
                                         }}
                                         className={`flex w-full items-center gap-3 rounded-field px-2.5 py-2 text-left transition-colors duration-fast ease-snap ${
  isCurrent ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-raised'
@@ -408,7 +452,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     key={key}
                                     role="tab"
                                     aria-selected={active}
-                                    onClick={() => setActiveTab(key)}
+                                    onClick={() => confirmLeaveBuilder(() => setActiveTab(key))}
                                     className={`flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-field px-4 text-t-sm font-bold transition-colors duration-fast ease-snap md:px-6 ${
  active
  ? 'bg-brand text-brand-ink'
@@ -441,7 +485,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         {selectedBlockId ? (
                             <div className="h-full flex flex-col">
                                 <button
-                                    onClick={() => setSelectedBlockId(null)}
+                                    onClick={() => confirmLeaveBuilder(() => setSelectedBlockId(null))}
                                     className="self-start mb-2 text-sm text-ink-subtle hover:text-ink flex items-center gap-1 transition-colors"
                                 >
                                     &larr; Ver todos los bloques
@@ -450,6 +494,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     athleteId={athleteId}
                                     blockId={selectedBlockId}
                                     athleteName={athlete.full_name}
+                                    onDirtyChange={setBuilderDirty}
                                 />
                             </div>
                         ) : (
@@ -633,6 +678,16 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 confirmText="Eliminar"
                 cancelText="Cancelar"
                 variant="danger"
+            />
+            <ConfirmationModal
+                isOpen={leaveBuilderConfirm.isOpen}
+                onClose={() => setLeaveBuilderConfirm(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={leaveBuilderConfirm.onConfirm}
+                title="Cambios sin guardar"
+                description="Este bloque tiene series sin guardar. Si sales ahora, se pierden."
+                confirmText="Salir sin guardar"
+                cancelText="Seguir editando"
+                variant="warning"
             />
         </div>
     );
