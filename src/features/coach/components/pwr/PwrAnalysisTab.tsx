@@ -92,7 +92,26 @@ export function PwrAnalysisTab({
   const handleResult = useCallback((value: PwrResult | null) => setResult(value), []);
 
   return (
-    <div className={`mx-auto px-2 sm:px-4 py-4 animate-fade w-full ${trackingData ? 'max-w-[1800px] h-[calc(100vh-32px)] min-h-[600px] flex flex-col' : 'max-w-5xl space-y-6'}`}>
+    /* EL ALTO DE PANTALLA ES UNA DECISION DE ESCRITORIO, NO DE MOVIL.
+       =================================================================
+       Con el analisis terminado, esta pantalla se convertia en una caja
+       de `100vh` con `overflow-hidden` en TODAS las anchuras. Medido a
+       375x812: la caja daba 604 px y dentro habia 3.665 px de contenido.
+       Tres mil pixeles recortados y sin barra que los alcanzara — el
+       informe de serie entero, con sus graficas y sus botones de
+       exportar, no se veia NUNCA. A 1440x900 tampoco: 780 contra 2.061.
+
+       Debajo de `lg` no hay dos columnas que encajar, asi que no hay
+       nada que ganar atando el alto: la pantalla vuelve a ser un
+       documento y lo desplaza el `<main>` del armazon, que ya es
+       `overflow-y-auto`. De `lg` en adelante se mantiene el reparto
+       video-izquierda / metricas-derecha, y quien desplaza es la columna
+       de metricas.
+
+       `dvh` y no `vh`: en un movil con la barra del navegador a la
+       vista, `100vh` mide mas de lo que se ve (ver 9d764cb9, donde este
+       sitio se quedo fuera del barrido). */
+    <div className={`mx-auto px-2 sm:px-4 py-4 animate-fade w-full ${trackingData ? 'max-w-[1800px] flex flex-col lg:h-[calc(100dvh-32px)] lg:min-h-[600px]' : 'max-w-5xl space-y-6'}`}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shrink-0 mb-6">
           <div className="flex items-center gap-3 min-w-0">
               {onBack && (
@@ -203,10 +222,10 @@ export function PwrAnalysisTab({
 
       {/* Contenedor dinámico: se convierte en 2 columnas cuando hay resultados, pero mantiene el Video Tracker en el mismo nivel del DOM para no perder el estado. */}
       {setup && (
-      <div className={`flex flex-1 ${trackingData ? 'flex-col lg:flex-row gap-6 min-h-0 overflow-hidden' : 'flex-col'}`}>
+      <div className={`flex flex-1 ${trackingData ? 'flex-col gap-6 lg:min-h-0 lg:flex-row lg:overflow-hidden' : 'flex-col'}`}>
 
           {/* Lado izquierdo (o Full width) */}
-          <div className={`${trackingData ? 'w-full lg:w-5/12 xl:w-4/12 h-[40vh] lg:h-full flex flex-col shrink-0' : 'w-full'}`}>
+          <div className={`${trackingData ? 'w-full lg:w-5/12 xl:w-4/12 h-[40dvh] lg:h-full flex flex-col shrink-0' : 'w-full'}`}>
               <VideoTracker
                   key={trackerVersion}
                   onTrackingComplete={handleTrackingComplete}
@@ -216,10 +235,18 @@ export function PwrAnalysisTab({
               />
           </div>
 
-          {/* Lado derecho (Solo visible en resultados) */}
+          {/* Lado derecho (Solo visible en resultados).
+
+              De `lg` en adelante esta columna ES el puerto de desplazamiento
+              del informe: sin `overflow-y-auto` aqui, el panel se recorta
+              contra el alto de la ventana y el informe de serie no se
+              alcanza. Debajo de `lg` no lleva alto ni desbordamiento
+              propios — se desplaza la pantalla entera. `pr-2` sube a `lg`
+              con ellos: es el hueco de la barra de desplazamiento, y en
+              movil no hay barra que separar. */}
           {trackingData && (
-              <div className="w-full lg:w-7/12 xl:w-8/12 h-full pr-2">
-                  <div className="animate-slide h-full">
+              <div className="w-full lg:w-7/12 xl:w-8/12 lg:h-full lg:overflow-y-auto lg:pr-2">
+                  <div className="animate-slide">
                       <MetricsDashboard
                           path={trackingData.path}
                           calibration={trackingData.calibration}

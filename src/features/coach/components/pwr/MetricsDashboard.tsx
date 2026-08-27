@@ -439,8 +439,20 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
   /** Atenuar es la señal de "esto no te lo creas", sin llegar a esconderlo. */
   const dimmed = quality.verdict === 'blocked' ? 'opacity-50' : '';
 
+  /* ESTE PANEL ES UN DOCUMENTO, NO UNA CAJA DE ALTO FIJO.
+     ===================================================================
+     Era `h-full`: un flex de alto atado al del padre, con casi todos los
+     bloques en `shrink-0` y las graficas en `flex-1`. Como el contenido
+     real mide unos 2.000 px, nunca hubo espacio sobrante que repartir:
+     medido en el navegador, la fila de las dos graficas salia a CERO
+     pixeles de alto — a 375 y a 1440 —, asi que la curva de velocidad y
+     la trayectoria de la barra no se han visto nunca.
+
+     Con alto natural, el orden se lee entero y quien lo desplaza es el
+     contenedor de fuera (ver `PwrAnalysisTab`): el `<main>` del armazon
+     en movil, la columna derecha de `lg` en adelante. */
   return (
-    <div className="flex flex-col h-full gap-3 pb-2 w-full">
+    <div className="flex w-full flex-col gap-3 pb-2">
 
       <div className={`shrink-0 rounded-card border ${tone.border} ${tone.bg} p-3`}>
         <div className="flex items-start gap-2.5">
@@ -522,7 +534,12 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
       )}
 
       {/* Summary Cards */}
-      <div className={`grid grid-cols-3 gap-3 shrink-0 ${dimmed}`}>
+      {/* UNA COLUMNA EN EL MOVIL. Con `grid-cols-3` fijo, a 375 px cada
+          tarjeta dejaba 41 px de texto para un valor que pide 67: se leia
+          "0,4…" donde ponia "0,45 m/s", y "Velocidad Media" pedia 119.
+          Truncar la cifra es peor que no ensenarla, porque parece un
+          numero. */}
+      <div className={`grid grid-cols-1 gap-3 sm:grid-cols-3 shrink-0 ${dimmed}`}>
          <div className="bg-[#241b1b] border border-[#ff3333]/10 p-3 rounded-xl flex items-center gap-2 overflow-hidden shadow-[0_4px_20px_rgba(255,51,51,0.05)]">
              <div className="p-2 bg-brand/10 rounded-lg text-brand-text shrink-0">
                  <Activity size={18} />
@@ -554,9 +571,15 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
          </div>
       </div>
 
-      <div className={`grid grid-cols-2 gap-3 flex-1 min-h-0 ${dimmed}`}>
+      {/* ALTO PROPIO, Y NO `flex-1`. Con la raiz en alto natural no queda
+          espacio sobrante que repartir, asi que una grafica en `flex-1` se
+          quedaria en su minimo. 260 px es lo que necesita la curva de
+          velocidad para que se distingan el arranque y el estancamiento.
+          Apiladas por debajo de `sm`: dos graficas a 175 px de ancho no se
+          leen. */}
+      <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${dimmed}`}>
           {/* Velocity Line Chart */}
-          <div className="bg-surface-sunken border border-subtle p-3 rounded-xl flex flex-col h-full overflow-hidden">
+          <div className="bg-surface-sunken border border-subtle p-3 rounded-xl flex flex-col h-[260px] overflow-hidden">
               <h3 className="text-ink text-xs font-bold mb-2 flex items-center gap-1 shrink-0">
                   <Activity className="text-brand-text" size={14} />
                   Topología de Velocidad
@@ -610,7 +633,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           </div>
 
           {/* Bar Path Scatter Chart */}
-          <div className="bg-surface-sunken border border-subtle p-3 rounded-xl flex flex-col items-center h-full overflow-hidden">
+          <div className="bg-surface-sunken border border-subtle p-3 rounded-xl flex flex-col items-center h-[260px] overflow-hidden">
               <h3 className="text-ink text-xs font-bold mb-2 flex items-center gap-1 w-full shrink-0">
                   <Target className="text-success" size={14} />
                   Trayectoria (1:1)
