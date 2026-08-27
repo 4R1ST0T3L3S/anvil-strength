@@ -8,11 +8,36 @@ import { useNavigate } from 'react-router-dom';
 export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: () => void }) {
     const navigate = useNavigate();
     const chatContainerRef = useRef<HTMLDivElement>(null);
-    const { messages, loading, sendMessage, markAsRead } = useChat(user.id, user.coach_id || null);
+    const { messages, loading, sendMessage, markAsRead, hayMas, cargarMas } = useChat(user.id, user.coach_id || null);
+
+    /**
+     * Alto del hilo justo ANTES de pedir mensajes viejos.
+     *
+     * Sin esto, ampliar la ventana antepone mensajes, el efecto de abajo ve
+     * que `messages` ha cambiado y baja del todo — es decir, pides ver lo de
+     * antes y te manda al final. Guardando el alto previo, la diferencia es
+     * exactamente cuánto ha crecido por arriba, y dejar ahí el scroll mantiene
+     * la vista clavada donde estaba.
+     *
+     * Es un `ref` y no un `state` porque no pinta nada: si fuese estado,
+     * escribirlo provocaría un render de más en cada pulsación.
+     */
+    const altoPrevioRef = useRef<number | null>(null);
+
+    const verMasAntiguos = () => {
+        altoPrevioRef.current = chatContainerRef.current?.scrollHeight ?? null;
+        cargarMas();
+    };
 
     useEffect(() => {
-        if (chatContainerRef.current) {
-            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        const hilo = chatContainerRef.current;
+        if (hilo) {
+            if (altoPrevioRef.current !== null) {
+                hilo.scrollTop = hilo.scrollHeight - altoPrevioRef.current;
+                altoPrevioRef.current = null;
+            } else {
+                hilo.scrollTop = hilo.scrollHeight;
+            }
         }
         if (messages.length > 0) {
             markAsRead();
@@ -65,10 +90,25 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
                     </div>
                 ) : (
                     <>
-                        <div className="flex flex-col items-center mb-10 opacity-30">
-                            <ShieldCheck size={32} className="text-ink-subtle mb-2" />
-                            <p className="text-t-2xs font-black uppercase tracking-[0.4em] text-ink-subtle">Conexión Segura de Punto a Punto</p>
-                        </div>
+                        {/* El principio del hilo. Con `hayMas` no es el
+                            principio de verdad: es donde llega la ventana que
+                            se ha pedido, y por eso ahí va el botón en vez del
+                            sello. */}
+                        {hayMas ? (
+                            <div className="flex justify-center mb-10">
+                                <button
+                                    onClick={verMasAntiguos}
+                                    className="px-5 py-2.5 rounded-full border border-line bg-surface-raised text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle hover:text-ink hover:border-strong transition-colors"
+                                >
+                                    Ver mensajes anteriores
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center mb-10 opacity-30">
+                                <ShieldCheck size={32} className="text-ink-subtle mb-2" />
+                                <p className="text-t-2xs font-black uppercase tracking-[0.4em] text-ink-subtle">Conexión Segura de Punto a Punto</p>
+                            </div>
+                        )}
                         {messages.map(msg => (
                             <ChatBubble key={msg.id} message={msg} isOwn={msg.sender_id === user.id} />
                         ))}

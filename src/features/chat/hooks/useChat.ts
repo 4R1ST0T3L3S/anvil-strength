@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { ChatMessage } from '../../../types/database';
@@ -27,36 +27,99 @@ import { ChatMessage } from '../../../types/database';
  * el estado inicial, y el canal en tiempo real escribiendo sobre la caché con
  * `setQueryData`. El canal SÍ es un efecto legítimo — es exactamente
  * "suscribirse a un sistema externo", que es para lo que existen los efectos.
+ *
+ *
+ * POR QUÉ AHORA PIDE UNA CONVERSACIÓN Y NO LA TABLA ENTERA (K12, deuda 2)
+ * ---------------------------------------------------------------------
+ *
+ * Hasta el 24/08/2026 esto pedía TODOS los mensajes del usuario —con todo el
+ * mundo, desde el principio de los tiempos— y se quedaba con la conversación
+ * FILTRANDO EN EL NAVEGADOR. El comentario que lo justificaba decía que
+ * PostgREST no admite un `or` de dos condiciones compuestas.
+ *
+ * **Eso era falso.** `or=(and(...),and(...))` es sintaxis válida y está
+ * comprobada contra producción. La consulta correcta cabe en una línea:
+ *
+ *     or=(and(sender_id.eq.A,receiver_id.eq.B),
+ *         and(sender_id.eq.B,receiver_id.eq.A))
+ *
+ * Con eso, el servidor devuelve la conversación y solo la conversación, y los
+ * índices de `migrations/0002_chat_messages.sql` la resuelven sin ordenar
+ * nada.
+ *
+ * Y además se pide POR VENTANAS. Un hilo de dos años no se descarga para
+ * enseñar las últimas doce líneas: se piden las 50 más recientes y `cargarMas`
+ * amplía la ventana. La ventana se guarda POR CONVERSACIÓN, así que volver a
+ * un hilo que ya habías desplegado lo devuelve como lo dejaste.
  */
 
-export const claveConversacion = (yo: string, elOtro: string | null) =>
-    ['chat', yo, elOtro] as const;
+/** Cuántos mensajes trae cada tirón. */
+export const TAMANO_PAGINA = 50;
+
+export const claveConversacion = (yo: string, elOtro: string | null, ventana: number) =>
+    ['chat', yo, elOtro, ventana] as const;
 
 export const useChat = (currentUserId: string, otherUserId: string | null) => {
     const queryClient = useQueryClient();
-    const clave = claveConversacion(currentUserId, otherUserId);
+
+    /**
+     * La ventana abierta de cada conversación.
+     *
+     * Es un mapa y no un número suelto a propósito: con un número habría que
+     * reiniciarlo al cambiar de interlocutor, y eso sería un `setState` dentro
+     * de un efecto — justo lo que el bloque 6 se dedicó a quitar de 40 sitios.
+     * Indexando por interlocutor, el valor correcto se DERIVA y no hay efecto
+     * que escribir.
+     */
+    const [ventanas, setVentanas] = useState<Record<string, number>>({});
+    const ventana = (otherUserId && ventanas[otherUserId]) || TAMANO_PAGINA;
+
+    const clave = claveConversacion(currentUserId, otherUserId, ventana);
 
     const { data: messages = [], isPending: loading } = useQuery({
         queryKey: clave,
         queryFn: async (): Promise<ChatMessage[]> => {
+            const yo = currentUserId;
+            const elOtro = otherUserId as string;
+
             const { data, error } = await supabase
                 .from('chat_messages')
                 .select('*')
-                .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-                .order('created_at', { ascending: true });
+                .or(
+                    `and(sender_id.eq.${yo},receiver_id.eq.${elOtro}),` +
+                    `and(sender_id.eq.${elOtro},receiver_id.eq.${yo})`
+                )
+                // Descendente + límite = las MÁS RECIENTES. Ascendente con
+                // límite daría las más antiguas, que es lo contrario de lo que
+                // se quiere ver al abrir un chat.
+                .order('created_at', { ascending: false })
+                .limit(ventana);
 
             if (error) throw error;
 
-            // El filtro final se hace aquí y no en la consulta porque PostgREST
-            // no admite un `or` de dos condiciones compuestas; se piden todos
-            // los mensajes en los que participo y se queda la conversación.
-            return (data || []).filter(msg =>
-                (msg.sender_id === currentUserId && msg.receiver_id === otherUserId) ||
-                (msg.sender_id === otherUserId && msg.receiver_id === currentUserId)
-            );
+            // Y se le da la vuelta para pintar: arriba lo viejo, abajo lo nuevo.
+            return (data ?? []).slice().reverse();
         },
         enabled: !!otherUserId,
     });
+
+    /**
+     * ¿Puede haber más hilo hacia atrás?
+     *
+     * Si el servidor ha devuelto justo los que caben en la ventana, es que
+     * probablemente hay más. Cuando el total coincide exactamente con la
+     * ventana esto se equivoca una vez: se pide una página más, vuelve lo
+     * mismo, y ya se sabe que no hay nada detrás.
+     */
+    const hayMas = messages.length >= ventana;
+
+    const cargarMas = useCallback(() => {
+        if (!otherUserId) return;
+        setVentanas(previas => ({
+            ...previas,
+            [otherUserId]: (previas[otherUserId] || TAMANO_PAGINA) + TAMANO_PAGINA,
+        }));
+    }, [otherUserId]);
 
     /** Añade un mensaje a la caché sin duplicarlo. */
     const anadirMensaje = useCallback((nuevo: ChatMessage) => {
@@ -66,7 +129,7 @@ export const useChat = (currentUserId: string, otherUserId: string | null) => {
         // `clave` se reconstruye en cada render, así que las dependencias son
         // sus piezas y no el array.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [queryClient, currentUserId, otherUserId]);
+    }, [queryClient, currentUserId, otherUserId, ventana]);
 
     // Tiempo real. Esto SÍ es un efecto: se suscribe a un sistema externo y se
     // da de baja al desmontar.
@@ -123,7 +186,7 @@ export const useChat = (currentUserId: string, otherUserId: string | null) => {
     const fetchMessages = useCallback(() => {
         queryClient.invalidateQueries({ queryKey: clave });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [queryClient, currentUserId, otherUserId]);
+    }, [queryClient, currentUserId, otherUserId, ventana]);
 
-    return { messages, loading, sendMessage, markAsRead, fetchMessages };
+    return { messages, loading, sendMessage, markAsRead, fetchMessages, hayMas, cargarMas };
 };
