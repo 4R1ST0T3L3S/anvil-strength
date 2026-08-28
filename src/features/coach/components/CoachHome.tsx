@@ -4,10 +4,9 @@ import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, Calendar, User, Weight, List, Calculator,
-    ChevronRight, Swords, Activity, Fish, Loader,
-    BookOpen, Quote, LayoutDashboard, AlertTriangle,
+    ChevronRight, Swords, Fish, Loader, MessageCircle, FlaskConical,
+    BookOpen, Quote, LayoutDashboard,
 } from 'lucide-react';
-import { AttentionPanel } from './AttentionPanel';
 import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { TeamCard, NextCompCard, NoCompCard, type NextComp } from './CoachHomeCards';
 import type { LucideIcon } from 'lucide-react';
@@ -30,10 +29,10 @@ const AREA = {
 
 type AreaKey = keyof typeof AREA;
 
-function SectionLabel({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+function SectionLabel({ icon: Icon, children, colorClass }: { icon: LucideIcon; children: React.ReactNode; colorClass?: string }) {
     return (
-        <h2 className="mb-3 flex items-center gap-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-            <Icon size={14} aria-hidden="true" className="text-ink-faint" />
+        <h2 className="my-4 flex items-center gap-2 text-t-sm font-bold uppercase tracking-widest text-ink-subtle">
+            <Icon size={18} aria-hidden="true" className={colorClass || "text-ink-faint"} />
             {children}
         </h2>
     );
@@ -46,18 +45,20 @@ function NavTile({
     hint,
     onClick,
     area = 'tool',
+    customColor,
 }: {
     icon: LucideIcon;
     title: string;
     hint: string;
     onClick: () => void;
     area?: AreaKey;
+    customColor?: { icon: string, chip: string, ring: string };
 }) {
-    const a = AREA[area];
+    const a = customColor || AREA[area];
     return (
         <button
             onClick={onClick}
-            className="group relative flex h-full min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay active:bg-surface-raised"
+            className={`group relative flex h-full min-h-[110px] xl:min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay active:bg-surface-raised ${a.ring}`}
         >
             <Icon
                 size={72}
@@ -96,7 +97,6 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
         return 'Buenas noches';
     };
 
-    const [athleteCount, setAthleteCount] = useState<number | null>(null);
     const [nextComp, setNextComp] = useState<NextComp | null>(null);
     const [loading, setLoading] = useState(true);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
@@ -117,7 +117,6 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                 // El filtro vive en la puerta única, no aquí: ver
                 // src/features/coach/hooks/useCoachRoster.ts.
                 const athleteIds = await fetchRosterIds(user.id, 'active');
-                if (alive) setAthleteCount(athleteIds.length);
 
                 if (athleteIds.length === 0) {
                     if (alive) setNextComp(null);
@@ -179,13 +178,14 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
 
     return (
         <>
-            <div className="mx-auto flex h-[100dvh] md:h-[calc(100vh-64px)] w-full max-w-none flex-col px-4 py-4 md:px-8 xl:px-12 xl:py-4 overflow-hidden">
+            <div className="mx-auto flex min-h-full xl:h-[calc(100vh-64px)] w-full max-w-none flex-col px-4 py-4 md:px-8 xl:px-12 xl:py-4 xl:overflow-hidden">
                 <header className="mb-4 shrink-0 flex items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
-                            {getGreeting()}, {firstName}
+                        <h1 className="text-t-xl md:text-t-2xl font-black uppercase tracking-display text-ink">
+                            {getGreeting()},{' '}
+                            <span className="text-anvil-red">{firstName}</span>
                         </h1>
-                        <p className="mt-1 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
+                        <p className="mt-0.5 flex items-center gap-2 text-t-xs capitalize text-ink-muted">
                             <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
                             {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </p>
@@ -206,10 +206,8 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                             a quién tiene que atender y cuánto queda para la
                             siguiente tarima.                                    */}
                         <section className="shrink-0 flex flex-col min-h-0">
-                            <SectionLabel icon={Users}>Tu equipo</SectionLabel>
-                            <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-2 min-h-0">
-                                <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
-
+                            <SectionLabel icon={Trophy} colorClass="text-[#f59e0b]">Próxima competición</SectionLabel>
+                            <div className="grid flex-1 grid-cols-1 gap-2 min-h-0">
                                 {nextComp
                                     ? <NextCompCard comp={nextComp} onClick={() => onNavigate('calendar')} />
                                     : <NoCompCard />}
@@ -217,17 +215,10 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                         </section>
 
                         {/* -----------------------------------------------------
-                            QUÉ REQUIERE TU ATENCIÓN
-                            Va justo después de la acción principal y por delante de
-                            la rejilla de herramientas: es lo que decide a qué se
-                            dedica el coach hoy, y las calculadoras no. */}
-                        <section className="flex flex-col min-h-0 shrink-0">
-                            <SectionLabel icon={AlertTriangle}>Requiere tu atención</SectionLabel>
-                            <AttentionPanel coachId={user.id} />
-                        </section>
+                            ANVIL LESSONS */}
 
                         <section className="flex flex-1 flex-col min-h-0">
-                            <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
+                            <SectionLabel icon={BookOpen} colorClass="text-[#eab308]">Anvil Lessons</SectionLabel>
                             <div className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
                                 <Quote
                                     size={112}
@@ -245,29 +236,25 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                     </div>
 
                     {/* COLUMNA DERECHA (Secundaria) */}
-                    <div className="flex shrink-0 flex-col gap-4 xl:w-[50%] 2xl:w-[45%] min-h-0 overflow-hidden">
+                    <div className="flex shrink-0 flex-col gap-4 xl:w-[50%] 2xl:w-[45%] min-h-0 xl:overflow-hidden">
                         {/* ----------------------------------------------------- */}
                         <section className="flex flex-[3] flex-col min-h-0">
-                            <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
-                            <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2 min-h-0">
-                                <NavTile area="coach" icon={Calendar} title="Mis competiciones" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
-                                <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
-                                {!isNutritionist && (
-                                    <NavTile area="coach" icon={Activity} title="Análisis PWR" hint="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
-                                )}
-                                <NavTile icon={User} title="Mi perfil" hint="Marca, logo y datos" onClick={() => onNavigate('profile')} />
-                                <NavTile area="club" icon={Swords} title="La Arena" hint="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
-                                <NavTile area="club" icon={Users} title="Ranking" hint="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
+                            <SectionLabel icon={LayoutDashboard} colorClass="text-[#3b82f6]">Gestión</SectionLabel>
+                            <div className="grid flex-1 grid-cols-2 gap-2 min-h-0">
+                                <NavTile icon={MessageCircle} title="Mensajes" hint="Próximamente..." onClick={() => {}} customColor={{ icon: 'text-cyan-500', chip: 'bg-cyan-500/10', ring: 'group-hover:border-cyan-500/50' }} />
+                                <NavTile icon={Trophy} title="Competiciones" hint="Calendario anual" onClick={() => onNavigate('calendar')} customColor={{ icon: 'text-amber-500', chip: 'bg-amber-500/10', ring: 'group-hover:border-amber-500/50' }} />
+                                <NavTile icon={Swords} title="La Arena" hint="Comunidad del club" onClick={() => navigate('/dashboard/community')} customColor={{ icon: 'text-orange-500', chip: 'bg-orange-500/10', ring: 'group-hover:border-orange-500/50' }} />
+                                <NavTile icon={Users} title="Ranking" hint="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} customColor={{ icon: 'text-purple-500', chip: 'bg-purple-500/10', ring: 'group-hover:border-purple-500/50' }} />
                             </div>
                         </section>
 
                         <section className="flex flex-[2] flex-col min-h-0">
-                            <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
+                            <SectionLabel icon={FlaskConical} colorClass="text-[#10b981]">Anvil Lab Tools</SectionLabel>
                             <div className="grid flex-1 grid-cols-2 gap-2 min-h-0">
-                                <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
-                                <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
-                                <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
-                                <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
+                                <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} customColor={{ icon: 'text-pink-500', chip: 'bg-pink-500/10', ring: 'group-hover:border-pink-500/50' }} />
+                                <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} customColor={{ icon: 'text-indigo-500', chip: 'bg-indigo-500/10', ring: 'group-hover:border-indigo-500/50' }} />
+                                <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} customColor={{ icon: 'text-emerald-500', chip: 'bg-emerald-500/10', ring: 'group-hover:border-emerald-500/50' }} />
+                                <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} customColor={{ icon: 'text-rose-500', chip: 'bg-rose-500/10', ring: 'group-hover:border-rose-500/50' }} />
                             </div>
                         </section>
                     </div>
