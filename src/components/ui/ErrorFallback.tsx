@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface ErrorFallbackProps {
@@ -19,24 +19,43 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
     const isChunkError = isChunkLoadError(error);
 
+    const [tooManyRetries, setTooManyRetries] = useState(false);
+
     // Auto-reload on stale chunk errors (Service Worker cache mismatch)
     useEffect(() => {
         if (isChunkError) {
-            // Clear SW caches then reload
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then((registrations) => {
-                    Promise.all(registrations.map((r) => r.unregister())).then(() => {
-                        window.location.reload();
+            const reloads = parseInt(sessionStorage.getItem('chunk_reload_count') || '0', 10);
+            if (reloads < 2) {
+                sessionStorage.setItem('chunk_reload_count', (reloads + 1).toString());
+                
+                // Clear Cache Storage
+                if ('caches' in window) {
+                    caches.keys().then((names) => {
+                        names.forEach(name => caches.delete(name));
                     });
-                });
+                }
+
+                // Clear SW caches then reload
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then((registrations) => {
+                        Promise.all(registrations.map((r) => r.unregister())).then(() => {
+                            window.location.href = window.location.href; // Force navigate
+                        });
+                    });
+                } else {
+                    window.location.href = window.location.href;
+                }
             } else {
-                window.location.reload();
+                setTooManyRetries(true);
+                sessionStorage.removeItem('chunk_reload_count');
             }
+        } else {
+             sessionStorage.removeItem('chunk_reload_count');
         }
     }, [isChunkError]);
 
     // Show brief message while reloading
-    if (isChunkError) {
+    if (isChunkError && !tooManyRetries) {
         return (
             <div role="alert" className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-4">
                 <div className="bg-[#0a0a0a] p-8 rounded-xl border border-white/10 max-w-md w-full text-center shadow-2xl">
