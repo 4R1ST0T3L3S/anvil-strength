@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut, FileText, ChevronRight } from 'lucide-react';
+import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut, FileText, ChevronRight, Users } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
-import { isStaff } from '../../../lib/roles';
+import { isStaff, tieneAmbosPaneles, isCoach } from '../../../lib/roles';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { RolesSection } from './RolesSection';
 import { PdfThemeSettings } from './PdfThemeSettings';
 import { PersonalInfoSection } from './PersonalInfoSection';
@@ -24,6 +25,9 @@ interface ProfileSectionProps {
  * grises con opacidad a mano — el resto de la aplicación ya no se ve así.
  */
 export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) {
+    const navigate = useNavigate();
+    const location = useLocation();
+    
     /** "Mi perfil" y "Documento PDF" son dos pantallas, no un formulario con
      *  pestañas: la segunda necesita el ancho entero para la vista previa. */
     const [screen, setScreen] = useState<'profile' | 'pdf'>('profile');
@@ -177,12 +181,42 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                         onClick={onBack}
                         className="mb-2 flex items-center gap-1.5 text-t-xs font-bold uppercase tracking-widest text-ink-subtle transition-colors duration-fast hover:text-ink"
                     >
-                        ← Volver
+                        Volver
                     </button>
                 )}
-                <h1 className="text-t-3xl font-black uppercase tracking-display text-ink">Mi perfil</h1>
-                <p className="mt-1 text-t-sm text-ink-muted">Gestiona tu información personal y marcas.</p>
+                <h1 className="text-t-3xl md:text-t-4xl font-black uppercase tracking-display text-ink">
+                    Mi perfil
+                </h1>
+                <p className="mt-1 text-t-sm md:text-t-base text-ink-subtle">
+                    Gestiona tu información personal y foto de perfil.
+                </p>
             </header>
+
+            {tieneAmbosPaneles(user) && (
+                <button
+                    onClick={() => {
+                        if (isCoach(user) && location.pathname.includes('/coach-dashboard')) {
+                            navigate('/dashboard');
+                        } else {
+                            navigate('/coach-dashboard');
+                        }
+                    }}
+                    className="mb-8 flex w-full items-center justify-between rounded-card border border-[var(--border-default)] bg-[var(--brand-quiet)] p-4 text-left transition-colors duration-fast ease-snap hover:border-brand"
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-field bg-brand text-brand-ink">
+                            <Users size={20} aria-hidden="true" />
+                        </span>
+                        <div>
+                            <p className="text-t-sm font-bold text-ink">Cambiar de panel</p>
+                            <p className="text-t-xs text-ink-subtle">
+                                Tienes acceso a {(isCoach(user) && location.pathname.includes('/coach-dashboard')) ? 'Atleta' : isCoach(user) ? 'Entrenador' : 'Nutricionista'}
+                            </p>
+                        </div>
+                    </div>
+                    <ChevronRight size={20} className="text-ink-faint" />
+                </button>
+            )}
 
             {message && (
                 <div className={`mb-6 flex items-center gap-3 rounded-card border p-4 ${

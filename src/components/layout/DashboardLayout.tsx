@@ -94,7 +94,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="flex-1 flex flex-col min-w-0">
 
                 {/* Barra superior */}
-                <header className={`h-14 md:h-16 shrink-0 flex items-center justify-between gap-3 px-4 md:px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40 ${hideHeaderOnDesktop ? 'md:hidden' : ''}`}>
+                <header className={`hidden md:flex h-16 shrink-0 items-center justify-between gap-3 px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40 ${hideHeaderOnDesktop ? 'md:hidden' : ''}`}>
                     <div className="flex items-center gap-2 min-w-0">
                         {onBack ? (
                             <button
@@ -117,7 +117,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         )}
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-1">
                         {/* Conmutador de panel: píldora fija en la cabecera, visible siempre */}
                         {panelSwitch && (!hideHeaderOnDesktop || !isDesktop) && (
                             <button
@@ -155,11 +155,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
 
             {/* ============ NAV INFERIOR (móvil) ============ */}
-            {/* Barra inferior del movil.
-                Vive pegada al borde de la pantalla, asi que necesita `pb-safe`
-                para no quedar debajo de la barra de gestos del iPhone. */}
-            <nav className="fixed bottom-0 left-0 right-0 z-sticky flex items-stretch justify-around border-t border-subtle bg-surface-canvas/95 px-1 pb-safe pt-1 backdrop-blur-md md:hidden">
-                {barItems.map((item) => (
+            {/* Barra inferior del móvil, estilo flotante translúcido. */}
+            <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-sticky md:hidden">
+                <nav className="flex items-stretch justify-around rounded-3xl border border-subtle bg-surface-canvas/80 px-2 py-1 shadow-2xl backdrop-blur-xl">
+                    {barItems.map((item) => (
                     <button
                         key={item.label}
                         onClick={item.onClick}
@@ -192,7 +191,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         </span>
                     </button>
                 ))}
-            </nav>
+                </nav>
+            </div>
         </div>
     );
 };

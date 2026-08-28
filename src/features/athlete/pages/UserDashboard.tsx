@@ -125,14 +125,11 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: slug === 'nutricion',
         },
         {
-            icon: <Trophy size={20} />,
-            label: 'Competiciones',
-            // En la barra del móvil una pestaña mide 73px y "Competiciones"
-            // se cortaba. "Competir" cabe entero y además rima con "Entrenar":
-            // las cinco pestañas quedan en el mismo registro verbal.
-            shortLabel: 'Competir',
-            onClick: () => go('competiciones'),
-            isActive: slug === 'competiciones',
+            icon: <Calendar size={20} />,
+            label: 'Calendario AEP',
+            shortLabel: 'Calendario',
+            onClick: () => go('calendario'),
+            isActive: slug === 'calendario',
         },
         {
             icon: <User size={20} />,
@@ -143,17 +140,17 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         // A partir de aquí, fuera de la barra inferior del móvil: cinco
         // pestañas es el techo antes de que los iconos dejen de ser pulsables.
         {
+            icon: <Trophy size={20} />,
+            label: 'Competiciones',
+            onClick: () => go('competiciones'),
+            isActive: slug === 'competiciones',
+            hideOnMobileBar: true,
+        },
+        {
             icon: <Activity size={20} />,
             label: 'Velocidad',
             onClick: () => go('velocidad'),
             isActive: slug === 'velocidad',
-            hideOnMobileBar: true,
-        },
-        {
-            icon: <Calendar size={20} />,
-            label: 'Calendario AEP',
-            onClick: () => go('calendario'),
-            isActive: slug === 'calendario',
             hideOnMobileBar: true,
         },
         {
@@ -226,22 +223,20 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                         user={user} 
                         onNavigate={(v) => go(viewToSlug(v))} 
                         headerActions={
-                            isDesktop ? (
-                                <div className="flex items-center gap-1">
-                                    {panelSwitch && (
-                                        <button
-                                            onClick={panelSwitch.onClick}
-                                            aria-label={panelSwitch.label}
-                                            className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97]"
-                                        >
-                                            <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
-                                            <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
-                                        </button>
-                                    )}
-                                    <NotificationBell userId={user.id} />
-                                    <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
-                                </div>
-                            ) : undefined
+                            <div className="flex items-center gap-1">
+                                {panelSwitch && (
+                                    <button
+                                        onClick={panelSwitch.onClick}
+                                        aria-label={panelSwitch.label}
+                                        className="flex h-9 items-center gap-1.5 rounded-field border border-anvil-red/25 bg-anvil-red/10 px-2.5 text-[11px] font-bold uppercase tracking-wide text-anvil-red transition-colors duration-fast active:scale-[0.97]"
+                                    >
+                                        <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
+                                        <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
+                                    </button>
+                                )}
+                                <NotificationBell userId={user.id} />
+                                <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
+                            </div>
                         }
                     />
                 );

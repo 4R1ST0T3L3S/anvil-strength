@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Calendar, ChevronRight, Trophy, Weight, List, Calculator, Users, Swords,
     Lock, FileText, User, Fish, Dumbbell, Loader, BookOpen, Quote,
+    Zap, Medal, Crown, FlaskConical
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
@@ -60,10 +61,10 @@ const AREA = {
 
 type AreaKey = keyof typeof AREA;
 
-function SectionLabel({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
+function SectionLabel({ icon: Icon, children, colorClass }: { icon: LucideIcon; children: React.ReactNode; colorClass?: string }) {
     return (
-        <h2 className="mb-3 flex items-center gap-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-            <Icon size={14} aria-hidden="true" className="text-ink-faint" />
+        <h2 className="my-4 flex items-center gap-2 text-t-sm font-bold uppercase tracking-widest text-ink-subtle">
+            <Icon size={18} aria-hidden="true" className={colorClass || "text-ink-faint"} />
             {children}
         </h2>
     );
@@ -83,6 +84,7 @@ function NavTile({
     onClick,
     area = 'tool',
     disabled = false,
+    customColor,
 }: {
     icon: LucideIcon;
     title: string;
@@ -90,13 +92,14 @@ function NavTile({
     onClick: () => void;
     area?: AreaKey;
     disabled?: boolean;
+    customColor?: { icon: string, chip: string, ring: string };
 }) {
-    const a = AREA[area];
+    const a = customColor || AREA[area];
     return (
         <button
             onClick={onClick}
             disabled={disabled}
-            className={`group relative flex h-full min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay active:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-surface-raised ${a.ring}`}
+            className={`group relative flex h-full min-h-[110px] xl:min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay active:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-surface-raised ${a.ring}`}
         >
             {/* Marca de agua. Decorativa y a muy baja opacidad: da cuerpo a la
                 tarjeta sin competir con el texto. */}
@@ -180,7 +183,7 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
 
     return (
         <>
-            <div className="mx-auto flex h-[100dvh] md:h-[calc(100vh-64px)] w-full max-w-none flex-col px-4 py-4 md:px-8 xl:px-12 xl:py-4 overflow-hidden">
+            <div className="mx-auto flex min-h-full xl:h-[calc(100vh-64px)] w-full max-w-none flex-col px-4 py-4 md:px-8 xl:px-12 xl:py-4 xl:overflow-hidden">
                 {/* ---------------------------------------------------------
                     CABECERA                                              */}
                 <header className="mb-4 shrink-0 flex items-start justify-between gap-4">
@@ -203,11 +206,11 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                                 </p>
                             </div>
                         )}
-                        <h1 className="text-t-3xl font-black uppercase tracking-display text-ink md:text-t-4xl">
+                        <h1 className="text-t-xl md:text-t-2xl font-black uppercase tracking-display text-ink">
                             {getGreeting()},{' '}
                             <span style={{ color: accent }}>{firstName}</span>
                         </h1>
-                        <p className="mt-1 flex items-center gap-2 text-t-sm capitalize text-ink-muted">
+                        <p className="mt-0.5 flex items-center gap-2 text-t-xs capitalize text-ink-muted">
                             <Calendar size={14} className="text-ink-faint" aria-hidden="true" />
                             {new Date().toLocaleDateString('es-ES', {
                                 weekday: 'long', day: 'numeric', month: 'long',
@@ -223,40 +226,21 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
 
                 <div className="flex flex-1 flex-col xl:flex-row gap-4 min-h-0">
                     {/* COLUMNA IZQUIERDA (Principal) */}
-                    <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-hidden">
-                        {/* ---------------------------------------------------------
-                            HOY
-                            Entrenar es la razón por la que el atleta abre la app: es
-                            lo único con tratamiento de acción primaria en toda la
-                            pantalla, y ocupa el ancho que le corresponde.        */}
-                        <section className="shrink-0 flex flex-col min-h-0">
-                            <SectionLabel icon={Dumbbell}>Hoy</SectionLabel>
-
-                            {/* El entrenamiento pautado y los macros del día, con datos
-                                de verdad. Antes eran dos botones que no decían nada de
-                                lo que había detrás: para saber qué tocaba hoy había que
-                                entrar en otra pantalla y esperar a que cargara. */}
-                            <TodayPanel
-                                athleteId={user.id}
-                                locked={locked}
-                                onOpenTraining={() => onNavigate('planning')}
-                                onOpenNutrition={() => onNavigate('nutrition')}
-                            />
-
-                            <div className="mt-2.5">
-                                <CheckInCard athleteId={user.id} />
-                            </div>
-                        </section>
+                    <div className="flex flex-1 flex-col gap-4 min-w-0 xl:overflow-hidden">
+                        
+                        <div className="shrink-0">
+                            <CheckInCard athleteId={user.id} />
+                        </div>
 
                         {/* ---------------------------------------------------------
                             FRASE + COMPETICIÓN
-                            Las dos cosas que se miran y no se tocan van juntas en una
-                            fila, la frase con más peso porque es lo que se lee.
+                            El panel de la izquierda tiene el saludo, que da el
+                            contexto personal, y debajo el bloque motivacional.
                             Sin competición asignada, la frase se queda con la fila
                             entera en vez de dejar un hueco.                       */}
                         <section className={`flex flex-1 grid gap-2 min-h-0 ${nextCompetition ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
                             <div className="flex flex-col h-full min-h-0">
-                                <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
+                                <SectionLabel icon={BookOpen} colorClass="text-[#eab308]">Anvil Lessons</SectionLabel>
                                 <div className="relative flex-1 flex flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
                                     <Quote
                                         size={112}
@@ -274,7 +258,7 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
 
                             {nextCompetition && (
                                 <div className="flex flex-col h-full min-h-0">
-                                    <SectionLabel icon={Trophy}>Próxima competición</SectionLabel>
+                                    <SectionLabel icon={Trophy} colorClass="text-[#f59e0b]">Próxima competición</SectionLabel>
                                     <div className="flex flex-1 flex-col">
                                         <CountdownWidget assigned={nextCompetition} userId={user.id} />
                                     </div>
@@ -284,44 +268,28 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                     </div>
 
                     {/* COLUMNA DERECHA (Secundaria) */}
-                    <div className="flex shrink-0 flex-col gap-4 xl:w-[50%] 2xl:w-[45%] min-h-0 overflow-hidden">
+                    <div className="flex shrink-0 flex-col gap-4 xl:w-[50%] 2xl:w-[45%] min-h-0 xl:overflow-hidden">
                         {/* ---------------------------------------------------------
                             PANEL DE CONTROL                                      */}
                         <section className="flex flex-[3] flex-col min-h-0">
-                            <SectionLabel icon={FileText}>Tu carrera</SectionLabel>
-                            <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2 min-h-0">
-                                <NavTile area="train" icon={FileText} title="Planificación" hint="Bloques y sesiones" onClick={() => onNavigate('planning')} />
-                                <NavTile area="club" icon={Trophy} title="Competiciones" hint="Marcas y eventos" onClick={() => onNavigate('competitions')} />
-                                <NavTile area="train" icon={Calendar} title="Calendario" hint="Tu año de un vistazo" onClick={() => onNavigate('calendar')} />
-                                <NavTile area="tool" icon={User} title="Mi perfil" hint="Marcas, categoría y datos" onClick={() => onNavigate('profile')} />
-                                <NavTile
-                                    area="club"
-                                    icon={Swords}
-                                    title="La Arena"
-                                    hint={locked ? 'Necesitas acceso completo' : 'Apuestas del club'}
-                                    onClick={() => navigate('/dashboard/community')}
-                                    disabled={locked}
-                                />
-                                <NavTile
-                                    area="club"
-                                    icon={Users}
-                                    title="Ranking"
-                                    hint={locked ? 'Necesitas acceso completo' : 'Clasificación de atletas'}
-                                    onClick={() => setIsRankingOpen(true)}
-                                    disabled={locked}
-                                />
+                            <SectionLabel icon={Swords} colorClass="text-[#cd7f32]">El Club</SectionLabel>
+                            <div className="grid flex-1 grid-cols-2 gap-2 min-h-0">
+                                <NavTile icon={FileText} title="Planificación" hint="Bloques y sesiones" onClick={() => onNavigate('planning')} customColor={{ icon: 'text-red-500', chip: 'bg-red-500/10', ring: 'group-hover:border-red-500/50' }} />
+                                <NavTile icon={Trophy} title="Competiciones" hint="Marcas y eventos" onClick={() => onNavigate('competitions')} customColor={{ icon: 'text-amber-500', chip: 'bg-amber-500/10', ring: 'group-hover:border-amber-500/50' }} />
+                                <NavTile icon={Swords} title="La Arena" hint={locked ? 'Necesitas acceso completo' : 'Apuestas del club'} disabled={locked} onClick={() => onNavigate('arena')} customColor={{ icon: 'text-orange-500', chip: 'bg-orange-500/10', ring: 'group-hover:border-orange-500/50' }} />
+                                <NavTile icon={Medal} title="Ranking Anvil" hint="Clasificación general" onClick={() => onNavigate('ranking')} customColor={{ icon: 'text-purple-500', chip: 'bg-purple-500/10', ring: 'group-hover:border-purple-500/50' }} />
                             </div>
                         </section>
 
                         {/* ---------------------------------------------------------
                             HERRAMIENTAS                                          */}
                         <section className="flex flex-[2] flex-col min-h-0">
-                            <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
+                            <SectionLabel icon={FlaskConical} colorClass="text-[#10b981]">Anvil Lab Tools</SectionLabel>
                             <div className="grid flex-1 grid-cols-2 gap-2 min-h-0">
-                                <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
-                                <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
-                                <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
-                                <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
+                                <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} customColor={{ icon: 'text-pink-500', chip: 'bg-pink-500/10', ring: 'group-hover:border-pink-500/50' }} />
+                                <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} customColor={{ icon: 'text-indigo-500', chip: 'bg-indigo-500/10', ring: 'group-hover:border-indigo-500/50' }} />
+                                <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} customColor={{ icon: 'text-emerald-500', chip: 'bg-emerald-500/10', ring: 'group-hover:border-emerald-500/50' }} />
+                                <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} customColor={{ icon: 'text-rose-500', chip: 'bg-rose-500/10', ring: 'group-hover:border-rose-500/50' }} />
                             </div>
                         </section>
                     </div>

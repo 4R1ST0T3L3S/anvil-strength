@@ -1,10 +1,11 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { UserProfile } from '../hooks/useUser';
 import { isStaff, isAdmin, isAthlete, puede } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
 import { LandingPage } from '../features/landing/pages/LandingPage';
 import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
+import { PwaInstallBlocker } from '../components/pwa/PwaInstallBlocker';
 // Lazy Load Pages
 const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
 const CompetitionsPage = lazy(() => import('../features/landing/pages/CompetitionsPage').then(module => ({ default: module.CompetitionsPage })));
@@ -44,7 +45,18 @@ const PiezasPreview = import.meta.env.DEV
     ? lazy(() => import('../features/devtools/PiezasPreview').then(module => ({ default: module.PiezasPreview })))
     : null;
 
-
+function AppLoginFallback({ onLoginClick }: { onLoginClick: () => void }) {
+    // Cuando el usuario entra en app.anvilstrength.es y cierra la modal de login,
+    // se queda en esta pantalla de fallback en lugar de ver la landing pública.
+    return (
+        <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4 text-center">
+            <h1 className="text-2xl font-black uppercase text-white mb-6 tracking-wider">Anvil Strength</h1>
+            <button onClick={onLoginClick} className="bg-white text-black px-8 py-3 rounded-full font-black uppercase tracking-wider hover:bg-gray-200 transition-colors">
+                Iniciar Sesión
+            </button>
+        </div>
+    );
+}
 
 interface AppRoutesProps {
     user: UserProfile | null | undefined;
@@ -58,6 +70,18 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
     const { session } = useAuth();
 
     const hasActiveSession = !!session;
+
+    // Subdomain routing logic
+    const isAppSubdomain = useMemo(() => {
+        if (typeof window === 'undefined') return false;
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Simulación rápida para que puedas probar la web en localhost poniendo ?env=web
+        if (urlParams.get('env') === 'web') return false;
+        
+        const hostname = window.location.hostname;
+        return hostname.startsWith('app.') || hostname === 'localhost' || hostname === '127.0.0.1';
+    }, []);
 
     // Sin `key={location.pathname}` en <Routes>.
     //
@@ -76,11 +100,15 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 había forma de llegar al perfil para completar los datos. */}
             <Route path="/" element={
                 !user && !hasActiveSession ? (
-                    <LandingPage
-                        onLoginClick={onLoginClick}
-                        onSignupClick={onSignupClick}
-                        user={user}
-                    />
+                    isAppSubdomain ? (
+                        <AppLoginFallback onLoginClick={onLoginClick} />
+                    ) : (
+                        <LandingPage
+                            onLoginClick={onLoginClick}
+                            onSignupClick={onSignupClick}
+                            user={user}
+                        />
+                    )
                 ) : isAthlete(user) ? (
                     <Navigate to="/dashboard" replace />
                 ) : isStaff(user) ? (
@@ -191,7 +219,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         <Navigate to="/pending" replace />
                     ) : (
                         <Suspense fallback={<DashboardSkeleton />}>
-                            <ArenaView user={user} />
+                            <PwaInstallBlocker><ArenaView user={user} /></PwaInstallBlocker>
                         </Suspense>
                     )
                 ) : (
@@ -206,11 +234,13 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                             atletas (es entrenador o nutricionista) pero quiso
                             entrar por /dashboard: quiere su panel de atleta. El
                             chat también. */}
-                        {isAthlete(user) ? (
-                            <AthleteChatView user={user} />
-                        ) : (
-                            <CoachChatManager coach={user} />
-                        )}
+                        <PwaInstallBlocker>
+                            {isAthlete(user) ? (
+                                <AthleteChatView user={user} />
+                            ) : (
+                                <CoachChatManager coach={user} />
+                            )}
+                        </PwaInstallBlocker>
                     </Suspense>
                 ) : (
                     <Navigate to="/" replace />
@@ -220,7 +250,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             <Route path="/dashboard/games" element={
                 hasActiveSession && user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
-                        <AnvilGamesHub user={user} />
+                        <PwaInstallBlocker><AnvilGamesHub user={user} /></PwaInstallBlocker>
                     </Suspense>
                 ) : (
                     <Navigate to="/" replace />
@@ -249,10 +279,12 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         <Navigate to="/coach-dashboard" replace />
                     ) : user ? (
                         <Suspense fallback={<DashboardSkeleton />}>
-                            <UserDashboard
-                                user={user}
-                                onLogout={onLogout}
-                            />
+                            <PwaInstallBlocker>
+                                <UserDashboard
+                                    user={user}
+                                    onLogout={onLogout}
+                                />
+                            </PwaInstallBlocker>
                         </Suspense>
                     ) : null
                 } />
@@ -272,7 +304,9 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                         <Navigate to="/dashboard" replace />
                     ) : user ? (
                         <Suspense fallback={<DashboardSkeleton />}>
-                            <CoachDashboard user={user} onLogout={onLogout} />
+                            <PwaInstallBlocker>
+                                <CoachDashboard user={user} onLogout={onLogout} />
+                            </PwaInstallBlocker>
                         </Suspense>
                     ) : null
                 } />
@@ -293,7 +327,9 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     <Navigate to="/dashboard" replace />
                 ) : user ? (
                     <Suspense fallback={<DashboardSkeleton />}>
-                        <NutritionDashboard user={user} onLogout={onLogout} />
+                        <PwaInstallBlocker>
+                            <NutritionDashboard user={user} onLogout={onLogout} />
+                        </PwaInstallBlocker>
                     </Suspense>
                 ) : null
             } />
@@ -306,7 +342,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     <Navigate to="/" replace />
                 ) : (
                     <Suspense fallback={<DashboardSkeleton />}>
-                        <AdminDashboard />
+                        <PwaInstallBlocker><AdminDashboard /></PwaInstallBlocker>
                     </Suspense>
                 )
             } />

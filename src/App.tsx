@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 import { supabase } from './lib/supabase';
@@ -46,6 +46,14 @@ function App() {
     return <CountdownPage />;
   }
 
+  // Si venimos redirigidos de la web con ?signup=true, abrir el modal
+  useEffect(() => {
+    if (searchParams.get('signup') === 'true' && !user && !isLoading) {
+       setAuthMode('signup');
+       setIsAuthModalOpen(true);
+    }
+  }, [user, isLoading]);
+
 
 
 
@@ -54,8 +62,23 @@ function App() {
     window.location.reload();
   };
 
-  const handleLoginClick = () => { setAuthMode('login'); setIsAuthModalOpen(true); };
-  const handleSignupClick = () => { setAuthMode('signup'); setIsAuthModalOpen(true); };
+  const handleLoginClick = () => { 
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('app.')) {
+        window.location.href = `https://app.${window.location.hostname.replace('www.', '')}`;
+    } else {
+        setAuthMode('login'); 
+        setIsAuthModalOpen(true); 
+    }
+  };
+  
+  const handleSignupClick = () => { 
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('app.')) {
+        window.location.href = `https://app.${window.location.hostname.replace('www.', '')}?signup=true`;
+    } else {
+        setAuthMode('signup'); 
+        setIsAuthModalOpen(true); 
+    }
+  };
 
   if (isLoading) return <LoadingSpinner fullscreen message="Verificando sesión..." />;
 

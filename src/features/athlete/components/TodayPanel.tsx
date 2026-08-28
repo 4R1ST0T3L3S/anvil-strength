@@ -58,7 +58,7 @@ export function TodayPanel({ athleteId, onOpenTraining, onOpenNutrition, locked 
     }, [athleteId]);
 
     return (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-2 gap-2 xl:gap-3">
             <TrainingCard
                 training={training}
                 loading={loading}
@@ -163,7 +163,7 @@ export function TrainingCard({
         <button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative flex w-full flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60"
         >
             <Dumbbell
                 size={128}
@@ -216,7 +216,7 @@ export function TrainingCard({
             </div>
 
             <div className="relative mt-4">
-                <span className="block truncate text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
+                <span className="block truncate text-t-xl xl:text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
                     {loading
                         ? 'Cargando…'
                         : noSession
@@ -299,7 +299,7 @@ function NutritionCard({
         <button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative flex flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-4 xl:p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60"
         >
             <Utensils
                 size={128}
@@ -316,7 +316,7 @@ function NutritionCard({
                     nutricionista. Es el dato que el atleta mira varias veces
                     al día y para el que antes había que cambiar de pantalla. */}
                 {!loading && plan && (
-                    <div className="mt-3 grid grid-cols-4 gap-2">
+                    <div className="mt-3 grid grid-cols-2 xl:grid-cols-4 gap-2">
                         <Macro label="kcal" value={plan.calories_target} />
                         <Macro label="prot" value={plan.protein_target} unit="g" />
                         <Macro label="carb" value={plan.carbs_target} unit="g" />
@@ -326,7 +326,7 @@ function NutritionCard({
             </div>
 
             <div className="relative mt-4">
-                <span className="block text-t-2xl font-black uppercase leading-none tracking-display text-ink">
+                <span className="block text-t-xl xl:text-t-2xl font-black uppercase leading-none tracking-display text-ink">
                     Mi dieta
                 </span>
                 <span className="mt-1.5 flex items-center gap-1 text-t-sm text-ink-subtle">

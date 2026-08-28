@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ClipboardCheck, X, Check, Loader, CalendarCheck, UserCog } from 'lucide-react';
+import { ClipboardCheck, X, Check, Loader, Activity, CalendarDays, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     formsService, getPeriodKey, mergeQuestions,
@@ -8,6 +8,54 @@ import {
 } from '../../services/formsService';
 import { fetchActiveCoach } from '../coach/hooks/useCoachRoster';
 import { CheckInAnswerFields, AnswerValues } from './CheckInAnswerFields';
+
+function CheckInCountdown({ type }: { type: 'daily' | 'weekly' }) {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        const update = () => {
+            const now = new Date();
+            let target = new Date(now);
+            
+            if (type === 'daily') {
+                target.setHours(24, 0, 0, 0); // Next midnight
+            } else {
+                // Next Monday at 00:00:00
+                const day = now.getDay();
+                const daysUntilNextMonday = day === 0 ? 1 : 8 - day;
+                target.setDate(now.getDate() + daysUntilNextMonday);
+                target.setHours(0, 0, 0, 0);
+            }
+
+            const diff = target.getTime() - now.getTime();
+            
+            if (diff <= 0) {
+                setTimeLeft('00:00');
+                return;
+            }
+
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            
+            if (type === 'weekly' && h > 48) {
+                const days = Math.floor(h / 24);
+                setTimeLeft(`${days}d ${h % 24}h`);
+            } else {
+                setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+            }
+        };
+
+        update();
+        const interval = setInterval(update, 60000);
+        return () => clearInterval(interval);
+    }, [type]);
+
+    return (
+        <span className="flex items-center gap-1 text-[9px] font-black uppercase text-gray-500 tracking-wider">
+            {timeLeft} restantes
+        </span>
+    );
+}
 
 // ============ Tarjeta de acceso (para el home del atleta) ============
 
@@ -46,7 +94,10 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             }`}
                         >
                             <div className="flex items-center justify-between mb-2">
-                                <CalendarCheck size={18} className={done ? 'text-green-400' : 'text-anvil-red'} />
+                                {type === 'daily' 
+                                    ? <Activity size={18} className={done ? 'text-green-400' : 'text-anvil-red'} />
+                                    : <CalendarDays size={18} className={done ? 'text-green-400' : 'text-anvil-red'} />
+                                }
                                 {done && (
                                     <span className="flex items-center gap-1 text-[9px] font-black uppercase text-green-400">
                                         <Check size={10} /> Hecho
@@ -59,6 +110,11 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">
                                 {done ? 'Editar respuesta' : type === 'daily' ? '¿Cómo fue la sesión?' : 'Resumen de la semana'}
                             </p>
+                            {!done && (
+                                <div className="mt-2.5">
+                                    <CheckInCountdown type={type} />
+                                </div>
+                            )}
                         </button>
                     );
                 })}
