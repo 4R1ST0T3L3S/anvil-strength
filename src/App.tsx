@@ -63,21 +63,13 @@ function App() {
   };
 
   const handleLoginClick = () => { 
-    if (window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('app.')) {
-        window.location.href = `https://app.${window.location.hostname.replace('www.', '')}`;
-    } else {
-        setAuthMode('login'); 
-        setIsAuthModalOpen(true); 
-    }
+    setAuthMode('login'); 
+    setIsAuthModalOpen(true); 
   };
   
   const handleSignupClick = () => { 
-    if (window.location.hostname !== 'localhost' && !window.location.hostname.startsWith('app.')) {
-        window.location.href = `https://app.${window.location.hostname.replace('www.', '')}?signup=true`;
-    } else {
-        setAuthMode('signup'); 
-        setIsAuthModalOpen(true); 
-    }
+    setAuthMode('signup'); 
+    setIsAuthModalOpen(true); 
   };
 
   if (isLoading) return <LoadingSpinner fullscreen message="Verificando sesión..." />;
