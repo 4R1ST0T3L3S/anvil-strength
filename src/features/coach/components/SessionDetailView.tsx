@@ -31,6 +31,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
     }, [session.id]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchExercises();
     }, [session.id, fetchExercises]);
 

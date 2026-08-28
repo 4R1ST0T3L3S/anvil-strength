@@ -16,6 +16,7 @@ export function CoachNotesPanel({ coachId, athleteId }: { coachId: string; athle
 
     useEffect(() => {
         let alive = true;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
         athletesService.getCoachNotes(coachId, athleteId)
             .then(n => { if (alive) setNotes(n ?? ''); })

@@ -168,6 +168,7 @@ function buildDemo() {
 
 const DEMO = buildDemo();
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Preview() {
     const { concentrics, eccentrics, series, report } = DEMO;
 

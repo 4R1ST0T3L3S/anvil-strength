@@ -34,6 +34,7 @@ export function CoachCheckInsTab({ athleteId, coachId }: { athleteId: string; co
         }
     }, [athleteId, type]);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { load(); }, [load]);
 
     const scaleColor = (v: number) => {

@@ -195,6 +195,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
    * pulsar «exportar»— para que los tres formatos lleven la misma fecha aunque
    * se descarguen con minutos de diferencia.
    */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const reportBuiltAt = useMemo(() => new Date(), [path]);
 
   /**

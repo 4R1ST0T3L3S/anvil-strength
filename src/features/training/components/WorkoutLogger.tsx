@@ -170,6 +170,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 
     useEffect(() => {
         if (!activeSessionId || !activeExerciseIdsKey) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLastSessionByExercise(new Map());
             return;
         }
@@ -344,12 +345,14 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     // así están todas disponibles en el selector aunque aún no se hayan cargado.
     // Cambiar a una semana que aún no está cargada dispara lazy loading.
     const availableWeeks = useMemo(() => {
-        if (!block?.start_week || !block?.end_week) return [];
+        const start = block?.start_week;
+        const end = block?.end_week;
+        if (!start || !end) return [];
         return Array.from(
-            { length: block.end_week - block.start_week + 1 },
-            (_, i) => block.start_week! + i
+            { length: end - start + 1 },
+            (_, i) => start + i
         );
-    }, [block?.start_week, block?.end_week]);
+    }, [block]);
 
     // Días de la semana elegida, en orden de calendario.
     const sessions = useMemo(

@@ -180,6 +180,7 @@ export function DayEditorModal({
     // Mantener una selección válida cuando cambia la lista
     useEffect(() => {
         if (!session.exercises.some(e => e.id === selectedExId)) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSelectedExId(session.exercises[session.exercises.length - 1]?.id ?? null);
         }
     }, [session.exercises, selectedExId]);

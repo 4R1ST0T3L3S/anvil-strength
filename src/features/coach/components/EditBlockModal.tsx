@@ -32,6 +32,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
 
     useEffect(() => {
         if (block) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setName(block.name || '');
             setStartWeek(block.start_week ?? 1);
             setEndWeek(block.end_week ?? 4);

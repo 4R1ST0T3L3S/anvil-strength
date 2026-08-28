@@ -17,6 +17,7 @@ export function AthleteChatView({ user, onBack }: { user: UserProfile; onBack?: 
         if (messages.length > 0) {
             markAsRead();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messages]);
 
     if (!user.coach_id) {

@@ -823,6 +823,7 @@ function RestInput({
     // la casilla lo refleja. Mientras se está escribiendo no: `draft` solo se
     // resincroniza cuando el valor de arriba deja de coincidir con lo enviado.
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDraft(seconds != null ? String(seconds) : '');
     }, [seconds]);
 

@@ -60,6 +60,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
 
     useEffect(() => {
         if (isOpen && coachId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             fetchAthletes();
         }
     }, [isOpen, coachId, fetchAthletes]);

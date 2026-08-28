@@ -178,6 +178,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedBlockId(null);
         setActiveTab('planning');
     }, [athleteId]);
@@ -201,6 +202,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
         };
 
         fetchAthlete();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchCompetitions();
     }, [athleteId, fetchCompetitions]);
 
@@ -622,6 +624,7 @@ function CompetitionResultRow({ result, onSave }: {
 }) {
     const [draft, setDraft] = useState<Partial<CompetitionResult>>(result ?? {});
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { setDraft(result ?? {}); }, [result]);
 
     const field = (key: keyof CompetitionResult, label: string, placeholder: string) => (

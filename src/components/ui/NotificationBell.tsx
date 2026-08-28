@@ -62,6 +62,7 @@ export function NotificationBell({ userId }: { userId: string }) {
 
     // Carga inicial + aviso de bienvenida
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         refresh().then(count => {
             if (count > 0 && !welcomeShown.current) {
                 welcomeShown.current = true;

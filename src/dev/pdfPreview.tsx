@@ -58,6 +58,7 @@ const LONG_DAY: PrintWeek = {
 GlobalWorkerOptions.workerSrc = workerUrl;
 
 /** Pinta todas las páginas de un PDF, una debajo de otra. */
+// eslint-disable-next-line react-refresh/only-export-components
 function PdfCanvas({ bytes, width = 460 }: { bytes: ArrayBuffer | null; width?: number }) {
     const host = useRef<HTMLDivElement>(null);
 
@@ -94,6 +95,7 @@ function PdfCanvas({ bytes, width = 460 }: { bytes: ArrayBuffer | null; width?: 
     return <div ref={host} />;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Bench() {
     const [preset, setPreset] = useState('pizarra');
     const [long, setLong] = useState(false);

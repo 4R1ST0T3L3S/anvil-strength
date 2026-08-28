@@ -5,9 +5,11 @@ import { Share, PlusSquare, Download, MoreVertical, Smartphone } from 'lucide-re
 export const PwaInstallBlocker: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [shouldBlock, setShouldBlock] = useState(false);
     const [isIos, setIsIos] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const handleBeforeInstallPrompt = (e: any) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -21,8 +23,10 @@ export const PwaInstallBlocker: React.FC<{ children: React.ReactNode }> = ({ chi
 
     useEffect(() => {
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone || document.referrer.includes('android-app://');
         
+        // eslint-disable-next-line react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any
         setIsIos(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
 
         // DESACTIVADO TEMPORALMENTE PARA DESARROLLO

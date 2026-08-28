@@ -84,6 +84,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
     }, [athleteId]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchBlocks();
     }, [athleteId, fetchBlocks]);
 

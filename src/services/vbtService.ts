@@ -190,7 +190,8 @@ async function writeSetSummary(
             'training_sets.vbt_metrics no existe: la serie se actualiza solo con las métricas ' +
             'clásicas. Ejecuta database/metrics_catalog.sql en el editor SQL de Supabase.'
         );
-        const { vbt_metrics: _omit, ...legacyRow } = row;
+        const legacyRow = { ...row };
+        delete legacyRow.vbt_metrics;
         const retry = await supabase.from('training_sets').update(legacyRow).eq('id', setId);
         return retry.error ?? null;
     }
@@ -245,7 +246,8 @@ export const vbtService = {
                 'vbt_measurements.metrics no existe: se guarda sin las métricas ampliadas. ' +
                 'Ejecuta database/metrics_catalog.sql en el editor SQL de Supabase.'
             );
-            const { metrics: _omit, ...legacyPayload } = payload;
+            const legacyPayload = { ...payload } as Record<string, unknown>;
+            delete legacyPayload.metrics;
             ({ data, error } = await supabase
                 .from('vbt_measurements')
                 .insert(legacyPayload)

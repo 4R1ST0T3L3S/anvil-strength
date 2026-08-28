@@ -95,28 +95,28 @@ export function useDeleteMeal() {
 export function useAddFoodToMeal() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ foodData }: { foodData: Partial<MealFood>, athleteId: string, tempFood?: any }) => 
+        mutationFn: ({ foodData }: { foodData: Partial<MealFood>, athleteId: string, tempFood?: FoodItem }) => 
             nutritionService.addFoodToMeal(foodData),
         onMutate: async ({ foodData, athleteId, tempFood }) => {
             await queryClient.cancelQueries({ queryKey: NUTRITION_KEYS.plan(athleteId) });
             const previousPlan = queryClient.getQueryData(NUTRITION_KEYS.plan(athleteId));
             
             if (tempFood) {
-                queryClient.setQueryData(NUTRITION_KEYS.plan(athleteId), (old: any) => {
+                queryClient.setQueryData<NutritionPlan | undefined>(NUTRITION_KEYS.plan(athleteId), (old) => {
                     if (!old) return old;
                     return {
                         ...old,
-                        meals: old.meals.map((m: any) => {
+                        meals: (old.meals || []).map((m: Meal) => {
                             if (m.id === foodData.meal_id) {
                                 return {
                                     ...m,
                                     foods: [...(m.foods || []), { 
                                         id: `temp-${Date.now()}`, 
                                         meal_id: m.id, 
-                                        food_id: foodData.food_id, 
-                                        amount_g: foodData.amount_g, 
+                                        food_id: foodData.food_id || '', 
+                                        amount_g: foodData.amount_g || 0, 
                                         food: tempFood 
-                                    }]
+                                    } as MealFood]
                                 };
                             }
                             return m;
@@ -150,13 +150,13 @@ export function useRemoveFoodFromMeal() {
             await queryClient.cancelQueries({ queryKey: NUTRITION_KEYS.plan(athleteId) });
             const previousPlan = queryClient.getQueryData(NUTRITION_KEYS.plan(athleteId));
             
-            queryClient.setQueryData(NUTRITION_KEYS.plan(athleteId), (old: any) => {
+            queryClient.setQueryData<NutritionPlan | undefined>(NUTRITION_KEYS.plan(athleteId), (old) => {
                 if (!old) return old;
                 return {
                     ...old,
-                    meals: old.meals.map((m: any) => ({
+                    meals: (old.meals || []).map((m: Meal) => ({
                         ...m,
-                        foods: (m.foods || []).filter((f: any) => f.id !== mealFoodId)
+                        foods: (m.foods || []).filter((f: MealFood) => f.id !== mealFoodId)
                     }))
                 };
             });

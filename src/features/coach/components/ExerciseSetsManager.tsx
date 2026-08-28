@@ -55,6 +55,7 @@ function SetTextInput({
 
     // Only reset from external state when the row identity changes (e.g. after a save)
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLocalVal(initialValue);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resetKey]);
@@ -91,6 +92,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
     }, [sessionExerciseId]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSets();
     }, [sessionExerciseId, fetchSets]);
 

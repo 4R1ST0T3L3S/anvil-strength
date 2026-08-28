@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Calendar, ChevronRight, Trophy, Weight, List, Calculator, Users, Swords,
-    Lock, FileText, User, Fish, Dumbbell, Loader, BookOpen, Quote,
-    Zap, Medal, Crown, FlaskConical
+    Calendar, ChevronRight, Trophy, Weight, List, Calculator, Swords,
+    Lock, FileText, Fish, Loader, BookOpen, Quote,
+    Medal, FlaskConical
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
@@ -20,7 +20,8 @@ import { CountdownWidget } from '../../../components/ui/CountdownWidget';
 
 interface AthleteHomeProps {
     user: UserProfile;
-    onNavigate: (view: string) => void;
+    onNavigate: (view: string) => void | Promise<void>;
+    headerActions?: React.ReactNode;
 }
 
 const getGreeting = () => {
@@ -149,7 +150,6 @@ function NavTile({
  * y al final las herramientas que se abren de vez en cuando.
  */
 export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProps) {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);

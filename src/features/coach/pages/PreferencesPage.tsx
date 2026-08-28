@@ -33,6 +33,7 @@ export function PreferencesPage({ coachId, onOpenPdfTheme }: {
     const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { if (!dirty) setPrefs(loaded); }, [loaded, dirty]);
 
     const patch = (fn: (prev: CoachPrefs) => CoachPrefs) => {

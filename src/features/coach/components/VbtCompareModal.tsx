@@ -20,6 +20,21 @@ interface SummaryRow {
     maxFatiga: string;
 }
 
+const MetricRadio = ({ value, label, isActive, onSelect }: { value: string, label: string, isActive: boolean, onSelect: (val: string) => void }) => {
+    return (
+        <button
+            onClick={() => onSelect(value)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest ${
+                isActive 
+                    ? 'bg-anvil-red text-black border-anvil-red shadow-lg' 
+                    : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
+            }`}
+        >
+            {label}
+        </button>
+    );
+};
+
 interface VbtCompareModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -53,6 +68,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
         if (!isOpen || sessionsToCompare.length === 0) return;
 
         let isMounted = true;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
 
         const fetchAndParse = async () => {
@@ -157,21 +173,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
 
     if (!isOpen) return null;
 
-    const MetricRadio = ({ value, label }: { value: string, label: string }) => {
-        const isActive = activeMetric === value;
-        return (
-            <button
-                onClick={() => setActiveMetric(value as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest ${
-                    isActive 
-                        ? 'bg-anvil-red text-black border-anvil-red shadow-lg' 
-                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
-                }`}
-            >
-                {label}
-            </button>
-        );
-    };
+
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/95 backdrop-blur-sm animate-in fade-in duration-300">
@@ -219,12 +221,12 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                             {/* Metric Selector */}
                             <div className="flex flex-wrap items-center justify-center gap-2 mb-8 w-full p-2">
                                 <span className="text-xs uppercase font-bold text-gray-600 px-2 mr-2">Analizar:</span>
-                                <MetricRadio value="Vm" label="Vm" />
-                                <MetricRadio value="Vmp" label="Vmp" />
-                                <MetricRadio value="Vmax" label="Vmax" />
-                                <MetricRadio value="Potencia" label="Potencia" />
-                                <MetricRadio value="Fatiga" label="Fatiga" />
-                                <MetricRadio value="ROM" label="ROM" />
+                                <MetricRadio value="Vm" label="Vm" isActive={activeMetric === 'Vm'} onSelect={(v) => setActiveMetric(v as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')} />
+                                <MetricRadio value="Vmp" label="Vmp" isActive={activeMetric === 'Vmp'} onSelect={(v) => setActiveMetric(v as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')} />
+                                <MetricRadio value="Vmax" label="Vmax" isActive={activeMetric === 'Vmax'} onSelect={(v) => setActiveMetric(v as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')} />
+                                <MetricRadio value="Potencia" label="Potencia" isActive={activeMetric === 'Potencia'} onSelect={(v) => setActiveMetric(v as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')} />
+                                <MetricRadio value="Fatiga" label="Fatiga" isActive={activeMetric === 'Fatiga'} onSelect={(v) => setActiveMetric(v as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')} />
+                                <MetricRadio value="ROM" label="ROM" isActive={activeMetric === 'ROM'} onSelect={(v) => setActiveMetric(v as 'Vm' | 'Vmp' | 'Vmax' | 'Potencia' | 'Fatiga' | 'ROM')} />
                             </div>
 
                             {/* Main Chart */}

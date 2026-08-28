@@ -181,11 +181,13 @@ export function Reveal({
  * 55ms entre elementos: por debajo no se percibe, por encima la última
  * tarjeta llega tarde y la sección parece lenta.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const staggerList: Variants = {
     hidden: {},
     show: { transition: { staggerChildren: 0.055 } },
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const staggerItem: Variants = {
     hidden: { opacity: 0, y: 16 },
     show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },

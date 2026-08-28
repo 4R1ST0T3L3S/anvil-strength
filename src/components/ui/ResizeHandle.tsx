@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * hacia la izquierda lo ensancha. Sin esto el tirador funciona al revés y se
  * siente roto aunque el número sea correcto.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePanelWidth(
     storageKey: string,
     { initial, min, max, side = 'right' }: { initial: number; min: number; max: number; side?: 'left' | 'right' }

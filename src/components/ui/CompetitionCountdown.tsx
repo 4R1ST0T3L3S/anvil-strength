@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Trophy, MapPin, Settings } from 'lucide-react';
 import { BannerSettingsModal } from './BannerSettingsModal';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const formatCompetitionName = (name: string, location?: string, level?: string) => {
     const cleanName = name.replace(/Campeonato\s+/i, '').trim();
     let lvl = level ? level.toUpperCase() : '';
@@ -27,6 +28,7 @@ export const formatCompetitionName = (name: string, location?: string, level?: s
     return cleanName;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const getCompetitionColorClass = (level?: string) => {
     if (!level) return 'bg-gradient-to-br from-blue-700 to-blue-900';
     if (level.includes('AEP 1')) return 'bg-gradient-to-br from-blue-500 to-blue-700';
@@ -111,6 +113,7 @@ export function CompetitionBanner({
     location?: string;
     level?: string;
     mobile?: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fullUserMetadata?: any;
 }) {
     const settings = fullUserMetadata?.competition_banner_settings || {};
@@ -188,6 +191,7 @@ export function CompetitionBanner({
             <button 
                 onClick={(e) => {
                     e.stopPropagation();
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     userId && setIsSettingsOpen(true);
                 }}
                 className="md:hidden absolute top-4 right-4 z-[60] p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10 text-white/80"

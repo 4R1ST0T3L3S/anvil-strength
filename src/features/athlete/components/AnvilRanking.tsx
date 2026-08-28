@@ -9,6 +9,7 @@ import { lockBodyScroll } from '../../../lib/scrollLock';
 interface AnvilRankingProps {
     isOpen?: boolean;
     onClose?: () => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user?: any;
     onBack?: () => void;
 }
@@ -35,6 +36,7 @@ export function AnvilRanking({ isOpen, onClose, onBack }: AnvilRankingProps) {
     const [rankingType, setRankingType] = useState<'gl' | 'sushi'>('gl');
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/immutability
         if (isVisible) fetchRankings();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isVisible, rankingType]);

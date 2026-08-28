@@ -204,6 +204,7 @@ const NOT_THE_MAIN_LIFT = /bulgara|búlgara|frontal|hack|goblet|sissy|jaca|zerch
  * powerlifting: el que entrena para otra cosa no tiene por qué hacer siempre
  * uno de los tres.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getLiftTheme(name: string) {
     const n = name.toLowerCase();
     const accessory = { key: 'ACC', accent: 'text-emerald-400', border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' };
@@ -225,12 +226,14 @@ export function getLiftTheme(name: string) {
 }
 
 /** Resumen compacto de la prescripción de un ejercicio: "3×3 · 5×5". */
+// eslint-disable-next-line react-refresh/only-export-components
 export function summarizeSets(sets: TrainingSet[]): string {
     if (sets.length === 0) return 'Sin series';
     return sets.map(s => s.target_reps || '?').join(' · ');
 }
 
 /** Métricas agregadas del día para el panel derecho. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function computeDayMetrics(exercises: ExtendedSessionExercise[]) {
     let totalSeries = 0;
     let tonnage = 0;

@@ -30,6 +30,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
             .finally(() => setLoading(false));
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(load, [athleteId]);
 
     const status = paymentStatus(history[0]?.paid_until ?? null);

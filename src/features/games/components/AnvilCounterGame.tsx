@@ -36,6 +36,7 @@ export function AnvilCounterGame({ user: _user, onSaveScore, onClose }: AnvilCou
         
         // Determinar cantidad. Sube la dificultad
         const maxAnvils = Math.min(15, 3 + Math.floor(currentScore / 2)); 
+        // eslint-disable-next-line react-hooks/purity
         const count = Math.floor(Math.random() * maxAnvils) + 1; // 1 to maxAnvils
         
         generateAnvils(count);

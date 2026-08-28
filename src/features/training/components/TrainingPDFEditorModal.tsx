@@ -165,6 +165,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                         ['advanced', LayoutTemplate, 'Estilo'],
                         ['ai', Sparkles, 'IA']
                     ] as const).map(([key, Icon, label]) => (
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         <button key={key} onClick={() => setActiveTab(key as any)} className={`flex-1 min-w-[60px] py-2.5 text-[10px] font-black tracking-widest uppercase flex flex-col items-center gap-1 transition-colors ${activeTab === key ? 'text-anvil-red bg-zinc-800/50 border-b-2 border-anvil-red' : 'text-zinc-500 hover:text-white'}`}>
                             <Icon size={16} />{label}
                         </button>
@@ -222,6 +223,7 @@ export function TrainingPDFEditorModal({ block, weekNumber, weekName, athleteNam
                         <p className="text-xs text-zinc-500 uppercase font-bold mb-2">Espaciado de Tabla</p>
                         <div className="grid grid-cols-3 gap-2">
                             {['compact', 'normal', 'relaxed'].map(pad => (
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 <button key={pad} onClick={() => update({ tablePadding: pad as any })}
                                     className={`py-2 px-1 text-[10px] font-bold uppercase rounded border transition-colors ${s.tablePadding === pad ? 'bg-anvil-red/10 border-anvil-red text-anvil-red' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'}`}>
                                     {pad}

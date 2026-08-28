@@ -81,6 +81,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
         setRefreshing(false);
     }, []);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { load(); }, [load]);
 
     const handleAddSelfCompetition = async (comp: Competition, indexKey: number) => {

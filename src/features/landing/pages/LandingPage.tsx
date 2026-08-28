@@ -778,6 +778,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
     // salida se ve como un parpadeo en vez de como un cierre.
     const [shown, setShown] = useState<Achievement | null>(achievement);
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (achievement) { setShown(achievement); setImgIndex(0); }
     }, [achievement]);
 

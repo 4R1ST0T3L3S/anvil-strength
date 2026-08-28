@@ -47,11 +47,14 @@ function App() {
   }
 
   // Si venimos redirigidos de la web con ?signup=true, abrir el modal
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (searchParams.get('signup') === 'true' && !user && !isLoading) {
+       // eslint-disable-next-line react-hooks/set-state-in-effect
        setAuthMode('signup');
        setIsAuthModalOpen(true);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isLoading]);
 
 

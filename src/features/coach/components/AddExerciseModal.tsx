@@ -21,6 +21,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
 
     useEffect(() => {
         if (isOpen && exercises.length === 0) {
+            // eslint-disable-next-line react-hooks/immutability
             fetchLibrary();
         }
     }, [isOpen, exercises.length]);

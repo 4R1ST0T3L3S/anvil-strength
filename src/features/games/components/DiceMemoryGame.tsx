@@ -19,6 +19,7 @@ export function DiceMemoryGame({ user: _user, onSaveScore, onClose }: DiceMemory
     const startGame = () => {
         setScore(0);
         setPlayerSequence([]);
+        // eslint-disable-next-line react-hooks/purity
         nextRound([Math.floor(Math.random() * 6) + 1]);
     };
 

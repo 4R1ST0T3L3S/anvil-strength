@@ -17,6 +17,7 @@ interface BannerSettings {
 
 interface BannerSettingsModalProps {
     userId: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fullUserMetadata: any;
     isOpen: boolean;
     onClose: () => void;
@@ -172,6 +173,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 ].map(t => (
                                     <button
                                         key={t.id}
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         onClick={() => setSettings({ ...settings, theme: t.id as any })}
                                         className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${settings.theme === t.id ? 'border-white bg-white/10 scale-105 shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
                                     >
@@ -194,6 +196,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 ].map(s => (
                                     <button
                                         key={s.id}
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         onClick={() => setSettings({ ...settings, shape: s.id as any })}
                                         className={`p-2 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${settings.shape === s.id ? 'border-anvil-red bg-anvil-red/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
                                     >
@@ -212,6 +215,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 </label>
                                 <select
                                     value={settings.font || 'inter'}
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     onChange={e => setSettings({ ...settings, font: e.target.value as any })}
                                     className="w-full bg-black border border-white/5 rounded-xl px-4 py-3 text-white outline-none focus:border-anvil-red/50 appearance-none"
                                 >

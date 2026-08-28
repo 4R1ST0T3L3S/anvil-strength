@@ -35,6 +35,7 @@ export const useChat = (currentUserId: string, otherUserId: string | null) => {
     useEffect(() => {
         if (!otherUserId) return;
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchMessages();
 
         const channel = supabase.channel(`chat_${currentUserId}_${otherUserId}_${Math.random().toString(36).substring(7)}`)

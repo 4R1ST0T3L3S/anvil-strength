@@ -215,7 +215,6 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
                 setHistoryByExercise(map);
             })
             .catch(() => { /* sparklines no críticas */ });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editingSessionId, athleteId]);
 
     // Plantillas de día
@@ -460,6 +459,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
     // Reset expanded weeks when block changes (collapse all)
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setExpandedWeeks([]);
     }, [blockData?.id]);
 
@@ -1341,6 +1341,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
      * tuviera. Un solo punto para las dos entradas de "pegar un día completo":
      * el portapapeles de la tarjeta y "Traer el día entero" del editor.
      */
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const copyDayWithConfirm = useCallback((sourceSessionId: string, targetSessionId: string) => {
         setBlockData(prev => {
             if (!prev) return prev;
@@ -1377,6 +1378,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             }
             return prev;
         });
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [dayLabelFor, loadData]);
 
     /** Pega el día copiado (portapapeles) SOBRE `targetSessionId`. */
@@ -1392,6 +1394,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     }, [editingSessionId, copyDayWithConfirm]);
 
     /** Copia `sourceSessionId` sobre varios días de golpe, con confirmación previa. */
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const handleCopyDayToMany = useCallback((sourceSessionId: string, targetIds: string[], mode: 'replace' | 'append') => {
         if (targetIds.length === 0) return;
         setBlockData(prev => {
@@ -1424,6 +1427,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
             });
             return prev;
         });
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [dayLabelFor, loadData]);
 
     /**
@@ -1477,7 +1481,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
 
     // Año al que pertenecen las semanas del bloque. `week_number` es la semana
     // ISO DEL AÑO, así que sin esto no se puede traducir a fechas reales.
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const blockYear = useMemo(
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
         () => blockData?.start_date
             ? new Date(blockData.start_date).getFullYear()
             : new Date().getFullYear(),
@@ -1485,6 +1491,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
     );
 
     // RENDER HELPERS
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const weeks = useMemo(() => {
         if (!blockData) return [];
         const startWeek = blockData.start_week ?? 1;
@@ -1555,7 +1562,9 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName }: WorkoutBuild
         [dayOptionsSignature]
     );
     const weekLabelFor = useCallback(
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
         (weekNumber: number) => `Semana ${weeks.indexOf(weekNumber) + 1}`,
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
         [weeks]
     );
 

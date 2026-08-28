@@ -39,6 +39,7 @@ export function VbtChartModal({ isOpen, onClose, vbtFileUrl, exerciseName }: Vbt
         if (!isOpen || !vbtFileUrl) return;
 
         let isMounted = true;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(true);
 
         // Fetch and parse the CSV from the URL

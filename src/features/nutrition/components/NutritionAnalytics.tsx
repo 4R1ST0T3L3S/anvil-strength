@@ -121,6 +121,7 @@ export function NutritionAnalytics() {
                                         ))}
                                     </Pie>
                                     <Tooltip 
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         formatter={(value: any) => [`${Math.round(Number(value))} kcal`, '']}
                                         contentStyle={{ backgroundColor: '#111111', borderColor: '#333', borderRadius: '8px', color: '#fff' }}
                                         itemStyle={{ color: '#fff' }}
@@ -141,6 +142,7 @@ export function NutritionAnalytics() {
                                     <XAxis dataKey="name" stroke="#888" tick={{fill: '#888'}} />
                                     <YAxis stroke="#888" tick={{fill: '#888'}} />
                                     <Tooltip 
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         formatter={(_value: any, _name: any, props: any) => [`${Math.round(props.payload.value / (props.payload.name === 'Grasas' ? 9 : 4))}g`, props.payload.name]}
                                         cursor={{fill: '#222'}}
                                         contentStyle={{ backgroundColor: '#111111', borderColor: '#333', borderRadius: '8px', color: '#fff' }}

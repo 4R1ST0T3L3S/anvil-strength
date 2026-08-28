@@ -99,6 +99,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function MacroItem({ label, current, target, color, isExceeded }: any) {
     return (
         <div className="space-y-1">

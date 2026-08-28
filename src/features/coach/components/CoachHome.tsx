@@ -22,9 +22,9 @@ import { AnvilRanking } from '../../athlete/components/AnvilRanking';
  * rojo es programar, ambar es la comunidad, neutro son las herramientas.
  */
 const AREA = {
-    coach: { icon: 'text-brand', chip: 'bg-brand-quiet' },
-    club: { icon: 'text-warning', chip: 'bg-warning-quiet' },
-    tool: { icon: 'text-ink-muted', chip: 'bg-surface-overlay' },
+    coach: { icon: 'text-brand', chip: 'bg-brand-quiet', ring: '' },
+    club: { icon: 'text-warning', chip: 'bg-warning-quiet', ring: '' },
+    tool: { icon: 'text-ink-muted', chip: 'bg-surface-overlay', ring: '' },
 } as const;
 
 type AreaKey = keyof typeof AREA;
@@ -174,7 +174,6 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
     }
 
     const firstName = user.full_name?.split(' ')[0] || 'Entrenador';
-    const isNutritionist = user.role === 'nutritionist';
 
     return (
         <>

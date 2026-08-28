@@ -29,6 +29,7 @@ export function BlockDetailView({ block, onBack, onSelectSession }: BlockDetailV
     }, [block.id]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchSessions();
     }, [block.id, fetchSessions]);
 

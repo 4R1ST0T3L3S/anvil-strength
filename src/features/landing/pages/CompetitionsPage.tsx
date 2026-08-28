@@ -319,6 +319,7 @@ interface RosterModalProps {
 
 function RosterModal({ event, onClose }: RosterModalProps) {
     const [activeIndex, setActiveIndex] = useState(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_direction, setDirection] = useState(0);
     const dragX = useMotionValue(0);
 

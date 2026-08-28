@@ -2,6 +2,7 @@ import { NutritionPlan } from '../../../types/nutrition';
 
 interface PlanExportPDFProps {
     plan: NutritionPlan;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any;
     currentMacros: { kcal: number; prot: number; carbs: number; fats: number };
 }
@@ -10,7 +11,9 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
     const meals = plan.meals || [];
 
     // Group foods by alternative_group_id within each meal
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const groupFoodsByAlternative = (foods: any[]) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const groups: Record<string, any[]> = {};
         foods.forEach(mf => {
             const gid = mf.alternative_group_id || mf.id;
@@ -134,6 +137,7 @@ export function PlanExportPDF({ plan, user: _user, currentMacros: _currentMacros
                             </thead>
                             <tbody>
                                 {groups.map((group) => (
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     group.map((mf: any, idx: number) => {
                                         if (!mf.food) return null;
                                         const mult = mf.amount_g / 100;

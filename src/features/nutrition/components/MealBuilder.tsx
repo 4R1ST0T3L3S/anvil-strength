@@ -90,6 +90,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
     };
 
     const openAlternativeSearch = (mealId: string, refFood: FoodItem, groupId: string) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setActiveCategory((refFood as any).category || 'Otros');
         setAlternativeRefFood(refFood);
         setAlternativeGroupId(groupId);
@@ -217,6 +218,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
     const [isExpanded, setIsExpanded] = useState(true);
     const [isAdjusting, setIsAdjusting] = useState(false);
     const [adjustTargets, setAdjustTargets] = useState({ protein: 0, carbs: 0, fats: 0 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [optimizedProposals, setOptimizedProposals] = useState<any[] | null>(null);
     const [selectedProposalId, setSelectedProposalId] = useState<string | null>(null);
     const [adjustError, setAdjustError] = useState<string | null>(null);

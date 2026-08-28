@@ -58,6 +58,7 @@ export function NotificationProvider({ children, user }: { children: React.React
                 schema: 'public',
                 table: 'user_points',
                 filter: `user_id=eq.${user.id}`
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }, (payload: any) => {
                 const oldBalance = payload.old.balance;
                 const newBalance = payload.new.balance;
@@ -82,6 +83,7 @@ export function NotificationProvider({ children, user }: { children: React.React
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useNotifications() {
     const context = useContext(NotificationContext);
     if (!context) {

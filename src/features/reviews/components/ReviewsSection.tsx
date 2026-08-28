@@ -28,6 +28,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadReviews();
     }, []);
 

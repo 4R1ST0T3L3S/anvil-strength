@@ -27,6 +27,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
             const maxDay = existingSessions.length > 0
                 ? Math.max(...existingSessions.map(s => s.day_number))
                 : 0;
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setDayNumber(maxDay + 1);
             setName(''); // Reset name
             setDayOfWeek(''); // Reset dayOfWeek

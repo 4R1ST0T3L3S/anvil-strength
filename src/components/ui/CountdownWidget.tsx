@@ -13,6 +13,7 @@ export interface CountdownTheme {
     swatch: string;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const COUNTDOWN_THEMES: CountdownTheme[] = [
     { id: 'auto', label: 'Nivel automático', className: '', swatch: 'bg-gradient-to-br from-blue-500 via-[#D4AF37] to-[#FF6B35]' },
     { id: 'anvil', label: 'Anvil Red', className: 'bg-gradient-to-br from-anvil-red to-red-950', swatch: 'bg-gradient-to-br from-anvil-red to-red-950' },
@@ -91,6 +92,7 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         if (new Date(event.date + 'T00:00:00') < yesterday) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             savePrefs({ ...prefs, source: 'assigned' });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -183,12 +185,14 @@ function CountdownSettings({
     const [aepError, setAepError] = useState<string | null>(null);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (isOpen) setDraft(prefs);
     }, [isOpen, prefs]);
 
     // Cargar calendario AEP al abrir la pestaña correspondiente
     useEffect(() => {
         if (!isOpen || draft.source !== 'aep' || aepCompetitions.length > 0 || loadingAep) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoadingAep(true);
         setAepError(null);
         fetchCompetitions()

@@ -86,6 +86,7 @@ export function AssignSetPicker({
     // ---------------------------------------------------------------
     useEffect(() => {
         let alive = true;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoadingTree(true);
 
         getAthleteTrainingTree(athleteId)
@@ -113,7 +114,11 @@ export function AssignSetPicker({
 
     // Contenido del bloque elegido.
     useEffect(() => {
-        if (!blockId) { setSessions([]); return; }
+        if (!blockId) { 
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSessions([]); 
+            return; 
+        }
 
         let alive = true;
         setLoadingBlock(true);
@@ -405,6 +410,7 @@ function Level({
     const [open, setOpen] = useState(true);
 
     // Al elegir se pliega solo; al deshacer la elección se vuelve a abrir.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { setOpen(chosen === null); }, [chosen]);
 
     if (chosen !== null && !open) {

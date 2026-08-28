@@ -15,7 +15,7 @@ function CheckInCountdown({ type }: { type: 'daily' | 'weekly' }) {
     useEffect(() => {
         const update = () => {
             const now = new Date();
-            let target = new Date(now);
+            const target = new Date(now);
             
             if (type === 'daily') {
                 target.setHours(24, 0, 0, 0); // Next midnight
@@ -73,6 +73,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
         } catch { /* tabla aún no migrada: la tarjeta sigue funcionando */ }
     }, [athleteId]);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { refreshStatus(); }, [refreshStatus]);
 
     return (

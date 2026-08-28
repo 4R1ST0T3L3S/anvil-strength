@@ -20,6 +20,8 @@ import { useEffect } from 'react';
  * `id` evita duplicar el bloque si dos componentes piden el mismo esquema.
  */
 export function useJsonLd(id: string, data: unknown) {
+    const serializedData = JSON.stringify(data);
+
     useEffect(() => {
         const existing = document.getElementById(id);
         if (existing) return;
@@ -27,13 +29,11 @@ export function useJsonLd(id: string, data: unknown) {
         const script = document.createElement('script');
         script.type = 'application/ld+json';
         script.id = id;
-        script.textContent = JSON.stringify(data);
+        script.textContent = serializedData;
         document.head.appendChild(script);
 
         return () => {
             script.remove();
         };
-        // `data` se serializa en cada render si se pasa como literal, así que
-        // la dependencia es su forma serializada y no la referencia.
-    }, [id, JSON.stringify(data)]);
+    }, [id, serializedData]);
 }

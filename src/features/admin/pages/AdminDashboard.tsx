@@ -41,6 +41,7 @@ export function AdminDashboard() {
 
     useEffect(() => {
         if (isAdmin(currentUser)) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             loadUsers();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

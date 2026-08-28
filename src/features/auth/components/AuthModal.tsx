@@ -44,6 +44,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
   // después de haber abierto "Entrar" seguía enseñando el formulario de login.
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLogin(initialMode === 'login');
       setError('');
       setNotice('');

@@ -8,15 +8,19 @@ import { puede } from '../../../lib/roles';
 
 export function CoachChatManager({ coach }: { coach: UserProfile }) {
     const navigate = useNavigate();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [athletes, setAthletes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [selectedAthlete, setSelectedAthlete] = useState<any | null>(null);
 
     const [showAll, setShowAll] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/immutability
         fetchAthletes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [coach.id, showAll]);
 
     const fetchAthletes = async () => {

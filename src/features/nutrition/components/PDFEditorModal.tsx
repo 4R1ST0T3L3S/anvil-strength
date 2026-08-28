@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Download, Palette, Type, Image, LayoutTemplate, Loader2, Sparkles } from 'lucide-react';
-import { NutritionPlan } from '../../../types/nutrition';
+import { NutritionPlan, MealFood } from '../../../types/nutrition';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -136,8 +136,8 @@ export function PDFEditorModal({ plan, onClose }: Props) {
     const s = settings;
     const isDark = s.bgColor !== '#ffffff' && s.bgColor !== '#f0fdf4' && s.bgColor !== '#fff7ed';
 
-    const groupFoods = (foods: any[]) => {
-        const groups: Record<string, { groupId: string, category: string, items: any[] }> = {};
+    const groupFoods = (foods: MealFood[]) => {
+        const groups: Record<string, { groupId: string, category: string, items: MealFood[] }> = {};
         foods.forEach(mf => {
             const gid = mf.alternative_group_id || mf.id;
             if (!groups[gid]) groups[gid] = { groupId: gid, category: mf.category || 'Otros', items: [] };
@@ -199,7 +199,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                         <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Personalizado</p>
                         {[['Acento', 'accentColor'], ['Fondo', 'bgColor'], ['Texto', 'textColor']].map(([label, key]) => (
                             <div key={key} className="flex items-center gap-3">
-                                <input type="color" value={(s as any)[key]} onChange={e => update({ [key]: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+                                <input type="color" value={String(s[key as keyof PDFSettings])} onChange={e => update({ [key]: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
                                 <span className="text-zinc-300 text-sm">{label}</span>
                             </div>
                         ))}
@@ -253,7 +253,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                         <p className="text-xs text-zinc-500 uppercase font-bold mt-4">Opciones</p>
                         {[['showMacroBar', 'Barras de macros'], ['showAlternatives', 'Mostrar alternativas']].map(([key, label]) => (
                             <label key={key} className="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" checked={(s as any)[key]} onChange={e => update({ [key]: e.target.checked })} className="accent-red-500 w-4 h-4" />
+                                <input type="checkbox" checked={Boolean(s[key as keyof PDFSettings])} onChange={e => update({ [key]: e.target.checked })} className="accent-red-500 w-4 h-4" />
                                 <span className="text-zinc-300 text-sm">{label}</span>
                             </label>
                         ))}
@@ -382,7 +382,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                                                                 {group.items.length > 1 && <span style={{ color: '#22c55e', marginLeft: '8px' }}>— ELIGE 1 OPCIÓN</span>}
                                                             </td>
                                                         </tr>
-                                                        {group.items.map((mf: any, idx: number) => {
+                                                        {group.items.map((mf: MealFood, idx: number) => {
                                                             if (!mf.food) return null;
                                                             if (idx > 0 && !s.showAlternatives) return null;
                                                             const m = mf.amount_g / 100;
@@ -409,7 +409,7 @@ export function PDFEditorModal({ plan, onClose }: Props) {
                                                         {group.category} {totalCounts[group.category] > 1 ? `(OPCIÓN ${group.catIndex})` : ''}
                                                         {group.items.length > 1 && <span style={{ color: '#22c55e', marginLeft: '4px' }}>— ELIGE 1 OPCIÓN</span>}
                                                     </div>
-                                                    {group.items.map((mf: any, idx: number) => {
+                                                    {group.items.map((mf: MealFood, idx: number) => {
                                                         if (!mf.food || (idx > 0 && !s.showAlternatives)) return null;
                                                         const m = mf.amount_g / 100;
                                                         return (

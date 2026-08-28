@@ -39,13 +39,16 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then((registrations) => {
                         Promise.all(registrations.map((r) => r.unregister())).then(() => {
+                            // eslint-disable-next-line no-self-assign
                             window.location.href = window.location.href; // Force navigate
                         });
                     });
                 } else {
+                    // eslint-disable-next-line no-self-assign
                     window.location.href = window.location.href;
                 }
             } else {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setTooManyRetries(true);
                 sessionStorage.removeItem('chunk_reload_count');
             }

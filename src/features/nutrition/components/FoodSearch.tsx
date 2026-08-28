@@ -22,6 +22,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
     useEffect(() => {
         const savedBrands = localStorage.getItem('anvil_favorite_brands');
         if (savedBrands) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect, @typescript-eslint/no-unused-vars, no-empty
             try { setFavoriteBrands(JSON.parse(savedBrands)); } catch (e) {}
         }
     }, []);

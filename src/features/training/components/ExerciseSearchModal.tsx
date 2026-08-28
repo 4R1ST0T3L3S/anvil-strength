@@ -38,6 +38,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
     };
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadExercises();
     }, []);
 

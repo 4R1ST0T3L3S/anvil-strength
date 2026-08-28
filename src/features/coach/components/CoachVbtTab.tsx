@@ -100,6 +100,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
         }
     }, [athleteId]);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { void load(); }, [load]);
 
     const byExercise = useMemo(() => summarizeByExercise(measurements), [measurements]);

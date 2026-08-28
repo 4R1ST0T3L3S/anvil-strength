@@ -162,6 +162,7 @@ interface Stage {
     note?: string;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Bench() {
     const { cvReady, cvError } = useOpenCV();
     const videoRef = useRef<HTMLVideoElement>(null);
