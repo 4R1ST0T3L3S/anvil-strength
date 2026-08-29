@@ -169,17 +169,6 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         </h2>
                     </div>
 
-                    {/* Reintentar tiene que estar SIEMPRE, no solo cuando algo
-                        falla: la federacion publica cambios durante la
-                        temporada y la cache dura horas. */}
-                    <button
-                        onClick={() => load(true)}
-                        disabled={refreshing || loading}
-                        className="flex items-center gap-2 rounded-xl border border-white/10 px-3.5 py-2 text-[11px] font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-anvil-red/40 hover:text-white disabled:opacity-40"
-                    >
-                        <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-                        {refreshing ? 'Actualizando' : 'Actualizar'}
-                    </button>
                 </div>
 
                 {/* De donde salen los datos. Solo se dice cuando NO vienen
@@ -218,33 +207,33 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                         const { esInvitado, level, color, bg, border, line, icon } = meta;
 
                         return (
-                            <div key={index} className={`relative bg-[#0a0a0a] border-y border-r ${border} border-l-[6px] ${line} p-6 md:p-8 rounded-[1.5rem] transition-all hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
-                                <div className="flex flex-col gap-5 md:gap-6">
+                            <div key={index} className={`relative bg-[#0a0a0a] border-y border-r ${border} border-l-[6px] ${line} p-4 md:p-5 rounded-xl transition-all hover:bg-[#111] hover:border-r-white/10 ${esInvitado ? 'opacity-70' : ''}`}>
+                                <div className="flex flex-col gap-3 md:gap-4">
 
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}
                                     <div className="flex justify-between items-start">
-                                        <div className="flex flex-col gap-2">
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest ${bg} ${color}`}>
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${bg} ${color}`}>
                                                 {icon && icon}
                                                 {level}
                                             </div>
                                             {esInvitado && (
-                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-[10px] font-black px-3 py-1.5 rounded-lg uppercase border border-white/5`}>
+                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-[10px] font-black px-2 py-1 rounded-md uppercase border border-white/5`}>
                                                     <Users size={12} /> Atleta Invitado
                                                 </div>
                                             )}
                                         </div>
 
                                         {/* CAJA DE FECHA ESTILO CLEAN */}
-                                        <div className="flex items-center gap-2 text-white font-black uppercase tracking-widest bg-white/5 border border-white/5 px-4 py-2.5 rounded-xl shrink-0 text-xs md:text-sm shadow-inner">
-                                            <CalendarIcon size={16} className={color.replace('text-', 'text-')} />
+                                        <div className="flex items-center gap-1.5 text-white font-black uppercase tracking-widest bg-white/5 border border-white/5 px-2.5 py-1.5 rounded-lg shrink-0 text-[10px] md:text-xs shadow-inner">
+                                            <CalendarIcon size={14} className={color.replace('text-', 'text-')} />
                                             <span>{comp.fecha}</span>
                                         </div>
                                     </div>
 
                                     {/* SECCIÓN CENTRAL: NOMBRE DEL CAMPEONATO */}
-                                    <div className="mt-1">
-                                        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter leading-tight italic">
+                                    <div className="mt-0">
+                                        <h3 className="text-lg md:text-xl font-black text-white uppercase tracking-tighter leading-tight italic">
                                             {comp.campeonato}
                                         </h3>
                                     </div>
@@ -252,10 +241,10 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                     <div className="h-px w-full bg-white/5" />
 
                                     {/* SECCIÓN INFERIOR: UBICACIÓN Y BOTÓN */}
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-0">
-                                        <div className="flex items-center gap-3 text-white font-black uppercase text-xs md:text-sm tracking-widest">
-                                            <div className={`p-2 rounded-lg ${bg}`}>
-                                                <MapPin size={18} className={color} />
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-0">
+                                        <div className="flex items-center gap-2 text-white font-bold uppercase text-[10px] md:text-xs tracking-widest">
+                                            <div className={`p-1.5 rounded-md ${bg}`}>
+                                                <MapPin size={14} className={color} />
                                             </div>
                                             <span>{comp.sede}</span>
                                         </div>

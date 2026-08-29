@@ -292,7 +292,10 @@ export async function fetchCompetitionsDetailed(
 ): Promise<CompetitionsResult> {
     const cached = readCache();
 
-    if (!force && cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    // La caché caduca a las 12:00 de la noche (cambio de día)
+    const isSameDay = cached && (new Date(Date.now()).setHours(0, 0, 0, 0) === new Date(cached.timestamp).setHours(0, 0, 0, 0));
+
+    if (!force && cached && isSameDay) {
         return {
             competitions: cached.data,
             source: 'cache',

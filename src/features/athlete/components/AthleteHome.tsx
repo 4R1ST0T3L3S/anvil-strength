@@ -168,14 +168,6 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
         return () => { alive = false; };
     }, [user.id]);
 
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader className="animate-spin text-brand" size={28} />
-            </div>
-        );
-    }
-
     const firstName = user.full_name?.split(' ')[0] || 'Atleta';
     const teamName = user.role === 'athlete' ? getTeamName(user.coach_name) : null;
     const locked = user.has_access === false;
@@ -238,7 +230,7 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                             contexto personal, y debajo el bloque motivacional.
                             Sin competición asignada, la frase se queda con la fila
                             entera en vez de dejar un hueco.                       */}
-                        <section className={`flex flex-1 grid gap-2 min-h-0 ${nextCompetition ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
+                        <section className="flex flex-1 grid gap-2 min-h-0 lg:grid-cols-[1.6fr_1fr]">
                             <div className="flex flex-col h-full min-h-0">
                                 <SectionLabel icon={BookOpen} colorClass="text-[#eab308]">Anvil Lessons</SectionLabel>
                                 <div className="relative flex-1 flex flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
@@ -256,14 +248,18 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                                 </div>
                             </div>
 
-                            {nextCompetition && (
-                                <div className="flex flex-col h-full min-h-0">
-                                    <SectionLabel icon={Trophy} colorClass="text-[#f59e0b]">Próxima competición</SectionLabel>
-                                    <div className="flex flex-1 flex-col">
+                            <div className="flex flex-col h-full min-h-0">
+                                <SectionLabel icon={Trophy} colorClass="text-[#f59e0b]">Próxima competición</SectionLabel>
+                                <div className="flex flex-1 flex-col">
+                                    {loading ? (
+                                        <div className="flex flex-1 items-center justify-center rounded-card border border-[var(--border-default)] bg-surface-raised min-h-[160px]">
+                                            <Loader className="animate-spin text-brand" size={24} />
+                                        </div>
+                                    ) : (
                                         <CountdownWidget assigned={nextCompetition} userId={user.id} />
-                                    </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
                         </section>
                     </div>
 

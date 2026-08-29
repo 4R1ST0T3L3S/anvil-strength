@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { TeamCard, NextCompCard, NoCompCard, type NextComp } from './CoachHomeCards';
+import { CountdownWidget } from '../../../components/ui/CountdownWidget';
 import type { LucideIcon } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
@@ -165,14 +166,6 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
         return () => { alive = false; };
     }, [user.id]);
 
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader className="animate-spin text-brand" size={28} />
-            </div>
-        );
-    }
-
     const firstName = user.full_name?.split(' ')[0] || 'Entrenador';
 
     return (
@@ -200,36 +193,36 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                     {/* COLUMNA IZQUIERDA (Principal) */}
                     <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-hidden">
                         {/* -----------------------------------------------------
-                            ACCIÓN PRINCIPAL + PRÓXIMA COMPETICIÓN
-                            Las dos cosas que un entrenador quiere saber al entrar:
-                            a quién tiene que atender y cuánto queda para la
-                            siguiente tarima.                                    */}
-                        <section className="shrink-0 flex flex-col min-h-0">
-                            <SectionLabel icon={Trophy} colorClass="text-[#f59e0b]">Próxima competición</SectionLabel>
-                            <div className="grid flex-1 grid-cols-1 gap-2 min-h-0">
-                                {nextComp
-                                    ? <NextCompCard comp={nextComp} onClick={() => onNavigate('calendar')} />
-                                    : <NoCompCard />}
+                            FRASE + COMPETICIÓN */}
+                        <section className="flex flex-1 grid gap-2 min-h-0 lg:grid-cols-[1.6fr_1fr]">
+                            <div className="flex flex-col h-full min-h-0">
+                                <SectionLabel icon={BookOpen} colorClass="text-[#eab308]">Anvil Lessons</SectionLabel>
+                                <div className="relative flex-1 flex flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                                    <Quote
+                                        size={112}
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
+                                    />
+                                    <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
+                                        {getAnvilQuote()}
+                                    </p>
+                                    <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
+                                        Anvil Strength Club
+                                    </p>
+                                </div>
                             </div>
-                        </section>
 
-                        {/* -----------------------------------------------------
-                            ANVIL LESSONS */}
-
-                        <section className="flex flex-1 flex-col min-h-0">
-                            <SectionLabel icon={BookOpen} colorClass="text-[#eab308]">Anvil Lessons</SectionLabel>
-                            <div className="relative flex flex-1 flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                                <Quote
-                                    size={112}
-                                    aria-hidden="true"
-                                    className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
-                                />
-                                <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
-                                    {getAnvilQuote()}
-                                </p>
-                                <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-faint">
-                                    Anvil Strength Club
-                                </p>
+                            <div className="flex flex-col h-full min-h-0">
+                                <SectionLabel icon={Trophy} colorClass="text-[#f59e0b]">Próxima competición</SectionLabel>
+                                <div className="flex flex-1 flex-col">
+                                    {loading ? (
+                                        <div className="flex flex-1 items-center justify-center rounded-card border border-[var(--border-default)] bg-surface-raised min-h-[160px]">
+                                            <Loader className="animate-spin text-brand" size={24} />
+                                        </div>
+                                    ) : (
+                                        <CountdownWidget assigned={nextComp} userId={user.id} />
+                                    )}
+                                </div>
                             </div>
                         </section>
                     </div>

@@ -5,6 +5,15 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api/aep': {
+        target: 'https://docs.google.com',
+        changeOrigin: true,
+        rewrite: (path) => '/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSMIGAG6eqYDt4/export?format=csv&gid=577884253',
+      }
+    }
+  },
   plugins: [
     react(),
     VitePWA({

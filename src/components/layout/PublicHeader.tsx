@@ -18,9 +18,9 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
     const navigate = useNavigate();
     const location = useLocation();
 
-    const isHome = location.pathname === '/';
+    const isHome = location.pathname === '/' || location.pathname === '/web';
 
-    const isTransparentPage = location.pathname === '/' || location.pathname === '/ropa' || location.pathname === '/competiciones';
+    const isTransparentPage = location.pathname === '/' || location.pathname === '/web' || location.pathname === '/ropa' || location.pathname === '/competiciones';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -35,7 +35,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
 
         // Logic for "ROPA" link
         if (href === '/ropa') {
-            navigate('/ropa');
+            navigate(`/ropa${location.search}`);
             setIsMobileMenuOpen(false);
             window.scrollTo(0, 0);
             return;
@@ -43,7 +43,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
 
         // Logic for "COMPETICIONES" link
         if (href === '/competiciones') {
-            navigate('/competiciones');
+            navigate(`/competiciones${location.search}`);
             setIsMobileMenuOpen(false);
             window.scrollTo(0, 0);
             return;
@@ -56,10 +56,13 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setIsMobileMenuOpen(false);
+                // Opcional: actualizar el hash en la URL sin recargar
+                window.history.pushState({}, '', `${location.pathname}${location.search}${href}`);
             }
         } else {
-            // If not on home, navigate to home + hash
-            navigate(`/${href}`); // href already includes #
+            // If not on home, navigate to home + hash (preservando search params para local)
+            const basePath = location.search.includes('env=web') ? '/web' : '/';
+            navigate(`${basePath}${location.search}${href}`);
             setIsMobileMenuOpen(false);
         }
     };
@@ -79,6 +82,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
     ];
 
     return (
+        <>
         <header
             className={`fixed w-full z-50 transition-all duration-300 ease-in-out border-b ${isScrolled || !isTransparentPage 
                 ? 'bg-[#050505]/90 backdrop-blur-md border-white/5 py-3 shadow-2xl' 
@@ -103,13 +107,13 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     centraba en el hueco que dejaban logo y botones, que no
                     miden lo mismo, y por eso el menú aparecía desplazado a la
                     derecha. */}
-                <nav className="pointer-events-none absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-x-3 whitespace-nowrap 2xl:flex">
+                <nav className="pointer-events-none absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-x-2 2xl:gap-x-3 whitespace-nowrap xl:flex">
                     {navLinks.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className={`pointer-events-auto text-[13px] font-bold uppercase leading-none tracking-[0.06em] transition-colors duration-fast ease-snap hover:text-white ${
+                            className={`pointer-events-auto text-[12px] 2xl:text-[13px] font-bold uppercase leading-none tracking-[0.06em] transition-colors duration-fast ease-snap hover:text-white ${
                                 location.pathname === link.href ? 'text-anvil-red' : 'text-gray-400'
                             }`}
                         >
@@ -145,63 +149,65 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="2xl:hidden text-gray-400 p-2 hover:bg-white/5 rounded-xl transition-colors"
+                        className="xl:hidden text-gray-400 p-2 hover:bg-white/5 rounded-xl transition-colors"
                     >
                         <Menu className="h-6 w-6" />
                     </button>
                 </div>
             </div>
 
-            {/* Mobile Navigation Overlay */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ x: "100%" }}
-                        animate={{ x: 0 }}
-                        exit={{ x: "100%" }}
-                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 z-[100] bg-[#050505] flex flex-col overflow-y-auto 2xl:hidden"
-                    >
-                        <div className="flex items-center justify-between px-6 py-8 border-b border-white/5">
-                            <img src="/logo-dark-removebg-preview.png" className="h-8 w-auto" alt="Logo" />
-                            <button
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-white p-3 bg-white/5 rounded-full"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        <nav className="flex-1 flex flex-col justify-center px-10 gap-8">
-                            {navLinks.map((link, index) => (
-                                <motion.a
-                                    key={link.name}
-                                    href={link.href}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    onClick={(e) => handleNavClick(e, link.href)}
-                                    className="text-5xl font-black uppercase font-bebas italic tracking-tighter text-white/40 hover:text-anvil-red transition-all"
-                                >
-                                    {link.name}
-                                </motion.a>
-                            ))}
-                        </nav>
-                        
-                        <div className="space-y-3 p-10">
-                            <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full bg-anvil-red py-6" />
-                            {onSignupClick && !currentUser && (
-                                <button
-                                    onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
-                                    className="w-full rounded-lg border border-white/20 py-4 font-bebas text-lg italic tracking-[0.1em] text-white transition-colors hover:bg-white/5"
-                                >
-                                    Crear cuenta
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </header>
+
+        {/* Mobile Navigation Overlay - Mover fuera del header para que backdrop-filter no restrinja su fixed inset-0 */}
+        <AnimatePresence>
+            {isMobileMenuOpen && (
+                <motion.div
+                    initial={{ x: "100%" }}
+                    animate={{ x: 0 }}
+                    exit={{ x: "100%" }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="fixed inset-0 z-[600] bg-[#050505] flex flex-col overflow-y-auto xl:hidden"
+                >
+                    <div className="flex items-center justify-between px-6 py-8 border-b border-white/5">
+                        <img src="/logo-dark-removebg-preview.png" className="h-8 w-auto" alt="Logo" />
+                        <button
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="text-white p-3 bg-white/5 rounded-full"
+                        >
+                            <X className="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <nav className="flex-1 flex flex-col justify-center px-10 gap-8">
+                        {navLinks.map((link, index) => (
+                            <motion.a
+                                key={link.name}
+                                href={link.href}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                onClick={(e) => handleNavClick(e, link.href)}
+                                className="text-5xl font-black uppercase font-bebas italic tracking-normal text-[#666] hover:text-brand transition-all"
+                            >
+                                {link.name}
+                            </motion.a>
+                        ))}
+                    </nav>
+                    
+                    <div className="space-y-3 p-10">
+                        <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full bg-brand py-6 font-bebas text-xl italic tracking-wider text-white" />
+                        {onSignupClick && !currentUser && (
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
+                                className="w-full rounded-lg border border-white/20 py-4 font-bebas text-lg italic tracking-[0.1em] text-white transition-colors hover:bg-white/5"
+                            >
+                                Crear cuenta
+                            </button>
+                        )}
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+        </>
     );
 }

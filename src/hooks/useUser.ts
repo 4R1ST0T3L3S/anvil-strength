@@ -56,6 +56,8 @@ export interface UserProfile {
     profile_image?: string; // Alias for avatar_url
 }
 
+const CACHE_KEY = 'anvil_user_cache';
+
 const fetchUser = async (): Promise<UserProfile | null> => {
     // 1. Get Session with Strict Timeout
     try {
@@ -72,6 +74,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
         const sessionError = 'error' in result ? result.error : null;
 
         if (sessionError || !session?.user) {
+            localStorage.removeItem(CACHE_KEY);
             return null;
         }
 
@@ -94,6 +97,8 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
             profile_image: meta?.avatar_url
         };
+
+        let resultUser = optimisticUser;
 
         // 2. Fetch Profile (Background Update)
         try {
@@ -157,7 +162,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     nutritionistName = nutData?.full_name ?? null;
                 }
 
-                return {
+                resultUser = {
                     ...optimisticUser,
                     full_name: profile.full_name || optimisticUser.full_name,
                     nickname: profile.nickname || optimisticUser.nickname,
@@ -200,7 +205,8 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             console.warn('Profile sync failed, using session data');
         }
 
-        return optimisticUser;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(resultUser));
+        return resultUser;
 
     } catch (error) {
         // If it's a timeout or specific error, rethrow so useQuery sees it as an error
@@ -220,6 +226,17 @@ export const useUser = () => {
         queryFn: fetchUser,
         staleTime: 1000 * 60, // 1 minute
         retry: 2,
+        initialData: () => {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    return JSON.parse(cached);
+                }
+            } catch (e) {
+                console.warn('Failed to parse cached user', e);
+            }
+            return undefined; // Debe devolver undefined si no hay cache para que useQuery haga fetch en background
+        },
         placeholderData: (previousData) => previousData, // Keep user during refetch
     });
 };
