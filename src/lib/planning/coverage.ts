@@ -52,6 +52,7 @@
  */
 
 import { getISOWeekStart } from '../../utils/dateUtils';
+import { weekdayIndex } from '../../types/training';
 
 // =====================================================================
 // ENTRADA
@@ -309,6 +310,34 @@ export function resolveBlockSpan(
             hasContent: filled.size > 0,
         },
     };
+}
+
+/**
+ * LA FECHA REAL DE UNA SESIÓN — calendario de rejilla, 30 ago 2026.
+ *
+ * `null` cuando no se puede saber: sin `day_of_week` la sesión se identifica
+ * por `day_number` y no por calendario (nunca se inventa un día — decisión
+ * K10), y si su `week_number` cae fuera de las semanas ya resueltas de
+ * `span` tampoco hay nada que devolver.
+ *
+ * Recibe el `BlockSpan` YA RESUELTO en vez de recalcularlo: `resolveBlockSpan`
+ * es lo único que sabe convertir semana ISO + año en un lunes real, y
+ * llamarlo una vez por bloque en vez de una vez por sesión es lo que hace
+ * que colocar un mes entero de un equipo de veinte atletas siga siendo
+ * barato.
+ */
+export function sessionDate(
+    session: Pick<CoverageSessionInput, 'week_number' | 'day_of_week'>,
+    span: Pick<BlockSpan, 'weeks'>
+): Date | null {
+    if (!session.day_of_week) return null;
+    const idx = weekdayIndex(session.day_of_week);
+    if (idx === null) return null;
+
+    const week = span.weeks.find(w => w.week === session.week_number);
+    if (!week) return null;
+
+    return addDays(week.monday, idx - 1);
 }
 
 /**

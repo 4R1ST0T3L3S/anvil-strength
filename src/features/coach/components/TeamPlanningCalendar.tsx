@@ -1,52 +1,42 @@
-import { useMemo, useRef, useState } from 'react';
-import { CalendarOff, Info, Trophy } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { CalendarOff, ChevronRight, Info, Trophy } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { useTeamCoverage } from '../hooks/useTeamCoverage';
 import {
-    monthsBetween, positionInAxis, daysBetween, ymd, parseYmd,
-    type AthleteCoverage, type BlockSpan,
+    addDays, daysBetween, ymd, parseYmd,
+    type AthleteCoverage,
 } from '../../../lib/planning/coverage';
 import { EstadoDeDatos } from '../../../components/ui/EstadoDeDatos';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { SafeImage } from '../../../components/ui/SafeImage';
 
 /**
- * CALENDARIO GENERAL DEL EQUIPO
+ * CALENDARIO GENERAL DEL EQUIPO — REJILLA DE DÍAS
  * =====================================================================
  *
- * LA PREGUNTA QUE CONTESTA, Y ES UNA SOLA
+ * Rediseño del 30 de agosto de 2026 (decisión D1: "las dos"). Antes era un
+ * carril horizontal por atleta, con una barra por bloque — correcto para
+ * "hasta cuándo está programado cada uno" pero, como pediste, "una tira
+ * horizontal", no un calendario de verdad.
  *
- * "¿A quién se le acaba la programación, y cuándo?". Un entrenador con veinte
- * atletas no puede llevar eso en la cabeza, y hasta ahora la aplicación solo
- * lo decía de uno en uno: había que entrar en cada ficha, mirar el bloque
- * activo y calcular. Con veinte atletas eso significa que no se mira.
+ * Ahora son DOS piezas, no una:
  *
+ *   1. LA REJILLA, arriba — lunes a domingo, una columna por semana. Cada
+ *      casilla es la CUENTA de sesiones de TODO el equipo ese día (un
+ *      mapa de calor, no un carril por persona): cuántas hay programadas y
+ *      cuántas de esas ya tienen contenido de verdad.
+ *   2. LA LISTA, debajo — quién se queda antes sin programación, la misma
+ *      que ya había, para poder "pinchar un atleta y ver la suya" (que
+ *      ahora es su propio calendario en rejilla — ver
+ *      `AthleteTimelineCalendar`).
  *
- * POR QUÉ CARRILES HORIZONTALES Y NO UNA REJILLA DE MES
- *
- * Una rejilla de mes (7 columnas × 5 filas) enseña UN mes y obliga a meter a
- * los veinte atletas dentro de cada casilla. Es la forma correcta para "qué
- * pasa el día 12" y la peor posible para "hasta cuándo está programado cada
- * uno", que es una pregunta sobre INTERVALOS y sobre varios meses a la vez.
- *
- * Un carril por atleta y el tiempo en el eje X contesta las dos que importan
- * de un vistazo: dónde acaba cada barra, y dónde hay hueco entre barras.
- *
- *
- * LA SEMÁNTICA DE COLOR — CUATRO ESTADOS Y NI UNO MÁS
- *
- *   · Barra sólida de marca      → programado y con contenido escrito.
- *   · Barra rayada y atenuada    → bloque creado pero con semanas VACÍAS.
- *     Es el estado que más daño hace y el que nadie veía: el bloque existe,
- *     la lista de atletas dice que tiene plan, y el atleta abre la aplicación
- *     el lunes y no hay nada.
- *   · Borde ámbar al final       → aquí se le acaba.
- *   · Pin rojo                   → compite.
- *
- * No hay un quinto color para "descarga", ni para "bloque activo frente a
- * inactivo", ni para el tipo de bloque. Cada color de más es una leyenda que
- * hay que aprender, y un calendario que necesita leyenda deja de leerse de un
- * vistazo — que es lo único que este calendario tiene que hacer bien.
+ * POR QUÉ LA CASILLA NO DICE QUÉ SE ENTRENA
+ * Para el calendario INDIVIDUAL sí compensa pedir el nombre de cada
+ * ejercicio —es un atleta—. Para el de equipo sería una consulta por cada
+ * sesión de cada atleta, y `useTeamCoverage` existe precisamente para
+ * evitar ese coste (ver su cabecera: "cuatro consultas, no ochenta"). La
+ * cuenta agregada contesta la pregunta de esta pantalla —¿cuánta carga de
+ * trabajo cae ese día en todo el equipo?— sin pagar ese precio.
  */
 
 interface TeamPlanningCalendarProps {
@@ -55,38 +45,33 @@ interface TeamPlanningCalendarProps {
     onSelectAthlete: (athleteId: string) => void;
 }
 
-/** Ancho mínimo de un mes en el eje, en píxeles. Por debajo no se lee nada. */
-const MONTH_MIN_WIDTH = 132;
-
 /** Meses hacia delante disponibles. Sustituye al antiguo 4/6/14 (30 ago 2026). */
 const MONTH_PRESETS = [3, 6, 12];
-
 /** Cuánto retrocede cada pulsación de "Atrás". */
 const MONTHS_BACK_STEP = 3;
+const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const WEEK_COL_WIDTH = 30;
 
 export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCalendarProps) {
     const [monthsForward, setMonthsForward] = useState(6);
-    /** El de partida de `useTeamCoverage`: un mes. "Atrás" lo alarga. */
     const [monthsBack, setMonthsBack] = useState(1);
-    const scrollRef = useRef<HTMLDivElement>(null);
 
     const { data, byUrgency, loading, error, refetch } = useTeamCoverage(user.id, { monthsForward, monthsBack });
 
-    const months = useMemo(
-        () => (data ? monthsBetween(data.axisStart, data.axisEnd) : []),
+    const weeks = useMemo(
+        () => (data ? buildWeekColumns(data.axisStart, data.axisEnd) : []),
         [data]
     );
 
-    // Hoy, situado en el eje. Es la referencia que hace legible todo lo demás:
-    // sin la línea de hoy, una barra que termina "por la izquierda" no se
-    // distingue de una que termina "por la derecha".
-    const todayPos = useMemo(() => {
-        if (!data) return null;
-        const today = new Date();
-        return positionInAxis(today, today, data.axisStart, data.axisEnd);
+    const maxCount = useMemo(() => {
+        if (!data) return 0;
+        let max = 0;
+        for (const cell of data.cells.values()) max = Math.max(max, cell.count);
+        return max;
     }, [data]);
 
-    const axisWidth = Math.max(months.length * MONTH_MIN_WIDTH, 600);
+    const todayYmd = ymd(new Date());
 
     return (
         <section className="space-y-4">
@@ -94,13 +79,10 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                 <div className="min-w-0">
                     <h2 className="text-t-base font-bold text-ink">Programación del equipo</h2>
                     <p className="mt-0.5 text-t-xs text-ink-subtle">
-                        Hasta cuándo está programado cada atleta y cuándo compite.
+                        Cuántas sesiones caen cada día, y a quién se le acaba la programación.
                     </p>
                 </div>
 
-                {/* Cuántos meses se ven. Es lo que convierte esto en una
-                    herramienta de planificación y no en una vista de "esta
-                    semana": una preparación a una competición dura meses. */}
                 <div className="flex shrink-0 items-center gap-1.5">
                     <button
                         onClick={() => setMonthsBack(b => b + MONTHS_BACK_STEP)}
@@ -117,11 +99,7 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                             Hoy
                         </button>
                     )}
-                    <div
-                        role="group"
-                        aria-label="Meses hacia delante"
-                        className="flex shrink-0 rounded-field bg-surface-sunken p-0.5"
-                    >
+                    <div role="group" aria-label="Meses hacia delante" className="flex shrink-0 rounded-field bg-surface-sunken p-0.5">
                         {MONTH_PRESETS.map(m => (
                             <button
                                 key={m}
@@ -143,73 +121,83 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                 consulta={{ isLoading: loading, isError: !!error, error, refetch }}
                 queEs="que.atletas"
                 vacio={!!data && data.athletes.length === 0}
-                esqueleto={
-                    <div className="space-y-2">
-                        {Array.from({ length: 5 }, (_, i) => (
-                            <Skeleton key={i} className="h-12 w-full rounded-card" />
-                        ))}
-                    </div>
-                }
+                esqueleto={<Skeleton className="h-64 w-full rounded-card" />}
                 vacioIcono={<CalendarOff size={20} aria-hidden="true" />}
                 vacioTitulo="Todavía no tienes atletas"
-                vacioCuerpo="Cuando tengas atletas en tu equipo verás aquí hasta cuándo está programado cada uno."
+                vacioCuerpo="Cuando tengas atletas en tu equipo verás aquí cuánta carga cae cada día."
             >
                 {data && (
                     <>
-                        <Legend />
-
-                        {/* EL CARRIL. La columna de nombres es `sticky` para
-                            que al desplazarse por los meses no se pierda de
-                            vista de quién es cada fila — que es el fallo
-                            clásico de las tablas anchas en móvil. */}
-                        <div
-                            ref={scrollRef}
-                            className="overflow-x-auto rounded-card border border-[var(--border-default)] bg-surface-raised"
-                        >
-                            <div style={{ minWidth: axisWidth + 160 }}>
-                                {/* Cabecera de meses */}
+                        {/* LA REJILLA */}
+                        <div className="overflow-x-auto rounded-card border border-[var(--border-default)] bg-surface-raised">
+                            <div style={{ minWidth: weeks.length * WEEK_COL_WIDTH + 40 }}>
                                 <div className="flex border-b border-[var(--border-subtle)]">
-                                    <div className="sticky left-0 z-10 w-40 shrink-0 border-r border-[var(--border-subtle)] bg-surface-raised px-3 py-2">
-                                        <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                                            Atleta
-                                        </span>
-                                    </div>
-                                    <div className="relative flex flex-1">
-                                        {months.map(m => (
-                                            <div
-                                                key={`${m.year}-${m.month}`}
-                                                style={{ width: `${(m.days / totalDays(data.axisStart, data.axisEnd)) * 100}%` }}
-                                                className="border-r border-[var(--border-subtle)] px-2 py-2 last:border-r-0"
-                                            >
-                                                <span className="block truncate text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
-                                                    {m.label.slice(0, 3)}
-                                                </span>
-                                                <span className="block text-t-2xs text-ink-faint">{m.year}</span>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <div className="sticky left-0 z-10 w-10 shrink-0 border-r border-[var(--border-subtle)] bg-surface-raised" />
+                                    {weeks.map((w, i) => (
+                                        <div key={i} style={{ width: WEEK_COL_WIDTH }} className="shrink-0 border-r border-[var(--border-subtle)] py-1 text-center last:border-r-0">
+                                            {w.label && (
+                                                <span className="block truncate text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{w.label}</span>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
 
-                                {/* Un carril por atleta */}
-                                <ul>
-                                    {byUrgency.map(athlete => {
-                                        const cov = data.coverage.get(athlete.id);
-                                        if (!cov) return null;
-                                        return (
-                                            <AthleteLane
-                                                key={athlete.id}
-                                                name={athlete.full_name ?? 'Atleta'}
-                                                avatarUrl={athlete.avatar_url}
-                                                coverage={cov}
-                                                axisStart={data.axisStart}
-                                                axisEnd={data.axisEnd}
-                                                todayLeft={todayPos?.left ?? null}
-                                                onClick={() => onSelectAthlete(athlete.id)}
-                                            />
-                                        );
-                                    })}
-                                </ul>
+                                {WEEKDAY_LABELS.map((label, dayIdx) => (
+                                    <div key={label} className="flex border-b border-[var(--border-subtle)] last:border-b-0">
+                                        <div className="sticky left-0 z-10 flex w-10 shrink-0 items-center justify-center border-r border-[var(--border-subtle)] bg-surface-raised">
+                                            <span className="text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{label}</span>
+                                        </div>
+                                        {weeks.map((w, i) => {
+                                            const date = addDays(w.monday, dayIdx);
+                                            const key = ymd(date);
+                                            const cell = data.cells.get(key);
+                                            const isToday = key === todayYmd;
+                                            const level = heatLevel(cell?.withContent ?? 0, maxCount);
+
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    title={cell ? `${key} — ${cell.withContent} de ${cell.count} sesiones con contenido` : key}
+                                                    style={{ width: WEEK_COL_WIDTH }}
+                                                    className={`flex h-7 shrink-0 items-center justify-center border-r border-[var(--border-subtle)] last:border-r-0 ${isToday ? 'ring-1 ring-inset ring-[var(--brand-line)]' : ''}`}
+                                                >
+                                                    {cell && (
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className={`flex h-5 w-5 items-center justify-center rounded text-[9px] font-black tabular-nums ${HEAT_CLASSES[level]}`}
+                                                        >
+                                                            {cell.withContent}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
                             </div>
+                        </div>
+                        <HeatLegend />
+
+                        {/* LA LISTA — a quién se le acaba antes, y el acceso a su propio calendario. */}
+                        <div className="rounded-card border border-[var(--border-default)] bg-surface-raised">
+                            <h3 className="border-b border-[var(--border-subtle)] px-3.5 py-2.5 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                Atletas, por urgencia
+                            </h3>
+                            <ul>
+                                {byUrgency.map(athlete => {
+                                    const cov = data.coverage.get(athlete.id);
+                                    if (!cov) return null;
+                                    return (
+                                        <AthleteRow
+                                            key={athlete.id}
+                                            name={athlete.full_name ?? 'Atleta'}
+                                            avatarUrl={athlete.avatar_url}
+                                            coverage={cov}
+                                            onClick={() => onSelectAthlete(athlete.id)}
+                                        />
+                                    );
+                                })}
+                            </ul>
                         </div>
 
                         <UndatedNotice coverage={[...data.coverage.values()]} athletes={data.athletes} />
@@ -220,58 +208,67 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
     );
 }
 
-const totalDays = (from: Date, to: Date) => daysBetween(from, to) + 1;
+function getMonday(d: Date): Date {
+    const day = d.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    return addDays(d, diff);
+}
 
-// =====================================================================
+interface WeekColumn { monday: Date; label: string }
 
-function Legend() {
+function buildWeekColumns(axisStart: Date, axisEnd: Date): WeekColumn[] {
+    const weeks: WeekColumn[] = [];
+    let cursor = getMonday(axisStart);
+    let lastMonth = -1;
+    while (cursor <= axisEnd) {
+        const m = cursor.getMonth();
+        weeks.push({ monday: new Date(cursor), label: m !== lastMonth ? MONTHS[m] : '' });
+        lastMonth = m;
+        cursor = addDays(cursor, 7);
+    }
+    return weeks;
+}
+
+/** Cuatro niveles sobre el máximo del periodo, mismo criterio que ConsistencyCalendar. */
+function heatLevel(count: number, max: number): 0 | 1 | 2 | 3 {
+    if (count <= 0 || max <= 0) return 0;
+    const q = count / max;
+    if (q > 0.66) return 3;
+    if (q > 0.33) return 2;
+    return 1;
+}
+
+const HEAT_CLASSES: Record<0 | 1 | 2 | 3, string> = {
+    0: 'bg-surface-sunken text-ink-faint',
+    1: 'bg-brand/25 text-ink',
+    2: 'bg-brand/55 text-ink',
+    3: 'bg-brand text-brand-ink',
+};
+
+function HeatLegend() {
     return (
-        <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-t-2xs text-ink-subtle">
-            <li className="flex items-center gap-1.5">
-                <span className="h-2.5 w-5 rounded-pill bg-brand" aria-hidden="true" />
-                Programado
-            </li>
-            <li className="flex items-center gap-1.5">
-                <span
-                    aria-hidden="true"
-                    className="h-2.5 w-5 rounded-pill bg-brand/25"
-                    style={{
-                        backgroundImage:
-                            'repeating-linear-gradient(45deg, transparent, transparent 2px, var(--brand) 2px, var(--brand) 3px)',
-                    }}
-                />
-                Semanas vacías
-            </li>
-            <li className="flex items-center gap-1.5">
-                <span className="h-2.5 w-0.5 rounded-pill bg-warning" aria-hidden="true" />
-                Fin de programación
-            </li>
-            <li className="flex items-center gap-1.5">
-                <Trophy size={11} className="text-danger-text" aria-hidden="true" />
-                Competición
-            </li>
-        </ul>
+        <div className="flex items-center gap-1.5 text-t-2xs text-ink-subtle">
+            Menos
+            {([0, 1, 2, 3] as const).map(level => (
+                <span key={level} aria-hidden="true" className={`h-3.5 w-3.5 rounded ${HEAT_CLASSES[level]}`} />
+            ))}
+            Más sesiones ese día
+        </div>
     );
 }
 
 // =====================================================================
 
-function AthleteLane({
-    name, avatarUrl, coverage, axisStart, axisEnd, todayLeft, onClick,
+function AthleteRow({
+    name, avatarUrl, coverage, onClick,
 }: {
     name: string;
     avatarUrl: string | null;
     coverage: AthleteCoverage;
-    axisStart: Date;
-    axisEnd: Date;
-    todayLeft: number | null;
     onClick: () => void;
 }) {
     const today = new Date();
     const covered = coverage.coveredUntil;
-
-    // Cuántos días le quedan de programación. Es la cifra que ordena la lista
-    // y la que decide el color del texto de la columna de nombres.
     const daysLeft = covered ? daysBetween(today, covered) : null;
 
     const tone =
@@ -280,25 +277,26 @@ function AthleteLane({
                 : daysLeft <= 7 ? 'warn'
                     : 'good';
 
+    const nextComp = [...coverage.competitions].sort((a, b) => a.date.localeCompare(b.date))[0] ?? null;
+
     return (
-        <li className="flex border-b border-[var(--border-subtle)] last:border-b-0">
-            {/* Columna de nombres, fija al desplazarse */}
+        <li className="border-b border-[var(--border-subtle)] last:border-b-0">
             <button
                 onClick={onClick}
-                className="sticky left-0 z-10 flex w-40 shrink-0 items-center gap-2 border-r border-[var(--border-subtle)] bg-surface-raised px-3 py-2.5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
             >
                 <SafeImage
                     src={avatarUrl ?? undefined}
                     alt=""
-                    className="h-7 w-7 shrink-0 rounded-full object-cover"
+                    className="h-8 w-8 shrink-0 rounded-full object-cover"
                     fallback={
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-t-2xs font-bold text-ink-subtle">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-overlay text-t-2xs font-bold text-ink-subtle">
                             {name.charAt(0)}
                         </span>
                     }
                 />
                 <span className="min-w-0 flex-1">
-                    <span className="block truncate text-t-xs font-semibold text-ink">{name}</span>
+                    <span className="block truncate text-t-sm font-semibold text-ink">{name}</span>
                     <span
                         className={`block truncate text-t-2xs ${tone === 'bad' ? 'text-danger-text'
                             : tone === 'warn' ? 'text-warning'
@@ -309,47 +307,23 @@ function AthleteLane({
                         {coverageLabel(daysLeft, covered)}
                     </span>
                 </span>
-            </button>
-
-            {/* El carril temporal */}
-            <div className="relative min-h-[52px] flex-1">
-                {/* Línea de HOY. Va debajo de las barras a propósito: es una
-                    referencia, no un elemento que haya que leer. */}
-                {todayLeft !== null && (
-                    <span
-                        aria-hidden="true"
-                        style={{ left: `${todayLeft}%` }}
-                        className="absolute inset-y-0 z-0 w-px bg-[var(--border-strong)]"
-                    />
+                {nextComp && (
+                    <span className="flex shrink-0 items-center gap-1 text-t-2xs text-ink-subtle">
+                        <Trophy size={11} className="text-danger-text" aria-hidden="true" />
+                        {formatShortDate(nextComp.date)}
+                    </span>
                 )}
-
-                {coverage.spans.map(span => (
-                    <BlockBar key={span.blockId} span={span} axisStart={axisStart} axisEnd={axisEnd} />
-                ))}
-
-                {coverage.competitions.map(comp => {
-                    const date = parseYmd(comp.date);
-                    if (!date) return null;
-                    const end = comp.end_date ? parseYmd(comp.end_date) : null;
-                    const pos = positionInAxis(date, end ?? date, axisStart, axisEnd);
-                    if (!pos) return null;
-                    return (
-                        <span
-                            key={comp.id}
-                            style={{ left: `${pos.left}%` }}
-                            title={`${comp.name} — ${comp.date}`}
-                            className="absolute top-1/2 z-20 -translate-x-1/2 -translate-y-1/2"
-                        >
-                            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[var(--danger)] bg-surface-raised">
-                                <Trophy size={11} className="text-danger-text" aria-hidden="true" />
-                            </span>
-                            <span className="sr-only">{comp.name}, {comp.date}</span>
-                        </span>
-                    );
-                })}
-            </div>
+                <ChevronRight size={14} className="shrink-0 text-ink-faint" aria-hidden="true" />
+            </button>
         </li>
     );
+}
+
+function formatShortDate(raw: string): string {
+    const d = parseYmd(raw);
+    if (!d) return raw;
+    const [, m, day] = ymd(d).split('-');
+    return `${Number(day)}/${Number(m)}`;
 }
 
 /** Qué se lee bajo el nombre del atleta. */
@@ -364,59 +338,11 @@ function coverageLabel(daysLeft: number | null, covered: Date | null): string {
 
 // =====================================================================
 
-function BlockBar({ span, axisStart, axisEnd }: { span: BlockSpan; axisStart: Date; axisEnd: Date }) {
-    const pos = positionInAxis(span.from, span.to, axisStart, axisEnd);
-    if (!pos) return null;
-
-    // El color del bloque lo eligió el coach al crearlo. Se respeta: es su
-    // código visual, y el calendario no tiene por qué inventarse otro.
-    const color = span.color || 'var(--brand)';
-    const empty = span.emptyWeeks.length > 0;
-
-    return (
-        <span
-            style={{ left: `${pos.left}%`, width: `${pos.width}%` }}
-            title={`${span.name}${empty ? ` — ${span.emptyWeeks.length} semana(s) sin ejercicios` : ''}`}
-            className="absolute top-1/2 z-10 flex h-6 -translate-y-1/2 items-center overflow-hidden rounded-chip"
-        >
-            {/* Relleno. Rayado cuando hay semanas vacías: el bloque existe
-                pero el atleta no tiene qué hacer en parte de él. */}
-            <span
-                aria-hidden="true"
-                className="absolute inset-0 rounded-chip"
-                style={
-                    empty
-                        ? {
-                            backgroundColor: 'transparent',
-                            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 3px, ${color} 3px, ${color} 4px)`,
-                            border: `1px solid ${color}`,
-                            opacity: 0.75,
-                        }
-                        : { backgroundColor: color }
-                }
-            />
-
-            <span className="relative truncate px-2 text-t-2xs font-bold text-white mix-blend-luminosity">
-                {span.name}
-            </span>
-
-            {/* El final de la programación. Una marca de 2px al borde derecho:
-                es el punto exacto que el coach viene a buscar. */}
-            <span
-                aria-hidden="true"
-                className="absolute inset-y-0 right-0 w-0.5 bg-warning"
-            />
-        </span>
-    );
-}
-
-// =====================================================================
-
 /**
  * Los bloques que NO se pueden situar en el calendario.
  *
  * NO se colocan a ojo (decisión K10: nunca inventar una fecha). Se listan
- * aquí con el motivo, porque un bloque que no aparece en el carril y del que
+ * aquí con el motivo, porque un bloque que no aparece en la rejilla y del que
  * nadie dice nada se lee como un fallo de la aplicación.
  */
 function UndatedNotice({

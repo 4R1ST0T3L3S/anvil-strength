@@ -27,6 +27,7 @@ import {
     ymd,
     daysBetween,
     addDays,
+    sessionDate,
     type CoverageBlockInput,
     type CoverageSessionInput,
     type CoverageCompetitionInput,
@@ -374,5 +375,42 @@ describe('addDays / daysBetween', () => {
         const b = new Date(2026, 0, 11);
         assert.equal(daysBetween(a, b), 10);
         assert.equal(daysBetween(b, a), -10);
+    });
+});
+
+describe('sessionDate — la fecha real de una sesión', () => {
+    test('lunes de la semana de inicio es el propio start_date', () => {
+        const b = block(); // start_week 10, start_date 2026-03-02 (lunes)
+        const { span } = resolveBlockSpan(b) as { span: import('./coverage').BlockSpan };
+        const d = sessionDate({ week_number: 10, day_of_week: 'monday' }, span);
+        assert.equal(d && ymd(d), '2026-03-02');
+    });
+
+    test('el viernes de la tercera semana cae seis días después del lunes de esa semana', () => {
+        const b = block();
+        const { span } = resolveBlockSpan(b) as { span: import('./coverage').BlockSpan };
+        const monday3 = span.weeks.find(w => w.week === 12)!.monday;
+        const d = sessionDate({ week_number: 12, day_of_week: 'friday' }, span);
+        assert.equal(d && daysBetween(monday3, d), 4);
+    });
+
+    test('sin day_of_week no se inventa un día', () => {
+        const b = block();
+        const { span } = resolveBlockSpan(b) as { span: import('./coverage').BlockSpan };
+        assert.equal(sessionDate({ week_number: 10, day_of_week: null }, span), null);
+    });
+
+    test('una semana fuera del span resuelto no se inventa', () => {
+        const b = block();
+        const { span } = resolveBlockSpan(b) as { span: import('./coverage').BlockSpan };
+        assert.equal(sessionDate({ week_number: 45, day_of_week: 'monday' }, span), null);
+    });
+
+    test('domingo, el último día ISO, cae justo antes del lunes siguiente', () => {
+        const b = block();
+        const { span } = resolveBlockSpan(b) as { span: import('./coverage').BlockSpan };
+        const monday10 = span.weeks.find(w => w.week === 10)!.monday;
+        const sunday = sessionDate({ week_number: 10, day_of_week: 'sunday' }, span)!;
+        assert.equal(daysBetween(monday10, sunday), 6);
     });
 });

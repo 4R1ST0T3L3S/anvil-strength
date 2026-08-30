@@ -5,7 +5,10 @@ import { fetchRoster, type RosterAthlete } from './useCoachRoster';
 import { competitionsService } from '../../../services/competitionsService';
 import {
     buildAthleteCoverage,
+    resolveBlockSpan,
+    sessionDate,
     addDays,
+    ymd,
     type AthleteCoverage,
     type CoverageBlockInput,
     type CoverageSessionInput,
@@ -53,6 +56,14 @@ export interface TeamCoverage {
     athletes: RosterAthlete[];
     /** Una entrada por atleta, en el mismo orden que `athletes`. */
     coverage: Map<string, AthleteCoverage>;
+    /**
+     * Una entrada por FECHA (clave `ymd`) — la rejilla del calendario de
+     * equipo. `count` son las sesiones de ESE día en todo el equipo,
+     * `withContent` las que además tienen algún ejercicio (no solo el día
+     * creado y vacío), y `athletes` sus ids, para el resumen al pasar el
+     * ratón. Ausente = ningún atleta entrena ese día.
+     */
+    cells: Map<string, { count: number; withContent: number; athletes: string[] }>;
     /** Extremos del eje temporal, ya calculados sobre los datos reales. */
     axisStart: Date;
     axisEnd: Date;
@@ -94,7 +105,7 @@ export function useTeamCoverage(
             const axisEnd = new Date(today.getFullYear(), today.getMonth() + monthsForward + 1, 0);
 
             if (athletes.length === 0) {
-                return { athletes, coverage: new Map(), axisStart, axisEnd };
+                return { athletes, coverage: new Map(), cells: new Map(), axisStart, axisEnd };
             }
 
             const athleteIds = athletes.map(a => a.id);
@@ -166,7 +177,29 @@ export function useTeamCoverage(
                 ])
             );
 
-            return { athletes, coverage, axisStart, axisEnd };
+            // 4. UNA CASILLA POR FECHA, con cuántos atletas entrenan ese día —
+            //    lo que pinta la rejilla del calendario de equipo (30 ago
+            //    2026). Se resuelve aquí, una vez, reutilizando los mismos
+            //    `blocks`/`sessions` que ya se han pedido: ni una consulta de
+            //    más por tener también la rejilla.
+            const cells = new Map<string, { count: number; withContent: number; athletes: string[] }>();
+            for (const block of blocks) {
+                const resolved = resolveBlockSpan(block, sessions);
+                if (!('span' in resolved)) continue;
+                for (const session of sessions) {
+                    if (session.block_id !== block.id) continue;
+                    const date = sessionDate(session, resolved.span);
+                    if (!date) continue;
+                    const key = ymd(date);
+                    const cell = cells.get(key) ?? { count: 0, withContent: 0, athletes: [] };
+                    cell.count += 1;
+                    if (session.exerciseCount > 0) cell.withContent += 1;
+                    cell.athletes.push(block.athlete_id);
+                    cells.set(key, cell);
+                }
+            }
+
+            return { athletes, coverage, cells, axisStart, axisEnd };
         },
     });
 
