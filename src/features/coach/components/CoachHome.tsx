@@ -6,7 +6,7 @@ import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, Calendar, User, Weight, List, Calculator,
     ChevronRight, Swords, Activity, Fish, Loader,
-    LayoutDashboard, AlertTriangle,
+    LayoutDashboard, AlertTriangle, MessageCircle, Lock,
 } from 'lucide-react';
 import { AttentionPanel } from './AttentionPanel';
 import { fetchRosterIds } from '../hooks/useCoachRoster';
@@ -47,18 +47,21 @@ function NavTile({
     hint,
     onClick,
     area = 'tool',
+    disabled = false,
 }: {
     icon: LucideIcon;
     title: string;
     hint: string;
     onClick: () => void;
     area?: AreaKey;
+    disabled?: boolean;
 }) {
     const a = AREA[area];
     return (
         <button
             onClick={onClick}
-            className="group relative flex min-h-[104px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-4 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay active:bg-surface-raised"
+            disabled={disabled}
+            className="group relative flex min-h-[104px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-4 text-left transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:bg-surface-overlay active:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-surface-raised"
         >
             <Icon
                 size={72}
@@ -66,13 +69,17 @@ function NavTile({
                 className="pointer-events-none absolute -right-4 -top-3 text-ink opacity-[0.04] transition-transform duration-base ease-snap group-hover:scale-110"
             />
             <span className={`flex h-9 w-9 items-center justify-center rounded-field ${a.chip}`}>
-                <Icon size={17} className={a.icon} aria-hidden="true" />
+                {disabled
+                    ? <Lock size={16} className="text-ink-faint" aria-hidden="true" />
+                    : <Icon size={17} className={a.icon} aria-hidden="true" />}
             </span>
             <span className="relative">
                 <span className="block text-t-base font-bold leading-tight text-ink">{title}</span>
                 <span className="mt-0.5 flex items-center gap-1 text-t-xs text-ink-subtle">
                     {hint}
-                    <ChevronRight size={12} aria-hidden="true" className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                    {!disabled && (
+                        <ChevronRight size={12} aria-hidden="true" className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                    )}
                 </span>
             </span>
         </button>
@@ -227,78 +234,82 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                 </header>
 
                 {/* -----------------------------------------------------
-                    LA REJILLA DE CABECERA — CUATRO BLOQUES, DOS PESOS
+                    DOS COLUMNAS — PRINCIPAL Y GESTIÓN
 
-                        ┌──────────────┬──────────────┐
-                        │ MIS ATLETAS  │    DIETAS    │  ← acciones
-                        ├──────────────┼──────────────┤
-                        │   LESSONS    │ PRÓX. COMPE. │  ← contexto
-                        └──────────────┴──────────────┘
+                    ┌───────────────────────────┬─────────────────────┐
+                    │ MIS ATLETAS  │   DIETAS   │      GESTIÓN        │
+                    │──────────────┼────────────│   (mensajes,        │
+                    │   LESSONS    │ PRÓX.COMPE.│    calendario,      │
+                    │              │            │    perfil...)       │
+                    │  Requiere tu atención      │    ANVIL LAB        │
+                    └───────────────────────────┴─────────────────────┘
 
-                    Arriba, a dónde se va a trabajar. Abajo, lo que hay que
-                    saber pero no se pulsa cada día.
+                    Izquierda: a qué se dedica el coach hoy — su equipo, el
+                    contexto (frase + competición) y qué necesita atención.
+                    Derecha: el resto de la app, en accesos compactos.
 
-                    Anvil Lessons ocupaba antes una `<section>` de ancho
-                    completo al final del panel, y la próxima competición
-                    compartía fila con "Mis atletas" al mismo peso visual.
-                    Las dos eran más grandes de lo que su función justifica:
-                    una frase del día y un contador de días no compiten en
-                    importancia con la lista de atletas.
+                    En móvil y tablet, la derecha cae debajo de la
+                    izquierda; nada se apila fila a fila como antes.       */}
+                <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
+                    {/* COLUMNA IZQUIERDA (Principal) */}
+                    <div className="min-w-0 flex-1 space-y-8">
+                        <section>
+                            <SectionLabel icon={Users}>Tu equipo</SectionLabel>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
 
-                    En móvil las cuatro se apilan igual que antes.        */}
-                <section>
-                    <SectionLabel icon={Users}>Tu equipo</SectionLabel>
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                        <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
+                                <DietsCard
+                                    withPlan={dietStats?.withPlan ?? null}
+                                    total={athleteCount}
+                                    onClick={() => onNavigate('diets')}
+                                />
 
-                        <DietsCard
-                            withPlan={dietStats?.withPlan ?? null}
-                            total={athleteCount}
-                            onClick={() => onNavigate('diets')}
-                        />
+                                <LessonsCard quote={getAnvilQuote()} />
 
-                        <LessonsCard quote={getAnvilQuote()} />
+                                {nextComp
+                                    ? <NextCompCard compact comp={nextComp} onClick={() => onNavigate('calendar')} />
+                                    : <NoCompCard compact />}
+                            </div>
+                        </section>
 
-                        {nextComp
-                            ? <NextCompCard compact comp={nextComp} onClick={() => onNavigate('calendar')} />
-                            : <NoCompCard compact />}
+                        {/* QUÉ REQUIERE TU ATENCIÓN
+                            Va justo después del equipo: es lo que decide a
+                            qué se dedica el coach hoy, y las calculadoras
+                            no. */}
+                        <section>
+                            <SectionLabel icon={AlertTriangle}>Requiere tu atención</SectionLabel>
+                            <AttentionPanel coachId={user.id} />
+                        </section>
                     </div>
-                </section>
 
-                {/* -----------------------------------------------------
-                    QUÉ REQUIERE TU ATENCIÓN
-                    Va justo después de la acción principal y por delante de
-                    la rejilla de herramientas: es lo que decide a qué se
-                    dedica el coach hoy, y las calculadoras no. */}
-                <section>
-                    <SectionLabel icon={AlertTriangle}>Requiere tu atención</SectionLabel>
-                    <AttentionPanel coachId={user.id} />
-                </section>
+                    {/* COLUMNA DERECHA (Secundaria) */}
+                    <div className="flex flex-col gap-8 xl:w-[400px] xl:shrink-0 2xl:w-[440px]">
+                        <section>
+                            <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
+                            <div className="grid grid-cols-2 gap-2.5">
+                                <NavTile icon={MessageCircle} title="Mensajes" hint="Próximamente" onClick={() => {}} disabled />
+                                <NavTile area="coach" icon={Calendar} title="Mis competiciones" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
+                                <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
+                                {!isNutritionist && (
+                                    <NavTile area="coach" icon={Activity} title="Análisis PWR" hint="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
+                                )}
+                                <NavTile icon={User} title="Mi perfil" hint="Marca, logo y datos" onClick={() => onNavigate('profile')} />
+                                <NavTile area="club" icon={Swords} title="La Arena" hint="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
+                                <NavTile area="club" icon={Users} title="Ranking" hint="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
+                            </div>
+                        </section>
 
-                {/* ----------------------------------------------------- */}
-                <section>
-                    <SectionLabel icon={LayoutDashboard}>Gestión</SectionLabel>
-                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                        <NavTile area="coach" icon={Calendar} title="Mis competiciones" hint="Sesiones del equipo" onClick={() => onNavigate('schedule')} />
-                        <NavTile area="coach" icon={Trophy} title="Calendario" hint="Competiciones del año" onClick={() => onNavigate('calendar')} />
-                        {!isNutritionist && (
-                            <NavTile area="coach" icon={Activity} title="Análisis PWR" hint="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
-                        )}
-                        <NavTile icon={User} title="Mi perfil" hint="Marca, logo y datos" onClick={() => onNavigate('profile')} />
-                        <NavTile area="club" icon={Swords} title="La Arena" hint="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
-                        <NavTile area="club" icon={Users} title="Ranking" hint="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
+                        <section>
+                            <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
+                            <div className="grid grid-cols-2 gap-2.5">
+                                <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
+                                <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
+                                <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
+                                <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
+                            </div>
+                        </section>
                     </div>
-                </section>
-
-                <section>
-                    <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
-                    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-                        <NavTile icon={Weight} title="Carga de barra" hint="Qué discos poner" onClick={() => setIsPlateCalcOpen(true)} />
-                        <NavTile icon={List} title="Aproximaciones" hint="Escalera de calentamiento" onClick={() => setIsWarmUpCalcOpen(true)} />
-                        <NavTile icon={Calculator} title="1RM" hint="Desde RPE o velocidad" onClick={() => setIs1RMCalcOpen(true)} />
-                        <NavTile icon={Fish} title="Sushi" hint="Recuento post-competición" onClick={() => setIsSushiCounterOpen(true)} />
-                    </div>
-                </section>
+                </div>
 
             </div>
 

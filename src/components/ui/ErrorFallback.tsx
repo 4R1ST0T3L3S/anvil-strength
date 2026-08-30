@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface ErrorFallbackProps {
@@ -18,25 +18,50 @@ const isChunkLoadError = (error: unknown): boolean => {
 export function ErrorFallback({ error }: ErrorFallbackProps) {
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
     const isChunkError = isChunkLoadError(error);
+    const [tooManyRetries, setTooManyRetries] = useState(false);
 
-    // Auto-reload on stale chunk errors (Service Worker cache mismatch)
+    /**
+     * Recarga automática ante un chunk desfasado (caché de Service Worker
+     * obsoleta tras un despliegue), pero con tope de 2 reintentos.
+     *
+     * Sin el tope, un chunk que sigue fallando después de limpiar caché
+     * (por ejemplo un fichero que de verdad ya no existe en el servidor)
+     * entraba en bucle: recarga -> mismo error -> recarga otra vez, para
+     * siempre. El contador vive en `sessionStorage` para sobrevivir a la
+     * propia recarga; al tercer intento se rinde y enseña el error normal.
+     */
     useEffect(() => {
         if (isChunkError) {
-            // Clear SW caches then reload
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then((registrations) => {
-                    Promise.all(registrations.map((r) => r.unregister())).then(() => {
-                        window.location.reload();
+            const reloads = parseInt(sessionStorage.getItem('chunk_reload_count') || '0', 10);
+            if (reloads < 2) {
+                sessionStorage.setItem('chunk_reload_count', (reloads + 1).toString());
+
+                if ('caches' in window) {
+                    caches.keys().then((names) => {
+                        names.forEach((name) => caches.delete(name));
                     });
-                });
+                }
+
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then((registrations) => {
+                        Promise.all(registrations.map((r) => r.unregister())).then(() => {
+                            window.location.reload();
+                        });
+                    });
+                } else {
+                    window.location.reload();
+                }
             } else {
-                window.location.reload();
+                setTooManyRetries(true);
+                sessionStorage.removeItem('chunk_reload_count');
             }
+        } else {
+            sessionStorage.removeItem('chunk_reload_count');
         }
     }, [isChunkError]);
 
     // Show brief message while reloading
-    if (isChunkError) {
+    if (isChunkError && !tooManyRetries) {
         return (
             <div role="alert" className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center p-4">
                 <div className="bg-surface-sunken p-8 rounded-xl border border-line max-w-md w-full text-center shadow-2xl">

@@ -260,101 +260,114 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                     )}
                 </header>
 
-                {/* ---------------------------------------------------------
-                    HOY
-                    Entrenar es la razón por la que el atleta abre la app: es
-                    lo único con tratamiento de acción primaria en toda la
-                    pantalla, y ocupa el ancho que le corresponde.        */}
-                <section>
-                    <SectionLabel icon={Dumbbell}>{t('inicio.hoy')}</SectionLabel>
+                {/* -----------------------------------------------------
+                    DOS COLUMNAS — HOY Y ACCESOS
 
-                    {/* El entrenamiento pautado y los macros del día, con datos
-                        de verdad. Antes eran dos botones que no decían nada de
-                        lo que había detrás: para saber qué tocaba hoy había que
-                        entrar en otra pantalla y esperar a que cargara. */}
-                    <TodayPanel
-                        athleteId={user.id}
-                        locked={locked}
-                        onOpenTraining={() => onNavigate('planning')}
-                        onOpenNutrition={() => onNavigate('nutrition')}
-                    />
+                    Izquierda: lo que toca hacer hoy (entreno + dieta),
+                    el cuestionario, la frase del día y la competición.
+                    Derecha: el resto de la app, en accesos compactos.
 
-                    <div className="mt-3">
-                        <CheckInCard athleteId={user.id} />
-                    </div>
-                </section>
+                    En móvil y tablet, la derecha cae debajo de la
+                    izquierda; nada se apila fila a fila como antes.       */}
+                <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
+                    {/* COLUMNA IZQUIERDA (Principal) */}
+                    <div className="min-w-0 flex-1 space-y-8">
+                        {/* HOY
+                            Entrenar es la razón por la que el atleta abre la
+                            app: es lo único con tratamiento de acción
+                            primaria en toda la pantalla. */}
+                        <section>
+                            <SectionLabel icon={Dumbbell}>{t('inicio.hoy')}</SectionLabel>
 
-                {/* ---------------------------------------------------------
-                    FRASE + COMPETICIÓN
-                    Las dos cosas que se miran y no se tocan van juntas en una
-                    fila, la frase con más peso porque es lo que se lee.
-                    Sin competición asignada, la frase se queda con la fila
-                    entera en vez de dejar un hueco.                       */}
-                <section className={`grid gap-3 ${nextCompetition ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
-                    <div>
-                        <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
-                        <div className="relative flex min-h-[160px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                            <Quote
-                                size={112}
-                                aria-hidden="true"
-                                className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
+                            {/* El entrenamiento pautado y los macros del día,
+                                con datos de verdad. Antes eran dos botones
+                                que no decían nada de lo que había detrás:
+                                para saber qué tocaba hoy había que entrar en
+                                otra pantalla y esperar a que cargara. */}
+                            <TodayPanel
+                                athleteId={user.id}
+                                locked={locked}
+                                onOpenTraining={() => onNavigate('planning')}
+                                onOpenNutrition={() => onNavigate('nutrition')}
                             />
-                            <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
-                                {getAnvilQuote()}
-                            </p>
-                            <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                                Anvil Strength Club
-                            </p>
-                        </div>
+
+                            <div className="mt-3">
+                                <CheckInCard athleteId={user.id} />
+                            </div>
+                        </section>
+
+                        {/* FRASE + COMPETICIÓN
+                            Las dos cosas que se miran y no se tocan van
+                            juntas en una fila, la frase con más peso porque
+                            es lo que se lee. Sin competición asignada, la
+                            frase se queda con la fila entera en vez de
+                            dejar un hueco. */}
+                        <section className={`grid gap-3 ${nextCompetition ? 'lg:grid-cols-[1.6fr_1fr]' : ''}`}>
+                            <div>
+                                <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
+                                <div className="relative flex min-h-[160px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
+                                    <Quote
+                                        size={112}
+                                        aria-hidden="true"
+                                        className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
+                                    />
+                                    <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
+                                        {getAnvilQuote()}
+                                    </p>
+                                    <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                        Anvil Strength Club
+                                    </p>
+                                </div>
+                            </div>
+
+                            {nextCompetition && (
+                                <div>
+                                    <SectionLabel icon={Trophy}>{t('inicio.proximaCompeticion')}</SectionLabel>
+                                    <CountdownWidget assigned={nextCompetition} userId={user.id} />
+                                </div>
+                            )}
+                        </section>
                     </div>
 
-                    {nextCompetition && (
-                        <div>
-                            <SectionLabel icon={Trophy}>{t('inicio.proximaCompeticion')}</SectionLabel>
-                            <CountdownWidget assigned={nextCompetition} userId={user.id} />
-                        </div>
-                    )}
-                </section>
+                    {/* COLUMNA DERECHA (Secundaria) */}
+                    <div className="flex flex-col gap-8 xl:w-[400px] xl:shrink-0 2xl:w-[440px]">
+                        <section>
+                            <SectionLabel icon={FileText}>{t('inicio.tuCarrera')}</SectionLabel>
+                            <div className="grid grid-cols-2 gap-2.5">
+                                <NavTile area="train" icon={FileText} title={t('inicio.planificacion')} hint={t('inicio.planificacionPista')} onClick={() => onNavigate('planning')} />
+                                <NavTile area="club" icon={Trophy} title={t('nav.competiciones')} hint={t('inicio.competicionesPista')} onClick={() => onNavigate('competitions')} />
+                                <NavTile area="train" icon={Calendar} title={t('nav.calendario')} hint={t('inicio.calendarioPista')} onClick={() => onNavigate('calendar')} />
+                                <NavTile area="tool" icon={User} title={t('inicio.miPerfil')} hint={t('inicio.miPerfilPista')} onClick={() => onNavigate('profile')} />
+                                <NavTile
+                                    area="club"
+                                    icon={Swords}
+                                    title={t('nav.arena')}
+                                    hint={locked ? t('inicio.necesitasAcceso') : t('inicio.arenaPista')}
+                                    onClick={() => navigate('/dashboard/community')}
+                                    disabled={locked}
+                                />
+                                <NavTile
+                                    area="club"
+                                    icon={Users}
+                                    title={t('nav.ranking')}
+                                    hint={locked ? t('inicio.necesitasAcceso') : t('inicio.rankingPista')}
+                                    onClick={() => setIsRankingOpen(true)}
+                                    disabled={locked}
+                                />
+                            </div>
+                        </section>
 
-                {/* ---------------------------------------------------------
-                    PANEL DE CONTROL                                      */}
-                <section>
-                    <SectionLabel icon={FileText}>{t('inicio.tuCarrera')}</SectionLabel>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        <NavTile area="train" icon={FileText} title={t('inicio.planificacion')} hint={t('inicio.planificacionPista')} onClick={() => onNavigate('planning')} />
-                        <NavTile area="club" icon={Trophy} title={t('nav.competiciones')} hint={t('inicio.competicionesPista')} onClick={() => onNavigate('competitions')} />
-                        <NavTile area="train" icon={Calendar} title={t('nav.calendario')} hint={t('inicio.calendarioPista')} onClick={() => onNavigate('calendar')} />
-                        <NavTile area="tool" icon={User} title={t('inicio.miPerfil')} hint={t('inicio.miPerfilPista')} onClick={() => onNavigate('profile')} />
-                        <NavTile
-                            area="club"
-                            icon={Swords}
-                            title={t('nav.arena')}
-                            hint={locked ? t('inicio.necesitasAcceso') : t('inicio.arenaPista')}
-                            onClick={() => navigate('/dashboard/community')}
-                            disabled={locked}
-                        />
-                        <NavTile
-                            area="club"
-                            icon={Users}
-                            title={t('nav.ranking')}
-                            hint={locked ? t('inicio.necesitasAcceso') : t('inicio.rankingPista')}
-                            onClick={() => setIsRankingOpen(true)}
-                            disabled={locked}
-                        />
+                        <section>
+                            <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
+                            <div className="grid grid-cols-2 gap-2.5">
+                                <NavTile icon={Weight} title={t('inicio.cargaDeBarra')} hint={t('inicio.cargaDeBarraPista')} onClick={() => setIsPlateCalcOpen(true)} />
+                                <NavTile icon={List} title={t('inicio.aproximaciones')} hint={t('inicio.aproximacionesPista')} onClick={() => setIsWarmUpCalcOpen(true)} />
+                                <NavTile icon={Calculator} title={t('inicio.unRm')} hint={t('inicio.unRmPista')} onClick={() => setIs1RMCalcOpen(true)} />
+                                <NavTile icon={Fish} title={t('inicio.sushi')} hint={t('inicio.sushiPista')} onClick={() => setIsSushiCounterOpen(true)} />
+                            </div>
+                        </section>
                     </div>
-                </section>
-
-                {/* ---------------------------------------------------------
-                    HERRAMIENTAS                                          */}
-                <section>
-                    <SectionLabel icon={Calculator}>Anvil Lab</SectionLabel>
-                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        <NavTile icon={Weight} title={t('inicio.cargaDeBarra')} hint={t('inicio.cargaDeBarraPista')} onClick={() => setIsPlateCalcOpen(true)} />
-                        <NavTile icon={List} title={t('inicio.aproximaciones')} hint={t('inicio.aproximacionesPista')} onClick={() => setIsWarmUpCalcOpen(true)} />
-                        <NavTile icon={Calculator} title={t('inicio.unRm')} hint={t('inicio.unRmPista')} onClick={() => setIs1RMCalcOpen(true)} />
-                        <NavTile icon={Fish} title={t('inicio.sushi')} hint={t('inicio.sushiPista')} onClick={() => setIsSushiCounterOpen(true)} />
-                    </div>
-                </section>
+                </div>
             </div>
 
             <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
