@@ -56,6 +56,24 @@ export interface UserProfile {
     profile_image?: string; // Alias for avatar_url
 }
 
+/**
+ * CACHÉ DE ARRANQUE EN FRÍO — portado de main (ba2d6f4b, 30 ago 2026).
+ *
+ * `useQuery` ya evita pedir el usuario dos veces en la misma sesión de
+ * pestaña (`staleTime`), pero CADA recarga completa —F5, cerrar y volver a
+ * abrir— empieza de cero: pantalla en blanco hasta que `getSession()` y
+ * el `SELECT` a `profiles` contestan, aunque sea el MISMO usuario que hace
+ * un minuto.
+ *
+ * Con esto, `initialData` (más abajo) le da a React Query el último
+ * perfil conocido desde el primer render, así que el panel aparece de
+ * inmediato con esos datos mientras `fetchUser` los refresca por detrás.
+ * Es una copia LOCAL a este dispositivo — nunca sustituye la sesión real:
+ * si `getSession()` dice que no hay sesión, la caché se borra igual que si
+ * nunca hubiera existido.
+ */
+const CACHE_KEY = 'anvil_user_cache';
+
 const fetchUser = async (): Promise<UserProfile | null> => {
     // 1. Get Session with Strict Timeout
     try {
@@ -72,6 +90,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
         const sessionError = 'error' in result ? result.error : null;
 
         if (sessionError || !session?.user) {
+            localStorage.removeItem(CACHE_KEY);
             return null;
         }
 
@@ -94,6 +113,13 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
             profile_image: meta?.avatar_url
         };
+
+        // Lo que de verdad se devuelve y se cachea. Arranca en el optimista
+        // (de la sesión, sin ir a la base) y el bloque de abajo lo sustituye
+        // SI el perfil llega a tiempo — igual que antes, pero con un nombre
+        // propio para poder guardarlo en caché desde un único punto de
+        // salida en vez de desde dos `return` distintos.
+        let resultUser = optimisticUser;
 
         // 2. Fetch Profile (Background Update)
         try {
@@ -157,7 +183,7 @@ const fetchUser = async (): Promise<UserProfile | null> => {
                     nutritionistName = nutData?.full_name ?? null;
                 }
 
-                return {
+                resultUser = {
                     ...optimisticUser,
                     full_name: profile.full_name || optimisticUser.full_name,
                     nickname: profile.nickname || optimisticUser.nickname,
@@ -200,7 +226,8 @@ const fetchUser = async (): Promise<UserProfile | null> => {
             console.warn('Profile sync failed, using session data');
         }
 
-        return optimisticUser;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(resultUser));
+        return resultUser;
 
     } catch (error) {
         // If it's a timeout or specific error, rethrow so useQuery sees it as an error
@@ -221,5 +248,16 @@ export const useUser = () => {
         staleTime: 1000 * 60, // 1 minute
         retry: 2,
         placeholderData: (previousData) => previousData, // Keep user during refetch
+        // Arranque en frío: mientras `fetchUser` resuelve, pinta ya el
+        // último usuario conocido en este dispositivo (ver CACHE_KEY arriba).
+        initialData: () => {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) return JSON.parse(cached);
+            } catch (e) {
+                console.warn('Failed to parse cached user', e);
+            }
+            return undefined;
+        },
     });
 };

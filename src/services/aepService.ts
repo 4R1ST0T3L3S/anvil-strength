@@ -35,7 +35,6 @@ export interface CompetitionsResult {
 const CSV_ENDPOINT = '/api/aep';
 
 const CACHE_KEY = 'aep_calendar_data_v3';
-const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 h
 
 interface CachedPayload {
     timestamp: number;
@@ -277,7 +276,7 @@ function writeCache(data: Competition[]) {
 /**
  * Trae el calendario, en este orden:
  *
- *   1. Caché fresca (menos de 6 h). Instantáneo.
+ *   1. Caché fresca (de hoy mismo). Instantáneo.
  *   2. La federación, a través de nuestro propio proxy.
  *   3. Caché caducada, si la hay.
  *   4. La copia local del Excel oficial.
@@ -292,7 +291,13 @@ export async function fetchCompetitionsDetailed(
 ): Promise<CompetitionsResult> {
     const cached = readCache();
 
-    if (!force && cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    // La caché caduca a las 12:00 de la noche (cambio de día), no a las N
+    // horas: el calendario de la federación no cambia tan seguido como
+    // para justificar refrescarlo varias veces en el mismo día, y así se
+    // ahorra una petición al proxy en cada apertura de la app.
+    const isSameDay = cached && (new Date(Date.now()).setHours(0, 0, 0, 0) === new Date(cached.timestamp).setHours(0, 0, 0, 0));
+
+    if (!force && cached && isSameDay) {
         return {
             competitions: cached.data,
             source: 'cache',

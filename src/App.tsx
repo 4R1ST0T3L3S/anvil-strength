@@ -83,6 +83,7 @@ function App() {
 
 
   const handleLogout = async () => {
+    localStorage.removeItem('anvil_user_cache');
     await supabase.auth.signOut();
     window.location.reload();
   };

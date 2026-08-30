@@ -196,6 +196,22 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      /**
+       * En producción esta ruta la sirve `api/aep.ts` (función serverless).
+       * En `npm run dev` no hay funciones serverless, así que sin esto
+       * `aepService.ts` pedía `/api/aep` contra el propio Vite y recibía
+       * un 404 — el calendario de competiciones caía siempre al respaldo
+       * local en desarrollo. Portado de main (ba2d6f4b, 30 ago 2026).
+       */
+      '/api/aep': {
+        target: 'https://docs.google.com',
+        changeOrigin: true,
+        rewrite: () => '/spreadsheets/d/1Mm-CytTHU59mqGk_oMuSMIGAG6eqYDt4/export?format=csv&gid=577884253',
+      },
+    },
+  },
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
