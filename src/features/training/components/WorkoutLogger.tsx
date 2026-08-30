@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { trainingService, parseGroupedReps } from '../../../services/trainingService';
 import type { LastSessionSetReference } from '../../../services/trainingService';
 import { LoggerSetRow } from './LoggerSetRow';
+import { LoggerCardioRow } from './LoggerCardioRow';
 import { LastSessionReference } from './LastSessionReference';
 import { SaveIndicator } from '../../../components/ui/SaveIndicator';
 import { DURATION, EASE_OUT, prefersReducedMotion } from '../../../lib/motion';
@@ -1154,6 +1155,8 @@ function LoggerExerciseCard({
         [sessionExercise.id, sessionExercise.sets]
     );
 
+    const isCardio = sessionExercise.section === 'cardio';
+
     // Unidad en la que el coach pautó este ejercicio. Las series antiguas no
     // la traen: son kilos, que era lo único que había antes de la migración.
     const prescriptionMetric: TargetMetric =
@@ -1529,21 +1532,24 @@ function LoggerExerciseCard({
                 <LastSessionReference reference={lastSession} unit={unit} />
             )}
 
-            {/* Cabecera de las columnas */}
-            {/* Mismas columnas que LoggerSetRow. Si se cambian ahí, aquí
-                también: son la cabecera de esa rejilla. */}
-            <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold uppercase tracking-wide text-ink-subtle sm:gap-1.5 sm:px-3">
-                <span className="text-left">#</span>
-                <span>Reps</span>
-                {/* Esta columna son SIEMPRE kilos movidos, porque la escribe el
-                    atleta. Cuando el coach pautó en otra unidad —RPE, RIR,
-                    velocidad— su objetivo aparece encima de cada casilla, que
-                    es donde no se confunde con lo que se ha levantado. */}
-                <span>{unit === 'lb' ? 'Lb' : 'Kg'}{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
-                <span>RPE</span>
-                <span />
-                <span />
-            </div>
+            {/* Cabecera de las columnas.
+                El cardio tiene su propia fila (LoggerCardioRow) con SUS
+                columnas — duración, FC, distancia — y no encaja en esta
+                cabecera de reps/kg/RPE, así que aquí no se pinta ninguna. */}
+            {!isCardio && (
+                <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold uppercase tracking-wide text-ink-subtle sm:gap-1.5 sm:px-3">
+                    <span className="text-left">#</span>
+                    <span>Reps</span>
+                    {/* Esta columna son SIEMPRE kilos movidos, porque la escribe el
+                        atleta. Cuando el coach pautó en otra unidad —RPE, RIR,
+                        velocidad— su objetivo aparece encima de cada casilla, que
+                        es donde no se confunde con lo que se ha levantado. */}
+                    <span>{unit === 'lb' ? 'Lb' : 'Kg'}{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
+                    <span>RPE</span>
+                    <span />
+                    <span />
+                </div>
+            )}
 
             {/* Series.
                 Una serie agrupada ("4x8") se pinta como cuatro renglones para
@@ -1553,27 +1559,39 @@ function LoggerExerciseCard({
                 bloque programado no genera ni una escritura. */}
             <div className="divide-y divide-[var(--border-subtle)]">
                 {rows.map((row, index) => (
-                    <LoggerSetRow
-                        key={row.key}
-                        set={row.set}
-                        displayIndex={index + 1}
-                        targetReps={row.targetReps}
-                        onStartTimer={onStartTimer}
-                        defaultRestSeconds={sessionExercise.rest_seconds}
-                        needsExpansion={row.needsExpansion}
-                        groupIndex={row.groupIndex}
-                        onExpand={(groupIndex) => onExpandSet(row.set.id, row.baseOrderIndex, groupIndex)}
-                        onChange={onSetChange}
-                        // La velocidad solo se ofrece en series YA SEPARADAS: en
-                        // un "4x8" sin separar las cuatro comparten fila, y
-                        // guardar una velocidad ahí la asignaría a las cuatro.
-                        onOpenVbt={
-                            row.needsExpansion
-                                ? undefined
-                                : () => setVbtSet({ set: row.set, number: index + 1 })
-                        }
-                        unit={unit}
-                    />
+                    isCardio ? (
+                        <LoggerCardioRow
+                            key={row.key}
+                            set={row.set}
+                            displayIndex={index + 1}
+                            needsExpansion={row.needsExpansion}
+                            groupIndex={row.groupIndex}
+                            onExpand={(groupIndex) => onExpandSet(row.set.id, row.baseOrderIndex, groupIndex)}
+                            onChange={onSetChange}
+                        />
+                    ) : (
+                        <LoggerSetRow
+                            key={row.key}
+                            set={row.set}
+                            displayIndex={index + 1}
+                            targetReps={row.targetReps}
+                            onStartTimer={onStartTimer}
+                            defaultRestSeconds={sessionExercise.rest_seconds}
+                            needsExpansion={row.needsExpansion}
+                            groupIndex={row.groupIndex}
+                            onExpand={(groupIndex) => onExpandSet(row.set.id, row.baseOrderIndex, groupIndex)}
+                            onChange={onSetChange}
+                            // La velocidad solo se ofrece en series YA SEPARADAS: en
+                            // un "4x8" sin separar las cuatro comparten fila, y
+                            // guardar una velocidad ahí la asignaría a las cuatro.
+                            onOpenVbt={
+                                row.needsExpansion
+                                    ? undefined
+                                    : () => setVbtSet({ set: row.set, number: index + 1 })
+                            }
+                            unit={unit}
+                        />
+                    )
                 ))}
             </div>
 

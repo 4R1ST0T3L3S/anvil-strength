@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-    TrainingSet, TARGET_METRICS, SET_TYPES, GROUP_TAGS, EXERCISE_SECTIONS,
+    TrainingSet, TARGET_METRICS, CARDIO_TARGET_METRICS, SET_TYPES, GROUP_TAGS, EXERCISE_SECTIONS,
     ACCESSORY_CLASSES,
 } from '../../../../types/training';
 import type { TargetMetric, ExerciseSection, AccessoryClass } from '../../../../types/training';
@@ -57,6 +57,22 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
     const [musclesOpen, setMusclesOpen] = useState(false);
     /** Serie cuya ficha de velocidad está abierta. */
     const [vbtSet, setVbtSet] = useState<{ set: TrainingSet; number: number } | null>(null);
+    /**
+     * Estado del descanso — ver el comentario largo más abajo, junto a
+     * `handleRestChange`/`handleRestCommit`.
+     *
+     * Los DOS `useState` viven aquí arriba, con el resto de hooks, y no
+     * junto a los manejadores que los usan: un poco más abajo hay un
+     * `if (!sessionExercise) return null;` preexistente, y ningún hook
+     * puede declararse después de un retorno condicional — el linter de
+     * hooks lo rechaza aunque `sessionExercise` nunca sea falsy en la
+     * práctica (no es opcional en `ExerciseCardProps`), porque la regla es
+     * sobre la FORMA estática de la función, no sobre si la condición
+     * llega a cumplirse.
+     */
+    const [restSaving, setRestSaving] = useState(false);
+    const [restSaved, setRestSaved] = useState(sessionExercise?.rest_seconds ?? null);
+
     /** Campo del enlace de vídeo de la ficha del ejercicio, plegado. */
     const [editingVideo, setEditingVideo] = useState(false);
 
@@ -134,6 +150,44 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
     };
 
     /**
+     * FC OBJETIVO — aplicada a TODAS las series del ejercicio.
+     *
+     * Igual criterio que `exerciseMetric`: un cardio se pauta entero en la
+     * misma zona de frecuencia cardíaca, no serie a serie.
+     *
+     * Se guarda en `vbt_metrics` DIRECTAMENTE, sin pasar por "Guardar
+     * cambios" — mismo camino que cualquier otra métrica de la bolsa
+     * (`SetVbtModal`). `savableSet()` (helpers.ts) nunca ha incluido los
+     * campos de la bolsa a propósito: mezclar los dos caminos de guardado
+     * para el mismo dato es lo que ya causó el bug del descanso.
+     */
+    const commitHrTarget = async (
+        patch: { hr_target?: number; hr_target_min?: number; hr_target_max?: number } | null
+    ) => {
+        const previous = sessionExercise.sets.map(s => s.vbt_metrics ?? null);
+        const next = sessionExercise.sets.map(s => {
+            const bag = { ...(s.vbt_metrics ?? {}) };
+            delete bag.hr_target;
+            delete bag.hr_target_min;
+            delete bag.hr_target_max;
+            if (patch) Object.assign(bag, patch);
+            return Object.keys(bag).length > 0 ? bag : null;
+        });
+
+        sessionExercise.sets.forEach((s, i) => onUpdateSet(s.id, 'vbt_metrics', next[i]));
+
+        try {
+            await Promise.all(
+                sessionExercise.sets.map((s, i) => trainingService.updateSet(s.id, { vbt_metrics: next[i] }))
+            );
+        } catch (err) {
+            console.error(err);
+            sessionExercise.sets.forEach((s, i) => onUpdateSet(s.id, 'vbt_metrics', previous[i]));
+            toast.error(err instanceof Error ? err.message : 'No se pudo guardar la FC objetivo');
+        }
+    };
+
+    /**
      * Guarda el enlace de vídeo en la BIBLIOTECA.
      *
      * Escribe en `exercise_library`, no en la prescripción: es la ficha del
@@ -202,15 +256,21 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
     const exerciseName = sessionExercise?.exercise?.name || "Ejercicio desconocido";
     const hasVideo = !!sessionExercise.exercise?.video_url;
 
+    /** El cardio elige entre duración y distancia; el resto, entre kg/RPE/RIR/velocidad. */
+    const isCardio = (sessionExercise.section ?? 'main') === 'cardio';
+    const metricOptions = isCardio ? CARDIO_TARGET_METRICS : TARGET_METRICS;
+
     /**
      * Unidad en la que está pautado el ejercicio.
      *
      * La métrica se guarda por SERIE en la base, pero se elige por ejercicio.
      * Se lee de la primera serie y las filas antiguas, sin `target_metric`,
      * son kilos: es lo único que se podía prescribir antes de la migración.
+     * Un ejercicio de cardio recién marcado como tal no hereda 'kg' — no
+     * significa nada ahí — y arranca en duración.
      */
     const exerciseMetric: TargetMetric =
-        sessionExercise.sets[0]?.target_metric ?? 'kg';
+        sessionExercise.sets[0]?.target_metric ?? (isCardio ? 'duracion_seg' : 'kg');
 
     /**
      * Cambiar la unidad afecta a todas las series del ejercicio.
@@ -267,34 +327,35 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
      * el atleta lo veía ni "Guardar cambios" lo rescataba —ese botón solo
      * cubre `training_sets`, nunca `session_exercises`—.
      *
-     * `restSavedRef` es la foto de "lo que hay guardado de verdad". Se
-     * resincroniza con la prop SOLO cuando no hay ningún guardado en curso:
-     * mientras se teclea, la prop ya lleva el valor optimista (el `onChange`
-     * de cada pulsación lo escribe en el estado del bloque), así que sin este
-     * candado `restSavedRef` perseguiría al propio valor que hay que poder
-     * deshacer. Mismo patrón que `commitAccessoryClass` y `commitRounds`, un
-     * poco más abajo, adaptado al debounce del campo.
+     * `restSaved` (declarado arriba, con el resto de hooks) es la foto de
+     * "lo que hay guardado de verdad". Se resincroniza con la prop SOLO
+     * cuando no hay ningún guardado en curso: mientras se teclea, la prop ya
+     * lleva el valor optimista (el `onChange` de cada pulsación lo escribe
+     * en el estado del bloque), así que sin este candado perseguiría al
+     * propio valor que hay que poder deshacer. Mismo patrón que
+     * `commitAccessoryClass` y `commitRounds`, un poco más arriba, adaptado
+     * al debounce del campo.
      */
-    const restSaving = useRef(false);
-    const restSavedRef = useRef(sessionExercise.rest_seconds ?? null);
-    if (!restSaving.current) restSavedRef.current = sessionExercise.rest_seconds ?? null;
+    if (!restSaving && restSaved !== (sessionExercise.rest_seconds ?? null)) {
+        setRestSaved(sessionExercise.rest_seconds ?? null);
+    }
 
     const handleRestChange = (value: number | null) => {
-        restSaving.current = true;
+        setRestSaving(true);
         onUpdateExercise(sessionExercise.id, { rest_seconds: value });
     };
 
     const handleRestCommit = async (value: number | null) => {
-        const previous = restSavedRef.current;
+        const previous = restSaved;
         try {
             await trainingService.updateSessionExercise(sessionExercise.id, { rest_seconds: value });
-            restSavedRef.current = value;
+            setRestSaved(value);
         } catch (err) {
             console.error(err);
             onUpdateExercise(sessionExercise.id, { rest_seconds: previous });
             toast.error(err instanceof Error ? err.message : 'No se pudo guardar el descanso');
         } finally {
-            restSaving.current = false;
+            setRestSaving(false);
         }
     };
 
@@ -613,23 +674,41 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             ESTE bloque: el mismo remo puede programarse
                             buscando dorsal o buscando espalda alta, y el
                             volumen que sale es distinto. La etiqueta dice si
-                            hay anulación puesta, para que se vea sin abrir. */}
-                        <div className="w-28">
-                            <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Volumen</div>
-                            <button
-                                onClick={() => setMusclesOpen(true)}
-                                title="Elegir a qué músculos cuenta este ejercicio como volumen directo e indirecto"
-                                className={cn(
-                                    'flex h-[34px] w-full items-center justify-center gap-1.5 rounded-field border text-t-2xs font-semibold transition-colors duration-fast ease-snap',
-                                    hasMuscleOverride
-                                        ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text'
-                                        : 'border-[var(--border-default)] bg-surface-sunken text-ink-subtle hover:text-ink'
-                                )}
-                            >
-                                <Target size={12} aria-hidden="true" />
-                                {hasMuscleOverride ? 'Ajustado' : 'Auto'}
-                            </button>
-                        </div>
+                            hay anulación puesta, para que se vea sin abrir.
+
+                            NO aparece en cardio: countsForVolume() ya lo
+                            excluye siempre, así que "a qué músculo cuenta"
+                            no significa nada aquí — ver
+                            database/CARDIO_2026-08-30.sql. En su lugar, la FC
+                            objetivo (G5): un número o un rango ("150" o
+                            "140-150"), mismo patrón de texto libre que ya usa
+                            el RPE. */}
+                        {isCardio ? (
+                            <div className="w-32">
+                                <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">FC objetivo</div>
+                                <HrTargetInput
+                                    metrics={sessionExercise.sets[0]?.vbt_metrics ?? null}
+                                    onCommit={(patch) => commitHrTarget(patch)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="w-28">
+                                <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Volumen</div>
+                                <button
+                                    onClick={() => setMusclesOpen(true)}
+                                    title="Elegir a qué músculos cuenta este ejercicio como volumen directo e indirecto"
+                                    className={cn(
+                                        'flex h-[34px] w-full items-center justify-center gap-1.5 rounded-field border text-t-2xs font-semibold transition-colors duration-fast ease-snap',
+                                        hasMuscleOverride
+                                            ? 'border-[var(--brand-line)] bg-[var(--brand-quiet)] text-brand-text'
+                                            : 'border-[var(--border-default)] bg-surface-sunken text-ink-subtle hover:text-ink'
+                                    )}
+                                >
+                                    <Target size={12} aria-hidden="true" />
+                                    {hasMuscleOverride ? 'Ajustado' : 'Auto'}
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {musclesOpen && (
@@ -658,7 +737,10 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                 {/* Header Row */}
                 <div className="mb-2 grid grid-cols-[1fr_1fr_1.3fr_40px] items-center gap-2 px-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">
                     <span>Series</span>
-                    <span>Reps</span>
+                    {/* "Intervalos" y no "Reps" en cardio: es lo que de verdad
+                        cuenta esa cifra en "10 intervalos de 30 s" — ver la
+                        cabecera de database/CARDIO_2026-08-30.sql. */}
+                    <span>{isCardio ? 'Interv.' : 'Reps'}</span>
                     {/* La unidad de la columna la elige el coach. El selector
                         vive en la CABECERA y no en cada fila porque un
                         ejercicio se pauta entero en la misma unidad; repetirlo
@@ -667,10 +749,10 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         value={exerciseMetric}
                         onChange={(e) => handleMetricChange(e.target.value as TargetMetric)}
                         aria-label="Unidad de la prescripción"
-                        title={TARGET_METRICS.find(m => m.key === exerciseMetric)?.hint}
-                        className="w-full cursor-pointer rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand"
+                        title={metricOptions.find(m => m.key === exerciseMetric)?.hint}
+                        className="w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand"
                     >
-                        {TARGET_METRICS.map(m => (
+                        {metricOptions.map(m => (
                             <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
                                 {m.label}{m.unit && ` (${m.unit})`}
                             </option>
@@ -714,12 +796,17 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     placeholder={referenceMax ? '170 u 85%' : '-'}
                                 />
                             ) : (
-                                // RIR, velocidad y pérdida no admiten porcentaje:
-                                // un "85%" ahí no significaría nada.
+                                // RIR, velocidad, pérdida, duración y distancia no
+                                // admiten porcentaje: un "85%" ahí no significaría nada.
                                 <CompactInput
                                     value={set.target_load}
                                     onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
-                                    placeholder={exerciseMetric === 'vel' ? '0.45' : '-'}
+                                    placeholder={
+                                        exerciseMetric === 'vel' ? '0.45'
+                                            : exerciseMetric === 'duracion_seg' ? '1800'
+                                                : exerciseMetric === 'distancia_km' ? '5'
+                                                    : '-'
+                                    }
                                     type="number"
                                 />
                             )}
@@ -1027,6 +1114,69 @@ function RestInput({
                 <p className="mt-0.5 text-center text-t-2xs tabular-nums text-ink-subtle">{asMinutes}</p>
             )}
         </div>
+    );
+}
+
+/**
+ * FC OBJETIVO — un número ("150") o un rango ("140-150").
+ *
+ * Texto libre con guion, el mismo patrón que ya usa el RPE ("7-8") en vez
+ * de tres campos numéricos separados: escribir un rango así es más rápido
+ * que tabular entre mínimo y máximo, y es la notación que ya usa el coach
+ * en cualquier otra parte de la app.
+ */
+function HrTargetInput({
+    metrics,
+    onCommit,
+}: {
+    metrics: Record<string, number> | null;
+    onCommit: (patch: { hr_target?: number; hr_target_min?: number; hr_target_max?: number } | null) => void;
+}) {
+    const inicial = metrics?.hr_target_min != null && metrics?.hr_target_max != null
+        ? `${metrics.hr_target_min}-${metrics.hr_target_max}`
+        : metrics?.hr_target != null
+            ? String(metrics.hr_target)
+            : '';
+
+    const [draft, setDraft] = useState(inicial);
+    const [anterior, setAnterior] = useState(inicial);
+    if (anterior !== inicial) {
+        setAnterior(inicial);
+        setDraft(inicial);
+    }
+
+    const commit = () => {
+        const texto = draft.trim();
+        if (texto === anterior) return;
+
+        if (texto === '') { onCommit(null); return; }
+
+        const rango = texto.match(/^(\d{2,3})\s*-\s*(\d{2,3})$/);
+        if (rango) {
+            const min = Number.parseInt(rango[1], 10);
+            const max = Number.parseInt(rango[2], 10);
+            if (min < max) { onCommit({ hr_target_min: min, hr_target_max: max }); return; }
+        }
+
+        const num = Number.parseInt(texto, 10);
+        if (Number.isFinite(num) && num > 0) { onCommit({ hr_target: num }); return; }
+
+        // No se entiende: se deja como estaba en vez de guardar basura.
+        setDraft(anterior);
+    };
+
+    return (
+        <input
+            type="text"
+            inputMode="numeric"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+            placeholder="150 o 140-150"
+            aria-label="Frecuencia cardíaca objetivo, en pulsaciones por minuto"
+            className="h-[34px] w-full rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink transition-colors duration-fast ease-snap placeholder:text-t-2xs placeholder:text-ink-subtle focus:border-brand"
+        />
     );
 }
 

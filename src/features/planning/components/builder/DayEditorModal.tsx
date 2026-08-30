@@ -8,6 +8,7 @@ import {
 import { m, AnimatePresence, Reorder } from 'framer-motion';
 import { type ParsedWarmupExercise } from '../../../../lib/planning/warmupParser';
 import { VolumePanel } from '../VolumePanel';
+import { CardioVolumePanel } from '../CardioVolumePanel';
 import { ResizeHandle, usePanelWidth } from '../../../../components/ui/ResizeHandle';
 import { findMax, type MaxesByExercise } from '../../../../services/maxesService';
 import { toVolumeInput } from '../../../../lib/volume/engine';
@@ -804,6 +805,15 @@ export function DayEditorModal({
                                 currentSessionId={session.id}
                                 currentWeek={session.week_number}
                             />
+                        </div>
+
+                        {/* Cardio, aparte — G1: nunca se mezcla con el
+                            tonelaje de fuerza de arriba. Usa `allSessions`
+                            (sin filtrar por `toVolumeInput`, que descarta el
+                            cardio antes de que llegue aquí) y no `session`,
+                            para poder sumar toda la semana. */}
+                        <div className="border-t border-subtle pt-4">
+                            <CardioVolumePanel sessions={allSessions} currentWeek={session.week_number} />
                         </div>
 
                         {/* Distribución por levantamiento */}

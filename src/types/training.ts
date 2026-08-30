@@ -386,7 +386,15 @@ export interface SessionExercise {
  * pauta en rango ("7-8") y ya tenía datos escritos ahí— y en `target_load` en
  * todos los demás casos.
  */
-export type TargetMetric = 'kg' | 'rir' | 'rpe' | 'vel' | 'vel_loss';
+/**
+ * 'duracion_seg' y 'distancia_km' se añadieron el 30 de agosto de 2026 para
+ * cardio (ver database/CARDIO_2026-08-30.sql). NO aparecen en
+ * `TARGET_METRICS` —el selector de fuerza— a propósito: son las opciones de
+ * `CARDIO_TARGET_METRICS`, más abajo, que solo se ofrece cuando
+ * `section === 'cardio'`. Mezclar las dos listas permitiría pautar una
+ * sentadilla "en segundos", que no significa nada.
+ */
+export type TargetMetric = 'kg' | 'rir' | 'rpe' | 'vel' | 'vel_loss' | 'duracion_seg' | 'distancia_km';
 
 /** Etiqueta y sufijo de cada métrica, para no repetirlos por la interfaz. */
 export const TARGET_METRICS: {
@@ -400,6 +408,17 @@ export const TARGET_METRICS: {
         { key: 'rir', label: 'RIR', unit: '', hint: 'Repeticiones en recámara' },
         { key: 'vel', label: 'Vel', unit: 'm/s', hint: 'Velocidad media objetivo' },
         { key: 'vel_loss', label: 'Pérdida', unit: '%', hint: 'Pérdida de velocidad permitida' },
+    ];
+
+/** El selector de métrica cuando el ejercicio es cardio. Ver el comentario de `TargetMetric`. */
+export const CARDIO_TARGET_METRICS: {
+    key: TargetMetric;
+    label: string;
+    unit: string;
+    hint: string;
+}[] = [
+        { key: 'duracion_seg', label: 'Duración', unit: 's', hint: 'Cuánto dura la serie o el intervalo' },
+        { key: 'distancia_km', label: 'Distancia', unit: 'km', hint: 'Distancia a recorrer' },
     ];
 
 /**
@@ -577,6 +596,17 @@ export interface TrainingSet {
     vbt_est_1rm?: number | null;
     /** De dónde salen los números. */
     vbt_source?: VbtSource | null;
+    /**
+     * LA BOLSA — ver database/metrics_catalog.sql y `lib/vbt/metricRegistry.ts`.
+     *
+     * `{ clave: número }` sin esquema fijo. Empezó siendo solo de VBT
+     * (fuerza, RFD, desviación de barra…) y desde el 30 de agosto de 2026
+     * también guarda cardio (`hr_avg`, `distance_km`,
+     * `duration_actual_seconds`…) — el nombre de la columna es historia de
+     * VBT, el mecanismo es genérico y no hacía falta una segunda bolsa.
+     * `null` = sin ninguna métrica de catálogo en esta serie.
+     */
+    vbt_metrics?: Record<string, number> | null;
 
     order_index: number;
     created_at: string;

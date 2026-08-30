@@ -70,6 +70,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
     estimation: 'Estimación',
     tempo: 'Tempo',
     quality: 'Medición',
+    cardio: 'Cardio',
     other: 'Otras',
 };
 
@@ -120,6 +121,19 @@ const FALLBACK_DEFINITIONS: MetricDefinition[] = [
     d('tracking_loss', 'Fotogramas perdidos', 'Pérd.', '%', 1, 'quality', 'down', 630, 0, 100),
     d('sample_rate', 'Frecuencia de muestreo', 'Muestreo', 'Hz', 0, 'quality', 'up', 640, 0, 1000),
     d('plate_px', 'Disco medido', 'Disco', 'px', 0, 'quality', 'neutral', 650, 0, 10000),
+
+    // CARDIO — 30 de agosto de 2026. La duración y la distancia PAUTADAS
+    // van en target_load/target_metric (no en la bolsa, ver
+    // database/CARDIO_2026-08-30.sql); esto es frecuencia cardíaca
+    // (objetivo Y realizada) y distancia/ritmo REALIZADOS.
+    d('hr_target', 'FC objetivo', 'FC obj.', 'bpm', 0, 'cardio', 'neutral', 710, 30, 230),
+    d('hr_target_min', 'FC objetivo mínima', 'FC min', 'bpm', 0, 'cardio', 'neutral', 711, 30, 230),
+    d('hr_target_max', 'FC objetivo máxima', 'FC máx', 'bpm', 0, 'cardio', 'neutral', 712, 30, 230),
+    d('hr_avg', 'FC media realizada', 'FC', 'bpm', 0, 'cardio', 'neutral', 720, 30, 230),
+    // NO es actual_load: esa columna es kilos en todo el resto de la app.
+    d('duration_actual_seconds', 'Duración realizada', 'Dur.', 's', 0, 'cardio', 'neutral', 725, 0, 36000),
+    d('distance_km', 'Distancia', 'Dist.', 'km', 2, 'cardio', 'neutral', 730, 0, 400),
+    d('pace_min_km', 'Ritmo', 'Ritmo', 'min/km', 2, 'cardio', 'neutral', 740, 0, 60),
 ];
 
 /** Atajo para que la lista de arriba se lea como una tabla y no como ruido. */
