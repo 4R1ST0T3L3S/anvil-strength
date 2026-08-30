@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Palette, SlidersHorizontal, CalendarClock, Save, FileText, ChevronRight } from 'lucide-react';
+import { Palette, SlidersHorizontal, CalendarClock, Save, FileText, ChevronRight, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/Button';
 import { useCoachPrefs, useSaveCoachPrefs } from '../../../hooks/useCoachPrefs';
 import type { CoachPrefs, IntensityMetric, WeightUnit, FirstWeekday } from '../../../lib/prefs/contract';
+import { PermissionsSettings } from '../components/PermissionsSettings';
 
 /**
  * PERSONALIZACIÓN DEL ENTRENADOR
@@ -20,11 +21,19 @@ import type { CoachPrefs, IntensityMetric, WeightUnit, FirstWeekday } from '../.
  * decidida y cerrada, es la unidad y el primer día de la semana, que cada
  * atleta puede pisar desde su propio perfil.
  */
-export function PreferencesPage({ coachId, onOpenPdfTheme }: {
+export function PreferencesPage({ coachId, onOpenPdfTheme, isDeveloper = false }: {
     coachId: string;
     /** Abre el diseño del PDF. Vive en su propia ruta porque necesita la
      *  pantalla entera para la vista previa del documento. */
     onOpenPdfTheme?: () => void;
+    /**
+     * Ajustes es donde vive Permisos (30 ago 2026) — decisión cerrada: SOLO
+     * desarrollador, nadie más ve ni esta sección ni la comprueba. El
+     * componente en sí no vuelve a preguntar por el rol: confía en que
+     * quien lo monta ya lo comprobó, igual que hace cualquier otra pantalla
+     * de esta página con sus propios props.
+     */
+    isDeveloper?: boolean;
 }) {
     const { prefs: loaded, loading } = useCoachPrefs(coachId);
     const save = useSaveCoachPrefs(coachId);
@@ -279,6 +288,16 @@ export function PreferencesPage({ coachId, onOpenPdfTheme }: {
                     </Field>
                 </div>
             </Card>
+
+            {/* AJUSTES — SOLO DESARROLLADOR.
+                Se guarda sola, columna a columna (ver PermissionsSettings):
+                no comparte el botón "Guardar preferencias" de abajo, que es
+                solo para coach_prefs. */}
+            {isDeveloper && (
+                <Card icon={ShieldCheck} title="Permisos por rol" hint="Qué puede hacer cada rol. Solo tú puedes ver y cambiar esto.">
+                    <PermissionsSettings />
+                </Card>
+            )}
 
             <div className="sticky bottom-4 flex justify-end">
                 <Button variant="primary" icon={<Save size={16} />} loading={saving} disabled={!dirty} onClick={handleSave}>

@@ -6,6 +6,7 @@ import { supabase } from './lib/supabase';
 import { useUser } from './hooks/useUser';
 import { useRedeemPendingInvite } from './hooks/useRedeemPendingInvite';
 import { useClaimManagedProfile } from './hooks/useClaimManagedProfile';
+import { useCapabilityConfig } from './hooks/useCapabilityConfig';
 import { AuthModal } from './features/auth/components/AuthModal';
 import { ErrorFallback } from './components/ui/ErrorFallback';
 import { Button } from './components/ui/Button';
@@ -63,6 +64,10 @@ function App() {
   // Quien entra por primera vez en una ficha que le creó su entrenador la
   // reclama aquí: no se migra nada, la cuenta ya era suya. Ver el hook.
   useClaimManagedProfile(user);
+
+  // Carga la configuración de permisos por rol (si algún desarrollador la
+  // ha tocado en Ajustes) para que `puede()` la lea en cualquier panel.
+  useCapabilityConfig(user);
 
   // COUNTDOWN LOGIC
   const isPreLaunch = false;

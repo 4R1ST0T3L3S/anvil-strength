@@ -27,7 +27,7 @@ import { PdfThemeSettings } from '../../profile/components/PdfThemeSettings';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 import { FloatingChat } from '../../chat/components/FloatingChat';
-import { isStaff, isNutritionist, tieneAmbosPaneles } from '../../../lib/roles';
+import { isStaff, isNutritionist, isDeveloper, tieneAmbosPaneles } from '../../../lib/roles';
 
 interface CoachDashboardProps {
     user: UserProfile;
@@ -204,7 +204,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             case 'pwr_analysis':
                 return <PwrAnalysisTab />;
             case 'preferences':
-                return <PreferencesPage coachId={user.id} onOpenPdfTheme={() => go('documento')} />;
+                return <PreferencesPage coachId={user.id} onOpenPdfTheme={() => go('documento')} isDeveloper={isDeveloper(user)} />;
             case 'pdf_theme':
                 return <PdfThemeSettings user={user} onBack={() => go('preferencias')} />;
             case 'home':

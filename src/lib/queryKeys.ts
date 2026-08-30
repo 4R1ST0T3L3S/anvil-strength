@@ -85,4 +85,7 @@ export const CLAVES = {
     usuariosAdmin: {
         raiz: ['usuarios-admin'] as const,
     },
+    permisosPorRol: {
+        raiz: ['permisos-por-rol'] as const,
+    },
 } as const;

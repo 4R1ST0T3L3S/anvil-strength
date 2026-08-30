@@ -107,6 +107,11 @@ export const ROL_INFO: Record<Rol, { nombre: string; descripcion: string }> = {
  *   nutricionista— solo pauta nutrición.
  *   desarrollador— todo, incluida la trastienda que nadie más debería ver.
  *   miembro      — hoy, lo mismo que un atleta.
+ *
+ * Las tres últimas se añadieron el 30 de agosto de 2026 junto con la
+ * pantalla de Ajustes (ver `CAPACIDADES_CONFIGURABLES`, más abajo): antes
+ * no había forma de darle a un rol la vista de "qué entrena esta gente" sin
+ * darle también permiso para editarlo.
  */
 export type Capacidad =
     /** Crear y editar bloques de entrenamiento de OTRAS personas. */
@@ -122,7 +127,37 @@ export type Capacidad =
     /** Trastienda: Arena, funciones en pruebas, cosas a medio hacer. */
     | 'ver_trastienda'
     /** Panel de administración: usuarios, roles y accesos de terceros. */
-    | 'administrar';
+    | 'administrar'
+    /** Ver el entrenamiento de atletas ajenos, sin poder programarlo. */
+    | 'ver_entrenamientos'
+    /** Conceder o quitar el rol `member` (socio del club) a alguien. */
+    | 'designar_miembros'
+    /** Conceder o quitar el rol `coach` a alguien. */
+    | 'designar_entrenadores';
+
+export const CAPACIDAD_INFO: Record<Capacidad, { nombre: string; descripcion: string }> = {
+    planificar_entrenamiento: { nombre: 'Planificar entrenamiento', descripcion: 'Crear y editar bloques de entrenamiento de otras personas.' },
+    pautar_nutricion: { nombre: 'Pautar nutrición', descripcion: 'Crear y editar planes de nutrición de otras personas.' },
+    recibir_entrenamiento: { nombre: 'Recibir entrenamiento', descripcion: 'Tener un plan propio de entrenamiento y registrar series.' },
+    recibir_nutricion: { nombre: 'Recibir nutrición', descripcion: 'Tener un plan propio de nutrición.' },
+    gestionar_atletas: { nombre: 'Gestionar atletas', descripcion: 'Cartera de atletas, agenda de equipo, chat como profesional.' },
+    ver_trastienda: { nombre: 'Ver la trastienda', descripcion: 'La Arena y funciones todavía en pruebas.' },
+    administrar: { nombre: 'Administrar', descripcion: 'Panel de administración: usuarios, roles y accesos de terceros.' },
+    ver_entrenamientos: { nombre: 'Ver entrenamientos', descripcion: 'Consultar el entrenamiento de atletas ajenos, sin poder programarlo.' },
+    designar_miembros: { nombre: 'Designar miembros', descripcion: 'Conceder o quitar la condición de socio del club a alguien.' },
+    designar_entrenadores: { nombre: 'Designar entrenadores', descripcion: 'Conceder o quitar el rol de entrenador a alguien.' },
+};
+
+/**
+ * Los cuatro roles cuyas capacidades edita Ajustes.
+ *
+ * `developer` y `admin` NO están, y no es un olvido: son "acceso a todo, no
+ * es un rol que se elija" (ver `ROL_INFO`), y dejarlos editables abriría la
+ * puerta a que un desarrollador se quitara a sí mismo el acceso a esta
+ * misma pantalla. Sus capacidades siguen fijas en el código, abajo.
+ */
+export const ROLES_CONFIGURABLES = ['athlete', 'coach', 'nutritionist', 'member'] as const;
+export type RolConfigurable = (typeof ROLES_CONFIGURABLES)[number];
 
 const CAPACIDADES: Record<Rol, Capacidad[]> = {
     athlete: ['recibir_entrenamiento', 'recibir_nutricion'],
@@ -130,7 +165,7 @@ const CAPACIDADES: Record<Rol, Capacidad[]> = {
     // Ni `recibir_*`: ser entrenador no significa que te entrenen. Quien
     // quiera las dos cosas marca también Atleta, que es justo el caso que
     // motivó todo esto.
-    coach: ['planificar_entrenamiento', 'gestionar_atletas'],
+    coach: ['planificar_entrenamiento', 'gestionar_atletas', 'ver_entrenamientos'],
 
     nutritionist: ['pautar_nutricion', 'gestionar_atletas'],
 
@@ -138,18 +173,57 @@ const CAPACIDADES: Record<Rol, Capacidad[]> = {
     // socio se puedan colgar de algo sin volver a migrar a nadie.
     member: ['recibir_entrenamiento', 'recibir_nutricion'],
 
+    // FIJAS. No pasan por `role_capabilities` ni por Ajustes — ver
+    // `ROLES_CONFIGURABLES`.
     developer: [
         'planificar_entrenamiento', 'pautar_nutricion',
         'recibir_entrenamiento', 'recibir_nutricion',
         'gestionar_atletas', 'ver_trastienda', 'administrar',
+        'ver_entrenamientos', 'designar_miembros', 'designar_entrenadores',
     ],
 
     admin: [
         'planificar_entrenamiento', 'pautar_nutricion',
         'recibir_entrenamiento', 'recibir_nutricion',
         'gestionar_atletas', 'ver_trastienda', 'administrar',
+        'ver_entrenamientos', 'designar_miembros', 'designar_entrenadores',
     ],
 };
+
+/**
+ * CONFIGURACIÓN CARGADA DE LA BASE DE DATOS.
+ *
+ * `puede()` se llama de forma SÍNCRONA en decenas de sitios, muchos dentro
+ * de un render — convertirla en `async` habría obligado a tocar cada uno de
+ * esos sitios. En su lugar, la pantalla de Ajustes (a través de
+ * `useCapabilityConfig`) escribe aquí una vez cargada la tabla
+ * `role_capabilities`, y `puede()` sigue siendo una función normal que lee
+ * esta variable de módulo si existe.
+ *
+ * `null` — el estado por defecto, y también el de una base sin la migración
+ * `database/PERMISOS_2026-08-30.sql` — significa "usa el mapa fijo de
+ * arriba". Es la misma idea de degradar con elegancia que seguía
+ * `metric_definitions`.
+ */
+let capacidadesConfiguradas: Partial<Record<RolConfigurable, Capacidad[]>> | null = null;
+
+/** Solo la llama `useCapabilityConfig`. No la uses desde una pantalla suelta. */
+export function setCapacidadesConfiguradas(
+    config: Partial<Record<RolConfigurable, Capacidad[]>> | null
+) {
+    capacidadesConfiguradas = config;
+}
+
+const esConfigurable = (rol: Rol): rol is RolConfigurable =>
+    (ROLES_CONFIGURABLES as readonly string[]).includes(rol);
+
+function capacidadesDe(rol: Rol): Capacidad[] {
+    if (esConfigurable(rol)) {
+        return capacidadesConfiguradas?.[rol] ?? CAPACIDADES[rol];
+    }
+    // developer / admin: siempre el mapa fijo, nunca el de la base.
+    return CAPACIDADES[rol];
+}
 
 // =====================================================================
 // LECTURA DEL PERFIL
@@ -214,7 +288,7 @@ export const tieneRol = (user: RoleBearer, rol: Rol): boolean => rolesDe(user).i
  * modelo anterior no sabía representar.
  */
 export function puede(user: RoleBearer, capacidad: Capacidad): boolean {
-    return rolesDe(user).some(rol => CAPACIDADES[rol]?.includes(capacidad));
+    return rolesDe(user).some(rol => capacidadesDe(rol)?.includes(capacidad));
 }
 
 // =====================================================================
