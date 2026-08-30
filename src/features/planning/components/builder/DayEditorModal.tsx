@@ -19,6 +19,7 @@ import { AppendixEditor } from './AppendixEditor';
 import { WarmupConversionPanel } from './WarmupConversionPanel';
 import { AthletePreview } from './AthletePreview';
 import { ExerciseCard } from './ExerciseCard';
+import { AthleteContextPanel } from '../context/AthleteContextPanel';
 
 /**
  * Ejemplo de lo que son las consideraciones.
@@ -202,6 +203,21 @@ export function DayEditorModal({
         () => allSessions.map(s => toVolumeInput(s, s.exercises)),
         [allSessions]
     );
+
+    /**
+     * Los 1RM del atleta en el formato que espera la analítica.
+     *
+     * `maxes` viene indexado por `exercise_key` (normalizado) y
+     * `buildReferenceMaxes` espera un objeto por NOMBRE, que vuelve a
+     * normalizar por su cuenta. Se traduce aquí y no dentro de cada sección
+     * para que las tres que lo usan reciban exactamente la misma referencia y
+     * no puedan dar porcentajes distintos del mismo peso.
+     */
+    const declaredMaxes = useMemo(() => {
+        const out: Record<string, number> = {};
+        maxes.forEach(m => { out[m.exercise_name] = m.one_rm; });
+        return out;
+    }, [maxes]);
 
     // Cerrar con Escape (solo si no se está escribiendo un ejercicio)
     useEffect(() => {
@@ -723,7 +739,28 @@ export function DayEditorModal({
                         style={{ '--panel-w': `${panel.width}px` } as React.CSSProperties}
                         className="w-1/3 shrink-0 space-y-4 overflow-y-auto border-subtle bg-surface-canvas p-4 min-h-0 lg:w-[var(--panel-w)] lg:border-l"
                     >
-                        <p className="text-t-2xs font-black uppercase tracking-[0.25em] text-ink-subtle flex items-center gap-2">
+                        {/* CENTRO DE CONTEXTO DEL ATLETA.
+                            Va ARRIBA del resumen del día, y el orden importa:
+                            lo de abajo describe lo que se está escribiendo
+                            —cuántas series lleva este día— y lo de aquí es
+                            aquello CONTRA lo que se escribe: cuánto lleva la
+                            semana, qué hizo la anterior, qué es lo mejor que ha
+                            levantado. Es lo que se consulta antes de decidir.
+
+                            El resumen del día que había se conserva entero
+                            debajo, sin tocar. */}
+                        <AthleteContextPanel
+                            athleteId={athleteId}
+                            sessions={volumeSessions}
+                            sessionMeta={allSessions}
+                            exercises={session.exercises}
+                            currentSessionId={session.id}
+                            currentWeek={session.week_number}
+                            maxes={maxes}
+                            declaredMaxes={declaredMaxes}
+                        />
+
+                        <p className="border-t border-subtle pt-4 text-t-2xs font-black uppercase tracking-[0.25em] text-ink-subtle flex items-center gap-2">
                             <BarChart3 size={13} className="text-brand-text" /> Resumen del día
                         </p>
 

@@ -226,6 +226,50 @@ export const EXERCISE_SECTIONS: { key: ExerciseSection; label: string; hint: str
 ];
 
 /**
+ * PARA QUÉ SIRVE UN ACCESORIO.
+ *
+ * `section` dice si un ejercicio es calentamiento, trabajo principal o
+ * accesorio. Esto dice a QUÉ acompaña ese accesorio, que es una pregunta
+ * distinta y la que se hace un entrenador de fuerza al repartir el trabajo de
+ * la semana: "¿cuántas series de apoyo a la banca lleva?".
+ *
+ * Sin esto, todo lo que no es uno de los tres básicos cae en un único cajón
+ * ("ACC") de treinta series a la semana del que no se puede decir nada.
+ *
+ *   acc_sq / acc_bp / acc_dl — apoyan directamente a un levantamiento.
+ *   compensatorio            — trabajo de equilibrio, salud articular y
+ *                              puntos débiles. No apoya a un básico concreto.
+ *   comp                     — trabajo de competición que no es un básico
+ *                              (aproximaciones con mando, órdenes, mono...).
+ *
+ * NULL —el estado de todas las filas anteriores a la migración— significa
+ * "sin clasificar", y se cuenta aparte. No se reparte a ojo: una categoría
+ * inventada es peor que una categoría vacía.
+ *
+ * Ver database/CALENDARIO_Y_MARCAS_2026-08-30.sql.
+ */
+export type AccessoryClass = 'acc_sq' | 'acc_bp' | 'acc_dl' | 'compensatorio' | 'comp';
+
+export const ACCESSORY_CLASSES: {
+    key: AccessoryClass;
+    label: string;
+    short: string;
+    hint: string;
+}[] = [
+        { key: 'acc_sq', label: 'Accesorio de sentadilla', short: 'ACC SQ', hint: 'Apoya al movimiento de sentadilla' },
+        { key: 'acc_bp', label: 'Accesorio de banca', short: 'ACC BP', hint: 'Apoya al press de banca' },
+        { key: 'acc_dl', label: 'Accesorio de peso muerto', short: 'ACC DL', hint: 'Apoya al peso muerto' },
+        { key: 'compensatorio', label: 'Compensatorio', short: 'COMP.', hint: 'Equilibrio, puntos débiles y salud articular' },
+        { key: 'comp', label: 'Competición', short: 'COMP', hint: 'Trabajo específico de competición' },
+    ];
+
+export const accessoryClassLabel = (c?: AccessoryClass | null): string | null =>
+    ACCESSORY_CLASSES.find(a => a.key === c)?.label ?? null;
+
+export const accessoryClassShort = (c?: AccessoryClass | null): string | null =>
+    ACCESSORY_CLASSES.find(a => a.key === c)?.short ?? null;
+
+/**
  * ¿Este ejercicio cuenta para el volumen, el tonelaje y el reparto por patrón?
  *
  * ES LA FUNCIÓN MÁS IMPORTANTE DE ESTE ARCHIVO, y existe como UNA sola función
@@ -260,6 +304,18 @@ export interface SessionExercise {
      * — para eso está `countsForVolume()`.
      */
     section?: ExerciseSection | null;
+    /**
+     * A qué levantamiento apoya este accesorio. NULL = sin clasificar.
+     *
+     * Va en la PRESCRIPCIÓN y no en `exercise_library` por el mismo motivo que
+     * `primary_muscles`: la biblioteca es global y no puede decir dos cosas a
+     * la vez. La misma prensa puede ser apoyo de sentadilla en un bloque de
+     * pierna y trabajo compensatorio en uno de press, y quien lo decide es el
+     * coach caso a caso.
+     *
+     * Ausente en bases sin database/CALENDARIO_Y_MARCAS_2026-08-30.sql.
+     */
+    accessory_class?: AccessoryClass | null;
     /**
      * Vueltas del circuito que forman los ejercicios con el mismo `group_tag`.
      * NULL = no es un circuito.

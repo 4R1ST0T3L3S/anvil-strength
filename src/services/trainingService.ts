@@ -976,17 +976,48 @@ export const trainingService = {
 
         if (!error) return;
 
+        const code = (error as { code?: string }).code;
+
         // Mismo caso que arriba: sin la migración, `section` y `round_count`
         // no existen. Se traduce a un mensaje con instrucciones en vez de
         // propagar un código que no dice qué hacer.
-        if (
-            (error as { code?: string }).code === 'PGRST204' &&
-            ('section' in updates || 'round_count' in updates)
-        ) {
+        if (code === 'PGRST204' && ('section' in updates || 'round_count' in updates)) {
             throw new Error(
                 'La base de datos todavía no distingue secciones del día. Ejecuta ' +
                 'database/CALENTAMIENTO_ESTRUCTURADO.sql.'
             );
+        }
+
+        // La clasificación de accesorios es POSTERIOR y OPCIONAL: sin ella el
+        // resto del ejercicio se guarda igual y los accesorios salen como
+        // "sin clasificar", que es exactamente lo que son. Así que aquí no se
+        // lanza — se reintenta sin la columna y se avisa por consola.
+        //
+        // Es la diferencia con `section`: aquella cambia lo que cuenta para el
+        // volumen y callarla falsearía las cifras. Esta solo agrupa.
+        if ((code === 'PGRST204' || code === '42703') && 'accessory_class' in updates) {
+            const rest = { ...updates };
+            delete (rest as Record<string, unknown>).accessory_class;
+
+            if (Object.keys(rest).length === 0) {
+                console.warn(
+                    '[session_exercises] no se pudo guardar la clasificación de accesorio. ' +
+                    'Ejecuta database/CALENDARIO_Y_MARCAS_2026-08-30.sql.'
+                );
+                throw new Error(
+                    'La base de datos todavía no clasifica accesorios. Ejecuta ' +
+                    'database/CALENDARIO_Y_MARCAS_2026-08-30.sql.'
+                );
+            }
+
+            const retry = await supabase.from('session_exercises').update(rest).eq('id', id);
+            if (retry.error) throw retry.error;
+
+            console.warn(
+                '[session_exercises] guardado SIN la clasificación de accesorio. ' +
+                'Ejecuta database/CALENDARIO_Y_MARCAS_2026-08-30.sql.'
+            );
+            return;
         }
 
         throw error;

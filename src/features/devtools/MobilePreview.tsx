@@ -3,7 +3,7 @@ import {
     LayoutDashboard, FileText, Utensils, Trophy, User, Calendar, Medal, ShoppingBag,
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
-import { TeamCard, NextCompCard, NoCompCard } from '../coach/components/CoachHomeCards';
+import { TeamCard, DietsCard, LessonsCard, NextCompCard, NoCompCard } from '../coach/components/CoachHomeCards';
 import { RolesSection } from '../profile/components/RolesSection';
 import type { UserProfile } from '../../hooks/useUser';
 import { LoggerSetRow } from '../training/components/LoggerSetRow';
@@ -95,9 +95,16 @@ export function MobilePreview() {
                 <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
                     Panel del entrenador · cabecera
                 </p>
+                {/* LA REJILLA REAL, en el orden en que se envía: las dos
+                    acciones arriba y las dos de contexto abajo, compactadas.
+                    Se monta tal cual para poder ver que a 375px las cuatro se
+                    apilan y ninguna se corta. */}
                 <div data-probe="home-cards" className="grid gap-3 md:grid-cols-2">
                     <TeamCard athleteCount={14} onClick={() => {}} />
+                    <DietsCard withPlan={9} total={14} onClick={() => {}} />
+                    <LessonsCard quote="El hierro no negocia. Solo responde a lo que le pones delante." />
                     <NextCompCard
+                        compact
                         comp={{
                             name: 'Campeonato de España Absoluto de Powerlifting Clásico',
                             date: '2026-11-14',
@@ -107,12 +114,27 @@ export function MobilePreview() {
                         }}
                         onClick={() => {}}
                     />
+                </div>
+
+                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    Casos límite
+                </p>
+                <div data-probe="home-cards-limite" className="grid gap-3 md:grid-cols-2">
                     <TeamCard athleteCount={0} onClick={() => {}} />
+                    {/* Equipo sin ninguna dieta puesta, y equipo vacío: dos
+                        textos distintos y los dos tienen que caber. */}
+                    <DietsCard withPlan={0} total={14} onClick={() => {}} />
+                    <DietsCard withPlan={0} total={0} onClick={() => {}} />
+                    <DietsCard withPlan={null} total={null} onClick={() => {}} />
                     <NextCompCard
+                        compact
                         comp={{ name: 'Open Anvil', date: '2026-08-06', days: 1, level: '', location: '' }}
                         onClick={() => {}}
                     />
-                    <NoCompCard />
+                    <NoCompCard compact />
+                    {/* Una frase larga en la celda compacta: es el caso que
+                        decide si `text-balance` basta o hay que recortar. */}
+                    <LessonsCard quote="La fuerza no se construye los días que te apetece entrenar, se construye exactamente los días que no." />
                 </div>
 
                 {/* AUTOGESTIÓN DE ROLES.

@@ -3,13 +3,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { m } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus, Mail, Link2, Loader, Archive, RotateCcw } from 'lucide-react';
+import { Search, MessageSquare, ArrowLeft, UserPlus, UserMinus, Mail, Link2, Loader, Archive, RotateCcw, CalendarRange, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { InviteAthleteModal } from './InviteAthleteModal';
 import { RemoveAthleteModal } from './RemoveAthleteModal';
 import { athletesService, ACCOUNT_STATUS_LABEL, hasAccount } from '../../../services/athletesService';
 import { fetchRosterIds, useCoachRoster, rosterQueryKey, type RosterAthlete } from '../hooks/useCoachRoster';
 import { AddAthleteModal } from './AddAthleteModal';
+import { TeamPlanningCalendar } from './TeamPlanningCalendar';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { SafeImage } from '../../../components/ui/SafeImage';
@@ -78,6 +79,19 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<FilterKey>('all');
+    /**
+     * Lista o calendario.
+     *
+     * Un conmutador y no una pestaña más del panel: las dos vistas hablan del
+     * MISMO equipo y contestan preguntas complementarias —"¿quién necesita
+     * atención hoy?" y "¿a quién se le acaba la programación?"—. Separarlas en
+     * dos secciones del menú obligaría a recordar en cuál de las dos está lo
+     * que se busca.
+     *
+     * Arranca en `lista` porque es lo que había, y quien no toque nada no debe
+     * notar ningún cambio.
+     */
+    const [vista, setVista] = useState<'lista' | 'calendario'>('lista');
     const [sort, setSort] = useState<SortKey>('attention');
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -315,6 +329,34 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                         invitación exige que la otra persona haga algo, así que
                         es la secundaria aunque sea la que existía antes. */}
                     <div className="flex shrink-0 items-center gap-2">
+                        {/* Conmutador lista ↔ calendario. Va con las acciones
+                            y no con los filtros porque no filtra nada: cambia
+                            la forma de mirar al mismo equipo. */}
+                        <div
+                            role="group"
+                            aria-label="Forma de ver el equipo"
+                            className="flex rounded-field bg-surface-sunken p-0.5"
+                        >
+                            {([
+                                { key: 'lista' as const, label: 'Lista', icon: List },
+                                { key: 'calendario' as const, label: 'Calendario', icon: CalendarRange },
+                            ]).map(({ key, label, icon: Icon }) => (
+                                <button
+                                    key={key}
+                                    onClick={() => setVista(key)}
+                                    aria-pressed={vista === key}
+                                    title={label}
+                                    className={`flex items-center gap-1.5 rounded-chip px-2.5 py-2 text-t-xs font-bold transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${vista === key
+                                        ? 'bg-brand text-brand-ink'
+                                        : 'text-ink-subtle hover:text-ink'
+                                        }`}
+                                >
+                                    <Icon size={14} aria-hidden="true" />
+                                    <span className="hidden sm:inline">{label}</span>
+                                </button>
+                            ))}
+                        </div>
+
                         <button
                             onClick={() => setIsInviteOpen(true)}
                             className="flex items-center gap-2 rounded-field border border-[var(--border-default)] px-3 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
@@ -364,10 +406,20 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 }}
             />
 
+            {/* EL CALENDARIO. Sustituye a la lista, no se apila con ella: son
+                dos respuestas a la misma pregunta y verlas a la vez obligaría
+                a desplazarse por una para llegar a la otra.
+
+                Se monta solo cuando se pide — trae cuatro consultas propias y
+                no tiene sentido pagarlas mientras se mira la lista. */}
+            {vista === 'calendario' && (
+                <TeamPlanningCalendar user={user} onSelectAthlete={onSelectAthlete} />
+            )}
+
             {/* Búsqueda, filtros y orden. Antes solo existía la búsqueda por
                 nombre, que sirve cuando ya sabes a quién buscas — es decir,
                 nunca al abrir la pantalla. */}
-            <div className="mb-5 space-y-3">
+            <div className={`mb-5 space-y-3 ${vista === 'lista' ? '' : 'hidden'}`}>
                 <div className="relative">
                     <Search
                         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle"
@@ -422,7 +474,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 </div>
             </div>
 
-            {filter === 'archived' ? (
+            {vista === 'calendario' ? null : filter === 'archived' ? (
                 <ArchivedList
                     athletes={pasados}
                     loading={cargandoPasados}

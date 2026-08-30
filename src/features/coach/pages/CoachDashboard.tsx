@@ -12,6 +12,7 @@ import {
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
 import { CoachAthletes } from '../components/CoachAthletes';
+import { CoachDiets } from '../components/CoachDiets';
 import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -43,6 +44,14 @@ interface CoachDashboardProps {
 const VIEWS = {
     '': 'home',
     atletas: 'athletes',
+    // Pautar dietas al equipo. Ruta PROPIA y no una pestaña dentro de la
+    // ficha de un atleta: se entra a hacer dietas igual que se entra a
+    // programar, y obligar a elegir antes un atleta y buscar su pestaña de
+    // nutrición era el paso de más que hacía que no se usara.
+    //
+    // No confundir con /nutrition, que es el panel completo del
+    // NUTRICIONISTA (con su propio armazón y sus gráficas) y sigue intacto.
+    dietas: 'diets',
     agenda: 'schedule',
     calendario: 'calendar',
     pwr: 'pwr_analysis',
@@ -63,6 +72,7 @@ const isSlug = (value: string | undefined): value is Slug =>
 const TITLES: Record<Slug, string | undefined> = {
     '': undefined,
     atletas: 'Mis atletas',
+    dietas: 'Dietas',
     agenda: 'Agenda del equipo',
     calendario: 'Calendario AEP',
     pwr: 'Análisis PWR',
@@ -185,6 +195,8 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                         onBack={() => go('')}
                     />
                 );
+            case 'diets':
+                return <CoachDiets user={user} onBack={() => go('')} />;
             case 'schedule':
                 return <CoachTeamSchedule user={user} onBack={() => go('')} />;
             case 'calendar':

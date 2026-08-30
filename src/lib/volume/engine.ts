@@ -55,6 +55,20 @@ export interface VolumeExerciseInput {
      */
     primary_muscles?: string[] | null;
     secondary_muscles?: string[] | null;
+    /**
+     * A qué levantamiento apoya, si es un accesorio.
+     *
+     * EL MOTOR DE VOLUMEN NO LA LEE. Viaja aquí porque `toVolumeInput` es la
+     * única traducción que hay entre el estado del constructor y los módulos
+     * de cálculo, y el reparto de accesorios
+     * (`lib/planning/accessoryStats.ts`) la necesita. Sin este campo habría
+     * que construir un segundo array en paralelo con los mismos ejercicios y
+     * mantenerlo sincronizado a mano.
+     *
+     * `undefined` en bases sin la migración de 2026-08-30, y también en todo
+     * lo que se construya sin pasar por `toVolumeInput`.
+     */
+    accessory_class?: string | null;
     sets: TrainingSet[];
 }
 
@@ -62,6 +76,12 @@ export interface VolumeSessionInput {
     id: string;
     week_number: number;
     day_number: number;
+    /**
+     * Día de la semana agendado. Como `accessory_class`: el motor no lo usa,
+     * pero el desglose por día de `lib/planning/liftSummary.ts` sí, y esta es
+     * la traducción por la que pasa todo.
+     */
+    day_of_week?: string | null;
     exercises: VolumeExerciseInput[];
 }
 
@@ -392,19 +412,21 @@ function round1(n: number): number {
  * calentamiento de `session_exercises` en su día.
  */
 export function toVolumeInput(
-    session: { id: string; week_number: number; day_number: number },
+    session: { id: string; week_number: number; day_number: number; day_of_week?: string | null },
     exercises: (SessionExercise & { sets?: TrainingSet[] })[]
 ): VolumeSessionInput {
     return {
         id: session.id,
         week_number: session.week_number,
         day_number: session.day_number,
+        day_of_week: session.day_of_week ?? null,
         exercises: exercises.filter(ex => countsForVolume(ex.section)).map((ex) => ({
             id: ex.id,
             exercise: ex.exercise,
             variant_name: ex.variant_name,
             primary_muscles: ex.primary_muscles,
             secondary_muscles: ex.secondary_muscles,
+            accessory_class: ex.accessory_class ?? null,
             sets: ex.sets ?? [],
         })),
     };

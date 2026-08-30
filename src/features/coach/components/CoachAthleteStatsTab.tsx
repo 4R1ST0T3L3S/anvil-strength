@@ -1,17 +1,32 @@
 import { useState } from 'react';
-import { LayoutDashboard, ClipboardList, Activity, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Activity, ClipboardCheck, Trophy } from 'lucide-react';
 import { AthleteStatsModal } from './AthleteStatsModal';
 import { AthleteLogTab } from './AthleteLogTab';
 import CoachVbtTab from './CoachVbtTab';
 import { CoachCheckInsTab } from '../../forms/CoachCheckInsTab';
+import { AthleteHistoryTab } from './AthleteHistoryTab';
 
-type StatsSubTab = 'resumen' | 'registro' | 'velocidad' | 'checkins';
+type StatsSubTab = 'resumen' | 'registro' | 'velocidad' | 'checkins' | 'historico';
 
 const SUB_TABS: { key: StatsSubTab; label: string; icon: typeof LayoutDashboard }[] = [
     { key: 'resumen', label: 'Resumen', icon: LayoutDashboard },
     { key: 'registro', label: 'Registro', icon: ClipboardList },
     { key: 'velocidad', label: 'Velocidad', icon: Activity },
     { key: 'checkins', label: 'Check-ins', icon: ClipboardCheck },
+    /**
+     * HISTÓRICO va el ÚLTIMO y no junto a "Resumen", aunque sea la sub-pestaña
+     * que más se consulta al programar.
+     *
+     * Porque las cuatro primeras contestan "¿cómo va?" —evolución, cumplimiento,
+     * velocidad, sensaciones— y esta contesta "¿de qué es capaz?". Es una
+     * referencia estable, no una tendencia, y mezclarla con las otras haría que
+     * se leyera como una gráfica más.
+     *
+     * Y la consulta rápida durante la programación no pasa por aquí: vive en el
+     * panel de contexto del editor de día, que enseña la marca del número de
+     * repeticiones que se está escribiendo. Esto es el catálogo completo.
+     */
+    { key: 'historico', label: 'Histórico', icon: Trophy },
 ];
 
 /**
@@ -76,6 +91,7 @@ export function CoachAthleteStatsTab({ athleteId, athleteName, coachId }: {
             {sub === 'registro' && <AthleteLogTab athleteId={athleteId} />}
             {sub === 'velocidad' && <CoachVbtTab athleteId={athleteId} />}
             {sub === 'checkins' && <CoachCheckInsTab athleteId={athleteId} coachId={coachId} />}
+            {sub === 'historico' && <AthleteHistoryTab athleteId={athleteId} />}
         </div>
     );
 }

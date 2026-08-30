@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useUser } from '../../../hooks/useUser';
 import { WorkoutBuilder } from '../../planning/components/WorkoutBuilder';
 import { TrainingBlockList } from './TrainingBlockList';
+import { AthleteTimelineCalendar } from './AthleteTimelineCalendar';
 import { CoachAthleteStatsTab } from './CoachAthleteStatsTab';
 import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEditor';
 import { PersonalInfoSection } from '../../profile/components/PersonalInfoSection';
@@ -501,10 +502,27 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                 />
                             </div>
                         ) : (
-                            <TrainingBlockList
-                                athleteId={athleteId}
-                                onSelectBlock={(block: TrainingBlock) => setSelectedBlockId(block.id)}
-                            />
+                            <div className="space-y-6">
+                                {/* LA LÍNEA TEMPORAL VA ANTES DE LA LISTA.
+                                    La lista contesta "¿qué bloques tiene?" y la
+                                    línea "¿cómo encajan entre sí y con la
+                                    competición?" — que es la pregunta con la
+                                    que se entra aquí a programar. Va arriba
+                                    porque es contexto, no un detalle al final.
+
+                                    Solo cuando NO se está dentro del
+                                    constructor: ahí la pantalla es del
+                                    constructor entero. */}
+                                <AthleteTimelineCalendar
+                                    athleteId={athleteId}
+                                    onSelectBlock={(blockId) => setSelectedBlockId(blockId)}
+                                />
+
+                                <TrainingBlockList
+                                    athleteId={athleteId}
+                                    onSelectBlock={(block: TrainingBlock) => setSelectedBlockId(block.id)}
+                                />
+                            </div>
                         )}
                     </div>
                 )}

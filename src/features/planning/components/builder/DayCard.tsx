@@ -3,6 +3,7 @@ import { Trash2, Check } from 'lucide-react';
 import { orderedWeekdays, weekdayLabel, type Weekday, type TrainingSet } from '../../../../types/training';
 import type { FirstWeekday } from '../../../../lib/prefs/contract';
 import { AnchoredMenu } from '../../../../components/ui/AnchoredMenu';
+import { classifyMainLift, type LiftKey } from '../../../../lib/planning/mainLift';
 import type { ExtendedSession, ExtendedSessionExercise } from './types';
 import { getSeriesCount, getRepsCount } from './helpers';
 import { CopyDayMenu, type DayOption } from './CopyDayMenu';
@@ -183,45 +184,28 @@ export const DayCard = memo(function DayCard({
 // ==========================================
 
 /**
- * Palabras que convierten un movimiento en OTRO ejercicio, no en una variante
- * del básico.
+ * El tema de color de cada levantamiento.
  *
- * "Sentadilla búlgara" contenía "sentadilla", así que se marcaba SQ en rojo
- * como si fuese el movimiento de competición — y lo mismo pasaba con la
- * frontal, la hack o el press militar. Un accesorio no puede vestirse igual
- * que el levantamiento al que acompaña: la etiqueta deja de significar nada.
+ * QUÉ decide la clave (SQ/BP/DL/ACC) ya no se decide aquí: vive en
+ * `src/lib/planning/mainLift.ts`, que es un módulo puro y comprobable. Aquí
+ * queda solo CÓMO se viste cada una, que es lo propio de un componente.
  *
- * Las variantes de competición SÍ siguen contando como el básico (pausada,
- * con cadenas, sin despegue...): son el mismo patrón a distinta dificultad.
+ * Se separaron porque la clasificación hacía falta también en los cálculos de
+ * series semanales y de accesorios, y esos son módulos de `lib/` que no
+ * pueden importar React. La alternativa era escribir el criterio dos veces, y
+ * entonces el panel y la tarjeta del día darían cifras distintas del mismo
+ * día. Ver la cabecera de `mainLift.ts`.
  */
-const NOT_THE_MAIN_LIFT = /bulgara|búlgara|frontal|hack|goblet|sissy|jaca|zercher|bulgaro|pistol|split|zancada|prensa|militar|inclinado|declinado|frances|francés|mancuerna|polea|maquina|máquina|banco|hombro|rumano|piernas rigidas|piernas rígidas|stiff|rdl|sumo alto|jefferson/;
+const LIFT_THEMES: Record<LiftKey, { key: string; accent: string; border: string; bg: string; bar: string; gradient: string }> = {
+    ACC: { key: 'ACC', accent: 'text-success', border: 'border-emerald-500/40', bg: 'bg-success-quiet', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' },
+    SQ: { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-red-500', gradient: 'from-red-500/15 to-transparent' },
+    BP: { key: 'BP', accent: 'text-info', border: 'border-sky-500/40', bg: 'bg-info-quiet', bar: 'bg-sky-500', gradient: 'from-sky-500/15 to-transparent' },
+    DL: { key: 'DL', accent: 'text-purple-400', border: 'border-purple-500/40', bg: 'bg-purple-500/10', bar: 'bg-purple-500', gradient: 'from-purple-500/15 to-transparent' },
+};
 
-/**
- * Clasifica el ejercicio por nombre y devuelve su tema de color.
- *
- * Solo los tres de competición reciben color propio. Todo lo demás es
- * accesorio, que es lo que pedía la app al dejar de ser exclusivamente de
- * powerlifting: el que entrena para otra cosa no tiene por qué hacer siempre
- * uno de los tres.
- */
+/** Clasifica el ejercicio por nombre y devuelve su tema de color. */
 export function getLiftTheme(name: string) {
-    const n = name.toLowerCase();
-    const accessory = { key: 'ACC', accent: 'text-success', border: 'border-emerald-500/40', bg: 'bg-success-quiet', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' };
-
-    if (NOT_THE_MAIN_LIFT.test(n)) return accessory;
-
-    if (n.includes('sentadilla') || n.includes('squat')) {
-        return { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-red-500', gradient: 'from-red-500/15 to-transparent' };
-    }
-    // "press" a secas ya no basta: arrastraba press militar, press francés y
-    // cualquier press de máquina a la etiqueta de banca.
-    if (n.includes('banca') || n.includes('bench')) {
-        return { key: 'BP', accent: 'text-info', border: 'border-sky-500/40', bg: 'bg-info-quiet', bar: 'bg-sky-500', gradient: 'from-sky-500/15 to-transparent' };
-    }
-    if (n.includes('peso muerto') || n.includes('deadlift')) {
-        return { key: 'DL', accent: 'text-purple-400', border: 'border-purple-500/40', bg: 'bg-purple-500/10', bar: 'bg-purple-500', gradient: 'from-purple-500/15 to-transparent' };
-    }
-    return accessory;
+    return LIFT_THEMES[classifyMainLift(name)];
 }
 
 /** Resumen compacto de la prescripción de un ejercicio: "3×3 · 5×5". */

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import {
     SessionExercise, TrainingSet, TARGET_METRICS, SET_TYPES, GROUP_TAGS, EXERCISE_SECTIONS,
+    ACCESSORY_CLASSES,
 } from '../../../../types/training';
-import type { TargetMetric, ExerciseSection } from '../../../../types/training';
+import type { TargetMetric, ExerciseSection, AccessoryClass } from '../../../../types/training';
+import { classifyMainLift } from '../../../../lib/planning/mainLift';
 import { trainingService } from '../../../../services/trainingService';
 import { Plus, Trash2, Video, Copy, Activity, X, BarChart3, TrendingUp, Check, Target } from 'lucide-react';
 import { toast } from 'sonner';
@@ -82,6 +84,35 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             console.error(err);
             onUpdateExercise(sessionExercise.id, { section: sessionExercise.section ?? 'main' });
             toast.error(err instanceof Error ? err.message : 'No se pudo cambiar la sección');
+        }
+    };
+
+    /**
+     * A qué levantamiento apoya este accesorio.
+     *
+     * Optimista, igual que `commitSection`: el reparto de accesorios del panel
+     * derecho recalcula con el estado local y ver el efecto del cambio al
+     * momento es justo el motivo de tocarlo.
+     *
+     * Si la migración no está ejecutada, el servicio guarda el RESTO del
+     * ejercicio y avisa por consola en vez de fallar (ver
+     * `updateSessionExercise`): la clasificación es opcional y no puede
+     * impedir que se programe.
+     */
+    const commitAccessoryClass = async (raw: string) => {
+        const value = (raw || null) as AccessoryClass | null;
+        if (value === (sessionExercise.accessory_class ?? null)) return;
+
+        onUpdateExercise(sessionExercise.id, { accessory_class: value });
+
+        try {
+            await trainingService.updateSessionExercise(sessionExercise.id, { accessory_class: value });
+        } catch (err) {
+            console.error(err);
+            onUpdateExercise(sessionExercise.id, {
+                accessory_class: sessionExercise.accessory_class ?? null,
+            });
+            toast.error(err instanceof Error ? err.message : 'No se pudo guardar la clasificación');
         }
     };
 
@@ -356,6 +387,49 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         ))}
                     </select>
                 </div>
+
+                {/* PARA QUÉ SIRVE ESTE ACCESORIO.
+                    Solo aparece cuando el ejercicio NO es uno de los tres de
+                    competición: preguntar a qué apoya una sentadilla no
+                    significa nada, y una casilla que sobra en la mitad de las
+                    fichas se convierte en ruido.
+
+                    El valor va en la PRESCRIPCIÓN, no en la biblioteca: la
+                    misma prensa puede ser apoyo de sentadilla en un bloque de
+                    pierna y trabajo compensatorio en uno de press. Mismo
+                    criterio que la clasificación muscular de más abajo.
+
+                    Sin clasificar es un estado legítimo y es el de por
+                    defecto: sus series se cuentan aparte y se dicen, nunca se
+                    reparten a ojo. */}
+                {classifyMainLift(sessionExercise.exercise?.name) === 'ACC'
+                    && (sessionExercise.section ?? 'main') !== 'warmup' && (
+                        <div className="mb-3 flex items-center gap-2">
+                            <span className="shrink-0 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                                Apoya a
+                            </span>
+                            <select
+                                value={sessionExercise.accessory_class ?? ''}
+                                onChange={(e) => commitAccessoryClass(e.target.value)}
+                                aria-label="A qué levantamiento apoya este accesorio"
+                                title={
+                                    ACCESSORY_CLASSES.find(a => a.key === sessionExercise.accessory_class)?.hint
+                                    ?? 'Sin clasificar: sus series no cuentan en ningún grupo de accesorios'
+                                }
+                                className={cn(
+                                    'min-w-0 cursor-pointer rounded-chip border px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                    sessionExercise.accessory_class
+                                        ? 'border-[var(--border-default)] bg-surface-sunken text-ink-muted'
+                                        : 'border-dashed border-[var(--border-default)] bg-transparent text-ink-faint hover:text-ink'
+                                )}
+                            >
+                                <option value="">Sin clasificar</option>
+                                {ACCESSORY_CLASSES.map(a => (
+                                    <option key={a.key} value={a.key}>{a.short}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                 {/* RONDAS DEL CIRCUITO.
                     Solo cuando el ejercicio es calentamiento Y está encadenado

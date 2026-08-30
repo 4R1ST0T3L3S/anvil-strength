@@ -90,6 +90,10 @@ const TABLAS = [
     { tabla: 'pwr_calibration_sessions', archivo: 'pwr_calibration.sql' },
     { tabla: 'chat_messages', archivo: '(SIN FICHERO — creada a mano en el panel de Supabase)',
       rompe: 'Deuda conocida: la tabla del chat vivo no está escrita en el repositorio.' },
+    { tabla: 'session_exercises', columna: 'accessory_class', archivo: 'CALENDARIO_Y_MARCAS_2026-08-30.sql',
+      rompe: 'Los accesorios salen todos como «sin clasificar» y el reparto ACC SQ/BP/DL queda vacío. Degrada con elegancia: no impide programar.' },
+    { tabla: 'athlete_rep_maxes', archivo: 'CALENDARIO_Y_MARCAS_2026-08-30.sql',
+      rompe: 'La pestaña Histórico y las mejores marcas del programador no funcionan. Degrada con elegancia: avisan de que falta la migración.' },
 ];
 
 /**

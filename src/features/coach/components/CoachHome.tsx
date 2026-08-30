@@ -6,11 +6,11 @@ import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, Calendar, User, Weight, List, Calculator,
     ChevronRight, Swords, Activity, Fish, Loader,
-    BookOpen, Quote, LayoutDashboard, AlertTriangle,
+    LayoutDashboard, AlertTriangle,
 } from 'lucide-react';
 import { AttentionPanel } from './AttentionPanel';
 import { fetchRosterIds } from '../hooks/useCoachRoster';
-import { TeamCard, NextCompCard, NoCompCard, type NextComp } from './CoachHomeCards';
+import { TeamCard, DietsCard, LessonsCard, NextCompCard, NoCompCard, type NextComp } from './CoachHomeCards';
 import type { LucideIcon } from 'lucide-react';
 import { getAnvilQuote } from '../../../lib/dailyQuotes';
 import { OneRMCalculator } from '../../athlete/components/OneRMCalculator';
@@ -99,6 +99,15 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
 
     const [athleteCount, setAthleteCount] = useState<number | null>(null);
     const [nextComp, setNextComp] = useState<NextComp | null>(null);
+    /**
+     * Cuántos atletas tienen plan de nutrición activo.
+     *
+     * Se pide junto al resto del panel y NO bloquea nada: si falla o si la
+     * tabla no responde, la tarjeta de Dietas enseña su texto genérico y se
+     * entra igual. Un contador es una comodidad, no un requisito para llegar
+     * a la sección.
+     */
+    const [dietStats, setDietStats] = useState<{ withPlan: number } | null>(null);
     const [loading, setLoading] = useState(true);
     const [is1RMCalcOpen, setIs1RMCalcOpen] = useState(false);
     const [isWarmUpCalcOpen, setIsWarmUpCalcOpen] = useState(false);
@@ -121,21 +130,38 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                 if (alive) setAthleteCount(athleteIds.length);
 
                 if (athleteIds.length === 0) {
-                    if (alive) setNextComp(null);
+                    if (alive) { setNextComp(null); setDietStats({ withPlan: 0 }); }
                     return;
                 }
 
                 const today = new Date().toISOString().split('T')[0];
-                const { data: comp } = await supabase
-                    .from('competitions')
-                    .select('name, date, end_date, level, location')
-                    .in('athlete_id', athleteIds)
-                    .or(`date.gte.${today},end_date.gte.${today}`)
-                    .order('date', { ascending: true })
-                    .limit(1)
-                    .maybeSingle();
+
+                // Las dos consultas son independientes y ninguna depende de la
+                // otra: encadenarlas sería un viaje de más nada más entrar.
+                const [{ data: comp }, planes] = await Promise.all([
+                    supabase
+                        .from('competitions')
+                        .select('name, date, end_date, level, location')
+                        .in('athlete_id', athleteIds)
+                        .or(`date.gte.${today},end_date.gte.${today}`)
+                        .order('date', { ascending: true })
+                        .limit(1)
+                        .maybeSingle(),
+                    // Un fallo aquí NO puede tumbar el panel: la tarjeta de
+                    // Dietas se pinta igual, solo que sin la cifra.
+                    supabase
+                        .from('nutrition_plans')
+                        .select('athlete_id')
+                        .in('athlete_id', athleteIds)
+                        .eq('status', 'active')
+                        .then(r => r.data ?? [], () => []),
+                ]);
 
                 if (!alive) return;
+
+                setDietStats({
+                    withPlan: new Set((planes as { athlete_id: string }[]).map(p => p.athlete_id)).size,
+                });
 
                 if (comp) {
                     // Días naturales que faltan. `Math.abs` habría convertido
@@ -201,18 +227,41 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                 </header>
 
                 {/* -----------------------------------------------------
-                    ACCIÓN PRINCIPAL + PRÓXIMA COMPETICIÓN
-                    Las dos cosas que un entrenador quiere saber al entrar:
-                    a quién tiene que atender y cuánto queda para la
-                    siguiente tarima.                                    */}
+                    LA REJILLA DE CABECERA — CUATRO BLOQUES, DOS PESOS
+
+                        ┌──────────────┬──────────────┐
+                        │ MIS ATLETAS  │    DIETAS    │  ← acciones
+                        ├──────────────┼──────────────┤
+                        │   LESSONS    │ PRÓX. COMPE. │  ← contexto
+                        └──────────────┴──────────────┘
+
+                    Arriba, a dónde se va a trabajar. Abajo, lo que hay que
+                    saber pero no se pulsa cada día.
+
+                    Anvil Lessons ocupaba antes una `<section>` de ancho
+                    completo al final del panel, y la próxima competición
+                    compartía fila con "Mis atletas" al mismo peso visual.
+                    Las dos eran más grandes de lo que su función justifica:
+                    una frase del día y un contador de días no compiten en
+                    importancia con la lista de atletas.
+
+                    En móvil las cuatro se apilan igual que antes.        */}
                 <section>
                     <SectionLabel icon={Users}>Tu equipo</SectionLabel>
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <TeamCard athleteCount={athleteCount} onClick={() => onNavigate('athletes')} />
 
+                        <DietsCard
+                            withPlan={dietStats?.withPlan ?? null}
+                            total={athleteCount}
+                            onClick={() => onNavigate('diets')}
+                        />
+
+                        <LessonsCard quote={getAnvilQuote()} />
+
                         {nextComp
-                            ? <NextCompCard comp={nextComp} onClick={() => onNavigate('calendar')} />
-                            : <NoCompCard />}
+                            ? <NextCompCard compact comp={nextComp} onClick={() => onNavigate('calendar')} />
+                            : <NoCompCard compact />}
                     </div>
                 </section>
 
@@ -251,22 +300,6 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                     </div>
                 </section>
 
-                <section>
-                    <SectionLabel icon={BookOpen}>Anvil Lessons</SectionLabel>
-                    <div className="relative flex min-h-[140px] flex-col justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                        <Quote
-                            size={112}
-                            aria-hidden="true"
-                            className="pointer-events-none absolute -right-4 -top-2 text-ink opacity-[0.04]"
-                        />
-                        <p className="relative text-t-xl font-black uppercase leading-snug tracking-display text-ink md:text-t-2xl">
-                            {getAnvilQuote()}
-                        </p>
-                        <p className="relative mt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                            Anvil Strength Club
-                        </p>
-                    </div>
-                </section>
             </div>
 
             <AnvilRanking isOpen={isRankingOpen} onClose={() => setIsRankingOpen(false)} />
