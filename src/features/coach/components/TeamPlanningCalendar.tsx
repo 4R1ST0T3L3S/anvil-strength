@@ -58,11 +58,19 @@ interface TeamPlanningCalendarProps {
 /** Ancho mínimo de un mes en el eje, en píxeles. Por debajo no se lee nada. */
 const MONTH_MIN_WIDTH = 132;
 
+/** Meses hacia delante disponibles. Sustituye al antiguo 4/6/14 (30 ago 2026). */
+const MONTH_PRESETS = [3, 6, 12];
+
+/** Cuánto retrocede cada pulsación de "Atrás". */
+const MONTHS_BACK_STEP = 3;
+
 export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCalendarProps) {
-    const [monthsForward, setMonthsForward] = useState(5);
+    const [monthsForward, setMonthsForward] = useState(6);
+    /** El de partida de `useTeamCoverage`: un mes. "Atrás" lo alarga. */
+    const [monthsBack, setMonthsBack] = useState(1);
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const { data, byUrgency, loading, error, refetch } = useTeamCoverage(user.id, { monthsForward });
+    const { data, byUrgency, loading, error, refetch } = useTeamCoverage(user.id, { monthsForward, monthsBack });
 
     const months = useMemo(
         () => (data ? monthsBetween(data.axisStart, data.axisEnd) : []),
@@ -93,24 +101,41 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                 {/* Cuántos meses se ven. Es lo que convierte esto en una
                     herramienta de planificación y no en una vista de "esta
                     semana": una preparación a una competición dura meses. */}
-                <div
-                    role="group"
-                    aria-label="Meses visibles"
-                    className="flex shrink-0 rounded-field bg-surface-sunken p-0.5"
-                >
-                    {[3, 5, 11].map(m => (
+                <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                        onClick={() => setMonthsBack(b => b + MONTHS_BACK_STEP)}
+                        title={`Ver ${MONTHS_BACK_STEP} meses más atrás`}
+                        className="rounded-chip bg-surface-sunken px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                        ← Atrás
+                    </button>
+                    {monthsBack !== 1 && (
                         <button
-                            key={m}
-                            onClick={() => setMonthsForward(m)}
-                            aria-pressed={monthsForward === m}
-                            className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m
-                                ? 'bg-brand text-brand-ink'
-                                : 'text-ink-subtle hover:text-ink'
-                                }`}
+                            onClick={() => setMonthsBack(1)}
+                            className="rounded-chip px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         >
-                            {m + 1} meses
+                            Hoy
                         </button>
-                    ))}
+                    )}
+                    <div
+                        role="group"
+                        aria-label="Meses hacia delante"
+                        className="flex shrink-0 rounded-field bg-surface-sunken p-0.5"
+                    >
+                        {MONTH_PRESETS.map(m => (
+                            <button
+                                key={m}
+                                onClick={() => setMonthsForward(m)}
+                                aria-pressed={monthsForward === m}
+                                className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m
+                                    ? 'bg-brand text-brand-ink'
+                                    : 'text-ink-subtle hover:text-ink'
+                                    }`}
+                            >
+                                {m} meses
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </header>
 

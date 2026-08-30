@@ -216,13 +216,23 @@ export interface TrainingSession {
  *
  * Ver database/CALENTAMIENTO_ESTRUCTURADO.sql. Las filas anteriores a esa
  * migración no traen el campo y valen como 'main': era lo único que había.
+ *
+ * `cardio` se añadió en database/CARDIO_2026-08-30.sql, que también amplía el
+ * CHECK de la columna — sin esa migración, la base rechaza cualquier fila que
+ * intente guardar 'cardio'.
  */
-export type ExerciseSection = 'warmup' | 'main' | 'accessory';
+export type ExerciseSection = 'warmup' | 'main' | 'accessory' | 'cardio';
 
-export const EXERCISE_SECTIONS: { key: ExerciseSection; label: string; hint: string }[] = [
-    { key: 'warmup', label: 'Calentamiento', hint: 'No cuenta para el volumen ni el tonelaje' },
-    { key: 'main', label: 'Principal', hint: 'El trabajo del día' },
-    { key: 'accessory', label: 'Accesorio', hint: 'Complementario, sí cuenta para el volumen' },
+/**
+ * `short` es lo que cabe en el grupo de cuatro botones de `ExerciseCard` sin
+ * empujar el nombre del ejercicio fuera de la tarjeta en un móvil estrecho.
+ * Mismo motivo que el `short` de `ACCESSORY_CLASSES`, un poco más abajo.
+ */
+export const EXERCISE_SECTIONS: { key: ExerciseSection; label: string; short: string; hint: string }[] = [
+    { key: 'warmup', label: 'Calentamiento', short: 'Calent', hint: 'No cuenta para el volumen ni el tonelaje' },
+    { key: 'main', label: 'Principal', short: 'Princ', hint: 'El trabajo del día' },
+    { key: 'accessory', label: 'Accesorio', short: 'Acces', hint: 'Complementario, sí cuenta para el volumen' },
+    { key: 'cardio', label: 'Cardio', short: 'Cardio', hint: 'Volumen y tonelaje propios — no se suman a los de fuerza' },
 ];
 
 /**
@@ -287,9 +297,25 @@ export const accessoryClassShort = (c?: AccessoryClass | null): string | null =>
  *
  * Los ACCESORIOS sí cuentan: son entrenamiento de verdad. Lo que no cuenta es
  * la movilidad y las aproximaciones.
+ *
+ * EL CARDIO TAMPOCO CUENTA AQUÍ, y por el mismo motivo que el calentamiento:
+ * es otra unidad. Minutos de carrera sumados a un tonelaje en kilos no
+ * significan nada, y mezclarlos falsearía el reparto muscular de fuerza. El
+ * cardio tiene su propio volumen — ver `countsForCardio()`, justo debajo.
  */
 export function countsForVolume(section?: string | null): boolean {
-    return (section ?? 'main') !== 'warmup';
+    const s = section ?? 'main';
+    return s !== 'warmup' && s !== 'cardio';
+}
+
+/**
+ * ¿Este ejercicio es cardio? Cuenta para SU PROPIO volumen y tonelaje —ver
+ * database/CARDIO_2026-08-30.sql—, nunca para el de fuerza de
+ * `countsForVolume()`. Las dos funciones son deliberadamente independientes:
+ * un ejercicio nunca cuenta para las dos a la vez.
+ */
+export function countsForCardio(section?: string | null): boolean {
+    return section === 'cardio';
 }
 
 // 4. SESSION EXERCISES (Ejercicios en la sesión)

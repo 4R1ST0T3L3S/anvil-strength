@@ -65,13 +65,29 @@ const MONTH_MIN_WIDTH = 120;
 
 export const athleteTimelineKey = (athleteId: string) => ['athlete-timeline', athleteId] as const;
 
+/** Meses hacia delante disponibles. Sustituye al antiguo 4/6/14 (30 ago 2026):
+ *  ahora es exactamente el número de meses, sin el "+1" que arrastraba el
+ *  cálculo antiguo (contar desde `monthsBack` en vez de desde hoy). */
+const MONTH_PRESETS = [3, 6, 12];
+
+/** Cuánto retrocede cada pulsación de "Atrás". */
+const MONTHS_BACK_STEP = 3;
+
 export function AthleteTimelineCalendar({
     athleteId,
     onSelectBlock,
     monthsForward: monthsForwardProp,
-    monthsBack = 2,
+    monthsBack: monthsBackProp = 2,
 }: AthleteTimelineCalendarProps) {
-    const [monthsForward, setMonthsForward] = useState(monthsForwardProp ?? 5);
+    const [monthsForward, setMonthsForward] = useState(monthsForwardProp ?? 6);
+    /**
+     * `monthsBack` empieza como el prop, pero a partir de aquí es del
+     * usuario: el botón "Atrás" lo alarga para poder paginar hacia atrás en
+     * el historial, y "Hoy" lo devuelve al valor de partida. Convertirlo en
+     * estado en vez de dejarlo fijo es lo que pediste explícitamente — antes
+     * el eje solo se podía extender hacia delante.
+     */
+    const [monthsBack, setMonthsBack] = useState(monthsBackProp);
 
     const query = useQuery({
         queryKey: [...athleteTimelineKey(athleteId), monthsBack, monthsForward],
@@ -182,24 +198,44 @@ export function AthleteTimelineCalendar({
                     </p>
                 </div>
 
-                <div
-                    role="group"
-                    aria-label="Meses visibles"
-                    className="flex shrink-0 rounded-field bg-surface-sunken p-0.5"
-                >
-                    {[3, 5, 11].map(m => (
+                <div className="flex shrink-0 items-center gap-1.5">
+                    {/* Paginar hacia atrás en el historial. Antes el eje solo
+                        crecía hacia delante; "Hoy" solo aparece cuando ya se
+                        ha retrocedido, para no ensuciar el caso normal. */}
+                    <button
+                        onClick={() => setMonthsBack(b => b + MONTHS_BACK_STEP)}
+                        title={`Ver ${MONTHS_BACK_STEP} meses más atrás`}
+                        className="rounded-chip bg-surface-sunken px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                        ← Atrás
+                    </button>
+                    {monthsBack !== monthsBackProp && (
                         <button
-                            key={m}
-                            onClick={() => setMonthsForward(m)}
-                            aria-pressed={monthsForward === m}
-                            className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m
-                                ? 'bg-brand text-brand-ink'
-                                : 'text-ink-subtle hover:text-ink'
-                                }`}
+                            onClick={() => setMonthsBack(monthsBackProp)}
+                            className="rounded-chip px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         >
-                            {m + monthsBack + 1}m
+                            Hoy
                         </button>
-                    ))}
+                    )}
+                    <div
+                        role="group"
+                        aria-label="Meses hacia delante"
+                        className="flex shrink-0 rounded-field bg-surface-sunken p-0.5"
+                    >
+                        {MONTH_PRESETS.map(m => (
+                            <button
+                                key={m}
+                                onClick={() => setMonthsForward(m)}
+                                aria-pressed={monthsForward === m}
+                                className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m
+                                    ? 'bg-brand text-brand-ink'
+                                    : 'text-ink-subtle hover:text-ink'
+                                    }`}
+                            >
+                                {m}m
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </header>
 

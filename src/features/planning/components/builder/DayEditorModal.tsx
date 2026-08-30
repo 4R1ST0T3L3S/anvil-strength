@@ -14,6 +14,8 @@ import { toVolumeInput } from '../../../../lib/volume/engine';
 import { lockBodyScroll } from '../../../../lib/scrollLock';
 import type { ExtendedSession, ExtendedSessionExercise, ExerciseCardUpdates } from './types';
 import { computeDayMetrics, summarizeSets, getLiftTheme, Sparkline } from './DayCard';
+import { SECTION_STYLE } from './helpers';
+import { EXERCISE_SECTIONS } from '../../../../types/training';
 import { ExerciseAutocomplete } from './ExerciseAutocomplete';
 import { AppendixEditor } from './AppendixEditor';
 import { WarmupConversionPanel } from './WarmupConversionPanel';
@@ -624,6 +626,14 @@ export function DayEditorModal({
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className={`text-t-2xs font-black px-1.5 py-0.5 rounded ${theme.bg} ${theme.accent}`}>{theme.key}</span>
                                                 <span className="text-t-2xs font-bold text-ink-subtle uppercase">#{i + 1}</span>
+                                                {/* Punto de color por parte del día — calentamiento,
+                                                    principal, accesorio, cardio—, para que se distingan
+                                                    de un vistazo en la lista sin abrir cada ejercicio. */}
+                                                <span
+                                                    aria-hidden="true"
+                                                    title={EXERCISE_SECTIONS.find(s => s.key === (ex.section ?? 'main'))?.label}
+                                                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${SECTION_STYLE[ex.section ?? 'main'].dot}`}
+                                                />
                                                 {ex.vbt_file_url && <Activity size={10} className="text-success" />}
                                                 <span className="ml-auto"><Sparkline values={spark} /></span>
                                             </div>

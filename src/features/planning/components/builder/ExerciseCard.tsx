@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-    SessionExercise, TrainingSet, TARGET_METRICS, SET_TYPES, GROUP_TAGS, EXERCISE_SECTIONS,
+    TrainingSet, TARGET_METRICS, SET_TYPES, GROUP_TAGS, EXERCISE_SECTIONS,
     ACCESSORY_CLASSES,
 } from '../../../../types/training';
 import type { TargetMetric, ExerciseSection, AccessoryClass } from '../../../../types/training';
@@ -13,7 +13,7 @@ import { SetVbtModal } from '../../../vbt/components/SetVbtModal';
 import { parseLoadInput, percentOfMax } from '../../../../lib/planning/loadMath';
 import { cn } from '../../../../lib/utils';
 import type { ExtendedSessionExercise, ExerciseCardUpdates } from './types';
-import { getSeriesCount, getRepsCount, formatTargetReps } from './helpers';
+import { getSeriesCount, getRepsCount, formatTargetReps, SECTION_STYLE } from './helpers';
 
 // ==========================================
 // SUB-COMPONENT: EXERCISE CARD
@@ -257,12 +257,45 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
         await trainingService.updateSessionExercise(sessionExercise.id, { notes: sessionExercise.notes });
     };
 
-    const handleGlobalUpdate = (field: keyof SessionExercise, val: string | number | null) => {
-        onUpdateExercise(sessionExercise.id, { [field]: val });
+    /**
+     * DESCANSO — SE PERSIGUE Y SE AVISA SI FALLA.
+     *
+     * Antes esto era `handleGlobalUpdate`/`handleGlobalBlur`, genéricos por
+     * `field` pero sin `try/catch` y sin que nadie esperase la promesa: un
+     * fallo de red se tragaba en silencio, el campo se quedaba con el valor
+     * optimista en pantalla y al recargar el descanso había desaparecido. Ni
+     * el atleta lo veía ni "Guardar cambios" lo rescataba —ese botón solo
+     * cubre `training_sets`, nunca `session_exercises`—.
+     *
+     * `restSavedRef` es la foto de "lo que hay guardado de verdad". Se
+     * resincroniza con la prop SOLO cuando no hay ningún guardado en curso:
+     * mientras se teclea, la prop ya lleva el valor optimista (el `onChange`
+     * de cada pulsación lo escribe en el estado del bloque), así que sin este
+     * candado `restSavedRef` perseguiría al propio valor que hay que poder
+     * deshacer. Mismo patrón que `commitAccessoryClass` y `commitRounds`, un
+     * poco más abajo, adaptado al debounce del campo.
+     */
+    const restSaving = useRef(false);
+    const restSavedRef = useRef(sessionExercise.rest_seconds ?? null);
+    if (!restSaving.current) restSavedRef.current = sessionExercise.rest_seconds ?? null;
+
+    const handleRestChange = (value: number | null) => {
+        restSaving.current = true;
+        onUpdateExercise(sessionExercise.id, { rest_seconds: value });
     };
 
-    const handleGlobalBlur = async (field: keyof SessionExercise, val: string | number | null) => {
-        await trainingService.updateSessionExercise(sessionExercise.id, { [field]: val });
+    const handleRestCommit = async (value: number | null) => {
+        const previous = restSavedRef.current;
+        try {
+            await trainingService.updateSessionExercise(sessionExercise.id, { rest_seconds: value });
+            restSavedRef.current = value;
+        } catch (err) {
+            console.error(err);
+            onUpdateExercise(sessionExercise.id, { rest_seconds: previous });
+            toast.error(err instanceof Error ? err.message : 'No se pudo guardar el descanso');
+        } finally {
+            restSaving.current = false;
+        }
     };
 
     return (
@@ -369,23 +402,43 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
 
                         Va en la cabecera y no escondido en un desplegable
                         porque cambia lo que el ejercicio SIGNIFICA, y eso
-                        tiene que verse de un vistazo al repasar el día. */}
-                    <select
-                        value={sessionExercise.section ?? 'main'}
-                        onChange={(e) => commitSection(e.target.value as ExerciseSection)}
-                        aria-label="Parte del día"
-                        title={EXERCISE_SECTIONS.find(x => x.key === (sessionExercise.section ?? 'main'))?.hint}
-                        className={cn(
-                            'ml-auto shrink-0 cursor-pointer rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast',
-                            (sessionExercise.section ?? 'main') === 'warmup'
-                                ? 'border-[var(--brand-line)] bg-brand-quiet text-brand-text'
-                                : 'border-transparent bg-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
-                        )}
-                    >
-                        {EXERCISE_SECTIONS.map(x => (
-                            <option key={x.key} value={x.key}>{x.label}</option>
-                        ))}
-                    </select>
+                        tiene que verse de un vistazo al repasar el día.
+
+                        CUATRO BOTONES, NO UN `<select>`. El desplegable nativo
+                        tenía dos fallos a la vez: el propio navegador lo
+                        pintaba en blanco al abrirlo y en negro al elegir un
+                        valor —sin `appearance-none` ni fondo sólido, un
+                        `<select>` con `bg-transparent` deja que Windows dibuje
+                        su propio control por debajo—, y de los tres estados
+                        solo "Calentamiento" tenía un color distinto:
+                        "Principal" y "Accesorio" compartían exactamente el
+                        mismo `border-transparent bg-transparent text-ink-faint`,
+                        así que no había forma de distinguirlos sin leer el
+                        texto. Un grupo de botones no tiene ninguno de los dos
+                        problemas: no hay chrome nativo que pintar, y cada
+                        sección tiene su propio color en `SECTION_STYLE`. */}
+                    <div role="group" aria-label="Parte del día" className="ml-auto flex shrink-0 gap-1">
+                        {EXERCISE_SECTIONS.map(x => {
+                            const active = (sessionExercise.section ?? 'main') === x.key;
+                            return (
+                                <button
+                                    key={x.key}
+                                    type="button"
+                                    onClick={() => commitSection(x.key)}
+                                    aria-pressed={active}
+                                    title={x.hint}
+                                    className={cn(
+                                        'shrink-0 rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                        active
+                                            ? SECTION_STYLE[x.key].active
+                                            : 'border-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
+                                    )}
+                                >
+                                    {x.short}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* PARA QUÉ SIRVE ESTE ACCESORIO.
@@ -403,11 +456,20 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     defecto: sus series se cuentan aparte y se dicen, nunca se
                     reparten a ojo. */}
                 {classifyMainLift(sessionExercise.exercise?.name) === 'ACC'
-                    && (sessionExercise.section ?? 'main') !== 'warmup' && (
+                    && (sessionExercise.section ?? 'main') !== 'warmup'
+                    && (sessionExercise.section ?? 'main') !== 'cardio' && (
                         <div className="mb-3 flex items-center gap-2">
                             <span className="shrink-0 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
                                 Apoya a
                             </span>
+                            {/* `appearance-none` + fondo SÓLIDO (nunca
+                                `bg-transparent`): mismo fallo que tenía el
+                                selector de sección — sin esto, Windows dibuja
+                                su propio control por debajo del nuestro y el
+                                desplegable sale blanco al abrir. `<option>`
+                                con su propio color, igual que ya hace
+                                `AdminDashboard`, para que la lista abierta
+                                también se lea en modo oscuro. */}
                             <select
                                 value={sessionExercise.accessory_class ?? ''}
                                 onChange={(e) => commitAccessoryClass(e.target.value)}
@@ -417,15 +479,15 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     ?? 'Sin clasificar: sus series no cuentan en ningún grupo de accesorios'
                                 }
                                 className={cn(
-                                    'min-w-0 cursor-pointer rounded-chip border px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                    'min-w-0 cursor-pointer appearance-none rounded-chip border bg-surface-sunken px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                                     sessionExercise.accessory_class
-                                        ? 'border-[var(--border-default)] bg-surface-sunken text-ink-muted'
-                                        : 'border-dashed border-[var(--border-default)] bg-transparent text-ink-faint hover:text-ink'
+                                        ? 'border-[var(--border-default)] text-ink-muted'
+                                        : 'border-dashed border-[var(--border-default)] text-ink-faint hover:text-ink'
                                 )}
                             >
-                                <option value="">Sin clasificar</option>
+                                <option value="" className="bg-surface-sunken text-ink-faint">Sin clasificar</option>
                                 {ACCESSORY_CLASSES.map(a => (
-                                    <option key={a.key} value={a.key}>{a.short}</option>
+                                    <option key={a.key} value={a.key} className="bg-surface-sunken text-ink">{a.short}</option>
                                 ))}
                             </select>
                         </div>
@@ -541,8 +603,8 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Descanso</div>
                             <RestInput
                                 seconds={sessionExercise.rest_seconds ?? null}
-                                onChange={(value) => handleGlobalUpdate('rest_seconds', value)}
-                                onCommit={(value) => handleGlobalBlur('rest_seconds', value)}
+                                onChange={handleRestChange}
+                                onCommit={handleRestCommit}
                             />
                         </div>
 

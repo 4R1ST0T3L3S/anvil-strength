@@ -1,5 +1,26 @@
 import { TrainingSet, weekdayIndex } from '../../../../types/training';
+import type { ExerciseSection } from '../../../../types/training';
 import type { ExtendedSession, ExtendedSessionExercise } from './types';
+
+/**
+ * Un color por parte del día, compartido entre el selector de `ExerciseCard`
+ * y la insignia de la lista de `DayEditorModal` — una sola fuente para que
+ * las dos pantallas no acaben pintando el mismo estado de dos colores
+ * distintos.
+ *
+ * Cuatro colores sin solapar entre sí y sin tomar prestado ningún token
+ * semántico (`--danger`/`--warning`/`--success` significan estado, no
+ * categoría): rojo de marca para el trabajo PRINCIPAL —es lo que de verdad
+ * importa del día—, y ámbar/índigo/esmeralda para las otras tres, en la
+ * misma familia de colores "decorativos" que ya usan los accesos del
+ * Dashboard (`CoachHomeCards.tsx`).
+ */
+export const SECTION_STYLE: Record<ExerciseSection, { active: string; dot: string }> = {
+    warmup: { active: 'border-amber-500/40 bg-amber-500/10 text-amber-500', dot: 'bg-amber-500' },
+    main: { active: 'border-brand/45 bg-brand-quiet text-brand-text', dot: 'bg-brand' },
+    accessory: { active: 'border-indigo-500/40 bg-indigo-500/10 text-indigo-400', dot: 'bg-indigo-500' },
+    cardio: { active: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500', dot: 'bg-emerald-500' },
+};
 
 // Helpers to parse and format target_reps field specifically for grouped sets
 export const getSeriesCount = (target_reps: string | null | undefined) => {
