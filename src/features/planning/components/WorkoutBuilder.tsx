@@ -1060,6 +1060,207 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
         }
     };
 
+    /**
+     * APLICAR UNA PROGRESIÓN DE VARIOS DÍAS POR SEMANA — B3, B4, B5, B7.
+     *
+     * `applyProgression`, arriba, da por hecho que el ejercicio YA existe en
+     * el bloque: solo sustituye series. Esta es la versión que además CREA
+     * lo que falte (B3) — el día de la semana, si no hay sesión ese día, y
+     * el ejercicio dentro de él — y AVISA de lo creado (B5) en vez de
+     * callarlo.
+     *
+     * `dayToWeekday` es la elección de B7: en qué día de la semana cae cada
+     * "día 1, día 2…" de la progresión. Se decide en el momento de aplicar,
+     * nunca se guarda en la plantilla.
+     *
+     * Es una función APARTE y no una ampliación de `applyProgression` a
+     * propósito: el camino simple (un día, el ejercicio ya está ahí) es el
+     * caso más frecuente y el que menos puede permitirse una regresión.
+     */
+    const applyProgressionMultiDay = async (
+        movementName: string,
+        steps: ProgressionStep[],
+        frequency: number,
+        dayToWeekday: Record<number, Weekday>
+    ) => {
+        if (!blockData || !movementName) return;
+
+        const targetKey = exerciseKey(movementName);
+        const referenceMax = findMax(maxes, movementName)?.one_rm ?? null;
+
+        interface PlanItem {
+            weekNumber: number;
+            weekday: Weekday;
+            /** La sesión de ESA semana con ESE día de la semana, si ya existe. */
+            existingSession: ExtendedSession | null;
+            /** El ejercicio dentro de esa sesión, si ya está. */
+            existingExercise: ExtendedSessionExercise | null;
+            stepsForDay: ProgressionStep[];
+        }
+
+        // 1. EL PLAN — qué hay que hacer en cada (semana, día), sin tocar
+        //    nada todavía. `ordinal` es la posición dentro de la progresión
+        //    (1, 2, 3…), que es como se guardan los `week` de sus escalones;
+        //    `weekNumber` es la semana REAL del bloque (puede empezar en la
+        //    30, por ejemplo) — mismo desdoblamiento que ya usa
+        //    `applyProgression`.
+        const plan: PlanItem[] = [];
+        weeks.forEach((weekNumber, i) => {
+            const ordinal = i + 1;
+            for (let d = 1; d <= frequency; d++) {
+                const weekday = dayToWeekday[d];
+                if (!weekday) continue;
+
+                const stepsForDay = steps.filter(s => s.week === ordinal && (s.day ?? 1) === d);
+                if (stepsForDay.length === 0) continue;
+
+                const existingSession = blockData.sessions.find(
+                    s => s.week_number === weekNumber && s.day_of_week === weekday
+                ) ?? null;
+                const existingExercise = existingSession?.exercises.find(
+                    ex => exerciseKey(ex.exercise?.name) === targetKey
+                ) ?? null;
+
+                plan.push({ weekNumber, weekday, existingSession, existingExercise, stepsForDay });
+            }
+        });
+
+        if (plan.length === 0) {
+            toast.error('No hay ningún escalón que aplicar con los días elegidos');
+            return;
+        }
+
+        const newSessionsNeeded = plan.filter(p => !p.existingSession).length;
+        const conflicts = plan.filter(p => p.existingExercise && p.existingExercise.sets.length > 0).length;
+
+        // B4 — SE PREGUNTA cuando hay algo que sustituir. B3/B5 — crear no
+        // se pregunta, solo se avisa DESPUÉS de hecho: no es destructivo.
+        const execute = () => void runPlan(plan, movementName, referenceMax, newSessionsNeeded);
+
+        if (conflicts > 0) {
+            setConfirmModal({
+                isOpen: true,
+                title: 'Sustituir series existentes',
+                description: `${movementName} ya está programado en ${conflicts} ${conflicts === 1 ? 'día' : 'días'} de los elegidos. Se sustituirán sus series por las de esta progresión.` +
+                    (newSessionsNeeded > 0 ? ` Además se crearán ${newSessionsNeeded} ${newSessionsNeeded === 1 ? 'día nuevo' : 'días nuevos'}.` : ''),
+                confirmText: 'Sustituir y aplicar',
+                variant: 'danger',
+                onConfirm: execute,
+            });
+            return;
+        }
+
+        execute();
+    };
+
+    /** La parte que de verdad escribe — separada para no anidar el confirm de arriba. */
+    const runPlan = async (
+        plan: {
+            weekNumber: number; weekday: Weekday;
+            existingSession: ExtendedSession | null; existingExercise: ExtendedSessionExercise | null;
+            stepsForDay: ProgressionStep[];
+        }[],
+        movementName: string,
+        referenceMax: number | null,
+        newSessionsNeeded: number
+    ) => {
+        if (!blockData) return;
+        setIsSaving(true);
+        try {
+            // 1. Las sesiones que faltan, EN UN SOLO LOTE — mismo patrón que
+            //    `fillWeeksWithDays`: cuarenta días uno a uno con `await` de
+            //    por medio son varios segundos de spinner para una decisión
+            //    que se toma una vez.
+            const missing = plan.filter(p => !p.existingSession);
+            let createdSessions: ExtendedSession[] = [];
+            if (missing.length > 0) {
+                const byWeek = new Map<number, number>(); // semana -> siguiente day_number libre
+                for (const s of blockData.sessions) {
+                    byWeek.set(s.week_number, Math.max(byWeek.get(s.week_number) ?? 0, s.day_number));
+                }
+                const toCreate = missing.map(p => {
+                    const nextDay = (byWeek.get(p.weekNumber) ?? 0) + 1;
+                    byWeek.set(p.weekNumber, nextDay);
+                    return {
+                        block_id: blockData.id,
+                        week_number: p.weekNumber,
+                        day_number: nextDay,
+                        day_of_week: p.weekday,
+                        name: `Día ${nextDay}`,
+                    };
+                });
+                const inserted = await trainingService.createSessions(toCreate);
+                createdSessions = inserted.map(s => ({ ...s, exercises: [] }));
+            }
+
+            const sessionFor = (weekNumber: number, weekday: Weekday): ExtendedSession | undefined =>
+                createdSessions.find(s => s.week_number === weekNumber && s.day_of_week === weekday)
+                ?? blockData.sessions.find(s => s.week_number === weekNumber && s.day_of_week === weekday);
+
+            // 2. El ejercicio, en cada sesión que no lo tenga ya.
+            const exerciseId = await trainingService.findOrCreateExercise(movementName, coachId ?? undefined);
+            const exerciseByPlace = new Map<string, ExtendedSessionExercise>(); // `${week}|${weekday}` -> ejercicio
+
+            for (const item of plan) {
+                const key = `${item.weekNumber}|${item.weekday}`;
+                if (item.existingExercise) { exerciseByPlace.set(key, item.existingExercise); continue; }
+
+                const session = sessionFor(item.weekNumber, item.weekday);
+                if (!session) continue; // no debería pasar: o existía, o se acaba de crear
+
+                const nextOrder = session.exercises.length;
+                const created = await trainingService.addSessionExercise(session.id, exerciseId, nextOrder);
+                exerciseByPlace.set(key, { ...created, exercise: { id: exerciseId, name: movementName, is_public: false, created_at: '' }, sets: [] });
+            }
+
+            // 3. Las series de cada ejercicio: se borran las que hubiera y se
+            //    insertan las resueltas — mismo criterio que `applyProgression`.
+            const oldSetIds = plan.flatMap(p => p.existingExercise?.sets.map(s => s.id) ?? []);
+            if (oldSetIds.length > 0) {
+                const { error } = await supabase.from('training_sets').delete().in('id', oldSetIds);
+                if (error) throw error;
+            }
+
+            let unresolvedDays = 0;
+            const newSets: Partial<TrainingSet>[] = [];
+            for (const item of plan) {
+                const ex = exerciseByPlace.get(`${item.weekNumber}|${item.weekday}`);
+                if (!ex) continue;
+
+                item.stepsForDay.forEach((step, orderIndex) => {
+                    const resolved = resolveStep(step, referenceMax);
+                    if (resolved.unresolved) unresolvedDays += 1;
+                    newSets.push({
+                        session_exercise_id: ex.id,
+                        target_reps: resolved.target_reps,
+                        target_load: resolved.target_load,
+                        target_metric: resolved.target_metric,
+                        target_rpe: resolved.target_rpe,
+                        is_video_required: false,
+                        order_index: orderIndex,
+                        vbt_metrics: resolved.appliedPercent != null ? { applied_percent: resolved.appliedPercent } : null,
+                    });
+                });
+            }
+
+            if (newSets.length > 0) await trainingService.addSets(newSets);
+
+            await loadData();
+
+            const parts = [`Progresión de ${movementName} aplicada en ${plan.length} ${plan.length === 1 ? 'día' : 'días'}`];
+            if (newSessionsNeeded > 0) parts.push(`${newSessionsNeeded} ${newSessionsNeeded === 1 ? 'día nuevo creado' : 'días nuevos creados'}`);
+            if (unresolvedDays > 0) parts.push(`${unresolvedDays} sin 1RM con el que calcular los kilos`);
+            toast[unresolvedDays > 0 ? 'warning' : 'success'](parts.join(' · '), { duration: 7000 });
+        } catch (err) {
+            console.error('Error aplicando la progresión multi-día:', err);
+            const detail = (err as { message?: string })?.message ?? 'error desconocido';
+            toast.error(`No se pudo aplicar la progresión: ${detail}`);
+            await loadData();
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const removeSet = (setId: string) => {
         supabase.from('training_sets').delete().eq('id', setId).then(({ error }) => {
             if (error) toast.error("Error borrando serie");
@@ -2197,7 +2398,11 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     weekCount={weeks.length}
                     referenceMax={findMax(maxes, progressionFor)?.one_rm ?? null}
                     coachId={coachId}
-                    onApply={(steps) => applyProgression(progressionFor, steps)}
+                    onApply={(steps, frequency, dayToWeekday) =>
+                        frequency > 1
+                            ? applyProgressionMultiDay(progressionFor, steps, frequency, dayToWeekday)
+                            : applyProgression(progressionFor, steps)
+                    }
                 />
             )}
 
