@@ -12,6 +12,7 @@ import { PreviousWeekSummary } from './PreviousWeekSummary';
 import { AccessoryBreakdown } from './AccessoryBreakdown';
 import { BestMarksMini } from './BestMarksMini';
 import { ContextCalendarModal } from './ContextCalendarModal';
+import { GoalsPanel } from './GoalsPanel';
 
 /**
  * CENTRO DE CONTEXTO DEL ATLETA
@@ -28,6 +29,8 @@ import { ContextCalendarModal } from './ContextCalendarModal';
  *
  * Vive en el panel derecho de `DayEditorModal`, encima del resumen del día
  * que ya había (que se conserva intacto, más abajo).
+ *
+ *   6. OBJETIVOS       — hacia dónde se lleva al atleta en este bloque
  *
  *
  * LA CARGA DEL REGISTRO ES DIFERIDA Y NO BLOQUEA
@@ -50,6 +53,9 @@ import { ContextCalendarModal } from './ContextCalendarModal';
 
 interface AthleteContextPanelProps {
     athleteId: string;
+    /** Del bloque que se está editando. Ata los objetivos nuevos a este bloque. */
+    blockId: string;
+    coachId: string | null;
     /** Todas las sesiones del bloque, con el estado local sin guardar. */
     sessions: VolumeSessionInput[];
     /** Metadatos de los días, para el selector del calendario. */
@@ -65,7 +71,7 @@ interface AthleteContextPanelProps {
 }
 
 export function AthleteContextPanel({
-    athleteId, sessions, sessionMeta, exercises,
+    athleteId, blockId, coachId, sessions, sessionMeta, exercises,
     currentSessionId, currentWeek, maxes, declaredMaxes = {}, weekNames = {},
 }: AthleteContextPanelProps) {
     const [calendarOpen, setCalendarOpen] = useState(false);
@@ -134,6 +140,18 @@ export function AthleteContextPanel({
                 sessions={sessions}
                 week={currentWeek}
                 declaredMaxes={declaredMaxes}
+            />
+
+            {/* Hacia dónde se lleva a este atleta — F4/F7. Va justo debajo de
+                la semana en curso porque las dos contestan "qué estoy
+                escribiendo": una lo compara con la semana pasada, esta con
+                la meta del bloque. */}
+            <GoalsPanel
+                athleteId={athleteId}
+                coachId={coachId}
+                blockId={blockId}
+                logged={logged}
+                marks={marks}
             />
 
             <PreviousWeekSummary

@@ -761,6 +761,8 @@ export function DayEditorModal({
                             debajo, sin tocar. */}
                         <AthleteContextPanel
                             athleteId={athleteId}
+                            blockId={session.block_id}
+                            coachId={coachId}
                             sessions={volumeSessions}
                             sessionMeta={allSessions}
                             exercises={session.exercises}
