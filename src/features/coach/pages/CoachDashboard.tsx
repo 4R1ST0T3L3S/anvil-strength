@@ -19,7 +19,6 @@ import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { NotificationBell } from '../../../components/ui/NotificationBell';
 import { SelectorDeTema } from '../../../components/ui/SelectorDeTema';
 import { AccountMenu } from '../../../components/layout/DashboardLayout';
-import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import { ViewTransition } from '../../../components/layout/ViewTransition';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
@@ -86,7 +85,6 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const { view, athleteId } = useParams<{ view: string; athleteId: string }>();
     const { refetch } = useUser();
     const [chatAthlete, setChatAthlete] = useState<{ id: string; full_name: string; avatar_url?: string } | null>(null);
-    const isDesktop = useMediaQuery('(min-width: 768px)');
 
     const slug: Slug = isSlug(view) ? ((view ?? '') as Slug) : '';
 
@@ -212,27 +210,31 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             case 'home':
             default:
                 return (
-                    <CoachHome 
-                        user={user} 
+                    <CoachHome
+                        user={user}
                         onNavigate={(v) => go(viewToSlug(v))}
                         headerActions={
-                            isDesktop ? (
-                                <div className="flex items-center gap-1">
-                                    {panelSwitch && (
-                                        <button
-                                            onClick={panelSwitch.onClick}
-                                            aria-label={panelSwitch.label}
-                                            className="flex h-9 items-center gap-1.5 rounded-field border border-brand/25 bg-brand/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97]"
-                                        >
-                                            <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
-                                            <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
-                                        </button>
-                                    )}
-                                    <SelectorDeTema />
-                                    <NotificationBell userId={user.id} />
-                                    <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
-                                </div>
-                            ) : undefined
+                            <div className="flex items-center gap-1">
+                                {panelSwitch && (
+                                    <button
+                                        onClick={panelSwitch.onClick}
+                                        aria-label={panelSwitch.label}
+                                        className="flex h-9 items-center gap-1.5 rounded-field border border-brand/25 bg-brand/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97]"
+                                    >
+                                        <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
+                                        <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
+                                    </button>
+                                )}
+                                {/* Oculto por debajo de `sm`: en un móvil de 375px la
+                                    fila ya lleva el conmutador de panel, los avisos y
+                                    la ⋮, y el tema es lo que menos se toca de los
+                                    cuatro (mismo criterio que el armazón — ver
+                                    `DashboardLayout.tsx`). En móvil se cambia desde
+                                    Perfil → Este dispositivo. */}
+                                <SelectorDeTema className="hidden sm:flex" />
+                                <NotificationBell userId={user.id} />
+                                <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
+                            </div>
                         }
                     />
                 );

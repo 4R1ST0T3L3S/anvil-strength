@@ -27,12 +27,12 @@ interface AthleteHomeProps {
     user: UserProfile;
     onNavigate: (view: string) => void;
     /**
-     * Acciones de la cabecera en ESCRITORIO.
+     * Acciones de la cabecera: avisos, conmutador de panel y menú de cuenta.
      *
-     * En el inicio de escritorio la barra superior del armazon se oculta
-     * (hideHeaderOnDesktop), asi que la campana, el conmutador de panel y
-     * el menu de cuenta se sirven desde aqui. En movil llega undefined y
-     * manda la barra superior de siempre.
+     * La barra superior del armazón se oculta SIEMPRE en el inicio
+     * (`hideHeaderOnDesktop` en escritorio, y en móvil desde el 30 ago 2026
+     * no se ve en ninguna pantalla), así que estas acciones se sirven desde
+     * aquí en los dos tamaños.
      */
     headerActions?: ReactNode;
 }
@@ -249,12 +249,12 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                             })}
                         </p>
                     </div>
-                    {/* En el inicio de escritorio la barra superior del armazon se
-                        oculta, asi que sus acciones (avisos, conmutador de panel,
-                        cuenta) se pintan aqui. En movil llega undefined y manda la
-                        barra superior de siempre. */}
+                    {/* La barra superior del armazón se oculta siempre en
+                        móvil (no solo en escritorio, desde el 30 ago 2026),
+                        así que sus acciones (avisos, conmutador de panel,
+                        cuenta) se pintan aquí en los dos tamaños. */}
                     {headerActions && (
-                        <div className="hidden shrink-0 items-center gap-1 md:flex">
+                        <div className="flex shrink-0 items-center gap-1">
                             {headerActions}
                         </div>
                     )}

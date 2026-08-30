@@ -299,14 +299,19 @@
    cualquier cosa que flote ahí (el botón de volver arriba, un aviso, una
    hoja) se queda ENCIMA de "Perfil" si no se aparta.
 
-   Aquí se declara una vez lo que mide, y quien flote la resta. Son 52px de
-   botón + 4px de `pt-1` + 1px de borde. NO incluye el área segura del
-   iPhone: esa se suma aparte con `env(safe-area-inset-bottom)`, porque
-   depende del dispositivo y no del diseño.
+   Aquí se declara una vez lo que mide, y quien flote la resta.
+
+   Desde que la barra flota (30 ago 2026) en vez de ir pegada al borde: 52px
+   de botón + 8px de `py-1` + 2px de borde (el cuerpo de la píldora) + 16px
+   del hueco que la separa del borde (`bottom-[calc(1rem+…)]`) = 78px. NO
+   incluye el área segura del iPhone: esa se suma aparte con
+   `env(safe-area-inset-bottom)`, porque depende del dispositivo y no del
+   diseño — la propia píldora ya lo hace en su `bottom`.
 
    A partir de `md` la barra es `md:hidden` y esto pasa a valer cero. Si un
-   día cambia el alto del botón, cambia AQUÍ y se mueve todo lo que flota. */
-   --tabbar-alto: 57px;
+   día cambia el alto, el padding o el hueco de la píldora, cambia AQUÍ y se
+   mueve todo lo que flota encima (`BackToTop`). */
+   --tabbar-alto: 78px;
 }
 
 @media (min-width: 768px) {

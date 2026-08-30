@@ -30,12 +30,15 @@ import { Skeleton } from '../ui/Skeleton';
  *
  * LAS MEDIDAS TIENEN QUE COINCIDIR CON `DashboardLayout`
  *
- * `w-56` en la barra lateral, `h-14 md:h-16` en la cabecera, `min-h-[52px]`
- * en las pestañas de abajo. Si alguna cambia allí y no aquí, aparece el
- * salto que todo esto viene a evitar. Es la única razón por la que estos
- * números están repetidos: extraerlos a constantes compartidas obligaría a
- * `DashboardLayout` a importar del esqueleto o al revés, y son dos piezas
- * que no deben depender la una de la otra.
+ * `h-16` en la cabecera (oculta en móvil, visible desde `md` — desde el 30
+ * ago 2026 ya no hay barra lateral que dibujar aquí: el Dashboard de
+ * escritorio la sustituyó por el propio `CoachHome`/`AthleteHome`), y
+ * `min-h-[52px]` en las pestañas de la barra flotante de abajo. Si alguna
+ * cambia allí y no aquí, aparece el salto que todo esto viene a evitar. Es
+ * la única razón por la que estos números están repetidos: extraerlos a
+ * constantes compartidas obligaría a `DashboardLayout` a importar del
+ * esqueleto o al revés, y son dos piezas que no deben depender la una de la
+ * otra.
  */
 export function AppShellSkeleton() {
     return (
@@ -49,44 +52,17 @@ export function AppShellSkeleton() {
         >
             <span className="sr-only">Cargando la página…</span>
 
-            {/* ============ BARRA LATERAL (escritorio) ============ */}
-            <aside className="hidden w-56 shrink-0 flex-col border-r border-subtle bg-surface-sunken md:flex">
-                <div className="flex h-16 shrink-0 items-center border-b border-subtle px-5">
-                    {/* La marca SÍ se pinta de verdad: es lo único que se sabe
-                        con certeza mientras carga, y verla desde el primer
-                        frame es lo que hace que esto se lea como la misma
-                        aplicación y no como otra pantalla. */}
-                    <span className="select-none text-t-lg font-black tracking-tight text-ink">
-                        ANVIL<span className="text-brand-text">.</span>
-                    </span>
-                </div>
-
-                <nav className="flex-1 space-y-1 px-3 py-4">
-                    {Array.from({ length: 6 }, (_, i) => (
-                        <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-                            <Skeleton className="h-[17px] w-[17px] shrink-0 rounded-chip" />
-                            {/* Anchos distintos: seis pastillas idénticas se
-                                leen como una tabla, no como un menú. */}
-                            <Skeleton className="h-3.5" style={{ width: `${52 + (i % 3) * 18}%` }} />
-                        </div>
-                    ))}
-                </nav>
-
-                <div className="shrink-0 space-y-2 border-t border-subtle p-3">
-                    <Skeleton className="h-9 w-full" />
-                    <Skeleton className="h-3 w-2/3" />
-                </div>
-            </aside>
-
             {/* ============ COLUMNA PRINCIPAL ============ */}
             <div className="flex min-w-0 flex-1 flex-col">
-                <header className="z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-subtle bg-surface-canvas/90 px-4 backdrop-blur md:h-16 md:px-6">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <span className="select-none text-t-base font-black tracking-tight text-ink md:hidden">
-                            ANVIL<span className="text-brand-text">.</span>
-                        </span>
-                        <Skeleton className="hidden h-4 w-32 md:block" />
-                    </div>
+                {/* Oculta en móvil, igual que la cabecera real. En escritorio
+                    la marca SÍ se pinta de verdad: es lo único que se sabe
+                    con certeza mientras carga, y verla desde el primer frame
+                    es lo que hace que esto se lea como la misma aplicación y
+                    no como otra pantalla. */}
+                <header className="z-40 hidden h-16 shrink-0 items-center justify-between gap-3 border-b border-subtle bg-surface-canvas/90 px-6 backdrop-blur md:flex">
+                    <span className="select-none text-t-base font-black tracking-tight text-ink">
+                        ANVIL<span className="text-brand-text">.</span>
+                    </span>
                     <div className="flex items-center gap-2">
                         <Skeleton className="h-9 w-9 rounded-field" />
                         <Skeleton className="h-9 w-9 rounded-field" />
@@ -124,14 +100,18 @@ export function AppShellSkeleton() {
             </div>
 
             {/* ============ BARRA DE PESTAÑAS (móvil) ============ */}
-            <nav className="fixed bottom-0 left-0 right-0 z-sticky flex items-stretch justify-around border-t border-subtle bg-surface-canvas/95 px-1 pb-safe pt-1 backdrop-blur-md md:hidden">
-                {Array.from({ length: 5 }, (_, i) => (
-                    <div key={i} className="flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5">
-                        <Skeleton className="h-5 w-5 rounded-chip" />
-                        <Skeleton className="h-2 w-10" />
-                    </div>
-                ))}
-            </nav>
+            {/* Píldora flotante, igual que la real: separada del borde, no
+                pegada a él. */}
+            <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-sticky md:hidden">
+                <nav className="flex items-stretch justify-around rounded-3xl border border-subtle bg-surface-canvas/80 px-2 py-1 shadow-2xl backdrop-blur-xl">
+                    {Array.from({ length: 5 }, (_, i) => (
+                        <div key={i} className="flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5">
+                            <Skeleton className="h-5 w-5 rounded-chip" />
+                            <Skeleton className="h-2 w-10" />
+                        </div>
+                    ))}
+                </nav>
+            </div>
         </div>
     );
 }

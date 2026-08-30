@@ -176,8 +176,12 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                             {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                         </p>
                     </div>
+                    {/* La barra superior del armazón se oculta siempre en
+                        móvil (no solo en escritorio, desde el 30 ago 2026),
+                        así que estas acciones —avisos, conmutador de panel,
+                        cuenta— se pintan aquí en los dos tamaños. */}
                     {headerActions && (
-                        <div className="hidden md:flex items-center gap-1">
+                        <div className="flex items-center gap-1">
                             {headerActions}
                         </div>
                     )}

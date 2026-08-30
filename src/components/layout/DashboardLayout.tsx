@@ -70,8 +70,6 @@ export interface DashboardLayoutProps {
     hideHeaderOnDesktop?: boolean;
 }
 
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     menuItems,
     children,
@@ -83,7 +81,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     panelSwitch,
     hideHeaderOnDesktop = false,
 }) => {
-    const isDesktop = useMediaQuery('(min-width: 768px)');
     const visibleItems = menuItems.filter(item => item.label !== 'QA: Test DB');
     const barItems = visibleItems.filter(item => !item.hideOnMobileBar);
     const overflowItems = visibleItems.filter(item => item.hideOnMobileBar);
@@ -94,8 +91,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             {/* ============ COLUMNA PRINCIPAL ============ */}
             <div className="flex-1 flex flex-col min-w-0">
 
-                {/* Barra superior */}
-                <header className={`h-14 md:h-16 shrink-0 flex items-center justify-between gap-3 px-4 md:px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40 ${hideHeaderOnDesktop ? 'md:hidden' : ''}`}>
+                {/* Barra superior.
+                    SIEMPRE oculta en móvil, la vea o no `hideHeaderOnDesktop`.
+                    Antes se veía en móvil pase lo que pase, y eso duplicaba la
+                    cabecera de cada pantalla que ya trae la suya propia
+                    (`onBack` + título — ver `CoachAthletes`, `ProfileSection`,
+                    etc.) además de recortar la altura útil de la pantalla.
+                    Las acciones que solo vivían aquí —campana, conmutador de
+                    panel, cuenta y salida— las pinta ahora el propio Home
+                    (`headerActions` de `CoachHome`/`AthleteHome`), visibles
+                    también en móvil y no solo a partir de `md`. */}
+                <header className={`h-16 shrink-0 items-center justify-between gap-3 px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40 ${hideHeaderOnDesktop ? 'hidden' : 'hidden md:flex'}`}>
                     <div className="flex items-center gap-2 min-w-0">
                         {onBack ? (
                             <button
@@ -120,7 +126,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                     <div className="flex items-center gap-1">
                         {/* Conmutador de panel: píldora fija en la cabecera, visible siempre */}
-                        {panelSwitch && (!hideHeaderOnDesktop || !isDesktop) && (
+                        {panelSwitch && !hideHeaderOnDesktop && (
                             <button
                                 onClick={panelSwitch.onClick}
                                 aria-label={panelSwitch.label}
@@ -139,11 +145,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                             En móvil se cambia desde Perfil → Este dispositivo,
                             que es donde vive la misma pieza. */}
                         <SelectorDeTema className="hidden sm:flex" />
-                        {userId && (!hideHeaderOnDesktop || !isDesktop) && <NotificationBell userId={userId} />}
+                        {userId && !hideHeaderOnDesktop && <NotificationBell userId={userId} />}
                         {/* En móvil la barra inferior ya va llena de pestañas, así
                             que la salida vive aquí arriba en vez de robarle un
                             hueco a la navegación. */}
-                        {(!hideHeaderOnDesktop || !isDesktop) && (
+                        {!hideHeaderOnDesktop && (
                             <AccountMenu onLogout={onLogout} userName={userName} items={overflowItems} />
                         )}
                     </div>
@@ -170,51 +176,57 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     // quedarse encima de "Perfil". Fuera del panel no existe, y
                     // ahí el `fallback` la deja en cero.
                     style={{ ['--tabbar-h' as string]: 'var(--tabbar-alto)' }}
-                    className="flex-1 overflow-y-auto overflow-x-hidden pb-24 md:pb-6 scrollbar-hide bg-surface-canvas"
+                    className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-6 scrollbar-hide bg-surface-canvas"
                 >
                     {children}
                 </main>
             </div>
 
             {/* ============ NAV INFERIOR (móvil) ============ */}
-            {/* Barra inferior del movil.
-                Vive pegada al borde de la pantalla, asi que necesita `pb-safe`
-                para no quedar debajo de la barra de gestos del iPhone. */}
-            <nav className="fixed bottom-0 left-0 right-0 z-sticky flex items-stretch justify-around border-t border-subtle bg-surface-canvas/95 px-1 pb-safe pt-1 backdrop-blur-md md:hidden">
-                {barItems.map((item) => (
-                    <button
-                        key={item.label}
-                        onClick={item.onClick}
-                        aria-label={item.label}
-                        aria-current={item.isActive ? 'page' : undefined}
-                        // `min-h-[52px]`: por debajo de 44px el pulgar falla mas
-                        // de lo que acierta, y esta barra se usa de pie, con una
-                        // mano y el movil moviendose.
-                        className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-card px-1 py-1.5 transition-colors duration-fast ${
- item.isActive ? 'text-brand-text' : 'text-ink-subtle'
- }`}
-                    >
-                        {item.isActive && (
-                            <m.span
-                                layoutId="bottomnav-active"
-                                className="absolute inset-x-0.5 inset-y-0 rounded-card bg-[var(--brand-quiet)]"
-                                transition={{ type: 'spring', stiffness: 520, damping: 40 }}
-                            />
-                        )}
-                        {/* El icono NO se escala al activarse. Un salto de
-                            tamano en algo que se pulsa decenas de veces al dia
-                            se lee como parpadeo; el color y el fondo ya dicen
-                            cual esta activo. */}
-                        <span className="relative shrink-0">{item.icon}</span>
-                        {/* 10px es el suelo. A los 8px que tenia, la etiqueta
-                            era una mancha gris: se leia el icono y el texto
-                            solo anadia ruido debajo. */}
-                        <span className="relative max-w-full truncate text-t-2xs font-bold leading-none tracking-tight">
-                            {item.shortLabel ?? item.label.replace('Mi ', '').replace('Mis ', '')}
-                        </span>
-                    </button>
-                ))}
-            </nav>
+            {/* Barra flotante y translúcida, separada del borde en vez de
+                pegada a él — antes era una barra a todo lo ancho contra el
+                borde inferior, con `border-t` en vez de flotar. El hueco de
+                `--tabbar-alto` (tokens.css) tiene la geometría exacta de esta
+                versión: si cambia el alto o el margen de aquí, cambia también
+                ahí, o lo que flota encima (`BackToTop`) vuelve a quedar
+                tapado por la barra. */}
+            <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-sticky md:hidden">
+                <nav className="flex items-stretch justify-around rounded-3xl border border-subtle bg-surface-canvas/80 px-2 py-1 shadow-2xl backdrop-blur-xl">
+                    {barItems.map((item) => (
+                        <button
+                            key={item.label}
+                            onClick={item.onClick}
+                            aria-label={item.label}
+                            aria-current={item.isActive ? 'page' : undefined}
+                            // `min-h-[52px]`: por debajo de 44px el pulgar falla mas
+                            // de lo que acierta, y esta barra se usa de pie, con una
+                            // mano y el movil moviendose.
+                            className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-card px-1 py-1.5 transition-colors duration-fast ${
+     item.isActive ? 'text-brand-text' : 'text-ink-subtle'
+     }`}
+                        >
+                            {item.isActive && (
+                                <m.span
+                                    layoutId="bottomnav-active"
+                                    className="absolute inset-x-0.5 inset-y-0 rounded-card bg-[var(--brand-quiet)]"
+                                    transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                                />
+                            )}
+                            {/* El icono NO se escala al activarse. Un salto de
+                                tamano en algo que se pulsa decenas de veces al dia
+                                se lee como parpadeo; el color y el fondo ya dicen
+                                cual esta activo. */}
+                            <span className="relative shrink-0">{item.icon}</span>
+                            {/* 10px es el suelo. A los 8px que tenia, la etiqueta
+                                era una mancha gris: se leia el icono y el texto
+                                solo anadia ruido debajo. */}
+                            <span className="relative max-w-full truncate text-t-2xs font-bold leading-none tracking-tight">
+                                {item.shortLabel ?? item.label.replace('Mi ', '').replace('Mis ', '')}
+                            </span>
+                        </button>
+                    ))}
+                </nav>
+            </div>
         </div>
     );
 };
