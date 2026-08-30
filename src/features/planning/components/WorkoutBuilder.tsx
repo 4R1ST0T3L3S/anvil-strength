@@ -9,7 +9,7 @@ import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
 import {
     Loader, Plus, Save, Calendar, CalendarPlus, FileText, BarChart3, Eye, EyeOff,
-    LayoutTemplate, ChevronDown, Send, Check,
+    LayoutTemplate, ChevronDown, Send, Check, GitCompareArrows,
 } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
@@ -23,6 +23,7 @@ import { ConfirmationModal } from '../../../components/modals/ConfirmationModal'
 import { VbtChartModal } from '../../coach/components/VbtChartModal';
 import { BlockOverviewPanel } from './BlockOverviewPanel';
 import { ProgressionModal } from './ProgressionModal';
+import { WeeklyComparisonModal } from './WeeklyComparisonModal';
 import { resolveStep, type ProgressionStep } from '../../../lib/planning/progression';
 import { analyzeBlock, exerciseKey } from '../../../lib/planning/blockAnalytics';
 import { maxesService, findMax, type MaxesByExercise } from '../../../services/maxesService';
@@ -109,6 +110,8 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
     const savedSnapshot = useRef<Map<string, string>>(new Map());
     // Expanded weeks state - default to collapsed
     const [expandedWeeks, setExpandedWeeks] = useState<number[]>([]);
+    /** La semana para la que se abrió "Semana anterior ↔ siguiente" (apartado 6). `null` = cerrado. */
+    const [comparisonWeek, setComparisonWeek] = useState<number | null>(null);
 
     // Nombre + visibilidad de cada semana. Solo hay entrada para las semanas
     // que el coach ha tocado; el resto son visibles y sin nombre.
@@ -2054,6 +2057,18 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         {visible ? <Eye size={16} /> : <EyeOff size={16} />}
                                     </IconAction>
 
+                                    {/* Apartado 6: semana anterior frente a esta.
+                                        Fuera del menú de "⋮" a propósito — es la
+                                        acción que pediste ampliar mucho, no una
+                                        rara vez usada como exportar o duplicar. */}
+                                    <IconAction
+                                        label="Comparar con la semana anterior"
+                                        active={false}
+                                        onClick={(e) => { e.stopPropagation(); setComparisonWeek(week); }}
+                                    >
+                                        <GitCompareArrows size={16} />
+                                    </IconAction>
+
                                     <WeekMenu
                                         weekLabel={`Semana ${index + 1}`}
                                         otherWeeks={weeks
@@ -2183,6 +2198,26 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     referenceMax={findMax(maxes, progressionFor)?.one_rm ?? null}
                     coachId={coachId}
                     onApply={(steps) => applyProgression(progressionFor, steps)}
+                />
+            )}
+
+            {/* Apartado 6: semana anterior frente a siguiente, por movimiento.
+                Montaje CONDICIONAL y no `open={comparisonWeek !== null}` con
+                el componente siempre montado: el estado interno de "semana
+                que se está programando" solo lee la prop `currentWeek` en su
+                `useState` inicial, así que reabrir para otra semana con el
+                componente ya montado se quedaría con el valor de la vez
+                anterior. Mismo patrón que `ProgressionModal`, arriba. */}
+            {blockData && comparisonWeek !== null && (
+                <WeeklyComparisonModal
+                    open
+                    onClose={() => setComparisonWeek(null)}
+                    sessions={blockData.sessions}
+                    weeks={weeks}
+                    currentWeek={comparisonWeek}
+                    declaredMaxes={declaredMaxes}
+                    libraryNames={libraryNames}
+                    onUpdateSet={updateSetField}
                 />
             )}
 

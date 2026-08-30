@@ -17,7 +17,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import type { VolumeSessionInput } from '../volume/engine';
 import type { TrainingSet } from '../../types/training';
-import { weeklyLiftSummary, weeklyLiftSets, weeksOf, MAIN_LIFTS } from './liftSummary';
+import { weeklyLiftSummary, weeklyLiftSets, weeklyExerciseSummary, weeksOf, MAIN_LIFTS } from './liftSummary';
 
 // ---------------------------------------------------------------------
 
@@ -286,5 +286,49 @@ describe('weeksOf', () => {
     test('no duplica semanas con varios días', () => {
         const sessions = [session(10, 1, null, []), session(10, 2, null, []), session(11, 1, null, [])];
         assert.deepEqual(weeksOf(sessions), [10, 11]);
+    });
+});
+
+// =====================================================================
+
+describe('weeklyExerciseSummary — un ejercicio cualquiera, no solo los básicos', () => {
+    test('agrupa por exerciseKey, no por nombre exacto', () => {
+        const s = weeklyExerciseSummary(
+            [
+                session(10, 1, 'monday', [{ name: 'Prensa', sets: [set('3x10', 200)] }]),
+                session(10, 2, 'thursday', [{ name: '  prensa  ', sets: [set('3x10', 210)] }]),
+            ],
+            10,
+            'Prensa'
+        );
+        assert.equal(s.sets, 6);
+        assert.equal(s.frequency, 2);
+    });
+
+    test('funciona igual de bien para un básico que para un accesorio', () => {
+        const s = weeklyExerciseSummary(
+            [session(10, 1, 'monday', [
+                { name: 'Sentadilla', sets: [set('4x5', 150)] },
+                { name: 'Extensión de cuádriceps', sets: [set('3x12', 60)] },
+            ])],
+            10,
+            'Extensión de cuádriceps'
+        );
+        // Solo cuenta el accesorio pedido: la sentadilla del mismo día no se
+        // mezcla — 3 series y no 7.
+        assert.equal(s.sets, 3);
+        assert.equal(s.frequency, 1);
+        assert.equal(s.days[0].topLoad, 60);
+    });
+
+    test('sin ninguna serie esa semana, todo a cero y sin días', () => {
+        const s = weeklyExerciseSummary(
+            [session(10, 1, 'monday', [{ name: 'Sentadilla', sets: [set('4x5', 150)] }])],
+            10,
+            'Press militar'
+        );
+        assert.equal(s.sets, 0);
+        assert.equal(s.frequency, 0);
+        assert.deepEqual(s.days, []);
     });
 });

@@ -244,6 +244,99 @@ export function weeklyLiftSummary(
     });
 }
 
+/** Lo mismo que `LiftWeekSummary`, para UN ejercicio cualquiera y no solo los tres básicos. */
+export interface ExerciseWeekSummary {
+    exerciseName: string;
+    sets: number;
+    reps: number;
+    tonnage: number;
+    frequency: number;
+    days: LiftDayEntry[];
+}
+
+/**
+ * Igual que `weeklyLiftSummary`, pero para UN ejercicio elegido por nombre en
+ * vez de los tres básicos de competición — E1: "cualquier ejercicio,
+ * principalmente los básicos". Comparten agregación, agrupado por
+ * `exerciseKey()` (el mismo normalizado que usa el resto del proyecto: sin
+ * acentos, en minúsculas) para que "Sentadilla" y "sentadilla " cuenten
+ * juntas.
+ *
+ * Es una función APARTE y no una generalización de `weeklyLiftSummary` a
+ * propósito: aquella está test-cubierta y en uso; tocar su cuerpo para
+ * añadir un filtro por nombre arriesgaba una regresión en el desglose de los
+ * tres básicos por una función que solo hacía falta para una vista nueva.
+ */
+export function weeklyExerciseSummary(
+    sessions: VolumeSessionInput[],
+    week: number,
+    exerciseName: string,
+    declaredMaxes: Record<string, number> = {}
+): ExerciseWeekSummary {
+    const targetKey = exerciseKey(exerciseName);
+    const weekSessions = sessions.filter(s => s.week_number === week);
+    const maxes = buildReferenceMaxes(sessions, declaredMaxes);
+    const reference = maxes.get(targetKey)?.oneRm ?? null;
+
+    let sets = 0;
+    let reps = 0;
+    let tonnage = 0;
+    const days: LiftDayEntry[] = [];
+
+    for (const session of weekSessions) {
+        const identity = dayIdentity(session as { day_number: number; day_of_week?: string | null });
+        let dSets = 0, dReps = 0, dTonnage = 0;
+        let topLoad: number | null = null;
+        let topIntensity: number | null = null;
+        const entries: { series: number; reps: number; load: number | null; intensity: number | null; openEnded: boolean }[] = [];
+
+        for (const ex of session.exercises) {
+            if (exerciseKey(ex.exercise?.name ?? '') !== targetKey) continue;
+
+            for (const set of ex.sets ?? []) {
+                const m = computeSetMetrics(set, reference);
+                if (m.series <= 0) continue;
+
+                dSets += m.series;
+                dReps += m.openEnded ? 0 : m.series * m.reps;
+                if (m.tonnage != null) dTonnage += m.tonnage;
+                if (m.load != null && (topLoad == null || m.load > topLoad)) {
+                    topLoad = m.load;
+                    topIntensity = m.intensity;
+                }
+                entries.push({ series: m.series, reps: m.reps, load: m.load, intensity: m.intensity, openEnded: m.openEnded });
+            }
+        }
+
+        if (dSets === 0) continue;
+
+        sets += dSets;
+        reps += dReps;
+        tonnage += dTonnage;
+        days.push({
+            sessionId: session.id,
+            dayLabel: identity.label,
+            order: identity.order,
+            sets: dSets,
+            reps: dReps,
+            detail: describeSets(entries),
+            topLoad,
+            topIntensity,
+        });
+    }
+
+    days.sort((a, b) => a.order - b.order);
+
+    return {
+        exerciseName,
+        sets,
+        reps,
+        tonnage: Math.round(tonnage),
+        frequency: days.length,
+        days,
+    };
+}
+
 /**
  * Series semanales por básico, sin desglose. Para el calendario y las
  * estadísticas por ámbito, donde el detalle diario no cabe.
