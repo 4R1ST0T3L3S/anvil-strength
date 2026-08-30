@@ -94,6 +94,12 @@ const TABLAS = [
       rompe: 'Los accesorios salen todos como «sin clasificar» y el reparto ACC SQ/BP/DL queda vacío. Degrada con elegancia: no impide programar.' },
     { tabla: 'athlete_rep_maxes', archivo: 'CALENDARIO_Y_MARCAS_2026-08-30.sql',
       rompe: 'La pestaña Histórico y las mejores marcas del programador no funcionan. Degrada con elegancia: avisan de que falta la migración.' },
+    { tabla: 'role_capabilities', archivo: 'PERMISOS_2026-08-30.sql',
+      rompe: 'Ajustes → Permisos (desarrollador) no puede leer ni guardar qué puede hacer cada rol.' },
+    { tabla: 'training_goals', archivo: 'OBJETIVOS_2026-08-30.sql',
+      rompe: 'El panel de objetivos por movimiento no puede crear ni leer metas.' },
+    { tabla: 'progression_templates', columna: 'movement_name', archivo: 'PROGRESIONES_2026-08-30.sql',
+      rompe: 'Guardar una progresión multi-día falla (PGRST204), y las de otros entrenadores no se ven — la RLS de lectura sigue siendo solo-propietario hasta ejecutarla.' },
 ];
 
 /**
