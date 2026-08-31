@@ -194,7 +194,7 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                             sobre la versión de Javier. Mismo NavTile denso
                             que el resto de accesos, para que quede igual de
                             espaciado. */}
-                        <div className="grid shrink-0 grid-cols-2 gap-2">
+                        <div className="grid shrink-0 grid-cols-2 gap-2 xl:h-36">
                             <NavTile
                                 icon={Users}
                                 title="Mis atletas"
