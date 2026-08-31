@@ -189,27 +189,46 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
 
                 <div className="flex flex-1 flex-col xl:flex-row gap-4 min-h-0">
                     {/* COLUMNA IZQUIERDA (Principal) */}
-                    <div className="flex flex-1 flex-col gap-2 min-w-0 overflow-hidden">
+                    <div className="flex flex-1 flex-col gap-4 min-w-0 overflow-hidden">
                         {/* NUEVO: "Mis atletas" y "Dietas", el único añadido
-                            sobre la versión de Javier. Mismo NavTile denso
-                            que el resto de accesos, para que quede igual de
-                            espaciado. */}
-                        <div className="grid shrink-0 grid-cols-2 gap-2 xl:h-36">
-                            <NavTile
-                                icon={Users}
-                                title="Mis atletas"
-                                hint="Programación y seguimiento"
-                                onClick={() => onNavigate('athletes')}
-                                customColor={{ icon: 'text-brand', chip: 'bg-brand/10', ring: 'group-hover:border-brand/50' }}
-                            />
-                            <NavTile
-                                icon={Apple}
-                                title="Dietas"
-                                hint="Planes nutricionales del equipo"
-                                onClick={() => onNavigate('diets')}
-                                customColor={{ icon: 'text-lime-500', chip: 'bg-lime-500/10', ring: 'group-hover:border-lime-500/50' }}
-                            />
-                        </div>
+                            sobre la versión de Javier.
+
+                            LLEVA ETIQUETA, y no es decoración: era el ÚNICO
+                            grupo de la pantalla sin ella, y por eso sus
+                            tarjetas empezaban 54px más arriba que las de la
+                            columna derecha (los 54px que ocupa un
+                            `SectionLabel`: 16 de margen + 22 de texto + 16).
+                            Con la etiqueta, las dos columnas arrancan sus
+                            tarjetas a la misma altura sin números mágicos —
+                            se alinean solas a cualquier alto de ventana.
+
+                            El alto va por tramos porque las tarjetas de
+                            Gestión, al ser `flex`, encogen con la ventana:
+                            240px las iguala en una pantalla de 1920x1080
+                            (miden 238) y 208px se acerca en un portátil de
+                            1440x900 (miden 184). Con un solo valor, o se
+                            quedaban cortas en la grande o desproporcionadas
+                            en la pequeña. El alto sale de la sección de abajo
+                            (Anvil Lessons), que iba sobradísima de espacio. */}
+                        <section className="flex shrink-0 flex-col">
+                            <SectionLabel icon={Users} colorClass="text-brand">Tu equipo</SectionLabel>
+                            <div className="grid grid-cols-2 gap-2 xl:h-52 2xl:h-60">
+                                <NavTile
+                                    icon={Users}
+                                    title="Mis atletas"
+                                    hint="Programación y seguimiento"
+                                    onClick={() => onNavigate('athletes')}
+                                    customColor={{ icon: 'text-brand', chip: 'bg-brand/10', ring: 'group-hover:border-brand/50' }}
+                                />
+                                <NavTile
+                                    icon={Apple}
+                                    title="Dietas"
+                                    hint="Planes nutricionales del equipo"
+                                    onClick={() => onNavigate('diets')}
+                                    customColor={{ icon: 'text-lime-500', chip: 'bg-lime-500/10', ring: 'group-hover:border-lime-500/50' }}
+                                />
+                            </div>
+                        </section>
 
                         {/* FRASE + COMPETICIÓN */}
                         <section className="flex flex-1 grid gap-2 min-h-0 lg:grid-cols-[1.6fr_1fr]">
