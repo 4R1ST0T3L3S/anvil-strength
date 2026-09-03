@@ -1,4 +1,8 @@
 {
+  "framework": "vite",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/((?!.*\\.(?:jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm|pdf|json|xml|txt|js|css|map|woff2?)$).*)",
