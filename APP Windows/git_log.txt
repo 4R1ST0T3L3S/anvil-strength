@@ -1,0 +1,23 @@
+* 82a98e2 feat: restore authentication, add Google login, and gate registration access
+* 21de5e8 feat: forced push via shadow repo (hide clothing, update login, add athlete, update countdown)
+| * 6fdc05f feat: restore authentication, add Google login, and gate registration access
+|/  
+*   80823e3 B Merge branch 'main' of https://github.com/4R1ST0T3L3S/anvil-strength the commit.
+|\  
+| * 4b94c3c hola
+| * 4c5c953 cmabio fecha
+| * c64afb4 instagram countdown page arreglado
+* | 921ee35 feat: add Vercel Analytics
+|/  
+* 694e1e7 style: Force single-line countdown on mobile
+* 8ac9437 fix: Optimize countdown for mobile responsiveness
+* b244578 feat: Implement launch countdown timer
+* 73bfd2b style: Symmetric spacing for competition hero
+* 60fc00f style: Further reduce competition page spacing
+* 9308cce style: Update Competitions page title and spacing
+* d91905f fix: Enable transparent header on Competitions page
+* bf8b4b8 update: Replace Copa España with AEP3 results
+* a3a7cc7 fix: Re-enable strict filtering (RLS fixed)
+* 568ca0c fix: Revert strict filtering (allow hidden RLS athletes)
+* 2f45fe8 fix: Strict client-side filtering for visible athletes
+* 296952f fix: Relax competition filtering and handle missing athlete data

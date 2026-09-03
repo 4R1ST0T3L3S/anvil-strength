@@ -1,0 +1,201 @@
+import { useState } from 'react';
+import { X, Save, Loader, AlertCircle } from 'lucide-react';
+import { m, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { trainingService } from '../../../services/trainingService';
+import { TrainingSession } from '../../../types/training';
+import type { Weekday } from '../../../types/training';
+
+interface CreateSessionModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    blockId: string;
+    existingSessions: TrainingSession[];
+    onSessionCreated: () => void;
+}
+
+export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions, onSessionCreated }: CreateSessionModalProps) {
+    const [name, setName] = useState('');
+    const [dayNumber, setDayNumber] = useState(1);
+    // '' = sin agendar; el día se identificará por su número.
+    const [dayOfWeek, setDayOfWeek] = useState<Weekday | ''>('');
+    const [loading, setLoading] = useState(false);
+
+    // Ajuste durante el render en vez de un efecto. Ver la nota en AuthModal.
+    // Ojo con la dependencia: antes el efecto dependía de `existingSessions`,
+    // que es un array nuevo en cada render del padre, así que se reejecutaba
+    // continuamente y BORRABA el nombre mientras se escribía. Mirando solo
+    // `isOpen`, el reinicio ocurre una vez, al abrir, que es lo que se quería.
+    const [abiertoAntes, setAbiertoAntes] = useState(isOpen);
+    if (abiertoAntes !== isOpen) {
+        setAbiertoAntes(isOpen);
+        if (isOpen) {
+            const maxDay = existingSessions.length > 0
+                ? Math.max(...existingSessions.map(s => s.day_number))
+                : 0;
+            setDayNumber(maxDay + 1);
+            setName('');
+            setDayOfWeek('');
+        }
+    }
+
+    // Helper for translation
+    const translateDay = (day: string) => {
+        const map: Record<string, string> = {
+            'monday': 'Lunes',
+            'tuesday': 'Martes',
+            'wednesday': 'Miércoles',
+            'thursday': 'Jueves',
+            'friday': 'Viernes',
+            'saturday': 'Sábado',
+            'sunday': 'Domingo'
+        };
+        return map[day] || day;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            // Validate day number uniqueness
+            const dayExists = existingSessions.some(s => s.day_number === dayNumber);
+            if (dayExists) {
+                toast.error(`El Día ${dayNumber} ya existe en este bloque.`);
+                setLoading(false);
+                return;
+            }
+
+            await trainingService.createSession({
+                block_id: blockId,
+                week_number: 1, // Default to week 1 for base sessions
+                day_number: dayNumber,
+                name: name.trim() || null, // Optional
+                day_of_week: dayOfWeek || null,
+            });
+
+            toast.success('Sesión creada correctamente');
+            onSessionCreated();
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al crear la sesión');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <m.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                />
+
+                <m.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="relative bg-surface-sunken w-full max-w-sm rounded-card border border-[var(--border-default)] shadow-2xl overflow-hidden"
+                >
+                    <div className="flex items-center justify-between p-6 border-b border-subtle bg-surface-sunken">
+                        <h2 className="text-xl font-black uppercase text-ink">Añadir Día</h2>
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+
+                        {/* Day Number */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                                Número de Día
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted font-bold">Día</span>
+                                <input
+                                    type="number"
+                            inputMode="decimal"
+                                    min="1"
+                                    max="30"
+                                    value={dayNumber}
+                                    onChange={(e) => setDayNumber(parseInt(e.target.value))}
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl pl-12 pr-4 py-3 text-ink font-bold text-lg focus:border-brand/50 transition-colors text-center"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Day of Week Selector */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                                Día de la Semana
+                            </label>
+                            <select
+                                value={dayOfWeek}
+                                onChange={(e) => setDayOfWeek(e.target.value as Weekday | '')}
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-ink font-bold focus:border-brand/50 transition-colors appearance-none cursor-pointer"
+                            >
+                                <option value="">Seleccionar día (Opcional)</option>
+                                <option value="monday">Lunes</option>
+                                <option value="tuesday">Martes</option>
+                                <option value="wednesday">Miércoles</option>
+                                <option value="thursday">Jueves</option>
+                                <option value="friday">Viernes</option>
+                                <option value="saturday">Sábado</option>
+                                <option value="sunday">Domingo</option>
+                            </select>
+                        </div>
+
+                        {/* Name Input */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                                Etiqueta (Opcional)
+                            </label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="Ej: Torso Pesado, Pierna..."
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-ink placeholder-gray-600 focus:border-brand/50 transition-colors"
+                            />
+                        </div>
+
+                        {/* Info Alert */}
+                        <div className="bg-info-quiet border border-info/20 rounded-lg p-3 flex gap-3 items-start">
+                            <AlertCircle className="text-info flex-shrink-0 mt-0.5" size={16} />
+                            <p className="text-xs text-blue-300 leading-relaxed">
+                                {dayOfWeek
+                                    ? <span>Planificado para el <strong>{translateDay(dayOfWeek)}</strong> del microciclo.</span>
+                                    : <span>Estás creando el <strong>Día {dayNumber}</strong>. Podrás añadir ejercicios a este día en el siguiente paso.</span>
+                                }
+                            </p>
+                        </div>
+
+                        {/* Actions */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 rounded-xl bg-white text-black hover:bg-gray-200 font-black uppercase tracking-wider text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {loading ? (
+                                <Loader className="animate-spin" size={18} />
+                            ) : (
+                                <>
+                                    <Save size={18} />
+                                    Guardar Sesión
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </m.div>
+            </div>
+        </AnimatePresence>
+    );
+}

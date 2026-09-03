@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# VCenter
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.vs/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Database
+server/database.db
+server/database.db-journal
+
+# Herramientas de asistente instaladas localmente. Son 2,5 MB de skills
+# vendorizadas: no forman parte del proyecto y cada actualización metería un
+# diff enorme sin relación con el código.
+.agents/
+skills-lock.json
+
+# Originales de las imagenes antes de optimizar (scripts/optimizar-imagenes.mjs).
+# No se versionan: siguen en el historial de git, que es de donde se recuperan
+# de verdad. Esta carpeta es solo la comodidad de un "--restaurar" inmediato.
+assets-originales/
+
+# Basura de la CLI de Supabase. `project-ref` SÍ se versiona: es lo que hace
+# que `supabase functions deploy` funcione recién clonado, y no es un secreto
+# (el ref va en la URL del proyecto y en el bundle del cliente).
+supabase/.temp/cli-latest
+.vercel
+.env*
+
+# Instaladores de la app de escritorio (electron-builder)
+release/

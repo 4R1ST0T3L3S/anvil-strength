@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+
+// FIRMA DE RELEASE.
+// Se lee de android/keystore.properties, que NO se versiona (ver
+// keystore.properties.example y docs/ANDROID.md). Si el fichero no está, el
+// build de release sale SIN FIRMAR: sirve para comprobar que R8 no rompe nada,
+// pero Android no lo instala y Google Play no lo acepta.
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+def tieneFirma = keystoreProps.containsKey('storeFile')
+
+// VERSIÓN. Cada subida a Play necesita un versionCode MAYOR que el anterior.
+// Se puede fijar desde fuera sin tocar este fichero:
+//   ./gradlew bundleRelease -PversionCode=3 -PversionName=1.3.1
+// (En variables locales y no en línea con el setter: Groovy leería
+// `versionCode (x).toInteger()` como `versionCode(x).toInteger()`.)
+def codigoVersion = (project.findProperty('versionCode') ?: '2').toString().toInteger()
+def nombreVersion = (project.findProperty('versionName') ?: '1.3.0').toString()
+
+android {
+    namespace = "com.anvilstrength.app"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.anvilstrength.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode codigoVersion
+        versionName nombreVersion
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        release {
+            if (tieneFirma) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (tieneFirma) {
+                signingConfig signingConfigs.release
+            }
+            // R8: encoge y ofusca el código nativo y quita recursos sin usar.
+            // Los plugins de Capacitor traen sus propias reglas de conservación.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="white">
+  <!-- Top part -->
+  <path d="M10 25 L90 25 L80 45 L20 45 Z" />
+  
+  <!-- Bottom part -->
+  <path d="M28 50 L72 50 C65 65 65 65 82 85 L62 85 C62 85 50 75 38 85 L18 85 C35 65 35 65 28 50 Z" />
+</svg>

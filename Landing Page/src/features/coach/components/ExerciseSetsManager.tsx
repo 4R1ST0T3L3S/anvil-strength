@@ -1,0 +1,278 @@
+import { useCallback, useState } from 'react';
+import { Plus, Trash2, Loader } from 'lucide-react';
+import { toast } from 'sonner';
+import { trainingService } from '../../../services/trainingService';
+import { TrainingSet } from '../../../types/training';
+import { DurationPicker } from './DurationPicker';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
+
+interface ExerciseSetsManagerProps {
+    sessionExerciseId: string;
+}
+
+// Helpers to parse and format the target_reps field specifically for grouped sets
+const getSeriesCount = (target_reps: string | null | undefined) => {
+    if (!target_reps) return '';
+    const parts = target_reps.toLowerCase().split('x');
+    if (parts.length >= 2) return parts[0].trim();
+    return ''; // Return empty not '1' to avoid stale prefix
+};
+
+const getRepsCount = (target_reps: string | null | undefined) => {
+    if (!target_reps) return '';
+    const parts = target_reps.toLowerCase().split('x');
+    if (parts.length >= 2) return parts.slice(1).join('x').trim();
+    return target_reps.trim();
+};
+
+const formatTargetReps = (series: string, reps: string) => {
+    const s = series.trim();
+    const r = reps.trim();
+    if (!s || s === '1') return r;
+    if (!r) return `${s}x`;
+    return `${s}x${r}`;
+};
+
+/**
+ * A text input that keeps its own local state while typing.
+ * Only syncs back from props when 'resetKey' changes (i.e., a different row
+ * or a save from another field). This prevents the leading-zero bug where
+ * React re-derives the displayed value mid-keystroke.
+ */
+function SetTextInput({
+    initialValue,
+    placeholder,
+    onChange,
+    onBlur,
+    resetKey,
+}: {
+    initialValue: string;
+    placeholder: string;
+    onChange: (v: string) => void;
+    onBlur: () => void;
+    resetKey: string;
+}) {
+    const [localVal, setLocalVal] = useState(initialValue);
+
+    // El valor local vuelve al de fuera solo cuando cambia la identidad de la
+    // fila (por ejemplo después de guardar). Ajuste durante el render y no un
+    // efecto: aquí se está escribiendo un número, y un render intermedio con
+    // el valor viejo se ve como que la casilla "rebota".
+    const [claveAnterior, setClaveAnterior] = useState(resetKey);
+    if (claveAnterior !== resetKey) {
+        setClaveAnterior(resetKey);
+        setLocalVal(initialValue);
+    }
+
+    return (
+        <input
+            type="text"
+            value={localVal}
+            placeholder={placeholder}
+            onChange={(e) => {
+                setLocalVal(e.target.value);
+                onChange(e.target.value);
+            }}
+            onBlur={onBlur}
+            className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-ink focus:border-brand/50 transition-colors"
+        />
+    );
+}
+
+export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerProps) {
+    const queryClient = useQueryClient();
+    const [savingId, setSavingId] = useState<string | null>(null);
+
+    // Las series prescritas del ejercicio. Este componente se monta una vez por
+    // ejercicio de la sesion, asi que un dia con seis ejercicios eran seis
+    // peticiones en cada entrada; ahora se cachean por ejercicio.
+    const { data: sets = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.seriesDeEjercicio.deEjercicio(sessionExerciseId),
+        queryFn: () => trainingService.getSetsByExercise(sessionExerciseId),
+    });
+
+    /**
+     * Escritura optimista sobre la cache, en vez de los  de antes.
+     *
+     * Es el mismo gesto —pintar el cambio antes de que conteste el servidor—
+     * pero sobre la cache compartida: si la misma lista de series esta abierta
+     * en otro sitio, se entera. Con  el cambio moria aqui dentro.
+     */
+    const setSets = useCallback((siguientes: TrainingSet[]) => {
+        queryClient.setQueryData(CLAVES.seriesDeEjercicio.deEjercicio(sessionExerciseId), siguientes);
+    }, [queryClient, sessionExerciseId]);
+
+    const handleAddSet = async () => {
+        try {
+            const lastSet = sets[sets.length - 1];
+            const newSetData = {
+                session_exercise_id: sessionExerciseId,
+                order_index: (sets.length + 1) * 10,
+                target_reps: lastSet?.target_reps || '',
+                target_rpe: lastSet?.target_rpe || '',
+                target_load: lastSet?.target_load || null,
+                rest_seconds: lastSet?.rest_seconds || null,
+                is_video_required: false
+            };
+
+            const createdSet = await trainingService.addSet(newSetData);
+            setSets([...sets, createdSet]);
+            toast.success('Fila añadida');
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al añadir fila');
+        }
+    };
+
+    const handleDeleteSet = async (setId: string) => {
+        if (!confirm('¿Borrar esta fila de prescripción?')) return;
+        try {
+            await trainingService.deleteSet(setId);
+            setSets(sets.filter(s => s.id !== setId));
+            toast.success('Fila eliminada');
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al eliminar fila');
+        }
+    };
+
+    const handleUpdateSet = (setId: string, field: keyof TrainingSet, value: string | number | null) => {
+        const setIndex = sets.findIndex(s => s.id === setId);
+        if (setIndex === -1) return;
+
+        const updatedSets = [...sets];
+        updatedSets[setIndex] = { ...updatedSets[setIndex], [field]: value };
+        setSets(updatedSets);
+    };
+
+    const handleUpdateSeries = (setId: string, currentTargetReps: string | null | undefined, newSeries: string) => {
+        const currentReps = getRepsCount(currentTargetReps);
+        handleUpdateSet(setId, 'target_reps', formatTargetReps(newSeries, currentReps));
+    };
+
+    const handleUpdateReps = (setId: string, currentTargetReps: string | null | undefined, newReps: string) => {
+        const currentSeries = getSeriesCount(currentTargetReps);
+        handleUpdateSet(setId, 'target_reps', formatTargetReps(currentSeries, newReps));
+    };
+
+    const handleBlur = async (setId: string, updates: Partial<TrainingSet>) => {
+        setSavingId(setId);
+        try {
+            await trainingService.updateSet(setId, updates);
+        } catch (error) {
+            console.error(error);
+            toast.error('Error al guardar cambios');
+        } finally {
+            setSavingId(null);
+        }
+    };
+
+    if (loading) return <div className="text-xs text-ink-subtle p-4">Cargando prescripciones...</div>;
+
+    return (
+        <div className="p-4 bg-black/10">
+            {sets.length > 0 && (
+                <div className="grid grid-cols-11 gap-2 mb-2 text-t-2xs uppercase font-bold text-ink-subtle tracking-wider text-center">
+                    <div className="col-span-2">Series</div>
+                    <div className="col-span-2">Reps</div>
+                    <div className="col-span-2">RPE</div>
+                    <div className="col-span-2">Kilos</div>
+                    <div className="col-span-2">Rest (s)</div>
+                    <div className="col-span-1"></div>
+                </div>
+            )}
+
+            <div className="space-y-1">
+                {sets.map((set) => {
+                    // Use separate local state-derived values from target_reps.
+                    // We parse once and pass to a sub-component to keep local input state.
+                    const seriesVal = getSeriesCount(set.target_reps);
+                    const repsVal   = getRepsCount(set.target_reps);
+
+                    return (
+                        <div key={set.id} className="grid grid-cols-11 gap-2 items-center text-sm">
+                            {/* Series Input — uncontrolled to avoid leading-zero bug */}
+                            <div className="col-span-2">
+                                <SetTextInput
+                                    initialValue={seriesVal}
+                                    placeholder="Ej: 3"
+                                    onChange={(v) => handleUpdateSeries(set.id, set.target_reps, v)}
+                                    onBlur={() => handleBlur(set.id, { target_reps: set.target_reps })}
+                                    resetKey={set.target_reps ?? ''}
+                                />
+                            </div>
+
+                            {/* Reps Input */}
+                            <div className="col-span-2">
+                                <SetTextInput
+                                    initialValue={repsVal}
+                                    placeholder="Ej: 12"
+                                    onChange={(v) => handleUpdateReps(set.id, set.target_reps, v)}
+                                    onBlur={() => handleBlur(set.id, { target_reps: set.target_reps })}
+                                    resetKey={set.target_reps ?? ''}
+                                />
+                            </div>
+
+                            {/* Target RPE */}
+                            <div className="col-span-2">
+                                <input
+                                    type="text"
+                                    value={set.target_rpe || ''}
+                                    onChange={(e) => handleUpdateSet(set.id, 'target_rpe', e.target.value)}
+                                    onBlur={(e) => handleBlur(set.id, { target_rpe: e.target.value })}
+                                    placeholder="@"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-ink focus:border-brand/50 transition-colors"
+                                />
+                            </div>
+
+                            {/* Target Load */}
+                            <div className="col-span-2">
+                                <input
+                                    type="number"
+                            inputMode="decimal"
+                                    value={set.target_load || ''}
+                                    onChange={(e) => handleUpdateSet(set.id, 'target_load', e.target.value)}
+                                    onBlur={(e) => handleBlur(set.id, { target_load: e.target.value ? parseFloat(e.target.value) : null })}
+                                    placeholder="kg"
+                                    className="w-full bg-surface-sunken border border-[var(--border-default)] rounded px-2 py-1 text-center text-ink focus:border-brand/50 transition-colors"
+                                />
+                            </div>
+
+                            {/* Rest */}
+                            <div className="col-span-2">
+                                <DurationPicker
+                                    value={set.rest_seconds ?? null}
+                                    onChange={(val) => handleUpdateSet(set.id, 'rest_seconds', val)}
+                                    onBlur={() => handleBlur(set.id, { rest_seconds: set.rest_seconds })}
+                                />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="col-span-1 flex justify-end gap-1">
+                                {savingId === set.id ? (
+                                    <Loader size={12} className="text-brand-text animate-spin mx-auto" />
+                                ) : (
+                                    <button
+                                        onClick={() => handleDeleteSet(set.id)}
+                                        className="p-1.5 text-ink-subtle hover:text-danger-text hover:bg-[var(--danger-quiet)] rounded transition-colors mx-auto"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            <button
+                onClick={handleAddSet}
+                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-ink hover:border-[var(--border-strong)] transition-colors"
+            >
+                <Plus size={14} />
+                Prescribir Series
+            </button>
+        </div>
+    );
+}

@@ -1,0 +1,208 @@
+On branch main
+Your branch and 'origin/main' have diverged,
+and have 1 and 2 different commits each, respectively.
+  (use "git pull" if you want to integrate the remote branch with yours)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	deleted:    .eslintrc.cjs
+	deleted:    .gemini/antigravity/brain/f2459417-1550-4736-bc05-0c394f6765d2/task (# Name clash 2026-02-16 jx2utsC #).md
+	deleted:    .gemini/antigravity/brain/f2459417-1550-4736-bc05-0c394f6765d2/task.md
+	deleted:    .gitignore
+	deleted:    .vercel/project.json
+	deleted:    .vercelignore
+	deleted:    README.md
+	deleted:    database/Calendario_AEP_2026.xlsx
+	deleted:    database/DELETE_TEST_REVIEWS_SIMPLE.sql
+	deleted:    database/MASTER_CLEANUP.sql
+	deleted:    database/MASTER_DEPLOY_V2.sql
+	deleted:    database/MASTER_DEPLOY_V3_CLEAN.sql
+	deleted:    database/add_competitions_tables.sql
+	deleted:    database/add_day_of_week_column.sql
+	deleted:    database/add_end_date_migration.sql
+	deleted:    database/add_level_to_competitions.sql
+	deleted:    database/add_variant_logic.sql
+	deleted:    database/alter_blocks_weeks.sql
+	deleted:    database/athlete_reviews_schema.sql
+	deleted:    database/calendar_rls_diagnostic.sql
+	deleted:    database/cleanup_athlete_reviews.sql
+	deleted:    database/cleanup_comments.sql
+	deleted:    database/create_training_weeks.sql
+	deleted:    database/database_schema_complete.sql
+	deleted:    database/emergency_rls_fix.sql
+	deleted:    database/feature_efort_schema.sql
+	deleted:    database/fix_competitions_schema.sql
+	deleted:    database/fix_rls_simple.sql
+	deleted:    database/fix_sessions_schema.sql
+	deleted:    database/force_delete_comments.sql
+	deleted:    database/profile_rls.sql
+	deleted:    database/push_subscriptions.sql
+	deleted:    database/reload_schema.sql
+	deleted:    database/remove_duplicates.sql
+	deleted:    index.html
+	deleted:    lint_output.txt
+	deleted:    package-lock.json
+	deleted:    package.json
+	deleted:    playwright.config.ts
+	deleted:    postcss.config.js
+	deleted:    public/Logo-ipf.png
+	deleted:    public/Logotipo - sin fondo.png
+	deleted:    public/Nutricionistas/Javier Rubio Nutricionista Foto Presentacion.jpeg
+	deleted:    public/apple-touch-icon.png
+	deleted:    public/athletes/Pau.png
+	deleted:    public/athletes/alejandro.jpg
+	deleted:    public/athletes/elsa.jpeg
+	deleted:    public/athletes/gema.jpeg
+	deleted:    public/athletes/josep.png
+	deleted:    public/athletes/marc.png
+	deleted:    public/athletes/marina.jpg
+	deleted:    public/athletes/pauca.jpg
+	deleted:    public/athletes/santi.jpg
+	deleted:    public/athletes/villena.png
+	deleted:    public/coaches/7D70E0F9-1BC6-4CE4-AEAA-85FCE74FC23A.jpeg
+	deleted:    public/coaches/estelles.png
+	deleted:    public/filosofia-competition.jpg
+	deleted:    public/javier-bou.jpeg
+	deleted:    public/javier-estelles-logo.png
+	deleted:    public/javier-estelles-new.jpg
+	deleted:    public/logo-aep.png
+	deleted:    public/logo-black.svg
+	deleted:    public/logo-dark-removebg-preview.png
+	deleted:    public/logo-dark.png
+	deleted:    public/logo-light.jpg
+	deleted:    public/logo.svg
+	deleted:    public/normativa_equipo.pdf
+	deleted:    public/portadaanvil2.jpg
+	deleted:    public/pwa-192x192.png
+	deleted:    public/pwa-512x512.png
+	deleted:    public/pwa-maskable-512x512.png
+	deleted:    public/ropa/podium-tee.webp
+	deleted:    public/steezy_sin_fonfo.png
+	deleted:    public/sw.js
+	deleted:    src/App.tsx
+	deleted:    src/components/layout/DashboardLayout.tsx
+	deleted:    src/components/layout/PublicFooter.tsx
+	deleted:    src/components/layout/PublicHeader.tsx
+	deleted:    src/components/modals/AthleteDetailsModal.tsx
+	deleted:    src/components/modals/CoachDetailsModal.tsx
+	deleted:    src/components/modals/ConfirmationModal.tsx
+	deleted:    src/components/modals/PDFModal.tsx
+	deleted:    src/components/modals/TeamModal.tsx
+	deleted:    src/components/pwa/ReloadPrompt.tsx
+	deleted:    src/components/skeletons/DashboardSkeleton.tsx
+	deleted:    src/components/ui/AnvilMascot.tsx
+	deleted:    src/components/ui/ErrorFallback.tsx
+	deleted:    src/components/ui/LoadingSpinner.tsx
+	deleted:    src/components/ui/NotificationBell.tsx
+	deleted:    src/components/ui/Skeleton.tsx
+	deleted:    src/components/ui/SmartAuthButton.tsx
+	deleted:    src/components/ui/StarRating.tsx
+	deleted:    src/context/AuthContext.tsx
+	deleted:    src/data/athletes.ts
+	deleted:    src/data/coaches.ts
+	deleted:    src/features/arena/hooks/ArenaPage.tsx
+	deleted:    src/features/arena/pages/ArenaView.tsx
+	deleted:    src/features/arena/pages/Predictions.tsx
+	deleted:    src/features/arena/services/arenaService.ts
+	deleted:    src/features/athlete/components/AnvilRanking.tsx
+	deleted:    src/features/athlete/components/AthleteCompetitionsView.tsx
+	deleted:    src/features/athlete/components/AthleteHome.tsx
+	deleted:    src/features/athlete/components/AthleteNutritionView.tsx
+	deleted:    src/features/athlete/components/OneRMCalculator.tsx
+	deleted:    src/features/athlete/components/PlateCalculator.tsx
+	deleted:    src/features/athlete/components/WarmUpCalculator.tsx
+	deleted:    src/features/athlete/pages/UserDashboard.tsx
+	deleted:    src/features/auth/components/AuthModal.tsx
+	deleted:    src/features/auth/pages/PendingApprovalPage.tsx
+	deleted:    src/features/coach/components/AddExerciseModal.tsx
+	deleted:    src/features/coach/components/AssignCompetitionModal.tsx
+	deleted:    src/features/coach/components/BlockDetailView.tsx
+	deleted:    src/features/coach/components/CalendarSection.tsx
+	deleted:    src/features/coach/components/CalendarWeekPicker.tsx
+	deleted:    src/features/coach/components/CoachAthleteDetails.tsx
+	deleted:    src/features/coach/components/CoachAthletes.tsx
+	deleted:    src/features/coach/components/CoachHome.tsx
+	deleted:    src/features/coach/components/CoachTeamSchedule.tsx
+	deleted:    src/features/coach/components/CreateBlockModal.tsx
+	deleted:    src/features/coach/components/CreateSessionModal.tsx
+	deleted:    src/features/coach/components/DurationPicker.tsx
+	deleted:    src/features/coach/components/EditBlockModal.tsx
+	deleted:    src/features/coach/components/ExerciseSetsManager.tsx
+	deleted:    src/features/coach/components/SessionDetailView.tsx
+	deleted:    src/features/coach/components/TrainingBlockList.tsx
+	deleted:    src/features/coach/pages/CoachDashboard.tsx
+	deleted:    src/features/landing/components/BenefitsSection.tsx
+	deleted:    src/features/landing/pages/CompetitionsPage.tsx
+	deleted:    src/features/landing/pages/CountdownPage.tsx
+	deleted:    src/features/landing/pages/LandingPage.tsx
+	deleted:    src/features/landing/pages/RopaPage.tsx
+	deleted:    src/features/planning/components/WorkoutBuilder.tsx
+	deleted:    src/features/profile/components/ProfileSection.tsx
+	deleted:    src/features/reviews/components/ReviewForm.tsx
+	deleted:    src/features/reviews/components/ReviewsSection.tsx
+	deleted:    src/features/training/components/RestTimerOverlay.tsx
+	deleted:    src/features/training/components/WorkoutLogger.tsx
+	deleted:    src/hooks/usePushNotifications.ts
+	deleted:    src/hooks/useSwipeNavigation.ts
+	deleted:    src/hooks/useUser.ts
+	deleted:    src/index.css
+	deleted:    src/lib/dailyQuotes.ts
+	deleted:    src/lib/glPoints.ts
+	deleted:    src/lib/supabase.ts
+	deleted:    src/lib/utils.ts
+	deleted:    src/main.tsx
+	deleted:    src/routes/AppRoutes.tsx
+	deleted:    src/services/aepService.ts
+	deleted:    src/services/competitionsService.ts
+	deleted:    src/services/reviewsService.ts
+	deleted:    src/services/trainingService.ts
+	deleted:    src/types/database.ts
+	deleted:    src/types/nutrition.ts
+	deleted:    src/types/training.ts
+	deleted:    src/utils/dateUtils.ts
+	deleted:    src/utils/userDisplayName.ts
+	deleted:    src/utils/vbtCalculator.ts
+	deleted:    src/vite-env.d.ts
+	deleted:    supabase/FIX_EXERCISE_RLS.sql
+	deleted:    supabase/MASTER_SCHEMA_V3.sql
+	deleted:    supabase/MIGRATE_RPE_REST.sql
+	deleted:    supabase/functions/send-push/index.ts
+	deleted:    supabase/notifications.sql
+	deleted:    supabase/pr_notification_trigger.sql
+	deleted:    tailwind.config.js
+	deleted:    tests/app.spec.ts
+	deleted:    tests/auth-persistence.spec.ts
+	deleted:    tests/full-audit.spec.ts
+	deleted:    tests/pre-deploy.spec.ts
+	deleted:    tests/production-ready.spec.ts
+	deleted:    tsconfig.json
+	deleted:    tsconfig.node.json
+	deleted:    vercel.json
+	deleted:    vite.config.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.eslintrc.cjs
+	.gemini/
+	.gitignore
+	.vercel/
+	.vercelignore
+	README.md
+	database/
+	git_status.txt
+	index.html
+	lint_output.txt
+	package-lock.json
+	package.json
+	playwright.config.ts
+	postcss.config.js
+	public/
+	src/
+	supabase/
+	tailwind.config.js
+	tests/
+	tsconfig.json
+	tsconfig.node.json
+	vercel.json
+	vite.config.ts
+

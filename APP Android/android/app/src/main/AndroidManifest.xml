@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- allowBackup="false": la copia de seguridad de Google se llevaría el
+         localStorage del WebView, y ahí vive el token de sesión de Supabase.
+         Un token restaurado en otro móvil es una sesión abierta que nadie
+         pidió. -->
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- VUELTA DEL LOGIN CON GOOGLE.
+                 Supabase devuelve al navegador a
+                 com.anvilstrength.app://auth/callback#access_token=...
+                 y este filtro es lo que hace que Android abra la app con esa
+                 URL en vez de decir "no hay ninguna aplicación para esto".
+                 La recoge `appUrlOpen` en src/hooks/useNativeFeatures.ts.
+                 El esquema tiene que coincidir con `custom_url_scheme` en
+                 res/values/strings.xml y con ESQUEMA_APP en src/lib/plataforma.ts. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="@string/custom_url_scheme" />
+            </intent-filter>
+
+            <!-- APP LINKS: enlaces de la web que abren la app directamente.
+                 Solo se verifican (y se abren sin preguntar) si la web publica
+                 /.well-known/assetlinks.json con la huella del certificado de
+                 firma — ver docs/ANDROID.md. Sin ese fichero no rompen nada:
+                 el enlace abre el navegador, como siempre. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="anvilstrength.es" />
+                <data android:host="www.anvilstrength.es" />
+                <data android:pathPrefix="/auth/callback" />
+                <data android:pathPrefix="/invitacion/" />
+                <data android:pathPrefix="/reclamar/" />
+            </intent-filter>
+
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
+            <receiver android:name=".CountdownWidgetProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_countdown_info" />
+        </receiver>
+            <receiver android:name=".LessonsWidgetProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_lessons_info" />
+        </receiver>
+    </application>
+
+    <!-- Permissions -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Camera permission to allow taking videos directly from the file picker -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Storage permissions for picking files on various Android versions -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+    <!-- Modern storage permissions for Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+</manifest>

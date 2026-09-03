@@ -1,0 +1,107 @@
+{
+  "name": "anvil-strength-desktop",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "preview": "vite preview",
+    "db:check": "node scripts/db-check.mjs",
+    "test": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs --test \"src/**/*.test.ts\"",
+    "test:e2e": "playwright test",
+    "verify": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/ajuste-previo-y-1rm.mjs && node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/acuerdo-encoder.mjs && node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/calibracion-completa.mjs && node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/verify/escala-manual.mjs && node scripts/verify/deteccion-disco.mjs",
+    "update-types": "npx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types/supabase.ts",
+    "desktop:run": "vite build && electron .",
+    "desktop:build": "vite build && electron-builder --win --x64"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.93.1",
+    "@tanstack/react-query": "^5.90.20",
+    "@techstark/opencv-js": "^4.12.0-release.1",
+    "@typebot.io/react": "^0.9.19",
+    "@vercel/analytics": "^1.6.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "framer-motion": "^12.34.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^0.563.0",
+    "papaparse": "^5.5.3",
+    "pdfjs-dist": "5.4.296",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-error-boundary": "^6.1.0",
+    "react-pdf": "^10.3.0",
+    "react-router-dom": "^7.13.0",
+    "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^25.1.0",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-router-dom": "^5.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.23",
+    "electron": "^41.10.7",
+    "electron-builder": "^26.15.3",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.2.0"
+  },
+  "description": "Anvil Strength — app de escritorio para Windows",
+  "author": "Anvil Strength",
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "es.anvilstrength.desktop",
+    "productName": "Anvil Strength",
+    "directories": {
+      "output": "release",
+      "buildResources": "electron/build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/main.cjs",
+      "electron/preload.cjs",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "electron/build/icon.png",
+      "artifactName": "AnvilStrength-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Anvil Strength",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

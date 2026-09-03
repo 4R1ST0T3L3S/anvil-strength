@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- ICONOS.
+       El SVG manda donde se puede: el yunque se pinta blanco sobre pestaña
+       oscura y negro sobre pestaña clara, que es algo que un .ico no sabe
+       hacer porque no admite consulta de medios.
+
+       `favicon.ico` es el respaldo para lo que no entiende SVG (marcadores,
+       algunos clientes de escritorio, resultados de búsqueda). Va DESPUÉS a
+       propósito: el navegador se queda con la última declaración que sepa
+       usar, así que quien entienda SVG usa el SVG. Y lleva fondo rojo, no
+       transparente — un yunque blanco sin fondo sobre una pestaña clara es
+       un icono invisible.
+
+       Los cinco los genera `scripts/generate-icons.mjs` a partir de
+       logo.svg, derivando el rojo de `--brand`. Antes los cuatro PNG eran
+       literalmente el mismo fichero de 180x180 con cuatro nombres. -->
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <link rel="apple-touch-icon" href="/logo.svg" />
+
+  <!-- `viewport-fit=cover` es lo que ACTIVA las variables `env(safe-area-inset-*)`.
+       Sin él valen cero siempre, y todas las reservas de espacio que hace la app
+       para la barra de gestos del iPhone —la barra de pestañas del panel, el pie
+       del registro de series, las hojas inferiores— no reservan nada: los
+       controles quedan justo debajo del indicador de inicio, donde el sistema se
+       come el toque. Se nota sobre todo con la app instalada como PWA, que es
+       donde no hay barra del navegador que disimule. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- `dark light` y en ese orden: el primero es el que se usa cuando no hay
+       preferencia. Esto es lo que hace que el navegador pinte en el tono
+       correcto lo que NO controla el CSS —barras de scroll, selectores de
+       fecha, el fondo detrás del rebote elástico— desde el primer frame.
+       El script de abajo lo afina al tema real. -->
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- EL DESTELLO, QUE HAY QUE MATAR ANTES DE QUE REACT EXISTA.
+       =================================================================
+       Si el tema se decidiera en React, la secuencia sería: se pinta la
+       página con el tema por defecto, se descarga el bundle, arranca React,
+       lee `localStorage` y CAMBIA EL TEMA A LA VISTA. Quien tiene modo claro
+       ve un fogonazo negro de medio segundo cada vez que abre la app, y quien
+       tiene oscuro ve uno blanco, que es peor.
+
+       Este script corre SÍNCRONO en el `<head>`, antes de que el navegador
+       pinte un solo pixel, así que no hay dos estados: solo el bueno.
+
+       Va escrito a mano y no importado de `src/lib/tema.ts` a propósito: un
+       `<script type="module">` es diferido por definición y llegaría tarde,
+       que es justo el problema que viene a resolver. La duplicación es de
+       cinco líneas y está anotada en los dos sitios.
+
+       El `try` no sobra: `localStorage` lanza en modo privado de algunos
+       navegadores, y un error aquí dejaría la página EN BLANCO — este script
+       corre antes que nada. -->
+  <script>
+    (function () {
+      try {
+        /* EL IDIOMA, ANTES QUE NADA TAMBIÉN.
+           `<html lang>` no es decorativo: decide con qué voz lee un lector de
+           pantalla —"Save" leído con fonética española no se entiende— y le
+           dice al navegador con qué reglas partir las palabras. Si se pusiera
+           desde React, el primer pintado saldría con el idioma equivocado.
+           La lógica es la misma que `detectarIdioma()` en src/lib/i18n. */
+        var idioma = localStorage.getItem('anvil_idioma');
+        if (idioma !== 'es' && idioma !== 'en') {
+          idioma = 'es';
+          var lenguas = navigator.languages || [navigator.language];
+          for (var i = 0; i < lenguas.length; i++) {
+            var base = String(lenguas[i]).toLowerCase().split('-')[0];
+            if (base === 'es') { idioma = 'es'; break; }
+            if (base === 'en') { idioma = 'en'; break; }
+          }
+        }
+        document.documentElement.setAttribute('lang', idioma);
+
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.style.colorScheme = 'dark';
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
+  <!-- TIPOGRAFÍA — Plus Jakarta Sans.
+       El CSS declaraba `font-family: Inter` pero Inter no se cargaba en ningún
+       sitio: toda la app estaba cayendo a la fuente del sistema, que es la
+       razón de que se viera genérica. Plus Jakarta Sans tiene el asta más
+       gruesa y una 'a' de doble piso con más carácter, aguanta el peso 800 de
+       los titulares en mayúsculas que usa la app y trae cifras tabulares, que
+       son obligatorias aquí (ver `font-variant-numeric` en index.css).
+       `display=swap` para que el texto se lea desde el primer frame. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Anton — la fuente DISPLAY de la portada.
+       `font-bebas` en tailwind.config.js apuntaba a la misma variable que
+       `font-sans`: no había ninguna tipografía secundaria en el proyecto, así
+       que cualquier intento de dar un contraste tipográfico al titular caía
+       en Plus Jakarta otra vez. Anton es condensada y de trazo muy grueso —
+       el contraste de eje que le falta a un texto puesto solo en mayúsculas
+       y peso 800 de la misma fuente de cuerpo. Un solo peso (400, que en
+       Anton ya es el más negro que existe) porque es de uso exclusivo para
+       titulares cortos. -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
+  />
+
+  <!-- SEO Primary -->
+  <title>Anvil Strength | Club de Powerlifting Online en España — Gratis</title>
+  <meta name="description" content="Anvil Strength es el club de powerlifting digital de España. Gratis, sin sede física, afiliado AEP e IPF. Entrenadores de élite, app exclusiva y comunidad real. ¿Empezamos?" />
+  <!-- `keywords` lo ignoran todos los buscadores desde hace años. Se mantiene
+       porque no hace daño y documenta la intención de búsqueda del sitio. -->
+  <meta name="keywords" content="powerlifting españa, club powerlifting online, powerlifting principiantes, federarse powerlifting AEP, club digital powerlifting, anvil strength" />
+  <!-- Sin max-image-preview:large, Google recorta la miniatura de la portada a
+       un cuadrado pequeño en resultados y en Discover. -->
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta name="author" content="Anvil Strength" />
+  <link rel="canonical" href="https://anvilstrength.es/" />
+  <!-- AQUÍ NO HAY UN `hreflang="en"`, Y ES DELIBERADO.
+       La aplicación habla inglés desde F8, así que la tentación es declararlo.
+       Pero el idioma vive en `localStorage`, no en la ruta: no existe una URL
+       inglesa distinta a la que apuntar. Un `hreflang="en"` hacia esta misma
+       dirección le promete a Google una versión que no puede indexar por
+       separado, y lo que consigue es que trate las dos como duplicadas.
+
+       Decisión de Marc, 24/08/2026: el idioma se queda en el dispositivo. La
+       alternativa era `/en/competiciones` con rutas propias —lo único que da
+       SEO real en inglés— y sale cara: toca el enrutador, los enlaces internos
+       y el canonical. Si algún día se hace, la etiqueta vuelve aquí, y
+       entonces sí apuntando a otro sitio. -->
+  <link rel="alternate" hreflang="es-ES" href="https://anvilstrength.es/" />
+  <link rel="alternate" hreflang="x-default" href="https://anvilstrength.es/" />
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://anvilstrength.es/" />
+  <meta property="og:title" content="Anvil Strength | Club de Powerlifting Online en España" />
+  <meta property="og:description" content="Club digital de powerlifting, 100% gratuito, afiliado AEP + IPF. Entrenadores de élite, app exclusiva y comunidad real. El powerlifting es para todos." />
+  <meta property="og:image" content="https://anvilstrength.es/portadaanvil2.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Atletas de Anvil Strength entrenando powerlifting" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:site_name" content="Anvil Strength" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Anvil Strength | Club de Powerlifting Online en España" />
+  <meta name="twitter:description" content="Club digital de powerlifting, 100% gratuito, afiliado AEP + IPF. El powerlifting es para todos." />
+  <meta name="twitter:image" content="https://anvilstrength.es/portadaanvil2.jpg" />
+  <meta name="twitter:image:alt" content="Atletas de Anvil Strength entrenando powerlifting" />
+
+  <!-- Schema.org: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SportsOrganization",
+    "name": "Anvil Strength",
+    "url": "https://anvilstrength.es",
+    "logo": "https://anvilstrength.es/logo.svg",
+    "description": "Club de powerlifting digital afiliado a la AEP e IPF. Gratuito, para toda España.",
+    "sport": "Powerlifting",
+    "email": "anvilstrengthclub@gmail.com",
+    "sameAs": [
+      "https://www.instagram.com/anvilstrength_"
+    ],
+    "memberOf": [
+      {
+        "@type": "SportsOrganization",
+        "name": "Asociación Española de Powerlifting",
+        "url": "https://powerliftingspain.es/"
+      },
+      {
+        "@type": "SportsOrganization",
+        "name": "International Powerlifting Federation",
+        "url": "https://www.powerlifting.sport/"
+      }
+    ]
+  }
+  </script>
+
+  <!-- El esquema de FAQPage NO va aquí: en una SPA, un bloque en index.html se
+       declara en todas las rutas, y /competiciones o las páginas legales
+       estarían afirmando contener unas preguntas frecuentes que no tienen.
+       Lo genera FAQSection.tsx a partir del mismo array que pinta. -->
+
+  <!-- Preload / Prefetch -->
+  <!-- La portada es el elemento LCP. `fetchpriority` la saca de la cola de
+       prioridad baja en la que el navegador mete las imágenes por defecto. -->
+  <link rel="preload" href="/portadaanvil2.jpg" as="image" fetchpriority="high" />
+  <!-- La primera consulta a Supabase sale en cuanto monta la app; abrir la
+       conexión TLS en paralelo con el JS ahorra el ida y vuelta del handshake. -->
+  <link rel="preconnect" href="https://ihcyuoczbmjxfinxvzra.supabase.co" crossorigin />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

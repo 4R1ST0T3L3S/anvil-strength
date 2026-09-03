@@ -1,0 +1,64 @@
+import React from 'react';
+import { X } from 'lucide-react';
+import { Athlete } from '../../data/athletes';
+
+interface TeamModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  athletes: Athlete[];
+  onAthleteClick?: (athlete: Athlete) => void;
+}
+
+export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes, onAthleteClick }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <div className="relative bg-surface-sunken w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-line shadow-2xl">
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-surface-sunken/95 backdrop-blur border-b border-line p-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-ink">
+              Nuestro Equipo
+            </h2>
+            <div className="w-12 h-1 bg-brand mt-2" />
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-ink-muted hover:text-ink transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Grid */}
+        <div className="p-6 md:p-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {athletes.map((athlete) => (
+              <div
+                key={athlete.id}
+                className="group relative aspect-[4/5] bg-surface-sunken overflow-hidden rounded-xl cursor-pointer shadow-lg"
+                onClick={() => onAthleteClick?.(athlete)}
+              >
+                <img
+                  src={athlete.image}
+                  alt={athlete.name}
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-colors duration-slow"
+                />
+                <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-slow">
+                  <p className="text-ink font-bold uppercase tracking-wider text-lg">{athlete.name}</p>
+                  <p className="text-xs text-brand-text font-bold uppercase tracking-widest">{athlete.category}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fondo de la ventana nativa: lo que se ve detrás de la barra de estado
+         y de la de gestos mientras Capacitor mantiene el WebView apartado de
+         ellas. Es el mismo negro que la variable surface-canvas de la app. -->
+    <color name="fondo_app">#151515</color>
+</resources>
