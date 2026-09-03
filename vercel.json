@@ -1,7 +1,10 @@
 {
+  "installCommand": "cd \"Landing Page\" && npm ci",
+  "buildCommand": "cd \"Landing Page\" && npm run build",
+  "outputDirectory": "Landing Page/dist",
   "rewrites": [
     {
-      "source": "/((?!.*\\.(?:jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm|pdf|json|xml|txt|js|css|map|woff2?)$).*)",
+      "source": "/((?!.*\\.(?:jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm|pdf|apk|exe|json|xml|txt|js|css|map|woff2?)$).*)",
       "destination": "/index.html"
     }
   ],
@@ -13,14 +16,26 @@
           "key": "Strict-Transport-Security",
           "value": "max-age=63072000; includeSubDomains; preload"
         },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
         {
           "key": "Permissions-Policy",
           "value": "camera=(self), microphone=(self), geolocation=(), interest-cohort=()"
         },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
         {
           "key": "Content-Security-Policy-Report-Only",
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
@@ -30,12 +45,46 @@
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/downloads/(.*)\\.apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment"
+        }
+      ]
+    },
+    {
+      "source": "/downloads/(.*)\\.exe",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/octet-stream"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment"
+        }
       ]
     },
     {
       "source": "/push-sw.js",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
     }
   ]
 }
