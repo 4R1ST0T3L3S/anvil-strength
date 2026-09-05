@@ -1,0 +1,263 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+
+import { AccountStatus, Profile, Role } from '../types/database';
+
+export interface UserProfile {
+    id: string;
+    email?: string;
+    full_name: string; // Changed from 'name' to match database schema
+    nickname?: string;
+    avatar_url?: string; // Changed from 'profile_image' to match database schema
+    /**
+     * El rol de MAYOR ALCANCE de los que tiene. Es un REFLEJO de `roles`,
+     * mantenido por un disparador (database/ROLES_MULTIPLES.sql).
+     *
+     * Se conserva porque lo leen 39 políticas RLS y bastantes pantallas.
+     * Para decidir permisos usa `puede()` de src/lib/roles.ts: preguntando
+     * por `role` a secas, un atleta que además entrena parece solo
+     * entrenador y se queda sin su propio panel.
+     */
+    role: Role;
+    /**
+     * Todos sus roles. La verdad, frente a `role`, que es el reflejo.
+     * Opcional porque la migración es manual: entre el despliegue y el SQL,
+     * `rolesDe()` lo reconstruye desde `role` e `is_developer`.
+     */
+    roles?: string[];
+    has_access: boolean;
+    gender?: 'male' | 'female';
+    age_category?: string;
+    weight_category?: string;
+    biography?: string;
+    squat_pr?: number;
+    bench_pr?: number;
+    deadlift_pr?: number;
+    user_metadata?: Record<string, unknown>;
+    brand_color?: string | null;
+    logo_url?: string | null;
+    /** Aspecto de sus PDF de entrenamiento. Tipado real en src/lib/export/pdfTheme.ts. */
+    pdf_theme?: Record<string, unknown> | null;
+    coach_id?: string | null;
+    coach_name?: string | null;
+    coach_brand_color?: string | null;
+    coach_logo_url?: string | null;
+    nutritionist_id?: string | null;
+    nutritionist_name?: string | null;
+    /**
+     * En qué punto está la cuenta: creada por el coach, invitada o activa.
+     * Ver src/services/athletesService.ts.
+     */
+    account_status?: AccountStatus;
+    max_sushi_pieces?: number;
+    is_developer?: boolean;
+    // Backward compatibility aliases (deprecated)
+    name?: string; // Alias for full_name
+    profile_image?: string; // Alias for avatar_url
+}
+
+/**
+ * CACHÉ DE ARRANQUE EN FRÍO — portado de main (ba2d6f4b, 30 ago 2026).
+ *
+ * `useQuery` ya evita pedir el usuario dos veces en la misma sesión de
+ * pestaña (`staleTime`), pero CADA recarga completa —F5, cerrar y volver a
+ * abrir— empieza de cero: pantalla en blanco hasta que `getSession()` y
+ * el `SELECT` a `profiles` contestan, aunque sea el MISMO usuario que hace
+ * un minuto.
+ *
+ * Con esto, `initialData` (más abajo) le da a React Query el último
+ * perfil conocido desde el primer render, así que el panel aparece de
+ * inmediato con esos datos mientras `fetchUser` los refresca por detrás.
+ * Es una copia LOCAL a este dispositivo — nunca sustituye la sesión real:
+ * si `getSession()` dice que no hay sesión, la caché se borra igual que si
+ * nunca hubiera existido.
+ */
+const CACHE_KEY = 'anvil_user_cache';
+
+const fetchUser = async (): Promise<UserProfile | null> => {
+    // 1. Get Session with Strict Timeout
+    try {
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null }; error: Error }>((_, reject) =>
+            setTimeout(() => reject(new Error('Session check timeout')), 4000)
+        );
+
+        // Safe Promise.race typing
+        const result = await Promise.race([sessionPromise, timeoutPromise]);
+
+        // Type guard or check structure
+        const session = 'data' in result ? result.data.session : null;
+        const sessionError = 'error' in result ? result.error : null;
+
+        if (sessionError || !session?.user) {
+            localStorage.removeItem(CACHE_KEY);
+            return null;
+        }
+
+        const userId = session.user.id;
+        const meta = session.user.user_metadata;
+        const sessionRole = (meta?.role as Role) || 'athlete';
+
+        const optimisticUser: UserProfile = {
+            id: userId,
+            email: session.user.email,
+            full_name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+            nickname: meta?.nickname,
+            avatar_url: meta?.avatar_url,
+            role: sessionRole,
+            has_access: false, // Default to false until profile loads
+            is_developer: false,
+            gender: meta?.gender,
+            user_metadata: meta,
+            // Backward compatibility aliases
+            name: meta?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+            profile_image: meta?.avatar_url
+        };
+
+        // Lo que de verdad se devuelve y se cachea. Arranca en el optimista
+        // (de la sesión, sin ir a la base) y el bloque de abajo lo sustituye
+        // SI el perfil llega a tiempo — igual que antes, pero con un nombre
+        // propio para poder guardarlo en caché desde un único punto de
+        // salida en vez de desde dos `return` distintos.
+        let resultUser = optimisticUser;
+
+        // 2. Fetch Profile (Background Update)
+        try {
+            const dbTimeout = new Promise<null>((_, reject) =>
+                setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+            );
+
+            const dbFetch = async (): Promise<Profile | null> => {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (error && error.code === 'PGRST116') {
+                    // Create if missing
+                    const { data: newProfile } = await supabase
+                        .from('profiles')
+                        // `role` y `has_access` los fija el servidor (DEFAULT
+                        // + columnas revocadas). Enviarlos desde aquí haría
+                        // fallar el INSERT por permisos de columna.
+                        .insert([{
+                            id: userId,
+                            full_name: optimisticUser.name,
+                            nickname: optimisticUser.nickname || 'Atleta'
+                        }])
+                        .select()
+                        .single();
+                    return newProfile as Profile;
+                }
+                return data as Profile;
+            };
+
+            const profile = await Promise.race([dbFetch(), dbTimeout]);
+
+            if (profile) {
+                // Fetch coach name if athlete has a coach assigned
+                // Fetch coach name and branding if athlete has a coach assigned
+                let coachName: string | null = null;
+                let coachBrandColor: string | null = null;
+                let coachLogoUrl: string | null = null;
+                if (profile.coach_id) {
+                    const { data: coachData } = await supabase
+                        .from('profiles')
+                        .select('full_name, brand_color, logo_url')
+                        .eq('id', profile.coach_id)
+                        .single();
+                    coachName = coachData?.full_name ?? null;
+                    coachBrandColor = coachData?.brand_color ?? null;
+                    coachLogoUrl = coachData?.logo_url ?? null;
+                }
+
+                // Fetch nutritionist name if athlete has a nutritionist assigned
+                let nutritionistName: string | null = null;
+                if (profile.nutritionist_id) {
+                    const { data: nutData } = await supabase
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', profile.nutritionist_id)
+                        .single();
+                    nutritionistName = nutData?.full_name ?? null;
+                }
+
+                resultUser = {
+                    ...optimisticUser,
+                    full_name: profile.full_name || optimisticUser.full_name,
+                    nickname: profile.nickname || optimisticUser.nickname,
+                    role: profile.role || optimisticUser.role,
+                    // Sin la migración aplicada la columna no viene, y aquí
+                    // se deja en `undefined` a propósito: `rolesDe()` lo
+                    // toma como "todavía no hay array" y lo reconstruye
+                    // desde `role`. Poner `[]` diría "no tiene ningún rol",
+                    // que es lo contrario y dejaría a todos sin panel.
+                    roles: (profile as { roles?: string[] | null }).roles ?? undefined,
+                    has_access: profile.has_access ?? false,
+                    avatar_url: profile.avatar_url || optimisticUser.avatar_url,
+                    gender: profile.gender || optimisticUser.gender,
+                    age_category: profile.age_category,
+                    weight_category: profile.weight_category,
+                    biography: profile.biography,
+                    squat_pr: profile.squat_pr,
+                    bench_pr: profile.bench_pr,
+                    deadlift_pr: profile.deadlift_pr,
+                    brand_color: profile.brand_color,
+                    logo_url: profile.logo_url,
+                    pdf_theme: (profile as { pdf_theme?: Record<string, unknown> | null }).pdf_theme ?? null,
+                    coach_id: profile.coach_id ?? null,
+                    coach_name: coachName,
+                    coach_brand_color: coachBrandColor,
+                    coach_logo_url: coachLogoUrl,
+                    nutritionist_id: profile.nutritionist_id ?? null,
+                    nutritionist_name: nutritionistName,
+                    // Las cuentas anteriores a la migración no traen columna:
+                    // son cuentas que se registraron solas, o sea, activas.
+                    account_status: profile.account_status ?? 'active',
+                    max_sushi_pieces: profile.max_sushi_pieces || 0,
+                    is_developer: profile.is_developer ?? false,
+                    // Backward compatibility
+                    name: profile.full_name || optimisticUser.full_name,
+                    profile_image: profile.avatar_url || optimisticUser.avatar_url
+                };
+            }
+        } catch {
+            console.warn('Profile sync failed, using session data');
+        }
+
+        localStorage.setItem(CACHE_KEY, JSON.stringify(resultUser));
+        return resultUser;
+
+    } catch (error) {
+        // If it's a timeout or specific error, rethrow so useQuery sees it as an error
+        if (error instanceof Error && error.message.includes('timeout')) {
+            throw error;
+        }
+        // If it's a generic auth error (e.g., weird Supabase state), returning null is safer (logs out)
+        // But for network issues, we want Error state, not Logout state.
+        // Let's rely on standard error handling for everything except explicit "No Session".
+        return null;
+    }
+};
+
+export const useUser = () => {
+    return useQuery({
+        queryKey: ['user'],
+        queryFn: fetchUser,
+        staleTime: 1000 * 60, // 1 minute
+        retry: 2,
+        placeholderData: (previousData) => previousData, // Keep user during refetch
+        // Arranque en frío: mientras `fetchUser` resuelve, pinta ya el
+        // último usuario conocido en este dispositivo (ver CACHE_KEY arriba).
+        initialData: () => {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) return JSON.parse(cached);
+            } catch (e) {
+                console.warn('Failed to parse cached user', e);
+            }
+            return undefined;
+        },
+    });
+};

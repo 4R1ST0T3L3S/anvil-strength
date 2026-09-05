@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- ICONOS.
+       El SVG manda donde se puede: el yunque se pinta blanco sobre pestaña
+       oscura y negro sobre pestaña clara, que es algo que un .ico no sabe
+       hacer porque no admite consulta de medios.
+
+       `favicon.ico` es el respaldo para lo que no entiende SVG (marcadores,
+       algunos clientes de escritorio, resultados de búsqueda). Va DESPUÉS a
+       propósito: el navegador se queda con la última declaración que sepa
+       usar, así que quien entienda SVG usa el SVG. Y lleva fondo rojo, no
+       transparente — un yunque blanco sin fondo sobre una pestaña clara es
+       un icono invisible.
+
+       Los genera `scripts/generate-icons.mjs` a partir de logo.svg,
+       derivando el rojo de `--brand`. -->
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- La app es SOLO oscura. `color-scheme: dark` hace que el navegador pinte
+       en ese tono lo que NO controla el CSS —barras de scroll, selectores de
+       fecha— desde el primer frame. -->
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- EL IDIOMA, ANTES DE QUE REACT EXISTA.
+       `<html lang>` no es decorativo: decide con qué voz lee un lector de
+       pantalla y con qué reglas parte el navegador las palabras. Si se
+       pusiera desde React, el primer pintado saldría con el idioma
+       equivocado. Este script corre SÍNCRONO en el `<head>`. La lógica es la
+       misma que `detectarIdioma()` en src/lib/i18n.
+
+       El `try` no sobra: `localStorage` lanza en modo privado de algunos
+       navegadores, y un error aquí dejaría la página EN BLANCO. -->
+  <script>
+    (function () {
+      try {
+        var idioma = localStorage.getItem('anvil_idioma');
+        if (idioma !== 'es' && idioma !== 'en') {
+          idioma = 'es';
+          var lenguas = navigator.languages || [navigator.language];
+          for (var i = 0; i < lenguas.length; i++) {
+            var base = String(lenguas[i]).toLowerCase().split('-')[0];
+            if (base === 'es') { idioma = 'es'; break; }
+            if (base === 'en') { idioma = 'en'; break; }
+          }
+        }
+        document.documentElement.setAttribute('lang', idioma);
+      } catch (e) { /* sin localStorage: se queda el lang="es" del HTML */ }
+    })();
+  </script>
+
+  <!-- TIPOGRAFÍA — Plus Jakarta Sans.
+       El CSS declaraba `font-family: Inter` pero Inter no se cargaba en ningún
+       sitio: toda la app estaba cayendo a la fuente del sistema, que es la
+       razón de que se viera genérica. Plus Jakarta Sans tiene el asta más
+       gruesa y una 'a' de doble piso con más carácter, aguanta el peso 800 de
+       los titulares en mayúsculas que usa la app y trae cifras tabulares, que
+       son obligatorias aquí (ver `font-variant-numeric` en index.css).
+       `display=swap` para que el texto se lea desde el primer frame. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Anton — la fuente DISPLAY de la portada.
+       `font-bebas` en tailwind.config.js apuntaba a la misma variable que
+       `font-sans`: no había ninguna tipografía secundaria en el proyecto, así
+       que cualquier intento de dar un contraste tipográfico al titular caía
+       en Plus Jakarta otra vez. Anton es condensada y de trazo muy grueso —
+       el contraste de eje que le falta a un texto puesto solo en mayúsculas
+       y peso 800 de la misma fuente de cuerpo. Un solo peso (400, que en
+       Anton ya es el más negro que existe) porque es de uso exclusivo para
+       titulares cortos. -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
+  />
+
+  <title>Anvil Strength</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- La primera consulta a Supabase sale en cuanto monta la app; abrir la
+       conexión TLS en paralelo con el JS ahorra el ida y vuelta del handshake. -->
+  <link rel="preconnect" href="https://ihcyuoczbmjxfinxvzra.supabase.co" crossorigin />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

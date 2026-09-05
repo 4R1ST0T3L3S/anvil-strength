@@ -1,0 +1,181 @@
+﻿
+> anvil-strength@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives
+
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx
+   4:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-refresh/only-export-components
+  29:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-refresh/only-export-components
+  83:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:83:14
+  81 |     return (
+  82 |         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">
+> 83 |             <TimeBlock value={d} label="D├¡as" />
+     |              ^^^^^^^^^ This component is created during render
+  84 |             <TimeBlock value={h} label="Horas" />
+  85 |             <TimeBlock value={m} label="Mins" />
+  86 |             <TimeBlock value={s} label="Segs" />
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:72:23
+  70 |     const s = Math.floor((timeLeft / 1000) % 60);
+  71 |
+> 72 |     const TimeBlock = ({ value, label }: { value: number, label: string }) => (
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |         <div className="flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm rounded-lg py-2 px-1 w-full border border-white/10 aspect-square max-h-[80px]">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |                 {value.toString().padStart(2, '0')}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |             </span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 77 |             <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 78 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 79 |     );
+     | ^^^^^^ The component is created during render here
+  80 |
+  81 |     return (
+  82 |         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">    react-hooks/static-components
+  84:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:84:14
+  82 |         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">
+  83 |             <TimeBlock value={d} label="D├¡as" />
+> 84 |             <TimeBlock value={h} label="Horas" />
+     |              ^^^^^^^^^ This component is created during render
+  85 |             <TimeBlock value={m} label="Mins" />
+  86 |             <TimeBlock value={s} label="Segs" />
+  87 |         </div>
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:72:23
+  70 |     const s = Math.floor((timeLeft / 1000) % 60);
+  71 |
+> 72 |     const TimeBlock = ({ value, label }: { value: number, label: string }) => (
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |         <div className="flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm rounded-lg py-2 px-1 w-full border border-white/10 aspect-square max-h-[80px]">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |                 {value.toString().padStart(2, '0')}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |             </span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 77 |             <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 78 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 79 |     );
+     | ^^^^^^ The component is created during render here
+  80 |
+  81 |     return (
+  82 |         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">  react-hooks/static-components
+  85:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:85:14
+  83 |             <TimeBlock value={d} label="D├¡as" />
+  84 |             <TimeBlock value={h} label="Horas" />
+> 85 |             <TimeBlock value={m} label="Mins" />
+     |              ^^^^^^^^^ This component is created during render
+  86 |             <TimeBlock value={s} label="Segs" />
+  87 |         </div>
+  88 |     );
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:72:23
+  70 |     const s = Math.floor((timeLeft / 1000) % 60);
+  71 |
+> 72 |     const TimeBlock = ({ value, label }: { value: number, label: string }) => (
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |         <div className="flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm rounded-lg py-2 px-1 w-full border border-white/10 aspect-square max-h-[80px]">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |                 {value.toString().padStart(2, '0')}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |             </span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 77 |             <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 78 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 79 |     );
+     | ^^^^^^ The component is created during render here
+  80 |
+  81 |     return (
+  82 |         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">                                                                                         react-hooks/static-components
+  86:14  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:86:14
+  84 |             <TimeBlock value={h} label="Horas" />
+  85 |             <TimeBlock value={m} label="Mins" />
+> 86 |             <TimeBlock value={s} label="Segs" />
+     |              ^^^^^^^^^ This component is created during render
+  87 |         </div>
+  88 |     );
+  89 | }
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\components\ui\CompetitionCountdown.tsx:72:23
+  70 |     const s = Math.floor((timeLeft / 1000) % 60);
+  71 |
+> 72 |     const TimeBlock = ({ value, label }: { value: number, label: string }) => (
+     |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |         <div className="flex flex-col items-center justify-center bg-black/25 backdrop-blur-sm rounded-lg py-2 px-1 w-full border border-white/10 aspect-square max-h-[80px]">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |                 {value.toString().padStart(2, '0')}
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |             </span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 77 |             <span className="text-[8px] sm:text-[9px] lg:text-[10px] uppercase font-bold tracking-widest text-white/70 mt-1">{label}</span>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 78 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 79 |     );
+     | ^^^^^^ The component is created during render here
+  80 |
+  81 |     return (
+  82 |         <div className="grid grid-cols-4 gap-1.5 md:gap-2 mt-4 w-full max-w-[400px] mx-auto">                                                                                                                                        react-hooks/static-components
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\features\admin\pages\AdminDashboard.tsx
+   43:8   warning  React Hook useEffect has a missing dependency: 'loadUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  102:18  warning  'err' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+  115:18  warning  'err' is defined but never used                                                                               @typescript-eslint/no-unused-vars
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\features\admin\services\adminService.ts
+  58:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\features\coach\components\CoachVbtTab.tsx
+   25:8   warning  React Hook useEffect has a missing dependency: 'loadVbtExercises'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  110:49  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  159:51  warning  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\features\coach\components\VbtChartModal.tsx
+  55:79  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\features\coach\components\VbtCompareModal.tsx
+   35:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   39:52  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   66:73  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  171:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\features\training\components\WorkoutLogger.tsx
+  320:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\jotab\Documents\Proyectos\Anvil Strength\anvil-strength\src\services\trainingService.ts
+  240:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Ô£û 22 problems (4 errors, 18 warnings)
+

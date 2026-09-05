@@ -1,0 +1,153 @@
+import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CLAVES } from '../../../lib/queryKeys';
+import { SkeletonList } from '../../../components/ui/Skeleton';
+import { ArrowLeft, Plus, MoreVertical, Activity } from 'lucide-react';
+import { trainingService } from '../../../services/trainingService';
+import { TrainingSession } from '../../../types/training';
+import { AddExerciseModal } from './AddExerciseModal';
+import { ExerciseSetsManager } from './ExerciseSetsManager';
+import { VbtChartModal } from './VbtChartModal';
+
+interface SessionDetailViewProps {
+    session: TrainingSession;
+    onBack: () => void;
+}
+
+export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
+    const queryClient = useQueryClient();
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [vbtModalConfig, setVbtModalConfig] = useState<{ isOpen: boolean; url: string; exerciseName: string }>({ isOpen: false, url: '', exerciseName: '' });
+
+    // Los ejercicios de la sesion, por consulta. Ver la nota gemela en
+    // BlockDetailView: el patron anterior repintaba dos veces cada entrada.
+    const { data: exercises = [], isPending: loading } = useQuery({
+        queryKey: CLAVES.ejerciciosDeSesion.deSesion(session.id),
+        queryFn: () => trainingService.getSessionExercises(session.id),
+    });
+
+    const fetchExercises = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.ejerciciosDeSesion.deSesion(session.id) });
+    }, [queryClient, session.id]);
+
+    return (
+        <div className="flex flex-col h-full bg-surface-sunken">
+            {/* Header */}
+            <div className="border-b border-subtle bg-surface-sunken p-6">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="p-2 -ml-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-ink transition-colors"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <span className="bg-white/10 text-ink text-xs font-black px-2 py-1 rounded uppercase tracking-wider">
+                                Día {session.day_number}
+                            </span>
+                        </div>
+                        <h2 className="text-xl font-black uppercase text-ink tracking-tight leading-none mt-1">
+                            {session.name || `Entrenamiento Día ${session.day_number}`}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold text-ink uppercase tracking-tight">Ejercicios</h3>
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors"
+                    >
+                        <Plus size={16} />
+                        Añadir Ejercicio
+                    </button>
+                </div>
+
+                {/* Esqueleto con la forma de la lista, no un giro centrado:
+                    asi el hueco esta reservado y nada salta al llegar. */}
+                {loading ? (
+                    <SkeletonList filas={3} conAvatar={false} />
+                ) : exercises.length === 0 ? (
+                    <div className="text-center py-12 border-2 border-dashed border-subtle rounded-xl">
+                        <p className="text-ink-subtle mb-4">No hay ejercicios para este día.</p>
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="text-brand-text font-bold uppercase tracking-wider text-sm hover:underline"
+                        >
+                            Buscar en librería
+                        </button>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {exercises.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="bg-surface-sunken border border-subtle rounded-xl overflow-hidden"
+                            >
+                                {/* Exercise Header */}
+                                <div className="p-4 flex items-center justify-between bg-black/20">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 text-xs font-bold text-ink-muted">
+                                            {index + 1}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-ink text-lg leading-tight">
+                                                {item.exercise?.name || 'Ejercicio desconocido'}
+                                            </h4>
+                                            {item.exercise?.muscle_group && (
+                                                <span className="text-xs text-ink-subtle uppercase tracking-widest font-bold">
+                                                    {item.exercise.muscle_group}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2">
+                                        {item.vbt_file_url && (
+                                            <button 
+                                                onClick={() => setVbtModalConfig({ isOpen: true, url: item.vbt_file_url!, exerciseName: item.exercise?.name || 'VBT' })}
+                                                className="bg-success-quiet text-success border border-success/20 px-2 py-1.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors uppercase tracking-wider"
+                                                title="Ver Gráfica VBT"
+                                            >
+                                                <Activity size={14} />
+                                                VBT
+                                            </button>
+                                        )}
+                                        <button className="text-ink-subtle hover:text-ink transition-colors p-2">
+                                            <MoreVertical size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Sets Manager */}
+                                <div className="border-t border-subtle">
+                                    <ExerciseSetsManager sessionExerciseId={item.id} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <AddExerciseModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                sessionId={session.id}
+                currentExerciseCount={exercises.length}
+                onExerciseAdded={fetchExercises}
+            />
+            
+            <VbtChartModal
+                isOpen={vbtModalConfig.isOpen}
+                onClose={() => setVbtModalConfig(prev => ({ ...prev, isOpen: false }))}
+                vbtFileUrl={vbtModalConfig.url}
+                exerciseName={vbtModalConfig.exerciseName}
+            />
+        </div>
+    );
+}

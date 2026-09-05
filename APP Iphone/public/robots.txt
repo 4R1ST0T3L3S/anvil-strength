@@ -1,0 +1,4 @@
+# Subdominio de la app (PWA para iPhone). La web pública e indexable es
+# https://anvilstrength.es — esta no se indexa para no duplicarla.
+User-agent: *
+Disallow: /

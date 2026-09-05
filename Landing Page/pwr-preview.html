@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>PWR · banco de pruebas del informe de serie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
+</head>
+
+<body>
+  <!--
+    BANCO DE PRUEBAS, NO PARTE DE LA APLICACIÓN.
+
+    El informe de serie solo aparece tras analizar un vídeo de verdad, lo que
+    hace imposible comprobar que pinta bien sin grabar, subir y esperar. Esta
+    página lo monta con repeticiones SINTÉTICAS generadas por el mismo motor
+    —perfil de velocidad conocido, integrado a posición, con ruido de
+    seguimiento— así que además de verse, se ve con datos correctos.
+
+    No entra en el bundle: Vite solo empaqueta las páginas listadas en
+    `build.rollupOptions.input`, y esta no está. Se sirve en desarrollo
+    (/pwr-preview.html) y no existe en producción.
+  -->
+  <div id="root"></div>
+  <script type="module" src="/src/dev/pwrPreview.tsx"></script>
+</body>
+
+</html>

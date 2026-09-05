@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Anvil Strength</string>
+    <string name="title_activity_main">Anvil Strength</string>
+    <string name="package_name">com.anvilstrength.app</string>
+    <string name="custom_url_scheme">com.anvilstrength.app</string>
+</resources>

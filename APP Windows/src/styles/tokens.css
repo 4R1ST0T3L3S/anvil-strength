@@ -1,0 +1,293 @@
+/* =====================================================================
+   ANVIL STRENGTH — TOKENS DE DISEÑO
+   =====================================================================
+   Fuente única de verdad para color, elevación, radios, movimiento y
+   capas. Todo lo demás (tailwind.config.js, primitivas de src/components/ui)
+   lee de aquí.
+
+   REGLA: ningún componente nuevo escribe un hex a mano. Si un valor no
+   está aquí, o falta un token o el componente se está saliendo del sistema.
+
+   UN SOLO TEMA: OSCURO.
+
+   La aplicación de escritorio se ha diseñado únicamente en oscuro. El
+   atleta consulta la sesión en el gimnasio, a menudo con poca luz, y el
+   entrenador programa bloques por la noche; una pantalla en blanco
+   deslumbra. No hay `data-theme` ni bloque claro: este `:root` es todo.
+
+   Color en OKLCH: interpolación perceptualmente uniforme, así que aclarar
+   u oscurecer un tono no lo desatura ni lo vira, cosa que sí ocurre en HSL.
+   ===================================================================== */
+
+:root {
+  /* -------------------------------------------------------------------
+     1. SUPERFICIES — rampa de 4 pasos, no 7 grises casi iguales
+     -------------------------------------------------------------------
+     Cada paso es un nivel de elevación real. Si dudas entre dos, el
+     componente probablemente no necesita elevarse.                      */
+
+  --surface-sunken: oklch(0.145 0 0); /* ~#0a0a0a — pozos, code, letterbox */
+  --surface-canvas: oklch(0.226 0 0); /* ~#1c1c1c — fondo de la aplicación */
+  --surface-raised: oklch(0.265 0 0); /* ~#252525 — tarjetas, paneles, modales */
+  --surface-overlay: oklch(0.31 0 0); /* ~#303030 — menús, popovers, tooltips */
+
+  /* Bordes: transparencias del blanco, no grises opacos. Así funcionan
+     igual sobre cualquier paso de la rampa.                             */
+  --border-subtle: oklch(1 0 0 / 0.06); /* separadores internos */
+  --border-default: oklch(1 0 0 / 0.1); /* contorno de tarjeta / input */
+  --border-strong: oklch(1 0 0 / 0.18); /* hover, elemento enfocado */
+
+  /* -------------------------------------------------------------------
+     2. TINTA — medida contra la superficie donde el texto ESTÁ, no contra
+        la del fondo de la aplicación
+     -------------------------------------------------------------------
+     La versión anterior de este bloque medía todo contra --surface-canvas
+     y anunciaba que --ink-subtle daba 4,7:1, "suelo absoluto para texto
+     legible". Es verdad, y es engañoso: casi ningún texto vive sobre el
+     lienzo. Vive dentro de TARJETAS (--surface-raised) y de MENÚS
+     (--surface-overlay), que son más claros, y ahí el mismo gris daba
+     4,21:1 y 3,63:1 — o sea que no llegaba a AA justo en los dos sitios
+     donde de verdad se lee.
+
+     Medido en el navegador pintando el color y leyendo el pixel, que es la
+     única forma de convertir oklch sin inventarse la fórmula:
+
+                    lienzo   tarjeta   menú     ¿AA en los tres?
+       ink            18,9     16,6    13,7     sí
+       ink-muted       7,7      6,9     5,9     sí
+       ink-subtle      5,9      5,3     4,6     sí  <- suelo real
+       ink-faint       2,6      2,3     2,0     NO, y por eso no es texto
+
+     Los dos de en medio suben (0,72 -> 0,76 y 0,62 -> 0,68) para que el
+     suelo se cumpla en las tres superficies y no solo en una. Se mueven los
+     DOS y no solo el de abajo: subir únicamente `subtle` lo dejaría pegado
+     a `muted` y la rampa se quedaría en dos escalones útiles.            */
+
+  --ink: oklch(0.985 0 0); /* titulares, cifras, texto principal */
+  --ink-muted: oklch(0.76 0 0); /* texto secundario, labels */
+  --ink-subtle: oklch(0.68 0 0); /* metadatos, placeholders */
+  --ink-faint: oklch(0.48 0 0); /* NUNCA texto — solo adorno */
+  --ink-inverse: oklch(0.145 0 0); /* texto sobre superficie roja o blanca */
+
+  /* -------------------------------------------------------------------
+     3. ROJO DE MARCA — una sola rampa
+     -------------------------------------------------------------------
+     Estrategia de color: contenida. El rojo marca acción primaria,
+     selección actual y estado de error. Nunca decora.
+     Si algo es rojo y no se puede pulsar ni indica un estado, sobra.    */
+
+  /* EL ROJO BAJÓ DE 0.62 A 0.58 EL 24/08/2026, Y ES UN CAMBIO DE IDENTIDAD.
+     Motivo, medido pintando el color en un canvas y leyendo el píxel: con
+     0.62 el texto blanco encima daba 3,86:1 y AA pide 4,5. No era una
+     esquina rara: es el botón primario, el control más usado de la app.
+
+     Y no había salida sin mover el rojo. A 0.62 el color cae en una ZONA
+     MUERTA donde no pasa AA ni con texto blanco (3,86) ni con texto negro
+     (3,87) — está justo en medio. Con 0.58 el blanco encima da 4,57.
+
+     Lo que se ve: de rgb(234,60,63) a rgb(219,43,51). Sigue siendo el mismo
+     rojo, un punto más profundo. */
+  --brand: oklch(0.58 0.21 25); /* acción primaria, selección */
+
+  /* EL HOVER YA NO ACLARA: SATURA. Y esto merece explicación, porque aquí
+     ponía justo lo contrario.
+
+     El argumento anterior era bueno: sobre fondo oscuro, aclarar acerca el
+     elemento al usuario y oscurecer lo aleja. El problema es que con la base
+     ya en el suelo del contraste, aclarar lo gasta — a 0.60 el blanco encima
+     cae a 4,21 y el botón deja de cumplir EN HOVER, que es exactamente
+     cuando el usuario lo está mirando.
+
+     Misma luminosidad y más croma: el rojo se vuelve más encendido, se lee
+     igual de "caliente" al pasar por encima, y el contraste incluso sube a
+     4,60. El efecto de acercarse ya lo da el canto físico del botón, que se
+     hunde al pulsar (ver --press-depth). */
+  --brand-hover: oklch(0.58 0.23 25);
+  --brand-active: oklch(0.52 0.2 25); /* pulsado: aquí SÍ oscurece, y el
+                                          blanco encima sube a 5,84 */
+  --brand-quiet: oklch(0.58 0.21 25 / 0.14); /* fondo de chip / badge */
+  --brand-line: oklch(0.58 0.21 25 / 0.35); /* borde de estado activo */
+  --brand-ink: oklch(0.985 0 0); /* texto sobre --brand */
+
+  /* EL ROJO NO PUEDE HACER SUS DOS TRABAJOS CON UNA SOLA LUMINOSIDAD, y por
+     eso son dos tokens y no uno.
+
+     Como RELLENO necesita ser oscuro para que el texto blanco de encima se
+     lea: de ahí que `--brand` esté en 0.58. Como TEXTO sobre el lienzo
+     necesita justo lo contrario, ser claro: a 0.58 daría 3,58:1 sobre el
+     lienzo oscuro, ilegible.
+
+     Así que `--brand` pinta rellenos y `--brand-text` es el mismo rojo más
+     claro para cuando el rojo ES el texto o el icono: 4,95:1 sobre el lienzo
+     y 4,45:1 sobre la tarjeta. En el tema claro se invierte y baja a 0.52,
+     porque ahí lo que hay debajo es blanco. */
+  --brand-text: oklch(0.66 0.21 25);
+
+  /* -------------------------------------------------------------------
+     4. ESTADOS SEMÁNTICOS
+     -------------------------------------------------------------------
+     Deliberadamente apagados respecto al rojo de marca: en una app de
+     fuerza el rojo ya está ocupado por la identidad, así que el error
+     se distingue por contexto e icono, no por competir en saturación.  */
+
+  --success: oklch(0.72 0.17 150);
+  --success-quiet: oklch(0.72 0.17 150 / 0.14);
+  --warning: oklch(0.78 0.16 78);
+  --warning-quiet: oklch(0.78 0.16 78 / 0.14);
+  --danger: oklch(0.65 0.2 25);
+  /* Igual que la marca, en hover SE ACLARA: sobre fondo oscuro, oscurecer
+     aleja el elemento del usuario en vez de acercarlo. Existe para que un
+     botón de borrar no tenga que tomar prestado el hover del rojo de marca
+     — guardar y borrar no pueden reaccionar igual al pasar por encima. */
+  --danger-hover: oklch(0.71 0.2 25);
+  --danger-quiet: oklch(0.65 0.2 25 / 0.14);
+  /* Mismo desdoble que la marca, y por el mismo motivo medido: --danger a
+     0.65 da 4,31:1 como TEXTO sobre una tarjeta, por debajo de AA. Como
+     RELLENO con texto blanco encima, en cambio, aclararlo empeoraría. Así
+     que el relleno se queda donde está y el texto sube. */
+  --danger-text: oklch(0.7 0.2 25);
+  --info: oklch(0.7 0.13 240);
+  --info-quiet: oklch(0.7 0.13 240 / 0.14);
+
+  /* Escala de intensidad para el RPE / esfuerzo percibido: es el dato más
+     leído de la app y merece codificación propia, verde -> ámbar -> rojo. */
+  --effort-low: oklch(0.72 0.17 150);
+  --effort-mid: oklch(0.78 0.16 78);
+  --effort-high: oklch(0.7 0.19 45);
+  --effort-max: oklch(0.62 0.21 25);
+
+  /* -------------------------------------------------------------------
+     4b. TIPOGRAFÍA — una sola familia
+     -------------------------------------------------------------------
+     El registro de producto no necesita pareja display + cuerpo: hay
+     muchos niveles de texto y el contraste exagerado entre ellos genera
+     ruido. Una familia en varios pesos hace el mismo trabajo sin él.
+
+     Plus Jakarta Sans y no Inter: el asta es más gruesa, la 'a' de doble
+     piso tiene más carácter y aguanta el peso 800 en mayúsculas que la
+     app usa en cada titular. Inter, además, NUNCA llegó a cargarse — se
+     declaraba en el CSS pero no había ni @font-face ni enlace, así que
+     todo caía a la fuente del sistema. De ahí que se viera genérica.
+
+     El peso base es 500, no 400: sobre fondo oscuro el texto adelgaza
+     ópticamente, y a 400 esta familia se queda fina de más.
+
+     En claro pasa lo contrario —el texto engorda— así que 500 va justo al
+     límite de parecer seminegrita. Se deja igual en los dos temas: bajar a
+     400 solo en claro haría que el texto CAMBIE DE PESO al cambiar de tema,
+     y eso se nota mucho más que medio punto de grosor.                   */
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+
+  /* Anton — la única fuente DISPLAY del proyecto. De uso exclusivo en
+     titulares cortos de la web pública (el lema del hero, los nombres de
+     sección en mayúsculas de tarjetas de atleta/entrenador): es condensada
+     y de trazo muy grueso a propósito, para que aporte el contraste de eje
+     que Plus Jakarta en peso 800 no puede dar por sí sola. Nunca para
+     párrafos: a ese peso, un bloque de texto seguido se vuelve ilegible. */
+  --font-display: "Anton", "Plus Jakarta Sans", system-ui, sans-serif;
+
+  /* -------------------------------------------------------------------
+     5. FOCO — visible siempre, también sobre superficie roja
+     ------------------------------------------------------------------- */
+  --focus-ring: oklch(0.985 0 0);
+  --focus-offset: var(--surface-canvas);
+
+  /* -------------------------------------------------------------------
+     6. RADIOS — 5 pasos
+     -------------------------------------------------------------------
+     Las tarjetas topan en 16px. Los radios de 32-40px que había sueltos
+     (rounded-[2rem], rounded-[2.5rem]) leen como plantilla, no como marca. */
+  --radius-xs: 4px; /* badges, chips diminutos */
+  --radius-sm: 8px; /* inputs, botones */
+  --radius-md: 12px; /* tarjetas, paneles */
+  --radius-lg: 16px; /* modales, hojas — techo para contenedores */
+  --radius-pill: 999px; /* avatares, toggles, tags */
+
+  /* -------------------------------------------------------------------
+     7. ELEVACIÓN
+     -------------------------------------------------------------------
+     Sombra O borde, nunca los dos como decoración a la vez. La sombra en
+     tema oscuro se apoya en oscurecer, no en difuminar: los desenfoques
+     grandes sobre negro no se ven y solo cuestan pintado.               */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 4px 8px oklch(0 0 0 / 0.45);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.55);
+
+  /* -------------------------------------------------------------------
+     8. MOVIMIENTO
+     -------------------------------------------------------------------
+     Curva única de salida exponencial. Sin rebote ni elástico: esto es
+     una herramienta de trabajo, no una animación de marca.
+     Rango 120-320ms — el registro de producto vive entre 150 y 250ms.   */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* out-quint, la de por defecto */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* solo para bucles */
+
+  --dur-instant: 90ms; /* feedback de pulsación */
+  --dur-fast: 150ms; /* hover, focus, toggles */
+  --dur-base: 220ms; /* entrada de paneles, acordeones */
+  --dur-slow: 320ms; /* modales, transición de ruta */
+
+  /* -------------------------------------------------------------------
+     9. CAPAS — escala semántica, nunca z-index: 9999
+     ------------------------------------------------------------------- */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-backdrop: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+
+  /* -------------------------------------------------------------------
+     10. PORTADA — registro de MARCA, no de producto
+     -------------------------------------------------------------------
+     Todo lo de arriba sirve a la aplicación: tema oscuro y color contenido,
+     porque ahí el diseño sirve a una tarea. La web pública es otro registro:
+     ahí el diseño ES el producto y su trabajo es que alguien que no nos
+     conoce decida quedarse.
+
+     Por eso la portada sí puede DRENAR color — folds enteros de rojo o de
+     blanco — y por eso esos valores viven aquí abajo, separados y con
+     nombre propio (`--fold-*`), en vez de contaminar la rampa de la app.
+
+     El claro es un blanco NEUTRO (croma 0), no un crema. El crema tibio es
+     el fondo por defecto de medio internet generado en 2026; un blanco
+     limpio al lado del rojo de marca dice mucho más y no se parece a nada.  */
+
+  /* 0.95 y no 0.97: a pantalla completa y de noche —que es cuando se mira
+     esta web— el blanco puro deslumbra al venir de un fold negro. Sigue
+     leyéndose como blanco, pero el salto entre secciones ya no da un fogonazo. */
+  --fold-light: oklch(0.95 0 0); /* fondo de los folds claros */
+  --fold-light-raised: oklch(1 0 0); /* tarjetas sobre el fold claro */
+  --fold-light-ink: oklch(0.22 0 0); /* 15.8:1 — titulares */
+  --fold-light-ink-muted: oklch(0.44 0 0); /* 7.4:1 — cuerpo */
+  --fold-light-line: oklch(0.22 0 0 / 0.12);
+
+  /* Botón táctil: el canto inferior sólido que se hunde al pulsar. Es una
+     sombra CON forma, no un desenfoque decorativo — cuenta hacia qué lado
+     está la luz y hace que el botón parezca un objeto físico. */
+  --press-depth: 4px;
+  --press-edge-brand: oklch(0.42 0.17 25); /* acompaña al rojo nuevo */
+  --press-edge-light: oklch(0.78 0 0);
+  --press-edge-dark: oklch(0.1 0 0);
+}
+
+/* Quien desactiva animaciones en su sistema recibe transiciones
+   instantáneas, no animaciones "un poco más rápidas". */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 1ms;
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+  }
+}
+
+/* Un único anillo de foco para toda la app. Sustituye a los
+   `focus:outline-none` sueltos, que dejaban la app inutilizable con teclado. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}

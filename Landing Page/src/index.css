@@ -1,0 +1,266 @@
+@import "./styles/tokens.css";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  font-weight: 500;
+  color-scheme: dark;
+  color: var(--ink);
+  background-color: var(--surface-canvas);
+
+  /* Cifras de igual anchura en toda la app: sin esto, un peso que pasa de
+     97,5 a 100 desplaza la fila entera al re-renderizar. */
+  font-variant-numeric: tabular-nums;
+}
+
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overscroll-behavior: none;
+  background-color: var(--surface-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Titulares con líneas equilibradas */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* Prosa larga sin líneas huérfanas (descripciones de bloque, notas). */
+p {
+  text-wrap: pretty;
+}
+
+/* =====================================================================
+   CAPA DE RESPUESTA
+   =====================================================================
+   Estas seis reglas hacen más por la sensación de velocidad de la app que
+   cualquier animación que se pueda añadir a una pantalla concreta, porque
+   se aplican a TODA la interfaz sin tocar un solo componente.
+
+   La velocidad que percibe una persona no es la que mide un cronómetro:
+   es cuánto tarda la interfaz en ACUSAR RECIBO de lo que ha hecho. Una app
+   que responde en 16ms y termina en 400 se siente más rápida que una que
+   no dice nada y termina en 200.                                        */
+
+/* 1. EL RETARDO DE 300ms DEL MÓVIL.
+      El navegador espera ese tercio de segundo por si el toque era la
+      primera mitad de un doble toque para hacer zoom. En una app donde el
+      atleta marca doce series seguidas, son casi cuatro segundos de espera
+      pura repartidos en toda la sesión, y la sensación es de app lenta sin
+      que nada vaya lento de verdad. */
+button,
+a,
+[role="button"],
+label,
+summary,
+input[type="checkbox"],
+input[type="radio"] {
+  touch-action: manipulation;
+}
+
+/* 2. EL DESTELLO AZUL AL TOCAR.
+      El rectángulo gris-azulado que pinta el sistema encima de lo que se
+      pulsa tapa el feedback propio de la app y delata que esto es una web
+      metida en un móvil. Se quita y se sustituye por el punto 3. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 3. FEEDBACK DE PULSACIÓN, EN TODA LA APP.
+      Hundir el control 3 centésimas confirma que la interfaz ha oído el
+      toque, y ocurre en el mismo frame: no depende de la red ni de que
+      termine nada. Es lo que hace que una acción lenta no se sienta rota.
+
+      3% y no más: por debajo de 0.95 el control parece que se cae hacia
+      dentro. `data-no-press` es la salida para los pocos casos donde el
+      botón ES el contenedor de la pantalla y encogerlo se vería raro. */
+button:not(:disabled):not([data-no-press]):active,
+[role="button"]:not([data-no-press]):active {
+  transform: scale(0.97);
+}
+
+button:not([data-no-press]),
+[role="button"]:not([data-no-press]) {
+  transition: transform var(--dur-instant) var(--ease-out);
+}
+
+/* 4. EL ZOOM DE iOS AL ESCRIBIR.
+      Safari amplía la página entera al enfocar un campo de menos de 16px,
+      y al salir NO vuelve a desamplíar. El atleta escribe un peso y se
+      queda con la pantalla ampliada y descolocada el resto de la sesión.
+      Se arregla con el tamaño, no con `maximum-scale`: bloquear el zoom
+      del usuario para arreglar esto rompe la accesibilidad de la app. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* 4b. EL OBJETIVO TÁCTIL DE 44px, PARA LOS CAMPOS QUE NO PASAN POR `Field`.
+      Quedan unos 150 `<input>`, 33 `<select>` y 19 `<textarea>` escritos a
+      mano por toda la app. `Field` y compañía garantizan cuatro cosas —44px
+      de alto, 16px de texto, anillo de foco y error que no depende del
+      color— pero solo para quien los usa. Migrar 202 controles uno a uno es
+      un trabajo enorme y arriesgado; el alto mínimo, en cambio, se puede dar
+      a todos de una vez y aquí.
+
+      `pointer: coarse` y no siempre. 44px es una medida del DEDO, no del
+      cursor: en escritorio, con ratón, forzarla engorda rejillas densas
+      —la de series, la del editor de PDF— sin que nadie gane nada. En
+      móvil y tableta, donde el fallo se paga, se aplica sin excepción.
+
+      `data-compacto` es la salida para el caso raro en que un campo tenga
+      que seguir siendo pequeño incluso con el dedo. Si hay que usarlo mucho,
+      es que la pantalla necesita otra disposición, no otro tamaño de campo.
+
+      No lleva `line-height` ni `padding`: solo el alto mínimo. Cualquier
+      otra cosa cambiaría la maquetación de doscientos sitios a ciegas. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([data-compacto]),
+  select:not([data-compacto]),
+  textarea:not([data-compacto]) {
+    min-height: 44px;
+  }
+}
+
+/* 4c. EL CAMBIO DE TEMA NO SE ANIMA.
+      Medio proyecto lleva `transition-colors` para que el hover se sienta
+      suave. Al cambiar de tema todos animan a la vez y, en vez de un cambio
+      limpio, se ve una mancha reptando por la página durante 200ms con cada
+      elemento llegando a destiempo.
+
+      Un tema no es un cambio de estado de un control: es como encender la luz
+      de la habitación. Ocurre de golpe. La clase la pone y la quita
+      `aplicarTema` en src/lib/tema.ts, con un frame de por medio. */
+.cambiando-tema,
+.cambiando-tema *,
+.cambiando-tema *::before,
+.cambiando-tema *::after {
+  transition: none !important;
+}
+
+/* 5. FOCO VISIBLE, PERO SOLO PARA QUIEN NAVEGA CON TECLADO.
+      `:focus-visible` y no `:focus`: el anillo tras un clic de ratón es
+      ruido, tras un tabulador es lo único que te dice dónde estás. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* 6. INERCIA DE SCROLL EN iOS dentro de los paneles con scroll propio. */
+[class*="overflow-y-auto"],
+[class*="overflow-x-auto"] {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Accesibilidad: sin animaciones para quien las desactiva en su sistema */
+@media (prefers-reduced-motion: reduce) {
+  /* También la pulsación: es movimiento, y para quien marca esta
+     preferencia el movimiento es el problema, no la decoración. */
+  button:active,
+  [role="button"]:active {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- SCROLLBAR UTILITIES --- */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+/* --- GAME PLAN: EXPORTACIÓN A PDF (impresión) --- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #gameplan-print,
+  #gameplan-print * {
+    visibility: visible;
+  }
+
+  #gameplan-print {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    background: white !important;
+    color: black !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+/* --- TYPEBOT CUSTOMIZATION --- */
+/* 
+   Posicionamos el botón (oculto) del Typebot justo encima de la mascota 
+   para que la ventana de chat se abra desde ahí hacia arriba sin taparla.
+*/
+.typebot-bubble-button {
+  left: 24px !important;
+  /* Alineado con la mascota (left-6) */
+  right: auto !important;
+  /* Anular el default de derecha */
+  bottom: 0px !important;
+  /* Lo ponemos abajo del todo, pero oculto */
+  display: none !important;
+  /* Totalmente fuera */
+}
+
+/* 
+   VENTANA DEL CHAT
+   Forzamos a que aparezca encima de la mascota.
+   Mascota: bottom-6 (24px) + h-32 (128px) = ~152px altura ocupada.
+   Dejamos margen: bottom: 170px.
+*/
+#typebot-bubble-modal {
+  inset: auto auto 170px 24px !important;
+  /* top right bottom left */
+  max-height: calc(100vh - 190px) !important;
+  width: 90vw !important;
+  max-width: 400px !important;
+  position: fixed !important;
+  z-index: 10000 !important;
+}
+
+/* Si la librería usa clase en vez de ID */
+.typebot-bubble-modal {
+  inset: auto auto 170px 24px !important;
+  max-height: calc(100vh - 190px) !important;
+  width: 90vw !important;
+  max-width: 400px !important;
+}

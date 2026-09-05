@@ -1,0 +1,78 @@
+import { FormQuestion } from '../../services/formsService';
+
+export type AnswerValues = Record<string, string | number | null>;
+
+/**
+ * Campos de un check-in (escala 0-10, número y texto libre).
+ * Compartido por el formulario del atleta y el editor del coach para que
+ * ambos rellenen exactamente lo mismo.
+ */
+export function CheckInAnswerFields({
+    questions,
+    values,
+    onChange
+}: {
+    questions: FormQuestion[];
+    values: AnswerValues;
+    onChange: (id: string, value: string | number | null) => void;
+}) {
+    return (
+        <>
+            {questions.map(q => (
+                <div key={q.id}>
+                    <label className={`block text-sm font-bold text-ink ${q.help ? 'mb-1' : 'mb-3'}`}>{q.label}</label>
+                    {q.help && <p className="mb-3 text-xs text-ink-subtle">{q.help}</p>}
+
+                    {q.qtype === 'scale' && (
+                        <>
+                            <div className="grid grid-cols-11 gap-1">
+                                {Array.from({ length: 11 }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
+                                        className={`aspect-square rounded-lg text-xs font-black transition-[background-color,box-shadow,color,transform] ${
+ values[q.id] === i
+ ? 'bg-brand text-ink scale-110 shadow-lg shadow-brand/30'
+ : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ }`}
+                                    >
+                                        {i}
+                                    </button>
+                                ))}
+                            </div>
+                            {(q.scale?.minLabel || q.scale?.maxLabel) && (
+                                <div className="mt-1.5 flex justify-between text-t-2xs text-gray-600">
+                                    <span>{q.scale?.minLabel}</span>
+                                    <span>{q.scale?.maxLabel}</span>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {q.qtype === 'number' && (
+                        <input
+                            type="number"
+                            inputMode="numeric"
+                            value={values[q.id] ?? ''}
+                            onChange={(e) => onChange(q.id, e.target.value === '' ? null : Number(e.target.value))}
+                            placeholder="0"
+                            className="w-full bg-surface-sunken border border-line rounded-xl py-3 px-4 text-ink text-base focus:border-brand/50 transition-colors"
+                        />
+                    )}
+
+                    {q.qtype === 'text' && (
+                        <textarea
+                            value={(values[q.id] as string) ?? ''}
+                            onChange={(e) => onChange(q.id, e.target.value)}
+                            rows={3}
+                            maxLength={1000}
+                            placeholder="Escribe aquí..."
+                            className="w-full bg-surface-sunken border border-line rounded-xl py-3 px-4 text-ink text-base focus:border-brand/50 transition-colors resize-none"
+                        />
+                    )}
+                </div>
+            ))}
+        </>
+    );
+}
