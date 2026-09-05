@@ -80,6 +80,73 @@ funcionando.
 `PushNotifications.register()` **falla si no está `google-services.json`**, por
 eso el paso 4 es un interruptor explícito y no se intenta a ciegas.
 
+
+### El interruptor de JavaScript NO basta: sin `google-services.json` la app se cierra sola
+
+`VITE_FCM_ENABLED` protege la llamada de JavaScript, y eso es lo que se creía
+suficiente. No lo es, y esto es lo que estaba tirando la aplicación en los
+móviles de los atletas.
+
+`@capacitor/push-notifications` arrastra `firebase-messaging` como dependencia
+de Gradle **se llame o no se llame a `register()`**. Comprobado destripando el
+APK que se está repartiendo (`appdebug.apk`, versión 1.3.0):
+
+* el `AndroidManifest.xml` declara `com.google.firebase.provider.FirebaseInitProvider`,
+  `com.google.firebase.messaging.FirebaseMessagingService`,
+  `com.capacitorjs.plugins.pushnotifications.MessagingService` y
+  `com.google.firebase.iid.FirebaseInstanceIdReceiver`;
+* `classes.dex` trae el SDK entero;
+* y `resources.arsc` **no contiene** `google_app_id`, `google_api_key`,
+  `gcm_defaultSenderId` ni `project_id`.
+
+Faltan porque sin `google-services.json` el plugin `com.google.gms.google-services`
+no llega a aplicarse (ver el `if (servicesJSON.text)` de `app/build.gradle`) y
+es ese plugin el que genera esos recursos.
+
+`FirebaseInitProvider` es un *ContentProvider*: el sistema lo arranca **antes**
+de `Application.onCreate`, en cada arranque del proceso, sin que nadie lo pida.
+Y los componentes de mensajería los despierta Google Play Services por su
+cuenta. Cuando cualquiera de ellos pide la instancia por defecto se lleva un
+
+    java.lang.IllegalStateException: Default FirebaseApp is not initialized in
+    this process com.anvilstrength.app. Make sure to call
+    FirebaseApp.initializeApp(Context) first.
+
+que mata el proceso. Por fuera: **la app se abre y se cierra al instante**, de
+forma intermitente y sin patrón claro, porque depende de cuándo decide Play
+Services tocar esos componentes.
+
+Se agrava con la pantalla de arranque: `launchAutoHide: false` +
+`useDialog: true` hacen que el *splash* solo se quite cuando
+`useNativeFeatures` recibe `isReady`. Si el proceso muere antes, lo último que
+se ve es el splash — y si sobrevive pero el JS no arranca, se queda ahí para
+siempre.
+
+**Dos salidas, y hay que tomar una de las dos:**
+
+1. **Configurar Firebase de verdad** — los pasos 1 a 4 de arriba. Es lo que
+   este código espera.
+2. **Sacar el plugin del build hasta entonces**:
+   ```bash
+   npm uninstall @capacitor/push-notifications
+   npx cap sync android
+   ```
+   Los avisos locales (`@capacitor/local-notifications`) no dependen de
+   Firebase y siguen funcionando.
+
+Dejarlo como está —el plugin dentro, la configuración fuera— es la única
+combinación que no funciona.
+
+### Cómo confirmarlo en un móvil
+
+```bash
+adb logcat -c && adb shell am start -n com.anvilstrength.app/.MainActivity
+adb logcat | grep -iE "FATAL|AndroidRuntime|FirebaseApp|anvilstrength"
+```
+
+Si es esto, sale `Default FirebaseApp is not initialized` justo antes del
+`FATAL EXCEPTION`.
+
 Cuando llega un aviso con la app cerrada y la persona lo toca, la app abre en
 `data.link` (la misma ruta interna que ya lleva cada notificación).
 

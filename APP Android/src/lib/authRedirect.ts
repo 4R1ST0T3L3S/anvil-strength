@@ -69,3 +69,23 @@ export function esUrlDeCallback(url: string): boolean {
     if (url.startsWith(`${ESQUEMA_APP}://`)) return true;
     return url.includes(AUTH_CALLBACK_PATH);
 }
+
+/**
+ * LA DIRECCIÓN DE UN ENLACE QUE SE LE MANDA A OTRA PERSONA.
+ * =====================================================================
+ * No es lo mismo que `getSiteOrigin()`, y por eso son dos funciones.
+ *
+ * `getSiteOrigin()` responde "¿dónde estoy yo?". Esta responde "¿qué
+ * dirección le sirve a OTRO?", y ahí el origen del WebView —`https://localhost`
+ * dentro del APK— no vale de nada: es una dirección que solo existe en este
+ * teléfono. El enlace de invitación salía construido con ella y no llevaba a
+ * ninguna parte cuando el atleta lo abría.
+ *
+ * Siempre sobre `URL_WEB`, que además es el dominio que el `<intent-filter>`
+ * de AndroidManifest.xml declara con `autoVerify`: así el enlace abre la app
+ * instalada si la hay, y la web si no.
+ */
+export function enlaceCompartible(ruta: string): string {
+    const camino = ruta.startsWith('/') ? ruta : `/${ruta}`;
+    return `${URL_WEB}${camino}`;
+}

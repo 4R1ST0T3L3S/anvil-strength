@@ -115,9 +115,20 @@ export function usePushNotifications() {
 
             setState(s => ({ ...s, isSupported: true, permission: Notification.permission }));
 
-            // Verificar si ya hay una suscripción
+            // Verificar si ya hay una suscripción.
+            //
+            // Con tope, por el mismo motivo que en `subscribeToPush`: si no
+            // hay NINGÚN service worker registrado —y aquí dentro, a
+            // propósito, no lo hay— `ready` no resuelve nunca. Sin el tope,
+            // `isLoading` se quedaba en `true` para siempre y el ajuste de
+            // avisos giraba sin llegar a ninguna parte.
             try {
-                const registration = await navigator.serviceWorker.ready;
+                const registration = await Promise.race([
+                    navigator.serviceWorker.ready,
+                    new Promise<never>((_, rechazar) =>
+                        setTimeout(() => rechazar(new Error('No hay service worker activo')), 5_000)
+                    ),
+                ]);
                 const subscription = await registration.pushManager.getSubscription();
                 setState(s => ({
                     ...s,

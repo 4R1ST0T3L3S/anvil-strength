@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { enlaceCompartible } from '../lib/authRedirect';
 
 export interface CoachInvite {
     id: string;
@@ -120,9 +121,15 @@ export const invitesService = {
         if (error) throw error;
     },
 
-    /** La URL que se comparte. */
+    /**
+     * La URL que se comparte.
+     *
+     * Sobre el dominio público, no sobre el origen del navegador: dentro de
+     * la app empaquetada ese origen es privado del dispositivo y el enlace no
+     * abría nada. Ver src/lib/authRedirect.ts.
+     */
     buildUrl(code: string): string {
-        return `${window.location.origin}/invitacion/${code}`;
+        return enlaceCompartible(`/invitacion/${code}`);
     },
 
 

@@ -6,6 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import App from './App'
 import { ErrorFallback } from './components/ui/ErrorFallback'
 import './index.css'
+import { esAppEmpaquetada } from './lib/entorno'
 
 
 
@@ -33,6 +34,28 @@ import './index.css'
  * ya lo cubría `src/lib/offlineQueue.ts`. Las dos piezas juntas son lo que
  * hace que se pueda entrenar sin cobertura.
  */
+
+/*
+ * RESCATE PARA QUIEN YA TENGA UN SERVICE WORKER DENTRO DEL PAQUETE.
+ *
+ * `App.tsx` ya no lo REGISTRA aquí, pero eso no sirve de nada a quien lo
+ * tenga registrado de una versión anterior: la caché sobrevive a la
+ * actualización, así que ese service worker seguiría sirviendo un
+ * `index.html` viejo que pide ficheros que el paquete nuevo ya no trae.
+ * Resultado: pantalla en blanco que no se arregla reinstalando.
+ */
+if (esAppEmpaquetada() && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations()
+    .then(registros => Promise.all(registros.map(r => r.unregister())))
+    .then(quitados => {
+      if (quitados.some(Boolean) && 'caches' in window) {
+        return caches.keys().then(claves => Promise.all(claves.map(c => caches.delete(c))));
+      }
+    })
+    .catch(() => {
+      // Sin service workers que quitar, o el entorno no deja preguntarlo.
+    });
+}
 
 // Detector de desbordes horizontales. El `import()` va dentro del `if` para
 // que ni el módulo ni su coste entren en el bundle de producción.
