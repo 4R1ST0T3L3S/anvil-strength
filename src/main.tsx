@@ -6,6 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import App from './App'
 import { ErrorFallback } from './components/ui/ErrorFallback'
 import './index.css'
+import { esAppEmpaquetada } from './lib/entorno'
 
 
 
@@ -33,6 +34,33 @@ import './index.css'
  * ya lo cubría `src/lib/offlineQueue.ts`. Las dos piezas juntas son lo que
  * hace que se pueda entrenar sin cobertura.
  */
+
+/*
+ * RESCATE PARA QUIEN YA TENGA UN SERVICE WORKER DENTRO DEL APK.
+ *
+ * `App.tsx` ya no lo REGISTRA cuando la aplicación va empaquetada, pero eso
+ * no sirve de nada a quien lo tenga registrado de una versión anterior: la
+ * caché del WebView sobrevive a la actualización de la app, así que ese
+ * service worker seguiría interceptando y sirviendo un `index.html` viejo
+ * que pide ficheros que el paquete nuevo ya no trae. Resultado: pantalla en
+ * blanco que no se arregla reinstalando, solo borrando los datos de la app.
+ *
+ * Aquí se le quita de encima una vez y para siempre. En la web no se toca
+ * nada: `esAppEmpaquetada()` es falso y este bloque no llega a entrar.
+ */
+if (esAppEmpaquetada() && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations()
+    .then(registros => Promise.all(registros.map(r => r.unregister())))
+    .then(quitados => {
+      if (quitados.some(Boolean) && 'caches' in window) {
+        return caches.keys().then(claves => Promise.all(claves.map(c => caches.delete(c))));
+      }
+    })
+    .catch(() => {
+      // Sin service workers que quitar, o el WebView no deja preguntarlo.
+      // En los dos casos no hay nada que hacer y no es motivo de error.
+    });
+}
 
 // Detector de desbordes horizontales. El `import()` va dentro del `if` para
 // que ni el módulo ni su coste entren en el bundle de producción.

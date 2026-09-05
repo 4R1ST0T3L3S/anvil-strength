@@ -13,6 +13,7 @@ import { Button } from './components/ui/Button';
 import { DashboardSkeleton } from './components/skeletons/DashboardSkeleton';
 
 import { ReloadPrompt } from './components/pwa/ReloadPrompt';
+import { esAppEmpaquetada } from './lib/entorno';
 import { Toaster } from 'sonner';
 
 import { AppRoutes } from './routes/AppRoutes';
@@ -122,7 +123,28 @@ function App() {
       {/* Todo lo que anima va DENTRO. Un `<m.div>` fuera de aquí no se
           anima y no avisa. Ver la nota de `cargarMotor` arriba. */}
       <LazyMotion features={cargarMotor}>
-        <ReloadPrompt />
+        {/* EL SERVICE WORKER, SOLO EN LA WEB.
+            =========================================================
+            `ReloadPrompt` es lo único que registra el service worker (ver
+            src/main.tsx), así que no montarlo es no registrarlo.
+
+            Dentro del APK sobra, y además hace daño. La caché del service
+            worker vive en el almacenamiento del WebView, que SOBREVIVE a la
+            actualización de la aplicación; los ficheros del paquete, no.
+            Al instalar una versión nueva, el service worker viejo sigue
+            sirviendo el `index.html` que tenía guardado, que pide unos
+            `assets/index-<hash>.js` que ese APK ya no contiene: la app
+            arranca en blanco y no se recupera sola —hay que borrarle los
+            datos a mano—, que es justo el fallo que no puede tener una app
+            que se reparte por WhatsApp.
+
+            Y no aporta nada: el APK ya lleva todos los ficheros dentro, así
+            que la lectura sin conexión que da la PWA aquí ya la da el
+            propio paquete. La cola de escritura sin conexión
+            (src/lib/offlineQueue.ts) es independiente y sigue funcionando.
+
+            En la web no cambia nada. */}
+        {!esAppEmpaquetada() && <ReloadPrompt />}
         <Toaster position="top-center" theme="dark" richColors />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <NotificationProvider user={user || null}>

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.anvilstrength.app",
+      "sha256_cert_fingerprints": [
+        "C4:8E:48:AE:A9:93:4E:6F:B8:A6:BA:D3:B1:A4:7D:40:F2:11:18:94:9B:61:58:6B:56:B4:D6:FF:58:96:D8:42"
+      ]
+    }
+  }
+]
