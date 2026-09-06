@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { elegirBloqueActual } from '../lib/planning/bloqueActual';
 import { TrainingBlock, TrainingSession, ExerciseLibrary, SessionExercise, TrainingSet, Macrocycle, DayTemplate, DayTemplateExercise, WeekMeta, Weekday, weekdayIndex, weekdayLabel, countsForVolume } from '../types/training';
 import type { ExerciseSection } from '../types/training';
 import { getWeekNumber } from '../utils/dateUtils';
@@ -480,7 +481,11 @@ export const trainingService = {
      */
     async getTodayForAthlete(athleteId: string): Promise<TodayTraining | null> {
         const blocks = await this.getBlocksByAthlete(athleteId);
-        const block = blocks.find(b => b.is_active);
+        // El que toca HOY. `find(b => b.is_active)` daba el activo más
+        // recientemente CREADO, así que en cuanto el coach dejaba preparado
+        // el bloque siguiente, el inicio del atleta se ponía a mirarlo a él
+        // —vacío, porque no ha empezado— en vez del que está corriendo.
+        const block = elegirBloqueActual(blocks);
         if (!block) return null;
 
         const week = getWeekNumber();

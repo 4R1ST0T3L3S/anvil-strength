@@ -46,6 +46,16 @@ SELECT
     EXTRACT(YEAR FROM tb.start_date)::INT AS anio_de_start_date,
     tb.release_offset_days,
     tb.created_at,
+    -- Rango real del bloque en el calendario, para ver de un vistazo cual
+    -- de los activos es el que TOCA hoy y cual todavia no ha empezado.
+    (tb.start_date::date - (EXTRACT(ISODOW FROM tb.start_date)::INT - 1))                       AS primer_lunes,
+    CASE WHEN tb.start_week IS NOT NULL AND tb.end_week IS NOT NULL
+         THEN (tb.start_date::date - (EXTRACT(ISODOW FROM tb.start_date)::INT - 1))
+              + ((tb.end_week - tb.start_week + 1) * 7 - 1)
+    END                                                                                          AS ultimo_domingo,
+    CASE WHEN tb.start_week IS NOT NULL AND tb.end_week IS NOT NULL
+              AND EXTRACT(WEEK FROM CURRENT_DATE)::INT BETWEEN tb.start_week AND tb.end_week
+         THEN '<<< LE TOCA ESTE' ELSE '' END                                                     AS en_curso_por_fechas,
     CASE WHEN tb.id = (
         SELECT b2.id FROM public.training_blocks b2
          WHERE b2.athlete_id = tb.athlete_id AND b2.is_active
@@ -72,8 +82,12 @@ SELECT
     count(*)                                            AS dias,
     tw.is_visible                                       AS interruptor_del_coach,
     public.week_is_released(tb.id, ts.week_number)      AS publicada,
+    -- `start_date` es TIMESTAMPTZ en esta base, no DATE, y a un timestamptz
+    -- no se le puede restar un entero. El `::date` de aquí es el mismo que
+    -- hace PL/pgSQL sola dentro de week_is_released() al asignarlo a una
+    -- variable declarada DATE, así que la cuenta sale idéntica.
     (
-        (tb.start_date - (EXTRACT(ISODOW FROM tb.start_date)::INT - 1))
+        (tb.start_date::date - (EXTRACT(ISODOW FROM tb.start_date)::INT - 1))
         + ((ts.week_number - EXTRACT(WEEK FROM tb.start_date)::INT
             + CASE WHEN ts.week_number < EXTRACT(WEEK FROM tb.start_date)::INT
                    THEN EXTRACT(WEEK FROM make_date(EXTRACT(ISOYEAR FROM tb.start_date)::INT, 12, 28))::INT

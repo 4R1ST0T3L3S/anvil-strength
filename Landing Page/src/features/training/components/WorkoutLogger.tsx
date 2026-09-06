@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { m } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
+import { elegirBloqueActual } from '../../../lib/planning/bloqueActual';
 import { trainingService, parseGroupedReps } from '../../../services/trainingService';
 import type { LastSessionSetReference } from '../../../services/trainingService';
 import { LoggerSetRow } from './LoggerSetRow';
@@ -274,9 +275,10 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         const init = async () => {
             setLoading(true);
             try {
-                // 1. Get Active Block
+                // 1. El bloque que TOCA HOY, que no es lo mismo que el
+                //    último que el entrenador creó. Ver elegirBloqueActual().
                 const blocks = await trainingService.getBlocksByAthlete(athleteId);
-                const active = blocks.find(b => b.is_active);
+                const active = elegirBloqueActual(blocks);
 
                 if (!active) {
                     setBlock(null);
