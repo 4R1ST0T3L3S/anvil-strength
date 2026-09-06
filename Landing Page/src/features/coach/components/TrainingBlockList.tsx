@@ -563,8 +563,8 @@ function CreateMacroModal({
     // este modal se abre y se cierra varias veces seguidas mientras se
     // organizan los macros, y sin caché cada apertura era otra petición.
     const { data: competitions = [] } = useQuery({
-        queryKey: CLAVES.competicionesAsignadas.deAtleta(athleteId),
-        queryFn: () => competitionsService.getAthleteCompetitions(athleteId).then(c => c || []),
+        queryKey: CLAVES.competicionesAsignadas.listaDeAtleta(athleteId),
+        queryFn: () => competitionsService.getAthleteCompetitions(athleteId).then(c => (Array.isArray(c) ? c : [])),
     });
 
     const handleCreate = async () => {

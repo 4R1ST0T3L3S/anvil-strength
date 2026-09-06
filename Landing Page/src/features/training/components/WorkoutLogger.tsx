@@ -332,16 +332,47 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 // trabajando. Nunca la primera del bloque: obligaría a navegar
                 // hacia delante cada vez que abre la app.
                 const weeksAvailable = [...new Set(formatted.map(s => s.week_number))].sort((a, b) => a - b);
-                if (weeksAvailable.length === 0) {
+
+                /*
+                 * SI LA SEMANA DE HOY VIENE VACÍA, NO SE APAGA EL SELECTOR.
+                 *
+                 * Esto era `if (weeksAvailable.length === 0) { setSelectedWeek(null); return; }`,
+                 * y dejaba al atleta en un callejón sin salida: con
+                 * `selectedWeek` en null la cabecera entera —nombre del
+                 * bloque, selector de semana y pestañas de día— no se pinta,
+                 * así que el cartel decía "elige otra semana arriba" y arriba
+                 * no había nada que elegir. La única salida era cerrar la app.
+                 *
+                 * Y `weeksAvailable` sale solo de las sesiones de ESTA semana,
+                 * que es lo único que se ha pedido hasta aquí: que venga vacía
+                 * no dice nada del resto del bloque. Las semanas que el atleta
+                 * puede abrir son las del bloque (`start_week`..`end_week`), y
+                 * cambiar a una que no esté cargada ya dispara la carga
+                 * perezosa de más abajo.
+                 *
+                 * Se sigue enseñando la semana en curso —vacía es la respuesta
+                 * honesta a "qué me toca hoy"—, pero ahora con el selector
+                 * delante para poder moverse.
+                 */
+                const semanasDelBloque = active.start_week && active.end_week
+                    ? Array.from(
+                        { length: active.end_week - active.start_week + 1 },
+                        (_, i) => active.start_week! + i
+                    )
+                    : [];
+
+                const candidatas = weeksAvailable.length > 0 ? weeksAvailable : semanasDelBloque;
+
+                if (candidatas.length === 0) {
                     setSelectedWeek(null);
                     setActiveSessionId(null);
                     return;
                 }
 
                 const thisWeek = getWeekNumber();
-                const week = weeksAvailable.includes(thisWeek)
+                const week = candidatas.includes(thisWeek)
                     ? thisWeek
-                    : weeksAvailable.filter(w => w <= thisWeek).pop() ?? weeksAvailable[0];
+                    : candidatas.filter(w => w <= thisWeek).pop() ?? candidatas[0];
 
                 setSelectedWeek(week);
                 setActiveSessionId(pickSessionForToday(formatted.filter(s => s.week_number === week)));

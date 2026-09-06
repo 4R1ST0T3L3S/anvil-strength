@@ -60,7 +60,30 @@ export const CLAVES = {
     },
     competicionesAsignadas: {
         raiz: ['competiciones-asignadas'] as const,
+        /**
+         * La ficha del atleta: `{ competitions, results }`, un OBJETO.
+         * Junta las dos cosas porque la pestaña necesita las dos para pintar
+         * una fila.
+         */
         deAtleta: (athleteId: string) => ['competiciones-asignadas', athleteId] as const,
+        /**
+         * SOLO LA LISTA, y por eso tiene clave propia.
+         *
+         * Compartía clave con `deAtleta`, y esa es toda la historia del error
+         * «x.map is not a function» al abrir "Nuevo macro". React Query
+         * guarda por CLAVE, no por consulta: las dos escribían en la misma
+         * celda de la caché con formas distintas —un objeto la de la ficha,
+         * un array esta— y ganaba la que llegase primero. Como la ficha del
+         * atleta se monta antes, el desplegable de competiciones del macro
+         * recibía el objeto `{competitions, results}` y lo trataba como
+         * array. El `= []` de defecto no salvaba nada: el dato no era
+         * `undefined`, era del tipo equivocado.
+         *
+         * Al ser un sufijo de la otra, `invalidateQueries` con `deAtleta`
+         * sigue refrescando esta también — que es justo lo que se quiere
+         * cuando se añade o se borra una competición.
+         */
+        listaDeAtleta: (athleteId: string) => ['competiciones-asignadas', athleteId, 'lista'] as const,
     },
 
     // --- VBT y cuestionarios -------------------------------------------
