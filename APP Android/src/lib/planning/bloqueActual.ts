@@ -119,3 +119,45 @@ export function elegirBloqueActual<T extends BloqueOrdenable>(
     // 4. Ninguno se puede situar en el calendario: el orden de entrada.
     return activos[0];
 }
+
+/**
+ * Un bloque con sus semanas, listo para pintar en el selector del atleta.
+ */
+export interface GrupoDeSemanas<T> {
+    bloque: T;
+    /** Año al que pertenecen esas semanas ISO. Sale de `start_date`. */
+    anio: number;
+    /** De `start_week` a `end_week`, ambas incluidas. */
+    semanas: number[];
+}
+
+/**
+ * TODO lo que el atleta puede abrir, agrupado por bloque y en orden de
+ * calendario — del más antiguo al más nuevo, que es como lo vivió.
+ *
+ * Las semanas salen del bloque (`start_week`..`end_week`) y NO de las
+ * sesiones cargadas: así están todas en la lista desde el primer momento
+ * aunque solo se haya pedido la de hoy, y elegir una que aún no está en
+ * memoria dispara su carga.
+ *
+ * Los bloques sin semanas quedan fuera: no se pueden situar en el calendario
+ * y no hay nada que ofrecer de ellos.
+ */
+export function semanasDeCadaBloque<T extends BloqueOrdenable & { id: string }>(
+    bloques: T[],
+    hoy: Date = new Date()
+): GrupoDeSemanas<T>[] {
+    return bloques
+        .filter(b => b.start_week != null && b.end_week != null && b.end_week >= b.start_week)
+        .map(b => ({
+            bloque: b,
+            anio: b.start_date ? new Date(b.start_date).getFullYear() : hoy.getFullYear(),
+            semanas: Array.from(
+                { length: b.end_week! - b.start_week! + 1 },
+                (_, i) => b.start_week! + i
+            ),
+        }))
+        .sort((a, b) =>
+            a.anio !== b.anio ? a.anio - b.anio : a.bloque.start_week! - b.bloque.start_week!
+        );
+}

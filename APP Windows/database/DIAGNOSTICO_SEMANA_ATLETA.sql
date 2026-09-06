@@ -123,7 +123,10 @@ ORDER BY tw.week_number;
 -- `db:check` no lo puede ver porque solo mira que la función exista.
 -- Si sale `ANTIGUA`, falta ejecutar FIX_SEMANA_PUBLICADA_2026-09-05.sql.
 SELECT CASE
-    WHEN pg_get_functiondef(p.oid) LIKE '%v_weeks_in_year%' THEN 'ARREGLADA (06-09-2026)'
+    WHEN pg_get_functiondef(p.oid) LIKE '%v_visible IS TRUE%'
+        THEN 'AL DIA — las semanas se abren solas y el interruptor solo adelanta (APERTURA_AUTOMATICA_2026-09-06)'
+    WHEN pg_get_functiondef(p.oid) LIKE '%v_weeks_in_year%'
+        THEN 'A MEDIAS — publicar ya funciona, pero ocultar sigue siendo para siempre (falta APERTURA_AUTOMATICA_2026-09-06)'
     ELSE 'ANTIGUA — el boton "Publicar semana" solo sabe cerrar'
 END AS estado_week_is_released
 FROM pg_proc p

@@ -112,13 +112,12 @@ const TABLAS = [
 const FUNCIONES = [
     { nombre: 'manages_athlete', args: { p_athlete_id: UUID_NULO }, archivo: 'INFORMACION_PERSONAL.sql' },
     // OJO: esta sonda solo comprueba que la función EXISTA, y existe desde
-    // week_visibility_and_scheduling.sql. No puede ver su cuerpo, así que
-    // seguirá saliendo en verde con la versión antigua —la que ignoraba el
-    // botón "Publicar semana"— puesta. Lo que dice si el arreglo está o no
-    // está es ejecutar FIX_SEMANA_PUBLICADA_2026-09-05.sql: trae dentro sus
-    // cuatro comprobaciones y falla ruidosamente si algo no cuadra.
-    { nombre: 'week_is_released', args: { p_block_id: UUID_NULO, p_week_number: 1 }, archivo: 'FIX_SEMANA_PUBLICADA_2026-09-05.sql',
-      rompe: 'Con la versión vieja, publicar una semana a mano NO se la abre al atleta si su lunes aún no ha llegado: el interruptor solo sabía cerrar.' },
+    // week_visibility_and_scheduling.sql. No puede ver su CUERPO, así que
+    // sale en verde con cualquiera de sus tres versiones. Quien distingue
+    // cuál está puesta es la consulta 5 de
+    // database/DIAGNOSTICO_SEMANA_ATLETA.sql, que lee `pg_get_functiondef`.
+    { nombre: 'week_is_released', args: { p_block_id: UUID_NULO, p_week_number: 1 }, archivo: 'APERTURA_AUTOMATICA_2026-09-06.sql',
+      rompe: 'Con la versión vieja, una semana marcada como oculta NO se abre sola al llegarle su fecha, así que hay que publicarlas a mano una a una.' },
     { nombre: 'set_coach_athlete_status', args: { p_athlete_id: UUID_NULO, p_status: 'active', p_relation: null }, archivo: 'athlete_lifecycle.sql' },
     { nombre: 'find_athlete_by_email', args: { p_email: 'nadie@example.invalid' }, archivo: 'athlete_lifecycle.sql' },
     { nombre: 'gestiono_este_perfil', args: { p_profile_id: UUID_NULO }, archivo: 'athlete_lifecycle.sql' },

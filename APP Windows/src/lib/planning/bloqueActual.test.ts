@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { elegirBloqueActual } from './bloqueActual';
+import { elegirBloqueActual, semanasDeCadaBloque } from './bloqueActual';
 
 /**
  * El caso real, tal cual lo reportó el atleta el 06/09/2026.
@@ -113,4 +113,45 @@ test('un bloque que cruza el fin de año se sitúa en el año siguiente', () => 
     // 5 de enero de 2027: dentro del bloque de invierno.
     const elegido = elegirBloqueActual([navidad, viejo], new Date(2027, 0, 5));
     assert.equal(elegido?.nombre, 'BLOQUE DE INVIERNO');
+});
+
+// =====================================================================
+// EL SELECTOR DEL ATLETA: TODOS LOS BLOQUES, CON SUS SEMANAS
+// =====================================================================
+
+test('agrupa cada bloque con sus semanas, del más antiguo al más nuevo', () => {
+    const grupos = semanasDeCadaBloque(
+        [{ id: 'b2', ...segundoBloque }, { id: 'b1', ...primerBloque }],
+        HOY
+    );
+
+    assert.equal(grupos.length, 2);
+    // Entran por created_at descendente (el segundo primero) y salen en
+    // orden de calendario: primero el que el atleta vivió antes.
+    assert.deepEqual(grupos.map(g => g.bloque.nombre), [
+        'PRIMER BLOQUE HIPERTROFIA',
+        'SEGUNDO BLOQUE HIPERTROFIA',
+    ]);
+    assert.deepEqual(grupos[0].semanas, [32, 33, 34, 35, 36, 37]);
+    assert.deepEqual(grupos[1].semanas, [38, 39, 40, 41, 42, 43]);
+    assert.equal(grupos[0].anio, 2026);
+});
+
+test('un bloque sin semanas no aparece: no hay nada que ofrecer de él', () => {
+    const grupos = semanasDeCadaBloque(
+        [
+            { id: 'b1', ...primerBloque },
+            { id: 'roto', nombre: 'SIN SEMANAS', is_active: true, start_week: null, end_week: null, start_date: null },
+        ],
+        HOY
+    );
+    assert.deepEqual(grupos.map(g => g.bloque.id), ['b1']);
+});
+
+test('un bloque de una sola semana sale con esa semana', () => {
+    const grupos = semanasDeCadaBloque(
+        [{ id: 'x', nombre: 'TEST', is_active: true, start_week: 36, end_week: 36, start_date: '2026-08-31T00:00:00Z' }],
+        HOY
+    );
+    assert.deepEqual(grupos[0].semanas, [36]);
 });

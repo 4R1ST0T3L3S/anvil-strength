@@ -8,7 +8,7 @@ import type { WeekMeta, Weekday } from '../../../types/training';
 import { trainingService } from '../../../services/trainingService';
 import { supabase } from '../../../lib/supabase';
 import {
-    Loader, Plus, Save, Calendar, CalendarPlus, FileText, BarChart3, Eye, EyeOff,
+    Loader, Plus, Save, Calendar, CalendarPlus, FileText, BarChart3, Eye, CalendarClock,
     LayoutTemplate, ChevronDown, Send, Check, GitCompareArrows,
 } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
@@ -120,7 +120,18 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
     const [weekNameInput, setWeekNameInput] = useState("");
 
     const weekName = (week: number) => weekMeta[week]?.name || '';
-    const isWeekVisible = (week: number) => weekMeta[week]?.isVisible ?? true;
+    /**
+     * ¿La ha ADELANTADO el coach a mano?
+     *
+     * Antes esto era `?? true` y se llamaba "es visible", porque
+     * `is_visible` significaba publicada/oculta. Ya no: ahora TRUE quiere
+     * decir "abierta ya, sin esperar a su fecha", y todo lo demás —FALSE o
+     * sin fila— se lo queda el calendario. Ver
+     * database/APERTURA_AUTOMATICA_2026-09-06.sql.
+     *
+     * Por eso la comparación es estricta: la ausencia de fila NO es un sí.
+     */
+    const adelantadaAMano = (week: number) => weekMeta[week]?.isVisible === true;
 
     // Solo los nombres, que es lo único que consume el panel de análisis.
     const weekNames = useMemo(
@@ -1489,7 +1500,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
         e.stopPropagation();
         if (!blockData) return;
 
-        const next = !isWeekVisible(week);
+        const next = !adelantadaAMano(week);
         const previous = weekMeta;
 
         setWeekMeta(prev => ({
@@ -1499,7 +1510,17 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
 
         try {
             await trainingService.setWeekVisibility(blockData.id, week, next);
-            toast.success(next ? 'Semana publicada' : 'Semana oculta para el atleta');
+            // El mensaje dice lo que PASA, no lo que se ha pulsado: devolver
+            // al calendario una semana cuya fecha ya pasó no la cierra, y
+            // decir "ocultada" ahí sería mentira.
+            const yaLeTocaba = isWeekReleased(week, blockYear, releaseOffset);
+            toast.success(
+                next
+                    ? 'Semana abierta ya para el atleta'
+                    : yaLeTocaba
+                        ? 'Vuelve al calendario — le sigue tocando, así que la ve igual'
+                        : `Vuelve al calendario — se abrirá sola el ${formatShortDate(getWeekReleaseDate(week, blockYear, releaseOffset))}`
+            );
         } catch {
             setWeekMeta(previous);
             toast.error('No se pudo cambiar la visibilidad');
@@ -2093,7 +2114,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     // puertas distintas: el interruptor del coach y la fecha de
                     // publicación. La cabecera tiene que distinguirlas o el
                     // coach no sabe por qué su atleta no ve el entrenamiento.
-                    const visible = isWeekVisible(week);
+                    const visible = adelantadaAMano(week);
                     const released = isWeekReleased(week, blockYear, releaseOffset);
                     const releaseDate = getWeekReleaseDate(week, blockYear, releaseOffset);
 
@@ -2215,15 +2236,16 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                                 </>
                                             )}
 
-                                            {/* Estado de cara al atleta. Solo se dice algo cuando
-                                                NO lo está viendo: lo normal es que lo vea, y
-                                                repetir "publicada" en cada fila es ruido. */}
-                                            {!visible ? (
+                                            {/* Estado de cara al atleta. Lo normal —abierta
+                                                porque le toca— no se dice: repetirlo en cada
+                                                fila es ruido. Solo se habla de las dos
+                                                excepciones. */}
+                                            {visible && !released ? (
                                                 <>
                                                     <span className="text-ink-faint" aria-hidden="true">·</span>
-                                                    <span className="text-warning">Oculta para el atleta</span>
+                                                    <span className="text-brand-text">Adelantada</span>
                                                 </>
-                                            ) : !released && (
+                                            ) : !visible && !released && (
                                                 <>
                                                     <span className="text-ink-faint" aria-hidden="true">·</span>
                                                     <span>Se abre el {formatShortDate(releaseDate)}</span>
@@ -2250,13 +2272,23 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         usa a diario y que además comunica un
                                         estado, así que tiene que verse sin
                                         abrir nada. */}
-                                    <IconAction
-                                        label={visible ? 'Ocultar esta semana al atleta' : 'Publicar esta semana para el atleta'}
-                                        active={!visible}
-                                        onClick={(e) => toggleWeekVisibility(week, e)}
-                                    >
-                                        {visible ? <Eye size={16} /> : <EyeOff size={16} />}
-                                    </IconAction>
+                                    {/* "ABRIR YA", no "publicar".
+                                        La semana se abre sola el día que toca; esto solo
+                                        sirve para ADELANTARLA. Por eso el botón desaparece
+                                        en las que ya están abiertas por fecha: ahí no hay
+                                        nada que adelantar, y ofrecerlo hacía creer que
+                                        pulsarlo la ocultaría. */}
+                                    {!released && (
+                                        <IconAction
+                                            label={visible
+                                                ? `Devolver al calendario (se abriría sola el ${formatShortDate(releaseDate)})`
+                                                : `Abrir esta semana ya (le tocaría el ${formatShortDate(releaseDate)})`}
+                                            active={visible}
+                                            onClick={(e) => toggleWeekVisibility(week, e)}
+                                        >
+                                            {visible ? <Eye size={16} /> : <CalendarClock size={16} />}
+                                        </IconAction>
+                                    )}
 
                                     {/* Apartado 6: semana anterior frente a esta.
                                         Fuera del menú de "⋮" a propósito — es la

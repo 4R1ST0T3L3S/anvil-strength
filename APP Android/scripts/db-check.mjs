@@ -61,8 +61,6 @@ const UUID_NULO = '00000000-0000-0000-0000-000000000000';
 
 /** Tablas y columnas. `columna` en una tabla que existe distingue las dos. */
 const TABLAS = [
-    { tabla: 'device_push_tokens', columna: 'token', archivo: 'PUSH_NATIVO_2026-09-03.sql',
-      rompe: 'El APK no puede guardar su token de Firebase: sin avisos push nativos (la campana esconde el botón).' },
     { tabla: 'profiles', columna: 'account_status', archivo: 'athlete_lifecycle.sql' },
     { tabla: 'profiles', columna: 'coach_prefs', archivo: 'REESTRUCTURACION_2026-08.sql' },
     { tabla: 'profiles', columna: 'athlete_prefs', archivo: 'REESTRUCTURACION_2026-08.sql' },
@@ -113,7 +111,13 @@ const TABLAS = [
  */
 const FUNCIONES = [
     { nombre: 'manages_athlete', args: { p_athlete_id: UUID_NULO }, archivo: 'INFORMACION_PERSONAL.sql' },
-    { nombre: 'week_is_released', args: { p_block_id: UUID_NULO, p_week_number: 1 }, archivo: 'week_visibility_and_scheduling.sql' },
+    // OJO: esta sonda solo comprueba que la función EXISTA, y existe desde
+    // week_visibility_and_scheduling.sql. No puede ver su CUERPO, así que
+    // sale en verde con cualquiera de sus tres versiones. Quien distingue
+    // cuál está puesta es la consulta 5 de
+    // database/DIAGNOSTICO_SEMANA_ATLETA.sql, que lee `pg_get_functiondef`.
+    { nombre: 'week_is_released', args: { p_block_id: UUID_NULO, p_week_number: 1 }, archivo: 'APERTURA_AUTOMATICA_2026-09-06.sql',
+      rompe: 'Con la versión vieja, una semana marcada como oculta NO se abre sola al llegarle su fecha, así que hay que publicarlas a mano una a una.' },
     { nombre: 'set_coach_athlete_status', args: { p_athlete_id: UUID_NULO, p_status: 'active', p_relation: null }, archivo: 'athlete_lifecycle.sql' },
     { nombre: 'find_athlete_by_email', args: { p_email: 'nadie@example.invalid' }, archivo: 'athlete_lifecycle.sql' },
     { nombre: 'gestiono_este_perfil', args: { p_profile_id: UUID_NULO }, archivo: 'athlete_lifecycle.sql' },

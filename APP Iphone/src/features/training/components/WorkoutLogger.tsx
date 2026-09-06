@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { m } from 'framer-motion';
 import { supabase } from '../../../lib/supabase';
-import { elegirBloqueActual } from '../../../lib/planning/bloqueActual';
+import { elegirBloqueActual, semanasDeCadaBloque } from '../../../lib/planning/bloqueActual';
 import { trainingService, parseGroupedReps } from '../../../services/trainingService';
 import type { LastSessionSetReference } from '../../../services/trainingService';
 import { LoggerSetRow } from './LoggerSetRow';
@@ -138,7 +138,23 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     const unit = athletePrefs.unit;
 
     const [loading, setLoading] = useState(true);
-    const [block, setBlock] = useState<TrainingBlock | null>(null);
+
+    /**
+     * TODOS los bloques activos, no solo uno.
+     * =================================================================
+     * Antes esto era `block`, un único bloque elegido al arrancar, y el
+     * atleta no tenía forma de salir de él. Cuando el entrenador dejaba
+     * preparado el siguiente mesociclo antes de que terminara el que
+     * corría —lo normal—, el atleta se quedaba encerrado en el que le
+     * hubiera tocado y no podía ni asomarse al otro.
+     *
+     * Ahora el selector de la cabecera los lista todos, agrupados por
+     * bloque: «PRIMER BLOQUE · Semana 4», «SEGUNDO BLOQUE · Semana 1»…
+     * `elegirBloqueActual()` sigue decidiendo con cuál se ABRE la
+     * pantalla; lo que cambia es que ya no es una jaula.
+     */
+    const [blocks, setBlocks] = useState<TrainingBlock[]>([]);
+    const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     /**
      * TODAS las sesiones que el servidor deja ver, de todas las semanas.
      *
@@ -148,12 +164,28 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
      * definición, lo que el atleta tiene derecho a ver.
      */
     const [allSessions, setAllSessions] = useState<ExtendedSession[]>([]);
-    const [weekNames, setWeekNames] = useState<Record<number, string>>({});
+    /** Nombres de semana de TODOS los bloques: `[blockId][semana]`. */
+    const [nombresPorBloque, setNombresPorBloque] = useState<Record<string, Record<number, string>>>({});
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const [weekPickerOpen, setWeekPickerOpen] = useState(false);
     // Los objetivos del bloque se leen el primer día del mesociclo y no
     // vuelven a mirarse: van plegados y no ocupan alto de cabecera.
     const [objectivesOpen, setObjectivesOpen] = useState(false);
+
+    /**
+     * El bloque que se está mirando. Derivado y no un estado aparte: dos
+     * estados que tienen que decir lo mismo acaban diciendo cosas distintas.
+     */
+    const block = useMemo(
+        () => blocks.find(b => b.id === selectedBlockId) ?? null,
+        [blocks, selectedBlockId]
+    );
+
+    /** Los nombres de semana del bloque que se está mirando. */
+    const weekNames = useMemo(
+        () => (selectedBlockId ? nombresPorBloque[selectedBlockId] ?? {} : {}),
+        [nombresPorBloque, selectedBlockId]
+    );
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     /**
@@ -229,16 +261,19 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     };
 
     // Lazy load: cuando el usuario cambia a una semana aún no cargada, traerla.
-    const loadingWeeks = useRef(new Set<number>());
+    // La clave lleva el bloque además de la semana: con varios bloques a la
+    // vista, la "semana 36" de uno y la del otro son dos cosas distintas y
+    // marcar solo el número hacía que la segunda no se llegara a pedir.
+    const loadingWeeks = useRef(new Set<string>());
 
     useEffect(() => {
         if (!block || selectedWeek === null) return;
 
-        // ¿Ya está esta semana cargada?
-        const hasWeek = allSessions.some(s => s.week_number === selectedWeek);
-        if (hasWeek || loadingWeeks.current.has(selectedWeek)) return;
+        const clave = `${block.id}:${selectedWeek}`;
+        const hasWeek = allSessions.some(s => s.block_id === block.id && s.week_number === selectedWeek);
+        if (hasWeek || loadingWeeks.current.has(clave)) return;
 
-        loadingWeeks.current.add(selectedWeek);
+        loadingWeeks.current.add(clave);
         supabase
             .from('training_sessions')
             .select(`
@@ -280,12 +315,18 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 const blocks = await trainingService.getBlocksByAthlete(athleteId);
                 const active = elegirBloqueActual(blocks);
 
+                // Se guardan TODOS los activos, no solo el elegido: el
+                // selector de la cabecera los lista todos y el atleta puede
+                // moverse entre ellos sin recargar nada.
+                const activos = blocks.filter(b => b.is_active);
+                setBlocks(activos);
+
                 if (!active) {
-                    setBlock(null);
+                    setSelectedBlockId(null);
                     setLoading(false);
                     return;
                 }
-                setBlock(active);
+                setSelectedBlockId(active.id);
 
                 // 2. Get Sessions — solo la semana actual, no el bloque entero.
                 // Las otras semanas se cargan bajo demanda al navegar (lazy loading).
@@ -319,14 +360,21 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
 
                 setAllSessions(formatted);
 
-                // Nombres de las semanas. Son decorativos: si la tabla no está
-                // migrada se sigue navegando por "Semana 31".
-                setWeekNames(
-                    Object.fromEntries(
-                        Object.entries(await trainingService.getWeekMetaByBlock(active.id))
-                            .map(([w, m]) => [Number(w), m.name ?? ''])
-                    )
+                // Nombres de las semanas, de TODOS los bloques a la vez: el
+                // selector los enseña todos, así que hacen falta todos. Son
+                // decorativos —si la tabla no está migrada se sigue navegando
+                // por "Semana 31"— y por eso ninguno de estos fallos tumba la
+                // pantalla: `getWeekMetaByBlock` ya devuelve {} si algo va mal.
+                const metas = await Promise.all(
+                    activos.map(async b => [
+                        b.id,
+                        Object.fromEntries(
+                            Object.entries(await trainingService.getWeekMetaByBlock(b.id))
+                                .map(([w, m]) => [Number(w), m.name ?? ''])
+                        ),
+                    ] as const)
                 );
+                setNombresPorBloque(Object.fromEntries(metas));
 
                 // 4. Semana por defecto: la de HOY si está publicada. Si no —el
                 // atleta entra un domingo, o el bloque ya terminó— la última
@@ -388,22 +436,35 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         init();
     }, [athleteId]);
 
-    // Semanas que el atleta puede abrir, de menor a mayor.
-    // Se calcula del bloque (start_week .. end_week) en lugar de allSessions,
-    // así están todas disponibles en el selector aunque aún no se hayan cargado.
-    // Cambiar a una semana que aún no está cargada dispara lazy loading.
-    const availableWeeks = useMemo(() => {
-        if (!block?.start_week || !block?.end_week) return [];
-        return Array.from(
-            { length: block.end_week - block.start_week + 1 },
-            (_, i) => block.start_week! + i
-        );
-    }, [block?.start_week, block?.end_week]);
+    /**
+     * Todo lo que el atleta puede abrir, agrupado por bloque y en orden de
+     * calendario. Es lo que pinta el selector de la cabecera.
+     *
+     * Las semanas salen del bloque (`start_week`..`end_week`) y no de las
+     * sesiones cargadas: así están TODAS en la lista desde el primer momento
+     * aunque solo se haya pedido la de hoy, y elegir una que no esté cargada
+     * dispara la carga perezosa de arriba.
+     */
+    const semanasPorBloque = useMemo(() => semanasDeCadaBloque(blocks), [blocks]);
 
-    // Días de la semana elegida, en orden de calendario.
+    /** Cuántas cosas hay que elegir en total. Con una sola, el selector no abre. */
+    const totalOpciones = useMemo(
+        () => semanasPorBloque.reduce((n, g) => n + g.semanas.length, 0),
+        [semanasPorBloque]
+    );
+
+    // Semanas del bloque que se está mirando, de menor a mayor.
+    const availableWeeks = useMemo(
+        () => semanasPorBloque.find(g => g.bloque.id === selectedBlockId)?.semanas ?? [],
+        [semanasPorBloque, selectedBlockId]
+    );
+
+    // Días de la semana elegida, en orden de calendario. Se filtra también por
+    // BLOQUE: con dos bloques cargados a la vez, dos sesiones pueden compartir
+    // número de semana y se mezclaban los días de uno con los del otro.
     const sessions = useMemo(
-        () => sortSessions(allSessions.filter(s => s.week_number === selectedWeek)),
-        [allSessions, selectedWeek]
+        () => sortSessions(allSessions.filter(s => s.block_id === selectedBlockId && s.week_number === selectedWeek)),
+        [allSessions, selectedBlockId, selectedWeek]
     );
 
     const blockYear = block?.start_date
@@ -514,13 +575,23 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         })));
     }, []);
 
-    const changeWeek = (week: number) => {
+    /**
+     * Ir a una semana, posiblemente de OTRO bloque.
+     *
+     * Antes esto era `changeWeek(week)` y solo se movía dentro del bloque
+     * elegido al arrancar. Ahora el selector lista los bloques activos
+     * enteros, así que el destino es un par (bloque, semana).
+     */
+    const irA = (blockId: string, week: number) => {
+        setSelectedBlockId(blockId);
         setSelectedWeek(week);
         setWeekPickerOpen(false);
-        // Al cambiar de semana se cae en el día de hoy si lo hay, y si no en el
-        // primero: mantener el día anterior seleccionado dejaba la pantalla en
-        // un "Día 3" que en la semana nueva podía no existir.
-        setActiveSessionId(pickSessionForToday(allSessions.filter(s => s.week_number === week)));
+        // Al cambiar se cae en el día de hoy si lo hay, y si no en el primero:
+        // mantener el día anterior seleccionado dejaba la pantalla en un
+        // "Día 3" que en el destino podía no existir.
+        setActiveSessionId(
+            pickSessionForToday(allSessions.filter(s => s.block_id === blockId && s.week_number === week))
+        );
     };
 
     if (loading) return <div className="h-[100dvh] flex items-center justify-center bg-black"><Loader className="animate-spin text-ink" /></div>;
@@ -646,7 +717,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             <button
                                 onClick={() => setWeekPickerOpen(v => !v)}
                                 aria-expanded={weekPickerOpen}
-                                disabled={availableWeeks.length <= 1}
+                                disabled={totalOpciones <= 1}
                                 className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl bg-surface-raised px-2.5 py-1.5 text-left transition-colors hover:bg-surface-overlay disabled:hover:bg-surface-raised md:px-3 md:py-2.5"
                             >
                                 <span className="flex min-w-0 items-center gap-2">
@@ -672,7 +743,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                         </span>
                                     </span>
                                 </span>
-                                {availableWeeks.length > 1 && (
+                                {totalOpciones > 1 && (
                                     <ChevronDown
                                         size={15}
                                         aria-hidden="true"
@@ -722,34 +793,64 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         )}
 
                         {weekPickerOpen && (
-                            <div className="mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-subtle bg-surface-raised p-1.5">
-                                {availableWeeks.map((w, i) => (
-                                    <button
-                                        key={w}
-                                        onClick={() => changeWeek(w)}
-                                        className={cn(
-                                            'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors',
-                                            w === selectedWeek ? 'bg-white/10 text-ink' : 'text-ink-muted hover:bg-white/5'
+                            /* LA LISTA VA AGRUPADA POR BLOQUE.
+
+                                Con un solo bloque se ve igual que antes: la
+                                cabecera del grupo solo aparece cuando hay mas
+                                de uno, porque repetir el nombre del unico
+                                bloque encima de sus propias semanas es ruido.
+
+                                Con dos, que es el caso que motivo esto, se lee
+                                "PRIMER BLOQUE HIPERTROFIA / Semana 4 - Ahora" y
+                                debajo "SEGUNDO BLOQUE HIPERTROFIA / Semana 1,
+                                Semana 2...". El atleta ve de donde sale cada
+                                semana y puede asomarse a lo que viene. */
+                            <div className="mt-1.5 max-h-72 overflow-y-auto rounded-xl border border-subtle bg-surface-raised p-1.5">
+                                {semanasPorBloque.map(({ bloque, anio, semanas }) => (
+                                    <div key={bloque.id}>
+                                        {semanasPorBloque.length > 1 && (
+                                            <p className="px-2.5 pb-1 pt-2 text-t-2xs font-black uppercase tracking-widest text-brand-text first:pt-1">
+                                                {bloque.name}
+                                            </p>
                                         )}
-                                    >
-                                        <span className="min-w-0">
-                                            <span className="block truncate text-xs font-bold">
-                                                Semana {i + 1}
-                                                {weekNames[w] && <span className="ml-1.5 font-normal opacity-70">{weekNames[w]}</span>}
-                                            </span>
-                                            <span className="block text-t-2xs text-ink-subtle">
-                                                {formatDateRange(
-                                                    getDateRangeFromWeek(w, blockYear).start,
-                                                    getDateRangeFromWeek(w, blockYear).end
-                                                )}
-                                            </span>
-                                        </span>
-                                        {w === getWeekNumber() && (
-                                            <span className="ml-2 shrink-0 rounded-full bg-brand/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-brand-text">
-                                                Ahora
-                                            </span>
-                                        )}
-                                    </button>
+                                        {semanas.map((w, i) => {
+                                            const elegida = bloque.id === selectedBlockId && w === selectedWeek;
+                                            const nombre = nombresPorBloque[bloque.id]?.[w];
+                                            /* "Ahora" solo puede estar en un sitio: la semana
+                                               de hoy DENTRO del bloque que corre este ano. Sin
+                                               comprobar el ano, dos bloques distintos se
+                                               colgaban los dos la misma medalla. */
+                                            const esAhora = w === getWeekNumber() && anio === new Date().getFullYear();
+                                            return (
+                                                <button
+                                                    key={bloque.id + ':' + w}
+                                                    onClick={() => irA(bloque.id, w)}
+                                                    className={cn(
+                                                        'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors',
+                                                        elegida ? 'bg-white/10 text-ink' : 'text-ink-muted hover:bg-white/5'
+                                                    )}
+                                                >
+                                                    <span className="min-w-0">
+                                                        <span className="block truncate text-xs font-bold">
+                                                            Semana {i + 1}
+                                                            {nombre && <span className="ml-1.5 font-normal opacity-70">{nombre}</span>}
+                                                        </span>
+                                                        <span className="block text-t-2xs text-ink-subtle">
+                                                            {formatDateRange(
+                                                                getDateRangeFromWeek(w, anio).start,
+                                                                getDateRangeFromWeek(w, anio).end
+                                                            )}
+                                                        </span>
+                                                    </span>
+                                                    {esAhora && (
+                                                        <span className="ml-2 shrink-0 rounded-full bg-brand/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-brand-text">
+                                                            Ahora
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -876,10 +977,10 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             <Check size={32} />
                         </div>
                         <h3 className="text-xl font-black text-ink uppercase tracking-tighter mb-2">
-                            {availableWeeks.length === 0 ? 'Aún no disponible' : 'Semana sin sesiones'}
+                            {totalOpciones === 0 ? 'Aún no disponible' : 'Semana sin sesiones'}
                         </h3>
                         <p className="max-w-xs text-sm leading-relaxed">
-                            {availableWeeks.length === 0
+                            {totalOpciones === 0
                                 ? 'Tu entrenador todavía no ha abierto ninguna semana de este bloque. Aparecerá aquí en cuanto la publique.'
                                 : 'No hay sesiones programadas para esta semana. Elige otra semana arriba, o contacta a tu entrenador si crees que es un error.'}
                         </p>
