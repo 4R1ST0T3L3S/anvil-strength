@@ -348,26 +348,72 @@ export const trainingService = {
      * que tratar la ausencia como "visible", no como "oculta".
      */
     async getWeekMetaByBlock(blockId: string): Promise<Record<number, WeekMeta>> {
-        try {
-            const { data, error } = await supabase
-                .from('training_weeks')
-                .select('week_number, name, is_visible')
-                .eq('block_id', blockId);
+        /**
+         * SE PIDE `notes` Y, SI NO EXISTE, SE REINTENTA SIN ELLA.
+         *
+         * No es prudencia de más. PostgREST rechaza la consulta ENTERA con
+         * 42703 si una sola columna del `select` no existe, y el `catch` de
+         * abajo devuelve `{}` ante cualquier error — así que pedir `notes` a
+         * pelo apagaría también los NOMBRES de semana y la VISIBILIDAD en
+         * cualquier base donde no se haya ejecutado
+         * database/VOLUMEN_Y_NOTAS_2026-09-07.sql. Una función nueva no puede
+         * llevarse por delante dos que ya funcionaban.
+         *
+         * Es el equivalente en lectura de `insertWithOptionalColumns`, que ya
+         * existía para las escrituras.
+         */
+        const pedir = (columnas: string) =>
+            supabase.from('training_weeks').select(columnas).eq('block_id', blockId);
 
-            // La tabla o la columna pueden no estar migradas todavía: los
-            // nombres y la visibilidad son accesorios, no motivo para tumbar
-            // el constructor entero.
-            if (error) return {};
-
-            return (data || []).reduce((acc, curr) => {
+        const construir = (filas: unknown[]): Record<number, WeekMeta> =>
+            (filas || []).reduce((acc: Record<number, WeekMeta>, fila) => {
+                const curr = fila as { week_number: number; name?: string | null; is_visible?: boolean | null; notes?: string | null };
                 acc[curr.week_number] = {
                     name: curr.name ?? null,
                     isVisible: curr.is_visible ?? true,
+                    notes: curr.notes ?? null,
                 };
                 return acc;
-            }, {} as Record<number, WeekMeta>);
+            }, {});
+
+        try {
+            const { data, error } = await pedir('week_number, name, is_visible, notes');
+            if (!error) return construir(data as unknown[]);
+
+            // 42703 = "column does not exist". Cualquier otro error es un
+            // fallo de verdad y se trata como antes.
+            if (error.code !== '42703' && !/notes/.test(error.message ?? '')) return {};
+
+            const reintento = await pedir('week_number, name, is_visible');
+            if (reintento.error) return {};
+            return construir(reintento.data as unknown[]);
         } catch {
             return {};
+        }
+    },
+
+    /**
+     * Guarda la nota de una semana. El upsert manda SOLO `notes`, así que un
+     * nombre o una visibilidad ya guardados sobreviven al cambio — mismo
+     * patrón que `setWeekVisibility`.
+     */
+    async saveWeekNotes(blockId: string, weekNumber: number, notes: string): Promise<void> {
+        const { error } = await supabase
+            .from('training_weeks')
+            .upsert({
+                block_id: blockId,
+                week_number: weekNumber,
+                notes: notes.trim() || null,
+            }, { onConflict: 'block_id, week_number' });
+
+        if (error) {
+            if (error.code === '42703' || /notes/.test(error.message ?? '')) {
+                throw new Error(
+                    'Las notas de semana todavía no están activadas en la base de datos. ' +
+                    'Ejecuta database/VOLUMEN_Y_NOTAS_2026-09-07.sql en Supabase.'
+                );
+            }
+            throw error;
         }
     },
 

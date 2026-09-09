@@ -17,7 +17,7 @@ import {
     getWeekNumber, getDateRangeFromWeek, formatDateRange,
     getDateForWeekday, startOfToday,
 } from '../../../utils/dateUtils';
-import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download, Info } from 'lucide-react';
+import { Loader, Check, AlertCircle, UploadCloud, FileCheck, PlayCircle, ChevronDown, CalendarDays, Download, Info, StickyNote } from 'lucide-react';
 import { downloadWeekPdf, sessionToPrintDay } from '../../../lib/export/weekPdf';
 import { useCoachPdfTheme } from '../../../hooks/useCoachPdfTheme';
 import { useAthletePrefs } from '../../../hooks/useAthletePrefs';
@@ -166,6 +166,15 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     const [allSessions, setAllSessions] = useState<ExtendedSession[]>([]);
     /** Nombres de semana de TODOS los bloques: `[blockId][semana]`. */
     const [nombresPorBloque, setNombresPorBloque] = useState<Record<string, Record<number, string>>>({});
+    /**
+     * Notas de semana del entrenador, por bloque y semana.
+     *
+     * Aparte de `nombresPorBloque` y no dentro: los nombres se usan en el
+     * SELECTOR (una cadena corta por semana) y la nota se pinta en el cuerpo,
+     * solo la de la semana abierta. Meterlas juntas obligaría a arrastrar el
+     * texto entero de todas las semanas de todos los bloques por el selector.
+     */
+    const [notasPorBloque, setNotasPorBloque] = useState<Record<string, Record<number, string>>>({});
     const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
     const [weekPickerOpen, setWeekPickerOpen] = useState(false);
     // Los objetivos del bloque se leen el primer día del mesociclo y no
@@ -186,6 +195,14 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
         () => (selectedBlockId ? nombresPorBloque[selectedBlockId] ?? {} : {}),
         [nombresPorBloque, selectedBlockId]
     );
+    /** La nota del entrenador para la semana abierta, si la hay. */
+    const weekNote = useMemo(
+        () => (selectedBlockId && selectedWeek != null
+            ? notasPorBloque[selectedBlockId]?.[selectedWeek] ?? null
+            : null),
+        [notasPorBloque, selectedBlockId, selectedWeek]
+    );
+
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     /**
@@ -366,15 +383,23 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                 // por "Semana 31"— y por eso ninguno de estos fallos tumba la
                 // pantalla: `getWeekMetaByBlock` ya devuelve {} si algo va mal.
                 const metas = await Promise.all(
-                    activos.map(async b => [
-                        b.id,
-                        Object.fromEntries(
-                            Object.entries(await trainingService.getWeekMetaByBlock(b.id))
-                                .map(([w, m]) => [Number(w), m.name ?? ''])
-                        ),
-                    ] as const)
+                    activos.map(async b => {
+                        const meta = await trainingService.getWeekMetaByBlock(b.id);
+                        const entradas = Object.entries(meta);
+                        return [
+                            b.id,
+                            Object.fromEntries(entradas.map(([w, m]) => [Number(w), m.name ?? ''])),
+                            // La nota va en el mismo viaje: es la misma consulta.
+                            Object.fromEntries(
+                                entradas
+                                    .filter(([, m]) => (m.notes ?? '').trim() !== '')
+                                    .map(([w, m]) => [Number(w), m.notes as string])
+                            ),
+                        ] as const;
+                    })
                 );
-                setNombresPorBloque(Object.fromEntries(metas));
+                setNombresPorBloque(Object.fromEntries(metas.map(([id, nombres]) => [id, nombres])));
+                setNotasPorBloque(Object.fromEntries(metas.map(([id, , notas]) => [id, notas])));
 
                 // 4. Semana por defecto: la de HOY si está publicada. Si no —el
                 // atleta entra un domingo, o el bloque ya terminó— la última
@@ -790,6 +815,27 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                             <p className="mt-1.5 whitespace-pre-wrap rounded-xl border border-subtle bg-white/[0.03] p-3 text-t-xs leading-relaxed text-ink-muted">
                                 {block.description}
                             </p>
+                        )}
+
+                        {/* LA NOTA DE LA SEMANA, SIEMPRE ABIERTA.
+                            Al contrario que los objetivos del bloque —que se
+                            leen el primer día del mesociclo y viven detrás de
+                            un botón—, esto es una instrucción para ESTA semana:
+                            «descarga, no pases de RPE 7». Esconderla detrás de
+                            un icono garantizaría que la mitad de las semanas se
+                            entrenen sin leerla, que es el mismo criterio que ya
+                            sigue el bloque de notas del coach por ejercicio.
+
+                            Solo existe si el entrenador ha escrito algo: una
+                            franja vacía en la cabecera de cada semana costaría
+                            alto de pantalla en el móvil a cambio de nada. */}
+                        {weekNote && (
+                            <div className="mt-1.5 flex items-start gap-2 rounded-xl border border-brand/25 bg-brand-quiet p-2.5">
+                                <StickyNote size={13} className="mt-0.5 shrink-0 text-brand-text" aria-hidden="true" />
+                                <p className="whitespace-pre-wrap text-t-xs leading-relaxed text-ink">
+                                    {weekNote}
+                                </p>
+                            </div>
                         )}
 
                         {weekPickerOpen && (
@@ -1291,12 +1337,26 @@ function LoggerExerciseCard({
 
     const isCardio = sessionExercise.section === 'cardio';
 
-    // Unidad en la que el coach pautó este ejercicio. Las series antiguas no
-    // la traen: son kilos, que era lo único que había antes de la migración.
-    const prescriptionMetric: TargetMetric =
-        sessionExercise.sets?.[0]?.target_metric ?? 'kg';
-    const prescriptionLabel =
-        TARGET_METRICS.find(m => m.key === prescriptionMetric)?.label ?? 'Kg';
+    /**
+     * En qué unidades pautó el coach este ejercicio.
+     *
+     * Un ARRAY y no una sola, porque desde que la unidad se elige por serie
+     * (ver `metricaDe` en ExerciseCard) un mismo ejercicio puede llevar
+     * "1×1 @RPE 5" y debajo "3×3 @80%". Esto leía `sets[0]`, así que en un
+     * ejercicio mixto la cabecera anunciaba la unidad de la PRIMERA serie
+     * como si fuera la de todas.
+     *
+     * Las series antiguas no traen `target_metric`: son kilos, que era lo
+     * único que había antes de la migración.
+     */
+    const prescriptionMetrics: TargetMetric[] = [
+        ...new Set((sessionExercise.sets ?? []).map(s => s.target_metric ?? 'kg')),
+    ];
+    /** Las que NO son kilos: las únicas que hay que anunciar en la cabecera. */
+    const prescriptionLabel = prescriptionMetrics
+        .filter(m => m !== 'kg')
+        .map(m => TARGET_METRICS.find(t => t.key === m)?.label ?? m)
+        .join(' · ');
 
     /**
      * ¿Pautó el coach un peso literal para alguna serie de este ejercicio?
@@ -1678,7 +1738,7 @@ function LoggerExerciseCard({
                         atleta. Cuando el coach pautó en otra unidad —RPE, RIR,
                         velocidad— su objetivo aparece encima de cada casilla, que
                         es donde no se confunde con lo que se ha levantado. */}
-                    <span>{unit === 'lb' ? 'Lb' : 'Kg'}{prescriptionMetric !== 'kg' ? ` · ${prescriptionLabel}` : ''}</span>
+                    <span>{unit === 'lb' ? 'Lb' : 'Kg'}{prescriptionLabel ? ` · ${prescriptionLabel}` : ''}</span>
                     <span>RPE</span>
                     <span />
                     <span />

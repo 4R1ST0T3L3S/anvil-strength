@@ -51,6 +51,21 @@ export interface TrainingWeek {
 export interface WeekMeta {
     name: string | null;
     isVisible: boolean;
+    /**
+     * Nota del entrenador para toda la semana. LA VE EL ATLETA.
+     *
+     * Es el cuarto nivel de notas, y el que faltaba: ya había por serie
+     * (`training_sets.notes`), por ejercicio (`session_exercises.notes`,
+     * "usar cinturón") y por día (`training_sessions.appendix`). Aquí caben
+     * las instrucciones que no son de un ejercicio concreto: "semana de
+     * descarga, no pasar de RPE 7".
+     *
+     * Distinta de `coach_athletes.notes`, que es la libreta PRIVADA del
+     * entrenador y el atleta no ve.
+     *
+     * `undefined` en bases sin database/VOLUMEN_Y_NOTAS_2026-09-07.sql.
+     */
+    notes?: string | null;
 }
 
 /**

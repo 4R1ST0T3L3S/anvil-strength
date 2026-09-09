@@ -13,6 +13,8 @@ import { AccessoryBreakdown } from './AccessoryBreakdown';
 import { BestMarksMini } from './BestMarksMini';
 import { ContextCalendarModal } from './ContextCalendarModal';
 import { GoalsPanel } from './GoalsPanel';
+import { VolumeTargetsEditor, CLAVE_OBJETIVOS_VOLUMEN } from './VolumeTargetsEditor';
+import { volumeTargetsService } from '../../../../services/volumeTargetsService';
 
 /**
  * CENTRO DE CONTEXTO DEL ATLETA
@@ -75,6 +77,26 @@ export function AthleteContextPanel({
     currentSessionId, currentWeek, maxes, declaredMaxes = {}, weekNames = {},
 }: AthleteContextPanelProps) {
     const [calendarOpen, setCalendarOpen] = useState(false);
+    const [editandoObjetivos, setEditandoObjetivos] = useState(false);
+
+    /**
+     * Objetivos de volumen del atleta — TODOS, de cualquier ámbito.
+     *
+     * Se resuelven en el cliente (semana > bloque > siempre) porque el
+     * constructor cambia de semana con cada clic en el acordeón y una
+     * consulta por semana sería una petición por clic. Ver
+     * src/lib/volume/objetivos.ts.
+     *
+     * Lista vacía si la migración no está ejecutada: el panel de la semana
+     * sigue enseñando las series programadas, solo que sin nada contra lo
+     * que compararlas. Ver volumeTargetsService.
+     */
+    const objetivosQuery = useQuery({
+        queryKey: CLAVE_OBJETIVOS_VOLUMEN(athleteId),
+        staleTime: 60 * 1000,
+        queryFn: () => volumeTargetsService.listForAthlete(athleteId),
+    });
+    const objetivosVolumen = objetivosQuery.data ?? [];
 
     /**
      * Registro de ejecución y marcas, con `useQuery` y no con efectos.
@@ -140,6 +162,19 @@ export function AthleteContextPanel({
                 sessions={sessions}
                 week={currentWeek}
                 declaredMaxes={declaredMaxes}
+                objetivos={objetivosVolumen}
+                blockId={blockId}
+                onEditarObjetivos={() => setEditandoObjetivos(true)}
+            />
+
+            <VolumeTargetsEditor
+                open={editandoObjetivos}
+                onClose={() => setEditandoObjetivos(false)}
+                athleteId={athleteId}
+                coachId={coachId}
+                blockId={blockId}
+                week={currentWeek}
+                objetivos={objetivosVolumen}
             />
 
             {/* Hacia dónde se lleva a este atleta — F4/F7. Va justo debajo de

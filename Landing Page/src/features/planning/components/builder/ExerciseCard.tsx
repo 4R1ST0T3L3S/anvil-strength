@@ -261,31 +261,71 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
     const metricOptions = isCardio ? CARDIO_TARGET_METRICS : TARGET_METRICS;
 
     /**
-     * Unidad en la que está pautado el ejercicio.
+     * VARIOS MÉTODOS DENTRO DEL MISMO EJERCICIO.
+     * =================================================================
      *
-     * La métrica se guarda por SERIE en la base, pero se elige por ejercicio.
-     * Se lee de la primera serie y las filas antiguas, sin `target_metric`,
-     * son kilos: es lo único que se podía prescribir antes de la migración.
-     * Un ejercicio de cardio recién marcado como tal no hereda 'kg' — no
-     * significa nada ahí — y arranca en duración.
+     * `training_sets.target_metric` SIEMPRE se ha guardado por serie: la
+     * base de datos admite desde la primera migración que una sentadilla
+     * lleve "1×1 @RPE 5" y debajo "3×3 @80%". Lo que no lo admitía era
+     * esta pantalla, que leía la unidad de `sets[0]` y la escribía en
+     * TODAS al cambiarla. El coach no podía pautar un top-set por esfuerzo
+     * seguido de series de trabajo por porcentaje —que es media
+     * programación de powerlifting— y tenía que partir el ejercicio en
+     * dos, con lo que el volumen, el tonelaje y el histórico lo contaban
+     * como dos ejercicios distintos.
+     *
+     * Ahora la unidad es de la SERIE. La cabecera sigue existiendo y sigue
+     * aplicando a todas —es lo que se usa 19 de cada 20 veces— pero pasa a
+     * ser un "poner todas en" en vez de la única verdad, y cuando las
+     * series no coinciden lo dice en vez de mentir con la de la primera.
      */
-    const exerciseMetric: TargetMetric =
-        sessionExercise.sets[0]?.target_metric ?? (isCardio ? 'duracion_seg' : 'kg');
+    const metricaPorDefecto: TargetMetric = isCardio ? 'duracion_seg' : 'kg';
 
     /**
-     * Cambiar la unidad afecta a todas las series del ejercicio.
+     * La unidad de UNA serie. Las filas anteriores a la migración no
+     * tienen `target_metric` y son kilos: era lo único que se podía
+     * prescribir entonces. Un ejercicio de cardio recién marcado como tal
+     * no hereda 'kg' —no significa nada ahí— y arranca en duración.
+     */
+    const metricaDe = (set: TrainingSet): TargetMetric =>
+        set.target_metric ?? metricaPorDefecto;
+
+    /**
+     * La unidad común, o `null` si las series no coinciden.
+     *
+     * `null` es un estado legítimo y visible ("Mixta"), no un error. Es
+     * justo el caso que esta pantalla no sabía representar.
+     */
+    const metricaComun: TargetMetric | null = (() => {
+        const distintas = new Set(sessionExercise.sets.map(metricaDe));
+        if (distintas.size === 0) return metricaPorDefecto;
+        return distintas.size === 1 ? [...distintas][0] : null;
+    })();
+
+    /**
+     * Cambiar la unidad de UNA serie.
      *
      * NO se arrastra el número de una unidad a otra: 170 kilos no son 170
      * repeticiones en recámara. Al cambiar, el valor se vacía y el coach lo
      * vuelve a escribir, que es preferible a dejar una cifra que parece
      * correcta y significa otra cosa.
+     *
+     * Se vacían las DOS columnas porque el RPE vive en `target_rpe` (texto,
+     * para admitir rangos como "7-8") y el resto en `target_load`: sin
+     * limpiar las dos, pasar de RPE a kilos y volver resucitaría el RPE
+     * viejo debajo de unos kilos nuevos.
      */
+    const cambiarMetricaDeSerie = (set: TrainingSet, metric: TargetMetric) => {
+        if (metric === metricaDe(set)) return;
+        onUpdateSet(set.id, 'target_metric', metric);
+        onUpdateSet(set.id, 'target_load', null);
+        onUpdateSet(set.id, 'target_rpe', null);
+    };
+
+    /** La cabecera: poner TODAS las series en la misma unidad. */
     const handleMetricChange = (metric: TargetMetric) => {
-        if (metric === exerciseMetric) return;
         for (const set of sessionExercise.sets) {
-            onUpdateSet(set.id, 'target_metric', metric);
-            onUpdateSet(set.id, 'target_load', null);
-            onUpdateSet(set.id, 'target_rpe', null);
+            cambiarMetricaDeSerie(set, metric);
         }
     };
 
@@ -735,23 +775,40 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Sets Table */}
             <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-subtle">
                 {/* Header Row */}
-                <div className="mb-2 grid grid-cols-[1fr_1fr_1.3fr_40px] items-center gap-2 px-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">
+                <div className="mb-2 grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] items-center gap-2 px-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">
                     <span>Series</span>
                     {/* "Intervalos" y no "Reps" en cardio: es lo que de verdad
                         cuenta esa cifra en "10 intervalos de 30 s" — ver la
                         cabecera de database/CARDIO_2026-08-30.sql. */}
                     <span>{isCardio ? 'Interv.' : 'Reps'}</span>
-                    {/* La unidad de la columna la elige el coach. El selector
-                        vive en la CABECERA y no en cada fila porque un
-                        ejercicio se pauta entero en la misma unidad; repetirlo
-                        por serie serían cinco desplegables idénticos. */}
+                    {/* PONER TODAS LAS SERIES EN LA MISMA UNIDAD.
+                        Sigue aquí porque es lo que se hace 19 de cada 20
+                        veces, y evita los cinco desplegables idénticos que
+                        habría si la única forma de elegir unidad fuese fila a
+                        fila. Lo que ha cambiado es que ya no MIENTE: cuando
+                        las series llevan unidades distintas dice "Mixta" en
+                        vez de enseñar la de la primera. Elegir una opción las
+                        iguala todas; para cambiar una sola, el selector de su
+                        fila. */}
                     <select
-                        value={exerciseMetric}
+                        value={metricaComun ?? '__mixta__'}
                         onChange={(e) => handleMetricChange(e.target.value as TargetMetric)}
-                        aria-label="Unidad de la prescripción"
-                        title={metricOptions.find(m => m.key === exerciseMetric)?.hint}
-                        className="w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand"
+                        aria-label="Unidad de todas las series"
+                        title={
+                            metricaComun
+                                ? metricOptions.find(m => m.key === metricaComun)?.hint
+                                : 'Las series llevan unidades distintas. Elige una para igualarlas todas.'
+                        }
+                        className={cn(
+                            'w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
+                            metricaComun ? 'text-ink-subtle' : 'text-brand-text'
+                        )}
                     >
+                        {metricaComun === null && (
+                            <option value="__mixta__" disabled className="bg-surface-overlay text-ink">
+                                Mixta
+                            </option>
+                        )}
                         {metricOptions.map(m => (
                             <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
                                 {m.label}{m.unit && ` (${m.unit})`}
@@ -764,10 +821,15 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                 {sessionExercise.sets.map((set: TrainingSet, setIndex: number) => {
                     const seriesVal = getSeriesCount(set.target_reps);
                     const repsVal = getRepsCount(set.target_reps);
+                    const metricaDeEstaSerie = metricaDe(set);
 
                     return (
                         <div key={set.id} className="group/row">
-                            <div className="grid grid-cols-[1fr_1fr_1.3fr_40px] gap-2 items-center">
+                            {/* La columna del valor crece de 1.3fr a 1.7fr y las
+                                de series y reps encogen: el sufijo de unidad se
+                                come 34px, y sin rebalancear la casilla de kilos
+                                se quedaba en menos de 50px en el móvil. */}
+                            <div className="grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] gap-2 items-center">
                             <CompactInput
                                 value={seriesVal}
                                 onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(v as string, repsVal))}
@@ -778,38 +840,75 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(seriesVal, v as string))}
                                 placeholder="-"
                             />
-                            {/* El RPE se guarda en su columna de texto porque es
+                            {/* EL VALOR DE ESTA SERIE, EN LA UNIDAD DE ESTA SERIE.
+                                Antes miraba `exerciseMetric` —la del ejercicio
+                                entero—, así que "1×1 @RPE 5 + 3×3 @80%" era
+                                imposible de escribir. Ver la nota larga de
+                                `metricaDe` arriba.
+
+                                El RPE se guarda en su columna de texto porque es
                                 la única métrica que se pauta en rango ("7-8"),
                                 y un NUMERIC no lo admite. El resto van al
                                 número de `target_load`. Ver set_target_metric.sql. */}
-                            {exerciseMetric === 'rpe' ? (
-                                <CompactInput
-                                    value={set.target_rpe}
-                                    onChange={(v) => onUpdateSet(set.id, 'target_rpe', v as string)}
-                                    placeholder="@8"
-                                />
-                            ) : exerciseMetric === 'kg' ? (
-                                <LoadInput
-                                    value={set.target_load}
-                                    onChange={(kg) => onUpdateSet(set.id, 'target_load', kg)}
-                                    referenceMax={referenceMax}
-                                    placeholder={referenceMax ? '170 u 85%' : '-'}
-                                />
-                            ) : (
-                                // RIR, velocidad, pérdida, duración y distancia no
-                                // admiten porcentaje: un "85%" ahí no significaría nada.
-                                <CompactInput
-                                    value={set.target_load}
-                                    onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
-                                    placeholder={
-                                        exerciseMetric === 'vel' ? '0.45'
-                                            : exerciseMetric === 'duracion_seg' ? '1800'
-                                                : exerciseMetric === 'distancia_km' ? '5'
-                                                    : '-'
-                                    }
-                                    type="number"
-                                />
-                            )}
+                            <div className="flex min-w-0 items-center gap-1">
+                                <div className="min-w-0 flex-1">
+                                    {metricaDeEstaSerie === 'rpe' ? (
+                                        <CompactInput
+                                            value={set.target_rpe}
+                                            onChange={(v) => onUpdateSet(set.id, 'target_rpe', v as string)}
+                                            placeholder="@8"
+                                        />
+                                    ) : metricaDeEstaSerie === 'kg' ? (
+                                        <LoadInput
+                                            value={set.target_load}
+                                            onChange={(kg) => onUpdateSet(set.id, 'target_load', kg)}
+                                            referenceMax={referenceMax}
+                                            placeholder={referenceMax ? '170 u 85%' : '-'}
+                                        />
+                                    ) : (
+                                        // RIR, velocidad, pérdida, duración y distancia no
+                                        // admiten porcentaje: un "85%" ahí no significaría nada.
+                                        <CompactInput
+                                            value={set.target_load}
+                                            onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
+                                            placeholder={
+                                                metricaDeEstaSerie === 'vel' ? '0.45'
+                                                    : metricaDeEstaSerie === 'duracion_seg' ? '1800'
+                                                        : metricaDeEstaSerie === 'distancia_km' ? '5'
+                                                            : '-'
+                                            }
+                                            type="number"
+                                        />
+                                    )}
+                                </div>
+
+                                {/* LA UNIDAD DE ESTA FILA.
+                                    Se lee como el sufijo de la casilla —"Kg",
+                                    "RPE"— y solo parece un control al pasar por
+                                    encima, igual que el de la cabecera. Sin
+                                    fondo ni flecha: cuando las cinco series van
+                                    en la misma unidad no añade cinco
+                                    desplegables a la vista, añade cinco
+                                    etiquetas. Se enciende en color de marca
+                                    cuando el ejercicio lleva unidades mezcladas,
+                                    que es la única vez que hay que mirarlo. */}
+                                <select
+                                    value={metricaDeEstaSerie}
+                                    onChange={(e) => cambiarMetricaDeSerie(set, e.target.value as TargetMetric)}
+                                    aria-label={`Unidad de la serie ${setIndex + 1}`}
+                                    title={metricOptions.find(m => m.key === metricaDeEstaSerie)?.hint}
+                                    className={cn(
+                                        'w-[34px] shrink-0 cursor-pointer appearance-none rounded border border-transparent bg-transparent py-1 text-center text-t-2xs uppercase transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
+                                        metricaComun === null ? 'font-bold text-brand-text' : 'text-ink-faint'
+                                    )}
+                                >
+                                    {metricOptions.map(m => (
+                                        <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
+                                            {m.label}{m.unit && ` (${m.unit})`}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
                             {/* Actions */}
                             <div className="flex justify-end items-center gap-0.5">

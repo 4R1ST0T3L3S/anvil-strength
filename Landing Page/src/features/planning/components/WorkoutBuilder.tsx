@@ -37,6 +37,7 @@ import { DayCard } from './builder/DayCard';
 import type { DayOption } from './builder/CopyDayMenu';
 import { useCoachPrefs } from '../../../hooks/useCoachPrefs';
 import { IconAction, WeekMenu } from './builder/WeekMenu';
+import { WeekNotes } from './builder/WeekNotes';
 import { DayEditorModal } from './builder/DayEditorModal';
 import type { ExtendedSession, ExtendedSessionExercise, FullBlockData, ExerciseCardUpdates } from './builder/types';
 import {
@@ -2139,6 +2140,24 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                         >
                             {/* Cabecera de semana */}
                             <div
+                                // `data-no-press`: ESTA CABECERA ES UN CONTENEDOR, NO UN CONTROL.
+                                //
+                                // El CSS global (src/index.css §3) hunde
+                                // `transform: scale(0.97)` cualquier `button` o
+                                // `[role="button"]` mientras está pulsado, y `:active`
+                                // en CSS alcanza también a los ANCESTROS del elemento
+                                // que se toca. Como esta cabecera envuelve al lápiz de
+                                // renombrar, a los dos `IconAction` y al menú `⋮`,
+                                // tocar cualquiera de ellos encogía la cabecera ENTERA
+                                // un 3% alrededor de su centro. En una cabecera de
+                                // 1200px eso arrastra los controles del borde derecho
+                                // unos 16px hacia la izquierda mientras el dedo sigue
+                                // apoyado, así que al soltar el toque cae fuera del
+                                // botón y hay que apuntar más a la izquierda de lo que
+                                // se ve. Es justo la salida que documenta el propio
+                                // index.css: "para los pocos casos donde el botón ES el
+                                // contenedor de la pantalla".
+                                data-no-press
                                 role="button"
                                 tabIndex={0}
                                 aria-expanded={isExpanded}
@@ -2191,7 +2210,11 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                                 <button
                                                     onClick={(e) => handleStartEditWeekName(week, weekName(week), e)}
                                                     aria-label={`Renombrar semana ${index + 1}`}
-                                                    className="shrink-0 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-ink group-hover:opacity-100 focus-visible:opacity-100"
+                                                    // Ver la nota de DayCard: a opacidad cero seguía
+                                                    // siendo pulsable, y sin `hover` en el móvil era un
+                                                    // botón invisible pegado al título de la semana que
+                                                    // abría el renombrado en vez de plegar el acordeón.
+                                                    className="shrink-0 text-ink-faint transition-opacity duration-fast ease-snap hover:text-ink focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
                                                 </button>
@@ -2323,6 +2346,25 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                             <div className={`grid overflow-hidden rounded-b-card transition-[grid-template-rows] duration-base ease-snap ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                                 <div className="overflow-hidden">
                                     <div className="border-t border-[var(--border-subtle)] p-3 md:p-6">
+                                        {/* La nota de la semana, ANTES de los días.
+                                            Es contexto de todo lo que hay debajo —«esta
+                                            semana es descarga»— y ponerla al final la
+                                            convertiría en un pie que nadie lee. Ver
+                                            builder/WeekNotes.tsx. */}
+                                        {blockId && (
+                                            <WeekNotes
+                                                blockId={blockId}
+                                                weekNumber={week}
+                                                valor={weekMeta[week]?.notes}
+                                                onGuardado={(notes) =>
+                                                    setWeekMeta(prev => ({
+                                                        ...prev,
+                                                        [week]: { ...(prev[week] ?? { name: null, isVisible: false }), notes },
+                                                    }))
+                                                }
+                                            />
+                                        )}
+
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
                                             {weekSessions.map((session) => (
                                                 <DayCard
