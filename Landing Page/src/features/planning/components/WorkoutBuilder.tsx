@@ -38,6 +38,7 @@ import type { DayOption } from './builder/CopyDayMenu';
 import { useCoachPrefs } from '../../../hooks/useCoachPrefs';
 import { IconAction, WeekMenu } from './builder/WeekMenu';
 import { WeekNotes } from './builder/WeekNotes';
+import { FrequencyPlanner } from './FrequencyPlanner';
 import { DayEditorModal } from './builder/DayEditorModal';
 import type { ExtendedSession, ExtendedSessionExercise, FullBlockData, ExerciseCardUpdates } from './builder/types';
 import {
@@ -2364,6 +2365,25 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                                 }
                                             />
                                         )}
+
+                                        {/* CÓMO QUEDA REPARTIDA LA SEMANA.
+                                            Va ANTES de las tarjetas de día: la
+                                            pregunta "¿está bien repartida?" se hace
+                                            mirando la semana entera, y si estuviera
+                                            debajo habría que pasar por encima de
+                                            siete tarjetas para llegar a ella. Se
+                                            recalcula con cada tecla porque recibe el
+                                            estado local del constructor, igual que el
+                                            panel de volumen. Ver FrequencyPlanner. */}
+                                        <div className="mb-3 md:mb-4">
+                                            <FrequencyPlanner
+                                                sessions={blockVolumeSessions}
+                                                week={week}
+                                                declaredMaxes={declaredMaxes}
+                                                primerDia={coachPrefs.defaultFirstWeekday}
+                                                onAbrirDia={setEditingSessionId}
+                                            />
+                                        </div>
 
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
                                             {weekSessions.map((session) => (

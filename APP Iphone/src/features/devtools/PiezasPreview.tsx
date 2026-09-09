@@ -6,6 +6,7 @@ import type { AccountStatus } from '../../services/athletesService';
 import { ExerciseCard } from '../planning/components/builder/ExerciseCard';
 import { EJERCICIO_MIXTO, EJERCICIO_SIMPLE, SEMANA_DE_MENTIRA, OBJETIVOS_DE_MENTIRA } from './ejercicioDeMentira';
 import { CurrentWeekLifts } from '../planning/components/context/CurrentWeekLifts';
+import { FrequencyPlanner } from '../planning/components/FrequencyPlanner';
 import {
     TarjetaDeFase, TarjetaDeCompeticion, TarjetaDeMovimiento,
 } from '../athlete/components/AthleteStatsView';
@@ -129,6 +130,17 @@ export function PiezasPreview() {
                             ))}
                         </div>
                     </div>
+                </Bloque>
+
+                <Bloque
+                    titulo="Planificador de frecuencia"
+                    nota="La semana repartida por días. Los descansos ocupan sitio a propósito. Pasa el ratón por encima de un día (o tócalo en móvil) para ver su detalle."
+                >
+                    <FrequencyPlanner
+                        sessions={SEMANA_DE_MENTIRA}
+                        week={3}
+                        declaredMaxes={{ sentadilla: 220, 'press banca': 150, 'peso muerto': 260 }}
+                    />
                 </Bloque>
 
                 <Bloque
