@@ -113,7 +113,7 @@ export function AuthCallback() {
     // Una sola lectura, al montar: el cliente de Supabase LIMPIA la URL en
     // cuanto canjea el token, así que leerla en cada render devolvería
     // "vacío" a partir del segundo.
-    const aterrizaje = useMemo(leerAterrizaje, []);
+    const aterrizaje = useMemo(() => leerAterrizaje(), []);
 
     // Si el token viniera mal, quedarse aquí girando para siempre sería el
     // peor final posible. A los 8 segundos se da por perdido.

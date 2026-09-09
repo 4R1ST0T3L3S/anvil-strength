@@ -902,9 +902,16 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                         metricaComun === null ? 'font-bold text-brand-text' : 'text-ink-faint'
                                     )}
                                 >
+                                    {/* ETIQUETA CORTA, no la del selector de la cabecera.
+                                        Un `<select>` cerrado enseña el texto de la
+                                        opcion elegida, y "Kg (kg)" o "Perdida (%)" no
+                                        caben en 34px: se recortaban. Aqui basta la
+                                        UNIDAD —kg, m/s, %— porque la columna ya se
+                                        titula arriba; la cabecera sigue con el nombre
+                                        completo, que es donde de verdad se elige. */}
                                     {metricOptions.map(m => (
                                         <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
-                                            {m.label}{m.unit && ` (${m.unit})`}
+                                            {m.unit || m.label}
                                         </option>
                                     ))}
                                 </select>

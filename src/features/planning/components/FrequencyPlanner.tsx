@@ -309,7 +309,10 @@ function Marca({ titulo, banda }: { titulo: string; banda: Banda }) {
     const nivel = banda === 'alto' ? 3 : banda === 'medio' ? 2 : 1;
     return (
         <span className="flex items-center gap-1" title={`${titulo}: ${ETIQUETA_BANDA[banda].toLowerCase()}`}>
-            <span className="w-5 text-t-2xs uppercase text-ink-faint">{titulo}</span>
+            {/* Sin ancho fijo: con `w-5` (20px) el texto "VOL" medía 23 y se
+                salía de su caja. `shrink-0` conserva la alineación entre las
+                dos filas sin imponer una anchura que no cabe. */}
+            <span className="shrink-0 text-t-2xs uppercase text-ink-faint">{titulo}</span>
             <span className="flex gap-0.5" aria-hidden="true">
                 {[1, 2, 3].map(i => (
                     <span
