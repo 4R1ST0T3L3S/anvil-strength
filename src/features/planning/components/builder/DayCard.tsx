@@ -82,7 +82,18 @@ export const DayCard = memo(function DayCard({
                     onClick={() => onRemove(session.id)}
                     title="Eliminar día"
                     aria-label={`Eliminar ${dayLabel}`}
-                    className="rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
+                    // `md:opacity-0` y no `opacity-0` a secas.
+                    //
+                    // Un elemento a opacidad cero SIGUE recibiendo
+                    // pulsaciones, y en una pantalla táctil no existe el
+                    // `hover` que lo revelaba: en el móvil esto era un botón
+                    // INVISIBLE en la esquina de cada tarjeta de día que se
+                    // comía el toque. Tocabas la tarjeta para abrir el día y
+                    // saltaba «Eliminar día», así que había que apuntar a otro
+                    // sitio. Mismo idioma que ExerciseCard (`md:opacity-0
+                    // group-hover/row:opacity-100`): visible siempre donde no
+                    // hay ratón, al pasar por encima donde sí lo hay.
+                    className="rounded-field p-1.5 text-ink-faint transition-opacity duration-fast ease-snap hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand md:opacity-0 md:group-hover/day:opacity-100"
                 >
                     <Trash2 size={14} aria-hidden="true" />
                 </button>

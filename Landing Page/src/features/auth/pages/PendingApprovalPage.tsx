@@ -1,15 +1,12 @@
 import { ShieldAlert, LogOut } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
-import { useQueryClient } from '@tanstack/react-query';
+import { cerrarSesion } from '../../../lib/sesion';
 
 export function PendingApprovalPage() {
-    const queryClient = useQueryClient();
-
-    const handleLogout = async () => {
-        await supabase.auth.signOut();
-        queryClient.invalidateQueries({ queryKey: ['user'] });
-        window.location.href = '/';
-    };
+    // Sin `invalidateQueries`: `cerrarSesion` termina en una navegación
+    // completa, así que la caché de React Query se muere con el documento.
+    // Invalidar antes de irse solo servía para disparar una petición que
+    // nadie iba a leer. Ver src/lib/sesion.ts.
+    const handleLogout = cerrarSesion;
 
     return (
         <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center p-6 text-ink font-sans selection:bg-brand">

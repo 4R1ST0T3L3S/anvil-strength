@@ -568,6 +568,10 @@ function AthleteCard({
             transition={stagger(index)}
         >
             <div
+                // Mismo caso que la cabecera de semana del constructor: es una
+                // TARJETA con controles dentro, no un control. Ver la nota larga
+                // en WorkoutBuilder.tsx y src/index.css §3.
+                data-no-press
                 role="button"
                 tabIndex={0}
                 onClick={onSelect}

@@ -1,7 +1,7 @@
 import { LazyMotion } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
-import { supabase } from './lib/supabase';
+import { cerrarSesion } from './lib/sesion';
 import { useUser } from './hooks/useUser';
 import { useRedeemPendingInvite } from './hooks/useRedeemPendingInvite';
 import { useClaimManagedProfile } from './hooks/useClaimManagedProfile';
@@ -29,11 +29,9 @@ function App() {
   useClaimManagedProfile(user);
   useCapabilityConfig(user);
 
-  const handleLogout = async () => {
-    localStorage.removeItem('anvil_user_cache');
-    await supabase.auth.signOut();
-    window.location.reload();
-  };
+  // Una sola copia, en src/lib/sesion.ts. Ver ahi por que el `await
+  // signOut()` que habia aqui dejaba al usuario DENTRO cuando fallaba.
+  const handleLogout = cerrarSesion;
 
   if (isLoading) return <DashboardSkeleton />;
 

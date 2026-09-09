@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { vigilarRestauracionDeHistorial } from '../lib/sesion';
 import { Session } from '@supabase/supabase-js';
 import { Loader } from 'lucide-react';
 
@@ -76,6 +77,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             subscription.unsubscribe();
         };
     }, [queryClient, loading]);
+
+    /**
+     * EL BOTÓN ATRÁS DESPUÉS DE CERRAR SESIÓN.
+     *
+     * Salir hace una navegación completa, así que este documento se guarda
+     * en la caché de retroceso del navegador con el panel pintado y el
+     * objeto `session` vivo en memoria. Pulsar atrás lo restaura tal cual,
+     * sin ejecutar nada: se ve el panel del usuario que acaba de salir.
+     *
+     * Va en un efecto aparte y no en el de arriba a propósito: aquel se
+     * vuelve a montar cada vez que cambia `loading`, y esta suscripción no
+     * tiene por qué seguir ese ciclo.
+     */
+    useEffect(() => vigilarRestauracionDeHistorial(() => session !== null), [session]);
 
     if (loading) {
         return (

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { cerrarSesion } from '../../../lib/sesion';
 import { UserProfile } from '../../../hooks/useUser';
 import { Loader, Save, Camera, Trash2, CheckCircle2, AlertCircle, LogOut, FileText, ChevronRight } from 'lucide-react';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -159,15 +160,10 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
         }
     };
 
-    const handleLogout = async () => {
-        try {
-            await supabase.auth.signOut();
-            window.location.href = '/';
-        } catch (error) {
-            console.error('Error al cerrar sesión:', error);
-            window.location.href = '/';
-        }
-    };
+    // Ver src/lib/sesion.ts: el `signOut()` de aquí revocaba en el servidor y,
+    // al fallar, dejaba `anvil-auth-token` puesto. El `catch` disimulaba el
+    // fallo navegando igual, así que parecía que había salido y no.
+    const handleLogout = cerrarSesion;
 
     return (
         <div className="mx-auto w-full max-w-4xl px-4 py-6 pb-24 md:px-8 md:py-10">
