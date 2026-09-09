@@ -2,30 +2,48 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
+import { SelectorDeTema } from '../ui/SelectorDeTema';
 import { SelectorDeIdioma } from '../ui/SelectorDeIdioma';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 import { useUser } from '../../hooks/useUser';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface PublicHeaderProps {
-    onLoginClick?: () => void;
+    onLoginClick: () => void;
+    /** Abre el modal directamente en la pestaña de alta. */
     onSignupClick?: () => void;
 }
 
 /**
  * El orden es el mismo en el que aparecen las secciones en la portada: así la
  * barra se lee como un índice de la página y no como una lista suelta.
+ *
+ * `principal` marca los cinco que se ven en la barra. El resto vive en el
+ * menú "MÁS".
+ *
+ * POR QUÉ CINCO Y NO NUEVE. Los nueve enlaces a 13px con su interlineado no
+ * caben por debajo de 1536px, y la solución que había era esconderlos TODOS
+ * hasta ese ancho: en un portátil de 1280 o 1440 la web pública se navegaba
+ * con menú de hamburguesa. Cinco es el mismo tope que ya rige la barra
+ * inferior del móvil (ver DashboardLayout), aplicado al otro extremo.
  */
 const NAV_LINKS = [
-    { name: 'FILOSOFÍA', href: '#filosofia' },
-    { name: 'SOFTWARE', href: '#software' },
-    { name: 'EQUIPO', href: '#entrenadores' },
-    { name: 'ATLETAS', href: '#atletas' },
-    { name: 'COMPETICIONES', href: '/competiciones' },
-    { name: 'LOGROS', href: '#logros' },
-    { name: 'OPINIONES', href: '#reviews' },
-    { name: 'AFÍLIATE', href: '#afiliacion' },
-    { name: 'CONTACTO', href: '#contacto' },
+    // LA APP va la primera y es `principal`: desde que "entrar a entrenar"
+    // subió justo debajo de la portada, es la primera sección de la página, y
+    // esconderla en el menú "MÁS" sería volver a enterrar la puerta.
+    { name: 'LA APP', href: '#app', principal: true },
+    { name: 'FILOSOFÍA', href: '#filosofia', principal: true },
+    { name: 'SOFTWARE', href: '#software', principal: true },
+    { name: 'EQUIPO', href: '#entrenadores', principal: true },
+    // COMPETICIONES sale de la barra al menú "MÁS" para dejar sitio a LA APP:
+    // cinco es el tope, y es la única de las cinco que no es una sección de
+    // esta página sino otra ruta.
+    { name: 'ATLETAS', href: '#atletas', principal: true },
+    { name: 'COMPETICIONES', href: '/competiciones', principal: false },
+    { name: 'LOGROS', href: '#logros', principal: false },
+    { name: 'OPINIONES', href: '#reviews', principal: false },
+    { name: 'AFÍLIATE', href: '#afiliacion', principal: false },
+    { name: 'CONTACTO', href: '#contacto', principal: false },
 ];
 
 const IDS_SECCION = NAV_LINKS.filter(l => l.href.startsWith('#')).map(l => l.href.slice(1));
@@ -96,10 +114,12 @@ function useSeccionVisible(activo: boolean): string | null {
     return activo ? seccion : null;
 }
 
-export function PublicHeader(_props: PublicHeaderProps) {
+export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps) {
     const { data: currentUser } = useUser();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [masAbierto, setMasAbierto] = useState(false);
+    const masRef = useRef<HTMLButtonElement>(null);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -152,6 +172,7 @@ export function PublicHeader(_props: PublicHeaderProps) {
     const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
         e.preventDefault();
         setIsMobileMenuOpen(false);
+        setMasAbierto(false);
 
         // Ruta de verdad: navegar y ya está.
         //
@@ -185,6 +206,10 @@ export function PublicHeader(_props: PublicHeaderProps) {
         href.startsWith('#')
             ? isHome && seccionVisible === href.slice(1)
             : location.pathname === href;
+
+    const principales = NAV_LINKS.filter(l => l.principal);
+    const secundarios = NAV_LINKS.filter(l => !l.principal);
+    const hayActivoEnMas = secundarios.some(l => esActivo(l.href));
 
     return (
         <header
@@ -225,7 +250,7 @@ export function PublicHeader(_props: PublicHeaderProps) {
                     aria-label="Secciones del sitio"
                     className="pointer-events-none absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-x-1 whitespace-nowrap lg:flex"
                 >
-                    {NAV_LINKS.map((link) => (
+                    {principales.map((link) => (
                         <a
                             key={link.name}
                             href={link.href}
@@ -238,17 +263,79 @@ export function PublicHeader(_props: PublicHeaderProps) {
                             {link.name}
                         </a>
                     ))}
+
+                    <button
+                        ref={masRef}
+                        onClick={() => setMasAbierto(v => !v)}
+                        aria-expanded={masAbierto}
+                        aria-haspopup="menu"
+                        className={`pointer-events-auto flex h-11 items-center gap-1 rounded-field px-2.5 text-t-xs font-bold uppercase leading-none tracking-[0.06em] transition-colors duration-fast ease-snap hover:text-ink ${
+ hayActivoEnMas ? 'text-brand-text' : 'text-ink-muted'
+ }`}
+                    >
+                        MÁS
+                        <ChevronDown
+                            className={`h-3.5 w-3.5 transition-transform duration-fast ease-snap ${masAbierto ? 'rotate-180' : ''}`}
+                            aria-hidden="true"
+                        />
+                    </button>
                 </nav>
+
+                <AnchoredMenu
+                    open={masAbierto}
+                    onClose={() => setMasAbierto(false)}
+                    anchorRef={masRef}
+                    align="start"
+                    width={188}
+                    className="z-dropdown rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay"
+                >
+                    {secundarios.map((link) => (
+                        <a
+                            key={link.name}
+                            href={link.href}
+                            role="menuitem"
+                            onClick={(e) => handleNavClick(e, link.href)}
+                            className={`flex h-11 items-center rounded-field px-3 text-t-xs font-bold uppercase tracking-[0.06em] transition-colors duration-fast ease-snap hover:bg-surface-raised hover:text-ink ${
+ esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
+ }`}
+                        >
+                            {link.name}
+                        </a>
+                    ))}
+                </AnchoredMenu>
 
                 {/* Acciones */}
                 <div className="flex-shrink-0 flex items-center gap-2">
+                    <div className="hidden sm:block">
+                        <SmartAuthButton
+                            variant="ghost"
+                            onLoginClick={onLoginClick}
+                            className="!font-bebas !italic !tracking-[0.08em] !text-t-sm !min-h-[44px] !py-1.5 !px-4 !border !border-[var(--border-default)] !rounded-field hover:!border-[var(--border-strong)] hover:!bg-white/5"
+                        />
+                    </div>
+
+                    {onSignupClick && !currentUser && (
+                        <button
+                            onClick={onSignupClick}
+                            className="hidden min-h-[44px] items-center justify-center rounded-field bg-brand px-4 font-bebas text-t-sm italic tracking-[0.08em] text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover sm:inline-flex"
+                        >
+                            Crear cuenta
+                        </button>
+                    )}
+
                     {/* El icono de la tienda ya no está: era un `<button>` sin
                         `onClick`, con una insignia de "0" encima, y la ruta
                         /ropa lleva comentada en AppRoutes desde hace tiempo.
                         Un control que parece pulsable y no hace nada cuesta
                         más que no tenerlo. Cuando la tienda exista, vuelve. */}
 
+                    {/* El tema, también en la web pública: quien llega desde
+                        Google con el móvil en claro se merece la misma
+                        cortesía que quien ya tiene cuenta. Se esconde por
+                        debajo de lg porque ahí el sitio del icono lo ocupa el
+                        menú, y dentro del menú vuelve a salir. */}
                     <SelectorDeIdioma className="hidden lg:flex" />
+                    <SelectorDeTema className="hidden lg:flex" />
 
                     {/* Menú móvil. 44x44 reales: medía 40 con el relleno. */}
                     <button
@@ -314,6 +401,12 @@ export function PublicHeader(_props: PublicHeaderProps) {
                                 </m.a>
                             ))}
                         </nav>
+
+                        {/* El tema, también aquí. En la barra el icono está
+                            oculto por debajo de `lg` porque ese sitio lo ocupa
+                            el botón del menú, así que si no estuviera dentro
+                            del menú no habría forma de cambiarlo en móvil — que
+                            es justo donde el sistema cambia solo al anochecer. */}
                         <div className="space-y-1 border-t border-subtle px-8 py-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
@@ -321,11 +414,30 @@ export function PublicHeader(_props: PublicHeaderProps) {
                                 </span>
                                 <SelectorDeIdioma />
                             </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
+                                    Tema
+                                </span>
+                                <SelectorDeTema />
+                            </div>
                         </div>
 
                         {/* La zona segura: este bloque está pegado al borde
                             inferior y en un iPhone cae bajo la barra de gestos. */}
                         <div className="space-y-3 px-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] pt-4">
+                            <SmartAuthButton
+                                variant="primary"
+                                onLoginClick={onLoginClick}
+                                className="w-full !bg-brand hover:!bg-brand-hover !py-5"
+                            />
+                            {onSignupClick && !currentUser && (
+                                <button
+                                    onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
+                                    className="w-full rounded-field border border-[var(--border-default)] py-4 font-bebas text-t-lg italic tracking-[0.1em] text-ink transition-colors duration-fast ease-snap hover:bg-white/5"
+                                >
+                                    Crear cuenta
+                                </button>
+                            )}
                         </div>
                     </m.div>
                 )}

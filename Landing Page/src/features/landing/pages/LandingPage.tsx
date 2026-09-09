@@ -1,7 +1,9 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
-import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle, Download } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { AnvilLogoSVG } from '../../../components/ui/AnvilLogoSVG';
+import { AccesoAppSection, VolverAlAcceso } from '../components/AccesoAppSection';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
 import { CoachDetailsModal } from '../../../components/modals/CoachDetailsModal';
@@ -210,6 +212,24 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 </div>
 
                 <div className="relative z-10 mx-auto w-full max-w-[1180px] px-6 pb-24 pt-32 text-center md:px-10">
+                    {/* EL YUNQUE, ENCIMA DEL NOMBRE.
+                        La portada tenía el nombre en texto y nada más. La marca
+                        se reconoce antes por la silueta que por las letras, y
+                        aquí es donde hay sitio para enseñarla a tamaño de
+                        verdad; en la barra superior mide 24px. */}
+                    <m.div
+                        initial={{ opacity: 0, scale: 0.92 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        className="mb-7 flex justify-center"
+                    >
+                        <AnvilLogoSVG
+                            width={88}
+                            height={88}
+                            className="text-ink drop-shadow-[0_6px_24px_rgba(0,0,0,0.55)] md:h-28 md:w-28"
+                        />
+                    </m.div>
+
                     <m.h1
                         initial={{ opacity: 0, y: 24 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -240,19 +260,46 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         transition={{ duration: 0.65, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
                         className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
                     >
+                        {/* CTA PRINCIPAL.
+                            Se había quitado al separar esta carpeta como "solo
+                            promocional": una portada sin ninguna acción, cuya
+                            única salida era un enlace de texto a la filosofía.
+                            Vuelve, y `SmartAuthButton` hace que sirva también a
+                            quien ya tiene sesión —dice "Ir a mi panel" y va—,
+                            que ahora es posible porque este dominio sirve la
+                            aplicación entera. */}
+                        {!user ? (
+                            <PressButton onClick={onSignupClick ?? onLoginClick} className="w-full sm:w-auto">
+                                Crear cuenta gratis
+                            </PressButton>
+                        ) : (
+                            <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full sm:w-auto" />
+                        )}
                         <a
-                            href="#filosofia"
-                            onClick={(e) => scrollToSection(e, '#filosofia')}
+                            href="#app"
+                            onClick={(e) => scrollToSection(e, '#app')}
                             className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
                         >
-                            Ver de qué va
+                            Ya tengo cuenta
                         </a>
                     </m.div>
                 </div>
             </section>
 
             {/* =====================================================
-                2. QUÉ ES ANVIL — fold claro
+                2. ENTRAR A LA APP
+                =====================================================
+                Inmediatamente después de la portada, y no a media página
+                dentro del fold de "qué trae la app". Ver la cabecera de
+                AccesoAppSection.tsx.                                    */}
+            <AccesoAppSection
+                user={user}
+                onLoginClick={onLoginClick}
+                onSignupClick={onSignupClick}
+            />
+
+            {/* =====================================================
+                3. QUÉ ES ANVIL — fold claro
                 =====================================================
                 Sustituye a las dos rejillas de tarjetas que había aquí
                 (cuatro "pilares" + seis "beneficios"): dieciséis cajas
@@ -368,81 +415,16 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     ))}
                 </StaggerList>
 
-                <Reveal delay={0.2} className="mt-24 border-t border-subtle pt-16">
-                    <div className="mb-10 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
-                        <div>
-                            <h3 className="text-t-xl font-black text-ink uppercase tracking-display">
-                                Descarga la app oficial
-                            </h3>
-                            <p className="mt-2 text-ink-muted text-t-base">Disponible para todos tus dispositivos.</p>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        {/* Android */}
-                        <a href="/downloads/anvil-strength-1.3.0.apk" download="anvil-strength-1.3.0.apk" className="group relative flex items-center gap-4 rounded-xl border border-subtle bg-surface px-5 py-4 transition-colors hover:border-brand/50">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-sunken">
-                                <svg viewBox="-2 -2 28 28" fill="currentColor" className="h-6 w-6 text-[#3DDC84]">
-                                    <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v5C2 15.33 2.67 16 3.5 16S5 15.33 5 14.5v-5C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
-                                </svg>
-                            </div>
-                            <div className="flex-1 text-left relative z-10">
-                                <span className="block text-t-sm font-black uppercase tracking-widest text-ink">Android</span>
-                                <span className="mt-0.5 block text-t-xs text-ink-muted">APK v1.3.0</span>
-                            </div>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-brand-ink relative z-10 transition-transform group-hover:scale-110">
-                                <Download className="h-4 w-4" />
-                            </div>
-                        </a>
-
-                        {/* iOS */}
-                        <a href="https://ios.anvilstrength.es/?instalar=1" target="_blank" rel="noopener noreferrer" className="group relative flex items-center gap-4 rounded-xl border border-subtle bg-surface px-5 py-4 transition-colors hover:border-brand/50">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-sunken">
-                                <svg viewBox="-1 -1 26 26" fill="currentColor" className="h-6 w-6 text-gray-200">
-                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.22.67-2.94 1.5-.62.71-1.16 1.85-1.01 2.96 1.12.09 2.27-.59 2.96-1.4"/>
-                                </svg>
-                            </div>
-                            <div className="flex-1 text-left relative z-10">
-                                <span className="block text-t-sm font-black uppercase tracking-widest text-ink">iPhone</span>
-                                <span className="mt-0.5 block text-t-xs text-ink-muted">Web app · Añadir a inicio</span>
-                            </div>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-brand-ink relative z-10 transition-transform group-hover:scale-110">
-                                <Download className="h-4 w-4" />
-                            </div>
-                        </a>
-
-                        {/* Windows */}
-                        <a href="/downloads/AnvilStrength-Setup-1.0.0.exe" download="AnvilStrength-Setup-1.0.0.exe" className="group relative flex items-center gap-4 rounded-xl border border-subtle bg-surface px-5 py-4 transition-colors hover:border-brand/50">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-sunken">
-                                <svg viewBox="-3 -3 30 30" fill="currentColor" className="h-6 w-6 text-[#0078D4]">
-                                    <path d="M11 11H0V0h11v11zm13 0H12V0h11v11zM11 24H0V13h11v11zm13 0H12V13h11v11z"/>
-                                </svg>
-                            </div>
-                            <div className="flex-1 text-left relative z-10">
-                                <span className="block text-t-sm font-black uppercase tracking-widest text-ink">Windows</span>
-                                <span className="mt-0.5 block text-t-xs text-ink-muted">Instalador v1.0.0</span>
-                            </div>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-brand-ink relative z-10 transition-transform group-hover:scale-110">
-                                <Download className="h-4 w-4" />
-                            </div>
-                        </a>
-
-                        {/* macOS */}
-                        <div className="relative flex items-center gap-4 rounded-xl border border-subtle bg-surface px-5 py-4 opacity-75 cursor-not-allowed">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-sunken">
-                                <svg viewBox="-1 -1 26 26" fill="currentColor" className="h-6 w-6 text-gray-200 grayscale opacity-80">
-                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.22.67-2.94 1.5-.62.71-1.16 1.85-1.01 2.96 1.12.09 2.27-.59 2.96-1.4"/>
-                                </svg>
-                            </div>
-                            <div className="flex-1 text-left relative z-10">
-                                <span className="block text-t-sm font-black uppercase tracking-widest text-ink">Mac</span>
-                                <span className="mt-0.5 block text-t-xs text-ink-muted">En desarrollo</span>
-                            </div>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-subtle bg-surface text-ink-muted/50 relative z-10">
-                                <Download className="h-4 w-4" />
-                            </div>
-                        </div>
-                    </div>
-                </Reveal>
+                {/* La rejilla de cuatro descargas que había aquí —Android,
+                    iPhone, Windows y un Mac "en desarrollo"— se ha subido
+                    entera al fold de "Entrar a entrenar", justo debajo de la
+                    portada. Duplicarla aquí sería ofrecer dos veces lo mismo
+                    con dos jerarquías distintas; esto solo devuelve allí.
+                    Y el que decía "iPhone / Web app" ya no existe como
+                    plataforma aparte: es la versión web. */}
+                <VolverAlAcceso onIrAlAcceso={() => {
+                    document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }} />
             </Fold>
 
             {/* =====================================================
