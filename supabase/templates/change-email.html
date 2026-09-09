@@ -1,0 +1,104 @@
+<!--
+  GENERADO. No editar a mano.
+
+  Sale de supabase/templates/_base.html mediante
+  scripts/generar-correos.mjs. Para cambiar el aspecto se toca el armazón y
+  se vuelve a generar; para cambiar el TEXTO de este correo, la entrada
+  "change-email.html" de ese guion.
+
+  Dónde se pega: panel de Supabase → Authentication → Emails.
+  Ver docs/EMAILS.md.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>Anvil Strength</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0b0b0c; color:#e8e8ea; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+
+<!-- Texto de vista previa: lo que se lee en la bandeja antes de abrir.
+     Oculto en el cuerpo con la combinación que funciona en Gmail y Outlook. -->
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+  Confirma tu nueva dirección de correo.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0b0b0c;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:100%; background-color:#141416; border:1px solid #26262a; border-radius:14px; overflow:hidden;">
+
+        <!-- CABECERA -->
+        <tr>
+          <td align="center" style="padding:32px 32px 24px 32px; background-color:#141416; border-bottom:1px solid #26262a;">
+            <img src="https://anvilstrength.es/logo-dark-removebg-preview.png"
+                 width="132" height="44" alt="Anvil Strength"
+                 style="display:block; width:132px; height:auto; border:0; outline:none; text-decoration:none;">
+            <div style="margin-top:10px; font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:#8a8a92;">
+              Anvil Strength
+            </div>
+          </td>
+        </tr>
+
+        <!-- CUERPO -->
+        <tr>
+          <td style="padding:32px;">
+            <h1 style="margin:0 0 16px 0; font-size:24px; line-height:1.2; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#ffffff;">
+              Confirma tu correo nuevo
+            </h1>
+            <p style="margin:0 0 24px 0; font-size:15px; line-height:1.65; color:#b8b8bf;">
+              Has pedido cambiar la dirección de tu cuenta de Anvil Strength.
+              Confírmalo desde esta dirección para que el cambio surta efecto.
+            </p>
+
+            <!-- BOTÓN. Tabla y no <a> con padding: Outlook ignora el padding
+                 de un enlace y el botón sale como texto suelto. -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;">
+              <tr>
+                <td align="center" bgcolor="#d62828" style="border-radius:999px;">
+                  <a href="{{ .ConfirmationURL }}"
+                     style="display:inline-block; padding:14px 34px; font-size:14px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#ffffff; text-decoration:none; border-radius:999px;">
+                    Confirmar el cambio
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 6px 0; font-size:12px; line-height:1.5; color:#8a8a92;">
+              ¿No funciona el botón? Copia y pega esta dirección:
+            </p>
+            <p style="margin:0; font-size:12px; line-height:1.5; word-break:break-all;">
+              <a href="{{ .ConfirmationURL }}" style="color:#ef5350; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- PIE -->
+        <tr>
+          <td style="padding:22px 32px 26px 32px; background-color:#0f0f11; border-top:1px solid #26262a;">
+            <p style="margin:0 0 10px 0; font-size:12px; line-height:1.6; color:#8a8a92;">
+              Este correo se envió a {{ .Email }} porque alguien lo usó en Anvil Strength.
+              Si no has sido tú, puedes ignorarlo: sin pulsar el enlace no ocurre nada.
+            </p>
+            <p style="margin:0; font-size:11px; line-height:1.6; color:#6a6a72;">
+              <a href="https://anvilstrength.es" style="color:#8a8a92; text-decoration:none;">anvilstrength.es</a>
+              &nbsp;·&nbsp;
+              <a href="https://anvilstrength.es/legal/privacidad" style="color:#8a8a92; text-decoration:none;">Privacidad</a>
+              &nbsp;·&nbsp;
+              <a href="mailto:anvilstrengthclub@gmail.com" style="color:#8a8a92; text-decoration:none;">anvilstrengthclub@gmail.com</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
