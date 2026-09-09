@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
+import { tieneAmbosPaneles } from '../../../lib/roles';
 import { CheckInCard } from '../../forms/AthleteCheckIns';
 import { TodayPanel } from './TodayPanel';
 import { OneRMCalculator } from './OneRMCalculator';
@@ -299,6 +300,31 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                                     icon={Swords} title={t('nav.arena')} hint={locked ? t('inicio.necesitasAcceso') : t('inicio.arenaPista')} onClick={() => navigate('/dashboard/community')} disabled={locked} customColor={{ icon: 'text-orange-500', chip: 'bg-orange-500/10', ring: 'group-hover:border-orange-500/50' }} />
                                 <NavTile
                                     icon={Users} title={t('nav.ranking')} hint={locked ? t('inicio.necesitasAcceso') : t('inicio.rankingPista')} onClick={() => setIsRankingOpen(true)} disabled={locked} customColor={{ icon: 'text-indigo-500', chip: 'bg-indigo-500/10', ring: 'group-hover:border-indigo-500/50' }} />
+
+                                {/* PASAR AL PANEL DE ENTRENADOR.
+                                    =================================================
+                                    SOLO para quien de verdad entrena a gente:
+                                    `tieneAmbosPaneles` es `isStaff && isAthlete`, y
+                                    la capacidad que hay detrás (`gestionar_atletas`)
+                                    la decide la base de datos, no esta pantalla. Un
+                                    atleta normal no ve esta ficha, y si escribiera
+                                    /coach-dashboard a mano el guarda de la ruta lo
+                                    devolvería igual — esto solo decide qué se
+                                    ENSEÑA. Ver src/lib/roles.ts.
+
+                                    En esta variante el conmutador solo existía dentro
+                                    de "Mi perfil" (ProfileSection), que es justo lo
+                                    que se pidió cambiar de sitio. Allí se queda
+                                    también: los dos van al mismo destino. */}
+                                {tieneAmbosPaneles(user) && (
+                                    <NavTile
+                                        icon={Users}
+                                        title="Vista entrenador"
+                                        hint="Tus atletas y su programación"
+                                        onClick={() => navigate('/coach-dashboard')}
+                                        customColor={{ icon: 'text-brand-text', chip: 'bg-brand/10', ring: 'group-hover:border-brand/50' }}
+                                    />
+                                )}
                             </div>
                         </section>
 

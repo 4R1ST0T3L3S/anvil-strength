@@ -22,6 +22,7 @@ import { CountdownWidget } from '../../../components/ui/CountdownWidget';
 import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
 import { vistaBloqueada } from '../../../lib/billing';
 import { AvisoDePago } from '../../../components/ui/BloqueoDePago';
+import { tieneAmbosPaneles } from '../../../lib/roles';
 
 interface AthleteHomeProps {
     user: UserProfile;
@@ -354,6 +355,33 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                                     onClick={() => setIsRankingOpen(true)}
                                     disabled={locked}
                                 />
+
+                                {/* PASAR AL PANEL DE ENTRENADOR.
+                                    =================================================
+                                    SOLO para quien de verdad entrena a gente:
+                                    `tieneAmbosPaneles` es `isStaff && isAthlete`, y
+                                    la capacidad que hay detrás (`gestionar_atletas`)
+                                    la decide la base de datos, no esta pantalla. Un
+                                    atleta normal no ve esta ficha, y si escribiera
+                                    /coach-dashboard a mano el guarda de la ruta lo
+                                    devolvería igual — esto solo decide qué se
+                                    ENSEÑA. Ver src/lib/roles.ts.
+
+                                    El conmutador ya existía en la cabecera y en el
+                                    pie de la barra lateral; lo que faltaba era aquí,
+                                    en el inicio, que es donde se aterriza. No
+                                    sustituye a aquellos: los tres van al mismo
+                                    sitio y el de la cabecera sigue siendo el atajo
+                                    de quien ya está navegando. */}
+                                {tieneAmbosPaneles(user) && (
+                                    <NavTile
+                                        area="tool"
+                                        icon={Users}
+                                        title="Vista entrenador"
+                                        hint="Tus atletas, su programación y su seguimiento"
+                                        onClick={() => navigate('/coach-dashboard')}
+                                    />
+                                )}
                             </div>
                         </section>
 

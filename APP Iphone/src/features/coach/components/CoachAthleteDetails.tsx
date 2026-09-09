@@ -14,6 +14,7 @@ import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEdi
 import { PersonalInfoSection } from '../../profile/components/PersonalInfoSection';
 import { PaymentPanel } from './PaymentPanel';
 import { CoachNotesPanel } from './CoachNotesPanel';
+import { SeasonPhasesEditor } from './SeasonPhasesEditor';
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment, CompetitionResult } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -539,6 +540,19 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                     de las ya disputadas. */}
                 {shownTab === 'competitions' && (
                     <div className={`${TAB_WIDTH} space-y-6`}>
+                        {/* LAS FASES DE LA TEMPORADA, ANTES QUE LAS COMPETICIONES.
+                            Van en esta pestaña y no en Programación porque la
+                            temporada es el marco y la competición su destino: las
+                            dos contestan "cuándo", mientras que Programación
+                            contesta "qué". Y van ARRIBA porque la fase es lo que
+                            explica por qué la competición está donde está.
+
+                            Es lo que el atleta lee en sus estadísticas — ver
+                            AthleteStatsView. */}
+                        {currentUser && (
+                            <SeasonPhasesEditor athleteId={athleteId} coachId={currentUser.id} />
+                        )}
+
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black uppercase tracking-tight text-ink flex items-center gap-2">
                                 <Trophy className="text-brand-text" />

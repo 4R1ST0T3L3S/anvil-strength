@@ -9,6 +9,7 @@ import {
     Medal,
     Activity,
     Users,
+    TrendingUp,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
@@ -30,6 +31,7 @@ import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
 import { useIdioma } from '../../../hooks/useIdioma';
 import { vistaBloqueada } from '../../../lib/billing';
 import { AnvilRanking } from '../components/AnvilRanking';
+import { AthleteStatsView } from '../components/AthleteStatsView';
 
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { isAthlete, isCoach, tieneAmbosPaneles } from '../../../lib/roles';
@@ -54,6 +56,8 @@ interface UserDashboardProps {
 const VIEWS = {
     '': 'home',
     planificacion: 'planning',
+    // El slug va en castellano porque la URL la lee el atleta.
+    estadisticas: 'stats',
     velocidad: 'vbt',
     nutricion: 'nutrition',
     competiciones: 'competitions',
@@ -72,6 +76,7 @@ const isSlug = (value: string | undefined): value is Slug =>
 const TITLES: Record<Slug, string | undefined> = {
     '': undefined,
     planificacion: 'Mi planificación',
+    estadisticas: 'Estadísticas',
     velocidad: 'Velocidad (VBT)',
     nutricion: 'Mi nutrición',
     competiciones: 'Mis competiciones',
@@ -128,10 +133,24 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             isActive: slug === 'planificacion',
         },
         {
+            icon: <TrendingUp size={20} />,
+            label: 'Estadísticas',
+            // En la barra del móvil una pestaña mide 73px: "Estadísticas" se
+            // corta, igual que le pasaba a "Competiciones".
+            shortLabel: 'Progreso',
+            onClick: () => go('estadisticas'),
+            isActive: slug === 'estadisticas',
+        },
+        {
             icon: <Utensils size={20} />,
             label: t('nav.nutricion'),
             onClick: () => go('nutricion'),
             isActive: slug === 'nutricion',
+            // La barra inferior del móvil topa en CINCO pestañas antes de que
+            // los iconos dejen de ser pulsables. Estadísticas entra ahí y
+            // Nutrición pasa al menú de la ⋮: se consulta una vez al día, no
+            // entre series.
+            hideOnMobileBar: true,
         },
         {
             icon: <Trophy size={20} />,
@@ -239,6 +258,15 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                     return <BloqueoDePago resultado={puerta.resultado} queSeHaBloqueado="Tu plan de nutrición" />;
                 }
                 return <AthleteNutritionView user={user} />;
+            /**
+             * ESTADÍSTICAS. Sin puerta de pago.
+             *
+             * Es la pantalla que enseña lo que el atleta YA hizo, con datos
+             * que él mismo registró. Cerrarla por un recibo pendiente sería
+             * quitarle su propio historial, no un servicio.
+             */
+            case 'stats':
+                return <AthleteStatsView user={user} />;
             case 'competitions':
                 return <AthleteCompetitionsView user={user} />;
             case 'calendar':
