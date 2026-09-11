@@ -33,7 +33,8 @@ export const DayCard = memo(function DayCard({
     // Reciben el id en vez de venir ya cerrados sobre él. Con una lambda por
     // tarjeta, `memo` no servía de nada: las props cambiaban de identidad en
     // cada render del constructor aunque el día fuese exactamente el mismo.
-    onOpen: (sessionId: string) => void;
+    /** `origen`: dónde está la tarjeta, para que el editor se abra desde ella. */
+    onOpen: (sessionId: string, origen?: DOMRect) => void;
     onRemove: (sessionId: string) => void;
     onChangeWeekday: (sessionId: string, day: Weekday | null) => void;
     /** Día copiado al portapapeles interno del constructor. null = vacío. */
@@ -155,7 +156,9 @@ export const DayCard = memo(function DayCard({
             </div>
 
             <button
-                onClick={() => onOpen(session.id)}
+                // Se mide la TARJETA entera (el padre) y no el botón: es de ahí
+                // de donde crece el editor al abrirse.
+                onClick={(e) => onOpen(session.id, e.currentTarget.parentElement?.getBoundingClientRect())}
                 className="flex min-h-[150px] w-full flex-col rounded-card p-4 pt-9 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
             >
                 <h4 className="mt-0.5 truncate pr-6 text-t-base font-semibold text-ink">

@@ -68,6 +68,12 @@ export interface DashboardLayoutProps {
     panelSwitch?: PanelSwitch;
     /** Oculta la cabecera superior en escritorio. Útil para que la Home la integre sola. */
     hideHeaderOnDesktop?: boolean;
+    /**
+     * La vista cabe entera en la pantalla del ordenador (el inicio). Quita el
+     * margen inferior de `main`, que en esas vistas solo servía para fabricar
+     * 24px de scroll vertical sin nada debajo. Ver `InicioPanel.tsx`.
+     */
+    ajustarAPantalla?: boolean;
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
@@ -80,6 +86,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     userName,
     panelSwitch,
     hideHeaderOnDesktop = false,
+    ajustarAPantalla = false,
 }) => {
     const visibleItems = menuItems.filter(item => item.label !== 'QA: Test DB');
     const barItems = visibleItems.filter(item => !item.hideOnMobileBar);
@@ -176,7 +183,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     // quedarse encima de "Perfil". Fuera del panel no existe, y
                     // ahí el `fallback` la deja en cero.
                     style={{ ['--tabbar-h' as string]: 'var(--tabbar-alto)' }}
-                    className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-6 scrollbar-hide bg-surface-canvas"
+                    className={`flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-6 scrollbar-hide bg-surface-canvas ${ajustarAPantalla ? 'pc:pb-0' : ''}`}
                 >
                     {children}
                 </main>

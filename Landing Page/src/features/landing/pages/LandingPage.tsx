@@ -2,7 +2,6 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
-import { AnvilLogoSVG } from '../../../components/ui/AnvilLogoSVG';
 import { AccesoAppSection, VolverAlAcceso } from '../components/AccesoAppSection';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
@@ -21,9 +20,11 @@ import { SafeImage } from '../../../components/ui/SafeImage';
 import { Modal } from '../../../components/ui/Modal';
 
 import { useSeo } from '../../../hooks/useSeo';
+import { useIdioma } from '../../../hooks/useIdioma';
 import { UserProfile } from '../../../hooks/useUser';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
+import { coachEn, logroEn, nutricionistaEn, rellenar, useTextosWeb } from '../textos';
 
 /**
  * Typebot pesa 608 KB minificado — más que React, el router y Supabase juntos.
@@ -48,13 +49,21 @@ const featuredAchievements = allAchievements;
 
 
 
+/**
+ * TODOS LOS TEXTOS DE ESTA PÁGINA SALEN DE ../textos.ts, en el idioma que se
+ * elige en la cabecera. Antes estaban escritos aquí a mano en español, y por
+ * eso el selector «ES / EN» no cambiaba nada de la portada.
+ */
 export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: LandingPageProps) {
+    const t = useTextosWeb();
+    const { idioma } = useIdioma();
+
     // Solo se declara metainformación en /inicio. En "/" mandan las etiquetas
     // de index.html, que ya son las correctas y las únicas que ven los
     // rastreadores que no ejecutan JavaScript.
     useSeo({
-        title: 'Anvil Strength | Club de Powerlifting Online en España — Gratis',
-        description: 'Anvil Strength es el club de powerlifting digital de España. Gratis, sin sede física, afiliado AEP e IPF. Entrenadores de élite, app exclusiva y comunidad real. ¿Empezamos?',
+        title: t.seo.titulo,
+        description: t.seo.descripcion,
         canonical: 'https://anvilstrength.es/',
         noindex: noindex === true,
     });
@@ -78,6 +87,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
         // Dentro de la función LandingPage, junto a los otros useState:
     const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
     const [isAllAchievementsModalOpen, setIsAllAchievementsModalOpen] = useState(false);
+
+    // Los datos del club (cargos, presentaciones, logros) en el idioma de la
+    // página. Los nombres propios no cambian. Ver ../textos.ts.
+    const logros = featuredAchievements.map((a) => logroEn(a, idioma));
 
 
     // Añade esto debajo de tus useState
@@ -203,7 +216,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 <div className="absolute inset-0">
                     <img
                         src="/portadaanvil2.jpg"
-                        alt="Atleta de Anvil Strength en plena sentadilla durante una competición"
+                        alt={t.portada.fotoAlt}
                         className="h-full w-full object-cover"
                         fetchPriority="high"
                     />
@@ -212,24 +225,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 </div>
 
                 <div className="relative z-10 mx-auto w-full max-w-[1180px] px-6 pb-24 pt-32 text-center md:px-10">
-                    {/* EL YUNQUE, ENCIMA DEL NOMBRE.
-                        La portada tenía el nombre en texto y nada más. La marca
-                        se reconoce antes por la silueta que por las letras, y
-                        aquí es donde hay sitio para enseñarla a tamaño de
-                        verdad; en la barra superior mide 24px. */}
-                    <m.div
-                        initial={{ opacity: 0, scale: 0.92 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                        className="mb-7 flex justify-center"
-                    >
-                        <AnvilLogoSVG
-                            width={88}
-                            height={88}
-                            className="text-ink drop-shadow-[0_6px_24px_rgba(0,0,0,0.55)] md:h-28 md:w-28"
-                        />
-                    </m.div>
-
+                    {/* Aquí iba el yunque en SVG encima del nombre. Se quita:
+                        el trazado es más ancho que alto y a 112px se veía
+                        aplastado, compitiendo con el logo de la cabecera. La
+                        marca ya está arriba a la izquierda. */}
                     <m.h1
                         initial={{ opacity: 0, y: 24 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -251,7 +250,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
                         className="mt-5 font-display text-[clamp(1.75rem,5vw,3rem)] uppercase leading-[0.95] tracking-[0.01em] text-white/90"
                     >
-                        Where champions are forged
+                        {t.portada.lema}
                     </m.p>
 
                     <m.div
@@ -270,7 +269,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                             aplicación entera. */}
                         {!user ? (
                             <PressButton onClick={onSignupClick ?? onLoginClick} className="w-full sm:w-auto">
-                                Crear cuenta gratis
+                                {t.portada.crearCuenta}
                             </PressButton>
                         ) : (
                             <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full sm:w-auto" />
@@ -280,7 +279,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                             onClick={(e) => scrollToSection(e, '#app')}
                             className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
                         >
-                            Ya tengo cuenta
+                            {t.portada.yaTengoCuenta}
                         </a>
                     </m.div>
                 </div>
@@ -311,38 +310,19 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 <div className="grid gap-14 md:grid-cols-[1fr_0.85fr] md:items-start md:gap-20">
                     <div>
                         <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink text-balance">
-                            Un club sin
+                            {t.filosofia.titulo1}
                             <br />
-                            puerta de entrada
+                            {t.filosofia.titulo2}
                         </h2>
                         <p className="mt-8 max-w-[62ch] text-t-lg leading-relaxed text-ink-muted">
-                            Anvil Strength nació de una idea sencilla: el powerlifting no debería
-                            ser un deporte cerrado. Si quieres competir, ya tienes sitio. No hace
-                            falta que muevas ningún número concreto ni que vengas de ningún lado.
+                            {t.filosofia.intro}
                         </p>
 
                         <dl className="mt-12 space-y-8">
-                            {[
-                                {
-                                    t: 'No tiene sede, y es a propósito',
-                                    d: 'Entrenas en tu gimnasio, estés donde estés, y compites bajo el nombre del club. Nadie se muda por entrenar.',
-                                },
-                                {
-                                    t: 'Cuesta cero euros',
-                                    d: 'Unirse no tiene coste. Solo pagas las tasas oficiales de federación y las inscripciones a cada competición, que van íntegras a la AEP.',
-                                },
-                                {
-                                    t: 'Federados en AEP e IPF',
-                                    d: 'Compites en campeonatos oficiales, con marcas homologadas y ranking que cuenta.',
-                                },
-                                {
-                                    t: 'Entrenador y nutricionista',
-                                    d: 'Asignados de verdad, con la programación dentro de la app y contacto directo por chat.',
-                                },
-                            ].map(({ t, d }) => (
-                                <Reveal key={t}>
+                            {t.filosofia.puntos.map(({ t: titulo, d }, i) => (
+                                <Reveal key={i}>
                                     <dt className="text-t-xl font-black uppercase tracking-display text-ink">
-                                        {t}
+                                        {titulo}
                                     </dt>
                                     <dd className="mt-2 max-w-[62ch] text-t-base leading-relaxed text-ink-muted">
                                         {d}
@@ -356,14 +336,13 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         <div className="overflow-hidden rounded-sheet">
                             <img
                                 src="/filosofia-competition.jpg"
-                                alt="Un atleta del club bloquea un peso muerto ante los tres jueces"
+                                alt={t.filosofia.fotoAlt}
                                 className="aspect-[4/5] w-full object-cover"
                                 loading="lazy"
                             />
                         </div>
                         <p className="mt-4 text-t-sm leading-relaxed text-ink-muted">
-                            En un deporte con normas de competición, entrena con normas de
-                            competición. Tú pones el esfuerzo; nosotros, la estructura.
+                            {t.filosofia.pie}
                         </p>
                     </Reveal>
                 </div>
@@ -389,27 +368,20 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <Fold id="software" tone="dark" className="py-24 md:py-28">
                 <Reveal className="max-w-2xl">
                     <div className="bg-brand/10 border border-brand/30 text-brand-text text-t-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full w-max mb-6">
-                        Anvil APP
+                        {t.software.etiqueta}
                     </div>
                     <h2 className="text-d-sm font-black uppercase leading-[1.02] text-ink text-balance">
-                        Y una aplicación que hace el trabajo aburrido
+                        {t.software.titulo}
                     </h2>
                     <p className="mt-5 text-t-lg leading-relaxed text-ink-muted">
-                        La misma que usan los entrenadores del club para programar. Incluida.
+                        {t.software.intro}
                     </p>
                 </Reveal>
 
                 <StaggerList className="mt-14 grid grid-cols-1 gap-x-12 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
-                    {[
-                        ['Programación semanal', 'Tu entrenador publica la semana y la ves con sus series, kilos y RPE. Registras desde el móvil entre series.'],
-                        ['Vídeo y VBT', 'Subes la serie, tu entrenador la corrige. Si usas encoder, el archivo se asocia a la serie que toca.'],
-                        ['Estadísticas reales', 'Tonelaje, intensidad y progresión por ejercicio. Sin hojas de cálculo.'],
-                        ['Chat directo', 'Con tu entrenador y tu nutricionista. Sin buscar el mensaje entre cien de un grupo.'],
-                        ['Calendario', 'Competiciones, inscripciones y la planificación del año de un vistazo.'],
-                        ['Comunidad', 'Ranking del club, logros y la Arena. Entrenas solo, pero no estás solo.'],
-                    ].map(([t, d]) => (
-                        <StaggerItem key={t}>
-                            <h3 className="text-t-lg font-black uppercase tracking-display text-ink">{t}</h3>
+                    {t.software.funciones.map(({ t: titulo, d }, i) => (
+                        <StaggerItem key={i}>
+                            <h3 className="text-t-lg font-black uppercase tracking-display text-ink">{titulo}</h3>
                             <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">{d}</p>
                         </StaggerItem>
                     ))}
@@ -433,94 +405,99 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <Fold id="entrenadores" tone="black" className="py-24 md:py-32">
                 <Reveal>
                     <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink">
-                        Quién te entrena
+                        {t.equipo.titulo}
                     </h2>
                     <p className="mt-5 max-w-[52ch] text-t-lg leading-relaxed text-ink-muted">
-                        Personas concretas, con nombre y con historial. Pulsa para ver el suyo.
+                        {t.equipo.intro}
                     </p>
                     <p className="mt-3 max-w-[52ch] text-t-sm text-ink-muted/70">
-                        El club no cobra cuota. El entrenamiento personalizado con cualquiera de
-                        ellos es un servicio de pago que se acuerda directamente con el entrenador.
+                        {t.equipo.nota}
                     </p>
                 </Reveal>
 
                 <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    {coaches.map((coach) => (
-                        <button
-                            key={coach.id}
-                            onClick={() => setSelectedCoach(coach)}
-                            className="group relative aspect-[3/4] overflow-hidden rounded-sheet bg-surface-sunken text-left transition-transform duration-base ease-snap hover:-translate-y-1"
-                        >
-                            <SafeImage
-                                src={coach.image}
-                                alt={`${coach.name}, ${coach.role} de Anvil Strength`}
-                                className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
-                                loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
-                            <div className="absolute inset-x-0 bottom-0 p-6">
-                                <span className="text-t-2xs font-black uppercase tracking-widest text-brand-text">
-                                    Entrenador
-                                </span>
-                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-ink">
-                                    {coach.name}
-                                </h3>
-                                <p className="mt-1.5 text-t-sm font-medium text-white/70">{coach.role}</p>
-                            </div>
-                            {coach.logo && (
-                                <img
-                                    src={coach.logo}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="absolute right-5 top-5 h-12 w-12 object-contain opacity-70"
+                    {coaches.map((coachEs) => {
+                        const coach = coachEn(coachEs, idioma);
+                        return (
+                            <button
+                                key={coach.id}
+                                onClick={() => setSelectedCoach(coach)}
+                                className="group relative aspect-[3/4] overflow-hidden rounded-sheet bg-surface-sunken text-left transition-transform duration-base ease-snap hover:-translate-y-1"
+                            >
+                                <SafeImage
+                                    src={coach.image}
+                                    alt={rellenar(t.equipo.fotoAlt, { nombre: coach.name, rol: coach.role })}
+                                    className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                    loading="lazy"
                                 />
-                            )}
-                        </button>
-                    ))}
+                                <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
+                                <div className="absolute inset-x-0 bottom-0 p-6">
+                                    <span className="text-t-2xs font-black uppercase tracking-widest text-brand-text">
+                                        {t.equipo.entrenador}
+                                    </span>
+                                    <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-ink">
+                                        {coach.name}
+                                    </h3>
+                                    <p className="mt-1.5 text-t-sm font-medium text-white/70">{coach.role}</p>
+                                </div>
+                                {coach.logo && (
+                                    <img
+                                        src={coach.logo}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="absolute right-5 top-5 h-12 w-12 object-contain opacity-70"
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
 
-                    {nutritionists.map((nutri) => (
-                        <div
-                            key={nutri.id}
-                            className="group relative aspect-[3/4] overflow-hidden rounded-sheet bg-surface-sunken"
-                        >
-                            <SafeImage
-                                src={nutri.image}
-                                alt={`${nutri.name}, ${nutri.role} de Anvil Strength`}
-                                className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
-                                loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
-                            <div className="absolute inset-x-0 bottom-0 p-6">
-                                <span className="text-t-2xs font-black uppercase tracking-widest text-success">
-                                    Nutrición
-                                </span>
-                                <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-ink">
-                                    {nutri.name}
-                                </h3>
-                                <p className="mt-1.5 text-t-sm font-medium text-white/70">{nutri.role}</p>
-                                <div className="mt-4 flex gap-2">
-                                    <a
-                                        href={nutri.instagram}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={`Instagram de ${nutri.name}`}
-                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-ink transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
-                                    >
-                                        <Instagram size={16} />
-                                    </a>
-                                    <a
-                                        href={nutri.contactForm}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        aria-label={`Formulario de contacto de ${nutri.name}`}
-                                        className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-ink transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
-                                    >
-                                        <FileText size={16} />
-                                    </a>
+                    {nutritionists.map((nutriEs) => {
+                        const nutri = nutricionistaEn(nutriEs, idioma);
+                        return (
+                            <div
+                                key={nutri.id}
+                                className="group relative aspect-[3/4] overflow-hidden rounded-sheet bg-surface-sunken"
+                            >
+                                <SafeImage
+                                    src={nutri.image}
+                                    alt={rellenar(t.equipo.fotoAlt, { nombre: nutri.name, rol: nutri.role })}
+                                    className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                    loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/25 to-transparent" />
+                                <div className="absolute inset-x-0 bottom-0 p-6">
+                                    <span className="text-t-2xs font-black uppercase tracking-widest text-success">
+                                        {t.equipo.nutricion}
+                                    </span>
+                                    <h3 className="mt-1 text-t-2xl font-black uppercase leading-none text-ink">
+                                        {nutri.name}
+                                    </h3>
+                                    <p className="mt-1.5 text-t-sm font-medium text-white/70">{nutri.role}</p>
+                                    <div className="mt-4 flex gap-2">
+                                        <a
+                                            href={nutri.instagram}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label={rellenar(t.equipo.instagramDe, { nombre: nutri.name })}
+                                            className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-ink transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                        >
+                                            <Instagram size={16} />
+                                        </a>
+                                        <a
+                                            href={nutri.contactForm}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label={rellenar(t.equipo.formularioDe, { nombre: nutri.name })}
+                                            className="flex h-11 w-11 items-center justify-center rounded-field bg-white/10 text-ink transition-colors duration-fast hover:bg-white hover:text-fold-light-ink"
+                                        >
+                                            <FileText size={16} />
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </Fold>
 
@@ -528,8 +505,9 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 la sección que más convence, y todavía quedan cuatro pantallas
                 hasta el cierre. Ver `BandaDeEntrada`. */}
             <BandaDeEntrada
-                texto="¿Te has visto ahí?"
-                remate="Se entra gratis y se sale cuando quieras."
+                texto={t.banda.texto}
+                remate={t.banda.remate}
+                boton={t.banda.ficha}
             />
 
             {/* =====================================================
@@ -538,13 +516,13 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <section id="atletas" className="overflow-hidden bg-surface-canvas py-24 md:py-28">
                 <div className="mx-auto mb-12 flex max-w-[1180px] items-end justify-between gap-6 px-6 md:px-10">
                     <h2 className="text-d-sm font-black uppercase leading-none text-ink">
-                        Nuestros atletas
+                        {t.atletas.titulo}
                     </h2>
                     <button
                         onClick={() => setIsTeamModalOpen(true)}
                         className="shrink-0 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
                     >
-                        Ver equipo
+                        {t.atletas.verEquipo}
                     </button>
                 </div>
 
@@ -554,14 +532,14 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
 
                     <button
                         onClick={() => handleManualNav('prev')}
-                        aria-label="Atletas anteriores"
+                        aria-label={t.atletas.anteriores}
                         className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-pill bg-surface-sunken/80 p-3 text-ink opacity-0 transition-opacity duration-fast hover:bg-brand group-hover/carousel:opacity-100 focus-visible:opacity-100 md:block"
                     >
                         <ChevronLeft size={22} />
                     </button>
                     <button
                         onClick={() => handleManualNav('next')}
-                        aria-label="Atletas siguientes"
+                        aria-label={t.atletas.siguientes}
                         className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-pill bg-surface-sunken/80 p-3 text-ink opacity-0 transition-opacity duration-fast hover:bg-brand group-hover/carousel:opacity-100 focus-visible:opacity-100 md:block"
                     >
                         <ChevronRight size={22} />
@@ -585,7 +563,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                 >
                                     <SafeImage
                                         src={athlete.image}
-                                        alt={`${athlete.name}, categoría ${athlete.category}`}
+                                        alt={rellenar(t.atletas.fotoAlt, { nombre: athlete.name, categoria: athlete.category })}
                                         className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
                                         loading="lazy"
                                     />
@@ -610,21 +588,21 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <Fold id="logros" tone="black" className="py-24 md:py-32">
                 <div className="flex flex-wrap items-end justify-between gap-6">
                     <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink">
-                        Lo que ha ganado
+                        {t.logros.titulo1}
                         <br />
-                        el club
+                        {t.logros.titulo2}
                     </h2>
                     <button
                         onClick={() => setIsAllAchievementsModalOpen(true)}
                         className="group flex items-center gap-1.5 text-t-sm font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:text-ink"
                     >
-                        Historial completo
+                        {t.logros.historial}
                         <ChevronRight size={16} className="transition-transform duration-fast ease-snap group-hover:translate-x-1" />
                     </button>
                 </div>
 
                 <StaggerList className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {featuredAchievements.slice(0, 3).map((item) => (
+                    {logros.slice(0, 3).map((item) => (
                         <StaggerItem key={item.id}>
                             <button
                                 onClick={() => setSelectedAchievement(item)}
@@ -656,24 +634,22 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 <div className="mx-auto max-w-2xl text-center">
                     <Reveal>
                         <p className="text-t-sm font-black uppercase tracking-widest text-brand-ink/70">
-                            Gratis · Sin cuota · Sin compromiso
+                            {t.afiliacion.antetitulo}
                         </p>
                         <h2 className="mt-5 text-d-md font-black uppercase leading-[0.95] text-brand-ink text-balance">
-                            ¿Te vienes?
+                            {t.afiliacion.titulo}
                         </h2>
                         <p className="mx-auto mt-6 max-w-[48ch] text-t-lg leading-relaxed text-brand-ink/85">
-                            Créate la cuenta y entra a ver la app. Si luego quieres competir con
-                            nosotros, rellenas la ficha de inscripción y listo.
+                            {t.afiliacion.texto}
                         </p>
                         <p className="mx-auto mt-4 max-w-[48ch] text-t-xs text-brand-ink/60">
-                            El club es gratis. El entrenamiento con tu entrenador se paga aparte,
-                            directamente con él.
+                            {t.afiliacion.nota}
                         </p>
                     </Reveal>
 
                     <Reveal delay={0.08} className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                         <PressButton tone="light" href="https://typebot.co/lead-generation-hhwa24t" className="w-full sm:w-auto">
-                            Ficha de inscripción
+                            {t.afiliacion.ficha}
                         </PressButton>
                         <a
                             href="/normativa_equipo.pdf"
@@ -682,7 +658,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                             className="inline-flex items-center gap-2 text-t-sm font-bold uppercase tracking-wide text-brand-ink/80 underline-offset-8 transition-colors duration-fast hover:text-brand-ink hover:underline"
                         >
                             <FileText size={16} />
-                            Normativa del equipo
+                            {t.afiliacion.normativa}
                         </a>
                     </Reveal>
 
@@ -714,7 +690,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 escribirnos; envolverlas en cajas con icono y borde no
                 añadía ninguna información.                             */}
             <Fold id="contacto" tone="dark" className="border-t border-subtle py-20">
-                <h2 className="text-d-sm font-black uppercase leading-none text-ink">Hablamos</h2>
+                <h2 className="text-d-sm font-black uppercase leading-none text-ink">{t.contacto.titulo}</h2>
 
                 <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-sheet bg-[var(--border-subtle)] sm:grid-cols-3">
                     {[
@@ -766,7 +742,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <AllAchievementsModal
                 isOpen={isAllAchievementsModalOpen}
                 onClose={() => setIsAllAchievementsModalOpen(false)}
-                achievements={featuredAchievements}
+                achievements={logros}
                 onSelect={setSelectedAchievement}
             />
 
@@ -787,7 +763,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 justo la que peor sienta a quien la desactiva.          */}
             <m.button
                 type="button"
-                aria-label="Abrir el chat de Anvil Strength"
+                aria-label={t.mascota.abrir}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -8, 0] }}
                 whileHover={{ scale: 1.06 }}
@@ -806,7 +782,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 className="group fixed bottom-6 right-6 z-toast cursor-pointer"
             >
                 <span className="absolute -top-12 right-0 whitespace-nowrap rounded-card rounded-br-none bg-white px-3.5 py-2 text-t-2xs font-black uppercase text-fold-light-ink shadow-overlay transition-colors duration-fast group-hover:bg-brand group-hover:text-brand-ink">
-                    ¿Hablamos?
+                    {t.mascota.burbuja}
                 </span>
                 <AnvilMascot className="h-24 w-24 md:h-28 md:w-28" />
             </m.button>
@@ -833,6 +809,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
 function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; onClose: () => void; achievement: Achievement | null }) {
     const [imgIndex, setImgIndex] = useState(0);
     const reduce = useReducedMotion();
+    const c = useTextosWeb().logros;
 
     // Se retiene el último logro para que el modal siga teniendo contenido
     // durante su animación de salida. Al cerrar, el estado del padre pasa a
@@ -888,7 +865,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
                                 <button
                                     type="button"
                                     onClick={() => go(-1)}
-                                    aria-label="Foto anterior"
+                                    aria-label={c.fotoAnterior}
                                     className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill bg-surface-sunken/70 text-ink opacity-0 transition-opacity duration-fast ease-snap hover:bg-brand group-hover/img:opacity-100 focus-visible:opacity-100 sm:flex"
                                 >
                                     <ChevronLeft size={20} />
@@ -896,7 +873,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
                                 <button
                                     type="button"
                                     onClick={() => go(1)}
-                                    aria-label="Foto siguiente"
+                                    aria-label={c.fotoSiguiente}
                                     className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill bg-surface-sunken/70 text-ink opacity-0 transition-opacity duration-fast ease-snap hover:bg-brand group-hover/img:opacity-100 focus-visible:opacity-100 sm:flex"
                                 >
                                     <ChevronRight size={20} />
@@ -917,7 +894,7 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
                                     key={src}
                                     type="button"
                                     onClick={() => setImgIndex(i)}
-                                    aria-label={`Ver foto ${i + 1} de ${images.length}`}
+                                    aria-label={rellenar(c.verFoto, { i: i + 1, n: images.length })}
                                     aria-current={i === imgIndex}
                                     className="flex h-11 w-8 items-center justify-center"
                                 >
@@ -954,12 +931,14 @@ function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; o
  * repetido diez veces deja de ser ruido.
  */
 function AllAchievementsModal({ isOpen, onClose, achievements, onSelect }: { isOpen: boolean; onClose: () => void; achievements: Achievement[]; onSelect: (a: Achievement) => void }) {
+    const c = useTextosWeb().logros;
+
     return (
         <Modal
             open={isOpen}
             onClose={onClose}
-            title="Historial del club"
-            description={`${achievements.length} resultados en competición oficial.`}
+            title={c.historialTitulo}
+            description={rellenar(c.resultados, { n: achievements.length })}
             size="lg"
         >
             <ul className="divide-y divide-[var(--border-subtle)] border-y border-[var(--border-subtle)]">

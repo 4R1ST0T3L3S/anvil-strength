@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TrainingSet, DayTemplate } from '../../../../types/training';
 import {
     Loader, Plus, Save, Trash2, Activity, X, Dumbbell, BarChart3, Flame, Timer, Eye,
     LayoutTemplate, CopyPlus, GripVertical, ChevronDown, Sparkles, Wand2,
     Flame as FlameIcon,
 } from 'lucide-react';
-import { m, AnimatePresence, Reorder } from 'framer-motion';
+import { m, AnimatePresence, Reorder, useReducedMotion } from 'framer-motion';
 import { type ParsedWarmupExercise } from '../../../../lib/planning/warmupParser';
 import { VolumePanel } from '../VolumePanel';
 import { CardioVolumePanel } from '../CardioVolumePanel';
@@ -50,6 +50,12 @@ const MOBILE_TABS = [
 
 interface DayEditorModalProps {
     session: ExtendedSession;
+    /**
+     * La tarjeta de día desde la que se abrió, medida en pantalla. El editor
+     * crece desde ahí y vuelve ahí al cerrarse. Sin ella (abierto desde el
+     * planificador de frecuencia) aparece desde el centro.
+     */
+    origen?: DOMRect | null;
     allSessions: ExtendedSession[];
     /** Atleta y entrenador: los necesita el registro de velocidad por serie. */
     athleteId: string;
@@ -88,7 +94,7 @@ interface DayEditorModalProps {
 }
 
 export function DayEditorModal({
-    session, allSessions, athleteId, coachId, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
+    session, origen, allSessions, athleteId, coachId, libraryNames, historyByExercise, maxes, onSetMax, onOpenProgression, templates,
     onSaveTemplate, onApplyTemplate, onDeleteTemplate, onCopyExercise, onCopyWholeDay, onReorder,
     onClose, onUpdateName, onUpdateAppendix, onConvertWarmup, onAddExercise, onUpdateExercise,
     onRemoveExercise, onAddSet, onDuplicateSet, onUpdateSet, onRemoveSet, onOpenVbtChart,
@@ -105,52 +111,19 @@ export function DayEditorModal({
     const [copySourceId, setCopySourceId] = useState<string | null>(null);
     // Pestaña visible en móvil. En escritorio no se usa: los tres paneles
     // caben en fila y no hay nada que ocultar.
-    const [mobileTab, setMobileTab] = useState<'lista' | 'editar' | 'datos'>('lista');
-    const tabIndex = MOBILE_TABS.findIndex(t => t.key === mobileTab);
-
-    /**
-     * Carrusel de las tres pestañas en móvil.
+    /*
+     * SIN CARRUSEL HORIZONTAL.
      *
-     * Los paneles ya no se ocultan con `hidden`: los tres están montados en una
-     * cinta de 300% de ancho que se desplaza. Ocultándolos no había nada que
-     * animar —el panel entrante no existía hasta el instante del cambio— y el
-     * salto entre "Ejercicios" y "Editar" era seco.
-     *
-     * El desplazamiento se calcula en PÍXELES a partir del ancho real medido, y
-     * no en porcentajes, porque el arrastre de framer trabaja en píxeles:
-     * mezclando las dos unidades el panel pega un tirón al soltar el dedo.
+     * En móvil los tres paneles iban en una cinta de 300% de ancho que se
+     * arrastraba de lado: el dedo que bajaba por la lista de ejercicios movía
+     * la pantalla en horizontal a poco que se torciera. Ahora se ve UN panel
+     * cada vez —el de la pestaña elegida— y el cambio es un fundido en el
+     * sitio. Nada en el editor se desplaza de lado.
      */
-    const trackRef = useRef<HTMLDivElement>(null);
-    const [viewportWidth, setViewportWidth] = useState(0);
-    const [isDesktop, setIsDesktop] = useState(
-        () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
-    );
-
-    useEffect(() => {
-        const query = window.matchMedia('(min-width: 1024px)');
-        const sync = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-        query.addEventListener('change', sync);
-        return () => query.removeEventListener('change', sync);
-    }, []);
-
-    useEffect(() => {
-        const node = trackRef.current;
-        if (!node) return;
-        const observer = new ResizeObserver(([entry]) => {
-            setViewportWidth(entry.contentRect.width);
-        });
-        observer.observe(node);
-        return () => observer.disconnect();
-    }, []);
-
-    /** Salta a la pestaña de al lado. Se para en los extremos, no da la vuelta. */
-    const goToTab = useCallback((delta: number) => {
-        setMobileTab(prev => {
-            const current = MOBILE_TABS.findIndex(t => t.key === prev);
-            const next = Math.min(MOBILE_TABS.length - 1, Math.max(0, current + delta));
-            return MOBILE_TABS[next].key;
-        });
-    }, []);
+    const [mobileTab, setMobileTab] = useState<'lista' | 'editar' | 'datos'>('lista');
+    /** Clases de un panel: en móvil solo se ve el de la pestaña activa; en escritorio, los tres. */
+    const visibleEnMovil = (tab: typeof mobileTab) =>
+        mobileTab === tab ? 'flex animate-fade' : 'hidden lg:flex';
 
     /**
      * Anchura del panel de datos, a gusto del entrenador.
@@ -236,8 +209,61 @@ export function DayEditorModal({
     // restaurando el estilo por su cuenta dejaba la página congelada.
     useEffect(() => lockBodyScroll(), []);
 
+    /**
+     * EL EDITOR CRECE DESDE LA TARJETA DEL DÍA.
+     *
+     * Antes aparecía de golpe a pantalla completa (`animate-fade`), y no había
+     * nada que dijera de qué tarjeta venía: se perdía el sitio en la semana.
+     * Ahora arranca encogido y centrado encima de la tarjeta pulsada y se
+     * expande hasta su tamaño real; al cerrar, vuelve a ella. Se mide la
+     * tarjeta en el clic (`origen`) y se traduce a escala + desplazamiento
+     * desde el centro de la pantalla, que es donde el panel está anclado.
+     *
+     * Con `prefers-reduced-motion` no hay viaje: solo un fundido.
+     */
+    const reducirMovimiento = useReducedMotion();
+    const desdeLaTarjeta = useMemo(() => {
+        if (reducirMovimiento) return { opacity: 0 };
+        if (!origen || typeof window === 'undefined') return { opacity: 0, scale: 0.94, x: 0, y: 0 };
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        return {
+            opacity: 0,
+            scale: Math.min(0.9, Math.max(0.2, origen.width / vw)),
+            x: origen.left + origen.width / 2 - vw / 2,
+            y: origen.top + origen.height / 2 - vh / 2,
+        };
+    }, [origen, reducirMovimiento]);
+
     return (
-        <div className="fixed inset-0 z-[150] bg-surface-canvas flex flex-col animate-fade">
+        <>
+            {/* Fondo. En escritorio el editor ya no tapa el constructor
+                entero: queda un margen alrededor, y se lee como lo que es —un
+                día abierto encima de su semana—. Pulsarlo cierra. */}
+            <m.div
+                aria-hidden="true"
+                onClick={onClose}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: reducirMovimiento ? 0 : 0.2 }}
+                className="fixed inset-0 z-[149] bg-black/60 backdrop-blur-sm"
+            />
+            <m.div
+                role="dialog"
+                aria-modal="true"
+                aria-label={session.name || `Día ${session.day_number}`}
+                initial={desdeLaTarjeta}
+                animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                exit={desdeLaTarjeta}
+                transition={reducirMovimiento
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 }}
+                style={{ transformOrigin: 'center center' }}
+                // `overflow-hidden` en la raíz: aquí dentro NADA se desplaza de
+                // lado. Cada panel trae su propio scroll vertical y nada más.
+                className="fixed inset-0 z-[150] flex flex-col overflow-hidden bg-surface-canvas lg:inset-4 lg:rounded-sheet lg:border lg:border-[var(--border-default)] lg:shadow-overlay xl:inset-6"
+            >
             {/* Header */}
             <div className="flex items-center justify-between gap-4 px-4 md:px-8 py-4 border-b border-subtle bg-surface-canvas shrink-0">
                 <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -517,39 +543,14 @@ export function DayEditorModal({
                 {/* Ventana del carrusel. `overflow-hidden` solo en móvil: en
                     escritorio los paneles vuelven a ser una fila normal y
                     recortar aquí cortaría los desplegables de la cabecera. */}
-                <div ref={trackRef} className="flex-1 min-h-0 overflow-hidden lg:overflow-visible">
-                <m.div
-                    className="flex h-full w-[300%] lg:w-full"
-                    drag={isDesktop ? false : 'x'}
-                    // Bloquear la dirección al primer movimiento es lo que
-                    // permite que los paneles sigan haciendo scroll vertical:
-                    // sin esto, cualquier intento de bajar por la lista de
-                    // ejercicios arrastraba la cinta de lado.
-                    dragDirectionLock
-                    dragElastic={0.06}
-                    dragMomentum={false}
-                    dragConstraints={{
-                        left: -(MOBILE_TABS.length - 1) * viewportWidth,
-                        right: 0,
-                    }}
-                    onDragEnd={(_, info) => {
-                        // Se decide con el desplazamiento O con la velocidad:
-                        // un gesto rápido y corto es un cambio de pestaña tan
-                        // claro como uno lento y largo, y exigir solo distancia
-                        // hace que los deslizamientos naturales no cuenten.
-                        const far = Math.abs(info.offset.x) > viewportWidth * 0.22;
-                        const fast = Math.abs(info.velocity.x) > 420;
-                        if (far || fast) goToTab(info.offset.x < 0 ? 1 : -1);
-                    }}
-                    animate={{ x: isDesktop ? 0 : -tabIndex * viewportWidth }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 42, mass: 0.9 }}
-                >
+                <div className="flex min-h-0 flex-1 overflow-hidden">
+                <div className="flex h-full w-full min-w-0">
 
                     {/* IZQUIERDA: pila de ejercicios (arrastra para reordenar) */}
                     {/* `w-1/3` = un tercio de una cinta que mide 300%, o sea
                         exactamente el ancho de la pantalla. En `lg` la cinta
                         vuelve a medir 100% y mandan las anchuras de siempre. */}
-                    <div className="flex w-1/3 shrink-0 flex-col gap-2 overflow-y-auto border-subtle bg-surface-canvas p-3 scrollbar-hide min-h-0 lg:w-80 lg:border-r xl:w-96">
+                    <div className={`${visibleEnMovil('lista')} w-full shrink-0 flex-col gap-2 overflow-y-auto overflow-x-hidden border-subtle bg-surface-canvas p-3 scrollbar-hide min-h-0 lg:w-72 lg:border-r xl:w-80 2xl:w-96`}>
                         {/* La columna se lee de principio a fin como se entrena
                             el día: primero lo que hay que tener en cuenta,
                             luego el calentamiento y luego los ejercicios. */}
@@ -685,7 +686,7 @@ export function DayEditorModal({
                     </div>
 
                     {/* CENTRO: detalle del ejercicio seleccionado (pop-up animado) */}
-                    <div className="w-1/3 shrink-0 overflow-y-auto p-4 min-h-0 md:p-6 lg:w-auto lg:flex-1 lg:shrink">
+                    <div className={`${visibleEnMovil('editar')} w-full min-w-0 flex-col overflow-y-auto overflow-x-hidden p-4 min-h-0 md:p-6 lg:flex-1`}>
                         <AnimatePresence mode="wait">
                             {selectedEx ? (
                                 <m.div
@@ -748,7 +749,10 @@ export function DayEditorModal({
                         // saldría con 320px fijos también en móvil, donde tiene
                         // que ocupar la pantalla entera.
                         style={{ '--panel-w': `${panel.width}px` } as React.CSSProperties}
-                        className="w-1/3 shrink-0 space-y-4 overflow-y-auto border-subtle bg-surface-canvas p-4 min-h-0 lg:w-[var(--panel-w)] lg:border-l"
+                        // Techo del 34% del ancho: con el panel estirado a 720px
+                        // en un portátil, el editor del centro se quedaba sin sitio
+                        // y la tabla de series tenía que desplazarse de lado.
+                        className={`${visibleEnMovil('datos')} w-full shrink-0 flex-col space-y-4 overflow-y-auto overflow-x-hidden border-subtle bg-surface-canvas p-4 min-h-0 lg:w-[min(var(--panel-w),34vw)] lg:border-l`}
                     >
                         {/* CENTRO DE CONTEXTO DEL ATLETA.
                             Va ARRIBA del resumen del día, y el orden importa:
@@ -873,10 +877,11 @@ export function DayEditorModal({
                             })}
                         </div>
                     </div>
-                </m.div>
+                </div>
                 </div>
                 </>
             )}
-        </div>
+            </m.div>
+        </>
     );
 }

@@ -255,8 +255,11 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                     : () => go(athleteId ? 'atletas' : slug === 'documento' ? 'preferencias' : '')
             }
             hideHeaderOnDesktop={slug === '' && !athleteId}
+            // El inicio cabe entero en la pantalla del ordenador: ver
+            // components/layout/InicioPanel.tsx.
+            ajustarAPantalla={slug === '' && !athleteId}
         >
-            <ViewTransition transitionKey={athleteId ?? slug}>{renderContent()}</ViewTransition>
+            <ViewTransition transitionKey={athleteId ?? slug} llenar={slug === '' && !athleteId}>{renderContent()}</ViewTransition>
 
             <FloatingChat
                 isOpen={!!chatAthlete}

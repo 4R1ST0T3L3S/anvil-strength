@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, Instagram, Mail, FileText } from 'lucide-react';
 import { Coach } from '../../data/coaches';
+import { useIdioma } from '../../hooks/useIdioma';
+import { coachEn, useTextosWeb } from '../../features/landing/textos';
 
 interface CoachDetailsModalProps {
   isOpen: boolean;
@@ -8,8 +10,14 @@ interface CoachDetailsModalProps {
   coach: Coach | null;
 }
 
-export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, onClose, coach }) => {
-  if (!isOpen || !coach) return null;
+export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, onClose, coach: coachEs }) => {
+  const c = useTextosWeb().modales;
+  const { idioma } = useIdioma();
+
+  if (!isOpen || !coachEs) return null;
+
+  // El cargo y la presentación, en el idioma de la web. Ver features/landing/textos.ts.
+  const coach = coachEn(coachEs, idioma);
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
@@ -19,10 +27,11 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
       />
 
       <div className="relative bg-surface-sunken w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
-        
+
         {/* Close Button Mobile */}
         <button
           onClick={onClose}
+          aria-label={c.cerrar}
           className="absolute top-4 right-4 z-[80] p-2 bg-black/50 rounded-full text-ink md:hidden"
         >
           <X size={24} />
@@ -52,6 +61,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           <div className="hidden md:flex justify-end mb-12">
             <button
               onClick={onClose}
+              aria-label={c.cerrar}
               className="p-3 bg-white/5 hover:bg-white/10 text-ink-muted hover:text-ink transition-colors rounded-full border border-line"
             >
               <X size={24} />
@@ -71,7 +81,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           <div className="mb-12">
             <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-brand" />
-              Presentación
+              {c.presentacion}
             </h3>
             <p className="text-ink leading-relaxed whitespace-pre-line text-lg font-medium">
               {coach.bio}
@@ -82,7 +92,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           <div className="mt-auto">
             <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-brand" />
-              Contacto Directo
+              {c.contactoDirecto}
             </h3>
             <div className="flex flex-wrap gap-4">
               <a
@@ -102,7 +112,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <FileText size={20} className="group-hover:scale-110 transition-transform" />
-                  <span className="font-black uppercase text-xs tracking-widest">Formulario</span>
+                  <span className="font-black uppercase text-xs tracking-widest">{c.formulario}</span>
                 </a>
               )}
               {coach.email && (

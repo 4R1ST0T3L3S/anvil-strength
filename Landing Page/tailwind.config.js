@@ -35,6 +35,16 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      /* `pc`: ordenador con alto de sobra. Es el tramo en el que el inicio del
+         panel se maqueta A PANTALLA COMPLETA, sin scroll (InicioPanel.tsx).
+         No basta con `lg`: un portátil con la ventana a media altura mide
+         1280 de ancho y 600 de alto, y ahí meter todo en una pantalla sería
+         recortar tarjetas. Por debajo de 640px de alto se vuelve a apilar y
+         a hacer scroll, como en el móvil. Nombre propio y no `lg`: ver la
+         regla de "ADITIVO" más abajo. */
+      screens: {
+        pc: { raw: "(min-width: 1024px) and (min-height: 640px)" },
+      },
       colors: {
         surface: {
           sunken: token("--surface-sunken"),

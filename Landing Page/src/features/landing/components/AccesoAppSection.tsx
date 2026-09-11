@@ -2,6 +2,7 @@ import { Monitor, Share, Plus, Download } from 'lucide-react';
 import { Fold, Reveal, PressButton } from './landingKit';
 import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import type { UserProfile } from '../../../hooks/useUser';
+import { rellenar, useTextosWeb } from '../textos';
 
 /**
  * ENTRAR A LA PLATAFORMA — EL SEGUNDO FOLD DE LA PORTADA.
@@ -33,6 +34,8 @@ import type { UserProfile } from '../../../hooks/useUser';
  *
  * Android y Windows siguen estando: son instalables de verdad. Pero van a
  * un lado, en dos fichas pequeñas, porque son el camino largo.
+ *
+ * Los textos, en los dos idiomas, viven en ../textos.ts.
  */
 
 /** APK de Android: nombre del fichero en /public/downloads y lo que pesa. */
@@ -49,18 +52,19 @@ export function AccesoAppSection({
     onLoginClick: () => void;
     onSignupClick?: () => void;
 }) {
+    const c = useTextosWeb().acceso;
+
     return (
         <Fold id="app" tone="black" className="border-b border-subtle py-20 md:py-24">
             <Reveal className="max-w-2xl">
                 <p className="text-t-xs font-black uppercase tracking-widest text-brand-text">
-                    La plataforma
+                    {c.antetitulo}
                 </p>
                 <h2 className="mt-4 text-d-sm font-black uppercase leading-[1.02] text-ink text-balance">
-                    Entra a entrenar
+                    {c.titulo}
                 </h2>
                 <p className="mt-5 text-t-lg leading-relaxed text-ink-muted">
-                    La misma aplicación que usan los entrenadores del club para programar.
-                    No hace falta instalar nada.
+                    {c.intro}
                 </p>
             </Reveal>
 
@@ -87,18 +91,16 @@ export function AccesoAppSection({
                                 </span>
                                 <div>
                                     <h3 className="text-t-xl font-black uppercase tracking-display text-ink">
-                                        Versión web
+                                        {c.web}
                                     </h3>
                                     <p className="text-t-xs font-bold uppercase tracking-widest text-brand-text">
-                                        Recomendada
+                                        {c.recomendada}
                                     </p>
                                 </div>
                             </div>
 
                             <p className="mt-5 max-w-lg text-t-base leading-relaxed text-ink-muted">
-                                Funciona en cualquier navegador, en el móvil y en el ordenador.
-                                Se abre aquí mismo, con tu cuenta de Anvil Strength, y siempre
-                                está en la última versión.
+                                {c.webTexto}
                             </p>
 
                             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -120,7 +122,7 @@ export function AccesoAppSection({
                                         // necesita para ser pulsable.
                                         className="inline-flex min-h-11 items-center justify-center px-2 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline sm:justify-start"
                                     >
-                                        Crear cuenta gratis
+                                        {c.crearCuenta}
                                     </button>
                                 )}
                             </div>
@@ -136,11 +138,11 @@ export function AccesoAppSection({
                                     <Plus className="h-3.5 w-3.5" />
                                 </span>
                                 <p className="text-t-xs leading-relaxed text-ink-muted">
-                                    <span className="font-bold text-ink">¿iPhone o iPad?</span>{' '}
-                                    Esta es tu versión. Para tenerla como una app más, abre el
-                                    menú <span className="font-semibold text-ink">Compartir</span> de
-                                    Safari y elige{' '}
-                                    <span className="font-semibold text-ink">Añadir a pantalla de inicio</span>.
+                                    <span className="font-bold text-ink">{c.iphoneTitulo}</span>{' '}
+                                    {c.iphoneAntes}{' '}
+                                    <span className="font-semibold text-ink">{c.iphoneCompartir}</span>{' '}
+                                    {c.iphoneEntre}{' '}
+                                    <span className="font-semibold text-ink">{c.iphoneAnadir}</span>.
                                 </p>
                             </div>
                         </div>
@@ -152,7 +154,7 @@ export function AccesoAppSection({
                     <div className="flex h-full flex-col gap-4">
                         <FichaDeDescarga
                             nombre="Android"
-                            detalle={`APK v${ANDROID.version} · ${ANDROID.peso}`}
+                            detalle={rellenar(c.apk, { version: ANDROID.version, peso: ANDROID.peso })}
                             archivo={ANDROID.archivo}
                             icono={
                                 <svg viewBox="-2 -2 28 28" fill="currentColor" className="h-5 w-5 text-[#3DDC84]" aria-hidden="true">
@@ -162,7 +164,7 @@ export function AccesoAppSection({
                         />
                         <FichaDeDescarga
                             nombre="Windows"
-                            detalle={`Instalador v${WINDOWS.version} · ${WINDOWS.peso}`}
+                            detalle={rellenar(c.instalador, { version: WINDOWS.version, peso: WINDOWS.peso })}
                             archivo={WINDOWS.archivo}
                             icono={
                                 <svg viewBox="-3 -3 30 30" fill="currentColor" className="h-5 w-5 text-[#0078D4]" aria-hidden="true">
@@ -172,9 +174,7 @@ export function AccesoAppSection({
                         />
 
                         <p className="mt-auto pt-2 text-t-2xs leading-relaxed text-ink-subtle">
-                            Las versiones instalables son la misma aplicación empaquetada.
-                            Útiles si entrenas sin cobertura en el gimnasio; para todo lo
-                            demás, la versión web va igual.
+                            {c.instalablesNota}
                         </p>
                     </div>
                 </Reveal>
@@ -229,19 +229,21 @@ function FichaDeDescarga({
  * "software". Vive aquí para que el texto y el destino no se separen.
  */
 export function VolverAlAcceso({ onIrAlAcceso }: { onIrAlAcceso: () => void }) {
+    const c = useTextosWeb().acceso;
+
     return (
         <Reveal delay={0.2} className="mt-20 border-t border-subtle pt-12">
             <div className="flex flex-col items-start gap-5 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h3 className="text-t-xl font-black uppercase tracking-display text-ink">
-                        Todo esto, ahora
+                        {c.volverTitulo}
                     </h3>
                     <p className="mt-2 text-t-base text-ink-muted">
-                        Versión web, Android o Windows — arriba del todo.
+                        {c.volverTexto}
                     </p>
                 </div>
                 <PressButton onClick={onIrAlAcceso} size="md" className="w-full md:w-auto">
-                    Entrar a la app
+                    {c.volverBoton}
                 </PressButton>
             </div>
         </Reveal>

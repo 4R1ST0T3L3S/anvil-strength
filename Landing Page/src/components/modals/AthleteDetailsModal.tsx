@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Trophy, Activity } from 'lucide-react';
 import { Athlete } from '../../data/athletes';
+import { useTextosWeb } from '../../features/landing/textos';
 
 interface AthleteDetailsModalProps {
   isOpen: boolean;
@@ -9,6 +10,8 @@ interface AthleteDetailsModalProps {
 }
 
 export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen, onClose, athlete }) => {
+  const c = useTextosWeb().modales;
+
   if (!isOpen || !athlete) return null;
 
   return (
@@ -19,10 +22,11 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
       />
 
       <div className="relative bg-surface-sunken w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
-        
+
         {/* Close Button Mobile */}
         <button
           onClick={onClose}
+          aria-label={c.cerrar}
           className="absolute top-4 right-4 z-[80] p-2 bg-black/50 rounded-full text-ink md:hidden"
         >
           <X size={24} />
@@ -52,6 +56,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
           <div className="hidden md:flex justify-end mb-12">
             <button
               onClick={onClose}
+              aria-label={c.cerrar}
               className="p-3 bg-white/5 hover:bg-white/10 text-ink-muted hover:text-ink transition-colors rounded-full border border-line"
             >
               <X size={24} />
@@ -91,9 +96,11 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             <div>
               <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-8 flex items-center gap-4">
                 <span className="w-8 h-[1px] bg-brand" />
-                Mejores Marcas
+                {c.mejoresMarcas}
               </h3>
               <div className="grid grid-cols-3 gap-4">
+                {/* Los tres levantamientos se nombran en inglés en los dos
+                    idiomas: es como se dicen en la tarima. */}
                 {[
                   { label: 'Squat', value: athlete.stats.squat },
                   { label: 'Bench', value: athlete.stats.bench },
@@ -110,7 +117,7 @@ export const AthleteDetailsModal: React.FC<AthleteDetailsModalProps> = ({ isOpen
             {/* Last Competition */}
             <div className="bg-gradient-to-r from-brand/20 to-transparent p-8 rounded-2xl border border-brand/30 shadow-xl relative overflow-hidden group">
               <div className="relative z-10">
-                <p className="text-t-2xs text-brand-text font-black uppercase tracking-[0.2em] mb-3">Última Competición</p>
+                <p className="text-t-2xs text-brand-text font-black uppercase tracking-[0.2em] mb-3">{c.ultimaCompeticion}</p>
                 <p className="text-2xl text-ink font-black uppercase font-bebas italic tracking-wider">{athlete.stats.lastCompetition}</p>
               </div>
               <Trophy className="absolute right-6 top-1/2 -translate-y-1/2 text-brand-text/10 group-hover:scale-125 transition-transform duration-slow" size={80} />

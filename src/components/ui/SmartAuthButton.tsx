@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/useUser';
 import { isAdmin, homeRouteFor } from '../../lib/roles';
 import { Loader } from 'lucide-react';
+import { useTextosWeb } from '../../features/landing/textos';
 
 interface SmartAuthButtonProps {
     variant?: 'primary' | 'secondary' | 'ghost';
@@ -16,6 +17,9 @@ export function SmartAuthButton({
 }: SmartAuthButtonProps) {
     const { data: user, isLoading } = useUser();
     const navigate = useNavigate();
+    // Vive en la web pública (cabecera, portada): sigue su idioma. Dentro del
+    // panel, `IdiomaFijo` lo deja en español.
+    const c = useTextosWeb().auth;
 
     const handleClick = () => {
         if (isLoading) return;
@@ -47,14 +51,14 @@ export function SmartAuthButton({
     };
 
     const buttonText = isLoading
-        ? 'Cargando...'
+        ? c.cargando
         : !user
-            ? 'Iniciar Sesión'
+            ? c.iniciarSesion
             : isAdmin(user)
-                ? 'Panel Admin'
+                ? c.panelAdmin
                 : !user.has_access
-                    ? 'Mi perfil'
-                    : 'Ir a mi Panel';
+                    ? c.miPerfil
+                    : c.irAMiPanel;
 
     return (
         <button
