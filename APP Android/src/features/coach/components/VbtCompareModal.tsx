@@ -68,7 +68,7 @@ function MetricRadio({ value, label, activa, onSelect }: {
     return (
         <button
             onClick={() => onSelect(value)}
-            className={`flex items-center gap-2 rounded-field border px-4 py-2 text-t-xs font-bold uppercase tracking-widest transition-colors duration-fast ease-snap ${isActive
+            className={`flex items-center gap-2 rounded-field border px-4 py-2 text-t-xs font-bold transition-colors duration-fast ease-snap ${isActive
                 ? 'border-brand bg-brand text-brand-ink'
                 : 'border-[var(--border-default)] bg-surface-raised text-ink-muted hover:bg-surface-overlay hover:text-ink'
                 }`}
@@ -204,7 +204,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-4 md:p-8 bg-black/95 backdrop-blur-sm animate-fade">
-            <div className="bg-surface-sunken max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-line shadow-2xl overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
+            <div className="bg-surface-sunken max-w-7xl w-full h-full sm:h-auto sm:rounded-2xl border-0 sm:border border-line shadow-overlay overflow-hidden flex flex-col max-h-[100dvh] sm:max-h-[90vh]">
                 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b border-subtle bg-surface-sunken gap-4 sm:gap-0 flex-shrink-0">
@@ -213,14 +213,14 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                             <Activity size={24} />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h2 className="text-xl font-black text-ink uppercase tracking-tight truncate">Comparativa VBT</h2>
+                            <h2 className="text-xl font-semibold text-ink tracking-tight truncate">Comparativa VBT</h2>
                             <p className="text-sm text-ink-muted font-medium truncate">
                                 {sessionsToCompare.length} Sesiones analizadas
                             </p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 text-ink-muted hover:text-ink bg-white/5 hover:bg-white/10 rounded-lg transition-colors sm:hidden ml-auto"
+                            className="p-2 text-ink-muted hover:text-ink bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] rounded-lg transition-colors sm:hidden ml-auto"
                         >
                             <X size={20} />
                         </button>
@@ -229,7 +229,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                          {/* Optional actions */}
                         <button
                             onClick={onClose}
-                            className="p-2.5 sm:p-2 text-ink-muted hover:text-ink bg-white/5 hover:bg-white/10 rounded-lg transition-colors hidden sm:block"
+                            className="p-2.5 sm:p-2 text-ink-muted hover:text-ink bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] rounded-lg transition-colors hidden sm:block"
                         >
                             <X size={20} />
                         </button>
@@ -241,13 +241,13 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                     {loading ? (
                         <div className="flex-1 flex flex-col items-center justify-center text-ink-subtle py-20">
                             <Loader size={48} className="animate-spin mb-4 text-brand-text" />
-                            <p className="font-bold uppercase tracking-widest text-sm">Cruzando datos...</p>
+                            <p className="font-bold text-sm">Cruzando datos...</p>
                         </div>
                     ) : (
                         <>
                             {/* Metric Selector */}
                             <div className="flex flex-wrap items-center justify-center gap-2 mb-8 w-full p-2">
-                                <span className="text-xs uppercase font-bold text-gray-600 px-2 mr-2">Analizar:</span>
+                                <span className="text-xs font-bold text-ink-subtle px-2 mr-2">Analizar:</span>
                                 <MetricRadio value="Vm" label="Vm" activa={activeMetric} onSelect={setActiveMetric} />
                                 <MetricRadio value="Vmp" label="Vmp" activa={activeMetric} onSelect={setActiveMetric} />
                                 <MetricRadio value="Vmax" label="Vmax" activa={activeMetric} onSelect={setActiveMetric} />
@@ -317,11 +317,11 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                             {/* Session Summary Table */}
                             <div className="sm:mt-8 bg-black/20 sm:rounded-xl border-y sm:border border-subtle -mx-4 sm:mx-0 overflow-hidden">
                                 <div className="px-4 py-3 border-b border-subtle bg-surface-sunken">
-                                    <h4 className="text-sm font-bold uppercase tracking-wider text-ink">Medias Acumuladas</h4>
+                                    <h4 className="text-sm font-bold text-ink">Medias Acumuladas</h4>
                                 </div>
                                 <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto overflow-x-auto">
                                     <table className="w-full text-left text-xs sm:text-sm text-ink-muted relative">
-                                        <thead className="sticky top-0 z-10 text-t-2xs sm:text-xs uppercase bg-surface-sunken text-ink-subtle font-bold border-b border-subtle shadow-sm">
+                                        <thead className="sticky top-0 z-10 text-t-2xs sm:text-xs bg-surface-sunken text-ink-subtle font-bold border-b border-subtle shadow-sm">
                                             <tr>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">Sesión</th>
                                                 <th className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">Med. Vm</th>
@@ -332,7 +332,7 @@ export function VbtCompareModal({ isOpen, onClose, sessionsToCompare }: VbtCompa
                                         </thead>
                                         <tbody>
                                             {(summaryData ?? []).map((row) => (
-                                                <tr key={row.id} className="border-b border-subtle hover:bg-white/5 transition-colors">
+                                                <tr key={row.id} className="border-b border-subtle hover:bg-[var(--fill-hover)] transition-colors">
                                                     <td className="px-3 sm:px-4 py-2.5 sm:py-3 font-bold text-ink whitespace-nowrap flex items-center gap-2">
                                                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: row.color }} />
                                                         {row.label}

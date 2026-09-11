@@ -33,7 +33,8 @@ export const DayCard = memo(function DayCard({
     // Reciben el id en vez de venir ya cerrados sobre él. Con una lambda por
     // tarjeta, `memo` no servía de nada: las props cambiaban de identidad en
     // cada render del constructor aunque el día fuese exactamente el mismo.
-    onOpen: (sessionId: string) => void;
+    /** `origen`: dónde está la tarjeta, para que el editor se abra desde ella. */
+    onOpen: (sessionId: string, origen?: DOMRect) => void;
     onRemove: (sessionId: string) => void;
     onChangeWeekday: (sessionId: string, day: Weekday | null) => void;
     /** Día copiado al portapapeles interno del constructor. null = vacío. */
@@ -82,7 +83,18 @@ export const DayCard = memo(function DayCard({
                     onClick={() => onRemove(session.id)}
                     title="Eliminar día"
                     aria-label={`Eliminar ${dayLabel}`}
-                    className="rounded-field p-1.5 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover/day:opacity-100"
+                    // `md:opacity-0` y no `opacity-0` a secas.
+                    //
+                    // Un elemento a opacidad cero SIGUE recibiendo
+                    // pulsaciones, y en una pantalla táctil no existe el
+                    // `hover` que lo revelaba: en el móvil esto era un botón
+                    // INVISIBLE en la esquina de cada tarjeta de día que se
+                    // comía el toque. Tocabas la tarjeta para abrir el día y
+                    // saltaba «Eliminar día», así que había que apuntar a otro
+                    // sitio. Mismo idioma que ExerciseCard (`md:opacity-0
+                    // group-hover/row:opacity-100`): visible siempre donde no
+                    // hay ratón, al pasar por encima donde sí lo hay.
+                    className="rounded-field p-1.5 text-ink-faint transition-opacity duration-fast ease-snap hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand md:opacity-0 md:group-hover/day:opacity-100"
                 >
                     <Trash2 size={14} aria-hidden="true" />
                 </button>
@@ -96,7 +108,7 @@ export const DayCard = memo(function DayCard({
                     aria-expanded={pickerOpen}
                     aria-haspopup="menu"
                     title="Agendar en un día de la semana"
-                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
+                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
  ? 'bg-brand-quiet font-semibold text-brand-text'
  : 'text-ink-subtle hover:text-ink'
  }`}
@@ -116,7 +128,7 @@ export const DayCard = memo(function DayCard({
                     onClose={() => setPickerOpen(false)}
                     anchorRef={pickerAnchor}
                 >
-                    <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                    <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold text-ink-subtle">
                         Agendar en
                     </p>
                     {orderedWeekdays(firstWeekday).map(d => (
@@ -144,7 +156,9 @@ export const DayCard = memo(function DayCard({
             </div>
 
             <button
-                onClick={() => onOpen(session.id)}
+                // Se mide la TARJETA entera (el padre) y no el botón: es de ahí
+                // de donde crece el editor al abrirse.
+                onClick={(e) => onOpen(session.id, e.currentTarget.parentElement?.getBoundingClientRect())}
                 className="flex min-h-[150px] w-full flex-col rounded-card p-4 pt-9 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
             >
                 <h4 className="mt-0.5 truncate pr-6 text-t-base font-semibold text-ink">
@@ -198,7 +212,7 @@ export const DayCard = memo(function DayCard({
  */
 const LIFT_THEMES: Record<LiftKey, { key: string; accent: string; border: string; bg: string; bar: string; gradient: string }> = {
     ACC: { key: 'ACC', accent: 'text-success', border: 'border-emerald-500/40', bg: 'bg-success-quiet', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' },
-    SQ: { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-red-500', gradient: 'from-red-500/15 to-transparent' },
+    SQ: { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-brand', gradient: 'from-red-500/15 to-transparent' },
     BP: { key: 'BP', accent: 'text-info', border: 'border-sky-500/40', bg: 'bg-info-quiet', bar: 'bg-sky-500', gradient: 'from-sky-500/15 to-transparent' },
     DL: { key: 'DL', accent: 'text-purple-400', border: 'border-purple-500/40', bg: 'bg-purple-500/10', bar: 'bg-purple-500', gradient: 'from-purple-500/15 to-transparent' },
 };

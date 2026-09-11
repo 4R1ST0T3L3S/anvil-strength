@@ -35,14 +35,14 @@
        sistema (estado y gestos) al WebView entero. `env(safe-area-inset-*)`
        pasa a valer 0 y las reservas que ya había no estorban. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+$
   <!-- `dark light` y en ese orden: el primero es el que se usa cuando no hay
        preferencia. Esto es lo que hace que el navegador pinte en el tono
        correcto lo que NO controla el CSS —barras de scroll, selectores de
        fecha, el fondo detrás del rebote elástico— desde el primer frame.
        El script de abajo lo afina al tema real. -->
   <meta name="color-scheme" content="dark light" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#0c0c0e" />
 
   <!-- EL DESTELLO, QUE HAY QUE MATAR ANTES DE QUE REACT EXISTA.
        =================================================================
@@ -64,9 +64,14 @@
        navegadores, y un error aquí dejaría la página EN BLANCO — este script
        corre antes que nada. -->
   <script>
-        (function () {
+    (function () {
       try {
-        // IDIOMA (mantenemos la lógica intacta)
+        /* EL IDIOMA, ANTES QUE NADA TAMBIÉN.
+           `<html lang>` no es decorativo: decide con qué voz lee un lector de
+           pantalla —"Save" leído con fonética española no se entiende— y le
+           dice al navegador con qué reglas partir las palabras. Si se pusiera
+           desde React, el primer pintado saldría con el idioma equivocado.
+           La lógica es la misma que `detectarIdioma()` en src/lib/i18n. */
         var idioma = localStorage.getItem('anvil_idioma');
         if (idioma !== 'es' && idioma !== 'en') {
           idioma = 'es';
@@ -79,17 +84,16 @@
         }
         document.documentElement.setAttribute('lang', idioma);
 
-        // TEMA: Forzado a oscuro (Dark Mode only)
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.classList.add('dark');
-        document.documentElement.style.colorScheme = 'dark';
-        
-        var m = document.querySelector('meta[name="theme-color"]');
-        if (m) m.setAttribute('content', '#151515'); // Color de fondo principal en Android oscuro
-
+        var t = localStorage.getItem('anvil_tema');
+        var claro = t === 'claro' || (t !== 'oscuro' && window.matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.setAttribute('data-theme', claro ? 'light' : 'dark');
+        document.documentElement.style.colorScheme = claro ? 'light' : 'dark';
+        if (claro) {
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', '#f4f4f6');
+        }
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.classList.add('dark');
       }
     })();
   </script>
@@ -115,7 +119,7 @@
        titulares cortos. -->
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400..700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
   />
 
   <!-- SEO Primary -->
@@ -198,7 +202,9 @@
        Lo genera FAQSection.tsx a partir del mismo array que pinta. -->
 
   <!-- Preload / Prefetch -->
-  <!-- Aquí no hay portada que precargar: la app abre en el login o en el panel. -->
+  <!-- La portada es el elemento LCP. `fetchpriority` la saca de la cola de
+       prioridad baja en la que el navegador mete las imágenes por defecto. -->
+  <link rel="preload" href="/portadaanvil2.jpg" as="image" fetchpriority="high" />
   <!-- La primera consulta a Supabase sale en cuanto monta la app; abrir la
        conexión TLS en paralelo con el JS ahorra el ida y vuelta del handshake. -->
   <link rel="preconnect" href="https://ihcyuoczbmjxfinxvzra.supabase.co" crossorigin />

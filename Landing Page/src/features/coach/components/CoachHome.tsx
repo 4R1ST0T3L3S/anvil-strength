@@ -5,7 +5,7 @@ import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, CalendarDays, Weight, List, Calculator, Swords, Fish, Loader,
-    Apple, BookOpen, LayoutDashboard, FlaskConical, Activity, User,
+    Apple, BookOpen, LayoutDashboard, FlaskConical, Activity, User, Inbox, MessageSquare,
 } from 'lucide-react';
 import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { CountdownWidget } from '../../../components/ui/CountdownWidget';
@@ -16,6 +16,9 @@ import { WarmUpCalculator } from '../../athlete/components/WarmUpCalculator';
 import { PlateCalculator } from '../../athlete/components/PlateCalculator';
 import { SushiCounter } from '../../athlete/components/SushiCounter';
 import { AnvilRanking } from '../../athlete/components/AnvilRanking';
+import { useCoachInboxSummary } from '../../inbox/hooks/useInbox';
+import { useChatSinLeer } from '../../chat/hooks/useChat';
+import { Avatar } from '../../../components/ui/Avatar';
 import {
     InicioArmazon, Seccion, RejillaAccesos, Acceso, TarjetaPrincipal,
     ParDePrincipales, FraseDelDia, FilaDeContexto,
@@ -37,20 +40,12 @@ const saludo = () => {
 };
 
 /**
- * Inicio del entrenador (y del nutricionista: los dos gestionan atletas
- * asignados y ven las mismas herramientas).
+ * Inicio del entrenador (y del nutricionista).
  *
- * MISMA FORMA QUE EL DEL ATLETA, con `InicioArmazon`: arriba a la izquierda lo
- * que se viene a hacer (aquí, el equipo; allí, el entrenamiento de hoy), debajo
- * la frase y la competición, y a la derecha los accesos y el Anvil Lab. En el
- * ordenador cabe en una pantalla sin scroll; ver `InicioPanel.tsx`.
- *
- * Lo que cambia respecto a la versión anterior:
- *   - «Mis atletas» y «Dietas» vuelven a ser las dos tarjetas grandes —como
- *     «Entrenar» y «Mi dieta» del atleta— y «Mis atletas» dice cuántos hay.
- *   - Los doce colores (uno por tarjeta) pasan a los tres de área del sistema.
- *   - «Mensajes · Próximamente» se va: era un botón que no hacía nada. Su hueco
- *     lo ocupa la Agenda del equipo, que existía y no tenía acceso desde aquí.
+ * LO PRIMERO ES LO QUE PIDE ATENCIÓN: la bandeja de entrada con cuántos
+ * entrenamientos esperan y de quién, al lado del equipo. Debajo, el contexto
+ * (frase y competición); a la derecha, el resto de la aplicación con los
+ * mensajes sin leer marcados, y el laboratorio.
  */
 export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfile; onNavigate: (view: string) => void; headerActions?: ReactNode }) {
     const navigate = useNavigate();
@@ -64,16 +59,15 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
     const [isSushiCounterOpen, setIsSushiCounterOpen] = useState(false);
     const [isRankingOpen, setIsRankingOpen] = useState(false);
 
+    const bandeja = useCoachInboxSummary(user.id);
+    const sinLeer = useChatSinLeer(user.id);
+
     useEffect(() => {
         let alive = true;
 
         const fetchStats = async () => {
             try {
-                // Solo relaciones VIVAS, igual que CoachAthletes.tsx. Sin este
-                // filtro, un atleta desvinculado (`ended`) o archivado seguía
-                // sumando aquí aunque ya hubiera desaparecido de la lista.
-                // El filtro vive en la puerta única, no aquí: ver
-                // src/features/coach/hooks/useCoachRoster.ts.
+                // Solo relaciones VIVAS, por la puerta única (useCoachRoster).
                 const athleteIds = await fetchRosterIds(user.id, 'active');
                 if (alive) setAthleteCount(athleteIds.length);
 
@@ -95,21 +89,12 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                 if (!alive) return;
 
                 if (comp) {
-                    // Días naturales que faltan. `Math.abs` habría convertido
-                    // una competición ya pasada en una futura.
                     const target = new Date(comp.date);
                     target.setHours(0, 0, 0, 0);
                     const now = new Date();
                     now.setHours(0, 0, 0, 0);
                     const days = Math.round((target.getTime() - now.getTime()) / 86400000);
-
-                    setNextComp({
-                        name: comp.name,
-                        date: comp.date,
-                        days,
-                        level: comp.level || '',
-                        location: comp.location || '',
-                    });
+                    setNextComp({ name: comp.name, date: comp.date, days, level: comp.level || '', location: comp.location || '' });
                 } else {
                     setNextComp(null);
                 }
@@ -131,28 +116,51 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
         ? 'Programación y seguimiento'
         : athleteCount === 0
             ? 'Todavía no tienes ninguno asignado'
-            : `${athleteCount} ${athleteCount === 1 ? 'atleta asignado' : 'atletas asignados'}`;
+            : `${athleteCount} ${athleteCount === 1 ? 'atleta en el equipo' : 'atletas en el equipo'}`;
+
+    const pendientes = bandeja.totalPendientes;
+    const pistaBandeja = bandeja.isPending
+        ? 'Entrenamientos por revisar'
+        : pendientes === 0
+            ? 'Todo revisado'
+            : `${pendientes} ${pendientes === 1 ? 'entrenamiento por revisar' : 'entrenamientos por revisar'}`;
 
     return (
         <>
             <InicioArmazon
-                titulo={<>{saludo()}, <span className="text-brand-text">{firstName}</span></>}
+                titulo={<>{saludo()}, {firstName}</>}
                 acciones={headerActions}
                 principal={
-                    <Seccion icono={Users} titulo="Tu equipo">
+                    <Seccion icono={LayoutDashboard} titulo="Hoy">
                         <ParDePrincipales>
                             <TarjetaPrincipal
+                                icono={Inbox}
+                                titulo="Bandeja de entrada"
+                                pista={pistaBandeja}
+                                insignia={pendientes}
+                                tono={pendientes > 0 ? 'marca' : 'neutro'}
+                                onClick={() => onNavigate('inbox')}
+                            >
+                                {bandeja.atletas.length > 0 && (
+                                    <span className="mt-3 flex items-center gap-1.5">
+                                        <span className="flex -space-x-2">
+                                            {bandeja.atletas.slice(0, 4).map(a => (
+                                                <Avatar key={a.athleteId} nombre={a.fullName} src={a.avatarUrl} size={24} anillo />
+                                            ))}
+                                        </span>
+                                        <span className={pendientes > 0 ? 'text-t-xs text-brand-ink/80' : 'text-t-xs text-ink-subtle'}>
+                                            {bandeja.atletas.slice(0, 2).map(a => a.fullName.split(' ')[0]).join(', ')}
+                                            {bandeja.atletas.length > 2 && ` y ${bandeja.atletas.length - 2} más`}
+                                        </span>
+                                    </span>
+                                )}
+                            </TarjetaPrincipal>
+                            <TarjetaPrincipal
+                                tono="neutro"
                                 icono={Users}
                                 titulo="Mis atletas"
                                 pista={pistaAtletas}
                                 onClick={() => onNavigate('athletes')}
-                            />
-                            <TarjetaPrincipal
-                                tono="comida"
-                                icono={Apple}
-                                titulo="Dietas"
-                                pista="Planes nutricionales del equipo"
-                                onClick={() => onNavigate('diets')}
                             />
                         </ParDePrincipales>
                     </Seccion>
@@ -164,8 +172,8 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                         </Seccion>
                         <Seccion icono={Trophy} titulo="Próxima competición">
                             {loading ? (
-                                <div className="flex min-h-[132px] items-center justify-center rounded-card border border-[var(--border-default)] bg-surface-raised pc:min-h-0 pc:flex-1">
-                                    <Loader className="animate-spin text-brand-text" size={24} />
+                                <div className="flex min-h-[124px] items-center justify-center rounded-card border border-[var(--card-border)] bg-surface-raised shadow-card pc:min-h-0 pc:flex-1">
+                                    <Loader className="animate-spin text-ink-subtle" size={22} />
                                 </div>
                             ) : (
                                 <CountdownWidget assigned={nextComp} userId={user.id} />
@@ -176,6 +184,8 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                 accesos={
                     <Seccion icono={LayoutDashboard} titulo="Gestión">
                         <RejillaAccesos>
+                            <Acceso area="entreno" icono={MessageSquare} titulo="Mensajes" pista="Chat con tus atletas" insignia={sinLeer} onClick={() => onNavigate('messages')} />
+                            <Acceso area="comida" icono={Apple} titulo="Dietas" pista="Planes nutricionales del equipo" onClick={() => onNavigate('diets')} />
                             <Acceso area="entreno" icono={CalendarDays} titulo="Agenda" pista="Las sesiones del equipo" onClick={() => onNavigate('schedule')} />
                             <Acceso area="entreno" icono={Trophy} titulo="Competiciones" pista="Calendario del año" onClick={() => onNavigate('calendar')} />
                             {!nutritionist && (

@@ -87,14 +87,14 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                     <button
                         onClick={() => setMonthsBack(b => b + MONTHS_BACK_STEP)}
                         title={`Ver ${MONTHS_BACK_STEP} meses más atrás`}
-                        className="rounded-chip bg-surface-sunken px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        className="rounded-chip bg-surface-sunken px-2 py-1 text-t-2xs font-bold text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                         ← Atrás
                     </button>
                     {monthsBack !== 1 && (
                         <button
                             onClick={() => setMonthsBack(1)}
-                            className="rounded-chip px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                            className="rounded-chip px-2 py-1 text-t-2xs font-bold text-brand-text transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         >
                             Hoy
                         </button>
@@ -105,7 +105,7 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                                 key={m}
                                 onClick={() => setMonthsForward(m)}
                                 aria-pressed={monthsForward === m}
-                                className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m
+                                className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m
                                     ? 'bg-brand text-brand-ink'
                                     : 'text-ink-subtle hover:text-ink'
                                     }`}
@@ -136,7 +136,7 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                                     {weeks.map((w, i) => (
                                         <div key={i} style={{ width: WEEK_COL_WIDTH }} className="shrink-0 border-r border-[var(--border-subtle)] py-1 text-center last:border-r-0">
                                             {w.label && (
-                                                <span className="block truncate text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{w.label}</span>
+                                                <span className="block truncate text-t-2xs font-bold text-ink-subtle">{w.label}</span>
                                             )}
                                         </div>
                                     ))}
@@ -145,7 +145,7 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                                 {WEEKDAY_LABELS.map((label, dayIdx) => (
                                     <div key={label} className="flex border-b border-[var(--border-subtle)] last:border-b-0">
                                         <div className="sticky left-0 z-10 flex w-10 shrink-0 items-center justify-center border-r border-[var(--border-subtle)] bg-surface-raised">
-                                            <span className="text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{label}</span>
+                                            <span className="text-t-2xs font-bold text-ink-subtle">{label}</span>
                                         </div>
                                         {weeks.map((w, i) => {
                                             const date = addDays(w.monday, dayIdx);
@@ -164,7 +164,7 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
                                                     {cell && (
                                                         <span
                                                             aria-hidden="true"
-                                                            className={`flex h-5 w-5 items-center justify-center rounded text-[9px] font-black tabular-nums ${HEAT_CLASSES[level]}`}
+                                                            className={`flex h-5 w-5 items-center justify-center rounded text-t-2xs font-semibold tabular-nums ${HEAT_CLASSES[level]}`}
                                                         >
                                                             {cell.withContent}
                                                         </span>
@@ -180,7 +180,7 @@ export function TeamPlanningCalendar({ user, onSelectAthlete }: TeamPlanningCale
 
                         {/* LA LISTA — a quién se le acaba antes, y el acceso a su propio calendario. */}
                         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised">
-                            <h3 className="border-b border-[var(--border-subtle)] px-3.5 py-2.5 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                            <h3 className="border-b border-[var(--border-subtle)] px-3.5 py-2.5 text-t-2xs font-bold text-ink-subtle">
                                 Atletas, por urgencia
                             </h3>
                             <ul>

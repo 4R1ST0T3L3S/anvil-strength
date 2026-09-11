@@ -347,7 +347,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
 
             {/* Progresión semanal */}
             <section>
-                <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                <h4 className="mb-3 text-sm font-semibold text-ink-muted">
                     Progresión semanal
                 </h4>
                 <div className="h-56 w-full">
@@ -413,7 +413,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
                 cómo progresa el volumen dentro del bloque. La media queda
                 debajo, como resumen. */}
             <section>
-                <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                <h4 className="mb-1 text-sm font-semibold text-ink-muted">
                     Series directas por semana
                 </h4>
                 <p className="mb-3 text-xs text-ink-subtle">
@@ -534,7 +534,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
 
             {/* Reparto por músculo */}
             <section>
-                <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                <h4 className="mb-1 text-sm font-semibold text-ink-muted">
                     Series por grupo muscular
                 </h4>
                 <p className="mb-3 text-xs text-ink-subtle">
@@ -586,7 +586,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
 
             {/* Lectura frente a las referencias */}
             <section>
-                <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                <h4 className="mb-3 text-sm font-semibold text-ink-muted">
                     Frente a las referencias semanales
                 </h4>
                 <ul className="grid gap-2 sm:grid-cols-2">
@@ -628,7 +628,7 @@ export function AthleteVolumeTab({ history, macros }: AthleteVolumeTabProps) {
 function Stat({ label, value }: { label: string; value: string }) {
     return (
         <div className="rounded-card bg-surface-raised px-3 py-2.5">
-            <p className="text-t-2xs uppercase tracking-wide text-ink-subtle">{label}</p>
+            <p className="text-t-2xs text-ink-subtle">{label}</p>
             <p className="mt-0.5 text-xl font-semibold text-ink">{value}</p>
         </div>
     );

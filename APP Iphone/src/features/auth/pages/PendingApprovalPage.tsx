@@ -9,7 +9,7 @@ export function PendingApprovalPage() {
 
     return (
         <div className="min-h-[100dvh] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)] bg-surface-sunken flex items-center justify-center p-6 text-ink font-sans selection:bg-brand">
-            <div className="max-w-md w-full bg-surface-raised border border-line rounded-2xl p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden">
+            <div className="max-w-md w-full bg-surface-raised border border-line rounded-2xl p-8 sm:p-10 text-center shadow-overlay relative overflow-hidden">
                 {/* Background Accent */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand/10 via-brand to-brand/10" />
 
@@ -19,7 +19,7 @@ export function PendingApprovalPage() {
                     </div>
                 </div>
 
-                <h1 className="text-3xl font-black uppercase italic tracking-tighter mb-4">
+                <h1 className="text-3xl font-semibold tracking-tight mb-4">
                     Cuenta en <br />
                     <span className="text-brand-text">Revisión</span>
                 </h1>
@@ -29,10 +29,10 @@ export function PendingApprovalPage() {
                 </p>
 
                 <div className="bg-surface-sunken rounded-xl p-4 border border-subtle mb-8">
-                    <p className="text-xs uppercase tracking-widest font-bold text-ink-subtle mb-1">
+                    <p className="text-xs font-bold text-ink-subtle mb-1">
                         Estado Actual
                     </p>
-                    <p className="text-sm font-black text-warning flex items-center justify-center gap-2 uppercase tracking-wide">
+                    <p className="text-sm font-semibold text-warning flex items-center justify-center gap-2">
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
@@ -43,7 +43,7 @@ export function PendingApprovalPage() {
 
                 <button
                     onClick={handleLogout}
-                    className="w-full bg-white hover:bg-gray-200 text-black font-black uppercase tracking-wider py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
+                    className="w-full bg-ink hover:opacity-90 text-surface-canvas font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
                 >
                     <LogOut className="w-5 h-5" />
                     Cerrar Sesión

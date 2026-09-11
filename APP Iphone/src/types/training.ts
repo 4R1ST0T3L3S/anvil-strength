@@ -199,6 +199,19 @@ export interface TrainingSession {
     /** Cómo fue el día, en palabras del atleta. Distinto de las notas por serie. */
     athlete_notes?: string | null;
     /**
+     * REVISIÓN DEL ENTRENADOR. Ver database/BANDEJA_REVISION_2026-09-11.sql.
+     * Las escribe la base (funciones y disparadores); el cliente solo las lee.
+     *   reviewed_at            última revisión (NULL = nunca).
+     *   athlete_updated_at     último cambio HECHO POR EL ATLETA.
+     *   review_pending         generada: cerrado y sin revisar desde el último cambio.
+     *   modified_after_review  generada: el atleta lo cambió tras una revisión.
+     */
+    reviewed_at?: string | null;
+    reviewed_by?: string | null;
+    athlete_updated_at?: string | null;
+    review_pending?: boolean | null;
+    modified_after_review?: boolean | null;
+    /**
      * Apéndices del día, en texto libre. NO son ejercicios: no cuentan para el
      * volumen, el tonelaje ni el reparto por patrón. Ausentes en bases sin
      * database/session_warmup_extras.sql aplicado.

@@ -61,7 +61,7 @@ export function SelectorDeIdioma({ className }: { className?: string }) {
                     terráqueo no dice en qué idioma estás, solo que se puede
                     cambiar. Y va `aria-hidden` porque el nombre completo ya
                     está en la etiqueta del botón. */}
-                <span className="text-t-2xs font-black tracking-wide" aria-hidden="true">
+                <span className="text-t-2xs font-semibold" aria-hidden="true">
                     {actual.codigo}
                 </span>
             </button>
@@ -97,7 +97,7 @@ export function SelectorDeIdioma({ className }: { className?: string }) {
                                 activo ? 'bg-brand-quiet text-ink' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'
                             )}
                         >
-                            <span className="w-7 shrink-0 text-t-2xs font-black tracking-wide text-ink-subtle">
+                            <span className="w-7 shrink-0 text-t-2xs font-semibold text-ink-subtle">
                                 {i.codigo}
                             </span>
                             <span className="min-w-0 flex-1 text-t-sm font-bold">{i.nombre}</span>

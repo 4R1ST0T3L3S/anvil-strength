@@ -128,7 +128,7 @@ export function CoachDiets({ user, onBack }: CoachDietsProps) {
                         }
                     />
                     <div className="min-w-0">
-                        <h1 className="truncate text-t-xl font-black uppercase tracking-display text-ink md:text-t-2xl">
+                        <h1 className="truncate text-t-xl font-semibold tracking-display text-ink md:text-t-2xl">
                             {selected.full_name ?? 'Atleta'}
                         </h1>
                         <p className="text-t-xs text-ink-subtle">Plan nutricional</p>
@@ -147,7 +147,7 @@ export function CoachDiets({ user, onBack }: CoachDietsProps) {
         <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 pb-24 md:px-8 md:py-10">
             <header className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
-                    <h1 className="flex items-center gap-2.5 text-t-2xl font-black uppercase tracking-display text-ink md:text-t-3xl">
+                    <h1 className="flex items-center gap-2.5 text-t-2xl font-semibold tracking-display text-ink md:text-t-3xl">
                         <Apple size={26} className="shrink-0 text-brand-text" aria-hidden="true" />
                         Dietas
                     </h1>

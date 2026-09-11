@@ -261,31 +261,71 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
     const metricOptions = isCardio ? CARDIO_TARGET_METRICS : TARGET_METRICS;
 
     /**
-     * Unidad en la que está pautado el ejercicio.
+     * VARIOS MÉTODOS DENTRO DEL MISMO EJERCICIO.
+     * =================================================================
      *
-     * La métrica se guarda por SERIE en la base, pero se elige por ejercicio.
-     * Se lee de la primera serie y las filas antiguas, sin `target_metric`,
-     * son kilos: es lo único que se podía prescribir antes de la migración.
-     * Un ejercicio de cardio recién marcado como tal no hereda 'kg' — no
-     * significa nada ahí — y arranca en duración.
+     * `training_sets.target_metric` SIEMPRE se ha guardado por serie: la
+     * base de datos admite desde la primera migración que una sentadilla
+     * lleve "1×1 @RPE 5" y debajo "3×3 @80%". Lo que no lo admitía era
+     * esta pantalla, que leía la unidad de `sets[0]` y la escribía en
+     * TODAS al cambiarla. El coach no podía pautar un top-set por esfuerzo
+     * seguido de series de trabajo por porcentaje —que es media
+     * programación de powerlifting— y tenía que partir el ejercicio en
+     * dos, con lo que el volumen, el tonelaje y el histórico lo contaban
+     * como dos ejercicios distintos.
+     *
+     * Ahora la unidad es de la SERIE. La cabecera sigue existiendo y sigue
+     * aplicando a todas —es lo que se usa 19 de cada 20 veces— pero pasa a
+     * ser un "poner todas en" en vez de la única verdad, y cuando las
+     * series no coinciden lo dice en vez de mentir con la de la primera.
      */
-    const exerciseMetric: TargetMetric =
-        sessionExercise.sets[0]?.target_metric ?? (isCardio ? 'duracion_seg' : 'kg');
+    const metricaPorDefecto: TargetMetric = isCardio ? 'duracion_seg' : 'kg';
 
     /**
-     * Cambiar la unidad afecta a todas las series del ejercicio.
+     * La unidad de UNA serie. Las filas anteriores a la migración no
+     * tienen `target_metric` y son kilos: era lo único que se podía
+     * prescribir entonces. Un ejercicio de cardio recién marcado como tal
+     * no hereda 'kg' —no significa nada ahí— y arranca en duración.
+     */
+    const metricaDe = (set: TrainingSet): TargetMetric =>
+        set.target_metric ?? metricaPorDefecto;
+
+    /**
+     * La unidad común, o `null` si las series no coinciden.
+     *
+     * `null` es un estado legítimo y visible ("Mixta"), no un error. Es
+     * justo el caso que esta pantalla no sabía representar.
+     */
+    const metricaComun: TargetMetric | null = (() => {
+        const distintas = new Set(sessionExercise.sets.map(metricaDe));
+        if (distintas.size === 0) return metricaPorDefecto;
+        return distintas.size === 1 ? [...distintas][0] : null;
+    })();
+
+    /**
+     * Cambiar la unidad de UNA serie.
      *
      * NO se arrastra el número de una unidad a otra: 170 kilos no son 170
      * repeticiones en recámara. Al cambiar, el valor se vacía y el coach lo
      * vuelve a escribir, que es preferible a dejar una cifra que parece
      * correcta y significa otra cosa.
+     *
+     * Se vacían las DOS columnas porque el RPE vive en `target_rpe` (texto,
+     * para admitir rangos como "7-8") y el resto en `target_load`: sin
+     * limpiar las dos, pasar de RPE a kilos y volver resucitaría el RPE
+     * viejo debajo de unos kilos nuevos.
      */
+    const cambiarMetricaDeSerie = (set: TrainingSet, metric: TargetMetric) => {
+        if (metric === metricaDe(set)) return;
+        onUpdateSet(set.id, 'target_metric', metric);
+        onUpdateSet(set.id, 'target_load', null);
+        onUpdateSet(set.id, 'target_rpe', null);
+    };
+
+    /** La cabecera: poner TODAS las series en la misma unidad. */
     const handleMetricChange = (metric: TargetMetric) => {
-        if (metric === exerciseMetric) return;
         for (const set of sessionExercise.sets) {
-            onUpdateSet(set.id, 'target_metric', metric);
-            onUpdateSet(set.id, 'target_load', null);
-            onUpdateSet(set.id, 'target_rpe', null);
+            cambiarMetricaDeSerie(set, metric);
         }
     };
 
@@ -423,7 +463,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     empujaba a la etiqueta de sección fuera de la tarjeta en un
                     móvil de 320px en vez de que fuera el nombre el que cediera. */}
                 <div className="flex items-center gap-2 mb-3">
-                    <h4 className="min-w-0 flex-1 truncate font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
+                    <h4 className="min-w-0 flex-1 truncate font-semibold text-ink text-base leading-tight tracking-tight">{exerciseName}</h4>
 
                     {/* ENLACE DE VÍDEO DE LA FICHA DEL EJERCICIO.
                         Era un icono azul y nada más: la columna existía, el
@@ -446,7 +486,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     {sessionExercise.vbt_file_url && (
                         <button
                             onClick={() => onOpenVbtChart(sessionExercise.vbt_file_url!, exerciseName)}
-                            className="shrink-0 bg-success-quiet text-success border border-success/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
+                            className="shrink-0 bg-success-quiet text-success border border-success/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-success-quiet transition-colors"
                             title="Ver Gráfica VBT"
                         >
                             <Activity size={12} />
@@ -489,7 +529,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     aria-pressed={active}
                                     title={x.hint}
                                     className={cn(
-                                        'shrink-0 rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                        'shrink-0 rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                                         active
                                             ? SECTION_STYLE[x.key].active
                                             : 'border-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
@@ -520,7 +560,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     && (sessionExercise.section ?? 'main') !== 'warmup'
                     && (sessionExercise.section ?? 'main') !== 'cardio' && (
                         <div className="mb-3 flex items-center gap-2">
-                            <span className="shrink-0 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                            <span className="shrink-0 text-t-2xs font-bold text-ink-subtle">
                                 Apoya a
                             </span>
                             {/* `appearance-none` + fondo SÓLIDO (nunca
@@ -540,7 +580,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     ?? 'Sin clasificar: sus series no cuentan en ningún grupo de accesorios'
                                 }
                                 className={cn(
-                                    'min-w-0 cursor-pointer appearance-none rounded-chip border bg-surface-sunken px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                    'min-w-0 cursor-pointer appearance-none rounded-chip border bg-surface-sunken px-2 py-0.5 text-t-2xs font-bold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                                     sessionExercise.accessory_class
                                         ? 'border-[var(--border-default)] text-ink-muted'
                                         : 'border-dashed border-[var(--border-default)] text-ink-faint hover:text-ink'
@@ -561,7 +601,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     primero del grupo y vale para todos, que es como se escribe
                     "Circuito A · 3 rondas" en una hoja de papel. */}
                 {(sessionExercise.section ?? 'main') === 'warmup' && isChained && (
-                    <label className="mb-3 flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                    <label className="mb-3 flex items-center gap-2 text-t-2xs font-bold text-ink-subtle">
                         Rondas del circuito
                         <input
                             type="number"
@@ -612,18 +652,18 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             onChange={(e) => handleVariantChange(e.target.value)}
                             onBlur={handleVariantBlur}
                             placeholder="Variante (ej: Tempo 3&quot; · Gomas media)"
-                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-brand rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
+                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-brand rounded-lg py-1.5 px-3 placeholder:text-ink-subtle transition-colors font-bold"
                         />
                         {pendingModifier ? (
                             <div className="flex items-center gap-2 justify-center">
-                                <span className="text-t-2xs font-black uppercase text-ink-subtle">{pendingModifier}:</span>
+                                <span className="text-t-2xs font-semibold text-ink-subtle">{pendingModifier}:</span>
                                 <input
                                     autoFocus
                                     type="text"
                                     value={modifierValue}
                                     onChange={(e) => setModifierValue(e.target.value)}
                                     placeholder={VARIANT_MODIFIERS.find(m => m.key === pendingModifier)?.prompt}
-                                    className="w-32 bg-black/40 text-xs text-center text-ink border border-brand/40 rounded-lg py-1 px-2 placeholder-gray-600"
+                                    className="w-32 bg-surface-sunken text-xs text-center text-ink border border-brand/40 rounded-lg py-1 px-2 placeholder:text-ink-subtle"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') applyModifier(pendingModifier, modifierValue);
                                         if (e.key === 'Escape') { setPendingModifier(null); setModifierValue(''); }
@@ -631,7 +671,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 />
                                 <button
                                     onClick={() => applyModifier(pendingModifier, modifierValue)}
-                                    className="text-t-2xs font-black uppercase text-brand-text hover:text-ink transition-colors"
+                                    className="text-t-2xs font-semibold text-brand-text hover:text-ink transition-colors"
                                 >
                                     OK
                                 </button>
@@ -642,7 +682,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     <button
                                         key={mod.key}
                                         onClick={() => setPendingModifier(mod.key)}
-                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-brand/10 hover:text-brand-text border border-transparent hover:border-brand/30 transition-colors"
+                                        className="text-t-2xs font-semibold px-2 py-0.5 rounded bg-[var(--fill-muted)] text-ink-subtle hover:bg-brand/10 hover:text-brand-text border border-transparent hover:border-brand/30 transition-colors"
                                     >
                                         + {mod.key}
                                     </button>
@@ -661,7 +701,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         igual entre todas sus series. */}
                     <div className="flex flex-wrap items-end justify-center gap-2">
                         <div className="w-28">
-                            <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Descanso</div>
+                            <div className="mb-1 text-center text-t-2xs text-ink-subtle">Descanso</div>
                             <RestInput
                                 seconds={sessionExercise.rest_seconds ?? null}
                                 onChange={handleRestChange}
@@ -685,7 +725,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             el RPE. */}
                         {isCardio ? (
                             <div className="w-32">
-                                <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">FC objetivo</div>
+                                <div className="mb-1 text-center text-t-2xs text-ink-subtle">FC objetivo</div>
                                 <HrTargetInput
                                     metrics={sessionExercise.sets[0]?.vbt_metrics ?? null}
                                     onCommit={(patch) => commitHrTarget(patch)}
@@ -693,7 +733,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             </div>
                         ) : (
                             <div className="w-28">
-                                <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Volumen</div>
+                                <div className="mb-1 text-center text-t-2xs text-ink-subtle">Volumen</div>
                                 <button
                                     onClick={() => setMusclesOpen(true)}
                                     title="Elegir a qué músculos cuenta este ejercicio como volumen directo e indirecto"
@@ -727,7 +767,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         onChange={(e) => handleNotesChange(e.target.value)}
                         onBlur={handleNotesBlur}
                         placeholder="Notas técnicas..."
-                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-brand focus:text-gray-200 resize-none h-[40px] leading-tight transition-colors"
+                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-brand focus:text-ink resize-none h-[40px] leading-tight transition-colors"
                     />
                 </div>
             </div>
@@ -735,23 +775,40 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Sets Table */}
             <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-subtle">
                 {/* Header Row */}
-                <div className="mb-2 grid grid-cols-[1fr_1fr_1.3fr_40px] items-center gap-2 px-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">
+                <div className="mb-2 grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] items-center gap-2 px-1 text-center text-t-2xs text-ink-subtle">
                     <span>Series</span>
                     {/* "Intervalos" y no "Reps" en cardio: es lo que de verdad
                         cuenta esa cifra en "10 intervalos de 30 s" — ver la
                         cabecera de database/CARDIO_2026-08-30.sql. */}
                     <span>{isCardio ? 'Interv.' : 'Reps'}</span>
-                    {/* La unidad de la columna la elige el coach. El selector
-                        vive en la CABECERA y no en cada fila porque un
-                        ejercicio se pauta entero en la misma unidad; repetirlo
-                        por serie serían cinco desplegables idénticos. */}
+                    {/* PONER TODAS LAS SERIES EN LA MISMA UNIDAD.
+                        Sigue aquí porque es lo que se hace 19 de cada 20
+                        veces, y evita los cinco desplegables idénticos que
+                        habría si la única forma de elegir unidad fuese fila a
+                        fila. Lo que ha cambiado es que ya no MIENTE: cuando
+                        las series llevan unidades distintas dice "Mixta" en
+                        vez de enseñar la de la primera. Elegir una opción las
+                        iguala todas; para cambiar una sola, el selector de su
+                        fila. */}
                     <select
-                        value={exerciseMetric}
+                        value={metricaComun ?? '__mixta__'}
                         onChange={(e) => handleMetricChange(e.target.value as TargetMetric)}
-                        aria-label="Unidad de la prescripción"
-                        title={metricOptions.find(m => m.key === exerciseMetric)?.hint}
-                        className="w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand"
+                        aria-label="Unidad de todas las series"
+                        title={
+                            metricaComun
+                                ? metricOptions.find(m => m.key === metricaComun)?.hint
+                                : 'Las series llevan unidades distintas. Elige una para igualarlas todas.'
+                        }
+                        className={cn(
+                            'w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
+                            metricaComun ? 'text-ink-subtle' : 'text-brand-text'
+                        )}
                     >
+                        {metricaComun === null && (
+                            <option value="__mixta__" disabled className="bg-surface-overlay text-ink">
+                                Mixta
+                            </option>
+                        )}
                         {metricOptions.map(m => (
                             <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
                                 {m.label}{m.unit && ` (${m.unit})`}
@@ -764,10 +821,15 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                 {sessionExercise.sets.map((set: TrainingSet, setIndex: number) => {
                     const seriesVal = getSeriesCount(set.target_reps);
                     const repsVal = getRepsCount(set.target_reps);
+                    const metricaDeEstaSerie = metricaDe(set);
 
                     return (
                         <div key={set.id} className="group/row">
-                            <div className="grid grid-cols-[1fr_1fr_1.3fr_40px] gap-2 items-center">
+                            {/* La columna del valor crece de 1.3fr a 1.7fr y las
+                                de series y reps encogen: el sufijo de unidad se
+                                come 34px, y sin rebalancear la casilla de kilos
+                                se quedaba en menos de 50px en el móvil. */}
+                            <div className="grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] gap-2 items-center">
                             <CompactInput
                                 value={seriesVal}
                                 onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(v as string, repsVal))}
@@ -778,38 +840,82 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(seriesVal, v as string))}
                                 placeholder="-"
                             />
-                            {/* El RPE se guarda en su columna de texto porque es
+                            {/* EL VALOR DE ESTA SERIE, EN LA UNIDAD DE ESTA SERIE.
+                                Antes miraba `exerciseMetric` —la del ejercicio
+                                entero—, así que "1×1 @RPE 5 + 3×3 @80%" era
+                                imposible de escribir. Ver la nota larga de
+                                `metricaDe` arriba.
+
+                                El RPE se guarda en su columna de texto porque es
                                 la única métrica que se pauta en rango ("7-8"),
                                 y un NUMERIC no lo admite. El resto van al
                                 número de `target_load`. Ver set_target_metric.sql. */}
-                            {exerciseMetric === 'rpe' ? (
-                                <CompactInput
-                                    value={set.target_rpe}
-                                    onChange={(v) => onUpdateSet(set.id, 'target_rpe', v as string)}
-                                    placeholder="@8"
-                                />
-                            ) : exerciseMetric === 'kg' ? (
-                                <LoadInput
-                                    value={set.target_load}
-                                    onChange={(kg) => onUpdateSet(set.id, 'target_load', kg)}
-                                    referenceMax={referenceMax}
-                                    placeholder={referenceMax ? '170 u 85%' : '-'}
-                                />
-                            ) : (
-                                // RIR, velocidad, pérdida, duración y distancia no
-                                // admiten porcentaje: un "85%" ahí no significaría nada.
-                                <CompactInput
-                                    value={set.target_load}
-                                    onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
-                                    placeholder={
-                                        exerciseMetric === 'vel' ? '0.45'
-                                            : exerciseMetric === 'duracion_seg' ? '1800'
-                                                : exerciseMetric === 'distancia_km' ? '5'
-                                                    : '-'
-                                    }
-                                    type="number"
-                                />
-                            )}
+                            <div className="flex min-w-0 items-center gap-1">
+                                <div className="min-w-0 flex-1">
+                                    {metricaDeEstaSerie === 'rpe' ? (
+                                        <CompactInput
+                                            value={set.target_rpe}
+                                            onChange={(v) => onUpdateSet(set.id, 'target_rpe', v as string)}
+                                            placeholder="@8"
+                                        />
+                                    ) : metricaDeEstaSerie === 'kg' ? (
+                                        <LoadInput
+                                            value={set.target_load}
+                                            onChange={(kg) => onUpdateSet(set.id, 'target_load', kg)}
+                                            referenceMax={referenceMax}
+                                            placeholder={referenceMax ? '170 u 85%' : '-'}
+                                        />
+                                    ) : (
+                                        // RIR, velocidad, pérdida, duración y distancia no
+                                        // admiten porcentaje: un "85%" ahí no significaría nada.
+                                        <CompactInput
+                                            value={set.target_load}
+                                            onChange={(v) => onUpdateSet(set.id, 'target_load', v as number)}
+                                            placeholder={
+                                                metricaDeEstaSerie === 'vel' ? '0.45'
+                                                    : metricaDeEstaSerie === 'duracion_seg' ? '1800'
+                                                        : metricaDeEstaSerie === 'distancia_km' ? '5'
+                                                            : '-'
+                                            }
+                                            type="number"
+                                        />
+                                    )}
+                                </div>
+
+                                {/* LA UNIDAD DE ESTA FILA.
+                                    Se lee como el sufijo de la casilla —"Kg",
+                                    "RPE"— y solo parece un control al pasar por
+                                    encima, igual que el de la cabecera. Sin
+                                    fondo ni flecha: cuando las cinco series van
+                                    en la misma unidad no añade cinco
+                                    desplegables a la vista, añade cinco
+                                    etiquetas. Se enciende en color de marca
+                                    cuando el ejercicio lleva unidades mezcladas,
+                                    que es la única vez que hay que mirarlo. */}
+                                <select
+                                    value={metricaDeEstaSerie}
+                                    onChange={(e) => cambiarMetricaDeSerie(set, e.target.value as TargetMetric)}
+                                    aria-label={`Unidad de la serie ${setIndex + 1}`}
+                                    title={metricOptions.find(m => m.key === metricaDeEstaSerie)?.hint}
+                                    className={cn(
+                                        'w-[34px] shrink-0 cursor-pointer appearance-none rounded border border-transparent bg-transparent py-1 text-center text-t-2xs transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
+                                        metricaComun === null ? 'font-bold text-brand-text' : 'text-ink-faint'
+                                    )}
+                                >
+                                    {/* ETIQUETA CORTA, no la del selector de la cabecera.
+                                        Un `<select>` cerrado enseña el texto de la
+                                        opcion elegida, y "Kg (kg)" o "Perdida (%)" no
+                                        caben en 34px: se recortaban. Aqui basta la
+                                        UNIDAD —kg, m/s, %— porque la columna ya se
+                                        titula arriba; la cabecera sigue con el nombre
+                                        completo, que es donde de verdad se elige. */}
+                                    {metricOptions.map(m => (
+                                        <option key={m.key} value={m.key} className="bg-surface-overlay text-ink">
+                                            {m.unit || m.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
                             {/* Actions */}
                             <div className="flex justify-end items-center gap-0.5">
@@ -859,7 +965,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                 <div className="mt-2 flex gap-2">
                     <button
                         onClick={() => onAddSet(sessionExercise.id)}
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-field bg-white/5 py-2 text-t-xs font-medium text-ink-subtle transition-colors duration-fast ease-snap hover:bg-white/10 hover:text-ink active:scale-95"
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-field bg-[var(--fill-muted)] py-2 text-t-xs font-medium text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--fill-pressed)] hover:text-ink active:scale-95"
                     >
                         <Plus size={12} aria-hidden="true" /> Añadir serie
                     </button>
@@ -940,7 +1046,7 @@ function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
 
     return (
         <div className="mt-3 rounded-card border border-[var(--success-line,var(--border-subtle))] bg-[var(--success-quiet)] px-3 py-2">
-            <p className="mb-1.5 flex items-center gap-1.5 text-t-2xs font-black uppercase tracking-widest text-success">
+            <p className="mb-1.5 flex items-center gap-1.5 text-t-2xs font-semibold text-success">
                 <Check size={10} aria-hidden="true" />
                 Registrado · {done.length} {done.length === 1 ? 'serie' : 'series'}
             </p>
@@ -987,7 +1093,7 @@ function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
                                 <span className="text-ink-subtle">{set.vbt_mean_velocity} m/s</span>
                             )}
                             {set.notes?.trim() && (
-                                <span className="min-w-0 truncate italic text-ink-subtle" title={set.notes}>
+                                <span className="min-w-0 truncate text-ink-subtle" title={set.notes}>
                                     “{set.notes.trim()}”
                                 </span>
                             )}
@@ -1231,9 +1337,9 @@ function SetTechniqueEditor({
                                     // eso, marcar una técnica por error no
                                     // tendría deshacer.
                                     onClick={() => onUpdateSet(set.id, 'set_type', on ? null : t.key)}
-                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold transition-colors duration-fast ease-snap ${on
  ? 'bg-warning text-[var(--surface-sunken)]'
- : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
  }`}
                                 >
                                     {t.short}
@@ -1253,9 +1359,9 @@ function SetTechniqueEditor({
                                     key={tag}
                                     title={`Encadenar con los ejercicios marcados ${tag} en este día`}
                                     onClick={() => onUpdateSet(set.id, 'group_tag', on ? null : tag)}
-                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold transition-colors duration-fast ease-snap ${on
  ? 'bg-info text-[var(--surface-sunken)]'
- : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
  }`}
                                 >
                                     {tag}

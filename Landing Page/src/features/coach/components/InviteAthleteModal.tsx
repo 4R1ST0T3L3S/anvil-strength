@@ -136,7 +136,7 @@ export function InviteAthleteModal({
                     <button
                         onClick={handleCreate}
                         disabled={creating}
-                        className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                        className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                     >
                         {creating
                             ? <><Loader size={16} className="animate-spin" aria-hidden="true" /> Creando…</>
@@ -162,7 +162,7 @@ export function InviteAthleteModal({
                             >
                                 <div className="space-y-3 pt-3.5">
                                     <label className="block">
-                                        <span className="mb-1 block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                        <span className="mb-1 block text-t-2xs font-bold text-ink-subtle">
                                             Para acordarte de quién es
                                         </span>
                                         <input
@@ -175,7 +175,7 @@ export function InviteAthleteModal({
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <label className="block">
-                                            <span className="mb-1 block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                            <span className="mb-1 block text-t-2xs font-bold text-ink-subtle">
                                                 Personas
                                             </span>
                                             <input
@@ -190,7 +190,7 @@ export function InviteAthleteModal({
                                         </label>
 
                                         <label className="block">
-                                            <span className="mb-1 block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                            <span className="mb-1 block text-t-2xs font-bold text-ink-subtle">
                                                 Caduca en (días)
                                             </span>
                                             <input
@@ -223,7 +223,7 @@ export function InviteAthleteModal({
                     </div>
                 ) : active.length > 0 ? (
                     <div>
-                        <h3 className="mb-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <h3 className="mb-2 text-t-2xs font-bold text-ink-subtle">
                             Enlaces activos
                         </h3>
                         <ul className="space-y-2">
@@ -239,7 +239,7 @@ export function InviteAthleteModal({
                                         {/* El código, grande y legible: es lo que se
                                             dicta por teléfono cuando copiar no es
                                             una opción. */}
-                                        <code className="flex-1 select-all font-mono text-t-base font-extrabold tracking-[0.15em] text-ink">
+                                        <code className="flex-1 select-all font-mono text-t-base font-semibold text-ink">
                                             {invite.code}
                                         </code>
 
@@ -300,7 +300,7 @@ export function InviteAthleteModal({
                         <ul className="mt-2 space-y-1.5">
                             {inactive.map(invite => (
                                 <li key={invite.id} className="flex items-center gap-2 px-1 text-t-xs text-ink-subtle">
-                                    <code className="font-mono font-bold tracking-widest line-through">{invite.code}</code>
+                                    <code className="font-mono font-bold line-through">{invite.code}</code>
                                     <span>· {inactiveReason(invite)}</span>
                                 </li>
                             ))}

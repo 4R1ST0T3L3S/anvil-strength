@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { StarRating } from '../../../components/ui/StarRating';
 import { ReviewForm } from './ReviewForm';
 import { reviewsService } from '../../../services/reviewsService';
+import { useIdioma } from '../../../hooks/useIdioma';
+import { useTextosWeb } from '../../landing/textos';
 
 import { MessageCircle } from 'lucide-react';
 
@@ -12,6 +14,10 @@ interface ReviewsSectionProps {
 
 export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
     const queryClient = useQueryClient();
+    const { idioma } = useIdioma();
+    // Los textos de la sección siguen al idioma de la web; las reseñas en sí
+    // son lo que escribió cada atleta y se enseñan tal cual.
+    const c = useTextosWeb().resenas;
 
     // Las reseñas de la portada. Van a la caché porque esta sección se
     // desmonta y se vuelve a montar cada vez que alguien navega a otra ruta
@@ -20,7 +26,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
         queryKey: ['resenas'],
         queryFn: () => reviewsService.getAllReviews(),
     });
-    const error = isError ? 'Error al cargar las reseñas' : '';
+    const error = isError ? c.error : '';
 
     const loadReviews = useCallback(() => {
         queryClient.invalidateQueries({ queryKey: ['resenas'] });
@@ -43,10 +49,10 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">
-                        Opiniones de <span className="text-brand-text">Nuestros Atletas</span>
+                        {c.titulo1} <span className="text-brand-text">{c.titulo2}</span>
                     </h2>
                     <p className="text-ink-muted text-lg max-w-2xl mx-auto">
-                        Descubre lo que nuestros atletas piensan sobre su experiencia con Anvil Strength
+                        {c.intro}
                     </p>
 
                     {/* Rating Summary */}
@@ -58,7 +64,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                 </div>
                                 <StarRating rating={Math.round(averageRating)} readonly size={28} />
                                 <p className="text-sm text-ink-subtle mt-2">
-                                    {reviews.length} {reviews.length === 1 ? 'reseña' : 'reseñas'}
+                                    {reviews.length} {reviews.length === 1 ? c.resena : c.resenas}
                                 </p>
                             </div>
 
@@ -96,15 +102,15 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                 {!isAuthenticated && reviews.length > 0 && (
                     <div className="mb-12 max-w-3xl mx-auto bg-surface-raised p-6 rounded-card border border-line text-center">
                         <MessageCircle className="inline-block mb-3 text-brand-text" size={32} />
-                        <h3 className="text-lg font-bold mb-2">¿Quieres dejar tu opinión?</h3>
+                        <h3 className="text-lg font-bold mb-2">{c.quieresOpinar}</h3>
                         <p className="text-ink-muted mb-4">
-                            Inicia sesión o regístrate para compartir tu experiencia con la comunidad
+                            {c.inicia}
                         </p>
                         <button
                             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                             className="bg-brand text-ink font-bold px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
                         >
-                            Iniciar Sesión
+                            {c.iniciarSesion}
                         </button>
                     </div>
                 )}
@@ -114,7 +120,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                     {isLoading ? (
                         <div className="text-center py-12">
                             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
-                            <p className="text-ink-muted mt-4">Cargando reseñas...</p>
+                            <p className="text-ink-muted mt-4">{c.cargando}</p>
                         </div>
                     ) : error ? (
                         <div className="text-center py-12">
@@ -123,18 +129,18 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                 onClick={loadReviews}
                                 className="mt-4 text-brand-text hover:underline"
                             >
-                                Reintentar
+                                {c.reintentar}
                             </button>
                         </div>
                     ) : reviews.length === 0 ? (
                         <div className="text-center py-12 bg-surface-raised rounded-card border border-line">
                             <MessageCircle className="inline-block mb-4 text-ink-faint" size={48} />
                             <p className="text-ink-muted text-lg">
-                                Aún no hay reseñas.
+                                {c.vacio}
                             </p>
                             {isAuthenticated && (
                                 <p className="text-ink-subtle mt-2">
-                                    ¡Sé el primero en compartir tu experiencia!
+                                    {c.primero}
                                 </p>
                             )}
                         </div>
@@ -151,7 +157,7 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
                                             <StarRating rating={review.rating} readonly size={18} />
                                         </div>
                                         <span className="text-xs text-ink-subtle">
-                                            {new Date(review.created_at).toLocaleDateString('es-ES', {
+                                            {new Date(review.created_at).toLocaleDateString(idioma === 'en' ? 'en-GB' : 'es-ES', {
                                                 year: 'numeric',
                                                 month: 'short',
                                                 day: 'numeric'

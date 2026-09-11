@@ -97,19 +97,19 @@ export function AccessoryBreakdown({
                         <table className="w-full text-t-2xs tabular-nums">
                             <thead>
                                 <tr className="text-ink-faint">
-                                    <th scope="col" className="pb-1 text-left font-bold uppercase tracking-wide">
+                                    <th scope="col" className="pb-1 text-left font-bold">
                                         Grupo
                                     </th>
-                                    <th scope="col" className="pb-1 text-right font-bold uppercase tracking-wide" title="Series programadas esta semana">
+                                    <th scope="col" className="pb-1 text-right font-bold" title="Series programadas esta semana">
                                         Act.
                                     </th>
-                                    <th scope="col" className="pb-1 text-right font-bold uppercase tracking-wide" title="Series programadas la semana anterior">
+                                    <th scope="col" className="pb-1 text-right font-bold" title="Series programadas la semana anterior">
                                         Ant.
                                     </th>
-                                    <th scope="col" className="pb-1 text-right font-bold uppercase tracking-wide" title="Volumen de la semana anterior: series × repeticiones">
+                                    <th scope="col" className="pb-1 text-right font-bold" title="Volumen de la semana anterior: series × repeticiones">
                                         Reps
                                     </th>
-                                    <th scope="col" className="pb-1 text-right font-bold uppercase tracking-wide" title="RPE pautado esta semana">
+                                    <th scope="col" className="pb-1 text-right font-bold" title="RPE pautado esta semana">
                                         RPE
                                     </th>
                                 </tr>

@@ -41,7 +41,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
     return (
         <div className="fixed bottom-24 left-4 right-4 z-[100] animate-rise">
             <div className={cn(
-                "bg-surface-sunken border border-[var(--border-default)] rounded-card shadow-2xl p-4 flex items-center justify-between",
+                "bg-surface-sunken border border-[var(--border-default)] rounded-card shadow-overlay p-4 flex items-center justify-between",
                 isFinished ? "border-green-500/50 bg-green-900/10" : "border-brand/30"
             )}>
                 {/* Time Display */}
@@ -53,11 +53,11 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                         <Timer size={20} className={isFinished ? "animate-bounce" : ""} />
                     </div>
                     <div>
-                        <p className="text-t-2xs uppercase font-bold text-ink-subtle tracking-wider">
+                        <p className="text-t-2xs font-bold text-ink-subtle">
                             {isFinished ? "Tiempo Completado" : "Tiempo de Descanso"}
                         </p>
                         <p className={cn(
-                            "text-2xl font-black tabular-nums leading-none",
+                            "text-2xl font-semibold tabular-nums leading-none",
                             isFinished ? "text-success" : "text-ink"
                         )}>
                             {formatTime(timeLeft)}
@@ -85,7 +85,7 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                     )}
                     <button
                         onClick={onClose}
-                        className="ml-2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
+                        className="ml-2 w-8 h-8 rounded-full bg-[var(--fill-muted)] flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
                     >
                         <X size={16} />
                     </button>

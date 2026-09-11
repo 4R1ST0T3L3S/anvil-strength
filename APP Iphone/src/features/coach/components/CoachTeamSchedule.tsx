@@ -135,7 +135,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-3 text-xs font-bold uppercase tracking-wider"
+                        className="flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-3 text-xs font-bold"
                     >
                         ← Volver al Dashboard
                     </button>
@@ -143,7 +143,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                 <div className="flex items-center gap-3">
                     <Calendar size={28} className="text-brand-text" />
                     <div>
-                        <h1 className="text-2xl font-black uppercase tracking-tight text-ink">Agenda del Equipo</h1>
+                        <h1 className="text-2xl font-semibold tracking-tight text-ink">Agenda del Equipo</h1>
                         <p className="text-sm text-ink-muted">Próximas competiciones y asistencia</p>
                     </div>
                 </div>
@@ -153,7 +153,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                 <AnimatePresence>
                 {competitions.length === 0 ? (
                     <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-surface-sunken border border-subtle rounded-xl p-8 text-center flex flex-col items-center justify-center">
-                        <Calendar size={24} className="text-gray-600 mb-3" />
+                        <Calendar size={24} className="text-ink-subtle mb-3" />
                         <p className="text-sm font-medium text-ink-muted">No hay competiciones programadas.</p>
                     </m.div>
                 ) : (
@@ -172,8 +172,8 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                         <Calendar size={20} className="text-brand-text" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-ink uppercase leading-tight mb-1">{comp.name}</h3>
-                                        <p className="text-xs text-ink-muted font-medium tracking-wide">
+                                        <h3 className="text-lg font-bold text-ink leading-tight mb-1">{comp.name}</h3>
+                                        <p className="text-xs text-ink-muted font-medium">
                                             {new Date(comp.date + 'T00:00:00').toLocaleDateString('es-ES', {
                                                 year: 'numeric',
                                                 month: 'short',
@@ -199,7 +199,7 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-xs text-ink truncate">{entry.profiles?.full_name}</p>
-                                                <p className="text-t-2xs text-ink-subtle uppercase truncate">{entry.category || 'N/A'}</p>
+                                                <p className="text-t-2xs text-ink-subtle truncate">{entry.category || 'N/A'}</p>
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
@@ -214,9 +214,9 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             </div>
                             
                             {/* Side tag */}
-                            <div className="absolute right-0 top-0 h-full w-14 bg-black/40 hidden md:flex flex-col items-center justify-center border-l border-subtle">
-                                <span className="text-xl font-black text-brand-text">{comp.entries.length}</span>
-                                <span className="text-t-2xs font-bold text-ink-subtle uppercase tracking-widest mt-1">Convoc.</span>
+                            <div className="absolute right-0 top-0 h-full w-14 bg-surface-sunken hidden md:flex flex-col items-center justify-center border-l border-subtle">
+                                <span className="text-xl font-semibold text-brand-text">{comp.entries.length}</span>
+                                <span className="text-t-2xs font-bold text-ink-subtle mt-1">Convoc.</span>
                             </div>
                         </m.div>
                     ))

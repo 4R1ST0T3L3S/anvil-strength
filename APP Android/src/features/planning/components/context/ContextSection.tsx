@@ -64,7 +64,7 @@ export function ContextSection({
                 <Icon size={13} className="shrink-0 text-brand-text" aria-hidden="true" />
 
                 <span className="min-w-0 flex-1">
-                    <span className="block truncate text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+                    <span className="block truncate text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                         {title}
                     </span>
                     {/* La pista se lee CON LA SECCIÓN CERRADA: es lo que hace
@@ -121,7 +121,7 @@ export function ContextStat({
 }) {
     return (
         <div className="min-w-0">
-            <p className="truncate text-t-2xs uppercase tracking-wide text-ink-subtle">{label}</p>
+            <p className="truncate text-t-2xs text-ink-subtle">{label}</p>
             <p
                 className={`mt-0.5 truncate text-t-sm font-bold tabular-nums ${tone === 'brand' ? 'text-brand-text' : tone === 'muted' ? 'text-ink-muted' : 'text-ink'
                     }`}

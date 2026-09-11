@@ -56,6 +56,10 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  /* iPhone: `100vh` mide la ventana SIN la barra de Safari, así que el cuerpo
+     sobresale por debajo y aparece un scroll fantasma. `dvh` sigue a la barra.
+     Va después del `vh` como respaldo para navegadores que no lo entienden. */
+  min-height: 100dvh;
   overscroll-behavior: none;
   background-color: var(--surface-canvas);
   -webkit-font-smoothing: antialiased;
@@ -281,6 +285,7 @@ button:not([data-no-press]),
   inset: auto auto 170px 24px !important;
   /* top right bottom left */
   max-height: calc(100vh - 190px) !important;
+  max-height: calc(100dvh - 190px) !important;
   width: 90vw !important;
   max-width: 400px !important;
   position: fixed !important;
@@ -291,6 +296,7 @@ button:not([data-no-press]),
 .typebot-bubble-modal {
   inset: auto auto 170px 24px !important;
   max-height: calc(100vh - 190px) !important;
+  max-height: calc(100dvh - 190px) !important;
   width: 90vw !important;
   max-width: 400px !important;
 }

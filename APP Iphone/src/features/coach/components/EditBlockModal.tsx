@@ -108,7 +108,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
             <form onSubmit={handleSubmit} className="flex flex-col gap-8 md:flex-row">
                 <div className="flex-1 space-y-6">
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="block text-t-2xs font-bold text-ink-subtle">
                             Nombre del bloque <span className="text-brand-text">*</span>
                         </span>
                         <input
@@ -127,7 +127,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                         semana. El aviso aparece únicamente cuando falta, para
                         no dar la lata en los bloques que ya la tienen. */}
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="block text-t-2xs font-bold text-ink-subtle">
                             Fecha de inicio
                         </span>
                         <input
@@ -148,7 +148,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                     </label>
 
                     <div className="space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Color del bloque</span>
+                        <span className="block text-t-2xs font-bold text-ink-subtle">Color del bloque</span>
                         <div className="flex items-center gap-2.5">
                             {BLOCK_COLORS.map((c) => (
                                 <button
@@ -198,7 +198,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                         >
                             {loading ? <Loader size={17} className="animate-spin" /> : <><Save size={17} aria-hidden="true" /> Guardar cambios</>}
                         </button>
@@ -207,7 +207,7 @@ export function EditBlockModal({ isOpen, onClose, block, onBlockUpdated }: EditB
 
                 <div className="flex-1">
                     <div className="flex h-full flex-col space-y-1.5">
-                        <span className="flex items-center gap-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="flex items-center gap-2 text-t-2xs font-bold text-ink-subtle">
                             <CalendarIcon size={13} aria-hidden="true" /> Duración del bloque
                         </span>
                         <div className="min-h-[400px] flex-1">

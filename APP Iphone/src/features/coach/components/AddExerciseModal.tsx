@@ -69,19 +69,19 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                    className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
                 />
 
                 <m.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-surface-sunken w-full max-w-2xl h-[80vh] rounded-2xl border border-line shadow-2xl flex flex-col"
+                    className="relative bg-surface-sunken w-full max-w-2xl h-[80vh] rounded-2xl border border-line shadow-overlay flex flex-col"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-subtle bg-surface-sunken">
-                        <h2 className="text-xl font-black uppercase text-ink">Librería de Ejercicios</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
+                        <h2 className="text-xl font-semibold text-ink">Librería de Ejercicios</h2>
+                        <button onClick={onClose} className="p-2 hover:bg-[var(--fill-pressed)] rounded-full text-ink-muted hover:text-ink transition-colors">
                             <X size={20} />
                         </button>
                     </div>
@@ -95,7 +95,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar por nombre o grupo muscular..."
-                                className="w-full bg-surface-sunken border border-line rounded-xl pl-12 pr-4 py-4 text-ink placeholder-gray-600 focus:border-brand/50 transition-colors font-medium"
+                                className="w-full bg-surface-sunken border border-line rounded-xl pl-12 pr-4 py-4 text-ink placeholder:text-ink-subtle focus:border-brand/50 transition-colors font-medium"
                                 autoFocus
                             />
                         </div>
@@ -116,16 +116,16 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                 {filteredExercises.map((ex) => (
                                     <div
                                         key={ex.id}
-                                        className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-colors group"
+                                        className="flex items-center justify-between p-4 rounded-xl hover:bg-[var(--fill-hover)] transition-colors group"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center border border-subtle">
+                                            <div className="w-10 h-10 bg-surface-sunken rounded-lg flex items-center justify-center border border-subtle">
                                                 <Dumbbell size={18} className="text-ink-subtle" />
                                             </div>
                                             <div>
                                                 <h4 className="text-ink font-bold">{ex.name}</h4>
                                                 {ex.muscle_group && (
-                                                    <span className="text-xs text-ink-subtle uppercase font-bold tracking-wider">
+                                                    <span className="text-xs text-ink-subtle font-bold">
                                                         {ex.muscle_group}
                                                     </span>
                                                 )}
@@ -135,7 +135,7 @@ export function AddExerciseModal({ isOpen, onClose, sessionId, currentExerciseCo
                                         <button
                                             onClick={() => handleAdd(ex)}
                                             disabled={addingInfo === ex.id}
-                                            className="px-4 py-2 bg-white/5 hover:bg-white text-ink hover:text-black rounded-lg text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2"
+                                            className="px-4 py-2 bg-[var(--fill-muted)] hover:bg-white text-ink hover:text-black rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
                                         >
                                             {addingInfo === ex.id ? (
                                                 <Loader size={16} className="animate-spin" />

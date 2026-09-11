@@ -7,41 +7,26 @@ import { cn } from '../../lib/utils';
  * ANVIL STRENGTH — PESTAÑAS
  * =====================================================================
  *
- * Sustituye a la docena de juegos de pestañas escritos a mano por la
- * aplicación (la ficha del atleta, el panel de VBT, las estadísticas...).
- * Ninguno tiene navegación por teclado y ninguno se anuncia como pestañas.
+ * Para las SECCIONES de una pantalla (la ficha del atleta, las
+ * estadísticas). Para alternar entre dos o tres vistas del mismo contenido,
+ * `SegmentedControl`.
  *
+ * TECLADO: una sola parada de tabulador para todo el grupo y flechas dentro
+ * (foco itinerante: `tabIndex` 0 solo en la activa).
  *
- * EL TECLADO NO ES OPCIONAL AQUÍ
+ * EL INDICADOR es neutro — tinta, no rojo —: la pestaña activa ya se lee por
+ * el peso y el color del texto, y el rojo se reserva para la acción. Se
+ * desliza de una pestaña a otra (`layoutId`): comunica "has cambiado de
+ * sitio" y no "ha cambiado la pantalla".
  *
- * Un juego de pestañas tiene un patrón de teclado establecido y la gente lo
- * espera: **una sola parada de tabulador** para todo el grupo, y dentro se
- * navega con las flechas. Lo que hay hoy son botones sueltos, así que
- * tabular por la ficha de un atleta obliga a pasar por las cinco pestañas
- * antes de llegar al contenido.
- *
- * Eso se consigue con `tabIndex` a 0 solo en la activa y -1 en el resto — lo
- * que se llama gestión de foco itinerante. Es la parte que casi nadie
- * implementa y la que hace la diferencia.
- *
- * Se implementa a mano y no con una librería (Radix serían ~8 KB) porque
- * `Modal` y `AnchoredMenu` ya resuelven a mano lo difícil de la
- * accesibilidad en este proyecto, y meter un segundo modelo mental para
- * esto no compensa. Ver decisión U3.
- *
- *
- * DESPLAZAMIENTO LATERAL EN MÓVIL
- *
- * Cinco pestañas no caben en 375px. La tira se desplaza de lado con su
- * propio `overflow-x`, que es un desbordamiento INTENCIONADO — por eso
- * `overflowGuard` no se queja de él (ver su comentario: la regla no es "¿se
- * sale?" sino "¿se sale hasta el armazón?").
+ * En móvil la tira se desplaza de lado con su propio `overflow-x`, que es un
+ * desbordamiento intencionado.
  */
 
 export interface Pestana<T extends string> {
     id: T;
     label: ReactNode;
-    /** Versión corta para móvil. Mismo criterio que `shortLabel` de la barra inferior. */
+    /** Versión corta para móvil. */
     labelCorta?: ReactNode;
     icono?: ReactNode;
     /** Contador a la derecha de la etiqueta: avisos, elementos pendientes. */
@@ -84,9 +69,8 @@ export function Tabs<T extends string>({
             e.preventDefault();
             const siguiente = utiles[destino];
             onChange(siguiente.id);
-            // El foco tiene que SEGUIR a la selección: si se queda atrás, la
-            // siguiente flecha se mueve desde donde estaba el foco y no desde
-            // donde está la pestaña activa, y la navegación se vuelve errática.
+            // El foco SIGUE a la selección, o la siguiente flecha se mueve
+            // desde donde estaba el foco y la navegación se vuelve errática.
             requestAnimationFrame(() => {
                 tiraRef.current
                     ?.querySelector<HTMLButtonElement>(`[data-pestana="${siguiente.id}"]`)
@@ -103,8 +87,8 @@ export function Tabs<T extends string>({
             aria-label={ariaLabel}
             onKeyDown={alPulsarTecla}
             className={cn(
-                'flex items-center gap-1 overflow-x-auto scrollbar-hide',
-                'border-b border-subtle',
+                'flex items-center gap-0.5 overflow-x-auto scrollbar-hide',
+                'border-b border-[var(--separator)]',
                 className
             )}
         >
@@ -116,20 +100,19 @@ export function Tabs<T extends string>({
                         role="tab"
                         type="button"
                         data-pestana={p.id}
+                        data-no-press
                         id={`${grupo}-${p.id}`}
                         aria-selected={esActiva}
                         aria-controls={`${grupo}-${p.id}-panel`}
-                        // Foco itinerante: una sola parada de tabulador.
                         tabIndex={esActiva ? 0 : -1}
                         disabled={p.deshabilitada}
                         onClick={() => onChange(p.id)}
                         className={cn(
                             'relative flex min-h-[44px] shrink-0 items-center gap-2 px-3 pb-2.5 pt-2',
-                            'text-t-sm font-bold whitespace-nowrap',
+                            'text-t-sm whitespace-nowrap',
                             'transition-colors duration-fast ease-snap',
-                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-canvas)] focus-visible:rounded-field',
                             'disabled:cursor-not-allowed disabled:opacity-40',
-                            esActiva ? 'text-ink' : 'text-ink-subtle hover:text-ink'
+                            esActiva ? 'font-semibold text-ink' : 'font-medium text-ink-subtle hover:text-ink'
                         )}
                     >
                         {p.icono && (
@@ -138,9 +121,6 @@ export function Tabs<T extends string>({
                             </span>
                         )}
 
-                        {/* La versión corta solo si existe: recortar con puntos
-                            suspensivos no ayuda, "Competi…" no dice más que
-                            "Competir". Misma regla que la barra inferior. */}
                         {p.labelCorta ? (
                             <>
                                 <span className="sm:hidden">{p.labelCorta}</span>
@@ -152,23 +132,18 @@ export function Tabs<T extends string>({
 
                         {p.insignia != null && p.insignia > 0 && (
                             <span
-                                className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-pill bg-[var(--brand-quiet)] px-1 text-t-2xs font-black tabular-nums text-brand-text"
+                                className="ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-pill bg-brand px-1.5 text-t-2xs font-semibold tabular-nums leading-none text-brand-ink"
                                 aria-label={`${p.insignia} pendientes`}
                             >
                                 {p.insignia > 99 ? '99+' : p.insignia}
                             </span>
                         )}
 
-                        {/* El subrayado se desplaza de una pestaña a otra en vez
-                            de aparecer y desaparecer: `layoutId` hace que
-                            framer-motion lo trate como el MISMO elemento
-                            moviéndose, que es lo que comunica "has cambiado de
-                            sitio" en lugar de "ha cambiado la pantalla". */}
                         {esActiva && (
                             <m.span
                                 layoutId={`${grupo}-subrayado`}
-                                className="absolute inset-x-1 -bottom-px h-0.5 rounded-pill bg-brand"
-                                transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                                className="absolute inset-x-2 -bottom-px h-[2px] rounded-pill bg-ink"
+                                transition={{ type: 'spring', stiffness: 520, damping: 42 }}
                             />
                         )}
                     </button>
@@ -179,11 +154,8 @@ export function Tabs<T extends string>({
 }
 
 /**
- * El panel de una pestaña.
- *
- * `tabIndex={0}` a propósito: si el contenido del panel no tiene nada
- * enfocable, quien navega con teclado no podría llegar a leerlo. Con esto,
- * el propio panel es una parada.
+ * El panel de una pestaña. `tabIndex={0}`: si el contenido no tiene nada
+ * enfocable, quien navega con teclado tiene que poder llegar a leerlo.
  */
 export function TabPanel({
     grupo,

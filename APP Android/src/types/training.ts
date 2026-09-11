@@ -51,6 +51,21 @@ export interface TrainingWeek {
 export interface WeekMeta {
     name: string | null;
     isVisible: boolean;
+    /**
+     * Nota del entrenador para toda la semana. LA VE EL ATLETA.
+     *
+     * Es el cuarto nivel de notas, y el que faltaba: ya había por serie
+     * (`training_sets.notes`), por ejercicio (`session_exercises.notes`,
+     * "usar cinturón") y por día (`training_sessions.appendix`). Aquí caben
+     * las instrucciones que no son de un ejercicio concreto: "semana de
+     * descarga, no pasar de RPE 7".
+     *
+     * Distinta de `coach_athletes.notes`, que es la libreta PRIVADA del
+     * entrenador y el atleta no ve.
+     *
+     * `undefined` en bases sin database/VOLUMEN_Y_NOTAS_2026-09-07.sql.
+     */
+    notes?: string | null;
 }
 
 /**
@@ -183,6 +198,19 @@ export interface TrainingSession {
     completed_at?: string | null;
     /** Cómo fue el día, en palabras del atleta. Distinto de las notas por serie. */
     athlete_notes?: string | null;
+    /**
+     * REVISIÓN DEL ENTRENADOR. Ver database/BANDEJA_REVISION_2026-09-11.sql.
+     * Las escribe la base (funciones y disparadores); el cliente solo las lee.
+     *   reviewed_at            última revisión (NULL = nunca).
+     *   athlete_updated_at     último cambio HECHO POR EL ATLETA.
+     *   review_pending         generada: cerrado y sin revisar desde el último cambio.
+     *   modified_after_review  generada: el atleta lo cambió tras una revisión.
+     */
+    reviewed_at?: string | null;
+    reviewed_by?: string | null;
+    athlete_updated_at?: string | null;
+    review_pending?: boolean | null;
+    modified_after_review?: boolean | null;
     /**
      * Apéndices del día, en texto libre. NO son ejercicios: no cuentan para el
      * volumen, el tonelaje ni el reparto por patrón. Ausentes en bases sin

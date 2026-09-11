@@ -1,133 +1,89 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { m, AnimatePresence } from 'framer-motion';
-import { X, Maximize2, Minimize2 } from 'lucide-react';
-import { AthleteChatView } from '../pages/AthleteChatView';
-import { UserProfile } from '../../../hooks/useUser';
+import { X, Maximize2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Hilo } from './Hilo';
+import type { UserProfile } from '../../../hooks/useUser';
+import { IconButton } from '../../../components/ui/IconButton';
+import { transition, DURATION } from '../../../lib/motion';
+import { lockBodyScroll } from '../../../lib/scrollLock';
 
-interface FloatingChatProps {
+/**
+ * EL CHAT FLOTANTE DEL ENTRENADOR
+ * =====================================================================
+ *
+ * Se abre desde la ficha de un atleta o desde la bandeja sin salir de
+ * donde se está: un panel lateral en escritorio, una hoja a pantalla
+ * completa en móvil. Es el MISMO hilo que en «Mensajes» (misma caché,
+ * mismo canal), solo cambia dónde se pinta.
+ */
+export function FloatingChat({
+    isOpen,
+    onClose,
+    athlete,
+    coach,
+}: {
     isOpen: boolean;
     onClose: () => void;
-    athlete: {
-        id: string;
-        full_name: string;
-        avatar_url?: string;
-    } | null;
+    athlete: { id: string; full_name: string; avatar_url?: string } | null;
     coach: UserProfile;
-}
-
-export function FloatingChat({ isOpen, onClose, athlete, coach }: FloatingChatProps) {
-    const [width, setWidth] = useState(400);
-    const [isResizing, setIsResizing] = useState(false);
-    const [isMinimized, setIsMinimized] = useState(false);
+}) {
+    const navigate = useNavigate();
+    const abierto = isOpen && !!athlete;
 
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isResizing) return;
-            const newWidth = window.innerWidth - e.clientX;
-            if (newWidth > 320 && newWidth < 800) {
-                setWidth(newWidth);
-            }
-        };
+        if (!abierto) return;
+        return lockBodyScroll();
+    }, [abierto]);
 
-        const handleMouseUp = () => {
-            setIsResizing(false);
-        };
-
-        if (isResizing) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isResizing]);
-
-    if (!isOpen || !athlete) return null;
+    useEffect(() => {
+        if (!abierto) return;
+        const alTeclear = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', alTeclear);
+        return () => document.removeEventListener('keydown', alTeclear);
+    }, [abierto, onClose]);
 
     return createPortal(
         <AnimatePresence>
-            <m.div
-                initial={{ x: '100%' }}
-                animate={{ x: isMinimized ? 'calc(100% - 60px)' : 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                style={{ width: isMinimized ? 60 : width }}
-                className="fixed top-0 right-0 h-full bg-surface-raised border-l border-line z-[1000] shadow-2xl flex flex-col overflow-hidden"
-            >
-                {/* Resize Handle */}
-                {!isMinimized && (
-                    <div
-                        onMouseDown={() => setIsResizing(true)}
-                        className="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-brand transition-colors z-50"
+            {abierto && athlete && (
+                <div className="fixed inset-0 flex justify-end" style={{ zIndex: 'var(--z-modal)' }}>
+                    <m.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={transition(DURATION.fast)}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-[var(--scrim)]"
+                        aria-hidden="true"
                     />
-                )}
-
-                {/* Header */}
-                <div className="p-4 bg-surface-sunken border-b border-subtle flex items-center justify-between">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="relative">
-                            {athlete.avatar_url ? (
-                                <img src={athlete.avatar_url} alt={athlete.full_name} className="w-10 h-10 rounded-full object-cover border border-line" />
-                            ) : (
-                                <div className="w-10 h-10 rounded-full bg-brand flex items-center justify-center text-ink font-black">
-                                    {athlete.full_name[0]}
-                                </div>
-                            )}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-surface-sunken"></div>
+                    <m.aside
+                        role="dialog"
+                        aria-label={`Chat con ${athlete.full_name}`}
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={transition(DURATION.slow)}
+                        className="relative flex h-full w-full flex-col bg-surface-canvas shadow-overlay sm:w-[440px] sm:border-l sm:border-[var(--separator)]"
+                    >
+                        <div className="absolute right-2 top-2 z-20 flex items-center gap-1">
+                            <IconButton
+                                size="sm"
+                                tono="relleno"
+                                aria-label="Abrir en Mensajes"
+                                icon={<Maximize2 />}
+                                onClick={() => { onClose(); navigate(`/coach-dashboard/mensajes/${athlete.id}`); }}
+                            />
+                            <IconButton size="sm" tono="relleno" aria-label="Cerrar" icon={<X />} onClick={onClose} />
                         </div>
-                        {!isMinimized && (
-                            <div className="flex flex-col truncate">
-                                <h3 className="text-ink font-black text-sm uppercase italic truncate">{athlete.full_name}</h3>
-                                <span className="text-t-2xs text-success font-bold uppercase tracking-widest">En línea</span>
-                            </div>
-                        )}
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                        <button 
-                            onClick={() => setIsMinimized(!isMinimized)}
-                            className="p-2 text-ink-subtle hover:text-ink transition-colors"
-                        >
-                            {isMinimized ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
-                        </button>
-                        <button 
-                            onClick={onClose}
-                            className="p-2 text-ink-subtle hover:text-ink transition-colors"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Chat Body */}
-                {!isMinimized && (
-                    <div className="flex-1 overflow-hidden relative">
-                        <AthleteChatView
-                            user={{
-                                ...coach,
-                                coach_id: athlete.id,
-                                coach_name: athlete.full_name
-                            }}
-                            onBack={onClose}
+                        <Hilo
+                            me={coach.id}
+                            otro={{ id: athlete.id, full_name: athlete.full_name, avatar_url: athlete.avatar_url, papel: 'athlete' }}
+                            className="flex-1"
                         />
-                    </div>
-                )}
-
-                {/* Minimized Vertical Label */}
-                {isMinimized && (
-                    <div className="flex-1 flex items-center justify-center">
-                        <span 
-                            className="whitespace-nowrap font-black uppercase text-xs tracking-[0.3em] text-zinc-600 -rotate-90"
-                            style={{ width: 'max-content' }}
-                        >
-                            CHAT CON {athlete.full_name.split(' ')[0]}
-                        </span>
-                    </div>
-                )}
-            </m.div>
+                    </m.aside>
+                </div>
+            )}
         </AnimatePresence>,
         document.body
     );

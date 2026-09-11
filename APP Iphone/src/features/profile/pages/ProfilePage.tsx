@@ -18,14 +18,14 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
         <div className="min-h-[100dvh] bg-surface-sunken font-sans selection:bg-brand flex flex-col">
             <PublicHeader onLoginClick={onLoginClick} />
             <div className="flex-1 pt-32 pb-20 px-4">
-                <div className="max-w-4xl mx-auto mb-8 bg-surface-raised border border-warning/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
+                <div className="max-w-4xl mx-auto mb-8 bg-surface-raised border border-warning/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 shadow-overlay relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500/10 via-amber-500 to-amber-500/10" />
                     <div className="w-16 h-16 bg-warning-quiet rounded-full flex items-center justify-center border border-warning/20 shrink-0">
                         <ShieldAlert className="w-8 h-8 text-warning" />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
                         <div>
-                            <h2 className="text-xl font-black uppercase tracking-tight text-ink mb-1">Cuenta en Revisión</h2>
+                            <h2 className="text-xl font-semibold tracking-tight text-ink mb-1">Cuenta en Revisión</h2>
                             <p className="text-ink-muted text-sm">
                                 Tu cuenta está pendiente de aprobación por el equipo de Anvil Strength. Mientras tanto, puedes configurar tu perfil.
                             </p>
@@ -33,7 +33,7 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
                         <button
                             onClick={() => refetch()}
                             disabled={isFetching}
-                            className="shrink-0 flex items-center justify-center gap-2 bg-warning-quiet hover:bg-amber-500/20 text-warning border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold uppercase text-sm transition-colors disabled:opacity-50"
+                            className="shrink-0 flex items-center justify-center gap-2 bg-warning-quiet hover:bg-amber-500/20 text-warning border border-amber-500/30 px-4 py-2.5 rounded-xl font-bold text-sm transition-colors disabled:opacity-50"
                         >
                             <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
                             Comprobar estado
@@ -54,7 +54,7 @@ export function ProfilePage({ user, onLoginClick }: ProfilePageProps) {
                     panel, los avisos y la ⋮. Sin esta fila no habría forma de
                     cambiar el tema desde un móvil dentro del panel. */}
                 <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                    <h2 className="mb-1 text-t-lg font-black uppercase tracking-display text-ink">
+                    <h2 className="mb-1 text-t-lg font-semibold tracking-display text-ink">
                         Este dispositivo
                     </h2>
                     <p className="mb-5 text-t-sm text-ink-muted">

@@ -14,6 +14,7 @@ import { NutritionPlanEditor } from '../../nutrition/components/NutritionPlanEdi
 import { PersonalInfoSection } from '../../profile/components/PersonalInfoSection';
 import { PaymentPanel } from './PaymentPanel';
 import { CoachNotesPanel } from './CoachNotesPanel';
+import { SeasonPhasesEditor } from './SeasonPhasesEditor';
 import { TrainingBlock } from '../../../types/training';
 import { competitionsService, CompetitionAssignment, CompetitionResult } from '../../../services/competitionsService';
 import { ConfirmationModal } from '../../../components/modals/ConfirmationModal';
@@ -306,7 +307,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 dejan de competir por la misma línea. */}
             <div className="flex items-center justify-between gap-3 p-4 md:p-6 border-b border-subtle bg-surface-sunken shrink-0">
                 <div className="flex min-w-0 items-center gap-2 md:gap-3">
-                    <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-ink transition-colors shrink-0">
+                    <button onClick={onBack} className="p-2 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-muted hover:text-ink transition-colors shrink-0">
                         <ArrowLeft size={20} />
                     </button>
 
@@ -333,7 +334,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                         )}
                         <div className="min-w-0">
                             <span className="flex items-center gap-1.5">
-                                <h2 className="text-lg md:text-xl font-black uppercase tracking-tight truncate">{athlete.full_name}</h2>
+                                <h2 className="text-lg md:text-xl font-semibold tracking-tight truncate">{athlete.full_name}</h2>
                                 <ChevronDown
                                     size={16}
                                     aria-hidden="true"
@@ -539,8 +540,21 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                     de las ya disputadas. */}
                 {shownTab === 'competitions' && (
                     <div className={`${TAB_WIDTH} space-y-6`}>
+                        {/* LAS FASES DE LA TEMPORADA, ANTES QUE LAS COMPETICIONES.
+                            Van en esta pestaña y no en Programación porque la
+                            temporada es el marco y la competición su destino: las
+                            dos contestan "cuándo", mientras que Programación
+                            contesta "qué". Y van ARRIBA porque la fase es lo que
+                            explica por qué la competición está donde está.
+
+                            Es lo que el atleta lee en sus estadísticas — ver
+                            AthleteStatsView. */}
+                        {currentUser && (
+                            <SeasonPhasesEditor athleteId={athleteId} coachId={currentUser.id} />
+                        )}
+
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black uppercase tracking-tight text-ink flex items-center gap-2">
+                            <h3 className="text-xl font-semibold tracking-tight text-ink flex items-center gap-2">
                                 <Trophy className="text-brand-text" />
                                 Competiciones
                             </h3>
@@ -609,16 +623,16 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                                 <div className="space-y-2">
                                                     <div className="flex flex-wrap items-center gap-3">
                                                         {comp.level && (
-                                                            <span className={`text-t-2xs font-black uppercase tracking-widest ${meta.bg} ${meta.color} px-2 py-1 rounded`}>
+                                                            <span className={`text-t-2xs font-semibold ${meta.bg} ${meta.color} px-2 py-1 rounded`}>
                                                                 {comp.level}
                                                             </span>
                                                         )}
                                                         {isPast && (
-                                                            <span className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle px-2 py-1 rounded bg-surface-raised">
+                                                            <span className="text-t-2xs font-semibold text-ink-subtle px-2 py-1 rounded bg-surface-raised">
                                                                 Disputada
                                                             </span>
                                                         )}
-                                                        <h4 className="text-lg font-bold text-ink uppercase leading-tight">
+                                                        <h4 className="text-lg font-bold text-ink leading-tight">
                                                             {comp.name}
                                                         </h4>
                                                     </div>
@@ -644,7 +658,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
 
                                                 <button
                                                     onClick={() => handleRemoveCompetition(comp.id, comp.name)}
-                                                    className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] text-danger-text rounded-lg transition-colors text-sm font-bold uppercase tracking-wide group shrink-0"
+                                                    className="self-end md:self-center flex items-center gap-2 px-4 py-2 bg-[var(--danger-quiet)] hover:bg-[var(--danger-quiet)] text-danger-text rounded-lg transition-colors text-sm font-bold group shrink-0"
                                                 >
                                                     <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
                                                     Eliminar
@@ -736,7 +750,7 @@ function CompetitionResultRow({ result, onSave }: {
 
     const field = (key: keyof CompetitionResult, label: string, placeholder: string) => (
         <label className="block">
-            <span className="mb-1 block text-t-2xs font-black uppercase tracking-widest text-ink-subtle">{label}</span>
+            <span className="mb-1 block text-t-2xs font-semibold text-ink-subtle">{label}</span>
             <input
                 type="text"
                 inputMode="decimal"
@@ -751,7 +765,7 @@ function CompetitionResultRow({ result, onSave }: {
 
     return (
         <div className="border-t border-subtle pt-4">
-            <p className="mb-3 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">Resultado</p>
+            <p className="mb-3 text-t-2xs font-semibold text-ink-subtle">Resultado</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                 {field('bodyweight_kg', 'Peso', 'kg')}
                 {field('squat_kg', 'Sentadilla', 'kg')}

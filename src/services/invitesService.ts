@@ -124,9 +124,9 @@ export const invitesService = {
     /**
      * La URL que se comparte.
      *
-     * Sobre el dominio público, no sobre el origen del navegador: desde la
-     * app de Android ese origen es `app://anvil` y el enlace no abría nada.
-     * Ver src/lib/authRedirect.ts.
+     * Sobre el dominio público, no sobre el origen del navegador: dentro de
+     * la app empaquetada ese origen es privado del dispositivo y el enlace no
+     * abría nada. Ver src/lib/authRedirect.ts.
      */
     buildUrl(code: string): string {
         return enlaceCompartible(`/invitacion/${code}`);

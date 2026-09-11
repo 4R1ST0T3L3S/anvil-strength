@@ -6,42 +6,30 @@ import { cn } from '../../lib/utils';
 /**
  * Botón que solo lleva icono.
  *
- * POR QUÉ ES UNA PRIMITIVA APARTE Y NO UNA VARIANTE DE `Button`
+ * Dos obligaciones que un botón con texto no tiene y que se olvidan siempre:
  *
- * Porque tiene dos obligaciones que un botón con texto no tiene, y las dos
- * se olvidan sistemáticamente cuando se escribe a mano:
+ *   1. `aria-label` OBLIGATORIO: es el único texto que tiene. No compila sin él.
+ *   2. El área pulsable la fija el componente: el círculo se ve de 36-40px y
+ *      un pseudo-elemento lo estira a 44 para el pulgar.
  *
- *   1. `aria-label` es OBLIGATORIO. Sin él, quien navega con lector oye
- *      "botón" y nada más. Aquí el tipo lo exige, así que no se puede
- *      olvidar: no compila.
- *
- *   2. El área pulsable la fija el componente, no quien lo usa. Los ~200
- *      botones de icono de la aplicación medían entre 24 y 40px; el pulgar
- *      necesita 44. El icono sigue siendo pequeño —un icono de 40px se ve
- *      infantil—, lo que crece es la zona sensible alrededor.
- *
- * `tono` decide qué comunica el control, y sigue el mismo lenguaje de hover
- * que el resto del sistema: el color sube un escalón y aparece un fondo.
+ * Circular, como los botones de herramientas de iOS: sin fondo en reposo,
+ * relleno suave al pasar o pulsar. `relleno` lo deja siempre visible (cerrar
+ * una hoja, el "más opciones" de una cabecera).
  */
 
-type Tono = 'neutro' | 'marca' | 'peligro';
+type Tono = 'neutro' | 'marca' | 'peligro' | 'relleno';
 type Tamano = 'sm' | 'md';
 
 const TONO: Record<Tono, string> = {
-    neutro: 'text-ink-muted hover:bg-surface-raised hover:text-ink',
-    marca: 'text-brand-text hover:bg-[var(--brand-quiet)]',
+    neutro: 'text-ink-muted hover:bg-[var(--fill-hover)] hover:text-ink active:bg-[var(--fill-pressed)]',
+    marca: 'text-brand-text hover:bg-[var(--brand-quiet)] active:bg-[var(--brand-quiet-strong)]',
     peligro: 'text-ink-muted hover:bg-[var(--danger-quiet)] hover:text-danger-text',
+    relleno: 'bg-[var(--fill-muted)] text-ink-muted hover:bg-[var(--fill-strong)] hover:text-ink',
 };
 
-/**
- * Los dos tamaños se refieren al ICONO, no al botón: el botón siempre mide
- * 44 de alto. `sm` reduce el ancho a 36 para barras de herramientas densas,
- * y ahí la altura sigue siendo suficiente porque el dedo falla más en
- * vertical que en horizontal.
- */
 const TAMANO: Record<Tamano, string> = {
-    sm: 'h-11 w-9 [&>svg]:h-4 [&>svg]:w-4',
-    md: 'h-11 w-11 [&>svg]:h-5 [&>svg]:w-5',
+    sm: "h-9 w-9 [&>svg]:h-[18px] [&>svg]:w-[18px] before:absolute before:-inset-1 before:content-['']",
+    md: "h-10 w-10 [&>svg]:h-5 [&>svg]:w-5 before:absolute before:-inset-0.5 before:content-['']",
 };
 
 export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
@@ -54,20 +42,19 @@ export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEle
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-    { icon, tono = 'neutro', size = 'md', loading = false, disabled, className, ...props },
+    { icon, tono = 'neutro', size = 'md', loading = false, disabled, className, type = 'button', ...props },
     ref
 ) {
     return (
         <button
             ref={ref}
-            type="button"
+            type={type}
             disabled={disabled || loading}
             aria-busy={loading || undefined}
             className={cn(
-                'inline-flex shrink-0 items-center justify-center rounded-field',
-                'transition-colors duration-fast ease-snap',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-canvas)]',
-                'disabled:cursor-not-allowed disabled:opacity-45',
+                'relative inline-flex shrink-0 items-center justify-center rounded-pill',
+                'transition-[background-color,color] duration-fast ease-snap',
+                'disabled:cursor-not-allowed disabled:opacity-40',
                 TONO[tono],
                 TAMANO[size],
                 className

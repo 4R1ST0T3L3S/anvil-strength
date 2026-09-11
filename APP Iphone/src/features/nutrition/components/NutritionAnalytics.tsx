@@ -75,7 +75,7 @@ export function NutritionAnalytics() {
     return (
         <div className="p-6 md:p-10 space-y-8 animate-fade pb-24">
             <div>
-                <h1 className="text-3xl font-black text-ink uppercase italic tracking-wider mb-2">
+                <h1 className="text-3xl font-semibold text-ink mb-2">
                     Métricas del Club
                 </h1>
                 <p className="text-ink-muted">
@@ -91,8 +91,8 @@ export function NutritionAnalytics() {
                             {card.icon}
                         </div>
                         <div>
-                            <p className="text-ink-muted text-sm font-bold uppercase">{card.title}</p>
-                            <p className="text-2xl font-black text-ink">{card.value}</p>
+                            <p className="text-ink-muted text-sm font-bold">{card.title}</p>
+                            <p className="text-2xl font-semibold text-ink">{card.value}</p>
                         </div>
                     </div>
                 ))}
@@ -102,7 +102,7 @@ export function NutritionAnalytics() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Gráfico Circular de Macros */}
                     <div className="bg-surface-sunken border border-line p-6 rounded-2xl">
-                        <h3 className="text-lg font-black text-ink uppercase mb-6">Distribución Calórica Promedio</h3>
+                        <h3 className="text-lg font-semibold text-ink mb-6">Distribución Calórica Promedio</h3>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -133,7 +133,7 @@ export function NutritionAnalytics() {
 
                     {/* Gráfico de Barras - Gramos */}
                     <div className="bg-surface-sunken border border-line p-6 rounded-2xl">
-                        <h3 className="text-lg font-black text-ink uppercase mb-6">Gramos Promedio por Macro</h3>
+                        <h3 className="text-lg font-semibold text-ink mb-6">Gramos Promedio por Macro</h3>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={macroData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>

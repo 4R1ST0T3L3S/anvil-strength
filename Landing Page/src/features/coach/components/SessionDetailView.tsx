@@ -37,17 +37,17 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
-                        className="p-2 -ml-2 hover:bg-white/10 rounded-lg text-ink-muted hover:text-ink transition-colors"
+                        className="p-2 -ml-2 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-muted hover:text-ink transition-colors"
                     >
                         <ArrowLeft size={20} />
                     </button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <span className="bg-white/10 text-ink text-xs font-black px-2 py-1 rounded uppercase tracking-wider">
+                            <span className="bg-[var(--fill-hover)] text-ink text-xs font-semibold px-2 py-1 rounded">
                                 Día {session.day_number}
                             </span>
                         </div>
-                        <h2 className="text-xl font-black uppercase text-ink tracking-tight leading-none mt-1">
+                        <h2 className="text-xl font-semibold text-ink tracking-tight leading-none mt-1">
                             {session.name || `Entrenamiento Día ${session.day_number}`}
                         </h2>
                     </div>
@@ -58,10 +58,10 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
             <div className="flex-1 overflow-y-auto p-6">
 
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold text-ink uppercase tracking-tight">Ejercicios</h3>
+                    <h3 className="text-lg font-bold text-ink tracking-tight">Ejercicios</h3>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-black rounded-lg text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-ink text-surface-canvas rounded-lg text-sm font-bold hover:opacity-90 transition-colors"
                     >
                         <Plus size={16} />
                         Añadir Ejercicio
@@ -77,7 +77,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                         <p className="text-ink-subtle mb-4">No hay ejercicios para este día.</p>
                         <button
                             onClick={() => setIsAddModalOpen(true)}
-                            className="text-brand-text font-bold uppercase tracking-wider text-sm hover:underline"
+                            className="text-brand-text font-bold text-sm hover:underline"
                         >
                             Buscar en librería
                         </button>
@@ -92,7 +92,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                 {/* Exercise Header */}
                                 <div className="p-4 flex items-center justify-between bg-black/20">
                                     <div className="flex items-center gap-4">
-                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 text-xs font-bold text-ink-muted">
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--fill-muted)] text-xs font-bold text-ink-muted">
                                             {index + 1}
                                         </div>
                                         <div>
@@ -100,7 +100,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                                 {item.exercise?.name || 'Ejercicio desconocido'}
                                             </h4>
                                             {item.exercise?.muscle_group && (
-                                                <span className="text-xs text-ink-subtle uppercase tracking-widest font-bold">
+                                                <span className="text-xs text-ink-subtle font-bold">
                                                     {item.exercise.muscle_group}
                                                 </span>
                                             )}
@@ -111,7 +111,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
                                         {item.vbt_file_url && (
                                             <button 
                                                 onClick={() => setVbtModalConfig({ isOpen: true, url: item.vbt_file_url!, exerciseName: item.exercise?.name || 'VBT' })}
-                                                className="bg-success-quiet text-success border border-success/20 px-2 py-1.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors uppercase tracking-wider"
+                                                className="bg-success-quiet text-success border border-success/20 px-2 py-1.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-success-quiet transition-colors"
                                                 title="Ver Gráfica VBT"
                                             >
                                                 <Activity size={14} />

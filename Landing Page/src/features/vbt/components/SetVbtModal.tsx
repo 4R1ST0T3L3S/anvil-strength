@@ -332,7 +332,7 @@ export function SetVbtModal({
                                 placeholder="0.52"
                             />
                             <div>
-                                <p className="mb-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <p className="mb-1 text-t-2xs font-semibold text-ink-subtle">
                                     Origen
                                 </p>
                                 <select
@@ -378,7 +378,7 @@ export function SetVbtModal({
 
                         {repVelocities && repVelocities.length > 1 && (
                             <div>
-                                <p className="mb-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <p className="mb-1.5 text-t-2xs font-semibold text-ink-subtle">
                                     Repeticiones leídas del archivo
                                 </p>
                                 <div className="flex flex-wrap gap-1">
@@ -458,7 +458,7 @@ function Field({
 }) {
     return (
         <div>
-            <p className="mb-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+            <p className="mb-1 text-t-2xs font-semibold text-ink-subtle">
                 {label} <span className="font-normal normal-case opacity-70">{unit}</span>
             </p>
             <input

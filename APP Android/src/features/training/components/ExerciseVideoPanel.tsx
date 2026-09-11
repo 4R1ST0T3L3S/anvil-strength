@@ -141,7 +141,7 @@ export function ExerciseVideoPanel({
                 esta ficha que se ha escrito pensando en esta sesión. */}
             {coachNotes && (
                 <div className="rounded-field bg-[var(--brand-quiet)] px-3 py-2.5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-text">
+                    <p className="text-xs font-semibold text-brand-text">
                         Nota de tu entrenador
                     </p>
                     <p className="mt-1 text-sm text-ink">{coachNotes}</p>
@@ -207,14 +207,14 @@ export function ExerciseVideoPanel({
                                     className="group flex h-full w-full flex-col items-center justify-center gap-2 text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
                                 >
                                     <PlayCircle className="h-9 w-9 text-brand-text" />
-                                    <p className="text-xs font-semibold uppercase tracking-wide">
+                                    <p className="text-xs font-semibold">
                                         Ver vídeo de técnica
                                     </p>
                                 </button>
                             ) : (
                                 <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-subtle">
                                     <Video className="h-7 w-7" />
-                                    <p className="text-xs font-medium uppercase tracking-wide">
+                                    <p className="text-xs font-medium">
                                         Sin vídeo todavía
                                     </p>
                                 </div>
@@ -241,7 +241,7 @@ export function ExerciseVideoPanel({
                         después de verlo. */}
                     {hasIndications && (
                         <div className="space-y-5 rounded-card border border-subtle bg-surface-raised p-4">
-                            <h4 className="text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+                            <h4 className="text-xs font-semibold text-ink-subtle">
                                 Cómo se hace
                             </h4>
 
@@ -345,7 +345,7 @@ export function ExerciseVideoPanel({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section>
-            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-subtle">
+            <h4 className="mb-2 text-xs font-semibold text-ink-subtle">
                 {title}
             </h4>
             {children}

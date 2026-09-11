@@ -202,7 +202,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:gap-4 md:px-5 md:py-4">
                     <div className="flex min-w-0 items-center gap-3 md:gap-4">
                         {isActive && (
-                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-black uppercase tracking-wider text-brand-text">
+                            <span className="shrink-0 rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-semibold text-brand-text">
                                 Activo
                             </span>
                         )}
@@ -303,7 +303,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                                 className="absolute right-0 top-full z-dropdown mt-2 w-60 rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <p className="px-2.5 py-1.5 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Mover a macro</p>
+                                <p className="px-2.5 py-1.5 text-t-2xs font-bold text-ink-subtle">Mover a macro</p>
                                 <div className="max-h-48 space-y-0.5 overflow-y-auto">
                                     {macros.length === 0 && (
                                         <p className="px-2.5 py-2 text-t-xs text-ink-subtle">Sin macros. Crea uno con "Nuevo macro".</p>
@@ -339,7 +339,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
     return (
         <div className="space-y-6">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                <h2 className="text-t-2xl font-black uppercase tracking-display text-ink">Bloques</h2>
+                <h2 className="text-t-2xl font-semibold tracking-display text-ink">Bloques</h2>
 
                 <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -358,7 +358,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                     </button>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                        className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-xs font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
                     >
                         <Plus size={16} aria-hidden="true" />
                         Nuevo bloque
@@ -392,7 +392,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                 vacioAccion={
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                        className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
                     >
                         Crear bloque
                     </button>
@@ -451,7 +451,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         return (
                             <div>
                                 {macros.length > 0 && (
-                                    <p className="mb-2.5 px-1 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Sin macro</p>
+                                    <p className="mb-2.5 px-1 text-t-2xs font-bold text-ink-subtle">Sin macro</p>
                                 )}
                                 <div className="grid grid-cols-1 gap-2.5">
                                     {ungrouped.map(block => renderBlockCard(block))}
@@ -530,7 +530,7 @@ export function TrainingBlockList({ athleteId, athleteName, onSelectBlock }: Tra
                         <button
                             onClick={confirmDelete}
                             disabled={isDeleting}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                         >
                             {isDeleting ? <Loader size={15} className="animate-spin" /> : 'Eliminar'}
                         </button>
@@ -593,7 +593,7 @@ function CreateMacroModal({
         <Modal open onClose={onClose} title="Nuevo macro" size="md">
             <div className="space-y-5">
                 <label className="block space-y-1.5">
-                    <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Nombre</span>
+                    <span className="block text-t-2xs font-bold text-ink-subtle">Nombre</span>
                     <input
                         type="text"
                         value={name}
@@ -607,7 +607,7 @@ function CreateMacroModal({
                 </label>
 
                 <label className="block space-y-1.5">
-                    <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <span className="block text-t-2xs font-bold text-ink-subtle">
                         Competición objetivo <span className="font-medium normal-case tracking-normal text-ink-subtle">· opcional</span>
                     </span>
                     <select
@@ -634,7 +634,7 @@ function CreateMacroModal({
                     <button
                         onClick={handleCreate}
                         disabled={!name.trim() || saving}
-                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                     >
                         {saving ? <Loader size={15} className="animate-spin" /> : <Plus size={15} />}
                         Crear macro

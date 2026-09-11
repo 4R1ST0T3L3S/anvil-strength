@@ -98,10 +98,10 @@ function TarjetaDemo({ n, color }: { n: number; color: string }) {
     const [id] = useState(() => ++montajes);
     return (
         <div className="flex min-h-[140px] flex-col justify-center rounded-card border border-[var(--border-default)] bg-surface-raised p-5">
-            <p className={`text-t-2xs font-bold uppercase tracking-widest ${TONO_DEMO[color] ?? 'text-ink-subtle'}`}>
+            <p className={`text-t-2xs font-bold ${TONO_DEMO[color] ?? 'text-ink-subtle'}`}>
                 Tarjeta {n}
             </p>
-            <p className="mt-1 text-metric font-black tabular-nums text-ink">{n * 137}</p>
+            <p className="mt-1 text-metric font-semibold tabular-nums text-ink">{n * 137}</p>
             <p className="mt-1 text-t-xs text-ink-subtle">Montaje n.º {id} desde que cargó la página</p>
         </div>
     );
@@ -111,7 +111,7 @@ function Bloque({ titulo, nota, children }: { titulo: string; nota?: string; chi
     return (
         <section className="space-y-3">
             <div>
-                <h2 className="text-t-lg font-black uppercase tracking-display text-ink">{titulo}</h2>
+                <h2 className="text-t-lg font-semibold tracking-display text-ink">{titulo}</h2>
                 {nota && <p className="mt-1 max-w-[70ch] text-t-xs text-ink-subtle">{nota}</p>}
             </div>
             <div className="rounded-card border border-dashed border-[var(--border-strong)] p-4">
@@ -165,8 +165,8 @@ export function SistemaPreview() {
         <div className="min-h-[100dvh] bg-surface-canvas px-4 py-8 md:px-8">
             <div className="mx-auto w-full max-w-4xl space-y-12">
                 <header>
-                    <p className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">Solo desarrollo</p>
-                    <h1 className="mt-1 text-t-3xl font-black uppercase tracking-display text-ink">
+                    <p className="text-t-2xs font-bold text-brand-text">Solo desarrollo</p>
+                    <h1 className="mt-1 text-t-3xl font-semibold tracking-display text-ink">
                         Sistema de diseño
                     </h1>
                     <p className="mt-1.5 max-w-[70ch] text-t-sm text-ink-muted">

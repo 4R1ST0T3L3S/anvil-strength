@@ -1,6 +1,15 @@
 import { supabase } from '../lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import type { CategoriaAviso } from './notificationPrefsService';
 
+/**
+ * AVISOS (la campana).
+ *
+ * Los escribe la base: disparadores de bloque nuevo, convocatoria,
+ * check-in pendiente, entrenamiento para revisar, feedback recibido… Con
+ * `category` desde septiembre de 2026 (database/NOTIFICACIONES_2026-09-11.sql)
+ * y `link` a la pantalla que toca.
+ */
 export interface AppNotification {
     id: string;
     user_id: string;
@@ -9,10 +18,12 @@ export interface AppNotification {
     is_read: boolean;
     link: string | null;
     created_at: string;
+    category?: CategoriaAviso | null;
+    ref_id?: string | null;
 }
 
 export const notificationsService = {
-    async getNotifications(userId: string, limit = 30): Promise<AppNotification[]> {
+    async getNotifications(userId: string, limit = 40): Promise<AppNotification[]> {
         const { data, error } = await supabase
             .from('notifications')
             .select('*')
@@ -55,19 +66,11 @@ export const notificationsService = {
     },
 
     /**
-     * Suscripción en tiempo real a nuevas notificaciones del usuario.
+     * Suscripción en tiempo real a nuevos avisos del usuario.
      *
-     * El topic lleva un sufijo aleatorio y no solo `userId` porque React
-     * StrictMode (y cualquier remontado normal, como cambiar de panel)
-     * monta el efecto dos veces. Con un topic fijo, `supabase.channel()`
-     * devuelve el canal VIEJO si sigue registrado — y limpiar con
-     * `.unsubscribe()` en vez de `supabase.removeChannel()` es justo lo que
-     * lo dejaba registrado: `unsubscribe()` cierra el socket pero no saca el
-     * canal de la lista interna, así que el siguiente `.channel()` con el
-     * mismo nombre recupera ese canal todavía en estado `joined`, y
-     * `.on('postgres_changes', …)` lanza "cannot add callbacks … after
-     * subscribe()". Con nombre único cada montaje es un canal nuevo de
-     * verdad, y `removeChannel` es lo que de verdad lo da de baja.
+     * Topic con sufijo aleatorio: con un nombre fijo, `supabase.channel()`
+     * devuelve el canal VIEJO si sigue registrado y `.on(...)` lanza
+     * "cannot add callbacks … after subscribe()". Ver la nota histórica.
      */
     subscribe(userId: string, onNotification: (n: AppNotification) => void): RealtimeChannel {
         return supabase

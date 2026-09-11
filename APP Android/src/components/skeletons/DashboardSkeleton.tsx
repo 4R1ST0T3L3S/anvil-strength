@@ -32,7 +32,7 @@ export function DashboardSkeleton() {
             <AnvilMascot className="h-48 w-48" />
 
             <div className="flex flex-col items-center gap-3">
-                <p className="animate-pulse text-t-xl font-black uppercase italic tracking-tighter text-ink sm:text-t-2xl">
+                <p className="animate-pulse text-t-xl font-semibold tracking-tight text-ink sm:text-t-2xl">
                     Cargando tus gains…
                 </p>
 

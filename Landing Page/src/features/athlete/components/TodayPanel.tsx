@@ -182,7 +182,7 @@ export function TrainingCard({
                 <div className="flex items-center gap-2">
                     <Dumbbell size={22} className="text-brand-ink" aria-hidden="true" />
                     {done && (
-                        <span className="flex items-center gap-1 rounded-chip bg-brand-ink/15 px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wider text-brand-ink">
+                        <span className="flex items-center gap-1 rounded-chip bg-brand-ink/15 px-2 py-0.5 text-t-2xs font-bold text-brand-ink">
                             <Check size={11} strokeWidth={3} aria-hidden="true" /> Hecho
                         </span>
                     )}
@@ -192,7 +192,7 @@ export function TrainingCard({
                     Antes había que entrar en la planificación y leer el
                     selector de semana para saberlo. */}
                 {context && (
-                    <p className="mt-2 truncate text-t-2xs font-bold uppercase tracking-widest text-brand-ink/70">
+                    <p className="mt-2 truncate text-t-2xs font-bold text-brand-ink/70">
                         {context}
                     </p>
                 )}
@@ -223,7 +223,7 @@ export function TrainingCard({
             </div>
 
             <div className="relative mt-4 shrink-0">
-                <span className="block truncate text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
+                <span className="block truncate text-t-2xl font-semibold leading-none tracking-display text-brand-ink">
                     {loading
                         ? 'Cargando…'
                         : noSession
@@ -269,7 +269,7 @@ export function TrainingCard({
                     que esto es un `span` con aspecto de botón — el clic lo
                     sigue recogiendo la tarjeta. */}
                 {!loading && !locked && session && (
-                    <span className="mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-field bg-brand-ink/15 text-t-sm font-black uppercase tracking-wider text-brand-ink transition-colors duration-fast ease-snap group-hover:bg-brand-ink/25">
+                    <span className="mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-field bg-brand-ink/15 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap group-hover:bg-brand-ink/25">
                         {action}
                         <ChevronRight size={15} aria-hidden="true" />
                     </span>
@@ -333,7 +333,7 @@ function NutritionCard({
             </div>
 
             <div className="relative mt-4">
-                <span className="block text-t-2xl font-black uppercase leading-none tracking-display text-ink">
+                <span className="block text-t-2xl font-semibold leading-none tracking-display text-ink">
                     Mi dieta
                 </span>
                 <span className="mt-1.5 flex items-center gap-1 text-t-sm text-ink-subtle">
@@ -359,7 +359,7 @@ function NutritionCard({
 
 function Tag({ icon: Icon, children }: { icon: typeof Flame; children: React.ReactNode }) {
     return (
-        <span className="flex items-center gap-1 rounded-chip bg-brand-ink/15 px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wider text-brand-ink">
+        <span className="flex items-center gap-1 rounded-chip bg-brand-ink/15 px-2 py-0.5 text-t-2xs font-bold text-brand-ink">
             <Icon size={10} aria-hidden="true" />
             {children}
         </span>
@@ -369,11 +369,11 @@ function Tag({ icon: Icon, children }: { icon: typeof Flame; children: React.Rea
 function Macro({ label, value, unit = '' }: { label: string; value: number; unit?: string }) {
     return (
         <div className="rounded-field bg-surface-sunken px-2 py-1.5 text-center">
-            <p className="text-t-base font-black tabular-nums leading-none text-ink">
+            <p className="text-t-base font-semibold tabular-nums leading-none text-ink">
                 {Math.round(value || 0)}
                 {unit && <span className="text-t-2xs font-bold text-ink-subtle">{unit}</span>}
             </p>
-            <p className="mt-0.5 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{label}</p>
+            <p className="mt-0.5 text-t-2xs font-bold text-ink-subtle">{label}</p>
         </div>
     );
 }

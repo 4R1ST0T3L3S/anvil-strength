@@ -337,10 +337,10 @@ export const athletesService = {
          * `enlaceCompartible` Y NO `window.location.origin`.
          *
          * Este enlace se copia y se manda por WhatsApp: tiene que abrirse en
-         * el teléfono de OTRA persona. Dentro de la app de Android el origen
-         * del navegador es `app://anvil`, una dirección que solo existe
-         * dentro del propio móvil del entrenador, así que el enlace que salía
-         * de aquí no llevaba a ningún sitio. Ver src/lib/authRedirect.ts.
+         * el teléfono de OTRA persona. El origen del navegador aquí dentro es
+         * una dirección privada del dispositivo (`app://anvil` en escritorio,
+         * `https://localhost` en el APK), así que el enlace que salía de aquí
+         * no llevaba a ningún sitio. Ver src/lib/authRedirect.ts.
          */
         return { token: raw.token, url: enlaceCompartible(`/reclamar/${raw.token}`) };
     },

@@ -110,7 +110,7 @@ export function DataTable<T>({
                             <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                                 {resto.map(col => (
                                     <div key={col.id} className="min-w-0">
-                                        <dt className="text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                                        <dt className="text-t-2xs font-bold text-ink-subtle">
                                             {col.cabecera}
                                         </dt>
                                         <dd className="truncate text-t-sm tabular-nums text-ink-muted">
@@ -160,7 +160,7 @@ export function DataTable<T>({
                                         // tabla de treinta filas, sin esto se pierde
                                         // de vista qué es cada columna a la quinta.
                                         'sticky top-0 z-10 border-b border-subtle bg-surface-raised px-3 py-2.5',
-                                        'text-t-2xs font-bold uppercase tracking-wide text-ink-subtle whitespace-nowrap',
+                                        'text-t-2xs font-bold text-ink-subtle whitespace-nowrap',
                                         ALINEACION[col.alineacion ?? 'izquierda'],
                                         col.ancho
                                     )}

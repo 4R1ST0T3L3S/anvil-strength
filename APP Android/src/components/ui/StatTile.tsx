@@ -92,11 +92,11 @@ export function StatTile({
                 </span>
             )}
 
-            <p className="text-t-2xs font-bold uppercase tracking-[0.12em] text-ink-subtle">
+            <p className="text-t-2xs font-bold tracking-[0.12em] text-ink-subtle">
                 {label}
             </p>
 
-            <p className="flex items-baseline gap-1.5 text-metric font-black tabular-nums text-ink">
+            <p className="flex items-baseline gap-1.5 text-metric font-semibold tabular-nums text-ink">
                 {valor}
                 {unidad && (
                     <span className="text-t-base font-semibold text-ink-subtle">{unidad}</span>

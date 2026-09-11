@@ -173,7 +173,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
     return (
         <div className="p-4 bg-black/10">
             {sets.length > 0 && (
-                <div className="grid grid-cols-11 gap-2 mb-2 text-t-2xs uppercase font-bold text-ink-subtle tracking-wider text-center">
+                <div className="grid grid-cols-11 gap-2 mb-2 text-t-2xs font-bold text-ink-subtle text-center">
                     <div className="col-span-2">Series</div>
                     <div className="col-span-2">Reps</div>
                     <div className="col-span-2">RPE</div>
@@ -268,7 +268,7 @@ export function ExerciseSetsManager({ sessionExerciseId }: ExerciseSetsManagerPr
 
             <button
                 onClick={handleAddSet}
-                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle uppercase tracking-wider hover:bg-white/5 hover:text-ink hover:border-[var(--border-strong)] transition-colors"
+                className="mt-4 w-full py-2 flex items-center justify-center gap-2 border border-dashed border-[var(--border-default)] rounded-lg text-xs font-bold text-ink-subtle hover:bg-[var(--fill-hover)] hover:text-ink hover:border-[var(--border-strong)] transition-colors"
             >
                 <Plus size={14} />
                 Prescribir Series

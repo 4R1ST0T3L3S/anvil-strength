@@ -545,8 +545,8 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                  <Activity size={18} />
              </div>
              <div className="min-w-0">
-                 <p className="text-ink-muted text-t-2xs font-bold uppercase tracking-widest mb-0.5 truncate">Velocidad Media</p>
-                 <p className="text-lg font-black text-ink truncate">{advMetrics.concentric.meanVelocity.toFixed(2)} <span className="text-xs text-ink-subtle">m/s</span></p>
+                 <p className="text-ink-muted text-t-2xs font-bold mb-0.5 truncate">Velocidad Media</p>
+                 <p className="text-lg font-semibold text-ink truncate">{advMetrics.concentric.meanVelocity.toFixed(2)} <span className="text-xs text-ink-subtle">m/s</span></p>
              </div>
          </div>
 
@@ -555,8 +555,8 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                  <Gauge size={18} />
              </div>
              <div className="min-w-0">
-                 <p className="text-ink-muted text-t-2xs font-bold uppercase tracking-widest mb-0.5 truncate">Velocidad Pico</p>
-                 <p className="text-lg font-black text-ink truncate">{advMetrics.concentric.peakVelocity.toFixed(2)} <span className="text-xs text-ink-subtle">m/s</span></p>
+                 <p className="text-ink-muted text-t-2xs font-bold mb-0.5 truncate">Velocidad Pico</p>
+                 <p className="text-lg font-semibold text-ink truncate">{advMetrics.concentric.peakVelocity.toFixed(2)} <span className="text-xs text-ink-subtle">m/s</span></p>
              </div>
          </div>
 
@@ -565,8 +565,8 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                  <ArrowDownUp size={18} />
              </div>
              <div className="min-w-0">
-                 <p className="text-ink-muted text-t-2xs font-bold uppercase tracking-widest mb-0.5 truncate">Recorrido (ROM)</p>
-                 <p className="text-lg font-black text-ink truncate">{advMetrics.concentric.rom.toFixed(2)} <span className="text-xs text-ink-subtle">m</span></p>
+                 <p className="text-ink-muted text-t-2xs font-bold mb-0.5 truncate">Recorrido (ROM)</p>
+                 <p className="text-lg font-semibold text-ink truncate">{advMetrics.concentric.rom.toFixed(2)} <span className="text-xs text-ink-subtle">m</span></p>
              </div>
          </div>
       </div>
@@ -663,10 +663,10 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-surface-sunken border border-warning/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(234,179,8,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Zap size={12} className="text-warning" />
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Potencia</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate">Potencia</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-ink">{Math.round(advMetrics.dynamics.meanPower)}</p>
+                 <p className="text-lg xl:text-xl font-semibold text-ink">{Math.round(advMetrics.dynamics.meanPower)}</p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-subtle">/ {Math.round(advMetrics.dynamics.peakPower)} W</span>
               </div>
           </div>
@@ -681,10 +681,10 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
                      atleta y la aceleración de su centro de masas, que un vídeo
                      de la barra no puede ver. Con el nombre anterior el número
                      parecía comparable con una plataforma de fuerzas. */}
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate" title="m · (g + a) sobre la carga de la barra. No es la fuerza contra el suelo.">Fuerza en barra</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate" title="m · (g + a) sobre la carga de la barra. No es la fuerza contra el suelo.">Fuerza en barra</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-ink">{Math.round(advMetrics.dynamics.peakForce)}</p>
+                 <p className="text-lg xl:text-xl font-semibold text-ink">{Math.round(advMetrics.dynamics.peakForce)}</p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-subtle">N</span>
               </div>
           </div>
@@ -693,10 +693,10 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-surface-sunken border border-blue-400/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(96,165,250,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <TrendingUp size={12} className="text-info" />
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">RFD</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate">RFD</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-ink">{Math.round(advMetrics.dynamics.rfd)}</p>
+                 <p className="text-lg xl:text-xl font-semibold text-ink">{Math.round(advMetrics.dynamics.rfd)}</p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-subtle">N/s</span>
               </div>
           </div>
@@ -705,7 +705,7 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-surface-sunken border border-danger/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(239,68,68,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <AlertTriangle size={12} className="text-danger-text" />
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Sticking Point</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate">Sticking Point</p>
               </div>
               {/* `null` significa que la curva de velocidad tiene un solo
                   máximo: la barra subió sin pararse. Es información, no un
@@ -714,15 +714,15 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
               <div className="flex flex-col">
                  {advMetrics.concentric.minVelocity !== null ? (
                    <>
-                     <p className="text-lg xl:text-xl font-black text-ink">{advMetrics.concentric.minVelocity.toFixed(2)}<span className="text-t-2xs xl:text-xs font-bold text-ink-muted ml-1">m/s</span></p>
-                     <p className="text-t-2xs font-bold text-danger-text mt-0.5 uppercase">
+                     <p className="text-lg xl:text-xl font-semibold text-ink">{advMetrics.concentric.minVelocity.toFixed(2)}<span className="text-t-2xs xl:text-xs font-bold text-ink-muted ml-1">m/s</span></p>
+                     <p className="text-t-2xs font-bold text-danger-text mt-0.5">
                        A {(advMetrics.concentric.stickingHeight ?? 0).toFixed(2)}m
                      </p>
                    </>
                  ) : (
                    <>
-                     <p className="text-lg xl:text-xl font-black text-ink">—</p>
-                     <p className="text-t-2xs font-bold text-ink-subtle mt-0.5 uppercase">Sin estancamiento</p>
+                     <p className="text-lg xl:text-xl font-semibold text-ink">—</p>
+                     <p className="text-t-2xs font-bold text-ink-subtle mt-0.5">Sin estancamiento</p>
                    </>
                  )}
               </div>
@@ -732,10 +732,10 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-surface-sunken border border-purple-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(168,85,247,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <MoveHorizontal size={12} className="text-purple-500" />
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Desviación X</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate">Desviación X</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-ink">{advMetrics.concentric.horizontalDeviationCm.toFixed(1)}</p>
+                 <p className="text-lg xl:text-xl font-semibold text-ink">{advMetrics.concentric.horizontalDeviationCm.toFixed(1)}</p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-subtle">cm</span>
               </div>
           </div>
@@ -744,10 +744,10 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-surface-sunken border border-teal-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(20,184,166,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Clock size={12} className="text-teal-500" />
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Tiempo Exc / Con</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate">Tiempo Exc / Con</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-ink">{advMetrics.eccentric ? advMetrics.eccentric.duration.toFixed(2) : '—'}<span className="text-t-2xs text-ink-subtle ml-0.5">s</span></p>
+                 <p className="text-lg xl:text-xl font-semibold text-ink">{advMetrics.eccentric ? advMetrics.eccentric.duration.toFixed(2) : '—'}<span className="text-t-2xs text-ink-subtle ml-0.5">s</span></p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-subtle">/ {advMetrics.concentric.duration.toFixed(2)}s</span>
               </div>
           </div>
@@ -756,10 +756,10 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className="bg-surface-sunken border border-pink-500/20 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_4px_20px_rgba(236,72,153,0.03)]">
               <div className="flex items-center gap-1 mb-1">
                  <Percent size={12} className="text-pink-500" />
-                 <p className="text-t-2xs font-bold text-ink-muted tracking-widest uppercase truncate">Fatiga</p>
+                 <p className="text-t-2xs font-bold text-ink-muted truncate">Fatiga</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-lg xl:text-xl font-black text-ink">{Math.max(0, advMetrics.fatigue).toFixed(1)}</p>
+                 <p className="text-lg xl:text-xl font-semibold text-ink">{Math.max(0, advMetrics.fatigue).toFixed(1)}</p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-subtle">%</span>
               </div>
           </div>
@@ -773,14 +773,14 @@ export function MetricsDashboard({ path, calibration, trackingStats, onTimeHover
           <div className={`bg-gradient-to-br from-brand/20 to-orange-500/20 border-2 border-brand/40 py-2 px-3 rounded-xl flex flex-col justify-center shadow-[0_0_30px_rgba(220,38,38,0.1)] ${advMetrics.rm.reliable ? '' : 'opacity-60'}`}>
               <div className="flex items-center gap-1 mb-1">
                  <Award size={12} className="text-ink" />
-                 <p className="text-t-2xs font-bold text-ink tracking-widest uppercase truncate">1RM Est.</p>
+                 <p className="text-t-2xs font-bold text-ink truncate">1RM Est.</p>
               </div>
               <div className="flex items-baseline gap-1">
-                 <p className="text-xl xl:text-2xl font-black text-ink drop-shadow-md">{Math.round(advMetrics.rm.rm)}</p>
+                 <p className="text-xl xl:text-2xl font-semibold text-ink drop-shadow-md">{Math.round(advMetrics.rm.rm)}</p>
                  <span className="text-t-2xs xl:text-xs font-bold text-ink-muted">Kg ({Math.round(advMetrics.rm.percent)}%)</span>
               </div>
               {!advMetrics.rm.reliable && (
-                 <p className="text-t-2xs font-bold text-ink-subtle mt-0.5 uppercase leading-tight">
+                 <p className="text-t-2xs font-bold text-ink-subtle mt-0.5 leading-tight">
                     Fuera del tramo lineal
                  </p>
               )}

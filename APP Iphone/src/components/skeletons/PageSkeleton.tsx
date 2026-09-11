@@ -30,7 +30,7 @@ export function PageSkeleton() {
             {/* La cabecera es fija y mide 64px en la web pública: reservarla
                 evita que el contenido salte hacia abajo al montarse. */}
             <div className="flex h-16 items-center justify-between border-b border-subtle px-6">
-                <span className="select-none text-t-lg font-black tracking-tight text-ink">
+                <span className="select-none text-t-lg font-semibold tracking-tight text-ink">
                     ANVIL<span className="text-brand-text">.</span>
                 </span>
                 <Skeleton className="h-9 w-24" />

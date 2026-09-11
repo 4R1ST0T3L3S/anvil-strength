@@ -176,16 +176,16 @@ function Aviso({ titulo, cuerpo, codigo }: { titulo: string; cuerpo: string; cod
     return (
         <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-surface-sunken px-6 text-center text-ink">
             <div className="w-full max-w-md">
-                <p className="text-t-xs font-black uppercase tracking-widest text-brand-text">
+                <p className="text-t-xs font-semibold text-brand-text">
                     Anvil Strength
                 </p>
-                <h1 className="mt-4 text-t-2xl font-black uppercase leading-tight text-ink">{titulo}</h1>
+                <h1 className="mt-4 text-t-2xl font-semibold leading-tight text-ink">{titulo}</h1>
                 <p className="mt-4 text-t-base leading-relaxed text-ink-muted">{cuerpo}</p>
 
                 <Link
                     to="/"
                     replace
-                    className="mt-8 inline-flex items-center justify-center rounded-pill bg-brand px-7 py-3 text-t-sm font-black uppercase tracking-wide text-brand-ink transition-opacity duration-fast hover:opacity-90"
+                    className="mt-8 inline-flex items-center justify-center rounded-pill bg-brand px-7 py-3 text-t-sm font-semibold text-brand-ink transition-opacity duration-fast hover:opacity-90"
                 >
                     Volver a Anvil Strength
                 </Link>

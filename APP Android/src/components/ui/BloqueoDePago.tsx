@@ -74,7 +74,7 @@ export function BloqueoDePago({ resultado, queSeHaBloqueado, className }: Bloque
                     variant="primary"
                     size="lg"
                     icon={<MessageCircle className="h-5 w-5" />}
-                    onClick={() => navigate('/dashboard/chat')}
+                    onClick={() => navigate('/dashboard/mensajes')}
                 >
                     Hablar con mi entrenador
                 </Button>
@@ -116,7 +116,7 @@ export function AvisoDePago({ resultado }: { resultado: ResultadoPuerta }) {
             </p>
             <button
                 type="button"
-                onClick={() => navigate('/dashboard/chat')}
+                onClick={() => navigate('/dashboard/mensajes')}
                 className="min-h-[44px] shrink-0 text-t-sm font-bold text-warning underline underline-offset-2 transition-colors duration-fast ease-snap hover:text-ink"
             >
                 Hablar con mi entrenador

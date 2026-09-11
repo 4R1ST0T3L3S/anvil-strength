@@ -6,14 +6,44 @@
 :root {
   font-family: var(--font-sans);
   line-height: 1.5;
-  font-weight: 500;
-  color-scheme: dark;
+  /* 400 y no 500 desde el sistema de septiembre de 2026: SF Pro e Inter
+     están dibujadas para leerse en regular. La jerarquía la dan 500/600/700
+     donde toca, no un cuerpo que ya empieza en seminegrita. La portada
+     conserva su 500 dentro de `.registro-marca`. */
+  font-weight: 400;
   color: var(--ink);
   background-color: var(--surface-canvas);
+  /* Nada de negritas ni cursivas FALSAS: si un peso no está cargado, mejor
+     el más cercano que uno engordado a mano por el navegador. */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 
   /* Cifras de igual anchura en toda la app: sin esto, un peso que pasa de
      97,5 a 100 desplaza la fila entera al re-renderizar. */
   font-variant-numeric: tabular-nums;
+}
+
+/* =====================================================================
+   MATERIAL
+   =====================================================================
+   Solo para navegación que flota sobre contenido (barra de pestañas,
+   cabeceras fijas). Sin soporte de `backdrop-filter` cae a la superficie
+   opaca: mejor sólido que translúcido sin desenfoque, que es ilegible. */
+.material-bar {
+  background-color: var(--material-bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .material-bar {
+    background-color: var(--surface-canvas);
+  }
+}
+
+/* Los avisos (sonner) con las superficies del sistema en los dos temas. */
+[data-sonner-toaster] {
+  --border-radius: 14px;
 }
 
 html {
@@ -26,6 +56,10 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  /* iPhone: `100vh` mide la ventana SIN la barra de Safari, así que el cuerpo
+     sobresale por debajo y aparece un scroll fantasma. `dvh` sigue a la barra.
+     Va después del `vh` como respaldo para navegadores que no lo entienden. */
+  min-height: 100dvh;
   overscroll-behavior: none;
   background-color: var(--surface-canvas);
   -webkit-font-smoothing: antialiased;
@@ -251,6 +285,7 @@ button:not([data-no-press]),
   inset: auto auto 170px 24px !important;
   /* top right bottom left */
   max-height: calc(100vh - 190px) !important;
+  max-height: calc(100dvh - 190px) !important;
   width: 90vw !important;
   max-width: 400px !important;
   position: fixed !important;
@@ -261,6 +296,7 @@ button:not([data-no-press]),
 .typebot-bubble-modal {
   inset: auto auto 170px 24px !important;
   max-height: calc(100vh - 190px) !important;
+  max-height: calc(100dvh - 190px) !important;
   width: 90vw !important;
   max-width: 400px !important;
-}
+}

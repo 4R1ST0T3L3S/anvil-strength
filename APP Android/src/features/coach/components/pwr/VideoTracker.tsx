@@ -1011,7 +1011,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         posibilidad de notarlo. Con el aro solo, ninguna. */}
                     {calibration && (state === 'confirm' || state === 'span' || state === 'select_point' || state === 'ready') && (
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-field bg-surface-sunken px-2.5 py-2">
-                            <span className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">Escala</span>
+                            <span className="text-t-2xs font-semibold text-ink-subtle">Escala</span>
                             <span className="font-mono text-t-xs font-bold text-ink">{ratioLabel}</span>
                             <span className="text-t-2xs text-ink-subtle">·</span>
                             <span className="text-t-2xs text-ink-subtle">
@@ -1043,7 +1043,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         <button
                             onClick={confirmTrim}
                             disabled={!cvReady}
-                            className="rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-ink transition-transform duration-fast active:scale-95 disabled:opacity-40"
+                            className="rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold text-brand-ink transition-transform duration-fast active:scale-95 disabled:opacity-40"
                         >
                             Buscar el disco en este tramo
                         </button>
@@ -1071,7 +1071,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         <div className="flex flex-wrap items-center gap-2">
                             <button
                                 onClick={acceptCalibration}
-                                className="flex-1 rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-ink transition-transform duration-fast active:scale-95"
+                                className="flex-1 rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold text-brand-ink transition-transform duration-fast active:scale-95"
                             >
                                 Sí, es ese disco
                             </button>
@@ -1141,7 +1141,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                                             ? 'Marca primero los dos bordes del disco'
                                             : undefined
                                     }
-                                    className="flex-1 rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-ink transition-transform duration-fast active:scale-95 disabled:opacity-40"
+                                    className="flex-1 rounded-field bg-brand px-4 py-2.5 text-t-2xs font-bold text-brand-ink transition-transform duration-fast active:scale-95 disabled:opacity-40"
                                 >
                                     Usar esta escala
                                 </button>
@@ -1159,7 +1159,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                         <div className="flex gap-2">
                             <button
                                 onClick={() => void startTracking()}
-                                className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-ink transition-transform duration-fast active:scale-95"
+                                className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-2xs font-bold text-brand-ink transition-transform duration-fast active:scale-95"
                             >
                                 <Play size={14} /> Analizar el tramo
                             </button>
@@ -1214,7 +1214,7 @@ export function VideoTracker({ onTrackingComplete, seekTime, isResultMode, onTim
                                 <button
                                     onClick={() => calibration && onTrackingComplete(path, calibration, buildStats())}
                                     disabled={!calibration || path.length < 3}
-                                    className="flex-1 rounded-field bg-success px-5 py-2.5 text-t-2xs font-bold uppercase tracking-wide text-ink-inverse transition-transform duration-fast active:scale-95 disabled:opacity-40"
+                                    className="flex-1 rounded-field bg-success px-5 py-2.5 text-t-2xs font-bold text-ink-inverse transition-transform duration-fast active:scale-95 disabled:opacity-40"
                                 >
                                     Ver resultados
                                 </button>

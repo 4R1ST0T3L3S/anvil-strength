@@ -160,7 +160,7 @@ export function AthleteHistoryTab({ athleteId }: AthleteHistoryTabProps) {
             {/* ------------ PROPUESTAS ------------ */}
             {!unavailable && candidates.length > 0 && (
                 <section className="rounded-card border border-[var(--brand-line)] bg-brand-quiet p-4">
-                    <h4 className="flex items-center gap-2 text-t-xs font-black uppercase tracking-widest text-brand-text">
+                    <h4 className="flex items-center gap-2 text-t-xs font-semibold text-brand-text">
                         <Sparkles size={13} aria-hidden="true" />
                         {candidates.length} {candidates.length === 1 ? 'marca detectada' : 'marcas detectadas'}
                     </h4>
@@ -182,7 +182,7 @@ export function AthleteHistoryTab({ athleteId }: AthleteHistoryTabProps) {
                                             {c.exercise_name}
                                         </span>
                                         <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-t-xs tabular-nums text-ink-muted">
-                                            <span className="font-black text-brand-text">
+                                            <span className="font-semibold text-brand-text">
                                                 {c.load_kg} × {c.reps}
                                             </span>
                                             {c.rpe != null && <span>@{c.rpe}</span>}
@@ -259,13 +259,13 @@ export function AthleteHistoryTab({ athleteId }: AthleteHistoryTabProps) {
                             <ul className="divide-y divide-[var(--border-subtle)]">
                                 {marksForExercise(marks, ex.name).map(mark => (
                                     <li key={mark.id} className="group flex items-center gap-3 px-4 py-2.5">
-                                        <span className="w-24 shrink-0 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                                        <span className="w-24 shrink-0 text-t-2xs font-bold text-ink-subtle">
                                             {markLabel(mark.reps).replace('Mejor ', '')}
                                         </span>
 
                                         <span className="min-w-0 flex-1">
                                             <span className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                                                <span className="text-t-base font-black tabular-nums text-ink">
+                                                <span className="text-t-base font-semibold tabular-nums text-ink">
                                                     {mark.load_kg} <span className="text-t-xs font-bold text-ink-subtle">kg</span>
                                                 </span>
                                                 {mark.rpe != null && (
@@ -286,7 +286,7 @@ export function AthleteHistoryTab({ athleteId }: AthleteHistoryTabProps) {
                                                 {/* De dónde salió. Importa: una marca
                                                     detectada viene de una serie real y
                                                     una manual de lo que alguien tecleó. */}
-                                                <span className="rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs uppercase tracking-wide text-ink-faint">
+                                                <span className="rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs text-ink-faint">
                                                     {mark.source === 'detected' ? 'Del registro' : 'Manual'}
                                                 </span>
                                             </span>
@@ -386,7 +386,7 @@ function AddMarkModal({
         <Modal open={open} onClose={onClose} title="Nueva marca" size="md" dismissible={!saving}>
             <form onSubmit={submit} className="space-y-4">
                 <label className="block space-y-1.5">
-                    <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <span className="block text-t-2xs font-bold text-ink-subtle">
                         Ejercicio <span className="text-brand-text">*</span>
                     </span>
                     <input
@@ -400,7 +400,7 @@ function AddMarkModal({
 
                 <div className="grid grid-cols-2 gap-3">
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="block text-t-2xs font-bold text-ink-subtle">
                             Repeticiones <span className="text-brand-text">*</span>
                         </span>
                         <input
@@ -412,7 +412,7 @@ function AddMarkModal({
                     </label>
 
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="block text-t-2xs font-bold text-ink-subtle">
                             Peso (kg) <span className="text-brand-text">*</span>
                         </span>
                         <input
@@ -430,7 +430,7 @@ function AddMarkModal({
                     de hace un año con una de esta semana. */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">RPE</span>
+                        <span className="block text-t-2xs font-bold text-ink-subtle">RPE</span>
                         <input
                             type="text" inputMode="decimal"
                             value={rpe} onChange={e => setRpe(e.target.value)} placeholder="9"
@@ -439,7 +439,7 @@ function AddMarkModal({
                     </label>
 
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">m/s</span>
+                        <span className="block text-t-2xs font-bold text-ink-subtle">m/s</span>
                         <input
                             type="text" inputMode="decimal"
                             value={velocity} onChange={e => setVelocity(e.target.value)} placeholder="0.23"
@@ -448,7 +448,7 @@ function AddMarkModal({
                     </label>
 
                     <label className="col-span-2 block space-y-1.5 sm:col-span-1">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Fecha</span>
+                        <span className="block text-t-2xs font-bold text-ink-subtle">Fecha</span>
                         <input
                             type="date"
                             value={date} onChange={e => setDate(e.target.value)}

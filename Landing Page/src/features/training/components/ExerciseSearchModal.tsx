@@ -81,11 +81,11 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-surface-sunken border border-line rounded-card shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-pop">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[var(--scrim)] backdrop-blur-sm p-4">
+            <div className="bg-surface-sunken border border-line rounded-card shadow-overlay w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-pop">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-line">
-                    <h2 className="text-ink font-black uppercase text-lg tracking-wider flex items-center gap-2">
+                    <h2 className="text-ink font-semibold text-lg flex items-center gap-2">
                         <Dumbbell className="text-brand-text" />
                         Buscador de Ejercicios
                     </h2>
@@ -96,10 +96,10 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
 
                 {isCreating ? (
                     <div className="p-6 flex-1 flex flex-col justify-center">
-                        <h3 className="text-xl font-bold text-ink mb-6 uppercase tracking-wider text-center">Crear Nuevo Ejercicio</h3>
+                        <h3 className="text-xl font-bold text-ink mb-6 text-center">Crear Nuevo Ejercicio</h3>
                         <div className="space-y-4 max-w-md mx-auto w-full">
                             <div>
-                                <label className="block text-xs font-bold text-ink-subtle uppercase mb-2">Nombre del Ejercicio</label>
+                                <label className="block text-xs font-bold text-ink-subtle mb-2">Nombre del Ejercicio</label>
                                 <input 
                                     type="text" 
                                     value={customName}
@@ -110,7 +110,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-ink-subtle uppercase mb-2">Grupo Muscular</label>
+                                <label className="block text-xs font-bold text-ink-subtle mb-2">Grupo Muscular</label>
                                 <select 
                                     value={customGroup}
                                     onChange={(e) => setCustomGroup(e.target.value)}
@@ -124,14 +124,14 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                             <div className="flex gap-3 mt-8">
                                 <button 
                                     onClick={() => setIsCreating(false)}
-                                    className="flex-1 py-3 bg-surface-raised hover:bg-surface-overlay text-ink rounded-lg font-bold uppercase text-sm transition-colors"
+                                    className="flex-1 py-3 bg-surface-raised hover:bg-surface-overlay text-ink rounded-lg font-bold text-sm transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button 
                                     onClick={handleCreateCustom}
                                     disabled={!customName.trim() || submitting}
-                                    className="flex-1 py-3 bg-brand hover:bg-brand text-black rounded-lg font-black uppercase text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 bg-brand hover:bg-brand text-brand-ink rounded-lg font-semibold text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {submitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
                                     Crear y Seleccionar
@@ -157,7 +157,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                 </div>
                                 <button 
                                     onClick={() => setIsCreating(true)}
-                                    className="px-4 bg-surface-raised hover:bg-surface-overlay text-ink rounded-lg font-bold uppercase text-xs flex items-center gap-2 transition-colors border border-strong"
+                                    className="px-4 bg-surface-raised hover:bg-surface-overlay text-ink rounded-lg font-bold text-xs flex items-center gap-2 transition-colors border border-strong"
                                 >
                                     <Plus size={16} /> Crear
                                 </button>
@@ -172,7 +172,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     onClick={() => setActiveTab(group)}
                                     className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors mr-2 ${
  activeTab === group 
- ? 'bg-brand text-black' 
+ ? 'bg-brand text-brand-ink' 
  : 'bg-surface-raised text-ink-muted hover:text-ink hover:bg-surface-overlay'
  }`}
                                 >
@@ -186,7 +186,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center h-48 text-ink-subtle">
                                     <Loader2 className="animate-spin mb-4 text-brand-text" size={32} />
-                                    <p className="uppercase font-bold text-xs tracking-widest">Cargando ejercicios...</p>
+                                    <p className="font-bold text-xs">Cargando ejercicios...</p>
                                 </div>
                             ) : filteredExercises.length > 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -197,7 +197,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                             className="flex flex-col text-left p-4 rounded-xl bg-surface-canvas/50 hover:bg-surface-raised border border-transparent hover:border-strong transition-colors group"
                                         >
                                             <span className="font-bold text-ink group-hover:text-brand-text transition-colors">{ex.name}</span>
-                                            <span className="text-xs text-ink-subtle uppercase tracking-wider mt-1">{ex.muscle_group || 'Otros'}</span>
+                                            <span className="text-xs text-ink-subtle mt-1">{ex.muscle_group || 'Otros'}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -208,7 +208,7 @@ export function ExerciseSearchModal({ onSelect, onClose }: Props) {
                                     <p className="text-sm">¿No encuentras lo que buscas? Puedes crear uno nuevo.</p>
                                     <button 
                                         onClick={() => setIsCreating(true)}
-                                        className="mt-4 px-6 py-2 bg-brand/10 text-brand-text border border-brand/20 hover:bg-brand hover:text-black rounded-lg font-bold uppercase text-xs transition-colors"
+                                        className="mt-4 px-6 py-2 bg-brand/10 text-brand-text border border-brand/20 hover:bg-brand hover:text-brand-ink rounded-lg font-bold text-xs transition-colors"
                                     >
                                         Crear Ejercicio Custom
                                     </button>

@@ -60,7 +60,7 @@ export function AppShellSkeleton() {
                     es lo que hace que esto se lea como la misma aplicación y
                     no como otra pantalla. */}
                 <header className="z-40 hidden h-16 shrink-0 items-center justify-between gap-3 border-b border-subtle bg-surface-canvas/90 px-6 backdrop-blur md:flex">
-                    <span className="select-none text-t-base font-black tracking-tight text-ink">
+                    <span className="select-none text-t-base font-semibold tracking-tight text-ink">
                         ANVIL<span className="text-brand-text">.</span>
                     </span>
                     <div className="flex items-center gap-2">
@@ -103,7 +103,7 @@ export function AppShellSkeleton() {
             {/* Píldora flotante, igual que la real: separada del borde, no
                 pegada a él. */}
             <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-sticky md:hidden">
-                <nav className="flex items-stretch justify-around rounded-3xl border border-subtle bg-surface-canvas/80 px-2 py-1 shadow-2xl backdrop-blur-xl">
+                <nav className="flex items-stretch justify-around rounded-card border border-subtle bg-surface-canvas/80 px-2 py-1 shadow-overlay backdrop-blur-xl">
                     {Array.from({ length: 5 }, (_, i) => (
                         <div key={i} className="flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5">
                             <Skeleton className="h-5 w-5 rounded-chip" />

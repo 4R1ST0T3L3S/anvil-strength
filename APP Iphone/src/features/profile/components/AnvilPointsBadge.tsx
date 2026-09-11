@@ -13,7 +13,7 @@ export const AnvilPointsBadge: React.FC<AnvilPointsBadgeProps> = ({ userId, clas
 
     if (isLoading) {
         return (
-            <div className={`h-10 w-24 bg-white/5 animate-pulse rounded-full border border-line ${className}`}></div>
+            <div className={`h-10 w-24 bg-[var(--fill-muted)] animate-pulse rounded-full border border-line ${className}`}></div>
         );
     }
 
@@ -24,7 +24,7 @@ export const AnvilPointsBadge: React.FC<AnvilPointsBadgeProps> = ({ userId, clas
                 initial={{ opacity: 0, y: -20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                className={`group relative flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-xl border border-line rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:border-yellow-500/50 transition-colors duration-slow ${className}`}
+                className={`group relative flex items-center gap-2 px-4 py-2 bg-surface-sunken backdrop-blur-xl border border-line rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:border-yellow-500/50 transition-colors duration-slow ${className}`}
             >
                 {/* Glow effect on hover */}
                 <div className="absolute inset-0 bg-yellow-500/5 rounded-full opacity-0 group-hover:opacity-100 blur-md transition-opacity"></div>
@@ -34,8 +34,8 @@ export const AnvilPointsBadge: React.FC<AnvilPointsBadgeProps> = ({ userId, clas
                 </div>
                 
                 <div className="relative flex flex-col">
-                    <span className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle leading-none mb-0.5">Anvil Points</span>
-                    <span className="text-sm font-black text-ink leading-none tracking-tight">
+                    <span className="text-t-2xs font-semibold text-ink-subtle leading-none mb-0.5">Anvil Points</span>
+                    <span className="text-sm font-semibold text-ink leading-none tracking-tight">
                         {points?.balance?.toLocaleString() ?? 0}
                     </span>
                 </div>

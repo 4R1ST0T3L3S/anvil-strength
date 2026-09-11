@@ -286,14 +286,14 @@ export function VideoTrimmer({
                 <button
                     type="button"
                     onClick={() => setFrom(currentTime)}
-                    className="ml-auto rounded-field bg-surface-overlay px-3 py-2 text-t-2xs font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:text-ink"
+                    className="ml-auto rounded-field bg-surface-overlay px-3 py-2 text-t-2xs font-bold text-ink-muted transition-colors duration-fast hover:text-ink"
                 >
                     Inicio aquí
                 </button>
                 <button
                     type="button"
                     onClick={() => setTo(currentTime)}
-                    className="rounded-field bg-surface-overlay px-3 py-2 text-t-2xs font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:text-ink"
+                    className="rounded-field bg-surface-overlay px-3 py-2 text-t-2xs font-bold text-ink-muted transition-colors duration-fast hover:text-ink"
                 >
                     Fin aquí
                 </button>

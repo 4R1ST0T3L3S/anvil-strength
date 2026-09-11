@@ -2,45 +2,28 @@
  * ANVIL STRENGTH — CAMPOS DE FORMULARIO
  * =====================================================================
  *
- * QUÉ SUSTITUYE
- *
- * 157 `<input>`, 33 `<select>` y 19 `<textarea>` escritos a mano, cada uno
- * con sus clases. Ninguno tenía `aria-invalid` ni `aria-describedby` — cero
- * usos de los dos en toda la aplicación —, así que ningún error de
- * formulario estaba asociado a su campo para un lector de pantalla. El error
- * vivía en una franja al principio del formulario o en un aviso flotante,
- * nunca al lado de lo que había que corregir.
- *
- *
  * LAS CUATRO REGLAS QUE CUMPLE TODO CAMPO DE AQUÍ
  *
  * 1. 44px de alto como mínimo. Se usa de pie, en un gimnasio, con una mano.
+ * 2. 16px de letra. Por debajo, Safari amplía la página al enfocar y NO
+ *    vuelve a desampliarla.
+ * 3. El error NUNCA depende solo del color: icono y texto, asociados con
+ *    `aria-describedby` para que se lean al llegar al campo.
+ * 4. Foco inequívoco: borde en rojo Anvil más un halo suave, como el anillo
+ *    de foco de un campo de macOS pero con el acento de la marca.
  *
- * 2. 16px de tamaño de letra en móvil. Por debajo, Safari amplía la página
- *    al enfocar Y NO VUELVE A DESAMPLIARLA. `index.css` ya lo impone de
- *    forma global; aquí se declara además de forma explícita para que se vea
- *    al leer el componente y nadie lo baje sin querer.
+ * ASPECTO: campo RELLENO, sin borde en reposo (el gris translúcido del
+ * sistema), que funciona igual sobre el lienzo que sobre una tarjeta.
  *
- * 3. El error NUNCA depende solo del color. Lleva icono y texto, y va
- *    asociado con `aria-describedby` para que se lea al llegar al campo.
- *
- * 4. El anillo de foco es el del sistema, en `focus-visible`. Nada de
- *    `outline-none` — ver la regla de eslint que lo prohíbe.
- *
- *
- * CÓMO SE USA
+ * USO
  *
  *     const correo = useCampo({ inicial: '', validar: combinar(requerido('el correo'), email()) });
  *     <Input label="Correo" campo={correo} type="email" ayuda="Te mandamos un enlace" />
- *
- * El control y su envoltorio son la MISMA pieza a propósito: separarlos
- * obliga a escribir el `campo` dos veces y a acordarse de enlazar los
- * identificadores, que es justo de lo que esto libera.
  */
 
 import { forwardRef, useId } from 'react';
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { Campo } from '../../lib/validation';
 
@@ -65,9 +48,9 @@ export interface FieldProps {
 }
 
 /**
- * El armazón. Se exporta para los controles que esta familia no cubre —un
- * selector de color, un grupo de botones— y que aun así deben tener etiqueta,
- * ayuda y error como todos los demás.
+ * El armazón. Se exporta para controles que esta familia no cubre (un
+ * selector de color, un grupo de botones) y que aun así deben tener
+ * etiqueta, ayuda y error como todos los demás.
  */
 export function Field({
     label,
@@ -84,28 +67,26 @@ export function Field({
             <label
                 htmlFor={ids.control}
                 className={cn(
-                    'text-t-sm font-semibold text-ink-muted',
+                    'text-t-sm font-medium text-ink-muted',
                     labelOculta && 'sr-only'
                 )}
             >
                 {label}
                 {obligatorio && (
-                    // `aria-hidden` porque quien navega con lector ya lo sabe
-                    // por el `required` del control: oírlo dos veces molesta.
-                    <span className="ml-1 text-brand-text" aria-hidden="true">*</span>
+                    // `aria-hidden`: quien usa lector ya lo sabe por el `required`.
+                    <span className="ml-0.5 text-brand-text" aria-hidden="true">*</span>
                 )}
             </label>
 
             {ayuda && (
-                <p id={ids.ayuda} className="text-t-xs text-ink-subtle">
+                <p id={ids.ayuda} className="-mt-0.5 text-t-xs text-ink-subtle">
                     {ayuda}
                 </p>
             )}
 
             {children}
 
-            {/* `role="alert"` para que se anuncie al aparecer. Sin él, alguien
-                que navega con lector corrige a ciegas. */}
+            {/* `role="alert"`: se anuncia al aparecer. */}
             {error && (
                 <p
                     id={ids.error}
@@ -125,21 +106,19 @@ export function Field({
 // =====================================================================
 
 /**
- * `text-t-base` es 16px y NO se baja en móvil. Ver la regla 2 de la cabecera.
- *
- * El borde en error se acompaña SIEMPRE del icono y el texto de abajo: un
- * borde rojo por sí solo no lo distingue quien no ve el rojo.
+ * Exportado para los campos que la app escribe a mano (el registro de series,
+ * el constructor): así se parecen a estos sin tener que pasar por `useCampo`.
  */
-const controlBase = (hayError: boolean) =>
+export const controlBase = (hayError: boolean) =>
     cn(
-        'w-full min-h-[44px] rounded-field px-3 py-2',
-        'bg-surface-sunken text-t-base text-ink placeholder:text-ink-subtle',
-        'border transition-colors duration-fast ease-snap',
-        'focus-visible:border-brand',
+        'w-full min-h-[44px] rounded-field px-3.5 py-2',
+        'bg-[var(--fill-input)] text-t-base text-ink placeholder:text-ink-subtle',
+        'border transition-[background-color,border-color,box-shadow] duration-fast ease-snap',
+        'focus-visible:outline-none focus-visible:border-brand focus-visible:bg-surface-raised focus-visible:shadow-[0_0_0_3px_var(--brand-quiet)]',
         'disabled:cursor-not-allowed disabled:opacity-45',
         hayError
-            ? 'border-danger'
-            : 'border-[var(--border-default)] hover:border-[var(--border-strong)]'
+            ? 'border-danger bg-[var(--danger-quiet)]'
+            : 'border-transparent hover:bg-[var(--fill-muted)]'
     );
 
 // =====================================================================
@@ -177,7 +156,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             <div className="relative">
                 {icono && (
                     <span
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle [&>svg]:h-4 [&>svg]:w-4"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-subtle [&>svg]:h-4 [&>svg]:w-4"
                         aria-hidden="true"
                     >
                         {icono}
@@ -192,14 +171,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
                     required={obligatorio}
                     {...campo.props}
                     {...props}
-                    // `aria-describedby` se compone aquí porque puede haber
-                    // ayuda Y error a la vez, y `useCampo` solo conoce el error.
                     aria-describedby={
                         [ayuda ? campo.ids.ayuda : null, hayError ? campo.ids.error : null]
                             .filter(Boolean)
                             .join(' ') || undefined
                     }
-                    className={cn(controlBase(hayError), icono && 'pl-9', className)}
+                    className={cn(controlBase(hayError), icono && 'pl-10', className)}
                 />
             </div>
         </Field>
@@ -211,28 +188,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 // =====================================================================
 
 export interface NumberFieldProps extends Omit<InputProps, 'type'> {
-    /**
-     * `decimal` abre el teclado numérico CON coma; `numeric` sin ella.
-     * Un peso lleva decimales (97,5) y unas repeticiones no.
-     */
+    /** `decimal` abre el teclado numérico CON coma; `numeric` sin ella. */
     modo?: 'decimal' | 'numeric';
     sufijo?: ReactNode;
 }
 
 /**
- * Campo numérico.
- *
- * POR QUÉ `type="text"` Y NO `type="number"
-                            inputMode="decimal"`. El campo numérico nativo:
- *   · Muestra unas flechitas que en móvil no se pueden pulsar bien y en
- *     escritorio cambian el valor al hacer scroll por encima sin querer.
- *   · Rechaza la coma decimal en algunos idiomas del sistema, así que un
- *     atleta español no puede escribir 97,5.
- *   · Devuelve cadena vacía para cualquier cosa que no sepa leer, así que se
- *     pierde lo que la persona escribió y no se le puede decir qué estaba mal.
- *
- * Con `inputMode` se consigue el teclado correcto sin ninguno de los tres
- * problemas, y la validación la hace `numeroEnRango`, que sí entiende la coma.
+ * `type="text"` + `inputMode`, y no `type="number"`: el nativo muestra
+ * flechitas que cambian el valor al hacer scroll, rechaza la coma decimal en
+ * algunos idiomas y devuelve cadena vacía para lo que no sabe leer.
  */
 export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(function NumberField(
     { modo = 'decimal', sufijo, className, ...props },
@@ -250,7 +214,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
             />
             {sufijo && (
                 <span
-                    className="pointer-events-none absolute right-3 top-[calc(50%+2px)] text-t-sm text-ink-subtle"
+                    className="pointer-events-none absolute right-3.5 top-[calc(50%+2px)] text-t-sm text-ink-subtle"
                     aria-hidden="true"
                 >
                     {sufijo}
@@ -291,27 +255,32 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
             labelOculta={labelOculta}
             className={contenedorClassName}
         >
-            <select
-                ref={(nodo) => {
-                    campo.asignarRef(nodo);
-                    if (typeof ref === 'function') ref(nodo);
-                    else if (ref) ref.current = nodo;
-                }}
-                required={obligatorio}
-                {...campo.props}
-                {...props}
-                aria-describedby={
-                    [ayuda ? campo.ids.ayuda : null, hayError ? campo.ids.error : null]
-                        .filter(Boolean)
-                        .join(' ') || undefined
-                }
-                // `[color-scheme:dark]` hace que el desplegable NATIVO se pinte
-                // oscuro. Sin él, en Windows la lista sale blanca sobre una app
-                // negra, que es el detalle que delata que esto es una web.
-                className={cn(controlBase(hayError), 'cursor-pointer [color-scheme:dark]', className)}
-            >
-                {children}
-            </select>
+            <div className="relative">
+                <select
+                    ref={(nodo) => {
+                        campo.asignarRef(nodo);
+                        if (typeof ref === 'function') ref(nodo);
+                        else if (ref) ref.current = nodo;
+                    }}
+                    required={obligatorio}
+                    {...campo.props}
+                    {...props}
+                    aria-describedby={
+                        [ayuda ? campo.ids.ayuda : null, hayError ? campo.ids.error : null]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                    }
+                    // La lista nativa sigue el `color-scheme` del documento,
+                    // que pone el tema: ya no hace falta forzarla a oscuro.
+                    className={cn(controlBase(hayError), 'cursor-pointer appearance-none pr-10', className)}
+                >
+                    {children}
+                </select>
+                <ChevronDown
+                    className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-subtle"
+                    aria-hidden="true"
+                />
+            </div>
         </Field>
     );
 });
@@ -338,8 +307,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
 ) {
     const hayError = !!campo.errorVisible;
     const usados = String(campo.valor ?? '').length;
-    // El contador solo aparece cerca del tope: enseñarlo desde el carácter
-    // uno convierte escribir una nota en una cuenta atrás.
+    // El contador solo aparece cerca del tope: desde el carácter uno
+    // convierte escribir una nota en una cuenta atrás.
     const mostrarContador = maximo != null && usados > maximo * 0.8;
 
     return (
@@ -368,7 +337,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
                         .filter(Boolean)
                         .join(' ') || undefined
                 }
-                className={cn(controlBase(hayError), 'resize-y leading-relaxed', className)}
+                className={cn(controlBase(hayError), 'resize-y py-2.5 leading-relaxed', className)}
             />
             {mostrarContador && (
                 <p className="text-right text-t-2xs tabular-nums text-ink-subtle" aria-live="polite">
@@ -392,8 +361,8 @@ export interface CheckboxProps
 }
 
 /**
- * La casilla NO usa `Field`: su etiqueta va al lado y no encima, y el área
- * pulsable tiene que ser la fila entera, no el cuadradito de 16px.
+ * La casilla NO usa `Field`: su etiqueta va al lado y la zona pulsable es la
+ * fila entera, no el cuadradito de 18px.
  */
 export function Checkbox({ label, campo, ayuda, contenedorClassName, className, ...props }: CheckboxProps) {
     const idAyuda = useId();
@@ -401,18 +370,13 @@ export function Checkbox({ label, campo, ayuda, contenedorClassName, className, 
 
     return (
         <div className={cn('flex flex-col gap-1.5', contenedorClassName)}>
-            {/* `min-h-[44px]` en la ETIQUETA: así toda la fila —texto incluido—
-                es zona pulsable, en vez de obligar a acertar en 16px. */}
             <label
                 className="flex min-h-[44px] cursor-pointer items-start gap-3 py-2"
                 htmlFor={campo.ids.control}
             >
                 <input
-                    // Envuelto en una flecha y no `ref={campo.asignarRef}` a
-                    // secas: pasando la función directamente, el analizador de
-                    // React la marca como referencia y de rebote marca el
-                    // objeto `campo` entero, con lo que leer `campo.valor` al
-                    // pintar pasa a ser un error. Con la envoltura, no.
+                    // Envuelto en una flecha: pasando la función a pelo, el
+                    // analizador de React marca `campo` entero como referencia.
                     ref={(nodo) => campo.asignarRef(nodo)}
                     type="checkbox"
                     id={campo.ids.control}
@@ -427,17 +391,17 @@ export function Checkbox({ label, campo, ayuda, contenedorClassName, className, 
                     }
                     {...props}
                     className={cn(
-                        'mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded-chip',
+                        'mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer rounded-[5px]',
                         'accent-[var(--brand)]',
                         hayError && 'outline outline-1 outline-danger',
                         className
                     )}
                 />
-                <span className="text-t-sm leading-snug text-ink-muted">{label}</span>
+                <span className="text-t-sm leading-snug text-ink">{label}</span>
             </label>
 
             {ayuda && (
-                <p id={idAyuda} className="pl-8 text-t-xs text-ink-subtle">
+                <p id={idAyuda} className="pl-[30px] text-t-xs text-ink-subtle">
                     {ayuda}
                 </p>
             )}
@@ -446,7 +410,7 @@ export function Checkbox({ label, campo, ayuda, contenedorClassName, className, 
                 <p
                     id={campo.ids.error}
                     role="alert"
-                    className="flex items-start gap-1.5 pl-8 text-t-xs font-medium text-danger-text"
+                    className="flex items-start gap-1.5 pl-[30px] text-t-xs font-medium text-danger-text"
                 >
                     <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span>{campo.errorVisible}</span>

@@ -65,7 +65,7 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
                 return (
                     <div className="p-6 md:p-10 space-y-8 animate-fade">
                         <div>
-                            <h1 className="text-3xl font-black text-ink uppercase italic tracking-wider mb-2 flex items-center gap-3">
+                            <h1 className="text-3xl font-semibold text-ink mb-2 flex items-center gap-3">
                                 <Apple className="text-brand-text" size={32} />
                                 PANEL DE NUTRICIÓN
                             </h1>
@@ -77,12 +77,12 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                             <button onClick={() => setCurrentView('athletes')} className="bg-surface-sunken border border-line p-8 rounded-2xl hover:border-brand transition-colors group flex flex-col items-center text-center">
                                 <Users size={48} className="text-ink-subtle group-hover:text-brand-text mb-4 transition-colors" />
-                                <h3 className="text-xl font-black text-ink uppercase mb-2">Gestionar Atletas</h3>
+                                <h3 className="text-xl font-semibold text-ink mb-2">Gestionar Atletas</h3>
                                 <p className="text-ink-muted text-sm">Crea dietas, ajusta macros y añade comidas a los atletas del club.</p>
                             </button>
                             <button onClick={() => setCurrentView('analytics')} className="bg-surface-sunken border border-line p-8 rounded-2xl hover:border-blue-500 transition-colors group flex flex-col items-center text-center">
                                 <LayoutDashboard size={48} className="text-ink-subtle group-hover:text-info mb-4 transition-colors" />
-                                <h3 className="text-xl font-black text-ink uppercase mb-2">Métricas y Gráficas</h3>
+                                <h3 className="text-xl font-semibold text-ink mb-2">Métricas y Gráficas</h3>
                                 <p className="text-ink-muted text-sm">Visualiza el promedio de calorías, distribución de macros y KPIs globales.</p>
                             </button>
                         </div>

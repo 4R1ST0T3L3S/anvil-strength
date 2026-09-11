@@ -70,7 +70,7 @@ export function ConfirmationModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
                     />
 
                     <m.div
@@ -90,7 +90,7 @@ export function ConfirmationModal({
                             </div>
 
                             <div className="space-y-2">
-                                <h3 className="text-t-xl font-black uppercase text-ink">{title}</h3>
+                                <h3 className="text-t-xl font-semibold text-ink">{title}</h3>
                                 <p className="text-t-sm leading-relaxed text-ink-muted">{description}</p>
                             </div>
                         </div>
@@ -98,7 +98,7 @@ export function ConfirmationModal({
                         <div className="flex gap-3 p-6 pt-0">
                             <button
                                 onClick={onClose}
-                                className="flex-1 rounded-field bg-surface-overlay px-4 py-3 text-t-xs font-bold uppercase tracking-wider text-ink-muted transition-colors duration-fast hover:text-ink"
+                                className="flex-1 rounded-field bg-surface-overlay px-4 py-3 text-t-xs font-bold text-ink-muted transition-colors duration-fast hover:text-ink"
                             >
                                 {cancelText}
                             </button>
@@ -108,7 +108,7 @@ export function ConfirmationModal({
                                     onConfirm();
                                     onClose();
                                 }}
-                                className={`flex-1 rounded-field px-4 py-3 text-t-xs font-bold uppercase tracking-wider text-brand-ink transition-colors duration-fast ${danger ? 'bg-danger hover:bg-danger-hover' : 'bg-info hover:opacity-90'
+                                className={`flex-1 rounded-field px-4 py-3 text-t-xs font-bold text-brand-ink transition-colors duration-fast ${danger ? 'bg-danger hover:bg-danger-hover' : 'bg-info hover:opacity-90'
  }`}
                             >
                                 {confirmText}

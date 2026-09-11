@@ -128,14 +128,14 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                     <div className="flex gap-2.5">
                         <button
                             onClick={onClose}
-                            className="rounded-field px-4 py-2.5 text-t-xs font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
+                            className="rounded-field px-4 py-2.5 text-t-xs font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
                         >
                             Cancelar
                         </button>
                         <button
                             onClick={handleAssign}
                             disabled={submitting || selectedAthletes.size === 0}
-                            className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                            className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-xs font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                         >
                             {submitting ? <Loader size={14} className="animate-spin" /> : <Save size={14} aria-hidden="true" />}
                             Asignar
@@ -203,7 +203,7 @@ export function AssignCompetitionModal({ isOpen, onClose, competition }: AssignC
                 )}
 
                 <label className="block space-y-1.5">
-                    <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <span className="block text-t-2xs font-bold text-ink-subtle">
                         Descripción pública <span className="font-medium normal-case tracking-normal text-ink-subtle">· se muestra en la web al pinchar en el atleta</span>
                     </span>
                     <textarea

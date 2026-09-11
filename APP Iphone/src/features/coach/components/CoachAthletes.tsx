@@ -309,7 +309,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="mb-3 flex items-center gap-1.5 text-t-xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast hover:text-ink"
+                        className="mb-3 flex items-center gap-1.5 text-t-xs font-bold text-ink-subtle transition-colors duration-fast hover:text-ink"
                     >
                         <ArrowLeft size={14} aria-hidden="true" />
                         Volver
@@ -317,7 +317,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
                 )}
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <h1 className="text-t-3xl font-black uppercase tracking-display text-ink">Mis atletas</h1>
+                        <h1 className="text-t-3xl font-semibold tracking-display text-ink">Mis atletas</h1>
                         <p className="mt-1 text-t-sm text-ink-muted">
                             {athletes.length} en el equipo
                         </p>
@@ -367,7 +367,7 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
 
                         <button
                             onClick={() => setIsAddOpen(true)}
-                            className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                            className="flex items-center gap-2 rounded-field bg-brand px-4 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
                         >
                             <UserPlus size={16} aria-hidden="true" />
                             Nuevo atleta
@@ -586,7 +586,7 @@ function AthleteCard({
                             className="h-11 w-11 shrink-0 rounded-pill object-cover"
                         />
                     ) : (
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-surface-sunken text-t-base font-black text-ink-muted">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-surface-sunken text-t-base font-semibold text-ink-muted">
                             {athlete.full_name?.[0]?.toUpperCase() ?? 'A'}
                         </span>
                     )}
@@ -603,7 +603,7 @@ function AthleteCard({
                                 cero. Sin este distintivo, la tarjeta parecería
                                 la de un atleta que ha dejado de entrenar. */}
                             {!online && (
-                                <span className="shrink-0 rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wider text-ink-subtle">
+                                <span className="shrink-0 rounded-chip bg-surface-sunken px-1.5 py-0.5 text-t-2xs font-semibold text-ink-subtle">
                                     {ACCOUNT_STATUS_LABEL[athlete.account_status ?? 'active']}
                                 </span>
                             )}
@@ -689,7 +689,7 @@ function AthleteCard({
                 {ratio !== null && (
                     <div className="mt-3.5">
                         <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                            <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                            <span className="text-t-2xs font-bold text-ink-subtle">
                                 Constancia
                             </span>
                             <span className="text-t-xs font-bold tabular-nums text-ink">
@@ -727,7 +727,7 @@ function AthleteCard({
                     {([['SQ', athlete.squat_pr], ['BP', athlete.bench_pr], ['DL', athlete.deadlift_pr]] as const).map(
                         ([label, value]) => (
                             <div key={label}>
-                                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
+                                <p className="text-t-2xs font-bold text-ink-subtle">{label}</p>
                                 <p className="text-t-sm font-bold tabular-nums text-ink-muted">{value || '—'}</p>
                             </div>
                         )
@@ -770,7 +770,7 @@ function EmptyList({
             ) : (
                 <button
                     onClick={onInvite}
-                    className="mt-5 inline-flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                    className="mt-5 inline-flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
                 >
                     <UserPlus size={16} aria-hidden="true" />
                     Invitar a tu primer atleta
@@ -859,7 +859,7 @@ function SendAccessModal({
                 </p>
 
                 <div className="space-y-1.5">
-                    <label htmlFor="acceso-correo" className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <label htmlFor="acceso-correo" className="block text-t-2xs font-bold text-ink-subtle">
                         Correo
                     </label>
                     <div className="relative">
@@ -888,7 +888,7 @@ function SendAccessModal({
                     <button
                         type="submit"
                         disabled={sending || !email.includes('@')}
-                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                     >
                         {sending ? <Loader size={15} className="animate-spin" /> : <Mail size={15} />}
                         Enviar

@@ -1,42 +1,32 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
+import { Check } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { useClaseDeRegistro } from '../layout/RegistroMarca';
 
 /**
  * MENÚ COLGADO DE UN BOTÓN, FUERA DEL FLUJO
  * =====================================================================
  *
- * QUÉ PROBLEMA RESUELVE
- * Un desplegable en `position: absolute` vive dentro de su contenedor, y
- * eso significa que hereda sus recortes. En el constructor de rutinas el
- * menú de "agendar en qué día" colgaba de una tarjeta que está dentro del
- * acordeón de la semana, que necesita `overflow-hidden` para poder animar
- * su apertura. Resultado: el menú se recortaba contra el borde inferior de
- * la semana y los últimos días de la lista —jueves, viernes, sábado,
- * domingo— sencillamente no se podían pulsar.
+ * Un desplegable en `position: absolute` hereda los recortes de su
+ * contenedor (`overflow: hidden` del acordeón de semanas) y queda atrapado en
+ * los contextos de apilamiento que crea un `backdrop-filter` (la barra
+ * superior). Subir el `z-index` no arregla ninguna de las dos cosas.
  *
- * Subir el `z-index` no arregla nada: `overflow: hidden` recorta, no
- * ordena. Y quitarlo del acordeón rompería la animación de plegado.
+ * Aquí el menú sale por PORTAL a `<body>` en `position: fixed`, midiendo
+ * dónde está el botón. Se reposiciona con el scroll (también el de
+ * contenedores internos) y al cambiar el tamaño; abre hacia arriba si abajo
+ * no cabe, y nunca se sale de la ventana.
  *
- * El mismo problema, con otra cara, en la barra superior del panel: lleva
- * `backdrop-blur`, y un filtro CREA UN CONTEXTO DE APILAMIENTO. La campana de
- * notificaciones y el menú de cuenta colgaban de ella en `absolute`, así que
- * quedaban encerrados dentro y por debajo de cualquier elemento fijo del
- * contenido —la cabecera pegajosa del registro—. Ahí tampoco servía de nada
- * subir el `z-index`: desde dentro de un contexto de apilamiento no se puede
- * saltar por encima de él.
- *
- * LA SOLUCIÓN
- * Sacar el menú del árbol con un portal y colocarlo en `position: fixed`
- * contra la ventana, midiendo dónde está el botón. Así ningún contenedor
- * intermedio puede recortarlo ni taparlo.
- *
- * Se reposiciona al hacer scroll y al cambiar el tamaño porque `fixed` no
- * sigue al botón: sin eso, bastaba con desplazar la página un poco para que
- * el menú se quedara flotando lejos de su origen.
+ * `MenuItem`, `MenuSeparador` y `MenuEtiqueta`, abajo, son el vocabulario de
+ * dentro: la misma fila, el mismo hover y la misma marca en toda la app.
  */
 
 type Align = 'start' | 'end';
+
+const ESTILO_POR_DEFECTO =
+    'z-tooltip max-h-[min(60vh,24rem)] overflow-y-auto overscroll-contain rounded-[14px] border border-[var(--card-border)] bg-surface-overlay p-1.5 shadow-overlay animate-pop';
 
 export function AnchoredMenu({
     open,
@@ -55,29 +45,27 @@ export function AnchoredMenu({
     /** A qué lado del botón se alinea. */
     align?: Align;
     /**
-     * Ancho DESEADO en píxeles. Fijo para poder decidir si cabe antes de
-     * pintarlo. Si no cabe en la ventana se reduce hasta el ancho disponible,
-     * así que en un móvil estrecho el menú se estrecha en vez de salirse.
+     * Ancho DESEADO en píxeles. Si no cabe en la ventana se reduce hasta el
+     * disponible: en un móvil estrecho el menú se estrecha en vez de salirse.
      */
     width?: number;
-    /** Clases extra del contenedor. Para menús que no son una lista de opciones. */
+    /** Clases del contenedor. Sustituyen al estilo por defecto. */
     className?: string;
     /**
-     * `menu` cuando dentro hay opciones que se pulsan. Los paneles que solo
-     * enseñan contenido —las notificaciones— usan `dialog`: anunciar como
-     * menú algo que no tiene `menuitem`s desorienta a quien navega con lector.
+     * `menu` cuando dentro hay opciones que se pulsan; `dialog` para paneles
+     * que enseñan contenido (las notificaciones).
      */
     role?: 'menu' | 'dialog';
     children: ReactNode;
 }) {
     const menuRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+    const registro = useClaseDeRegistro();
 
     /**
      * `useLayoutEffect` y no `useEffect`: la posición tiene que estar
-     * calculada ANTES de que el navegador pinte. Con `useEffect` el menú
-     * aparece un fotograma en la esquina superior izquierda y salta a su
-     * sitio, que es un parpadeo perfectamente visible.
+     * calculada ANTES de pintar, o el menú aparece un fotograma en la esquina
+     * y salta a su sitio.
      */
     useLayoutEffect(() => {
         if (!open) return;
@@ -90,31 +78,18 @@ export function AnchoredMenu({
             const menuHeight = menuRef.current?.offsetHeight ?? 0;
             const margin = 8;
 
-            // El ancho pedido, recortado a lo que de verdad hay. Sin esto un
-            // panel de 384px anclado a un botón de la barra superior se salía
-            // por el lado izquierdo en un móvil de 375: el ancho se calculaba
-            // contra la ventana pero el anclaje no está en el borde de ella.
             const boxWidth = Math.min(width, window.innerWidth - margin * 2);
 
-            // Debajo del botón por defecto. Si no cabe —el menú de un día de
-            // la última fila, con la ventana ya cerca del final— se abre
-            // hacia arriba en vez de salirse por debajo de la pantalla.
             const below = rect.bottom + 6;
             const fitsBelow = below + menuHeight + margin <= window.innerHeight;
             const preferred = fitsBelow ? below : rect.top - menuHeight - 6;
 
-            // Y pase lo que pase, dentro de la pantalla. Cuando el botón está
-            // medio fuera —una tarjeta al borde inferior de la zona
-            // desplazable— ni arriba ni abajo caben del todo, y sin esto el
-            // último día del menú quedaba cortado por el canto de la ventana,
-            // que es exactamente el fallo que veníamos a arreglar.
             const top = Math.min(
                 Math.max(margin, preferred),
                 Math.max(margin, window.innerHeight - menuHeight - margin)
             );
 
             const raw = align === 'end' ? rect.right - boxWidth : rect.left;
-            // Y que no se salga por los lados en un móvil estrecho.
             const left = Math.min(
                 Math.max(margin, raw),
                 Math.max(margin, window.innerWidth - boxWidth - margin)
@@ -125,9 +100,6 @@ export function AnchoredMenu({
 
         place();
 
-        // `capture` para enterarse también del scroll de contenedores
-        // internos: el menú cuelga de una tarjeta que vive dentro de la zona
-        // desplazable del constructor, no del scroll de la ventana.
         window.addEventListener('scroll', place, true);
         window.addEventListener('resize', place);
         return () => {
@@ -168,18 +140,92 @@ export function AnchoredMenu({
                 top: position?.top ?? -9999,
                 left: position?.left ?? -9999,
                 width: position?.width ?? width,
-                // Invisible hasta tener medida. Con el menú ya en el DOM se
-                // puede medir su alto, que es lo que decide si abre hacia
-                // arriba o hacia abajo.
+                // Invisible hasta tener medida: con el menú ya en el DOM se
+                // puede medir su alto, que decide si abre hacia arriba.
                 visibility: position ? 'visible' : 'hidden',
+                transformOrigin: align === 'end' ? 'top right' : 'top left',
             }}
-            className={
-                className ??
-                'z-tooltip max-h-[min(60vh,24rem)] overflow-y-auto rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay'
-            }
+            className={cn(className ?? ESTILO_POR_DEFECTO, registro)}
         >
             {children}
         </div>,
         document.body
     );
+}
+
+// =====================================================================
+// EL CONTENIDO DE UN MENÚ
+// =====================================================================
+
+export function MenuItem({
+    icono,
+    children,
+    pista,
+    onClick,
+    activa = false,
+    peligro = false,
+    disabled = false,
+    role = 'menuitem',
+    derecha,
+}: {
+    icono?: ReactNode;
+    children: ReactNode;
+    /** Segunda línea, más discreta. */
+    pista?: ReactNode;
+    onClick?: () => void;
+    /** Opción elegida: fondo de selección y marca. */
+    activa?: boolean;
+    peligro?: boolean;
+    disabled?: boolean;
+    role?: 'menuitem' | 'menuitemradio' | 'menuitemcheckbox';
+    /** Algo a la derecha: un atajo, un contador. */
+    derecha?: ReactNode;
+}) {
+    return (
+        <button
+            type="button"
+            role={role}
+            aria-checked={role === 'menuitem' ? undefined : activa}
+            onClick={onClick}
+            disabled={disabled}
+            className={cn(
+                'flex min-h-[40px] w-full items-center gap-2.5 rounded-[9px] px-2.5 py-2 text-left text-t-sm',
+                'transition-colors duration-fast ease-snap',
+                'disabled:cursor-not-allowed disabled:opacity-40',
+                peligro
+                    ? 'text-danger-text hover:bg-[var(--danger-quiet)]'
+                    : activa
+                        ? 'bg-[var(--fill-selected)] text-ink'
+                        : 'text-ink hover:bg-[var(--fill-hover)]'
+            )}
+        >
+            {icono && (
+                <span
+                    className={cn(
+                        'flex h-5 w-5 shrink-0 items-center justify-center [&>svg]:h-[17px] [&>svg]:w-[17px]',
+                        peligro ? 'text-danger-text' : 'text-ink-muted'
+                    )}
+                    aria-hidden="true"
+                >
+                    {icono}
+                </span>
+            )}
+            <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{children}</span>
+                {pista && <span className="mt-0.5 block text-t-xs leading-snug text-ink-subtle">{pista}</span>}
+            </span>
+            {derecha}
+            {activa && role !== 'menuitem' && (
+                <Check className="h-4 w-4 shrink-0 text-brand-text" strokeWidth={2.5} aria-hidden="true" />
+            )}
+        </button>
+    );
+}
+
+export function MenuSeparador() {
+    return <div role="separator" className="-mx-1.5 my-1.5 h-px bg-[var(--separator)]" />;
+}
+
+export function MenuEtiqueta({ children }: { children: ReactNode }) {
+    return <p className="truncate px-2.5 pb-1 pt-1.5 text-t-xs font-medium text-ink-subtle">{children}</p>;
 }

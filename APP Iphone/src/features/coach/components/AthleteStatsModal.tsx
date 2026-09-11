@@ -50,8 +50,8 @@ const TOOLTIP_STYLE = {
 function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-5">
-            <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
-            <p className="mt-2 text-metric font-black leading-none text-ink">{value}</p>
+            <p className="text-t-2xs font-bold text-ink-subtle">{label}</p>
+            <p className="mt-2 text-metric font-semibold leading-none text-ink">{value}</p>
             {hint && <p className="mt-2 text-t-xs text-ink-subtle">{hint}</p>}
         </div>
     );
@@ -302,7 +302,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
             <header className={embedded ? 'shrink-0' : 'shrink-0 border-b border-subtle bg-surface-raised'}>
                 {!embedded && (
                     <div className="flex items-center justify-between gap-4 px-4 py-4 md:px-8">
-                        <h2 className="flex min-w-0 items-center gap-2.5 text-t-lg font-black uppercase tracking-display text-ink md:text-t-2xl">
+                        <h2 className="flex min-w-0 items-center gap-2.5 text-t-lg font-semibold tracking-display text-ink md:text-t-2xl">
                             <TrendingUp className="shrink-0 text-brand-text" size={20} aria-hidden="true" />
                             <span className="truncate">{athleteName}</span>
                         </h2>
@@ -624,7 +624,7 @@ export function AthleteStatsModal({ isOpen, onClose, athleteId, athleteName, emb
                         {tab === 'exercises' && (
                             <div className="mx-auto max-w-5xl space-y-6">
                                 <div>
-                                    <p className="mb-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                    <p className="mb-2 text-t-2xs font-bold text-ink-subtle">
                                         Comparar solo series de las mismas repeticiones
                                     </p>
                                     <div className="flex flex-wrap gap-2">
@@ -951,7 +951,7 @@ function CheckInsCard({
 
                         {data.comments.length > 0 && (
                             <div className="space-y-3 border-t border-subtle pt-5">
-                                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                <p className="text-t-2xs font-bold text-ink-subtle">
                                     Lo que ha contado
                                 </p>
                                 {data.comments.map((c, i) => (

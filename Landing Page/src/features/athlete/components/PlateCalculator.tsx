@@ -63,7 +63,7 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-card shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Header */}
                 <div className="p-4 md:px-6 md:py-3 border-b border-subtle flex justify-between items-center bg-surface-sunken shrink-0 h-16 md:h-20">
@@ -72,13 +72,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                             <Weight size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />
                         </div>
                         <div>
-                            <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-ink italic">Carga de Barra</h2>
-                            <p className="text-t-2xs md:text-t-xs font-black text-brand-text uppercase tracking-[0.3em]">Anvil Lab Tools</p>
+                            <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-ink">Carga de Barra</h2>
+                            <p className="text-t-2xs md:text-t-xs font-semibold text-brand-text">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
+                        className="w-12 h-12 md:w-14 md:h-14 bg-[var(--fill-muted)] hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
                     >
                         <X size={24} />
                     </button>
@@ -118,13 +118,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                 initial={{ x: 100, opacity: 0 }}
                                                 animate={{ x: 0, opacity: 1 }}
                                                 exit={{ x: -20, opacity: 0 }}
-                                                className={`${plate.height} w-3 md:w-6 rounded-sm flex items-center justify-center text-[6px] md:text-[12px] font-black border-x border-black/30 shadow-2xl shrink-0`}
+                                                className={`${plate.height} w-3 md:w-6 rounded-sm flex items-center justify-center text-[6px] md:text-[12px] font-semibold border-x border-black/30 shadow-overlay shrink-0`}
                                                 style={{
                                                     backgroundColor: plate.color,
                                                     color: plate.weight === 2.5 || plate.weight === 20 || plate.weight === 0.25 ? 'white' : 'black'
                                                 }}
                                             >
-                                                <span className="rotate-90 leading-none tracking-tighter">{plate.label}</span>
+                                                <span className="rotate-90 leading-none tracking-tight">{plate.label}</span>
                                             </m.div>
                                         ))}
                                     </AnimatePresence>
@@ -134,13 +134,13 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                         <m.div
                                             initial={{ x: 30, opacity: 0 }}
                                             animate={{ x: 0, opacity: 1 }}
-                                            className="w-4 md:w-8 h-14 md:h-28 bg-[#dddddd] rounded-sm shadow-2xl z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
+                                            className="w-4 md:w-8 h-14 md:h-28 bg-[#dddddd] rounded-sm shadow-overlay z-20 border-x border-black/40 flex items-center justify-center shrink-0 relative"
                                         >
-                                            <span className="text-[6px] md:text-[10px] font-black text-black rotate-90 relative z-10 leading-none">2.5</span>
+                                            <span className="text-[6px] md:text-t-2xs font-semibold text-black rotate-90 relative z-10 leading-none">2.5</span>
 
                                             {/* Competition Lever (Palanca) */}
                                             <div className="absolute -top-6 md:-top-10 left-1/2 -translate-x-1/2 w-1 md:w-2 h-8 md:h-12 bg-[#bbbbbb] rounded-full border border-black/10 shadow-lg origin-bottom -rotate-12">
-                                                <div className="absolute top-0 left-0 w-full h-1/3 bg-white/20 rounded-full"></div>
+                                                <div className="absolute top-0 left-0 w-full h-1/3 bg-[var(--fill-strong)] rounded-full"></div>
                                             </div>
                                         </m.div>
                                     )}
@@ -157,8 +157,8 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                         {/* LEFT: Controls */}
                         <div className="flex flex-col gap-4 pt-2 shrink-0 md:h-full">
                             {/* Input Section */}
-                            <div className="bg-black/40 border-2 border-subtle rounded-2xl p-4 flex flex-col justify-center min-h-[120px] md:flex-1 md:min-h-0">
-                                <label className="block text-t-2xs md:text-xs font-black text-gray-600 mb-1 uppercase tracking-widest text-center">Peso Total Objetivo</label>
+                            <div className="bg-surface-sunken border-2 border-subtle rounded-2xl p-4 flex flex-col justify-center min-h-[120px] md:flex-1 md:min-h-0">
+                                <label className="block text-t-2xs md:text-xs font-semibold text-ink-subtle mb-1 text-center">Peso Total Objetivo</label>
                                 <div className="flex items-center justify-center gap-2">
                                     <input
                                         type="number"
@@ -186,25 +186,25 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                             }
                                         }}
                                         placeholder="20"
-                                        className="w-full bg-transparent text-center text-4xl md:text-5xl font-black text-ink placeholder:text-gray-800 italic tracking-tighter"
+                                        className="w-full bg-transparent text-center text-4xl md:text-5xl font-semibold text-ink placeholder:text-ink-faint tracking-tight"
                                     />
-                                    <span className="text-xl md:text-2xl font-black text-gray-800 uppercase italic">kg</span>
+                                    <span className="text-xl md:text-2xl font-semibold text-ink-faint">kg</span>
                                 </div>
                             </div>
 
                             {/* Competition Collars Selector */}
-                            <div className="bg-black/40 border-2 border-subtle rounded-2xl p-3 flex flex-row items-center justify-between gap-4 shrink-0 h-20 md:h-24">
-                                <label className="block text-t-2xs font-black text-gray-600 uppercase tracking-widest leading-tight">Cierres de<br />Competición</label>
-                                <div className="flex bg-black/60 p-1 rounded-lg border border-subtle shrink-0">
+                            <div className="bg-surface-sunken border-2 border-subtle rounded-2xl p-3 flex flex-row items-center justify-between gap-4 shrink-0 h-20 md:h-24">
+                                <label className="block text-t-2xs font-semibold text-ink-subtle leading-tight">Cierres de<br />Competición</label>
+                                <div className="flex bg-surface-sunken p-1 rounded-lg border border-subtle shrink-0">
                                     <button
                                         onClick={() => setHasCollars(true)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${hasCollars ? 'bg-brand text-ink shadow-lg' : 'text-ink-subtle hover:text-ink'}`}
+                                        className={`px-3 py-2 rounded-md font-semibold text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${hasCollars ? 'bg-brand text-ink shadow-lg' : 'text-ink-subtle hover:text-ink'}`}
                                     >
                                         SÍ
                                     </button>
                                     <button
                                         onClick={() => setHasCollars(false)}
-                                        className={`px-3 py-2 rounded-md font-black italic text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${!hasCollars ? 'bg-white text-black shadow-lg' : 'text-ink-subtle hover:text-ink'}`}
+                                        className={`px-3 py-2 rounded-md font-semibold text-t-2xs md:text-xs transition-[background-color,box-shadow,color] ${!hasCollars ? 'bg-ink text-surface-canvas shadow-lg' : 'text-ink-subtle hover:text-ink'}`}
                                     >
                                         NO
                                     </button>
@@ -216,9 +216,9 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                         <div className="flex flex-col overflow-hidden pt-4 md:pt-2 h-full">
                             <div className="bg-surface-sunken rounded-2xl p-3 md:p-4 border border-subtle flex-1 flex flex-col md:overflow-hidden min-h-[200px]">
                                 <div className="flex items-center justify-between mb-4 md:mb-8 shrink-0">
-                                    <h3 className="text-sm md:text-base font-black text-ink uppercase tracking-widest italic">Discos (Por lado)</h3>
+                                    <h3 className="text-sm md:text-base font-semibold text-ink">Discos (Por lado)</h3>
                                     <div className="px-3 py-1 bg-brand/10 rounded-full border border-brand/20">
-                                        <span className="text-t-2xs md:text-xs font-black text-brand-text uppercase italic">IPF Standard</span>
+                                        <span className="text-t-2xs md:text-xs font-semibold text-brand-text">IPF Standard</span>
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap content-start gap-3 flex-1 overflow-y-auto custom-scrollbar md:pr-2">
@@ -238,14 +238,14 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                         initial={{ opacity: 0, scale: 0.8 }}
                                                         animate={{ opacity: 1, scale: 1 }}
                                                         transition={{ delay: idx * 0.05 }}
-                                                        className="flex items-center gap-3 bg-black/40 pr-5 pl-2 py-3 rounded-2xl border border-subtle hover:border-strong transition-colors"
+                                                        className="flex items-center gap-3 bg-surface-sunken pr-5 pl-2 py-3 rounded-2xl border border-subtle hover:border-strong transition-colors"
                                                     >
-                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border-2 border-subtle flex items-center justify-center text-t-2xs font-black text-black/50" style={{ backgroundColor: plate?.color }}>
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-lg border-2 border-subtle flex items-center justify-center text-t-2xs font-semibold text-black/50" style={{ backgroundColor: plate?.color }}>
                                                             {weight}
                                                         </div>
                                                         <div className="flex flex-col leading-none">
-                                                            <span className="text-lg md:text-2xl font-black text-ink italic">x{count}</span>
-                                                            <span className="text-t-2xs font-bold text-ink-subtle uppercase tracking-wider">{weight} kg</span>
+                                                            <span className="text-lg md:text-2xl font-semibold text-ink">x{count}</span>
+                                                            <span className="text-t-2xs font-bold text-ink-subtle">{weight} kg</span>
                                                         </div>
                                                     </m.div>
                                                 );
@@ -260,17 +260,17 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
                                                     <div className="w-1.5 h-4 bg-black/20 rounded-full rotate-45"></div>
                                                 </div>
                                                 <div className="flex flex-col leading-none">
-                                                    <span className="text-lg md:text-2xl font-black text-ink italic">x1</span>
-                                                    <span className="text-t-2xs font-bold text-ink-muted uppercase tracking-wider">Cierre</span>
+                                                    <span className="text-lg md:text-2xl font-semibold text-ink">x1</span>
+                                                    <span className="text-t-2xs font-bold text-ink-muted">Cierre</span>
                                                 </div>
                                             </m.div>
                                         )}
                                     </AnimatePresence>
 
                                     {!platesNeeded.length && !hasCollars && (
-                                        <div className="w-full h-32 flex flex-col items-center justify-center text-gray-700 space-y-2 border-2 border-dashed border-subtle rounded-2xl">
+                                        <div className="w-full h-32 flex flex-col items-center justify-center text-ink-faint space-y-2 border-2 border-dashed border-subtle rounded-2xl">
                                             <Calculator size={24} className="opacity-50" />
-                                            <p className="italic text-sm font-bold">Introduce un peso válido...</p>
+                                            <p className="text-sm font-bold">Introduce un peso válido...</p>
                                         </div>
                                     )}
                                 </div>
@@ -282,10 +282,10 @@ export function PlateCalculator({ isOpen, onClose }: PlateCalculatorProps) {
 
                 {/* Footer */}
                 <div className="p-4 md:px-6 md:py-4 bg-surface-sunken border-t border-subtle shrink-0 text-center flex items-center justify-center gap-3 h-16 md:h-20">
-                    <p className="text-t-2xs md:text-xs font-black text-ink-subtle uppercase tracking-[0.3em] italic">
+                    <p className="text-t-2xs md:text-xs font-semibold text-ink-subtle">
                         TOTAL EN BARRA:
                     </p>
-                    <span className="text-3xl md:text-5xl font-black text-ink italic tracking-tighter">
+                    <span className="text-3xl md:text-5xl font-semibold text-ink tracking-tight">
                         {platesNeeded.reduce((acc, p) => acc + p.weight * 2, 20 + (hasCollars ? 5 : 0))} <span className="text-brand-text text-lg md:text-2xl">kg</span>
                     </span>
                 </div>

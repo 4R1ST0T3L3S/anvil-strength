@@ -150,15 +150,15 @@ function Welcome({
                     className="mx-auto h-16 w-16 rounded-pill object-cover"
                 />
             ) : (
-                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-pill bg-surface-sunken text-t-2xl font-black text-ink-muted">
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-pill bg-surface-sunken text-t-2xl font-semibold text-ink-muted">
                     {preview.coachName?.[0]?.toUpperCase() ?? 'A'}
                 </span>
             )}
 
-            <p className="mt-4 text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
+            <p className="mt-4 text-t-xs font-bold text-ink-subtle">
                 Invitación de tu {rol}
             </p>
-            <h1 className="mt-1 text-t-2xl font-black uppercase leading-tight tracking-display text-ink">
+            <h1 className="mt-1 text-t-2xl font-semibold leading-tight tracking-display text-ink">
                 {preview.coachName ?? 'Anvil Strength'}
             </h1>
             <p className="mt-3 text-t-sm leading-relaxed text-ink-muted">
@@ -175,7 +175,7 @@ function Welcome({
                 <div className="mt-6 space-y-2">
                     <button
                         onClick={onSignupClick}
-                        className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                        className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
                     >
                         <UserPlus size={16} aria-hidden="true" />
                         Crear mi cuenta
@@ -212,7 +212,7 @@ function Success({
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-[var(--success-quiet)]">
                 <Check size={26} className="text-success" strokeWidth={3} aria-hidden="true" />
             </span>
-            <h1 className="mt-4 text-t-xl font-black uppercase leading-tight tracking-display text-ink">
+            <h1 className="mt-4 text-t-xl font-semibold leading-tight tracking-display text-ink">
                 {alreadyLinked ? 'Ya estabas en el equipo' : '¡Ya estás dentro!'}
             </h1>
             <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">
@@ -222,7 +222,7 @@ function Success({
             </p>
             <button
                 onClick={onContinue}
-                className="mt-6 w-full rounded-field bg-brand py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                className="mt-6 w-full rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
             >
                 Ir a mi panel
             </button>
@@ -273,7 +273,7 @@ function Failure({ problem, onHome }: { problem: InviteProblem | null; onHome: (
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-[var(--warning-quiet)]">
                 <AlertCircle size={24} className="text-warning" aria-hidden="true" />
             </span>
-            <h1 className="mt-4 text-t-xl font-black uppercase leading-tight tracking-display text-ink">
+            <h1 className="mt-4 text-t-xl font-semibold leading-tight tracking-display text-ink">
                 {copy.title}
             </h1>
             <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">{copy.body}</p>

@@ -124,8 +124,8 @@ function Bench() {
 
     return (
         <div className="min-h-[100dvh] bg-[#0b0c0e] p-6 text-ink">
-            <h1 className="mb-1 text-xl font-black uppercase tracking-widest">Hoja de entrenamiento</h1>
-            <p className="mb-5 text-xs text-white/50">
+            <h1 className="mb-1 text-xl font-semibold">Hoja de entrenamiento</h1>
+            <p className="mb-5 text-xs text-ink-subtle">
                 {resolved.layout.sheet === 'table' ? 'Maqueta de tabla' : 'Maqueta de bloques'} ·{' '}
                 {resolved.page} · {resolved.sheet.columns.length} columnas · fila {(resolved.sheet.rowUnits * 4).toFixed(0)} mm
             </p>
@@ -135,8 +135,8 @@ function Bench() {
                     <button
                         key={p.key}
                         onClick={() => { setPreset(p.key); setScan(null); setOriginal(null); }}
-                        className={`rounded px-3 py-1.5 text-xs font-bold uppercase ${
- !scan && preset === p.key ? 'bg-white text-black' : 'bg-white/10 text-ink-muted'
+                        className={`rounded px-3 py-1.5 text-xs font-bold ${
+ !scan && preset === p.key ? 'bg-ink text-surface-canvas' : 'bg-[var(--fill-hover)] text-ink-muted'
  }`}
                     >
                         {p.label}
@@ -144,11 +144,11 @@ function Bench() {
                 ))}
                 <button
                     onClick={() => setLong(v => !v)}
-                    className={`rounded px-3 py-1.5 text-xs font-bold uppercase ${long ? 'bg-amber-400 text-black' : 'bg-white/10 text-ink-muted'}`}
+                    className={`rounded px-3 py-1.5 text-xs font-bold ${long ? 'bg-amber-400 text-black' : 'bg-[var(--fill-hover)] text-ink-muted'}`}
                 >
                     Día largo
                 </button>
-                <label className="cursor-pointer rounded bg-sky-500 px-3 py-1.5 text-xs font-bold uppercase text-black">
+                <label className="cursor-pointer rounded bg-sky-500 px-3 py-1.5 text-xs font-bold text-black">
                     {busy ? 'Leyendo…' : 'Copiar de un PDF'}
                     <input
                         type="file"
@@ -160,25 +160,25 @@ function Bench() {
             </div>
 
             {scan && (
-                <pre className="mb-5 max-h-64 overflow-auto rounded-lg bg-black/50 p-3 text-t-2xs leading-relaxed text-emerald-300">
+                <pre className="mb-5 max-h-64 overflow-auto rounded-lg bg-surface-sunken p-3 text-t-2xs leading-relaxed text-emerald-300">
                     {JSON.stringify({ report: scan.report, theme: scan.theme }, null, 1)}
                 </pre>
             )}
 
             <div className="flex flex-wrap gap-6">
                 <div>
-                    <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Generado</p>
+                    <p className="mb-2 text-xs font-bold text-ink-subtle">Generado</p>
                     <PdfCanvas bytes={bytes} />
                 </div>
                 {original && (
                     <div>
-                        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Original</p>
+                        <p className="mb-2 text-xs font-bold text-ink-subtle">Original</p>
                         <PdfCanvas bytes={original} />
                     </div>
                 )}
                 {scan?.logoDataUrl && (
                     <div>
-                        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-white/40">Logotipo recortado</p>
+                        <p className="mb-2 text-xs font-bold text-ink-subtle">Logotipo recortado</p>
                         <img src={scan.logoDataUrl} alt="" className="max-w-[220px] bg-[repeating-conic-gradient(#333_0_25%,#222_0_50%)] bg-[length:16px_16px] p-2" />
                     </div>
                 )}

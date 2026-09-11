@@ -49,7 +49,7 @@ import { cn } from '../../../lib/utils';
 
 /** Mismo tema de color que `DayCard`, para que las dos pantallas coincidan. */
 const COLOR: Record<MainLift, { barra: string; texto: string; chip: string }> = {
-    SQ: { barra: 'bg-red-500', texto: 'text-danger-text', chip: 'bg-[var(--danger-quiet)]' },
+    SQ: { barra: 'bg-brand', texto: 'text-danger-text', chip: 'bg-[var(--danger-quiet)]' },
     BP: { barra: 'bg-sky-500', texto: 'text-info', chip: 'bg-info-quiet' },
     DL: { barra: 'bg-purple-500', texto: 'text-purple-400', chip: 'bg-purple-500/10' },
 };
@@ -108,7 +108,7 @@ export function FrequencyPlanner({
                         </span>
                     </span>
                 ))}
-                <span className="ml-auto text-t-2xs uppercase tracking-wide text-ink-subtle">
+                <span className="ml-auto text-t-2xs text-ink-subtle">
                     {vista.diasEntrenados} {vista.diasEntrenados === 1 ? 'día' : 'días'} · {vista.totalSeries} series
                 </span>
             </div>
@@ -186,7 +186,7 @@ function ColumnaDeDia({
                 )}
             >
                 <span className="flex items-baseline justify-between gap-1">
-                    <span className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                    <span className="text-t-2xs font-semibold text-ink-subtle">
                         {dia.corta}
                     </span>
                     {!dia.esDescanso && (
@@ -197,7 +197,7 @@ function ColumnaDeDia({
                 {dia.esDescanso ? (
                     <span className="mt-3 flex flex-1 flex-col items-center justify-center gap-1 py-2 text-ink-faint">
                         <Moon size={14} aria-hidden="true" />
-                        <span className="text-t-2xs uppercase tracking-wide">Descanso</span>
+                        <span className="text-t-2xs">Descanso</span>
                     </span>
                 ) : (
                     <>
@@ -211,7 +211,7 @@ function ColumnaDeDia({
                                         COLOR[b.lift].chip
                                     )}
                                 >
-                                    <span className={cn('text-t-2xs font-black tracking-wide', COLOR[b.lift].texto)}>
+                                    <span className={cn('text-t-2xs font-semibold', COLOR[b.lift].texto)}>
                                         {SIGLA[b.lift]}
                                     </span>
                                     <span className="text-t-2xs tabular-nums text-ink-muted">{b.sets}</span>
@@ -219,7 +219,7 @@ function ColumnaDeDia({
                             ))}
                             {dia.seriesAccesorias > 0 && (
                                 <span className="flex items-center justify-between gap-1 rounded-field bg-surface-overlay px-1.5 py-1">
-                                    <span className="text-t-2xs font-bold tracking-wide text-ink-subtle">ACC</span>
+                                    <span className="text-t-2xs font-bold text-ink-subtle">ACC</span>
                                     <span className="text-t-2xs tabular-nums text-ink-faint">{dia.seriesAccesorias}</span>
                                 </span>
                             )}
@@ -247,14 +247,14 @@ function ColumnaDeDia({
                 que son los que más cuesta consultar. */}
             <AnchoredMenu open={abierto} onClose={cerrar} anchorRef={ancla}>
                 <div className="min-w-[210px] max-w-[280px] p-2">
-                    <p className="pb-1.5 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                    <p className="pb-1.5 text-t-2xs font-semibold text-ink-subtle">
                         {dia.etiqueta}
                     </p>
 
                     <ul className="space-y-2">
                         {dia.basicos.map(b => (
                             <li key={b.lift}>
-                                <p className={cn('text-t-xs font-black uppercase tracking-wide', COLOR[b.lift].texto)}>
+                                <p className={cn('text-t-xs font-semibold', COLOR[b.lift].texto)}>
                                     {b.label}
                                 </p>
                                 <p className="text-t-xs tabular-nums text-ink">{b.detail}</p>
@@ -286,7 +286,7 @@ function ColumnaDeDia({
                     {onAbrir && dia.sessionIds[0] && (
                         <button
                             onClick={() => { cerrar(); onAbrir(dia.sessionIds[0]); }}
-                            className="mt-2 w-full rounded-field bg-brand-quiet py-1.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors hover:bg-brand hover:text-brand-ink"
+                            className="mt-2 w-full rounded-field bg-brand-quiet py-1.5 text-t-2xs font-bold text-brand-text transition-colors hover:bg-brand hover:text-brand-ink"
                         >
                             Editar este día
                         </button>
@@ -312,7 +312,7 @@ function Marca({ titulo, banda }: { titulo: string; banda: Banda }) {
             {/* Sin ancho fijo: con `w-5` (20px) el texto "VOL" medía 23 y se
                 salía de su caja. `shrink-0` conserva la alineación entre las
                 dos filas sin imponer una anchura que no cabe. */}
-            <span className="shrink-0 text-t-2xs uppercase text-ink-faint">{titulo}</span>
+            <span className="shrink-0 text-t-2xs text-ink-faint">{titulo}</span>
             <span className="flex gap-0.5" aria-hidden="true">
                 {[1, 2, 3].map(i => (
                     <span

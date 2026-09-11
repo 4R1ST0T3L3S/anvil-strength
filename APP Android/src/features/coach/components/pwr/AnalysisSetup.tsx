@@ -37,7 +37,7 @@ import {
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
     return (
         <div className="min-w-0">
-            <label className="block text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+            <label className="block text-t-2xs font-semibold text-ink-subtle">
                 {label}
             </label>
             {hint && <p className="mt-0.5 text-t-2xs leading-relaxed text-ink-subtle">{hint}</p>}
@@ -203,7 +203,7 @@ export function AnalysisSetup({ initial, prefillNote, onReady, submitLabel = 'Co
                 {/* EL VÍDEO                                              */}
                 {/* ---------------------------------------------------- */}
                 <div>
-                    <p className="flex items-center gap-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                    <p className="flex items-center gap-1.5 text-t-2xs font-semibold text-ink-subtle">
                         <Camera size={12} aria-hidden="true" />
                         El vídeo
                     </p>

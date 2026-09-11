@@ -4,23 +4,20 @@ import { cn } from '../../lib/utils';
 /**
  * Contenedor de sección.
  *
- * Deliberadamente NO se llama "Card": la tarjeta es la respuesta perezosa y
- * la app ya arrastra pantallas enteras de rectángulos idénticos. `Panel`
- * empieza plano y solo se eleva cuando hay una razón.
+ * Deliberadamente NO se llama "Card": `Panel` empieza PLANO y solo se eleva
+ * cuando hay una razón.
  *
- *   flat    (por defecto) — agrupa sin dibujar caja. Es lo correcto la
- *                           mayoría de las veces.
- *   outline                — necesita separarse del fondo (formularios, listas).
- *   raised                 — flota de verdad sobre el contenido (popovers).
+ *   flat    (por defecto) — agrupa sin dibujar caja. Casi siempre es lo correcto.
+ *   outline                — se separa del fondo: la superficie de tarjeta del
+ *                            sistema (formularios, listas, gráficas).
+ *   raised                 — flota de verdad sobre el contenido.
  *
- * Nunca borde y sombra a la vez como decoración, y nunca un panel dentro
- * de otro panel: si te hace falta, la jerarquía está mal.
+ * Nunca un panel dentro de otro panel: si hace falta, la jerarquía está mal.
+ * El título va en frase y en seminegrita: la jerarquía no se grita.
  */
 
 type Tone = 'flat' | 'outline' | 'raised';
 
-// `title` se omite del tipo nativo: aquí es un nodo de encabezado, no el
-// atributo HTML que muestra un tooltip del navegador.
 export interface PanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
     tone?: Tone;
     /** Encabezado de sección. */
@@ -36,7 +33,7 @@ export interface PanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'
 
 const TONE: Record<Tone, string> = {
     flat: '',
-    outline: 'bg-surface-raised border border-[var(--border-default)] rounded-card',
+    outline: 'bg-surface-raised border border-[var(--card-border)] shadow-card rounded-card',
     raised: 'bg-surface-overlay rounded-card shadow-float',
 };
 
@@ -58,25 +55,25 @@ export function Panel({
                 <header
                     className={cn(
                         'flex items-start justify-between gap-4',
-                        padded ? 'px-4 pt-4' : '',
+                        padded ? 'px-4 pt-4 sm:px-5' : '',
                         'pb-3'
                     )}
                 >
                     <div className="min-w-0">
                         {title && (
-                            <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                            <h3 className="text-t-base font-semibold text-ink">
                                 {title}
                             </h3>
                         )}
                         {description && (
-                            <p className="mt-1 text-sm text-ink-subtle">{description}</p>
+                            <p className="mt-0.5 text-t-sm text-ink-muted">{description}</p>
                         )}
                     </div>
                     {action && <div className="shrink-0">{action}</div>}
                 </header>
             )}
 
-            <div className={cn(padded && 'px-4 pb-4')}>{children}</div>
+            <div className={cn(padded && 'px-4 pb-4 sm:px-5 sm:pb-5')}>{children}</div>
         </section>
     );
 }

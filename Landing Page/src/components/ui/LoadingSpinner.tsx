@@ -34,7 +34,7 @@ export function LoadingSpinner({
             aria-live="polite"
         >
             <Loader className="animate-spin text-brand-text" size={40} aria-hidden="true" />
-            <p className="text-t-sm font-bold uppercase tracking-[0.2em] text-ink-muted">
+            <p className="text-t-sm font-bold text-ink-muted">
                 {message}
             </p>
         </div>

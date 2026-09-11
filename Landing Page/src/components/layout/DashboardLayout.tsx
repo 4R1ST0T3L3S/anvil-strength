@@ -1,51 +1,59 @@
 import { ReactNode, useRef, useState } from 'react';
 import { m } from 'framer-motion';
-import { ArrowLeft, Globe, LogOut, MoreVertical } from 'lucide-react';
+import { ChevronsUpDown, Globe, LogOut, MoreHorizontal, Monitor, Moon, Sun, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { NotificationBell } from '../ui/NotificationBell';
-import { SelectorDeTema } from '../ui/SelectorDeTema';
-import { AnchoredMenu } from '../ui/AnchoredMenu';
+import { AnchoredMenu, MenuItem as MenuOpcion, MenuSeparador, MenuEtiqueta } from '../ui/AnchoredMenu';
+import { Modal } from '../ui/Modal';
+import { Avatar } from '../ui/Avatar';
+import { Contador } from '../ui/Badge';
+import { List, ListRow } from '../ui/List';
+import { useTema } from '../../hooks/useTema';
+import type { Tema } from '../../lib/tema';
+import { cn } from '../../lib/utils';
+
+/**
+ * EL ARMAZÓN DEL PANEL
+ * =====================================================================
+ *
+ * Dos disposiciones, una sola pieza:
+ *
+ *   ESCRITORIO (≥ lg): barra lateral fija a la izquierda —la marca, la
+ *   navegación completa con contadores, el conmutador de panel y la cuenta—
+ *   y una columna de contenido con su propio scroll. Sin cabecera superior:
+ *   cada pantalla pone la suya con `PageHeader`, así que no hay dos títulos
+ *   compitiendo.
+ *
+ *   MÓVIL: una barra de pestañas flotante y translúcida, de cinco huecos
+ *   como máximo (el pulgar no acierta con más). Lo que no cabe vive en la
+ *   hoja «Más», junto con el tema, la web y la salida. Un contador rojo
+ *   sobre la pestaña dice cuántas cosas esperan.
+ *
+ * `--tabbar-alto` (tokens.css) tiene la geometría exacta de la barra para
+ * que lo que flota abajo (volver arriba, avisos) se aparte de ella.
+ */
 
 export interface MenuItem {
     icon: React.ReactNode;
     label: string;
-    /**
-     * Etiqueta para la barra inferior del móvil.
-     *
-     * Una pestaña mide 72px de ancho: "Competiciones" no cabe ni de lejos y
-     * se cortaba a mitad de palabra. Recortar con puntos suspensivos no
-     * ayuda —"Competi…" no dice más que "Comps"— así que la versión corta se
-     * escribe a mano donde se sabe qué se puede sacrificar.
-     */
+    /** Etiqueta corta para la barra del móvil: una pestaña mide ~70px. */
     shortLabel?: string;
     onClick: () => void;
     isActive: boolean;
     isExternal?: boolean;
     href?: string;
-    /**
-     * Fuera de la barra inferior del móvil. Cinco pestañas es el techo: con
-     * las nueve que había, cada una medía 38px de ancho y la etiqueta se
-     * cortaba a dos letras. Lo que se marca aquí sigue en la barra lateral de
-     * escritorio y aparece en el menú de cuenta en móvil, así que no se
-     * pierde ningún acceso.
-     */
+    /** Fuera de la barra del móvil: va en la hoja «Más». En escritorio siempre se ve. */
     hideOnMobileBar?: boolean;
+    /** Pendientes: entrenamientos por revisar, mensajes sin leer. */
+    badge?: number;
 }
 
 /**
- * CONMUTADOR DE PANEL.
- *
- * Quien tiene los dos paneles —entrena a gente y además le entrenan— necesita
- * ir y volver. Antes esto era un `menuItem` con `hideOnMobileBar`, así que en
- * el móvil se hundía en el menú de la ⋮ y no había forma evidente de cambiar
- * de panel. Como es un cambio de CONTEXTO y no una pestaña más, sube a un
- * control propio: un botón fijo en la cabecera del móvil y en el pie de la
- * barra lateral de escritorio. Siempre visible, nunca escondido.
+ * CONMUTADOR DE PANEL. Quien entrena a gente y además le entrenan necesita
+ * ir y volver. Es un cambio de CONTEXTO, no una pestaña más: en escritorio
+ * va al pie de la barra lateral y en móvil dentro de «Más», arriba del todo.
  */
 export interface PanelSwitch {
-    /** Texto completo (escritorio y etiqueta accesible). */
     label: string;
-    /** Versión corta para la píldora del móvil, donde no cabe todo. */
     shortLabel?: string;
     icon: React.ReactNode;
     onClick: () => void;
@@ -54,197 +62,381 @@ export interface PanelSwitch {
 export interface DashboardLayoutProps {
     menuItems: MenuItem[];
     children: ReactNode;
-    /** Si se pasa, muestra la campana de notificaciones en la barra superior */
     userId?: string;
-    /** Título de la vista actual (barra superior) */
+    /** Conservado por compatibilidad: la cabecera la pone cada pantalla (`PageHeader`). */
     title?: string;
-    /** Si se pasa, muestra el botón de volver en la barra superior */
+    /** Conservado por compatibilidad: ver `title`. */
     onBack?: () => void;
-    /** Cierra la sesión. Sin esto no hay forma de salir del panel. */
     onLogout?: () => void | Promise<void>;
-    /** Nombre a mostrar en el pie de la barra lateral. */
     userName?: string | null;
-    /** Conmutador entre panel de gestión y panel de atleta. Ver `PanelSwitch`. */
+    userAvatar?: string | null;
     panelSwitch?: PanelSwitch;
-    /** Oculta la cabecera superior en escritorio. Útil para que la Home la integre sola. */
+    /** Conservado por compatibilidad: en el sistema actual nunca hay cabecera del armazón. */
     hideHeaderOnDesktop?: boolean;
-    /**
-     * La vista cabe entera en la pantalla del ordenador (el inicio). Quita el
-     * margen inferior de `main`, que en esas vistas solo servía para fabricar
-     * 24px de scroll vertical sin nada debajo. Ver `InicioPanel.tsx`.
-     */
+    /** La vista cabe entera en la pantalla del ordenador (el inicio): sin margen inferior. */
     ajustarAPantalla?: boolean;
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     menuItems,
     children,
-    userId,
-    title,
-    onBack,
     onLogout,
     userName,
+    userAvatar,
     panelSwitch,
-    hideHeaderOnDesktop = false,
     ajustarAPantalla = false,
 }) => {
-    const visibleItems = menuItems.filter(item => item.label !== 'QA: Test DB');
-    const barItems = visibleItems.filter(item => !item.hideOnMobileBar);
-    const overflowItems = visibleItems.filter(item => item.hideOnMobileBar);
+    const visibles = menuItems.filter(item => item.label !== 'QA: Test DB');
+    const enBarra = visibles.filter(item => !item.hideOnMobileBar).slice(0, 4);
+    const enMas = visibles.filter(item => !enBarra.includes(item));
+    const [masAbierto, setMasAbierto] = useState(false);
+
+    // «Más» es la quinta pestaña, y la única que no navega: abre la hoja.
+    // Se pinta con contador si algo de lo que esconde lo tiene.
+    const pendientesEnMas = enMas.reduce((n, i) => n + (i.badge ?? 0), 0);
+    const masActivo = enMas.some(i => i.isActive);
 
     return (
-        <div className="flex h-[100dvh] bg-surface-canvas text-ink overflow-hidden font-sans">
+        <div className="flex h-[100dvh] overflow-hidden bg-surface-canvas font-sans text-ink">
 
-            {/* ============ COLUMNA PRINCIPAL ============ */}
-            <div className="flex-1 flex flex-col min-w-0">
+            {/* ============ BARRA LATERAL (escritorio) ============ */}
+            <aside className="hidden w-[248px] shrink-0 flex-col border-r border-[var(--separator)] bg-surface-sidebar lg:flex">
+                <div className="flex h-16 shrink-0 items-center px-5">
+                    <Marca />
+                </div>
 
-                {/* Barra superior.
-                    SIEMPRE oculta en móvil, la vea o no `hideHeaderOnDesktop`.
-                    Antes se veía en móvil pase lo que pase, y eso duplicaba la
-                    cabecera de cada pantalla que ya trae la suya propia
-                    (`onBack` + título — ver `CoachAthletes`, `ProfileSection`,
-                    etc.) además de recortar la altura útil de la pantalla.
-                    Las acciones que solo vivían aquí —campana, conmutador de
-                    panel, cuenta y salida— las pinta ahora el propio Home
-                    (`headerActions` de `CoachHome`/`AthleteHome`), visibles
-                    también en móvil y no solo a partir de `md`. */}
-                <header className={`h-16 shrink-0 items-center justify-between gap-3 px-6 bg-surface-canvas/90 backdrop-blur border-b border-subtle z-40 ${hideHeaderOnDesktop ? 'hidden' : 'hidden md:flex'}`}>
-                    <div className="flex items-center gap-2 min-w-0">
-                        {onBack ? (
-                            <button
-                                onClick={onBack}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 -ml-1 rounded-lg text-ink-muted hover:text-ink hover:bg-white/[0.06] text-xs font-bold uppercase tracking-wide transition-colors duration-fast active:scale-[0.97]"
-                                aria-label="Volver"
-                            >
-                                <ArrowLeft size={16} />
-                                <span className="hidden sm:inline">Volver</span>
-                            </button>
-                        ) : (
-                            <span className="font-black text-base tracking-tight text-ink select-none">
-                                ANVIL<span className="text-brand-text">.</span>
-                            </span>
-                        )}
-                        {title && (
-                            <h1 className="font-black uppercase tracking-tight text-sm md:text-base text-ink truncate">
-                                {title}
-                            </h1>
-                        )}
-                    </div>
+                <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-3" aria-label="Secciones">
+                    {visibles.map(item => (
+                        <ItemLateral key={item.label} item={item} />
+                    ))}
+                </nav>
 
-                    <div className="flex items-center gap-1">
-                        {/* Conmutador de panel: píldora fija en la cabecera, visible siempre */}
-                        {panelSwitch && !hideHeaderOnDesktop && (
-                            <button
-                                onClick={panelSwitch.onClick}
-                                aria-label={panelSwitch.label}
-                                className="flex h-9 items-center gap-1.5 rounded-field border border-brand/25 bg-brand/10 px-2.5 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast active:scale-[0.97]"
-                            >
-                                <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
-                                <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
-                            </button>
-                        )}
-                        {/* El tema, junto a los avisos y a la salida: es un
-                            ajuste del dispositivo, no de la pantalla, así que
-                            vive en el armazón y no dentro de ninguna vista.
-                            Se esconde por debajo de sm — a 375px la cabecera
-                            ya lleva el conmutador de panel, los avisos y la ⋮,
-                            y el tema es lo que menos se toca de los cuatro.
-                            En móvil se cambia desde Perfil → Este dispositivo,
-                            que es donde vive la misma pieza. */}
-                        <SelectorDeTema className="hidden sm:flex" />
-                        {userId && !hideHeaderOnDesktop && <NotificationBell userId={userId} />}
-                        {/* En móvil la barra inferior ya va llena de pestañas, así
-                            que la salida vive aquí arriba en vez de robarle un
-                            hueco a la navegación. */}
-                        {!hideHeaderOnDesktop && (
-                            <AccountMenu onLogout={onLogout} userName={userName} items={overflowItems} />
-                        )}
-                    </div>
-                </header>
+                <div className="shrink-0 border-t border-[var(--separator)] p-3">
+                    {panelSwitch && (
+                        <button
+                            type="button"
+                            onClick={panelSwitch.onClick}
+                            className="mb-2 flex h-10 w-full items-center gap-2.5 rounded-[10px] bg-[var(--brand-quiet)] px-3 text-t-sm font-semibold text-brand-text transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet-strong)]"
+                        >
+                            <span className="shrink-0 [&>svg]:h-[18px] [&>svg]:w-[18px]" aria-hidden="true">{panelSwitch.icon}</span>
+                            <span className="truncate">{panelSwitch.label}</span>
+                        </button>
+                    )}
+                    <CuentaLateral onLogout={onLogout} userName={userName} userAvatar={userAvatar} />
+                </div>
+            </aside>
 
-                {/* Contenido.
-                    `overflow-x-hidden` es el corte de seguridad del panel
-                    entero: aquí dentro viven tablas, rejillas de semanas y
-                    gráficas, y basta con que una se pase de ancho para que
-                    arrastre la PÁGINA hacia la derecha —cabecera y barra de
-                    pestañas incluidas— y deje medio móvil en negro. Los hijos
-                    que sí necesitan desplazarse de lado (las pestañas de la
-                    ficha, los días de la semana) traen su propio
-                    `overflow-x-auto` y siguen funcionando igual: esto solo
-                    impide que el desbordamiento se propague al armazón. */}
-                {/* `data-scroll-host`: aquí dentro `window.scrollY` vale SIEMPRE cero,
-                    porque quien se desplaza es este <main> y no la ventana. Lo que
-                    necesita el scroll (volver arriba, restaurar la posición al
-                    volver atrás) pregunta por este atributo. Ver src/lib/scrollHost.ts. */}
+            {/* ============ CONTENIDO ============ */}
+            <div className="flex min-w-0 flex-1 flex-col">
+                {/* `overflow-x-hidden` es el corte de seguridad del panel entero:
+                    una tabla que se pase de ancho no puede arrastrar la página.
+                    `data-scroll-host`: quien se desplaza es este <main>, no la
+                    ventana. Ver src/lib/scrollHost.ts. */}
                 <main
                     data-scroll-host
-                    // `--tabbar-h`: la altura que ocupa la barra inferior del
-                    // móvil. Lo que flote abajo la lee para apartarse en vez de
-                    // quedarse encima de "Perfil". Fuera del panel no existe, y
-                    // ahí el `fallback` la deja en cero.
                     style={{ ['--tabbar-h' as string]: 'var(--tabbar-alto)' }}
-                    className={`flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-6 scrollbar-hide bg-surface-canvas ${ajustarAPantalla ? 'pc:pb-0' : ''}`}
+                    className={cn(
+                        'flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide bg-surface-canvas',
+                        'pb-[calc(var(--tabbar-alto)+1rem+env(safe-area-inset-bottom,0px))] lg:pb-6',
+                        ajustarAPantalla && 'pc:pb-0'
+                    )}
                 >
                     {children}
                 </main>
             </div>
 
-            {/* ============ NAV INFERIOR (móvil) ============ */}
-            {/* Barra flotante y translúcida, separada del borde en vez de
-                pegada a él — antes era una barra a todo lo ancho contra el
-                borde inferior, con `border-t` en vez de flotar. El hueco de
-                `--tabbar-alto` (tokens.css) tiene la geometría exacta de esta
-                versión: si cambia el alto o el margen de aquí, cambia también
-                ahí, o lo que flota encima (`BackToTop`) vuelve a quedar
-                tapado por la barra. */}
-            <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-sticky md:hidden">
-                <nav className="flex items-stretch justify-around rounded-3xl border border-subtle bg-surface-canvas/80 px-2 py-1 shadow-2xl backdrop-blur-xl">
-                    {barItems.map((item) => (
-                        <button
+            {/* ============ BARRA DE PESTAÑAS (móvil) ============ */}
+            <div className="fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-3 right-3 z-sticky lg:hidden">
+                <nav
+                    aria-label="Secciones"
+                    className="material-bar flex h-[60px] items-stretch justify-around rounded-[22px] border border-[var(--card-border)] px-1 shadow-overlay"
+                >
+                    {enBarra.map(item => (
+                        <PestanaMovil
                             key={item.label}
+                            icon={item.icon}
+                            label={item.shortLabel ?? item.label.replace(/^Mis? /, '')}
+                            active={item.isActive}
+                            badge={item.badge}
                             onClick={item.onClick}
-                            aria-label={item.label}
-                            aria-current={item.isActive ? 'page' : undefined}
-                            // `min-h-[52px]`: por debajo de 44px el pulgar falla mas
-                            // de lo que acierta, y esta barra se usa de pie, con una
-                            // mano y el movil moviendose.
-                            className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-card px-1 py-1.5 transition-colors duration-fast ${
-     item.isActive ? 'text-brand-text' : 'text-ink-subtle'
-     }`}
-                        >
-                            {item.isActive && (
-                                <m.span
-                                    layoutId="bottomnav-active"
-                                    className="absolute inset-x-0.5 inset-y-0 rounded-card bg-[var(--brand-quiet)]"
-                                    transition={{ type: 'spring', stiffness: 520, damping: 40 }}
-                                />
-                            )}
-                            {/* El icono NO se escala al activarse. Un salto de
-                                tamano en algo que se pulsa decenas de veces al dia
-                                se lee como parpadeo; el color y el fondo ya dicen
-                                cual esta activo. */}
-                            <span className="relative shrink-0">{item.icon}</span>
-                            {/* 10px es el suelo. A los 8px que tenia, la etiqueta
-                                era una mancha gris: se leia el icono y el texto
-                                solo anadia ruido debajo. */}
-                            <span className="relative max-w-full truncate text-t-2xs font-bold leading-none tracking-tight">
-                                {item.shortLabel ?? item.label.replace('Mi ', '').replace('Mis ', '')}
-                            </span>
-                        </button>
+                        />
                     ))}
+                    {(enMas.length > 0 || onLogout) && (
+                        <PestanaMovil
+                            icon={<MoreHorizontal size={22} />}
+                            label="Más"
+                            active={masActivo || masAbierto}
+                            badge={pendientesEnMas}
+                            onClick={() => setMasAbierto(true)}
+                        />
+                    )}
                 </nav>
             </div>
+
+            <HojaMas
+                open={masAbierto}
+                onClose={() => setMasAbierto(false)}
+                items={enMas}
+                panelSwitch={panelSwitch}
+                onLogout={onLogout}
+                userName={userName}
+                userAvatar={userAvatar}
+            />
         </div>
     );
 };
 
+// =====================================================================
+// PIEZAS
+// =====================================================================
+
+function Marca() {
+    return (
+        <span className="flex items-center gap-2 select-none">
+            <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-brand text-brand-ink" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+                    <path d="M4 7h16v3H15.5v2.5h2v3H15l-1 3H10l-1-3H6.5v-3h2V10H4z" />
+                </svg>
+            </span>
+            <span className="text-t-base font-semibold tracking-[-0.01em] text-ink">Anvil</span>
+        </span>
+    );
+}
+
+function ItemLateral({ item }: { item: MenuItem }) {
+    return (
+        <button
+            type="button"
+            onClick={item.onClick}
+            data-no-press
+            aria-current={item.isActive ? 'page' : undefined}
+            className={cn(
+                'flex h-9 w-full items-center gap-2.5 rounded-[9px] px-2.5 text-left text-t-sm',
+                'transition-colors duration-fast ease-snap',
+                item.isActive
+                    ? 'bg-[var(--fill-selected)] font-semibold text-ink'
+                    : 'font-medium text-ink-muted hover:bg-[var(--fill-hover)] hover:text-ink'
+            )}
+        >
+            <span
+                className={cn('shrink-0 [&>svg]:h-[18px] [&>svg]:w-[18px]', item.isActive ? 'text-ink' : 'text-ink-subtle')}
+                aria-hidden="true"
+            >
+                {item.icon}
+            </span>
+            <span className="min-w-0 flex-1 truncate">{item.label}</span>
+            {item.badge != null && item.badge > 0 && (
+                <Contador n={item.badge} aria-label={`${item.badge} pendientes`} />
+            )}
+        </button>
+    );
+}
+
+function PestanaMovil({
+    icon,
+    label,
+    active,
+    badge,
+    onClick,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    active: boolean;
+    badge?: number;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            data-no-press
+            aria-label={badge ? `${label}, ${badge} pendientes` : label}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-[16px] px-1',
+                'transition-colors duration-fast ease-snap',
+                active ? 'text-brand-text' : 'text-ink-subtle'
+            )}
+        >
+            <span className="relative">
+                {/* El icono no se escala al activarse: en algo que se pulsa
+                    decenas de veces al día, un salto de tamaño se lee como
+                    parpadeo. El color y la etiqueta ya dicen cuál está activo. */}
+                <span className="[&>svg]:h-[22px] [&>svg]:w-[22px]" aria-hidden="true">{icon}</span>
+                {badge != null && badge > 0 && (
+                    <span
+                        className="absolute -right-2.5 -top-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-pill bg-brand px-1 text-t-2xs font-semibold tabular-nums leading-none text-brand-ink ring-2 ring-[var(--surface-canvas)]"
+                        aria-hidden="true"
+                    >
+                        {badge > 99 ? '99+' : badge}
+                    </span>
+                )}
+            </span>
+            <span className={cn('max-w-full truncate text-[10.5px] leading-none', active ? 'font-semibold' : 'font-medium')}>
+                {label}
+            </span>
+            {active && (
+                <m.span
+                    layoutId="tabbar-activa"
+                    aria-hidden="true"
+                    className="absolute bottom-[5px] h-[3px] w-[3px] rounded-pill bg-brand-text"
+                    transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                />
+            )}
+        </button>
+    );
+}
+
+/** La fila de cuenta al pie de la barra lateral: abre tema, web y salida. */
+function CuentaLateral({
+    onLogout,
+    userName,
+    userAvatar,
+}: {
+    onLogout?: () => void | Promise<void>;
+    userName?: string | null;
+    userAvatar?: string | null;
+}) {
+    const [abierto, setAbierto] = useState(false);
+    const anclaRef = useRef<HTMLButtonElement>(null);
+    const { tema, establecer } = useTema();
+
+    return (
+        <>
+            <button
+                ref={anclaRef}
+                type="button"
+                onClick={() => setAbierto(v => !v)}
+                aria-haspopup="menu"
+                aria-expanded={abierto}
+                data-no-press
+                className="flex h-12 w-full items-center gap-2.5 rounded-[10px] px-2 text-left transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)]"
+            >
+                <Avatar nombre={userName} src={userAvatar} size={32} />
+                <span className="min-w-0 flex-1">
+                    <span className="block truncate text-t-sm font-semibold text-ink">{userName || 'Mi cuenta'}</span>
+                    <span className="block text-t-xs text-ink-subtle">Cuenta y ajustes</span>
+                </span>
+                <ChevronsUpDown className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
+            </button>
+
+            <AnchoredMenu open={abierto} onClose={() => setAbierto(false)} anchorRef={anclaRef} align="start" width={224}>
+                <MenuEtiqueta>Apariencia</MenuEtiqueta>
+                {OPCIONES_TEMA.map(o => (
+                    <MenuOpcion
+                        key={o.valor}
+                        role="menuitemradio"
+                        icono={<o.icono />}
+                        activa={tema === o.valor}
+                        onClick={() => establecer(o.valor)}
+                    >
+                        {o.etiqueta}
+                    </MenuOpcion>
+                ))}
+                <MenuSeparador />
+                <Link to="/web" role="menuitem" onClick={() => setAbierto(false)} className="block">
+                    <MenuOpcion icono={<Globe />}>Ver la web</MenuOpcion>
+                </Link>
+                {onLogout && (
+                    <MenuOpcion icono={<LogOut />} peligro onClick={() => { setAbierto(false); onLogout(); }}>
+                        Cerrar sesión
+                    </MenuOpcion>
+                )}
+            </AnchoredMenu>
+        </>
+    );
+}
+
+const OPCIONES_TEMA: { valor: Tema; etiqueta: string; icono: typeof Sun }[] = [
+    { valor: 'sistema', etiqueta: 'Como el sistema', icono: Monitor },
+    { valor: 'claro', etiqueta: 'Claro', icono: Sun },
+    { valor: 'oscuro', etiqueta: 'Oscuro', icono: Moon },
+];
+
+/** La hoja «Más» del móvil: lo que no cabe en la barra, y la cuenta. */
+function HojaMas({
+    open,
+    onClose,
+    items,
+    panelSwitch,
+    onLogout,
+    userName,
+    userAvatar,
+}: {
+    open: boolean;
+    onClose: () => void;
+    items: MenuItem[];
+    panelSwitch?: PanelSwitch;
+    onLogout?: () => void | Promise<void>;
+    userName?: string | null;
+    userAvatar?: string | null;
+}) {
+    const { tema, establecer } = useTema();
+
+    return (
+        <Modal open={open} onClose={onClose} title="Más" size="sm">
+            <div className="flex flex-col gap-5 pb-1">
+                {(userName || panelSwitch) && (
+                    <div className="flex items-center gap-3 px-1">
+                        <Avatar nombre={userName} src={userAvatar} size={44} />
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-t-base font-semibold text-ink">{userName || 'Mi cuenta'}</p>
+                            {panelSwitch && (
+                                <button
+                                    type="button"
+                                    onClick={() => { onClose(); panelSwitch.onClick(); }}
+                                    className="mt-0.5 text-t-sm font-medium text-brand-text"
+                                >
+                                    {panelSwitch.label} →
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {items.length > 0 && (
+                    <List>
+                        {items.map(item => (
+                            <ListRow
+                                key={item.label}
+                                icono={item.icon}
+                                titulo={item.label}
+                                chevron
+                                activa={item.isActive}
+                                derecha={item.badge ? <Contador n={item.badge} /> : undefined}
+                                onClick={() => { onClose(); item.onClick(); }}
+                            />
+                        ))}
+                    </List>
+                )}
+
+                <List titulo="Apariencia">
+                    {OPCIONES_TEMA.map(o => (
+                        <ListRow
+                            key={o.valor}
+                            icono={<o.icono />}
+                            titulo={o.etiqueta}
+                            onClick={() => establecer(o.valor)}
+                            derecha={tema === o.valor ? <Check className="h-[18px] w-[18px] text-brand-text" strokeWidth={2.5} aria-hidden="true" /> : undefined}
+                        />
+                    ))}
+                </List>
+
+                <List>
+                    <ListRow icono={<Globe />} titulo="Ver la web" chevron onClick={() => { onClose(); window.location.assign('/web'); }} />
+                    {onLogout && (
+                        <ListRow icono={<LogOut />} titulo="Cerrar sesión" destructiva onClick={() => { onClose(); onLogout(); }} />
+                    )}
+                </List>
+            </div>
+        </Modal>
+    );
+}
+
 /**
- * Menú de cuenta para móvil: las pestañas que no caben en la barra inferior,
- * ver la web y cerrar sesión.
- *
- * En escritorio todo esto está siempre visible en la barra lateral. Aquí va
- * plegado porque la barra inferior topa en cinco pestañas: por encima de eso
- * cada icono baja de los 44px de zona pulsable que necesita un pulgar.
+ * Menú de cuenta compacto (⋮), para cabeceras de pantalla en móvil que quieran
+ * ofrecer las secciones que no caben y la salida. Se conserva porque las
+ * pantallas de inicio lo montan; en escritorio la barra lateral ya lo tiene.
  */
 export function AccountMenu({
     onLogout,
@@ -258,87 +450,42 @@ export function AccountMenu({
     const [open, setOpen] = useState(false);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
-    // Cerrar al pulsar fuera o con Escape lo resuelve `AnchoredMenu`.
-
     return (
-        <div>
+        <div className="lg:hidden">
             <button
                 ref={buttonRef}
                 onClick={() => setOpen(v => !v)}
                 aria-label="Cuenta y salida"
                 aria-expanded={open}
                 aria-haspopup="menu"
-                // 44x44. Medía 34 y es la única puerta a "cerrar sesión" y a
-                // las pestañas que no caben en la barra inferior: fallarlo deja
-                // al usuario sin salida visible del panel.
-                className="flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors duration-fast hover:bg-white/[0.06] hover:text-ink"
+                data-no-press
+                className="flex h-10 w-10 items-center justify-center rounded-pill text-ink-muted transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] hover:text-ink"
             >
-                <MoreVertical size={20} aria-hidden="true" />
+                <MoreHorizontal size={20} aria-hidden="true" />
             </button>
 
-            {/* PORTAL, no `absolute`.
-                Esta barra superior lleva `backdrop-blur`, y un filtro crea
-                contexto de apilamiento: el menú quedaba encerrado dentro de la
-                cabecera y por debajo de cualquier elemento fijo del contenido
-                —la cabecera pegajosa del registro, con `z-sticky`—, así que en
-                "Mi planificación" aparecía cortado por arriba. Subir el
-                `z-index` no lo arregla: desde dentro de un contexto de
-                apilamiento no se puede saltar por encima de él.
-
-                `AnchoredMenu` lo saca a `document.body` en `position: fixed`,
-                mide el hueco que queda debajo del botón y, si no cabe, lo abre
-                hacia arriba. Es el mismo componente que ya usaba el
-                constructor de rutinas. */}
-            <AnchoredMenu
-                open={open}
-                onClose={() => setOpen(false)}
-                anchorRef={buttonRef}
-                align="end"
-                width={208}
-                className="z-tooltip max-h-[min(75vh,32rem)] overflow-y-auto rounded-card border border-[var(--border-default)] bg-surface-overlay p-1.5 shadow-overlay"
-            >
-                        {userName && (
-                            <p className="truncate px-3 py-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
-                                {userName}
-                            </p>
-                        )}
-
-                        {items.map((item) => (
-                            <button
-                                key={item.label}
-                                role="menuitem"
-                                onClick={() => { setOpen(false); item.onClick(); }}
-                                className={`flex w-full items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-semibold transition-colors duration-fast ease-snap hover:bg-surface-raised ${
- item.isActive ? 'text-brand-text' : 'text-ink-muted hover:text-ink'
- }`}
-                            >
-                                <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>
-                                {item.label}
-                            </button>
-                        ))}
-
-                        {items.length > 0 && <div className="my-1.5 h-px bg-[var(--border-subtle)]" />}
-
-                        <Link
-                            to="/web"
-                            role="menuitem"
-                            onClick={() => setOpen(false)}
-                            className="flex items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-medium text-ink-muted transition-colors duration-fast ease-snap hover:bg-surface-raised hover:text-ink"
-                        >
-                            <Globe size={16} aria-hidden="true" />
-                            Ver la web
-                        </Link>
-
-                        {onLogout && (
-                            <button
-                                role="menuitem"
-                                onClick={() => { setOpen(false); onLogout(); }}
-                                className="flex w-full items-center gap-2.5 rounded-field px-3 py-2.5 text-t-sm font-medium text-ink-muted transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger-text"
-                            >
-                                <LogOut size={16} aria-hidden="true" />
-                                Cerrar sesión
-                            </button>
-                        )}
+            <AnchoredMenu open={open} onClose={() => setOpen(false)} anchorRef={buttonRef} align="end" width={224}>
+                {userName && <MenuEtiqueta>{userName}</MenuEtiqueta>}
+                {items.map(item => (
+                    <MenuOpcion
+                        key={item.label}
+                        icono={item.icon}
+                        activa={item.isActive}
+                        derecha={item.badge ? <Contador n={item.badge} /> : undefined}
+                        onClick={() => { setOpen(false); item.onClick(); }}
+                    >
+                        {item.label}
+                    </MenuOpcion>
+                ))}
+                {items.length > 0 && <MenuSeparador />}
+                <Link to="/web" role="menuitem" onClick={() => setOpen(false)} className="block">
+                    <MenuOpcion icono={<Globe />}>Ver la web</MenuOpcion>
+                </Link>
+                {onLogout && (
+                    <MenuOpcion icono={<LogOut />} peligro onClick={() => { setOpen(false); onLogout(); }}>
+                        Cerrar sesión
+                    </MenuOpcion>
+                )}
             </AnchoredMenu>
         </div>
     );

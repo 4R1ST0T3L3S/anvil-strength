@@ -55,7 +55,7 @@ export function AppendixEditor({
                 className="flex w-full items-center gap-2 px-3 py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
             >
                 <Icon size={13} className={filled ? 'text-brand-text' : 'text-ink-faint'} aria-hidden="true" />
-                <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <span className="text-t-2xs font-bold text-ink-subtle">
                     {label}
                 </span>
                 {filled && !open && (

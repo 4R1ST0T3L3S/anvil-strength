@@ -179,12 +179,12 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="mb-2 flex items-center gap-1.5 text-t-xs font-bold uppercase tracking-widest text-ink-subtle transition-colors duration-fast hover:text-ink"
+                        className="mb-2 flex items-center gap-1.5 text-t-xs font-bold text-ink-subtle transition-colors duration-fast hover:text-ink"
                     >
                         ← Volver
                     </button>
                 )}
-                <h1 className="text-t-3xl font-black uppercase tracking-display text-ink">Mi perfil</h1>
+                <h1 className="text-t-3xl font-semibold tracking-display text-ink">Mi perfil</h1>
                 <p className="mt-1 text-t-sm text-ink-muted">Gestiona tu información personal y marcas.</p>
             </header>
 
@@ -230,7 +230,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                             {imagePreview ? (
                                 <img src={imagePreview} alt="Avatar" className="h-full w-full object-cover" />
                             ) : (
-                                <span className="text-t-2xl font-black text-ink-subtle">
+                                <span className="text-t-2xl font-semibold text-ink-subtle">
                                     {(formData.nickname?.[0] || formData.name?.[0] || 'U').toUpperCase()}
                                 </span>
                             )}
@@ -260,7 +260,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
 
                 {/* Datos personales */}
                 <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                    <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Información personal</h2>
+                    <h2 className="text-t-2xs font-bold text-ink-subtle">Información personal</h2>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <FormField label="Nombre completo">
                             <input
@@ -298,7 +298,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                 {/* Categorías y marcas */}
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                        <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Categorías</h2>
+                        <h2 className="text-t-2xs font-bold text-ink-subtle">Categorías</h2>
                         <div className="space-y-4">
                             <FormField label="Categoría de edad">
                                 <select
@@ -360,7 +360,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                     </section>
 
                     <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                        <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Marcas (PR)</h2>
+                        <h2 className="text-t-2xs font-bold text-ink-subtle">Marcas (PR)</h2>
                         <div className="space-y-2.5">
                             <PrField label="Sentadilla" value={formData.squat_pr} onChange={v => setFormData({ ...formData, squat_pr: v })} />
                             <PrField label="Banca" value={formData.bench_pr} onChange={v => setFormData({ ...formData, bench_pr: v })} />
@@ -371,7 +371,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
 
                 {/* Biografía */}
                 <section className="space-y-4 rounded-card border border-[var(--border-default)] bg-surface-raised p-5 md:p-6">
-                    <h2 className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <h2 className="text-t-2xs font-bold text-ink-subtle">
                         {user.role === 'coach' ? 'Biografía / especialidad' : 'Sobre mí / objetivos'}
                     </h2>
                     <textarea
@@ -417,7 +417,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                     type="submit"
                     form="profile-form"
                     disabled={isSaving}
-                    className="flex w-full items-center justify-center gap-2 rounded-field bg-brand px-8 py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40 md:w-auto"
+                    className="flex w-full items-center justify-center gap-2 rounded-field bg-brand px-8 py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40 md:w-auto"
                 >
                     {isSaving ? <Loader size={17} className="animate-spin" /> : <Save size={17} />}
                     {isSaving ? 'Guardando…' : 'Guardar cambios'}
@@ -431,7 +431,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                             <button
                                 type="button"
                                 onClick={() => navigate('/dashboard')}
-                                className="flex w-full items-center justify-center gap-2 rounded-field bg-white/5 border border-subtle px-6 py-3 text-t-sm font-bold text-ink transition-colors duration-fast ease-snap hover:bg-white/10"
+                                className="flex w-full items-center justify-center gap-2 rounded-field bg-[var(--fill-muted)] border border-subtle px-6 py-3 text-t-sm font-bold text-ink transition-colors duration-fast ease-snap hover:bg-[var(--fill-pressed)]"
                             >
                                 <Dumbbell size={17} aria-hidden="true" className="text-brand-text" />
                                 Cambiar a Panel de Atleta
@@ -440,7 +440,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                             <button
                                 type="button"
                                 onClick={() => navigate('/coach-dashboard')}
-                                className="flex w-full items-center justify-center gap-2 rounded-field bg-white/5 border border-subtle px-6 py-3 text-t-sm font-bold text-ink transition-colors duration-fast ease-snap hover:bg-white/10"
+                                className="flex w-full items-center justify-center gap-2 rounded-field bg-[var(--fill-muted)] border border-subtle px-6 py-3 text-t-sm font-bold text-ink transition-colors duration-fast ease-snap hover:bg-[var(--fill-pressed)]"
                             >
                                 <Users size={17} aria-hidden="true" className="text-brand-text" />
                                 Cambiar a Panel de Entrenador
@@ -479,7 +479,7 @@ const INPUT =
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <label className="block space-y-1.5">
-            <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</span>
+            <span className="block text-t-2xs font-bold text-ink-subtle">{label}</span>
             {children}
         </label>
     );
@@ -488,7 +488,7 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
 function PrField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
     return (
         <div className="flex items-center justify-between rounded-field border border-subtle bg-surface-sunken px-4 py-2.5">
-            <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">{label}</span>
+            <span className="text-t-xs font-bold text-ink-subtle">{label}</span>
             <input
                 type="number"
                             inputMode="decimal"
@@ -496,7 +496,7 @@ function PrField({ label, value, onChange }: { label: string; value: string; onC
                 value={value}
                 onChange={e => onChange(e.target.value)}
                 placeholder="0"
-                className="w-20 bg-transparent text-right text-t-lg font-black tabular-nums text-ink"
+                className="w-20 bg-transparent text-right text-t-lg font-semibold tabular-nums text-ink"
             />
         </div>
     );

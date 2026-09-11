@@ -36,14 +36,14 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
  ${isExceeded ? 'border-brand shadow-red-900/20' : 'border-line shadow-black/40'}
 `}>
                         {/* Drag Handle Area */}
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-surface-raised px-3 py-0.5 rounded-full text-t-2xs font-black uppercase text-ink-subtle tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-surface-raised px-3 py-0.5 rounded-full text-t-2xs font-semibold text-ink-subtle tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">
                             Mover
                         </div>
 
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <Target size={14} className={isExceeded ? 'text-brand-text' : 'text-ink-subtle'} />
-                                <span className={`text-t-2xs font-black uppercase tracking-widest ${isExceeded ? 'text-brand-text' : 'text-ink-subtle'}`}>
+                                <span className={`text-t-2xs font-semibold ${isExceeded ? 'text-brand-text' : 'text-ink-subtle'}`}>
                                     Total Planificado
                                 </span>
                             </div>
@@ -51,7 +51,7 @@ export function FloatingMacroTracker({ current, targets, isVisible }: FloatingMa
                                 {isExceeded && <AlertCircle size={14} className="text-brand-text animate-pulse" />}
                                 <button 
                                     onClick={() => setShow(false)}
-                                    className="p-1 hover:bg-white/10 rounded-lg text-ink-subtle hover:text-ink transition-colors"
+                                    className="p-1 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-subtle hover:text-ink transition-colors"
                                 >
                                     <X size={14} />
                                 </button>
@@ -103,13 +103,13 @@ function MacroItem({ label, current, target, color, isExceeded }: any) {
     return (
         <div className="space-y-1">
             <div className="flex justify-between items-baseline">
-                <span className="text-t-2xs font-bold text-ink-subtle uppercase">{label}</span>
-                <span className={`text-xs font-black ${isExceeded ? 'text-brand-text' : color}`}>
+                <span className="text-t-2xs font-bold text-ink-subtle">{label}</span>
+                <span className={`text-xs font-semibold ${isExceeded ? 'text-brand-text' : color}`}>
                     {Math.round(current)}g
                 </span>
             </div>
             <div className="flex justify-between items-center text-t-2xs">
-                <span className="text-zinc-600">Obj: {target}</span>
+                <span className="text-ink-subtle">Obj: {target}</span>
                 <span className={isExceeded ? 'text-brand-text font-bold' : 'text-ink-subtle'}>
                     {Math.round(current - target) > 0 ? `+${Math.round(current - target)}` : ''}
                 </span>

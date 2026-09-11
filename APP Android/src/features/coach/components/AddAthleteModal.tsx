@@ -104,7 +104,7 @@ export function AddAthleteModal({
                 </p>
 
                 <div className="space-y-1.5">
-                    <label htmlFor="atleta-nombre" className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <label htmlFor="atleta-nombre" className="block text-t-2xs font-bold text-ink-subtle">
                         Nombre y apellidos
                     </label>
                     <input
@@ -121,7 +121,7 @@ export function AddAthleteModal({
                 </div>
 
                 <div className="space-y-1.5">
-                    <label htmlFor="atleta-correo" className="flex items-center gap-1.5 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <label htmlFor="atleta-correo" className="flex items-center gap-1.5 text-t-2xs font-bold text-ink-subtle">
                         Correo
                         <span className="font-medium normal-case tracking-normal text-ink-subtle">
                             · opcional
@@ -160,7 +160,7 @@ export function AddAthleteModal({
                             type="button"
                             onClick={handleInviteExisting}
                             disabled={saving}
-                            className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                            className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                         >
                             {saving ? <Loader size={15} className="animate-spin" /> : <Mail size={15} />}
                             Enviarle una invitación
@@ -179,7 +179,7 @@ export function AddAthleteModal({
                     <button
                         type="submit"
                         disabled={saving || fullName.trim().length < 2 || Boolean(conflict)}
-                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                     >
                         {saving ? <Loader size={15} className="animate-spin" /> : <UserPlus size={15} />}
                         Crear atleta

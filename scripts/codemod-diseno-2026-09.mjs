@@ -48,7 +48,9 @@ export function* archivos(dir) {
 }
 
 const PREFIJOS = /(^|\s)(flex|grid|text-|bg-|font-|rounded|p-\d|px-|py-|pt-|pb-|pl-|pr-|m-\d|mx-|my-|mt-|mb-|ml-|mr-|w-|h-|gap-|items-|justify-|border|uppercase|tracking-|italic|shadow|absolute|relative|fixed|inline|block|hidden|overflow|transition|hover:|focus:|group|space-|min-|max-|z-|opacity-|ring|animate|leading-|truncate|shrink|grow|self-|top-|left-|right-|bottom-|inset-|cursor-|select-|pointer-|whitespace-|object-|aspect-|sm:|md:|lg:|xl:|pc:|dark:)/;
-const esClase = (s) => PREFIJOS.test(s);
+// Se prueba sin los prefijos de variante: `placeholder:font-black` o
+// `md:uppercase` son clases igual que `font-black` o `uppercase`.
+const esClase = (s) => PREFIJOS.test(s.replace(/(^|\s)(?:[a-z-]+:)+/g, '$1'));
 
 const TOKEN = new Map(Object.entries({
     'font-black': 'font-semibold',

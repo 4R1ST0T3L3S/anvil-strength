@@ -26,7 +26,7 @@ export function WarmupConversionPanel({
 
     return (
         <div className="rounded-card border border-[var(--brand-line)] bg-surface-raised p-3">
-            <h4 className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">
+            <h4 className="text-t-2xs font-bold text-brand-text">
                 Se crearán {items.length} ejercicios
             </h4>
 
@@ -42,7 +42,7 @@ export function WarmupConversionPanel({
                             className="flex flex-wrap items-baseline gap-x-2 rounded-field bg-surface-sunken px-2.5 py-1.5"
                         >
                             {item.groupTag && (
-                                <span className="text-t-2xs font-black uppercase tracking-wide text-info">
+                                <span className="text-t-2xs font-semibold text-info">
                                     {item.groupTag}
                                     {item.rounds ? `·${item.rounds}` : ''}
                                 </span>
@@ -69,13 +69,13 @@ export function WarmupConversionPanel({
                 <button
                     onClick={() => onConvert(items)}
                     disabled={items.length === 0}
-                    className="flex h-10 items-center rounded-field bg-brand px-3 text-t-xs font-black uppercase tracking-wide text-brand-ink transition-colors duration-fast hover:bg-brand-hover disabled:opacity-40"
+                    className="flex h-10 items-center rounded-field bg-brand px-3 text-t-xs font-semibold text-brand-ink transition-colors duration-fast hover:bg-brand-hover disabled:opacity-40"
                 >
                     Crear ejercicios
                 </button>
                 <button
                     onClick={onCancel}
-                    className="flex h-10 items-center rounded-field px-3 text-t-xs font-bold uppercase tracking-wide text-ink-muted transition-colors duration-fast hover:bg-surface-overlay hover:text-ink"
+                    className="flex h-10 items-center rounded-field px-3 text-t-xs font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-overlay hover:text-ink"
                 >
                     Cancelar
                 </button>

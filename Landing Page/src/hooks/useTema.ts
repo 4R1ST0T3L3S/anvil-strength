@@ -1,5 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { aplicarTema, guardarTema, leerTema, temaEfectivo, type Tema } from '../lib/tema';
+
+/**
+ * EL TEMA QUE HAY PINTADO AHORA MISMO, lo haya cambiado quien lo haya
+ * cambiado.
+ *
+ * `useTema` guarda la ELECCIÓN en un estado propio de cada componente, así
+ * que dos componentes que lo usan no se enteran de lo que cambia el otro. Lo
+ * que no engaña es el atributo `data-theme` del `<html>`: esto lo observa, y
+ * sirve a quien solo necesita saber cómo pintarse (los avisos, las gráficas).
+ */
+function suscribirTemaPintado(avisar: () => void) {
+    const observador = new MutationObserver(avisar);
+    observador.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observador.disconnect();
+}
+
+const leerTemaPintado = (): 'claro' | 'oscuro' =>
+    document.documentElement.getAttribute('data-theme') === 'light' ? 'claro' : 'oscuro';
+
+export function useTemaEnPantalla(): 'claro' | 'oscuro' {
+    return useSyncExternalStore(suscribirTemaPintado, leerTemaPintado, () => 'oscuro');
+}
 
 /**
  * El tema, para React.

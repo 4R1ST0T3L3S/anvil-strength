@@ -103,29 +103,29 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
             {/* Header */}
             <div className="flex items-center justify-between gap-3 px-4 md:px-8 py-4 border-b border-subtle bg-surface-raised shrink-0 print:hidden">
                 <div className="min-w-0">
-                    <h2 className="text-lg md:text-2xl font-black uppercase text-ink flex items-center gap-2 tracking-tight truncate">
+                    <h2 className="text-lg md:text-2xl font-semibold text-ink flex items-center gap-2 tracking-tight truncate">
                         <Swords className="text-brand-text shrink-0" size={22} />
                         Game Plan · <span className="text-ink-muted truncate">{athleteName}</span>
                     </h2>
-                    <p className="text-t-2xs font-bold text-ink-subtle uppercase tracking-wider truncate">
+                    <p className="text-t-2xs font-bold text-ink-subtle truncate">
                         {competition.name} · {new Date(competition.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <button
                         onClick={handleExportPdf}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-line rounded-xl text-xs font-black uppercase text-ink hover:text-ink hover:border-brand/40 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-[var(--fill-muted)] border border-line rounded-xl text-xs font-semibold text-ink hover:text-ink hover:border-brand/40 transition-colors"
                     >
                         <FileDown size={14} className="text-brand-text" /> PDF
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-red-700 rounded-xl text-xs font-black uppercase text-ink transition-colors disabled:opacity-40"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand-hover rounded-xl text-xs font-semibold text-ink transition-colors disabled:opacity-40"
                     >
                         {saving ? <Loader className="animate-spin" size={14} /> : <Save size={14} />} Guardar
                     </button>
-                    <button onClick={onClose} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-ink-muted hover:text-ink transition-colors" aria-label="Cerrar">
+                    <button onClick={onClose} className="p-2.5 bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] rounded-xl text-ink-muted hover:text-ink transition-colors" aria-label="Cerrar">
                         <X size={18} />
                     </button>
                 </div>
@@ -138,7 +138,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                         const lift = plan[key];
                         return (
                             <div key={key} className="bg-surface-raised border border-subtle rounded-2xl p-5 md:p-6">
-                                <h3 className="text-xl font-black uppercase italic text-ink mb-5 flex items-center gap-3">
+                                <h3 className="text-xl font-semibold text-ink mb-5 flex items-center gap-3">
                                     <span className="text-brand-text">{label}</span>
                                 </h3>
 
@@ -146,19 +146,19 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                                     {lift.attempts.map((att, i) => (
                                         <div key={i} className="bg-black/20 border border-subtle rounded-xl p-4 space-y-2.5">
-                                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle">{ATTEMPT_LABELS[i]}</p>
+                                            <p className="text-t-2xs font-semibold text-ink-subtle">{ATTEMPT_LABELS[i]}</p>
                                             <div className="grid grid-cols-3 gap-2">
                                                 <div>
-                                                    <label className="text-t-2xs font-black uppercase text-gray-600 block mb-1">Kg</label>
+                                                    <label className="text-t-2xs font-semibold text-ink-subtle block mb-1">Kg</label>
                                                     <input
                                                         value={att.kg}
                                                         onChange={(e) => updateAttempt(key, i, 'kg', e.target.value)}
                                                         placeholder="—"
-                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm font-black text-center focus:border-brand/50"
+                                                        className="w-full bg-surface-sunken border border-line rounded-lg py-2 px-2 text-ink text-sm font-semibold text-center focus:border-brand/50"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-t-2xs font-black uppercase text-gray-600 block mb-1">RPE</label>
+                                                    <label className="text-t-2xs font-semibold text-ink-subtle block mb-1">RPE</label>
                                                     <input
                                                         value={att.rpe}
                                                         onChange={(e) => updateAttempt(key, i, 'rpe', e.target.value)}
@@ -167,7 +167,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="text-t-2xs font-black uppercase text-gray-600 block mb-1">Vel m/s</label>
+                                                    <label className="text-t-2xs font-semibold text-ink-subtle block mb-1">Vel m/s</label>
                                                     <input
                                                         value={att.velocity}
                                                         onChange={(e) => updateAttempt(key, i, 'velocity', e.target.value)}
@@ -188,7 +188,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
 
                                 {/* Aproximaciones (calentamientos) */}
                                 <div className="mb-4">
-                                    <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-2">Aproximaciones</p>
+                                    <p className="text-t-2xs font-semibold text-ink-subtle mb-2">Aproximaciones</p>
                                     <div className="flex flex-wrap items-center gap-2">
                                         {lift.warmups.map((w, i) => (
                                             <div key={i} className="flex items-center gap-1 bg-black/20 border border-line rounded-lg px-2 py-1.5">
@@ -198,7 +198,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                     placeholder="kg"
                                                     className="w-14 bg-transparent text-ink text-xs font-bold text-center"
                                                 />
-                                                <span className="text-gray-600 text-xs">×</span>
+                                                <span className="text-ink-subtle text-xs">×</span>
                                                 <input
                                                     value={w.reps}
                                                     onChange={(e) => updateLift(key, { warmups: lift.warmups.map((x, xi) => xi === i ? { ...x, reps: e.target.value } : x) })}
@@ -207,7 +207,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                                 />
                                                 <button
                                                     onClick={() => updateLift(key, { warmups: lift.warmups.filter((_, xi) => xi !== i) })}
-                                                    className="text-gray-700 hover:text-danger-text p-0.5"
+                                                    className="text-ink-faint hover:text-danger-text p-0.5"
                                                 >
                                                     <Trash2 size={11} />
                                                 </button>
@@ -215,7 +215,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                         ))}
                                         <button
                                             onClick={() => updateLift(key, { warmups: [...lift.warmups, { kg: '', reps: '' }] })}
-                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-brand/10 text-ink-subtle hover:text-brand-text text-t-2xs font-black uppercase transition-colors border border-transparent hover:border-brand/30"
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--fill-muted)] hover:bg-brand/10 text-ink-subtle hover:text-brand-text text-t-2xs font-semibold transition-colors border border-transparent hover:border-brand/30"
                                         >
                                             <Plus size={11} /> Serie
                                         </button>
@@ -235,25 +235,25 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
 
                     {/* Notas generales */}
                     <div className="bg-surface-raised border border-subtle rounded-2xl p-5 md:p-6">
-                        <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">Notas generales del día</p>
+                        <p className="text-t-2xs font-semibold text-ink-subtle mb-3">Notas generales del día</p>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             rows={4}
                             maxLength={2000}
                             placeholder="Pesaje, horarios, comida, equipación, mentalidad..."
-                            className="w-full bg-black/20 border border-subtle rounded-xl py-3 px-4 text-gray-200 text-sm focus:border-brand/50 resize-none"
+                            className="w-full bg-black/20 border border-subtle rounded-xl py-3 px-4 text-ink text-sm focus:border-brand/50 resize-none"
                         />
                     </div>
                 </div>
             </div>
 
             {/* ============ VISTA IMPRIMIBLE (solo visible al imprimir/exportar PDF) ============ */}
-            <div id="gameplan-print" className="hidden print:block bg-white text-black p-8 font-sans">
+            <div id="gameplan-print" className="hidden print:block bg-ink text-surface-canvas p-8 font-sans">
                 <div className="border-b-4 border-black pb-4 mb-6 flex items-end justify-between">
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-widest">ANVIL STRENGTH · GAME PLAN</p>
-                        <h1 className="text-3xl font-black uppercase">{athleteName}</h1>
+                        <p className="text-xs font-bold">ANVIL STRENGTH · GAME PLAN</p>
+                        <h1 className="text-3xl font-semibold">{athleteName}</h1>
                     </div>
                     <div className="text-right text-sm font-bold">
                         <p>{competition.name}</p>
@@ -268,10 +268,10 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                     if (!hasContent) return null;
                     return (
                         <div key={key} className="mb-6" style={{ pageBreakInside: 'avoid' }}>
-                            <h2 className="text-xl font-black uppercase border-b-2 border-black pb-1 mb-3">{label}</h2>
+                            <h2 className="text-xl font-semibold border-b-2 border-black pb-1 mb-3">{label}</h2>
                             <table className="w-full text-sm border-collapse mb-2">
                                 <thead>
-                                    <tr className="text-left text-xs uppercase font-black border-b border-gray-400">
+                                    <tr className="text-left text-xs font-semibold border-b border-gray-400">
                                         <th className="py-1 pr-4">Intento</th>
                                         <th className="py-1 pr-4">Kg</th>
                                         <th className="py-1 pr-4">RPE</th>
@@ -283,7 +283,7 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                                     {lift.attempts.map((a, i) => (
                                         <tr key={i} className="border-b border-gray-200">
                                             <td className="py-1.5 pr-4 font-bold">{ATTEMPT_LABELS[i]}</td>
-                                            <td className="py-1.5 pr-4 font-black text-lg">{a.kg || '—'}</td>
+                                            <td className="py-1.5 pr-4 font-semibold text-lg">{a.kg || '—'}</td>
                                             <td className="py-1.5 pr-4">{a.rpe || '—'}</td>
                                             <td className="py-1.5 pr-4">{a.velocity || '—'}</td>
                                             <td className="py-1.5 text-xs">{a.note || ''}</td>
@@ -293,18 +293,18 @@ export function GamePlanEditor({ coachId, athleteId, athleteName, competition, o
                             </table>
                             {lift.warmups.length > 0 && (
                                 <p className="text-sm">
-                                    <span className="font-black uppercase text-xs">Aproximaciones: </span>
+                                    <span className="font-semibold text-xs">Aproximaciones: </span>
                                     {lift.warmups.map(w => `${w.kg}×${w.reps}`).join(' → ')}
                                 </p>
                             )}
-                            {lift.liftNote && <p className="text-xs mt-1 italic">📝 {lift.liftNote}</p>}
+                            {lift.liftNote && <p className="text-xs mt-1">📝 {lift.liftNote}</p>}
                         </div>
                     );
                 })}
 
                 {notes && (
                     <div className="mt-4 border-t-2 border-black pt-3">
-                        <h3 className="font-black uppercase text-sm mb-1">Notas generales</h3>
+                        <h3 className="font-semibold text-sm mb-1">Notas generales</h3>
                         <p className="text-sm whitespace-pre-wrap">{notes}</p>
                     </div>
                 )}

@@ -15,15 +15,15 @@ const isChunkLoadError = (error: unknown): boolean => {
     );
 };
 
+const CLAVE_RECARGAS = 'chunk_reload_count';
+
+const recargasHechas = () => {
+    try { return parseInt(sessionStorage.getItem(CLAVE_RECARGAS) || '0', 10); } catch { return 0; }
+};
+
 export function ErrorFallback({ error }: ErrorFallbackProps) {
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
     const isChunkError = isChunkLoadError(error);
-    // Se decide al montar: el error no cambia mientras vive el fallback, y
-    // fijarlo desde el efecto era un setState síncrono de más (misma
-    // condición que el `else` del efecto de abajo).
-    const [tooManyRetries] = useState(() =>
-        isChunkError && parseInt(sessionStorage.getItem('chunk_reload_count') || '0', 10) >= 2
-    );
 
     /**
      * Recarga automática ante un chunk desfasado (caché de Service Worker
@@ -34,75 +34,79 @@ export function ErrorFallback({ error }: ErrorFallbackProps) {
      * entraba en bucle: recarga -> mismo error -> recarga otra vez, para
      * siempre. El contador vive en `sessionStorage` para sobrevivir a la
      * propia recarga; al tercer intento se rinde y enseña el error normal.
+     *
+     * Se decide en el primer pintado (no en un efecto) para que la pantalla
+     * de «actualizando» no parpadee antes de rendirse.
      */
+    const [tooManyRetries] = useState(() => isChunkError && recargasHechas() >= 2);
+
     useEffect(() => {
-        if (isChunkError) {
-            const reloads = parseInt(sessionStorage.getItem('chunk_reload_count') || '0', 10);
-            if (reloads < 2) {
-                sessionStorage.setItem('chunk_reload_count', (reloads + 1).toString());
-
-                if ('caches' in window) {
-                    caches.keys().then((names) => {
-                        names.forEach((name) => caches.delete(name));
-                    });
-                }
-
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then((registrations) => {
-                        Promise.all(registrations.map((r) => r.unregister())).then(() => {
-                            window.location.reload();
-                        });
-                    });
-                } else {
-                    window.location.reload();
-                }
-            } else {
-                sessionStorage.removeItem('chunk_reload_count');
-            }
-        } else {
-            sessionStorage.removeItem('chunk_reload_count');
+        if (!isChunkError) {
+            sessionStorage.removeItem(CLAVE_RECARGAS);
+            return;
         }
-    }, [isChunkError]);
+        if (tooManyRetries) {
+            sessionStorage.removeItem(CLAVE_RECARGAS);
+            return;
+        }
 
-    // Show brief message while reloading
+        sessionStorage.setItem(CLAVE_RECARGAS, (recargasHechas() + 1).toString());
+
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                names.forEach((name) => caches.delete(name));
+            });
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+                Promise.all(registrations.map((r) => r.unregister())).then(() => {
+                    window.location.reload();
+                });
+            });
+        } else {
+            window.location.reload();
+        }
+    }, [isChunkError, tooManyRetries]);
+
+    // Un momento mientras recarga.
     if (isChunkError && !tooManyRetries) {
         return (
-            <div role="alert" className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center p-4">
-                <div className="bg-surface-sunken p-8 rounded-xl border border-line max-w-md w-full text-center shadow-2xl">
-                    <div className="mx-auto bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                        <RefreshCw className="text-ink h-8 w-8 animate-spin" />
+            <div role="alert" className="flex min-h-[100dvh] flex-col items-center justify-center bg-surface-canvas p-4 text-ink">
+                <div className="w-full max-w-md rounded-card border border-[var(--card-border)] bg-surface-raised p-8 text-center shadow-card">
+                    <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-pill bg-[var(--fill-muted)]">
+                        <RefreshCw className="h-6 w-6 animate-spin text-ink-muted" aria-hidden="true" />
                     </div>
-                    <h2 className="text-xl font-black uppercase tracking-tighter mb-2 text-ink">Actualizando...</h2>
-                    <p className="text-ink-muted text-sm">Detectamos una nueva versión. Recargando la app.</p>
+                    <h2 className="mb-1.5 text-t-lg font-semibold text-ink">Actualizando…</h2>
+                    <p className="text-t-sm text-ink-muted">Hay una versión nueva. La app se recarga sola.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div role="alert" className="min-h-[100dvh] bg-surface-sunken text-ink flex flex-col items-center justify-center p-4">
-            <div className="bg-surface-sunken p-8 rounded-xl border border-danger/20 max-w-md w-full text-center shadow-2xl">
-                <div className="mx-auto bg-danger-quiet w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                    <AlertTriangle className="text-brand-text h-8 w-8" />
+        <div role="alert" className="flex min-h-[100dvh] flex-col items-center justify-center bg-surface-canvas p-4 text-ink">
+            <div className="w-full max-w-md rounded-card border border-[var(--card-border)] bg-surface-raised p-8 text-center shadow-card">
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-pill bg-danger-quiet">
+                    <AlertTriangle className="h-6 w-6 text-danger-text" aria-hidden="true" />
                 </div>
 
-                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 text-ink">
-                    Algo salió mal
-                </h2>
+                <h2 className="mb-1.5 text-t-xl font-semibold tracking-[-0.01em] text-ink">Algo ha fallado</h2>
 
-                <p className="text-ink-muted mb-6">
+                <p className="mb-5 text-t-sm text-ink-muted">
                     Ha ocurrido un error inesperado en esta sección.
                 </p>
 
-                <pre className="text-xs text-danger-text bg-black/50 p-4 rounded mb-8 overflow-auto text-left">
+                <pre className="mb-6 max-h-40 overflow-auto rounded-field bg-surface-sunken p-3 text-left font-mono text-t-xs text-danger-text">
                     {errorMessage}
                 </pre>
 
                 <button
+                    type="button"
                     onClick={() => window.location.reload()}
-                    className="w-full bg-white text-black font-bold uppercase tracking-wider py-4 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-field bg-ink text-t-sm font-semibold text-surface-canvas transition-opacity duration-fast hover:opacity-90"
                 >
-                    <RefreshCw size={20} />
+                    <RefreshCw size={18} aria-hidden="true" />
                     Intentar de nuevo
                 </button>
             </div>

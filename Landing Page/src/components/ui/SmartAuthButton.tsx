@@ -42,12 +42,12 @@ export function SmartAuthButton({
     };
 
     // Variant styles
-    const baseStyles = `inline-flex items-center justify-center gap-2 font-black uppercase tracking-wider transition-opacity rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`;
+    const baseStyles = `inline-flex items-center justify-center gap-2 font-semibold transition-opacity rounded-lg disabled:opacity-50 disabled:cursor-not-allowed`;
 
     const variantStyles = {
-        primary: 'bg-brand hover:bg-red-700 text-ink px-8 py-4 text-lg shadow-lg shadow-brand/20 hover:shadow-brand/40',
-        secondary: 'bg-white hover:bg-gray-200 text-black px-6 py-3 text-base',
-        ghost: 'bg-transparent hover:bg-white/10 text-ink border-2 border-strong hover:border-white px-6 py-2 text-sm'
+        primary: 'bg-brand hover:bg-brand-hover text-ink px-8 py-4 text-lg shadow-lg shadow-brand/20 hover:shadow-brand/40',
+        secondary: 'bg-ink hover:opacity-90 text-surface-canvas px-6 py-3 text-base',
+        ghost: 'bg-transparent hover:bg-[var(--fill-pressed)] text-ink border-2 border-strong hover:border-white px-6 py-2 text-sm'
     };
 
     const buttonText = isLoading

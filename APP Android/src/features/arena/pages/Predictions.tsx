@@ -67,8 +67,8 @@ export default function Predictions({ user }: PredictionsProps) {
     >
       <div className="p-4 md:p-8 text-ink min-h-[100dvh]">
         {/* CABECERA */}
-        <header className="mb-10 border-b border-gray-800 pb-6">
-          <h1 className="text-4xl md:text-5xl font-black text-warning tracking-tighter uppercase mb-2 flex items-center gap-3">
+        <header className="mb-10 border-b border-[var(--separator)] pb-6">
+          <h1 className="text-4xl md:text-5xl font-semibold text-warning tracking-tight mb-2 flex items-center gap-3">
             <Trophy className="h-10 w-10 md:h-12 md:w-12" />
             LA ARENA
           </h1>
@@ -81,11 +81,11 @@ export default function Predictions({ user }: PredictionsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* TARJETA DE ESTADO (MONEDERO) */}
-          <div className="bg-surface-canvas border border-gray-800 rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
+          <div className="bg-surface-canvas border border-[var(--separator)] rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
 
             <div className="absolute top-0 right-0 w-32 h-32 bg-warning-quiet rounded-full blur-3xl" />
 
-            <div className="p-4 bg-surface-raised rounded-full border border-gray-700 relative z-10">
+            <div className="p-4 bg-surface-raised rounded-full border border-[var(--separator)] relative z-10">
               <AlertCircle size={48} className="text-ink-subtle" />
             </div>
 
@@ -97,15 +97,15 @@ export default function Predictions({ user }: PredictionsProps) {
             </div>
 
             <div className="bg-gradient-to-r from-yellow-900/20 to-yellow-600/20 px-8 py-4 rounded-2xl border border-yellow-500/30 flex flex-col items-center w-full max-w-sm relative z-10">
-              <span className="text-warning/80 text-xs font-bold tracking-widest uppercase mb-1">SALDO ACTUAL</span>
+              <span className="text-warning/80 text-xs font-bold mb-1">SALDO ACTUAL</span>
               <div className="flex items-center gap-3">
                 <Coins className={`h-8 w-8 text-warning ${loading ? 'animate-pulse' : ''}`} />
 
                 {/* AQUÍ MOSTRAMOS EL SALDO REAL O UN SPINNER */}
                 {loading ? (
-                  <span className="text-2xl font-black text-gray-600">...</span>
+                  <span className="text-2xl font-semibold text-ink-subtle">...</span>
                 ) : (
-                  <span className="text-5xl font-black text-ink tracking-tighter drop-shadow-lg animate-rise">
+                  <span className="text-5xl font-semibold text-ink tracking-tight drop-shadow-lg animate-rise">
                     {balance}
                   </span>
                 )}
@@ -122,7 +122,7 @@ export default function Predictions({ user }: PredictionsProps) {
               <TrendingUp size={20} /> Próximos Eventos
             </h3>
 
-            <div className="bg-surface-raised p-4 rounded-xl border border-gray-700">
+            <div className="bg-surface-raised p-4 rounded-xl border border-[var(--separator)]">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs text-success font-bold bg-green-400/10 px-2 py-1 rounded">EN VIVO</span>
                 <span className="text-xs text-ink-subtle">Marzo 2026</span>
@@ -131,7 +131,7 @@ export default function Predictions({ user }: PredictionsProps) {
               <div className="text-sm text-ink-muted">Ganador Absoluto Masculino</div>
             </div>
 
-            <div className="bg-surface-raised p-4 rounded-xl border border-gray-700">
+            <div className="bg-surface-raised p-4 rounded-xl border border-[var(--separator)]">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs text-ink-subtle font-bold bg-surface-overlay px-2 py-1 rounded">PRÓXIMAMENTE</span>
                 <span className="text-xs text-ink-subtle">Abril 2026</span>

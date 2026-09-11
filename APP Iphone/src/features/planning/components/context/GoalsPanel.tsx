@@ -105,7 +105,7 @@ export function GoalsPanel({ athleteId, coachId, blockId, logged, marks }: Goals
                     <button
                         type="button"
                         onClick={() => setCreating(true)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-field border border-dashed border-[var(--border-default)] py-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:border-brand/50 hover:text-brand-text"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-field border border-dashed border-[var(--border-default)] py-2 text-t-2xs font-bold text-ink-subtle transition-colors duration-fast ease-snap hover:border-brand/50 hover:text-brand-text"
                     >
                         <Plus size={13} aria-hidden="true" />
                         Nuevo objetivo
@@ -159,7 +159,7 @@ function GoalRow({
         <li className={`rounded-field border p-2.5 ${cumplido ? 'border-[var(--success)]/30 bg-[var(--success-quiet)]' : 'border-[var(--border-subtle)] bg-surface-sunken'}`}>
             <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-1.5 truncate text-t-xs font-black uppercase tracking-wide text-ink">
+                    <p className="flex items-center gap-1.5 truncate text-t-xs font-semibold text-ink">
                         {cumplido && <CheckCircle2 size={12} className="shrink-0 text-success" aria-hidden="true" />}
                         {goal.exercise_name}
                     </p>
@@ -189,7 +189,7 @@ function ComparisonCell({ label, side, unidad }: { label: string; side: GoalSide
     if (!side || side.valor == null) {
         return (
             <div className="rounded bg-surface-overlay/50 px-1.5 py-1 text-center">
-                <p className="text-t-2xs uppercase tracking-wide text-ink-faint">{label}</p>
+                <p className="text-t-2xs text-ink-faint">{label}</p>
                 <p className="text-t-2xs text-ink-faint">—</p>
             </div>
         );
@@ -201,7 +201,7 @@ function ComparisonCell({ label, side, unidad }: { label: string; side: GoalSide
 
     return (
         <div className="rounded bg-surface-overlay/50 px-1.5 py-1 text-center" title={`${side.sets}×${side.reps ?? '?'}`}>
-            <p className="text-t-2xs uppercase tracking-wide text-ink-faint">{label}</p>
+            <p className="text-t-2xs text-ink-faint">{label}</p>
             <p className={`text-t-xs font-bold tabular-nums ${tone}`}>
                 {side.valor}{unidad}
             </p>
@@ -267,7 +267,7 @@ function NewGoalForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-2 rounded-field border border-[var(--border-default)] bg-surface-sunken p-2.5">
             <div className="flex items-center justify-between">
-                <p className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle">Nuevo objetivo</p>
+                <p className="text-t-2xs font-semibold text-ink-subtle">Nuevo objetivo</p>
                 <button type="button" onClick={onCancel} aria-label="Cancelar" className="text-ink-faint hover:text-ink">
                     <X size={14} aria-hidden="true" />
                 </button>
@@ -331,7 +331,7 @@ function NewGoalForm({
             <button
                 type="submit"
                 disabled={saving}
-                className="flex h-9 w-full items-center justify-center rounded-field bg-brand text-t-xs font-bold uppercase tracking-wide text-brand-ink transition-colors duration-fast disabled:opacity-60"
+                className="flex h-9 w-full items-center justify-center rounded-field bg-brand text-t-xs font-bold text-brand-ink transition-colors duration-fast disabled:opacity-60"
             >
                 {saving ? 'Guardando…' : 'Crear objetivo'}
             </button>

@@ -214,7 +214,7 @@ export function AthleteContextPanel({
             >
                 <CalendarDays size={13} className="shrink-0 text-brand-text" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                    <span className="block text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+                    <span className="block text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                         Calendario
                     </span>
                     <span className="mt-0.5 block truncate text-t-2xs text-ink-faint">

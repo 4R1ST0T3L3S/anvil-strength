@@ -199,14 +199,14 @@ export function AthleteTimelineCalendar({
                     <button
                         onClick={() => setMonthsBack(b => b + MONTHS_BACK_STEP)}
                         title={`Ver ${MONTHS_BACK_STEP} meses más atrás`}
-                        className="rounded-chip bg-surface-sunken px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                        className="rounded-chip bg-surface-sunken px-2 py-1 text-t-2xs font-bold text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                         ← Atrás
                     </button>
                     {monthsBack !== monthsBackProp && (
                         <button
                             onClick={() => setMonthsBack(monthsBackProp)}
-                            className="rounded-chip px-2 py-1 text-t-2xs font-bold uppercase tracking-wide text-brand-text transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                            className="rounded-chip px-2 py-1 text-t-2xs font-bold text-brand-text transition-colors duration-fast ease-snap hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         >
                             Hoy
                         </button>
@@ -217,7 +217,7 @@ export function AthleteTimelineCalendar({
                                 key={m}
                                 onClick={() => setMonthsForward(m)}
                                 aria-pressed={monthsForward === m}
-                                className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m ? 'bg-brand text-brand-ink' : 'text-ink-subtle hover:text-ink'}`}
+                                className={`rounded-chip px-2.5 py-1 text-t-2xs font-bold transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${monthsForward === m ? 'bg-brand text-brand-ink' : 'text-ink-subtle hover:text-ink'}`}
                             >
                                 {m}m
                             </button>
@@ -246,7 +246,7 @@ export function AthleteTimelineCalendar({
                                     {weeks.map((w, i) => (
                                         <div key={i} style={{ width: WEEK_COL_WIDTH }} className="shrink-0 border-r border-[var(--border-subtle)] py-1 text-center last:border-r-0">
                                             {w.label && (
-                                                <span className="block truncate text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{w.label}</span>
+                                                <span className="block truncate text-t-2xs font-bold text-ink-subtle">{w.label}</span>
                                             )}
                                         </div>
                                     ))}
@@ -256,7 +256,7 @@ export function AthleteTimelineCalendar({
                                 {WEEKDAYS.map(day => (
                                     <div key={day.key} className="flex border-b border-[var(--border-subtle)] last:border-b-0">
                                         <div className="sticky left-0 z-10 flex w-14 shrink-0 items-center border-r border-[var(--border-subtle)] bg-surface-raised px-1.5 py-1.5">
-                                            <span className="text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{day.short}</span>
+                                            <span className="text-t-2xs font-bold text-ink-subtle">{day.short}</span>
                                         </div>
                                         {weeks.map((w, i) => {
                                             const date = addDays(w.monday, day.index - 1);
@@ -287,7 +287,7 @@ export function AthleteTimelineCalendar({
                                                     {cell && theme && (
                                                         <span className="flex flex-col items-center gap-0.5">
                                                             <span className={`h-1.5 w-1.5 rounded-full ${theme.bar} ${cell.hasContent ? '' : 'opacity-40'}`} aria-hidden="true" />
-                                                            <span className={`text-[9px] font-black uppercase leading-none ${theme.accent} ${cell.hasContent ? '' : 'opacity-50'}`}>
+                                                            <span className={`text-t-2xs font-semibold leading-none ${theme.accent} ${cell.hasContent ? '' : 'opacity-50'}`}>
                                                                 {cell.lift}
                                                             </span>
                                                         </span>

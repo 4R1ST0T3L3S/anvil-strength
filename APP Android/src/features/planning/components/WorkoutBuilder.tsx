@@ -37,6 +37,8 @@ import { DayCard } from './builder/DayCard';
 import type { DayOption } from './builder/CopyDayMenu';
 import { useCoachPrefs } from '../../../hooks/useCoachPrefs';
 import { IconAction, WeekMenu } from './builder/WeekMenu';
+import { WeekNotes } from './builder/WeekNotes';
+import { FrequencyPlanner } from './FrequencyPlanner';
 import { DayEditorModal } from './builder/DayEditorModal';
 import type { ExtendedSession, ExtendedSessionExercise, FullBlockData, ExerciseCardUpdates } from './builder/types';
 import {
@@ -110,6 +112,10 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
     const savedSnapshot = useRef<Map<string, string>>(new Map());
     // Expanded weeks state - default to collapsed
     const [expandedWeeks, setExpandedWeeks] = useState<number[]>([]);
+    /** Mientras se borra una semana, las filas animan su recolocación. Ver handleDeleteWeek. */
+    const [animandoSemanas, setAnimandoSemanas] = useState(false);
+    /** La tarjeta de día desde la que se abrió el editor, para que crezca desde ella. */
+    const [origenEditor, setOrigenEditor] = useState<DOMRect | null>(null);
     /** La semana para la que se abrió "Semana anterior ↔ siguiente" (apartado 6). `null` = cerrado. */
     const [comparisonWeek, setComparisonWeek] = useState<number | null>(null);
 
@@ -436,8 +442,13 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
         }
     };
 
-    const loadData = useCallback(async () => {
-        setLoading(true);
+    /**
+     * `silencioso`: vuelve a leer sin tapar la pantalla con el spinner. Lo usa
+     * el borrado de semana para resincronizar si algo falla sin desmontar la
+     * lista entera, que es lo que deja ver QUÉ fila se ha ido.
+     */
+    const loadData = useCallback(async ({ silencioso = false }: { silencioso?: boolean } = {}) => {
+        if (!silencioso) setLoading(true);
         if (!athleteId || !blockId) {
             setBlockData(null);
             setLoading(false);
@@ -1413,26 +1424,78 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
         }
     };
 
-    const handleDeleteWeek = async (week: number) => {
+    /**
+     * BORRAR UNA SEMANA.
+     *
+     * El servidor ya lo hacía bien (ver `deleteWeek`: borra la semana y adelanta
+     * las siguientes un puesto, sesiones y metadatos; comprobado contra la base
+     * con una transacción revertida). Lo que fallaba era lo que se VEÍA: las
+     * filas iban con `key={week}`, que es el número ISO, así que al adelantarse
+     * las semanas React conservaba la fila del número borrado —con el contenido
+     * de la siguiente dentro— y la que desaparecía era siempre la del ÚLTIMO
+     * número. Con semanas duplicadas, que es lo normal al programar, parecía
+     * exactamente que se había borrado la última y no la elegida.
+     *
+     * Ahora:
+     *   - las filas se identifican por su contenido (`claveDeSemana`), así que
+     *     la que se va es la que se ha pedido borrar, con su animación;
+     *   - el cambio se aplica en local al instante, igual que en el servidor, y
+     *     solo se recarga si algo falla: los cambios sin guardar de las otras
+     *     semanas no se pierden por borrar una;
+     *   - el diálogo dice «Semana 2» —lo que pone la fila— y no «semana 38».
+     */
+    const handleDeleteWeek = (week: number, index: number) => {
         if (!blockData) return;
+
+        const etiqueta = `Semana ${index + 1}`;
+        const nombre = weekName(week);
+        const rango = getDateRangeFromWeek(week);
+        const siguientes = weeks.length - index - 1;
 
         setConfirmModal({
             isOpen: true,
-            title: `Eliminar semana ${week}`,
-            description: `Se borran todos los días de la semana ${week} y sus ejercicios. No se puede deshacer.`,
+            title: `Eliminar ${etiqueta}${nombre ? ` · ${nombre}` : ''}`,
+            description:
+                `Se borran los días de la ${etiqueta} (${formatDateRange(rango.start, rango.end)}) y sus ejercicios.` +
+                (siguientes === 1
+                    ? ' La semana siguiente se adelanta un puesto.'
+                    : siguientes > 1
+                        ? ` Las ${siguientes} semanas siguientes se adelantan un puesto.`
+                        : '') +
+                ' No se puede deshacer.',
             confirmText: 'Eliminar',
             variant: 'danger',
             onConfirm: async () => {
+                const id = blockData.id;
+                setAnimandoSemanas(true);
+
+                // En local, exactamente lo que va a hacer el servidor.
+                setBlockData(prev => prev ? {
+                    ...prev,
+                    end_week: prev.end_week != null ? prev.end_week - 1 : prev.end_week,
+                    sessions: prev.sessions
+                        .filter(s => s.week_number !== week)
+                        .map(s => (s.week_number > week ? { ...s, week_number: s.week_number - 1 } : s)),
+                } : prev);
+                setWeekMeta(prev => {
+                    const out: Record<number, WeekMeta> = {};
+                    for (const [k, v] of Object.entries(prev)) {
+                        const w = Number(k);
+                        if (w !== week) out[w > week ? w - 1 : w] = v;
+                    }
+                    return out;
+                });
+                setExpandedWeeks(prev => prev.filter(w => w !== week).map(w => (w > week ? w - 1 : w)));
+
                 try {
-                    setLoading(true);
-                    await trainingService.deleteWeek(blockData.id, week);
-                    await loadData();
-                    toast.success(`Semana ${week} eliminada`);
+                    await trainingService.deleteWeek(id, week);
+                    toast.success(`${etiqueta} eliminada`);
                 } catch (err) {
                     console.error(err);
-                    toast.error("Error eliminando semana");
+                    toast.error('No se pudo eliminar la semana. Se vuelve a cargar el bloque.');
+                    await loadData({ silencioso: true });
                 } finally {
-                    setLoading(false);
+                    window.setTimeout(() => setAnimandoSemanas(false), 700);
                 }
             }
         });
@@ -1777,6 +1840,30 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
         return Array.from({ length: weekCount }, (_, i) => startWeek + i);
     }, [blockData]);
 
+    /**
+     * Identidad ESTABLE de una fila de semana: el id de su primer día.
+     *
+     * No puede ser el número de semana. Al borrar una, las siguientes se
+     * adelantan un número; con `key={week}` React conservaba la fila del
+     * número borrado —con otro contenido dentro— y quitaba la del último, que
+     * es exactamente el "se borra la última y no la que he pedido". El id de
+     * una sesión no cambia al adelantarse la semana (se actualiza en el sitio),
+     * así que la fila se va con su contenido.
+     */
+    const claveDeSemana = (week: number) => {
+        let primera: ExtendedSession | undefined;
+        for (const s of blockData?.sessions ?? []) {
+            if (s.week_number === week && (!primera || s.day_number < primera.day_number)) primera = s;
+        }
+        return primera ? primera.id : `vacia-${week}`;
+    };
+
+    /** Abre el editor de un día. `origen` = la tarjeta pulsada, para que crezca desde ella. */
+    const abrirDia = useCallback((sessionId: string, origen?: DOMRect) => {
+        setOrigenEditor(origen ?? null);
+        setEditingSessionId(sessionId);
+    }, []);
+
     // Entrada de los motores de volumen y analítica. Se calcula sobre el estado
     // local para que el análisis refleje también lo que aún no se ha guardado:
     // el coach necesita ver el efecto del cambio antes de decidir si lo guarda.
@@ -1913,7 +2000,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         style={{ transformOrigin: 'top left' }}
                                         className="absolute left-0 top-full z-dropdown mt-2 w-64 rounded-card bg-surface-overlay p-3 shadow-overlay"
                                     >
-                                        <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                        <p className="text-t-2xs font-semibold text-ink-subtle">
                                             ¿Cuántos días se entrena?
                                         </p>
                                         <p className="mt-1 text-t-xs text-ink-subtle">
@@ -1960,7 +2047,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         style={{ transformOrigin: 'top left' }}
                                         className="absolute left-0 top-full z-dropdown mt-2 w-72 rounded-card bg-surface-overlay p-3 shadow-overlay"
                                     >
-                                        <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                        <p className="text-t-2xs font-semibold text-ink-subtle">
                                             ¿Cuándo ve el atleta cada semana?
                                         </p>
                                         <p className="mt-1 text-t-xs text-ink-subtle">
@@ -2019,7 +2106,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     {/* Descripción del bloque (visible para el atleta) */}
                     <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
                         <div className="mb-2 flex items-center justify-between gap-3">
-                            <p className="flex flex-wrap items-center gap-x-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                            <p className="flex flex-wrap items-center gap-x-2 text-t-2xs font-semibold text-ink-subtle">
                                 <FileText size={13} className="text-ink-faint" aria-hidden="true" />
                                 Descripción del bloque
                                 <span className="font-normal normal-case tracking-normal text-ink-subtle">
@@ -2103,7 +2190,11 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
             )}
 
             {/* Weeks List */}
-            <div className={`w-full space-y-4 px-5 pb-24 md:px-8 lg:px-12 ${view === 'plan' ? '' : 'hidden'}`}>
+            <div className={`relative w-full space-y-4 px-5 pb-24 md:px-8 lg:px-12 ${view === 'plan' ? '' : 'hidden'}`}>
+                {/* `popLayout`: la semana borrada sale de la maqueta al
+                    instante y las de debajo suben animadas a su hueco. Ver
+                    handleDeleteWeek y `claveDeSemana`. */}
+                <AnimatePresence initial={false} mode="popLayout">
                 {weeks.map((week, index) => {
                     const isExpanded = expandedWeeks.includes(week);
                     const weekSessions = sortSessions(blockData.sessions.filter(s => s.week_number === week));
@@ -2125,8 +2216,12 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     const isCurrent = week === currentRealWeek;
 
                     return (
-                        <div
-                            key={week}
+                        <m.div
+                            // La fila se identifica por su CONTENIDO, no por su
+                            // número de semana: ver `claveDeSemana`.
+                            key={claveDeSemana(week)}
+                            layout={animandoSemanas ? 'position' : false}
+                            exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }}
                             // SIN `overflow-hidden`. Lo tenía, y era lo que hacía
                             // que "copiar sobre otra semana" pareciera roto: el
                             // desplegable de la semana destino se dibuja debajo
@@ -2139,6 +2234,24 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                         >
                             {/* Cabecera de semana */}
                             <div
+                                // `data-no-press`: ESTA CABECERA ES UN CONTENEDOR, NO UN CONTROL.
+                                //
+                                // El CSS global (src/index.css §3) hunde
+                                // `transform: scale(0.97)` cualquier `button` o
+                                // `[role="button"]` mientras está pulsado, y `:active`
+                                // en CSS alcanza también a los ANCESTROS del elemento
+                                // que se toca. Como esta cabecera envuelve al lápiz de
+                                // renombrar, a los dos `IconAction` y al menú `⋮`,
+                                // tocar cualquiera de ellos encogía la cabecera ENTERA
+                                // un 3% alrededor de su centro. En una cabecera de
+                                // 1200px eso arrastra los controles del borde derecho
+                                // unos 16px hacia la izquierda mientras el dedo sigue
+                                // apoyado, así que al soltar el toque cae fuera del
+                                // botón y hay que apuntar más a la izquierda de lo que
+                                // se ve. Es justo la salida que documenta el propio
+                                // index.css: "para los pocos casos donde el botón ES el
+                                // contenedor de la pantalla".
+                                data-no-press
                                 role="button"
                                 tabIndex={0}
                                 aria-expanded={isExpanded}
@@ -2191,7 +2304,11 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                                 <button
                                                     onClick={(e) => handleStartEditWeekName(week, weekName(week), e)}
                                                     aria-label={`Renombrar semana ${index + 1}`}
-                                                    className="shrink-0 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-ink group-hover:opacity-100 focus-visible:opacity-100"
+                                                    // Ver la nota de DayCard: a opacidad cero seguía
+                                                    // siendo pulsable, y sin `hover` en el móvil era un
+                                                    // botón invisible pegado al título de la semana que
+                                                    // abría el renombrado en vez de plegar el acordeón.
+                                                    className="shrink-0 text-ink-faint transition-opacity duration-fast ease-snap hover:text-ink focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
                                                 </button>
@@ -2314,7 +2431,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         onExport={() => handleExportWeek(week, index)}
                                         onDuplicate={() => handleCopyWeek(week)}
                                         onCopyInto={(target) => handleCopyWeekInto(week, target)}
-                                        onDelete={() => handleDeleteWeek(week)}
+                                        onDelete={() => handleDeleteWeek(week, index)}
                                     />
                                 </div>
                             </div>
@@ -2323,12 +2440,50 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                             <div className={`grid overflow-hidden rounded-b-card transition-[grid-template-rows] duration-base ease-snap ${isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                                 <div className="overflow-hidden">
                                     <div className="border-t border-[var(--border-subtle)] p-3 md:p-6">
+                                        {/* La nota de la semana, ANTES de los días.
+                                            Es contexto de todo lo que hay debajo —«esta
+                                            semana es descarga»— y ponerla al final la
+                                            convertiría en un pie que nadie lee. Ver
+                                            builder/WeekNotes.tsx. */}
+                                        {blockId && (
+                                            <WeekNotes
+                                                blockId={blockId}
+                                                weekNumber={week}
+                                                valor={weekMeta[week]?.notes}
+                                                onGuardado={(notes) =>
+                                                    setWeekMeta(prev => ({
+                                                        ...prev,
+                                                        [week]: { ...(prev[week] ?? { name: null, isVisible: false }), notes },
+                                                    }))
+                                                }
+                                            />
+                                        )}
+
+                                        {/* CÓMO QUEDA REPARTIDA LA SEMANA.
+                                            Va ANTES de las tarjetas de día: la
+                                            pregunta "¿está bien repartida?" se hace
+                                            mirando la semana entera, y si estuviera
+                                            debajo habría que pasar por encima de
+                                            siete tarjetas para llegar a ella. Se
+                                            recalcula con cada tecla porque recibe el
+                                            estado local del constructor, igual que el
+                                            panel de volumen. Ver FrequencyPlanner. */}
+                                        <div className="mb-3 md:mb-4">
+                                            <FrequencyPlanner
+                                                sessions={blockVolumeSessions}
+                                                week={week}
+                                                declaredMaxes={declaredMaxes}
+                                                primerDia={coachPrefs.defaultFirstWeekday}
+                                                onAbrirDia={abrirDia}
+                                            />
+                                        </div>
+
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
                                             {weekSessions.map((session) => (
                                                 <DayCard
                                                     key={session.id}
                                                     session={session}
-                                                    onOpen={setEditingSessionId}
+                                                    onOpen={abrirDia}
                                                     onRemove={removeSession}
                                                     onChangeWeekday={changeSessionWeekday}
                                                     copiedDay={copiedDay}
@@ -2353,9 +2508,10 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </m.div>
                     );
                 })}
+                </AnimatePresence>
 
                 {/* Añadir semana */}
                 <button
@@ -2368,13 +2524,18 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
             </div>
 
 
-            {/* Editor de día a pantalla completa */}
+            {/* Editor de día: pop-up que crece desde la tarjeta pulsada y
+                vuelve a ella al cerrar. `AnimatePresence` es lo que le deja
+                animar la salida en vez de desaparecer de golpe. */}
+            <AnimatePresence>
             {editingSessionId && (() => {
                 const session = blockData.sessions.find(s => s.id === editingSessionId);
                 if (!session) return null;
                 return (
                     <DayEditorModal
+                        key={session.id}
                         session={session}
+                        origen={origenEditor}
                         allSessions={blockData.sessions}
                         athleteId={athleteId}
                         coachId={coachId}
@@ -2408,6 +2569,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     />
                 );
             })()}
+            </AnimatePresence>
 
             {/* Confirmation Modal */}
             <ConfirmationModal

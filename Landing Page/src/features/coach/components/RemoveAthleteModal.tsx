@@ -219,7 +219,7 @@ export function RemoveAthleteModal({ open, onClose, athlete, onDone }: RemoveAth
                                             type="button"
                                             onClick={() => ejecutar('end')}
                                             disabled={working !== null}
-                                            className="flex shrink-0 items-center gap-1.5 rounded-field bg-brand px-3.5 py-2 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                                            className="flex shrink-0 items-center gap-1.5 rounded-field bg-brand px-3.5 py-2 text-t-xs font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                                         >
                                             {working === 'end' && <Loader size={13} className="animate-spin" aria-hidden="true" />}
                                             Sacar

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useState } from 'react';
 import {
     detectarIdioma,
@@ -34,8 +34,24 @@ import type { ClaveDeTraduccion } from '../lib/i18n/es';
  * render invalidaría cualquier `memo` que la reciba, que es la forma habitual
  * de que una capa de traducción se coma el rendimiento de una tabla.
  */
+/**
+ * IDIOMA FIJO PARA UN SUBÁRBOL — el panel va siempre en español.
+ *
+ * El selector «ES / EN» es de la web pública. El panel (atleta, entrenador,
+ * nutrición, admin) está escrito casi entero a mano en español y solo unas
+ * pocas piezas pasan por `t()`: si siguieran el idioma elegido en la portada,
+ * el panel quedaría medio en cada idioma —que es justo lo que pasaba—.
+ * AppRoutes envuelve las rutas del panel con `<IdiomaFijo.Provider value="es">`
+ * y aquí dentro ese valor gana a lo guardado. La elección NO se pierde: al
+ * volver a la web con «Ver la web», la portada sale otra vez en el idioma
+ * elegido y el selector sigue ahí.
+ */
+export const IdiomaFijo = createContext<Idioma | null>(null);
+
 export function useIdioma() {
-    const [idioma, setIdioma] = useState<Idioma>(() => detectarIdioma());
+    const fijo = useContext(IdiomaFijo);
+    const [elegido, setIdioma] = useState<Idioma>(() => detectarIdioma());
+    const idioma = fijo ?? elegido;
 
     const cambiar = useCallback((nuevo: Idioma) => {
         guardarIdioma(nuevo);

@@ -69,7 +69,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
             {/* Smart Search Indicator */}
             {referenceFood && (
                 <div className="bg-success-quiet border border-green-500/30 rounded-lg p-3 flex items-center gap-3">
-                    <span className="text-success text-xs font-bold uppercase">🔍 Buscando alternativas a:</span>
+                    <span className="text-success text-xs font-bold">🔍 Buscando alternativas a:</span>
                     <span className="text-ink text-sm font-medium">{referenceFood.product_name}</span>
                     <span className="text-xs text-ink-muted ml-auto">{referenceFood['energy-kcal_100g']} kcal/100g</span>
                 </div>
@@ -100,7 +100,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
             {/* Favorite Brands Manager */}
             {isEditingBrands && (
                 <div className="bg-surface-raised border border-line rounded-lg p-3 animate-fade">
-                    <p className="text-xs text-ink-muted mb-2 font-bold uppercase flex items-center gap-1">
+                    <p className="text-xs text-ink-muted mb-2 font-bold flex items-center gap-1">
                         <Star size={12} /> Marcas Prioritarias
                     </p>
                     <div className="flex gap-2 mb-2">
@@ -126,7 +126,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                             ))}
                         </div>
                     ) : (
-                        <p className="text-xs text-zinc-600 italic">No hay marcas fijadas. Las marcas que añadas saldrán primero en la búsqueda.</p>
+                        <p className="text-xs text-ink-subtle">No hay marcas fijadas. Las marcas que añadas saldrán primero en la búsqueda.</p>
                     )}
                 </div>
             )}
@@ -187,19 +187,19 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
                     <div className="grid grid-cols-4 gap-2 mb-4 text-center">
                         <div className="bg-surface-canvas p-2 rounded">
-                            <span className="block text-xs text-ink-subtle uppercase">Kcal</span>
+                            <span className="block text-xs text-ink-subtle">Kcal</span>
                             <span className="font-bold text-ink">{Math.round(selectedFood['energy-kcal_100g'] * (grams / 100))}</span>
                         </div>
                         <div className="bg-surface-canvas p-2 rounded border-b-2 border-blue-500">
-                            <span className="block text-xs text-ink-subtle uppercase">Prot</span>
+                            <span className="block text-xs text-ink-subtle">Prot</span>
                             <span className="font-bold text-ink">{Math.round(selectedFood.proteins_100g * (grams / 100))}g</span>
                         </div>
                         <div className="bg-surface-canvas p-2 rounded border-b-2 border-yellow-500">
-                            <span className="block text-xs text-ink-subtle uppercase">Carb</span>
+                            <span className="block text-xs text-ink-subtle">Carb</span>
                             <span className="font-bold text-ink">{Math.round(selectedFood.carbohydrates_100g * (grams / 100))}g</span>
                         </div>
                         <div className="bg-surface-canvas p-2 rounded border-b-2 border-orange-500">
-                            <span className="block text-xs text-ink-subtle uppercase">Grasa</span>
+                            <span className="block text-xs text-ink-subtle">Grasa</span>
                             <span className="font-bold text-ink">{Math.round(selectedFood.fat_100g * (grams / 100))}g</span>
                         </div>
                     </div>
@@ -208,7 +208,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         <span className="text-xs text-ink-subtle self-center">Rápido:</span>
                         {[50, 100, 150, 200].map(g => (
                             <button key={g} onClick={() => setGrams(g)}
-                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${grams === g ? 'bg-brand text-black' : 'bg-surface-raised text-ink hover:bg-surface-overlay'}`}>
+                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${grams === g ? 'bg-brand text-brand-ink' : 'bg-surface-raised text-ink hover:bg-surface-overlay'}`}>
                                 {g}g
                             </button>
                         ))}
@@ -233,7 +233,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
                         <button
                             onClick={handleAdd}
                             disabled={grams <= 0}
-                            className="bg-brand hover:bg-red-600 text-black font-black px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="bg-brand hover:bg-brand-hover text-brand-ink font-semibold px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             <Check size={20} />
                             AÑADIR

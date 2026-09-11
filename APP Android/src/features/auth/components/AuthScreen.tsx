@@ -163,7 +163,7 @@ export function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
       <div className="w-full max-w-md p-8">
 
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-black text-ink uppercase tracking-tighter mb-2">
+          <h2 className="text-3xl font-semibold text-ink tracking-tight mb-2">
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </h2>
           <p className="text-ink-muted text-sm">
@@ -305,7 +305,7 @@ export function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
             data-testid="auth-submit-button"
             type="submit"
             disabled={isLoading || isGoogleLoading}
-            className="w-full bg-white text-black font-black uppercase py-4 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 mt-6 shadow-xl shadow-black/20"
+            className="w-full bg-ink text-surface-canvas font-semibold py-4 rounded-xl hover:opacity-90 transition-colors flex items-center justify-center gap-2 mt-6 shadow-xl shadow-black/20"
           >
             {isLoading ? <Loader className="animate-spin" size={20} /> : (isLogin ? 'Entrar' : 'Registrarse')}
           </button>
@@ -316,7 +316,7 @@ export function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
             <div className="w-full border-t border-line"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-surface-sunken text-ink-subtle font-bold uppercase tracking-wider">O continuar con</span>
+            <span className="px-4 bg-surface-sunken text-ink-subtle font-bold">O continuar con</span>
           </div>
         </div>
 
@@ -324,7 +324,7 @@ export function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
           type="button"
           onClick={handleGoogleLogin}
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-surface-sunken hover:bg-[#303030] text-ink border border-line font-black uppercase py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
+          className="w-full bg-surface-sunken hover:bg-[#303030] text-ink border border-line font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-3 shadow-lg"
         >
           {isGoogleLoading ? (
             <Loader className="animate-spin" size={20} />
@@ -344,7 +344,7 @@ export function AuthScreen({ initialMode = 'login' }: AuthScreenProps) {
         <div className="mt-8 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-ink-muted hover:text-ink text-sm font-bold uppercase tracking-wide transition-colors"
+            className="text-ink-muted hover:text-ink text-sm font-bold transition-colors"
           >
             {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
           </button>

@@ -25,6 +25,13 @@ const token =
 
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  /**
+   * HOVER SOLO DONDE HAY RATÓN. En una pantalla táctil no existe el hover:
+   * al tocar, el navegador aplica `hover:` y lo deja PEGADO hasta que se
+   * toca otra cosa —el botón se queda «iluminado» tras pulsarlo—. Con esto
+   * Tailwind envuelve cada `hover:` en `@media (hover: hover)`.
+   */
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
       /* `pc`: ordenador con alto de sobra (el inicio a pantalla completa, sin

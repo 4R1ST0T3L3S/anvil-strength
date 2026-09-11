@@ -44,7 +44,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
 
     return (
         <div className="space-y-3">
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-ink-subtle flex items-center gap-2">
+            <h2 className="text-xs font-semibold text-ink-subtle flex items-center gap-2">
                 <ClipboardCheck size={16} className="text-brand-text" /> Check-in
             </h2>
             <div className="grid grid-cols-2 gap-2 xl:h-52 2xl:h-60">
@@ -70,7 +70,7 @@ export function CheckInCard({ athleteId }: { athleteId: string }) {
                                 <span className="block text-t-sm xl:text-t-base font-bold leading-tight text-ink truncate">
                                     {type === 'daily' ? 'Diario' : 'Semanal'}
                                 </span>
-                                <span className="mt-0.5 flex items-center gap-1 text-[10px] xl:text-t-xs text-ink-subtle truncate">
+                                <span className="mt-0.5 flex items-center gap-1 text-t-2xs xl:text-t-xs text-ink-subtle truncate">
                                     <span className="truncate">
                                         {done ? 'Hecho (Editar respuesta)' : type === 'daily' ? '¿Cómo fue la sesión?' : 'Resumen de la semana'}
                                     </span>
@@ -244,7 +244,7 @@ export function CheckInFormModal({
                 <button
                     onClick={handleSubmit}
                     disabled={saving || loading || questions.length === 0}
-                    className="w-full py-3.5 rounded-xl bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl bg-brand hover:bg-brand-hover text-ink font-semibold text-sm transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                 >
                     {saving ? <Loader className="animate-spin" size={16} /> : <Check size={16} />}
                     Enviar check-in
@@ -254,7 +254,7 @@ export function CheckInFormModal({
             <div className="space-y-6">
                 <div className="flex items-center gap-2 -mt-1">
                     <ClipboardCheck className="text-brand-text shrink-0" size={18} />
-                    <h2 className="text-lg font-black uppercase text-ink">
+                    <h2 className="text-lg font-semibold text-ink">
                         Check-in {type === 'daily' ? 'diario' : 'semanal'}
                     </h2>
                 </div>
@@ -264,7 +264,7 @@ export function CheckInFormModal({
                 )}
 
                 {editedByCoach && (
-                    <p className="flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-brand-text bg-brand/10 border border-brand/20 rounded-xl px-3 py-2">
+                    <p className="flex items-center gap-2 text-t-2xs font-bold text-brand-text bg-brand/10 border border-brand/20 rounded-xl px-3 py-2">
                         <UserCog size={13} /> Tu coach ha modificado este check-in
                     </p>
                 )}
@@ -273,7 +273,7 @@ export function CheckInFormModal({
                 ) : (
                     <>
                         {intro && (
-                            <p className="rounded-xl border border-line bg-white/5 px-3.5 py-3 text-xs leading-relaxed text-ink-muted">
+                            <p className="rounded-xl border border-line bg-[var(--fill-muted)] px-3.5 py-3 text-xs leading-relaxed text-ink-muted">
                                 {intro}
                             </p>
                         )}

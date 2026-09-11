@@ -131,10 +131,10 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
         return (
             <div className="relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-center md:p-6">
                 <Trophy size={32} className="text-ink-faint mb-3" />
-                <h3 className="text-sm font-bold text-ink-muted italic leading-tight mb-1">No hay competiciones a la vista.</h3>
+                <h3 className="text-sm font-bold text-ink-muted leading-tight mb-1">No hay competiciones a la vista.</h3>
                 <button
                     onClick={() => setSettingsOpen(true)}
-                    className="text-xs text-brand-text font-bold mt-2 uppercase tracking-wider hover:text-ink transition-colors"
+                    className="text-xs text-brand-text font-bold mt-2 hover:text-ink transition-colors"
                 >
                     Elegir del calendario AEP →
                 </button>
@@ -151,22 +151,22 @@ export function CountdownWidget({ assigned, userId }: CountdownWidgetProps) {
 
     return (
         <div className={`${colorClass} relative flex h-full min-h-[160px] flex-col items-center justify-center overflow-hidden rounded-card p-5 text-center text-ink md:p-6`}>
-            <div className="pointer-events-none absolute -mr-24 -mt-24 right-0 top-0 h-56 w-56 rounded-full bg-white/10"></div>
+            <div className="pointer-events-none absolute -mr-24 -mt-24 right-0 top-0 h-56 w-56 rounded-full bg-[var(--fill-hover)]"></div>
 
             {/* Botón de ajustes */}
             <button
                 onClick={() => setSettingsOpen(true)}
-                className="absolute top-3 right-3 z-20 p-2 bg-black/20 hover:bg-black/40 rounded-full text-ink-muted hover:text-ink transition-colors"
+                className="absolute top-3 right-3 z-20 p-2 bg-black/20 hover:bg-surface-sunken rounded-full text-ink-muted hover:text-ink transition-colors"
                 aria-label="Personalizar contador"
             >
                 <Settings size={16} />
             </button>
 
             <div className="relative z-10 flex flex-col items-center w-full">
-                <div className="flex items-center justify-center gap-2 text-white/80 font-bold text-t-2xs md:text-xs uppercase tracking-widest mb-2">
+                <div className="flex items-center justify-center gap-2 text-ink font-bold text-t-2xs md:text-xs mb-2">
                     <Trophy size={14} /> {prefs.source === 'custom' ? 'TU OBJETIVO' : prefs.source === 'aep' ? 'CALENDARIO AEP' : 'TU PRÓXIMO RETO'}
                 </div>
-                <h3 className="mb-2 text-t-xl font-black uppercase italic leading-tight drop-shadow-lg md:text-t-2xl">
+                <h3 className="mb-2 text-t-xl font-semibold leading-tight drop-shadow-lg md:text-t-2xl">
                     {formatCompetitionName(event.name, event.location, event.level)}
                 </h3>
                 {event.location && (
@@ -255,20 +255,20 @@ function CountdownSettings({
                 <m.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                    className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
                 />
                 <m.div
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 40 }}
-                    className="relative bg-surface-canvas w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-2xl flex flex-col max-h-[85vh] text-left"
+                    className="relative bg-surface-canvas w-full md:max-w-lg rounded-t-3xl md:rounded-2xl border border-line shadow-overlay flex flex-col max-h-[85vh] text-left"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-5 border-b border-subtle shrink-0">
-                        <h2 className="text-lg font-black uppercase text-ink flex items-center gap-2">
+                        <h2 className="text-lg font-semibold text-ink flex items-center gap-2">
                             <Settings className="text-brand-text" size={18} /> Personalizar contador
                         </h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
+                        <button onClick={onClose} className="p-2 hover:bg-[var(--fill-pressed)] rounded-full text-ink-muted hover:text-ink transition-colors">
                             <X size={18} />
                         </button>
                     </div>
@@ -276,14 +276,14 @@ function CountdownSettings({
                     <div className="flex-1 overflow-y-auto p-5 space-y-6">
                         {/* Fuente del evento */}
                         <div>
-                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">¿A qué cuenta atrás?</p>
+                            <p className="text-t-2xs font-semibold text-ink-subtle mb-3">¿A qué cuenta atrás?</p>
                             <div className="grid grid-cols-3 gap-2">
                                 {sourceTabs.map(tab => (
                                     <button
                                         key={tab.id}
                                         disabled={tab.disabled}
                                         onClick={() => setDraft({ ...draft, source: tab.id })}
-                                        className={`py-2.5 px-2 rounded-xl text-t-2xs font-black uppercase tracking-wide transition-colors border ${
+                                        className={`py-2.5 px-2 rounded-xl text-t-2xs font-semibold transition-colors border ${
  draft.source === tab.id
  ? 'bg-brand border-brand text-ink'
  : 'bg-surface-raised border-subtle text-ink-muted hover:text-ink hover:border-strong'
@@ -298,7 +298,7 @@ function CountdownSettings({
                         {/* Lista AEP */}
                         {draft.source === 'aep' && (
                             <div>
-                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">Calendario oficial AEP</p>
+                                <p className="text-t-2xs font-semibold text-ink-subtle mb-3">Calendario oficial AEP</p>
                                 {loadingAep ? (
                                     <div className="flex justify-center py-8"><Loader className="animate-spin text-brand-text" size={24} /></div>
                                 ) : aepError ? (
@@ -320,7 +320,7 @@ function CountdownSettings({
  : 'bg-surface-raised border-subtle hover:border-strong'
  }`}
                                                 >
-                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-brand border-brand' : 'border-gray-600'}`}>
+                                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'bg-brand border-brand' : 'border-[var(--border-strong)]'}`}>
                                                         {isSelected && <Check size={10} className="text-ink" />}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
@@ -330,7 +330,7 @@ function CountdownSettings({
                                                             <span className="flex items-center gap-1 truncate"><MapPin size={10} /> {comp.sede}</span>
                                                         </p>
                                                     </div>
-                                                    <span className="text-t-2xs font-black uppercase px-2 py-0.5 rounded bg-white/5 text-ink-muted shrink-0">{comp.level}</span>
+                                                    <span className="text-t-2xs font-semibold px-2 py-0.5 rounded bg-[var(--fill-muted)] text-ink-muted shrink-0">{comp.level}</span>
                                                 </button>
                                             );
                                         })}
@@ -345,7 +345,7 @@ function CountdownSettings({
                         {/* Evento personalizado */}
                         {draft.source === 'custom' && (
                             <div className="space-y-3">
-                                <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle">Tu propio objetivo</p>
+                                <p className="text-t-2xs font-semibold text-ink-subtle">Tu propio objetivo</p>
                                 <div className="relative">
                                     <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={16} />
                                     <input
@@ -372,7 +372,7 @@ function CountdownSettings({
 
                         {/* Temas */}
                         <div>
-                            <p className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle mb-3">Estilo</p>
+                            <p className="text-t-2xs font-semibold text-ink-subtle mb-3">Estilo</p>
                             <div className="grid grid-cols-4 gap-3">
                                 {COUNTDOWN_THEMES.map(theme => (
                                     <button
@@ -385,7 +385,7 @@ function CountdownSettings({
  } flex items-center justify-center`}>
                                             {draft.themeId === theme.id && <Check size={16} className="text-ink drop-shadow" />}
                                         </div>
-                                        <span className={`text-t-2xs font-bold uppercase tracking-wide text-center leading-tight ${draft.themeId === theme.id ? 'text-ink' : 'text-ink-subtle'}`}>
+                                        <span className={`text-t-2xs font-bold text-center leading-tight ${draft.themeId === theme.id ? 'text-ink' : 'text-ink-subtle'}`}>
                                             {theme.label}
                                         </span>
                                     </button>
@@ -398,7 +398,7 @@ function CountdownSettings({
                     <div className="p-5 border-t border-subtle shrink-0 flex justify-end gap-3">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-ink font-bold uppercase tracking-wider text-xs transition-colors"
+                            className="px-4 py-2.5 rounded-lg bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] text-ink font-bold text-xs transition-colors"
                         >
                             Cancelar
                         </button>
@@ -408,7 +408,7 @@ function CountdownSettings({
                                 (draft.source === 'aep' && !draft.aep) ||
                                 (draft.source === 'custom' && (!draft.custom?.name || !draft.custom?.date))
                             }
-                            className="px-6 py-2.5 rounded-lg bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-wider text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="px-6 py-2.5 rounded-lg bg-brand hover:bg-brand-hover text-ink font-semibold text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             Guardar
                         </button>

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Calendar, Trophy, Weight, List, Calculator, Users, Swords,
-    FileText, User, Fish, Dumbbell, Loader, BookOpen, FlaskConical,
+    FileText, User, Fish, Dumbbell, Loader, BookOpen, FlaskConical, Inbox, MessageSquare, TrendingUp,
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
 import { CheckInCard } from '../../forms/AthleteCheckIns';
@@ -22,6 +22,8 @@ import { usePuertaDePago } from '../../../hooks/usePuertaDePago';
 import { vistaBloqueada } from '../../../lib/billing';
 import { AvisoDePago } from '../../../components/ui/BloqueoDePago';
 import { tieneAmbosPaneles } from '../../../lib/roles';
+import { useAthleteInboxUnread } from '../../inbox/hooks/useInbox';
+import { useChatSinLeer } from '../../chat/hooks/useChat';
 import {
     InicioArmazon, Seccion, RejillaAccesos, Acceso, FraseDelDia, FilaDeContexto,
 } from '../../../components/layout/InicioPanel';
@@ -29,22 +31,10 @@ import {
 interface AthleteHomeProps {
     user: UserProfile;
     onNavigate: (view: string) => void;
-    /**
-     * Acciones de la cabecera: avisos, conmutador de panel y menú de cuenta.
-     *
-     * La barra superior del armazón se oculta SIEMPRE en el inicio
-     * (`hideHeaderOnDesktop` en escritorio, y en móvil desde el 30 ago 2026
-     * no se ve en ninguna pantalla), así que estas acciones se sirven desde
-     * aquí en los dos tamaños.
-     */
+    /** Avisos, conmutador de panel y menú de cuenta: la cabecera los sirve en los dos tamaños. */
     headerActions?: ReactNode;
 }
 
-/**
- * Devuelve la CLAVE del saludo, no la frase.
- *
- * La franja horaria la decide el reloj del dispositivo; la palabra, el idioma.
- */
 const getGreeting = (): ClaveDeTraduccion => {
     const hour = new Date().getHours();
     if (hour >= 6 && hour < 14) return 'inicio.saludoManana';
@@ -62,14 +52,9 @@ const getTeamName = (coachName?: string | null): string | null => {
 /**
  * Inicio del atleta.
  *
- * MISMA FORMA QUE EL DEL ENTRENADOR, con `InicioArmazon`: arriba a la
- * izquierda lo que toca hoy, debajo la frase y la competición, y a la derecha
- * el resto de la app y el Anvil Lab. En el ordenador cabe en una pantalla sin
- * scroll; en el móvil se apila. Ver `InicioPanel.tsx`.
- *
- * La competición tiene SIEMPRE su hueco, haya o no: antes desaparecía cuando no
- * había ninguna asignada y la pantalla cambiaba de forma según el atleta, que
- * es justo lo que hacía que no se pareciera a la del entrenador.
+ * Arriba a la izquierda, lo que toca hoy (entrenamiento y comida) y el
+ * check-in; debajo la frase y la competición; a la derecha el resto de la
+ * app —con la bandeja y los mensajes marcados si hay algo nuevo— y el Lab.
  */
 export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProps) {
     const navigate = useNavigate();
@@ -83,6 +68,9 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
     const [isRankingOpen, setIsRankingOpen] = useState(false);
     const [nextCompetition, setNextCompetition] = useState<CompetitionAssignment | null>(null);
 
+    const sinLeerBandeja = useAthleteInboxUnread(user.id);
+    const sinLeerChat = useChatSinLeer(user.id);
+
     useEffect(() => {
         let alive = true;
         competitionsService
@@ -95,45 +83,25 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
 
     const firstName = user.full_name?.split(' ')[0] || 'Atleta';
     const teamName = user.role === 'athlete' ? getTeamName(user.coach_name) : null;
-    /*
-     * EL PANEL DE "HOY" SE CIERRA POR PAGO, NO POR `has_access` (K3, K5).
-     *
-     * Enseña el entrenamiento del día, así que es servicio del entrenador. El
-     * resto del inicio —competiciones, ranking, comunidad, cuestionarios— se
-     * ve con normalidad: no es suyo.
-     */
+    // El panel de "Hoy" se cierra por PAGO, no por `has_access` (K3, K5).
     const locked = vistaBloqueada('hoy', puerta.resultado, puerta.prefs.billing.blocks);
-    const accent = user.coach_brand_color || 'var(--brand)';
 
     return (
         <>
             <InicioArmazon
                 antetitulo={teamName && (
-                    <div className="mb-2 flex items-center gap-2.5">
+                    <div className="mb-1.5 flex items-center gap-2">
                         {user.coach_logo_url && (
-                            <img
-                                src={user.coach_logo_url}
-                                alt=""
-                                aria-hidden="true"
-                                className="h-7 w-auto rounded-chip object-contain"
-                            />
+                            <img src={user.coach_logo_url} alt="" aria-hidden="true" className="h-6 w-auto rounded-chip object-contain" />
                         )}
-                        <p className="text-t-2xs font-bold uppercase tracking-widest" style={{ color: accent }}>
-                            {teamName}
-                        </p>
+                        <p className="text-t-xs font-semibold text-ink-subtle">{teamName}</p>
                     </div>
                 )}
-                titulo={<>{t(getGreeting())}, <span style={{ color: accent }}>{firstName}</span></>}
+                titulo={<>{t(getGreeting())}, {firstName}</>}
                 acciones={headerActions}
-                // Con la puerta en modo aviso (K1) esto informa y no corta.
-                // Con la puerta cerrada, el panel de "Hoy" ya está bloqueado
-                // y esta franja explica por qué.
                 aviso={<AvisoDePago resultado={puerta.resultado} />}
                 principal={
                     <Seccion icono={Dumbbell} titulo={t('inicio.hoy')}>
-                        {/* El entrenamiento pautado y los macros del día, con
-                            datos de verdad: responde a "qué toca hoy" sin
-                            entrar en ninguna otra pantalla. */}
                         <TodayPanel
                             athleteId={user.id}
                             locked={locked}
@@ -152,8 +120,8 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                         </Seccion>
                         <Seccion icono={Trophy} titulo={t('inicio.proximaCompeticion')}>
                             {loading ? (
-                                <div className="flex min-h-[132px] items-center justify-center rounded-card border border-[var(--border-default)] bg-surface-raised pc:min-h-0 pc:flex-1">
-                                    <Loader className="animate-spin text-brand-text" size={24} />
+                                <div className="flex min-h-[124px] items-center justify-center rounded-card border border-[var(--card-border)] bg-surface-raised shadow-card pc:min-h-0 pc:flex-1">
+                                    <Loader className="animate-spin text-ink-subtle" size={22} />
                                 </div>
                             ) : (
                                 <CountdownWidget assigned={nextCompetition} userId={user.id} />
@@ -164,7 +132,10 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                 accesos={
                     <Seccion icono={FileText} titulo={t('inicio.tuCarrera')}>
                         <RejillaAccesos>
+                            <Acceso area="entreno" icono={Inbox} titulo="Bandeja de entrada" pista="Feedback y revisiones de tu entrenador" insignia={sinLeerBandeja} onClick={() => onNavigate('inbox')} />
+                            <Acceso area="entreno" icono={MessageSquare} titulo="Mensajes" pista="Chat con tu entrenador" insignia={sinLeerChat} onClick={() => onNavigate('messages')} />
                             <Acceso area="entreno" icono={FileText} titulo={t('inicio.planificacion')} pista={t('inicio.planificacionPista')} onClick={() => onNavigate('planning')} />
+                            <Acceso area="entreno" icono={TrendingUp} titulo="Estadísticas" pista="Progreso, e1RM y fases" onClick={() => onNavigate('stats')} />
                             <Acceso area="club" icono={Trophy} titulo={t('nav.competiciones')} pista={t('inicio.competicionesPista')} onClick={() => onNavigate('competitions')} />
                             <Acceso area="entreno" icono={Calendar} titulo={t('nav.calendario')} pista={t('inicio.calendarioPista')} onClick={() => onNavigate('calendar')} />
                             <Acceso icono={User} titulo={t('inicio.miPerfil')} pista={t('inicio.miPerfilPista')} onClick={() => onNavigate('profile')} />
@@ -184,19 +155,8 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                                 onClick={() => setIsRankingOpen(true)}
                                 bloqueado={locked}
                             />
-
-                            {/* PASAR AL PANEL DE ENTRENADOR. Solo para quien de
-                                verdad entrena a gente (`tieneAmbosPaneles` =
-                                `isStaff && isAthlete`; la capacidad la decide la
-                                base de datos). Esto solo decide qué se ENSEÑA:
-                                el guarda de /coach-dashboard sigue mandando. */}
                             {tieneAmbosPaneles(user) && (
-                                <Acceso
-                                    icono={Users}
-                                    titulo="Vista entrenador"
-                                    pista="Tus atletas y su programación"
-                                    onClick={() => navigate('/coach-dashboard')}
-                                />
+                                <Acceso icono={Users} titulo="Vista entrenador" pista="Tus atletas y su programación" onClick={() => navigate('/coach-dashboard')} />
                             )}
                         </RejillaAccesos>
                     </Seccion>

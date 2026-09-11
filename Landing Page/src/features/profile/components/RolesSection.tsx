@@ -92,7 +92,7 @@ export function RolesSection({ user }: { user: UserProfile }) {
     return (
         <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4 sm:p-6">
             <header className="mb-1">
-                <h2 className="text-t-lg font-black uppercase tracking-display text-ink">
+                <h2 className="text-t-lg font-semibold tracking-display text-ink">
                     Qué eres en Anvil
                 </h2>
             </header>
@@ -179,7 +179,7 @@ export function RolesSection({ user }: { user: UserProfile }) {
                     type="button"
                     onClick={guardar}
                     disabled={guardando || !hayCambios}
-                    className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-field bg-brand px-5 py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                 >
                     {guardando && <Loader size={15} className="animate-spin" aria-hidden="true" />}
                     Guardar roles

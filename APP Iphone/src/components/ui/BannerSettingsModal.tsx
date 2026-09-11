@@ -67,7 +67,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
 
     return createPortal(
         <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[var(--scrim)] backdrop-blur-sm"
             onClick={(e) => {
                 e.stopPropagation();
                 onClose();
@@ -77,13 +77,13 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="bg-surface-raised border border-line rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+                className="bg-surface-raised border border-line rounded-card w-full max-w-lg overflow-hidden shadow-overlay"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-6 border-b border-subtle flex justify-between items-center bg-surface-sunken">
                     <div className="flex items-center gap-3">
                         <Palette className="text-brand-text" size={20} />
-                        <h3 className="text-ink font-black uppercase italic tracking-widest">Personalizar Contador</h3>
+                        <h3 className="text-ink font-semibold">Personalizar Contador</h3>
                     </div>
                     <button onClick={onClose} className="text-ink-subtle hover:text-ink transition-colors">
                         <X size={24} />
@@ -93,11 +93,11 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                 <div className="p-4 sm:p-6 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                     {/* General Info */}
                     <div className="space-y-4">
-                        <h4 className="text-t-2xs font-black text-ink-subtle uppercase tracking-[0.2em] flex items-center gap-2">
+                        <h4 className="text-t-2xs font-semibold text-ink-subtle flex items-center gap-2">
                             <Trophy size={14} /> Información del Evento
                         </h4>
                         <div>
-                            <label className="block text-t-2xs font-bold text-ink-muted uppercase mb-1.5 ml-1">Nombre Personalizado</label>
+                            <label className="block text-t-2xs font-bold text-ink-muted mb-1.5 ml-1">Nombre Personalizado</label>
                             <input
                                 type="text"
                                 value={settings.customName || ''}
@@ -108,7 +108,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-t-2xs font-bold text-ink-muted uppercase mb-1.5 ml-1">Fecha</label>
+                                <label className="block text-t-2xs font-bold text-ink-muted mb-1.5 ml-1">Fecha</label>
                                 <input
                                     type="date"
                                     value={settings.targetDate || ''}
@@ -117,7 +117,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                 />
                             </div>
                             <div>
-                                <label className="block text-t-2xs font-bold text-ink-muted uppercase mb-1.5 ml-1 flex items-center gap-1">
+                                <label className="block text-t-2xs font-bold text-ink-muted mb-1.5 ml-1 flex items-center gap-1">
                                     <Clock size={10} /> Hora Exacta
                                 </label>
                                 <input
@@ -132,16 +132,16 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
 
                     {/* Aesthetics */}
                     <div className="space-y-4">
-                        <h4 className="text-t-2xs font-black text-ink-subtle uppercase tracking-[0.2em] flex items-center gap-2">
+                        <h4 className="text-t-2xs font-semibold text-ink-subtle flex items-center gap-2">
                             <Layout size={14} /> Estética y Estilo
                         </h4>
 
                         <div>
                             <div className="flex justify-between items-center mb-3">
-                                <label className="block text-t-2xs font-bold text-ink-muted uppercase ml-1">Tema y Colores</label>
+                                <label className="block text-t-2xs font-bold text-ink-muted ml-1">Tema y Colores</label>
                                 <button
                                     onClick={() => setShowAllThemes(!showAllThemes)}
-                                    className="text-t-2xs font-black text-brand-text uppercase tracking-widest hover:underline"
+                                    className="text-t-2xs font-semibold text-brand-text hover:underline"
                                 >
                                     {showAllThemes ? 'Ver Menos' : 'Ver Más Opciones'}
                                 </button>
@@ -154,7 +154,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     { id: 'gold', name: 'Nacional', class: 'bg-yellow-600 border-yellow-400' },
                                     { id: 'red', name: 'Anvil', class: 'bg-brand border-red-400' },
                                     { id: 'neon', name: 'Cyber', class: 'bg-purple-600 border-purple-400' },
-                                    { id: 'glass', name: 'Cristal', class: 'bg-white/10 border-strong backdrop-blur-md' },
+                                    { id: 'glass', name: 'Cristal', class: 'bg-[var(--fill-hover)] border-strong backdrop-blur-md' },
                                     // Hidden themes
                                     ...(showAllThemes ? [
                                         { id: 'brutalist', name: 'Brutal', class: 'bg-white border-black' },
@@ -173,10 +173,10 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     <button
                                         key={t.id}
                                         onClick={() => setSettings({ ...settings, theme: t.id as any })}
-                                        className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-[background-color,border-color,box-shadow,transform] ${settings.theme === t.id ? 'border-white bg-white/10 scale-105 shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+                                        className={`p-3 rounded-xl border-2 flex flex-col items-center gap-2 transition-[background-color,border-color,box-shadow,transform] ${settings.theme === t.id ? 'border-white bg-[var(--fill-hover)] scale-105 shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'border-transparent bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)]'}`}
                                     >
                                         <div className={`w-8 h-8 rounded-full ${t.class} border shadow-lg`} />
-                                        <span className="text-t-2xs font-bold text-ink uppercase">{t.name}</span>
+                                        <span className="text-t-2xs font-bold text-ink">{t.name}</span>
                                     </button>
                                 ))}
                             </div>
@@ -184,7 +184,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
 
 
                         <div>
-                            <label className="block text-t-2xs font-bold text-ink-muted uppercase mb-3 ml-1">Forma del Contenedor</label>
+                            <label className="block text-t-2xs font-bold text-ink-muted mb-3 ml-1">Forma del Contenedor</label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 {[
                                     { id: 'rounded', name: 'Redondo', class: 'rounded-xl' },
@@ -195,10 +195,10 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                                     <button
                                         key={s.id}
                                         onClick={() => setSettings({ ...settings, shape: s.id as any })}
-                                        className={`p-2 rounded-xl border-2 flex flex-col items-center gap-2 transition-colors ${settings.shape === s.id ? 'border-brand bg-brand/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+                                        className={`p-2 rounded-xl border-2 flex flex-col items-center gap-2 transition-colors ${settings.shape === s.id ? 'border-brand bg-brand/10' : 'border-transparent bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)]'}`}
                                     >
                                         <div className={`w-full h-8 bg-surface-overlay ${s.class}`} />
-                                        <span className="text-t-2xs font-bold text-ink-muted uppercase">{s.name}</span>
+                                        <span className="text-t-2xs font-bold text-ink-muted">{s.name}</span>
                                     </button>
                                 ))}
                             </div>
@@ -207,7 +207,7 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
 
                         <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className="block text-t-2xs font-bold text-ink-muted uppercase mb-1.5 ml-1 flex items-center gap-1">
+                                <label className="block text-t-2xs font-bold text-ink-muted mb-1.5 ml-1 flex items-center gap-1">
                                     <Type size={12} /> Tipografía
                                 </label>
                                 <select
@@ -228,14 +228,14 @@ export function BannerSettingsModal({ userId, fullUserMetadata, isOpen, onClose 
                 <div className="p-4 sm:p-6 bg-surface-sunken border-t border-subtle flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-bold uppercase text-xs tracking-widest text-ink-muted hover:text-ink transition-colors"
+                        className="flex-1 px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-bold text-xs text-ink-muted hover:text-ink transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="flex-1 bg-brand text-ink px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-red-500 transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]"
+                        className="flex-1 bg-brand text-ink px-4 py-3 sm:px-6 sm:py-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-[0_0_30px_rgba(220,38,38,0.3)]"
                     >
                         {isSaving ? (
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

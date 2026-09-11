@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Cookie } from 'lucide-react';
+import { useTextosWeb } from '../../features/landing/textos';
 
 const STORAGE_KEY = 'anvil:aviso-cookies-visto';
 
@@ -45,12 +46,14 @@ export function CookieNotice() {
         }
     };
 
+    const c = useTextosWeb().cookies;
+
     if (!visible) return null;
 
     return (
         <div
             role="region"
-            aria-label="Aviso de cookies"
+            aria-label={c.region}
             className="fixed inset-x-0 bottom-0 z-sticky border-t border-subtle bg-surface-sunken/95 px-4 py-4 backdrop-blur-md transition-transform duration-base ease-snap sm:px-6"
             style={{
                 paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
@@ -60,10 +63,9 @@ export function CookieNotice() {
                 <div className="flex items-start gap-3">
                     <Cookie size={18} className="mt-0.5 shrink-0 text-brand-text" aria-hidden="true" />
                     <p className="text-t-xs leading-relaxed text-ink-muted sm:text-t-sm">
-                        Usamos solo las cookies técnicas necesarias para que la sesión funcione —
-                        ninguna de seguimiento ni publicidad.{' '}
+                        {c.texto}{' '}
                         <Link to="/legal/cookies" className="text-brand-text hover:underline">
-                            Más información
+                            {c.mas}
                         </Link>
                     </p>
                 </div>
@@ -75,7 +77,7 @@ export function CookieNotice() {
                     onClick={dismiss}
                     className="flex min-h-[44px] w-full shrink-0 items-center justify-center rounded-field bg-ink px-5 text-t-xs font-black uppercase tracking-wide text-ink-inverse transition-colors duration-fast ease-snap hover:bg-ink-muted sm:w-auto"
                 >
-                    Entendido
+                    {c.entendido}
                 </button>
             </div>
         </div>

@@ -165,7 +165,7 @@ export function CurrentWeekLifts({
             {onEditarObjetivos && (
                 <button
                     onClick={onEditarObjetivos}
-                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-field border border-[var(--border-default)] py-1.5 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:border-brand/40 hover:text-brand-text"
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-field border border-[var(--border-default)] py-1.5 text-t-2xs font-bold text-ink-subtle transition-colors duration-fast ease-snap hover:border-brand/40 hover:text-brand-text"
                 >
                     <Target size={11} aria-hidden="true" />
                     {progreso.length > 0 ? 'Editar objetivos' : 'Poner objetivo de volumen'}
@@ -223,10 +223,10 @@ function LiftRow({ lift, progreso }: { lift: LiftWeekSummary; progreso: Progreso
                 </span>
 
                 <span className="shrink-0 text-right">
-                    <span className={`block text-t-lg font-black leading-none tabular-nums ${lift.sets > 0 ? 'text-brand-text' : 'text-ink-faint'}`}>
+                    <span className={`block text-t-lg font-semibold leading-none tabular-nums ${lift.sets > 0 ? 'text-brand-text' : 'text-ink-faint'}`}>
                         {lift.sets}
                     </span>
-                    <span className="block text-t-2xs uppercase tracking-wide text-ink-subtle">
+                    <span className="block text-t-2xs text-ink-subtle">
                         series
                     </span>
                 </span>
@@ -240,7 +240,7 @@ function LiftRow({ lift, progreso }: { lift: LiftWeekSummary; progreso: Progreso
 
             <AnchoredMenu open={open} onClose={() => setOpen(false)} anchorRef={anchor}>
                 <div className="min-w-[200px] max-w-[260px] p-1">
-                    <p className="px-2 pb-1.5 pt-0.5 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                    <p className="px-2 pb-1.5 pt-0.5 text-t-2xs font-semibold text-ink-subtle">
                         {lift.label} — {lift.sets} series
                     </p>
 
@@ -288,7 +288,7 @@ function Barras({ progreso }: { progreso: ProgresoDeObjetivo[] }) {
                 return (
                     <li key={p.objetivo.id}>
                         <div className="flex items-baseline justify-between gap-2">
-                            <span className="text-t-2xs uppercase tracking-wide text-ink-subtle">
+                            <span className="text-t-2xs text-ink-subtle">
                                 {info.corto}
                             </span>
                             <span className="shrink-0 text-t-2xs tabular-nums text-ink-muted">

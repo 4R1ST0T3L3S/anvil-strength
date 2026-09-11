@@ -92,7 +92,7 @@ export function MobilePreview() {
                 dígitos de cuenta atrás y el contador a cero. Con "Nacional ·
                 Madrid" y 12 días todo cabe siempre y no se ve nada. */}
             <div className="mx-auto w-full max-w-6xl space-y-3 p-4">
-                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <p className="text-t-2xs font-bold text-ink-subtle">
                     Panel del entrenador · cabecera
                 </p>
                 {/* LA REJILLA REAL, en el orden en que se envía: las dos
@@ -116,7 +116,7 @@ export function MobilePreview() {
                     />
                 </div>
 
-                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <p className="text-t-2xs font-bold text-ink-subtle">
                     Casos límite
                 </p>
                 <div data-probe="home-cards-limite" className="grid gap-3 md:grid-cols-2">
@@ -149,7 +149,7 @@ export function MobilePreview() {
                     renglón de contexto completo ("Viernes · Semana 6 de 12 ·
                     Día 3") con nombre de bloque largo, y los dos casos en que
                     no hay sesión y hay que explicar por qué. */}
-                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <p className="pt-4 text-t-2xs font-bold text-ink-subtle">
                     Hoy · entrenamiento del atleta
                 </p>
                 <div data-probe="hoy" className="grid gap-3 md:grid-cols-2">
@@ -229,7 +229,7 @@ export function MobilePreview() {
                     Sin sesión no hay plantilla que leer, así que cae al juego
                     predefinido y se puede medir la rejilla de campos —que es
                     lo que se estrecha— y el editor de "qué le pido". */}
-                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <p className="pt-4 text-t-2xs font-bold text-ink-subtle">
                     Información personal · vista del entrenador
                 </p>
                 <PersonalInfoSection
@@ -242,7 +242,7 @@ export function MobilePreview() {
                     editorId="00000000-0000-0000-0000-000000000000"
                 />
 
-                <p className="pt-4 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <p className="pt-4 text-t-2xs font-bold text-ink-subtle">
                     Perfil · qué eres en Anvil
                 </p>
                 <RolesSection
@@ -259,13 +259,13 @@ export function MobilePreview() {
             <div className="mx-auto w-full max-w-md">
                 <div data-probe="cabecera" className="sticky top-0 z-sticky border-b border-subtle bg-surface-canvas/95 pb-2 backdrop-blur">
                     <div className="p-4">
-                        <h1 className="text-t-2xs font-bold uppercase tracking-wider text-brand-text">Bloque de fuerza</h1>
+                        <h1 className="text-t-2xs font-bold text-brand-text">Bloque de fuerza</h1>
                     </div>
                     <div data-probe="progreso" className="flex items-center gap-2.5 px-4 pt-1">
                         <div className="h-1 flex-1 overflow-hidden rounded-pill bg-surface-sunken">
                             <div className="h-full w-1/6 bg-brand" />
                         </div>
-                        <span className="shrink-0 text-t-2xs font-bold uppercase tracking-widest tabular-nums text-ink-subtle">1/6</span>
+                        <span className="shrink-0 text-t-2xs font-bold tabular-nums text-ink-subtle">1/6</span>
                         <SaveIndicator />
                     </div>
                 </div>
@@ -275,14 +275,14 @@ export function MobilePreview() {
                         {/* Cinta de encadenado, a ancho completo y arriba del
                             todo, igual que en la tarjeta real. */}
                         <div className="flex items-center gap-2 bg-[var(--info-quiet)] px-4 py-1.5">
-                            <span className="text-t-2xs font-black uppercase tracking-widest text-info">Superserie A</span>
+                            <span className="text-t-2xs font-semibold text-info">Superserie A</span>
                             <span className="text-t-2xs text-info/70">· 1 de 2 · sin descanso, sigue al siguiente</span>
                         </div>
                         <div className="flex items-start justify-between gap-2 bg-surface-raised p-4">
                             <h3 className="text-t-lg font-bold leading-tight text-ink">Sentadilla trasera</h3>
                         </div>
 
-                        <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold uppercase tracking-wide text-ink-subtle sm:gap-1.5 sm:px-3">
+                        <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold text-ink-subtle sm:gap-1.5 sm:px-3">
                             <span className="text-left">#</span>
                             <span>Reps</span>
                             <span>Kg</span>
@@ -322,7 +322,7 @@ export function MobilePreview() {
                         de series en la misma línea. Con "Rotación externa de
                         hombro con banda elástica" —un nombre largo de
                         verdad— es donde el truncado se pone a prueba. */}
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <p className="pt-2 text-t-2xs font-bold text-ink-subtle">
                         Propuesta de calentamiento estructurado
                     </p>
                     <WarmupConversionPanel
@@ -343,7 +343,7 @@ Movilidad de cadera 5'`}
                         exactamente el camino que se quiere comprobar, y el
                         único que hay hoy en producción mientras
                         `exercise_videos.sql` siga sin ejecutarse. */}
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <p className="pt-2 text-t-2xs font-bold text-ink-subtle">
                         Ficha de ejercicio · respaldo al enlace externo
                     </p>
                     <ExerciseVideoPanel
@@ -368,7 +368,7 @@ Movilidad de cadera 5'`}
                         ]}
                     />
 
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <p className="pt-2 text-t-2xs font-bold text-ink-subtle">
                         Cierre del día · sin terminar
                     </p>
                     <SessionFinish
@@ -380,7 +380,7 @@ Movilidad de cadera 5'`}
                         onChange={() => {}}
                     />
 
-                    <p className="pt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                    <p className="pt-2 text-t-2xs font-bold text-ink-subtle">
                         Cierre del día · terminado
                     </p>
                     <SessionFinish
@@ -410,7 +410,7 @@ Movilidad de cadera 5'`}
                             ref={menuAnchor}
                             onClick={() => setMenuOpen(v => !v)}
                             aria-expanded={menuOpen}
-                            className="rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-semibold uppercase tracking-wide text-brand-text"
+                            className="rounded-chip bg-brand-quiet px-2 py-1 text-t-2xs font-semibold text-brand-text"
                         >
                             Agendar día
                         </button>

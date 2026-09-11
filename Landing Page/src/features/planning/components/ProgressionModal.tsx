@@ -184,7 +184,7 @@ export function ProgressionModal({
             <div className="space-y-4">
                 {/* FRECUENCIA — cuántos días por semana */}
                 <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                    <span className="text-t-2xs font-semibold text-ink-subtle">
                         Días por semana
                     </span>
                     <div role="group" aria-label="Días por semana" className="flex rounded-field bg-surface-sunken p-0.5">
@@ -226,7 +226,7 @@ export function ProgressionModal({
                     {/* Escritura */}
                     <div className="space-y-3">
                         <label className="block">
-                            <span className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                            <span className="text-t-2xs font-semibold text-ink-subtle">
                                 {frequency > 1 ? 'Una línea por semana y día' : 'Una línea por semana'}
                             </span>
                             <textarea
@@ -319,7 +319,7 @@ export function ProgressionModal({
 
                     {/* Vista previa resuelta — B8: la rejilla, para juzgar de un vistazo */}
                     <div className="space-y-3">
-                        <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                        <p className="text-t-2xs font-semibold text-ink-subtle">
                             Cómo queda
                             {referenceMax && (
                                 <span className="ml-2 font-normal normal-case tracking-normal text-ink-subtle">

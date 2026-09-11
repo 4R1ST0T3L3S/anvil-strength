@@ -5,16 +5,17 @@ import { cn } from '../../lib/utils';
  * Estado vacío.
  *
  * Un estado vacío enseña la interfaz; no anuncia que no hay nada. "Aún no
- * tienes bloques" no sirve de nada por sí solo: hay que decir qué es un
- * bloque y ofrecer el primer paso.
+ * tienes bloques" por sí solo no sirve: hay que decir qué es y ofrecer el
+ * primer paso.
  *
- * Tres registros distintos, porque no son lo mismo:
- *   empty  — todavía no hay datos. Es una oportunidad: enseña y propone.
+ *   empty  — todavía no hay datos. Enseña y propone.
  *   filter — hay datos, pero el filtro los oculta. La salida es limpiar.
  *   error  — algo falló. La salida es reintentar, y se dice qué pasó.
+ *   done   — no queda nada pendiente, y eso es una BUENA noticia (la bandeja
+ *            al día). Se dice con calma, sin confeti.
  */
 
-type Kind = 'empty' | 'filter' | 'error';
+type Kind = 'empty' | 'filter' | 'error' | 'done';
 
 export interface EmptyStateProps {
     kind?: Kind;
@@ -27,6 +28,13 @@ export interface EmptyStateProps {
     className?: string;
 }
 
+const ICONO: Record<Kind, string> = {
+    empty: 'bg-[var(--fill-muted)] text-ink-muted',
+    filter: 'bg-[var(--fill-muted)] text-ink-muted',
+    error: 'bg-[var(--danger-quiet)] text-danger-text',
+    done: 'bg-success-quiet text-success',
+};
+
 export function EmptyState({
     kind = 'empty',
     icon,
@@ -38,20 +46,18 @@ export function EmptyState({
     return (
         <div
             className={cn(
-                'flex flex-col items-center justify-center px-6 py-12 text-center',
+                'flex flex-col items-center justify-center px-6 py-14 text-center',
                 className
             )}
-            // El error interrumpe una tarea en curso, así que se anuncia;
-            // un estado vacío es parte de la página y no debe interrumpir.
+            // El error interrumpe una tarea en curso, así que se anuncia; un
+            // estado vacío es parte de la página y no debe interrumpir.
             role={kind === 'error' ? 'alert' : undefined}
         >
             {icon && (
                 <div
                     className={cn(
-                        'mb-4 flex h-11 w-11 items-center justify-center rounded-card',
-                        kind === 'error'
-                            ? 'bg-[var(--danger-quiet)] text-danger-text'
-                            : 'bg-surface-raised text-ink-faint'
+                        'mb-4 flex h-12 w-12 items-center justify-center rounded-pill [&>svg]:h-[22px] [&>svg]:w-[22px]',
+                        ICONO[kind]
                     )}
                     aria-hidden="true"
                 >
@@ -59,10 +65,10 @@ export function EmptyState({
                 </div>
             )}
 
-            <p className="text-base font-medium text-ink">{title}</p>
+            <p className="text-t-base font-semibold text-ink">{title}</p>
 
             {body && (
-                <p className="mt-1.5 max-w-[42ch] text-sm text-ink-muted">{body}</p>
+                <p className="mt-1.5 max-w-[40ch] text-t-sm leading-relaxed text-ink-muted">{body}</p>
             )}
 
             {action && <div className="mt-5">{action}</div>}

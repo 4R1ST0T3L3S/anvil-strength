@@ -435,7 +435,7 @@ export function AddMeasurementModal({
 
 function Label({ children }: { children: React.ReactNode }) {
     return (
-        <p className="mb-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">{children}</p>
+        <p className="mb-1 text-t-2xs font-semibold text-ink-subtle">{children}</p>
     );
 }
 

@@ -176,7 +176,7 @@ export const AnvilMascot = ({ className = "w-32 h-32" }: { className?: string })
 
                 {/* --- SOMBRA DEL SUELO --- */}
                 <m.div
-                    className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-2/3 h-2 bg-black/40 blur-sm rounded-[100%]"
+                    className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-2/3 h-2 bg-surface-sunken blur-sm rounded-[100%]"
                     animate={{ scaleX: [1, 0.8, 1], opacity: [0.4, 0.2, 0.4] }}
                     transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                 />

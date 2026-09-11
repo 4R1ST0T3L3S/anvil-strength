@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Check, ClipboardCheck, Loader, PenLine, RotateCcw } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Check, CheckCheck, ClipboardCheck, Eye, Loader, MessageSquareText, PenLine, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../../../components/ui/Button';
 import { trainingService } from '../../../services/trainingService';
 import { formsService, getPeriodKey } from '../../../services/formsService';
+import { inboxService } from '../../../services/inboxService';
+import { CLAVES } from '../../../lib/queryKeys';
+import { haceCuanto } from '../../../lib/tiempo';
 import { summarizeSessionLive, type SummarizableExercise } from '../../../lib/stats/sessionSummary';
 import { CheckInFormModal } from '../../forms/AthleteCheckIns';
 
@@ -51,6 +55,13 @@ interface SessionFinishProps {
     athleteNotes: string | null;
     /** Sube el estado a la pantalla para que la ficha del día se entere. */
     onChange: (patch: { completed_at?: string | null; athlete_notes?: string | null }) => void;
+    /**
+     * LA REVISIÓN DEL ENTRENADOR, tal como la lee la base. Ver
+     * database/BANDEJA_REVISION_2026-09-11.sql. El atleta tiene que poder
+     * saber que su entrenador ha mirado el día, y leer aquí su feedback.
+     */
+    reviewedAt?: string | null;
+    modifiedAfterReview?: boolean | null;
 }
 
 export function SessionFinish({
@@ -60,8 +71,20 @@ export function SessionFinish({
     completedAt,
     athleteNotes,
     onChange,
+    reviewedAt = null,
+    modifiedAfterReview = false,
 }: SessionFinishProps) {
     const summary = summarizeSessionLive(exercises);
+
+    // El feedback del entrenador sobre ESTE día. Solo se pide con el día
+    // cerrado: antes no puede haber ninguno.
+    const feedback = useQuery({
+        queryKey: CLAVES.bandeja.feedback(sessionId),
+        queryFn: () => inboxService.forSession(sessionId),
+        enabled: Boolean(completedAt),
+        staleTime: 60_000,
+    });
+    const comentarios = (feedback.data ?? []).filter(f => f.kind === 'training_feedback' && f.body);
 
     const [saving, setSaving] = useState(false);
     const [notes, setNotes] = useState(athleteNotes ?? '');
@@ -148,10 +171,10 @@ export function SessionFinish({
         <>
             <section
                 className={`overflow-hidden rounded-card border ${
- done
- ? 'border-[var(--success-quiet)] bg-surface-raised'
- : 'border-[var(--border-default)] bg-surface-raised'
- }`}
+                    done
+                        ? 'border-[var(--success-quiet)] bg-surface-raised'
+                        : 'border-[var(--border-default)] bg-surface-raised'
+                }`}
             >
                 <div className="p-4 md:p-5">
                     {/* -------------------------------------------------
@@ -159,24 +182,69 @@ export function SessionFinish({
                     <div className="flex items-start gap-3">
                         <span
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-field ${
- done ? 'bg-success-quiet text-success' : 'bg-brand-quiet text-brand-text'
- }`}
+                                done ? 'bg-success-quiet text-success' : 'bg-brand-quiet text-brand-text'
+                            }`}
                         >
                             <Check size={18} strokeWidth={3} aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
-                            <h3 className="text-t-lg font-black uppercase leading-none tracking-display text-ink">
+                            <h3 className="text-t-lg font-semibold leading-none tracking-display text-ink">
                                 {done ? 'Entrenamiento completado' : '¿Has terminado?'}
                             </h3>
                             <p className="mt-1.5 text-t-sm text-ink-subtle">
                                 {done
-                                    ? 'Tu entrenador ya lo ve registrado.'
+                                    ? 'Tu entrenador lo tiene en su bandeja de revisión.'
                                     : summary.setsDone >= summary.setsTotal
                                         ? 'Has cerrado todas las series del día.'
                                         : `Te quedan ${summary.setsTotal - summary.setsDone} series por marcar. Puedes cerrarlo igualmente.`}
                             </p>
                         </div>
                     </div>
+
+                    {/* -------------------------------------------------
+                        LA REVISIÓN DEL ENTRENADOR
+                        Tres estados que el atleta tiene derecho a ver:
+                        pendiente, revisado, y «lo cambiaste después de que
+                        lo revisara» (vuelve a su bandeja solo).          */}
+                    {done && (
+                        <div className="mt-3 flex items-start gap-2 rounded-field bg-surface-sunken px-3 py-2.5 text-t-sm">
+                            {reviewedAt && !modifiedAfterReview ? (
+                                <>
+                                    <CheckCheck size={16} className="mt-0.5 shrink-0 text-success" aria-hidden="true" />
+                                    <span className="text-ink">
+                                        Revisado por tu entrenador{' '}
+                                        <span className="text-ink-subtle">· {haceCuanto(reviewedAt)}</span>
+                                    </span>
+                                </>
+                            ) : modifiedAfterReview ? (
+                                <>
+                                    <Eye size={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+                                    <span className="text-ink">
+                                        Lo has cambiado después de la revisión: tu entrenador lo verá de nuevo.
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <Eye size={16} className="mt-0.5 shrink-0 text-ink-subtle" aria-hidden="true" />
+                                    <span className="text-ink-muted">Pendiente de revisión por tu entrenador.</span>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {comentarios.length > 0 && (
+                        <ul className="mt-3 space-y-2">
+                            {comentarios.map(c => (
+                                <li key={c.id} className="flex items-start gap-2 rounded-field bg-[var(--brand-quiet)] px-3 py-2.5">
+                                    <MessageSquareText size={16} className="mt-0.5 shrink-0 text-brand-text" aria-hidden="true" />
+                                    <div className="min-w-0">
+                                        <p className="whitespace-pre-wrap text-t-sm leading-relaxed text-ink">{c.body}</p>
+                                        <p className="mt-1 text-t-2xs text-ink-subtle">Tu entrenador · {haceCuanto(c.createdAt)}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
 
                     {/* -------------------------------------------------
                         CIFRAS DEL DÍA
@@ -217,28 +285,28 @@ export function SessionFinish({
                     {done && summary.rpePairs > 0 && (
                         <div className="mt-3 rounded-field bg-surface-sunken p-3">
                             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                <span className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                                <span className="text-t-2xs font-bold text-ink-subtle">
                                     RPE medio
                                 </span>
                                 <span className="text-t-sm text-ink-muted">
                                     pautado{' '}
-                                    <strong className="font-black tabular-nums text-ink">
+                                    <strong className="font-semibold tabular-nums text-ink">
                                         {summary.plannedRpe?.toFixed(1)}
                                     </strong>
                                 </span>
                                 <span className="text-t-sm text-ink-muted">
                                     real{' '}
-                                    <strong className="font-black tabular-nums text-ink">
+                                    <strong className="font-semibold tabular-nums text-ink">
                                         {summary.actualRpe?.toFixed(1)}
                                     </strong>
                                 </span>
                                 {summary.rpeDelta !== null && summary.rpeDelta !== 0 && (
                                     <span
-                                        className={`rounded-chip px-2 py-0.5 text-t-2xs font-black tabular-nums ${
- summary.rpeDelta > 0
- ? 'bg-warning-quiet text-warning'
- : 'bg-success-quiet text-success'
- }`}
+                                        className={`rounded-chip px-2 py-0.5 text-t-2xs font-semibold tabular-nums ${
+                                            summary.rpeDelta > 0
+                                                ? 'bg-warning-quiet text-warning'
+                                                : 'bg-success-quiet text-success'
+                                        }`}
                                     >
                                         {summary.rpeDelta > 0 ? '+' : ''}
                                         {summary.rpeDelta.toFixed(1)}
@@ -261,7 +329,7 @@ export function SessionFinish({
                         <div className="mt-3">
                             <label
                                 htmlFor={`notes-${sessionId}`}
-                                className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle"
+                                className="block text-t-2xs font-bold text-ink-subtle"
                             >
                                 Cómo ha ido
                             </label>
@@ -299,7 +367,7 @@ export function SessionFinish({
                             <button
                                 type="button"
                                 onClick={() => setNotesOpen(true)}
-                                className="mt-1.5 -mb-1 flex min-h-[40px] items-center gap-1.5 py-2.5 text-t-xs font-bold uppercase tracking-wider text-ink-subtle transition-colors duration-fast hover:text-ink"
+                                className="mt-1.5 -mb-1 flex min-h-[40px] items-center gap-1.5 py-2.5 text-t-xs font-bold text-ink-subtle transition-colors duration-fast hover:text-ink"
                             >
                                 <PenLine size={13} aria-hidden="true" />
                                 Añadir una nota
@@ -391,11 +459,11 @@ export function SessionFinish({
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
     return (
         <div className="rounded-field bg-surface-sunken px-3 py-2.5">
-            <p className="text-t-xl font-black tabular-nums leading-none text-ink">
+            <p className="text-t-xl font-semibold tabular-nums leading-none text-ink">
                 {value}
                 {hint && <span className="ml-1 text-t-2xs font-bold text-ink-subtle">{hint}</span>}
             </p>
-            <p className="mt-1 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
+            <p className="mt-1 text-t-2xs font-bold text-ink-subtle">{label}</p>
         </div>
     );
 }

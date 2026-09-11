@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import {
-    LayoutDashboard,
-    Users,
-    CalendarDays,
-    Calendar,
-    User,
-    Activity,
-    SlidersHorizontal,
+    LayoutDashboard, Users, CalendarDays, Calendar, User, Activity, Dumbbell, SlidersHorizontal, Inbox, MessageSquare, Apple, Bell,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
@@ -14,20 +8,23 @@ import { CoachAthletes } from '../components/CoachAthletes';
 import { CoachDiets } from '../components/CoachDiets';
 import { CoachAthleteDetails } from '../components/CoachAthleteDetails';
 import { CoachTeamSchedule } from '../components/CoachTeamSchedule';
-import { DashboardLayout } from '../../../components/layout/DashboardLayout';
-
-import { SelectorDeTema } from '../../../components/ui/SelectorDeTema';
+import { DashboardLayout, AccountMenu } from '../../../components/layout/DashboardLayout';
 import { NotificationBell } from '../../../components/ui/NotificationBell';
-
 import { ViewTransition } from '../../../components/layout/ViewTransition';
 import { CalendarSection } from '../components/CalendarSection';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 import { PreferencesPage } from './PreferencesPage';
 import { PdfThemeSettings } from '../../profile/components/PdfThemeSettings';
+import { NotificationSettings } from '../../profile/components/NotificationSettings';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 import { FloatingChat } from '../../chat/components/FloatingChat';
-import { isStaff, isNutritionist, isDeveloper } from '../../../lib/roles';
+import { CoachInbox } from '../../inbox/components/CoachInbox';
+import { CoachInboxAthlete } from '../../inbox/components/CoachInboxAthlete';
+import { useCoachInboxSummary } from '../../inbox/hooks/useInbox';
+import { ChatPage } from '../../chat/pages/ChatPage';
+import { useChatSinLeer } from '../../chat/hooks/useChat';
+import { isStaff, isNutritionist, isDeveloper, isAthlete, tieneAmbosPaneles } from '../../../lib/roles';
 
 interface CoachDashboardProps {
     user: UserProfile;
@@ -35,31 +32,27 @@ interface CoachDashboardProps {
 }
 
 /**
- * Igual que en el panel de atleta: las vistas son rutas, no `useState`.
- * Aquí importa incluso más, porque el coach entra y sale de la ficha de un
- * atleta constantemente y sin URL no había forma de volver con el botón
- * atrás ni de mandarle a nadie el enlace de un atleta concreto.
+ * Las vistas son RUTAS, no `useState`: el entrenador entra y sale de fichas
+ * constantemente y sin URL no hay botón atrás ni enlaces que compartir.
+ *
+ *   /coach-dashboard                      inicio
+ *   /coach-dashboard/<vista>              una sección
+ *   /coach-dashboard/atletas/<id>         la ficha de un atleta
+ *   /coach-dashboard/bandeja/<id>         los entrenamientos pendientes de un atleta
+ *   /coach-dashboard/mensajes/<id>        la conversación con alguien
  */
 const VIEWS = {
     '': 'home',
     atletas: 'athletes',
-    // Pautar dietas al equipo. Ruta PROPIA y no una pestaña dentro de la
-    // ficha de un atleta: se entra a hacer dietas igual que se entra a
-    // programar, y obligar a elegir antes un atleta y buscar su pestaña de
-    // nutrición era el paso de más que hacía que no se usara.
-    //
-    // No confundir con /nutrition, que es el panel completo del
-    // NUTRICIONISTA (con su propio armazón y sus gráficas) y sigue intacto.
+    bandeja: 'inbox',
+    mensajes: 'messages',
     dietas: 'diets',
     agenda: 'schedule',
     calendario: 'calendar',
     pwr: 'pwr_analysis',
     preferencias: 'preferences',
+    notificaciones: 'notifications',
     perfil: 'profile',
-    // El diseño del PDF tiene ruta PROPIA y no es un estado dentro de
-    // "Mi perfil": necesita la pantalla entera para la vista previa, y
-    // teniendo URL se puede llegar desde Preferencias —que es donde un
-    // entrenador lo busca— sin pasar por el perfil.
     documento: 'pdf_theme',
 } as const;
 
@@ -68,107 +61,71 @@ type Slug = keyof typeof VIEWS;
 const isSlug = (value: string | undefined): value is Slug =>
     value === undefined || value === '' || value in VIEWS;
 
-const TITLES: Record<Slug, string | undefined> = {
-    '': undefined,
-    atletas: 'Mis atletas',
-    dietas: 'Dietas',
-    agenda: 'Agenda del equipo',
-    calendario: 'Calendario AEP',
-    pwr: 'Análisis PWR',
-    preferencias: 'Preferencias',
-    perfil: 'Mi perfil',
-    documento: 'Documento PDF',
-};
-
 export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     const navigate = useNavigate();
-    const { view, athleteId } = useParams<{ view: string; athleteId: string }>();
+    const { view, athleteId, inboxAthleteId, chatId } = useParams<{ view: string; athleteId: string; inboxAthleteId: string; chatId: string }>();
     const { refetch } = useUser();
     const [chatAthlete, setChatAthlete] = useState<{ id: string; full_name: string; avatar_url?: string } | null>(null);
 
-    const slug: Slug = isSlug(view) ? ((view ?? '') as Slug) : '';
+    // Los contadores de las pestañas. Comparten socket con las pantallas.
+    const bandeja = useCoachInboxSummary(user.id);
+    const sinLeer = useChatSinLeer(user.id);
+
+    // Las rutas con parámetro no traen `view`: se deduce del parámetro.
+    const slug: Slug = inboxAthleteId ? 'bandeja' : chatId ? 'mensajes' : isSlug(view) ? ((view ?? '') as Slug) : '';
 
     const go = (next: Slug) =>
         navigate(next === '' ? '/coach-dashboard' : `/coach-dashboard/${next}`);
 
-    if (!isSlug(view)) return <Navigate to="/coach-dashboard" replace />;
+    if (!isSlug(view) && !inboxAthleteId && !chatId) return <Navigate to="/coach-dashboard" replace />;
 
-    /**
-     * Antes esto comprobaba `role !== 'coach'` y devolvía un cartel de
-     * "Acceso Denegado" sin salida. Pero AppRoutes manda aquí a TODO el que
-     * gestiona atletas, nutricionistas incluidos: un nutricionista entraba,
-     * se comía el cartel y no tenía ninguna ruta desde la que salir.
-     * Ahora las dos caras usan la misma función (src/lib/roles.ts) y quien no
-     * pinta aquí se redirige en vez de quedarse encallado.
-     */
+    // AppRoutes manda aquí a TODO el que gestiona atletas, nutricionistas
+    // incluidos; quien no pinta aquí se redirige en vez de quedarse encallado.
     if (!isStaff(user)) return <Navigate to="/dashboard" replace />;
 
     const nutritionist = isNutritionist(user);
 
     const menuItems = [
-        {
-            icon: <LayoutDashboard size={20} />,
-            label: 'Inicio',
-            onClick: () => go(''),
-            isActive: slug === '',
-        },
-        {
-            icon: <Users size={20} />,
-            label: 'Atletas',
-            onClick: () => go('atletas'),
-            isActive: slug === 'atletas',
-        },
-        {
-            icon: <CalendarDays size={20} />,
-            label: 'Agenda',
-            onClick: () => go('agenda'),
-            isActive: slug === 'agenda',
-        },
-        {
-            icon: <Calendar size={20} />,
-            label: 'Calendario',
-            onClick: () => go('calendario'),
-            isActive: slug === 'calendario',
-        },
-        {
-            icon: <User size={20} />,
-            label: 'Perfil',
-            onClick: () => go('perfil'),
-            isActive: slug === 'perfil',
-        },
-        // El análisis de velocidad de barra es trabajo de entrenador de
-        // fuerza. A un nutricionista le ocupa un hueco de menú sin darle
-        // nada, así que no se le enseña.
-        ...(nutritionist
-            ? []
-            : [{
-                icon: <Activity size={20} />,
-                label: 'Análisis PWR',
-                onClick: () => go('pwr'),
-                isActive: slug === 'pwr',
-                hideOnMobileBar: true,
-            }]),
-        {
-            icon: <SlidersHorizontal size={20} />,
-            label: 'Preferencias',
-            onClick: () => go('preferencias'),
-            isActive: slug === 'preferencias',
-            hideOnMobileBar: true,
-        },
+        { icon: <LayoutDashboard size={20} />, label: 'Inicio', onClick: () => go(''), isActive: slug === '' && !athleteId },
+        { icon: <Users size={20} />, label: 'Atletas', onClick: () => go('atletas'), isActive: slug === 'atletas' || !!athleteId },
+        { icon: <Inbox size={20} />, label: 'Bandeja', onClick: () => go('bandeja'), isActive: slug === 'bandeja', badge: bandeja.totalPendientes },
+        { icon: <MessageSquare size={20} />, label: 'Mensajes', onClick: () => go('mensajes'), isActive: slug === 'mensajes', badge: sinLeer },
+        { icon: <CalendarDays size={20} />, label: 'Agenda', onClick: () => go('agenda'), isActive: slug === 'agenda', hideOnMobileBar: true },
+        { icon: <Apple size={20} />, label: 'Dietas', onClick: () => go('dietas'), isActive: slug === 'dietas', hideOnMobileBar: true },
+        { icon: <Calendar size={20} />, label: 'Calendario', onClick: () => go('calendario'), isActive: slug === 'calendario', hideOnMobileBar: true },
+        // El análisis de velocidad es trabajo de entrenador de fuerza: a un
+        // nutricionista le ocupa un hueco sin darle nada.
+        ...(nutritionist ? [] : [{ icon: <Activity size={20} />, label: 'Análisis PWR', onClick: () => go('pwr'), isActive: slug === 'pwr', hideOnMobileBar: true }]),
+        { icon: <User size={20} />, label: 'Perfil', onClick: () => go('perfil'), isActive: slug === 'perfil', hideOnMobileBar: true },
+        { icon: <Bell size={20} />, label: 'Avisos', onClick: () => go('notificaciones'), isActive: slug === 'notificaciones', hideOnMobileBar: true },
+        { icon: <SlidersHorizontal size={20} />, label: 'Preferencias', onClick: () => go('preferencias'), isActive: slug === 'preferencias' || slug === 'documento', hideOnMobileBar: true },
     ];
 
-    // El conmutador coach<->atleta vive en Perfil (ProfileSection), no en la
-    // cabecera: en esta variante la cabecera de escritorio no existe.
+    // Quien entrena a gente y además se entrena necesita ir y volver.
+    const panelSwitch = tieneAmbosPaneles(user)
+        ? { icon: <Dumbbell size={20} />, label: 'Cambiar a atleta', shortLabel: 'Atleta', onClick: () => navigate('/dashboard') }
+        : undefined;
+
+    const abrirChat = (a: { id: string; full_name: string; avatar_url?: string }) => setChatAthlete(a);
 
     const renderContent = () => {
-        // La ficha de un atleta es su propia ruta (`/coach-dashboard/atletas/<id>`),
-        // así que el botón atrás vuelve a la lista en vez de salir del panel.
         if (athleteId) {
             return (
                 <CoachAthleteDetails
                     athleteId={athleteId}
-                    onOpenChat={(a) => setChatAthlete(a)}
+                    onOpenChat={abrirChat}
                     onBack={() => go('atletas')}
+                />
+            );
+        }
+        if (inboxAthleteId) {
+            return (
+                <CoachInboxAthlete
+                    user={user}
+                    athleteId={inboxAthleteId}
+                    onBack={() => go('bandeja')}
+                    onOpenChat={abrirChat}
+                    onOpenProfile={(id) => navigate(`/coach-dashboard/atletas/${id}`)}
                 />
             );
         }
@@ -179,8 +136,20 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                     <CoachAthletes
                         user={user}
                         onSelectAthlete={(id) => navigate(`/coach-dashboard/atletas/${id}`)}
-                        onOpenChat={(a) => setChatAthlete(a)}
+                        onOpenChat={abrirChat}
                         onBack={() => go('')}
+                    />
+                );
+            case 'inbox':
+                return <CoachInbox user={user} onOpenAthlete={(id) => navigate(`/coach-dashboard/bandeja/${id}`)} />;
+            case 'messages':
+                return (
+                    <ChatPage
+                        user={user}
+                        chatId={chatId ?? null}
+                        onAbrir={(id) => navigate(`/coach-dashboard/mensajes/${id}`)}
+                        onCerrar={() => go('mensajes')}
+                        onVerFicha={(id) => navigate(`/coach-dashboard/atletas/${id}`)}
                     />
                 );
             case 'diets':
@@ -188,17 +157,15 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
             case 'schedule':
                 return <CoachTeamSchedule user={user} onBack={() => go('')} />;
             case 'calendar':
-                return (
-                    <div className="p-4 md:p-8 max-w-5xl mx-auto">
-                        <CalendarSection onBack={() => go('')} />
-                    </div>
-                );
+                return <CalendarSection onBack={() => go('')} />;
             case 'profile':
                 return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => go('')} />;
             case 'pwr_analysis':
                 return <PwrAnalysisTab />;
             case 'preferences':
                 return <PreferencesPage coachId={user.id} onOpenPdfTheme={() => go('documento')} isDeveloper={isDeveloper(user)} />;
+            case 'notifications':
+                return <NotificationSettings userId={user.id} esStaff esAtleta={isAthlete(user)} onBack={() => go('')} />;
             case 'pdf_theme':
                 return <PdfThemeSettings user={user} onBack={() => go('preferencias')} />;
             case 'home':
@@ -209,17 +176,18 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                         onNavigate={(v) => go(viewToSlug(v))}
                         headerActions={
                             <div className="flex items-center gap-1">
-                                {/* La campana vivía en la cabecera de escritorio,
-                                    que esta variante no tiene: sin esto no había
-                                    forma de ver los avisos ni de activar el push. */}
-                                <NotificationBell userId={user.id} />
-                                {/* Oculto por debajo de `sm`: en un móvil de 375px la
-                                    fila ya lleva el conmutador de panel, los avisos y
-                                    la ⋮, y el tema es lo que menos se toca de los
-                                    cuatro (mismo criterio que el armazón — ver
-                                    `DashboardLayout.tsx`). En móvil se cambia desde
-                                    Perfil → Este dispositivo. */}
-                                <SelectorDeTema className="hidden sm:flex" />
+                                {panelSwitch && (
+                                    <button
+                                        onClick={panelSwitch.onClick}
+                                        aria-label={panelSwitch.label}
+                                        className="flex h-9 items-center gap-1.5 rounded-pill bg-[var(--brand-quiet)] px-3 text-t-xs font-semibold text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet-strong)] lg:hidden"
+                                    >
+                                        <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
+                                        <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
+                                    </button>
+                                )}
+                                <NotificationBell userId={user.id} className="lg:hidden" />
+                                <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
                             </div>
                         }
                     />
@@ -227,21 +195,21 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
         }
     };
 
+    const llenar = (slug === '' && !athleteId && !inboxAthleteId) || slug === 'mensajes';
+
     return (
         <DashboardLayout
             menuItems={menuItems}
             userId={user.id}
             userName={user.full_name}
+            userAvatar={user.avatar_url}
             onLogout={onLogout}
-            title={athleteId ? undefined : TITLES[slug]}
-            onBack={
-                slug === '' && !athleteId
-                    ? undefined
-                    : () => go(athleteId ? 'atletas' : slug === 'documento' ? 'preferencias' : '')
-            }
-            hideHeaderOnDesktop={slug === '' && !athleteId}
+            panelSwitch={panelSwitch}
+            ajustarAPantalla={llenar}
         >
-            <ViewTransition transitionKey={athleteId ?? slug}>{renderContent()}</ViewTransition>
+            <ViewTransition transitionKey={athleteId ?? inboxAthleteId ?? (slug === 'mensajes' ? 'mensajes' : slug)} llenar={llenar}>
+                {renderContent()}
+            </ViewTransition>
 
             <FloatingChat
                 isOpen={!!chatAthlete}
@@ -253,7 +221,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
     );
 }
 
-/** `CoachHome` navega con los nombres internos que usaba el `useState`. */
+/** `CoachHome` navega con los nombres internos de vista. */
 function viewToSlug(view: string): Slug {
     const entry = (Object.entries(VIEWS) as [Slug, string][]).find(([, name]) => name === view);
     return entry ? entry[0] : '';

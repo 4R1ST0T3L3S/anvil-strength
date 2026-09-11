@@ -2000,7 +2000,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         style={{ transformOrigin: 'top left' }}
                                         className="absolute left-0 top-full z-dropdown mt-2 w-64 rounded-card bg-surface-overlay p-3 shadow-overlay"
                                     >
-                                        <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                        <p className="text-t-2xs font-semibold text-ink-subtle">
                                             ¿Cuántos días se entrena?
                                         </p>
                                         <p className="mt-1 text-t-xs text-ink-subtle">
@@ -2047,7 +2047,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                         style={{ transformOrigin: 'top left' }}
                                         className="absolute left-0 top-full z-dropdown mt-2 w-72 rounded-card bg-surface-overlay p-3 shadow-overlay"
                                     >
-                                        <p className="text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                        <p className="text-t-2xs font-semibold text-ink-subtle">
                                             ¿Cuándo ve el atleta cada semana?
                                         </p>
                                         <p className="mt-1 text-t-xs text-ink-subtle">
@@ -2106,7 +2106,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                     {/* Descripción del bloque (visible para el atleta) */}
                     <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
                         <div className="mb-2 flex items-center justify-between gap-3">
-                            <p className="flex flex-wrap items-center gap-x-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                            <p className="flex flex-wrap items-center gap-x-2 text-t-2xs font-semibold text-ink-subtle">
                                 <FileText size={13} className="text-ink-faint" aria-hidden="true" />
                                 Descripción del bloque
                                 <span className="font-normal normal-case tracking-normal text-ink-subtle">

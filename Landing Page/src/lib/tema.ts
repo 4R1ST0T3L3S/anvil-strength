@@ -92,9 +92,10 @@ export function aplicarTema(tema: Tema) {
     raiz.style.colorScheme = efectivo === 'claro' ? 'light' : 'dark';
 
     const meta = document.querySelector('meta[name="theme-color"]');
-    // Los dos salen de tokens.css: `--surface-sunken` de cada modo. Escritos
-    // aquí en hexadecimal porque `<meta>` no entiende `var()`.
-    if (meta) meta.setAttribute('content', efectivo === 'claro' ? '#e6e6e6' : '#0a0a0a');
+    // Los dos salen de tokens.css: `--surface-canvas` de cada modo (sistema de
+    // septiembre de 2026). En hexadecimal porque `<meta>` no entiende `var()`.
+    // Si cambian los lienzos, cambian aquí y en el script de index.html.
+    if (meta) meta.setAttribute('content', efectivo === 'claro' ? '#f4f4f6' : '#0c0c0e');
 
     void raiz.offsetHeight;
     requestAnimationFrame(() => raiz.classList.remove('cambiando-tema'));

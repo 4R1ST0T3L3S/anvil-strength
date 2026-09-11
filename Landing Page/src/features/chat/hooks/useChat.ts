@@ -1,192 +1,371 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../../../lib/supabase';
-import { ChatMessage } from '../../../types/database';
+import { CLAVES } from '../../../lib/queryKeys';
+import {
+    chatService, fundirMensajes, ordenarMensajes,
+    type ChatAttachment, type ChatKind, type ChatMessage, type Conversation,
+} from '../../../services/chatService';
+import { chatMediaService, type SubidaOpciones } from '../../../services/chatMediaService';
 
 /**
- * LA CONVERSACIÓN ENTRE DOS PERSONAS.
+ * ANVIL STRENGTH — EL CHAT, PARA REACT
  * =====================================================================
  *
- * POR QUÉ ESTO ES UNA CONSULTA Y NO UN `useState`
+ * UN SOLO CANAL EN TIEMPO REAL POR USUARIO (`useChatRealtime`), montado una
+ * vez en el panel, con dos oídos:
  *
- * Antes: un `useState` con los mensajes, un `useCallback` que los pedía, y un
- * efecto que llamaba al callback y además abría el canal en tiempo real. Eso
- * tenía dos precios:
+ *   · INSERT donde yo soy el destinatario → el mensaje entra en el hilo si
+ *     está abierto, se marca ENTREGADO (ha llegado a este dispositivo) y se
+ *     refresca la lista de conversaciones.
+ *   · UPDATE donde yo soy el remitente → mis mensajes cambian a ✓✓ cuando
+ *     el otro los recibe.
  *
- *   · `fetchMessages` termina con `setLoading(false)` y se llamaba desde el
- *     CUERPO del efecto, así que abrir una conversación eran dos renders.
- *   · Cero caché. Volver a una conversación que se acababa de mirar la pedía
- *     entera otra vez, y hasta que llegaba se veía el hilo en blanco. En un
- *     chat, ver el hilo vacío medio segundo se lee como "se han borrado los
- *     mensajes".
+ * Antes había tres canales por usuario (uno por pantalla) y ninguno de
+ * reconexión: al volver de un túnel el hilo se quedaba sin los mensajes de
+ * en medio. Ahora, al reconectar, al volver a la pestaña y al recuperar la
+ * red se vuelve a pedir todo lo abierto y se confirman las entregas.
  *
- * Con la caché, volver a una conversación la enseña al instante y el refresco
- * ocurre por detrás.
- *
- * Es el mismo patrón que ya usa `src/hooks/useNotifications.ts`: consulta para
- * el estado inicial, y el canal en tiempo real escribiendo sobre la caché con
- * `setQueryData`. El canal SÍ es un efecto legítimo — es exactamente
- * "suscribirse a un sistema externo", que es para lo que existen los efectos.
- *
- *
- * POR QUÉ AHORA PIDE UNA CONVERSACIÓN Y NO LA TABLA ENTERA (K12, deuda 2)
- * ---------------------------------------------------------------------
- *
- * Hasta el 24/08/2026 esto pedía TODOS los mensajes del usuario —con todo el
- * mundo, desde el principio de los tiempos— y se quedaba con la conversación
- * FILTRANDO EN EL NAVEGADOR. El comentario que lo justificaba decía que
- * PostgREST no admite un `or` de dos condiciones compuestas.
- *
- * **Eso era falso.** `or=(and(...),and(...))` es sintaxis válida y está
- * comprobada contra producción. La consulta correcta cabe en una línea:
- *
- *     or=(and(sender_id.eq.A,receiver_id.eq.B),
- *         and(sender_id.eq.B,receiver_id.eq.A))
- *
- * Con eso, el servidor devuelve la conversación y solo la conversación, y los
- * índices de `migrations/0002_chat_messages.sql` la resuelven sin ordenar
- * nada.
- *
- * Y además se pide POR VENTANAS. Un hilo de dos años no se descarga para
- * enseñar las últimas doce líneas: se piden las 50 más recientes y `cargarMas`
- * amplía la ventana. La ventana se guarda POR CONVERSACIÓN, así que volver a
- * un hilo que ya habías desplegado lo devuelve como lo dejaste.
+ * ENVÍO OPTIMISTA. El mensaje se pinta al instante con `client_id` y estado
+ * `enviando`; si falla se queda como `fallido` con reintento; cuando llega
+ * el real, `fundirMensajes` sustituye el provisional por él (mismo client_id).
  */
 
-/** Cuántos mensajes trae cada tirón. */
-export const TAMANO_PAGINA = 50;
+export type EstadoLocal = 'enviando' | 'subiendo' | 'fallido';
 
-export const claveConversacion = (yo: string, elOtro: string | null, ventana: number) =>
-    ['chat', yo, elOtro, ventana] as const;
+export interface MensajeEnPantalla extends ChatMessage {
+    /** Solo en los provisionales. */
+    estadoLocal?: EstadoLocal;
+    /** 0-1 mientras sube un adjunto. */
+    progreso?: number;
+    /** Vista previa local del adjunto, hasta que exista en el servidor. */
+    previewUrl?: string;
+    error?: string;
+}
 
-export const useChat = (currentUserId: string, otherUserId: string | null) => {
+export const TAMANO_PAGINA = 40;
+
+// =====================================================================
+// LISTA DE CONVERSACIONES Y NO LEÍDOS
+// =====================================================================
+
+export function useConversaciones(userId: string | null | undefined, esStaff: boolean) {
+    return useQuery({
+        queryKey: CLAVES.chat.conversaciones(userId ?? ''),
+        queryFn: () => chatService.conversations(userId as string, esStaff),
+        enabled: !!userId,
+        staleTime: 15_000,
+    });
+}
+
+export function useChatSinLeer(userId: string | null | undefined) {
+    const q = useQuery({
+        queryKey: CLAVES.chat.sinLeer(userId ?? ''),
+        queryFn: () => chatService.unreadCount(userId as string),
+        enabled: !!userId,
+        staleTime: 15_000,
+    });
+    return q.data ?? 0;
+}
+
+// =====================================================================
+// EL CANAL
+// =====================================================================
+
+/** Qué conversación está abierta ahora mismo, para no avisar de lo que se está viendo. */
+const abiertaRef: { current: string | null } = { current: null };
+export function marcarConversacionAbierta(otherId: string | null) {
+    abiertaRef.current = otherId;
+}
+export function conversacionAbierta(): string | null {
+    return abiertaRef.current;
+}
+
+/**
+ * Se monta UNA vez (en el armazón del panel). Mantiene la caché al día y
+ * avisa de lo que llega para conversaciones que no están abiertas.
+ */
+export function useChatRealtime(
+    userId: string | null | undefined,
+    onMensajeNuevo?: (m: ChatMessage) => void
+) {
     const queryClient = useQueryClient();
+    const avisar = useRef(onMensajeNuevo);
+    useEffect(() => { avisar.current = onMensajeNuevo; });
 
-    /**
-     * La ventana abierta de cada conversación.
-     *
-     * Es un mapa y no un número suelto a propósito: con un número habría que
-     * reiniciarlo al cambiar de interlocutor, y eso sería un `setState` dentro
-     * de un efecto — justo lo que el bloque 6 se dedicó a quitar de 40 sitios.
-     * Indexando por interlocutor, el valor correcto se DERIVA y no hay efecto
-     * que escribir.
-     */
+    useEffect(() => {
+        if (!userId) return;
+
+        const refrescarTodo = () => {
+            queryClient.invalidateQueries({ queryKey: CLAVES.chat.raiz });
+            void chatService.ackDelivered().then(() => {
+                queryClient.invalidateQueries({ queryKey: CLAVES.chat.conversaciones(userId) });
+            });
+        };
+
+        let canal: RealtimeChannel | null = null;
+        let reintento: ReturnType<typeof setTimeout> | null = null;
+
+        const abrir = () => {
+            canal = supabase
+                .channel(`chat_${userId}_${Math.random().toString(36).slice(2, 8)}`)
+                .on('postgres_changes', {
+                    event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `receiver_id=eq.${userId}`,
+                }, (payload) => {
+                    const m = payload.new as ChatMessage;
+                    // Al hilo abierto, si es el suyo; a la lista siempre.
+                    queryClient.setQueriesData<MensajeEnPantalla[]>(
+                        { queryKey: CLAVES.chat.hilo(userId, m.sender_id) },
+                        (previos) => (previos ? fundirMensajes(previos, [m]) : previos)
+                    );
+                    queryClient.invalidateQueries({ queryKey: CLAVES.chat.conversaciones(userId) });
+                    queryClient.invalidateQueries({ queryKey: CLAVES.chat.sinLeer(userId) });
+                    // Ha llegado a este dispositivo: entregado. Y si se está
+                    // mirando, también leído.
+                    if (abiertaRef.current === m.sender_id && document.visibilityState === 'visible') {
+                        void chatService.markRead(userId, m.sender_id).then(() => {
+                            queryClient.invalidateQueries({ queryKey: CLAVES.chat.sinLeer(userId) });
+                        });
+                    } else {
+                        void chatService.ackDelivered();
+                        avisar.current?.(m);
+                    }
+                })
+                .on('postgres_changes', {
+                    event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `sender_id=eq.${userId}`,
+                }, (payload) => {
+                    const m = payload.new as ChatMessage;
+                    queryClient.setQueriesData<MensajeEnPantalla[]>(
+                        { queryKey: CLAVES.chat.hilo(userId, m.receiver_id) },
+                        (previos) => previos?.map(x => (x.id === m.id ? { ...x, delivered_at: m.delivered_at ?? x.delivered_at, is_read: m.is_read } : x))
+                    );
+                })
+                .subscribe((estado) => {
+                    // Tras una caída, al volver se rellena lo que faltó.
+                    if (estado === 'SUBSCRIBED') refrescarTodo();
+                    if (estado === 'CHANNEL_ERROR' || estado === 'TIMED_OUT') {
+                        if (reintento) clearTimeout(reintento);
+                        reintento = setTimeout(() => {
+                            if (canal) supabase.removeChannel(canal);
+                            abrir();
+                        }, 3000);
+                    }
+                });
+        };
+
+        abrir();
+
+        const alVolver = () => { if (document.visibilityState === 'visible') refrescarTodo(); };
+        document.addEventListener('visibilitychange', alVolver);
+        window.addEventListener('online', refrescarTodo);
+        window.addEventListener('focus', alVolver);
+
+        return () => {
+            if (reintento) clearTimeout(reintento);
+            if (canal) supabase.removeChannel(canal);
+            document.removeEventListener('visibilitychange', alVolver);
+            window.removeEventListener('online', refrescarTodo);
+            window.removeEventListener('focus', alVolver);
+        };
+    }, [userId, queryClient]);
+}
+
+// =====================================================================
+// UN HILO
+// =====================================================================
+
+export interface EnvioDeAdjunto {
+    file: File;
+    kind: Exclude<ChatKind, 'text'>;
+    /** Texto que acompaña (pie de foto). */
+    caption?: string;
+    name?: string;
+    duration_s?: number;
+    width?: number;
+    height?: number;
+    poster?: File | null;
+    /** Vista previa local (URL de objeto). */
+    previewUrl?: string;
+}
+
+export function useHilo(me: string, other: string | null) {
+    const queryClient = useQueryClient();
     const [ventanas, setVentanas] = useState<Record<string, number>>({});
-    const ventana = (otherUserId && ventanas[otherUserId]) || TAMANO_PAGINA;
+    const ventana = (other && ventanas[other]) || TAMANO_PAGINA;
+    const clave = useMemo(() => CLAVES.chat.hilo(me, other ?? ''), [me, other]);
 
-    const clave = claveConversacion(currentUserId, otherUserId, ventana);
-
-    const { data: messages = [], isPending: loading } = useQuery({
+    const consulta = useQuery({
         queryKey: clave,
-        queryFn: async (): Promise<ChatMessage[]> => {
-            const yo = currentUserId;
-            const elOtro = otherUserId as string;
-
-            const { data, error } = await supabase
-                .from('chat_messages')
-                .select('*')
-                .or(
-                    `and(sender_id.eq.${yo},receiver_id.eq.${elOtro}),` +
-                    `and(sender_id.eq.${elOtro},receiver_id.eq.${yo})`
-                )
-                // Descendente + límite = las MÁS RECIENTES. Ascendente con
-                // límite daría las más antiguas, que es lo contrario de lo que
-                // se quiere ver al abrir un chat.
-                .order('created_at', { ascending: false })
-                .limit(ventana);
-
-            if (error) throw error;
-
-            // Y se le da la vuelta para pintar: arriba lo viejo, abajo lo nuevo.
-            return (data ?? []).slice().reverse();
+        queryFn: async (): Promise<MensajeEnPantalla[]> => {
+            const del = await chatService.thread(me, other as string, ventana);
+            // Los provisionales (enviando / fallidos) sobreviven al refresco.
+            const previos = queryClient.getQueryData<MensajeEnPantalla[]>(clave) ?? [];
+            const provisionales = previos.filter(m => m.estadoLocal && !del.some(d => d.client_id && d.client_id === m.client_id));
+            return ordenarMensajes([...fundirMensajes(previos.filter(m => !m.estadoLocal), del), ...provisionales]);
         },
-        enabled: !!otherUserId,
+        enabled: !!other,
+        // La ventana forma parte de la consulta pero no de la clave: al
+        // ampliarla se vuelve a pedir el mismo hilo con más mensajes.
+        staleTime: 10_000,
     });
 
-    /**
-     * ¿Puede haber más hilo hacia atrás?
-     *
-     * Si el servidor ha devuelto justo los que caben en la ventana, es que
-     * probablemente hay más. Cuando el total coincide exactamente con la
-     * ventana esto se equivoca una vez: se pide una página más, vuelve lo
-     * mismo, y ya se sabe que no hay nada detrás.
-     */
-    const hayMas = messages.length >= ventana;
+    // Marcar como abierta y leer al entrar (y al recibir con el hilo abierto).
+    useEffect(() => {
+        if (!other) return;
+        marcarConversacionAbierta(other);
+        void chatService.markRead(me, other).then(() => {
+            queryClient.invalidateQueries({ queryKey: CLAVES.chat.sinLeer(me) });
+            queryClient.invalidateQueries({ queryKey: CLAVES.chat.conversaciones(me) });
+        });
+        return () => marcarConversacionAbierta(null);
+    }, [me, other, queryClient]);
+
+    // Ampliar la ventana vuelve a pedir el hilo.
+    const ultimaVentana = useRef(ventana);
+    useEffect(() => {
+        if (ultimaVentana.current !== ventana) {
+            ultimaVentana.current = ventana;
+            void consulta.refetch();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ventana]);
+
+    const mensajes = consulta.data ?? [];
+    const hayMas = mensajes.filter(m => !m.estadoLocal).length >= ventana;
 
     const cargarMas = useCallback(() => {
-        if (!otherUserId) return;
-        setVentanas(previas => ({
-            ...previas,
-            [otherUserId]: (previas[otherUserId] || TAMANO_PAGINA) + TAMANO_PAGINA,
-        }));
-    }, [otherUserId]);
+        if (!other) return;
+        setVentanas(v => ({ ...v, [other]: (v[other] || TAMANO_PAGINA) + TAMANO_PAGINA }));
+    }, [other]);
 
-    /** Añade un mensaje a la caché sin duplicarlo. */
-    const anadirMensaje = useCallback((nuevo: ChatMessage) => {
-        queryClient.setQueryData<ChatMessage[]>(clave, (previos = []) =>
-            previos.some(m => m.id === nuevo.id) ? previos : [...previos, nuevo]
-        );
-        // `clave` se reconstruye en cada render, así que las dependencias son
-        // sus piezas y no el array.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [queryClient, currentUserId, otherUserId, ventana]);
+    const escribir = useCallback((fn: (lista: MensajeEnPantalla[]) => MensajeEnPantalla[]) => {
+        queryClient.setQueryData<MensajeEnPantalla[]>(clave, (lista = []) => fn(lista));
+    }, [queryClient, clave]);
 
-    // Tiempo real. Esto SÍ es un efecto: se suscribe a un sistema externo y se
-    // da de baja al desmontar.
-    useEffect(() => {
-        if (!otherUserId) return;
+    const trasEnviar = useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: CLAVES.chat.conversaciones(me) });
+    }, [queryClient, me]);
 
-        const channel = supabase
-            .channel(`chat_${currentUserId}_${otherUserId}_${Math.random().toString(36).substring(7)}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'chat_messages',
-                filter: `receiver_id=eq.${currentUserId}`,
-            }, (payload) => {
-                const newMessage = payload.new as ChatMessage;
-                if (newMessage.sender_id === otherUserId) anadirMensaje(newMessage);
-            })
-            .subscribe();
+    /** Texto. Optimista, con reintento. */
+    const enviarTexto = useCallback(async (texto: string, clientIdPrevio?: string) => {
+        if (!other) return;
+        const content = texto.trim();
+        if (!content) return;
+        const clientId = clientIdPrevio ?? crypto.randomUUID();
+        const provisional: MensajeEnPantalla = {
+            id: `local-${clientId}`,
+            client_id: clientId,
+            sender_id: me,
+            receiver_id: other,
+            content,
+            type: 'text',
+            is_read: false,
+            created_at: new Date().toISOString(),
+            estadoLocal: 'enviando',
+        };
+        escribir(lista => ordenarMensajes([...lista.filter(m => m.client_id !== clientId), provisional]));
+        try {
+            const real = await chatService.send({ me, other, content, type: 'text', clientId });
+            escribir(lista => fundirMensajes(lista.filter(m => m.client_id !== clientId || m.id === real.id), [real]));
+            trasEnviar();
+        } catch (err) {
+            escribir(lista => lista.map(m => (m.client_id === clientId ? { ...m, estadoLocal: 'fallido', error: err instanceof Error ? err.message : 'No se pudo enviar' } : m)));
+        }
+    }, [me, other, escribir, trasEnviar]);
 
-        return () => { supabase.removeChannel(channel); };
-    }, [currentUserId, otherUserId, anadirMensaje]);
+    /** Adjunto ya preparado (comprimido). Sube con progreso y luego inserta. */
+    const enviarAdjunto = useCallback(async (envio: EnvioDeAdjunto, opciones: SubidaOpciones = {}) => {
+        if (!other) return;
+        const clientId = crypto.randomUUID();
+        const content = envio.caption?.trim() ?? '';
+        const provisional: MensajeEnPantalla = {
+            id: `local-${clientId}`,
+            client_id: clientId,
+            sender_id: me,
+            receiver_id: other,
+            content,
+            type: envio.kind,
+            is_read: false,
+            created_at: new Date().toISOString(),
+            estadoLocal: 'subiendo',
+            progreso: 0,
+            previewUrl: envio.previewUrl,
+            attachment: {
+                path: '',
+                kind: envio.kind,
+                mime: envio.file.type,
+                size: envio.file.size,
+                name: envio.name,
+                duration_s: envio.duration_s,
+                width: envio.width,
+                height: envio.height,
+            },
+        };
+        escribir(lista => ordenarMensajes([...lista, provisional]));
 
-    const sendMessage = async (content: string, type: 'text' | 'image' = 'text') => {
-        if (!otherUserId || !content.trim()) return;
+        try {
+            const adjunto: ChatAttachment = await chatMediaService.subir(
+                envio.file, me, other,
+                { name: envio.name, duration_s: envio.duration_s, width: envio.width, height: envio.height, poster: envio.poster },
+                {
+                    ...opciones,
+                    onProgreso: (f) => {
+                        opciones.onProgreso?.(f);
+                        escribir(lista => lista.map(m => (m.client_id === clientId ? { ...m, progreso: f } : m)));
+                    },
+                }
+            );
+            escribir(lista => lista.map(m => (m.client_id === clientId ? { ...m, estadoLocal: 'enviando', progreso: 1 } : m)));
+            const real = await chatService.send({ me, other, content, type: envio.kind, clientId, attachment: adjunto });
+            escribir(lista => fundirMensajes(lista.filter(m => m.client_id !== clientId || m.id === real.id), [{ ...real }]).map(m =>
+                m.id === real.id ? { ...m, previewUrl: envio.previewUrl } : m
+            ));
+            trasEnviar();
+        } catch (err) {
+            if (err instanceof DOMException && err.name === 'AbortError') {
+                escribir(lista => lista.filter(m => m.client_id !== clientId));
+                return;
+            }
+            escribir(lista => lista.map(m => (m.client_id === clientId ? { ...m, estadoLocal: 'fallido', error: err instanceof Error ? err.message : 'No se pudo enviar' } : m)));
+        }
+    }, [me, other, escribir, trasEnviar]);
 
-        const { data, error } = await supabase
-            .from('chat_messages')
-            .insert([{
-                sender_id: currentUserId,
-                receiver_id: otherUserId,
-                content,
-                type,
-            }])
-            .select()
-            .single();
+    const reintentar = useCallback((m: MensajeEnPantalla) => {
+        if (m.type === 'text' && m.client_id) void enviarTexto(m.content, m.client_id);
+    }, [enviarTexto]);
 
-        if (error) throw error;
-        anadirMensaje(data);
-        return data;
+    const descartar = useCallback((clientId: string) => {
+        escribir(lista => lista.filter(m => m.client_id !== clientId));
+    }, [escribir]);
+
+    return {
+        mensajes,
+        cargando: consulta.isPending && !!other,
+        error: consulta.isError ? consulta.error : null,
+        recargar: consulta.refetch,
+        hayMas,
+        cargarMas,
+        enviarTexto,
+        enviarAdjunto,
+        reintentar,
+        descartar,
     };
+}
 
-    const markAsRead = async () => {
-        if (!otherUserId) return;
+// =====================================================================
+// URL FIRMADA DE UN ADJUNTO (con caché: la firma dura una hora)
+// =====================================================================
 
-        await supabase
-            .from('chat_messages')
-            .update({ is_read: true })
-            .eq('sender_id', otherUserId)
-            .eq('receiver_id', currentUserId)
-            .eq('is_read', false);
-    };
+export function useAdjuntoUrl(path: string | null | undefined, disponible = true) {
+    return useQuery({
+        queryKey: CLAVES.chat.adjunto(path ?? ''),
+        queryFn: () => chatMediaService.firmar(path as string),
+        enabled: !!path && disponible,
+        staleTime: 50 * 60_000,
+        gcTime: 55 * 60_000,
+        retry: 1,
+    });
+}
 
-    /** Vuelve a pedir el hilo. Para cuando se sospecha que falta algo. */
-    const fetchMessages = useCallback(() => {
-        queryClient.invalidateQueries({ queryKey: clave });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [queryClient, currentUserId, otherUserId, ventana]);
-
-    return { messages, loading, sendMessage, markAsRead, fetchMessages, hayMas, cargarMas };
-};
+export type { Conversation };

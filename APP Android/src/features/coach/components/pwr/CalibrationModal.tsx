@@ -167,7 +167,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
 
     return (
         <div
-            className="fixed inset-0 z-[250] flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center sm:p-4"
+            className="fixed inset-0 z-[250] flex items-end justify-center bg-[var(--scrim)] backdrop-blur-sm sm:items-center sm:p-4"
             onClick={onClose}
         >
             <div
@@ -214,7 +214,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                     {/* APARATO                                            */}
                     {/* ------------------------------------------------- */}
                     <div>
-                        <label className="block text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                        <label className="block text-t-2xs font-semibold text-ink-subtle">
                             Aparato de referencia
                         </label>
                         <p className="mt-0.5 text-t-2xs text-ink-subtle">
@@ -233,7 +233,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                     {/* FICHERO                                            */}
                     {/* ------------------------------------------------- */}
                     <div>
-                        <label className="block text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                        <label className="block text-t-2xs font-semibold text-ink-subtle">
                             Fichero del encoder
                         </label>
                         <label className="mt-1.5 flex cursor-pointer items-center gap-2 rounded-field border border-dashed border-subtle bg-surface-sunken px-3 py-3 text-t-2xs font-semibold text-ink-muted transition-colors duration-fast hover:border-brand-line hover:text-ink">
@@ -338,7 +338,7 @@ export function CalibrationModal({ open, onClose, result, athleteId, coachId }: 
                             })}
 
                             <div>
-                                <label className="block text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <label className="block text-t-2xs font-semibold text-ink-subtle">
                                     Notas
                                 </label>
                                 <textarea

@@ -560,7 +560,7 @@ function SessionCard({ session, onSetPatched }: { session: LoggedSession; onSetP
                             {session.date && ` · ${session.date.split('-').reverse().join('/')}`}
                         </span>
                         {summary.completed && (
-                            <span className="rounded-chip bg-[var(--success-quiet)] px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wider text-success">
+                            <span className="rounded-chip bg-[var(--success-quiet)] px-1.5 py-0.5 text-t-2xs font-semibold text-success">
                                 Cerrado
                             </span>
                         )}
@@ -598,7 +598,7 @@ function SessionCard({ session, onSetPatched }: { session: LoggedSession; onSetP
             {open && (
                 <div className="space-y-3 border-t border-subtle px-4 py-3">
                     {session.athleteNotes?.trim() && (
-                        <p className="rounded-field bg-[var(--brand-quiet)] px-3 py-2 text-t-xs italic leading-relaxed text-ink-muted">
+                        <p className="rounded-field bg-[var(--brand-quiet)] px-3 py-2 text-t-xs leading-relaxed text-ink-muted">
                             “{session.athleteNotes.trim()}”
                         </p>
                     )}
@@ -675,7 +675,7 @@ function ExerciseLog({
                         set.notes?.trim() ? (
                             <li key={set.id} className="flex gap-2 text-t-2xs leading-relaxed text-ink-muted">
                                 <span className="shrink-0 text-ink-subtle">S{i + 1}</span>
-                                <span className="italic">“{set.notes.trim()}”</span>
+                                <span className="">“{set.notes.trim()}”</span>
                             </li>
                         ) : null
                     )}
@@ -982,9 +982,9 @@ function Metric({
 }) {
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
-            <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
+            <p className="text-t-2xs font-bold text-ink-subtle">{label}</p>
             <p className={cn(
-                'mt-1.5 text-2xl font-black leading-none tabular-nums',
+                'mt-1.5 text-2xl font-semibold leading-none tabular-nums',
                 tone === 'good' ? 'text-success' : tone === 'warn' ? 'text-warning' : 'text-ink'
             )}>
                 {value}

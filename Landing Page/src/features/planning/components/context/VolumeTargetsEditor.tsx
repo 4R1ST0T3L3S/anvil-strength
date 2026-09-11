@@ -202,7 +202,7 @@ export function VolumeTargetsEditor({
                         <button
                             onClick={() => borrarAmbito.mutate()}
                             disabled={borrarAmbito.isPending}
-                            className="flex items-center gap-1.5 text-t-xs font-bold uppercase tracking-wide text-ink-subtle transition-colors duration-fast hover:text-danger-text disabled:opacity-50"
+                            className="flex items-center gap-1.5 text-t-xs font-bold text-ink-subtle transition-colors duration-fast hover:text-danger-text disabled:opacity-50"
                         >
                             <Trash2 size={13} aria-hidden="true" />
                             Quitar los de «{AMBITO_INFO[ambito].etiqueta}»
@@ -225,7 +225,7 @@ export function VolumeTargetsEditor({
         >
             {/* ÁMBITO */}
             <div className="mb-5">
-                <p className="mb-2 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                <p className="mb-2 text-t-2xs font-semibold text-ink-subtle">
                     A qué se aplica
                 </p>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -237,7 +237,7 @@ export function VolumeTargetsEditor({
                                 onClick={() => { setAmbito(a); setBorrador({}); }}
                                 disabled={deshabilitado}
                                 className={cn(
-                                    'rounded-field border px-2 py-2 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap disabled:opacity-40',
+                                    'rounded-field border px-2 py-2 text-t-2xs font-bold transition-colors duration-fast ease-snap disabled:opacity-40',
                                     ambito === a
                                         ? 'border-brand bg-brand-quiet text-brand-text'
                                         : 'border-[var(--border-default)] text-ink-muted hover:text-ink'
@@ -259,7 +259,7 @@ export function VolumeTargetsEditor({
                 <div className="grid grid-cols-[1fr_5rem_5rem] items-center gap-2 px-1">
                     <span />
                     {METRICAS_EDITABLES.map(m => (
-                        <span key={m} className="text-center text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                        <span key={m} className="text-center text-t-2xs font-semibold text-ink-subtle">
                             {METRICA_INFO[m].corto}
                         </span>
                     ))}

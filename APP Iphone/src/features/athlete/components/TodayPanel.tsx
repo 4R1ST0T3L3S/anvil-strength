@@ -134,7 +134,7 @@ export function TrainingCard({
                 <span className="block text-t-sm xl:text-t-base font-bold leading-tight text-ink truncate">
                     {loading ? 'Cargando.' : noSession ? noSession.title : session?.title ?? 'Entrenar'}
                 </span>
-                <span className="mt-0.5 flex items-center gap-1 text-[10px] xl:text-t-xs text-ink-subtle truncate">
+                <span className="mt-0.5 flex items-center gap-1 text-t-2xs xl:text-t-xs text-ink-subtle truncate">
                     <span className="truncate">
                         {loading ? 'Tu sesión de hoy' : locked ? 'Necesitas acceso completo' : noSession ? noSession.hint : session ? `${session.completedSets} de ${session.totalSets} series • ${training?.blockName}` : 'Tu entrenador aún no te ha pautado nada'}
                     </span>
@@ -186,7 +186,7 @@ function NutritionCard({
                 <span className="block text-t-sm xl:text-t-base font-bold leading-tight text-ink truncate">
                     {loading ? 'Cargando.' : 'Mi dieta'}
                 </span>
-                <span className="mt-0.5 flex items-center gap-1 text-[10px] xl:text-t-xs text-ink-subtle truncate">
+                <span className="mt-0.5 flex items-center gap-1 text-t-2xs xl:text-t-xs text-ink-subtle truncate">
                     <span className="truncate">
                         {loading ? 'Tu plan nutricional' : locked ? 'Necesitas acceso completo' : plan ? `${plan.calories_target} kcal • ${plan.protein_target}g P` : 'Todavía no tienes plan asignado'}
                     </span>

@@ -171,7 +171,7 @@ export function PeriodSelector({
                 {deBloque.length > 0 && (
                     <>
                         <div className="my-1.5 h-px bg-[var(--border-subtle)]" role="separator" />
-                        <p className="px-3 pb-1 pt-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                        <p className="px-3 pb-1 pt-1 text-t-2xs font-bold text-ink-subtle">
                             Por bloque
                         </p>
                         {deBloque.map((o) => {

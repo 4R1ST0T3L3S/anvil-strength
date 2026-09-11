@@ -79,7 +79,7 @@ export function VolumePanel({
     return (
         <div className={cn('flex flex-col gap-4', className)}>
             <header className="flex items-center justify-between gap-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+                <h3 className="text-sm font-semibold text-ink-muted">
                     Volumen por grupo muscular
                 </h3>
 
@@ -95,7 +95,7 @@ export function VolumePanel({
                             aria-selected={scope === s}
                             onClick={() => setScope(s)}
                             className={cn(
-                                'rounded-chip px-2.5 py-1 text-t-2xs font-semibold uppercase transition-colors duration-fast ease-snap',
+                                'rounded-chip px-2.5 py-1 text-t-2xs font-semibold transition-colors duration-fast ease-snap',
                                 scope === s
                                     ? 'bg-brand text-brand-ink'
                                     : 'text-ink-subtle hover:text-ink'
@@ -218,7 +218,7 @@ function Metric({
 }) {
     return (
         <div>
-            <p className="text-t-2xs uppercase tracking-wide text-ink-subtle">{label}</p>
+            <p className="text-t-2xs text-ink-subtle">{label}</p>
             <p className="text-xl font-semibold text-ink">{value}</p>
             {hint && <p className="text-t-2xs text-ink-subtle">{hint}</p>}
         </div>

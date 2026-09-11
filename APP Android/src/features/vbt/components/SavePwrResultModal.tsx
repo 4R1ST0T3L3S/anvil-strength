@@ -273,7 +273,7 @@ export function SavePwrResultModal({
                         {/* 1. De quién es */}
                         {!fixedAthleteId && (
                             <div>
-                                <p className="mb-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <p className="mb-1.5 text-t-2xs font-semibold text-ink-subtle">
                                     ¿De qué atleta es?
                                 </p>
 
@@ -319,7 +319,7 @@ export function SavePwrResultModal({
 
                         {/* 2. De qué ejercicio */}
                         <div>
-                            <p className="mb-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                            <p className="mb-1.5 text-t-2xs font-semibold text-ink-subtle">
                                 Ejercicio
                             </p>
                             <input
@@ -333,7 +333,7 @@ export function SavePwrResultModal({
                         {/* 3. A qué serie */}
                         {athleteId && isAssign && (
                             <div>
-                                <p className="mb-1 flex items-center gap-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <p className="mb-1 flex items-center gap-1.5 text-t-2xs font-semibold text-ink-subtle">
                                     <Link2 size={12} aria-hidden="true" />
                                     Serie a la que se asocia
                                 </p>
@@ -353,7 +353,7 @@ export function SavePwrResultModal({
 
                         {athleteId && !isAssign && (
                             <div>
-                                <p className="mb-1 flex items-center gap-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <p className="mb-1 flex items-center gap-1.5 text-t-2xs font-semibold text-ink-subtle">
                                     <Link2 size={12} aria-hidden="true" />
                                     Enlazar con una serie <span className="font-normal normal-case opacity-70">(opcional)</span>
                                 </p>
@@ -411,7 +411,7 @@ export function SavePwrResultModal({
                         )}
 
                         <div>
-                            <p className="mb-1.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                            <p className="mb-1.5 text-t-2xs font-semibold text-ink-subtle">
                                 Nota <span className="font-normal normal-case opacity-70">(opcional)</span>
                             </p>
                             <textarea

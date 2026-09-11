@@ -23,24 +23,22 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-  <!-- VARIANTE PWA PARA IPHONE.
-       `viewport-fit=cover` es lo que ACTIVA `env(safe-area-inset-*)`. Sin él
-       valen cero y las reservas que hace la app para la barra de gestos (la
-       barra de pestañas del panel, el pie del registro de series, las hojas
-       inferiores) no reservan nada: los controles quedan bajo el indicador de
-       inicio, donde el sistema se come el toque. Igual que en la web (raíz). -->
+  <!-- `viewport-fit=cover` es lo que ACTIVA las variables `env(safe-area-inset-*)`.
+       Sin él valen cero siempre, y todas las reservas de espacio que hace la app
+       para la barra de gestos del iPhone —la barra de pestañas del panel, el pie
+       del registro de series, las hojas inferiores— no reservan nada: los
+       controles quedan justo debajo del indicador de inicio, donde el sistema se
+       come el toque. Se nota sobre todo con la app instalada como PWA, que es
+       donde no hay barra del navegador que disimule. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-  <!-- Instalada desde Safari ("Añadir a pantalla de inicio") abre sin barra
-       del navegador. La barra de estado va en `black` y NO en
-       `black-translucent`: con translúcida el contenido se dibuja DEBAJO del
-       reloj y la batería, y solo unas pocas pantallas reservan ese hueco con
-       CSS — las hojas y herramientas a pantalla completa (`fixed inset-0`)
-       quedarían con la cabecera bajo el reloj y la X de cerrar tapada. Con
-       `black` iOS reserva él la franja de arriba (opaca, negra: casi el
-       #0a0a0a del fondo) y a la app solo le queda el inset de abajo, que ya
-       gestiona. El `<link rel="manifest">` lo inyecta vite-plugin-pwa en el
-       build; no va aquí a mano o sale duplicado. -->
+  <!-- VARIANTE PWA PARA IPHONE. Instalada desde Safari ("Añadir a pantalla de
+       inicio") abre sin barra del navegador. La barra de estado va en `black`
+       y NO en `black-translucent`: con translúcida el contenido se dibuja
+       DEBAJO del reloj y la batería y las hojas a pantalla completa quedarían
+       con la X de cerrar tapada. Con `black` iOS reserva él la franja de
+       arriba y a la app solo le queda el inset de abajo, que ya gestiona. El
+       <link rel="manifest"> lo inyecta vite-plugin-pwa en el build. -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="Anvil Strength" />
@@ -51,7 +49,7 @@
        fecha, el fondo detrás del rebote elástico— desde el primer frame.
        El script de abajo lo afina al tema real. -->
   <meta name="color-scheme" content="dark light" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#0c0c0e" />
 
   <!-- EL DESTELLO, QUE HAY QUE MATAR ANTES DE QUE REACT EXISTA.
        =================================================================
@@ -73,9 +71,14 @@
        navegadores, y un error aquí dejaría la página EN BLANCO — este script
        corre antes que nada. -->
   <script>
-        (function () {
+    (function () {
       try {
-        // IDIOMA (mantenemos la lógica intacta)
+        /* EL IDIOMA, ANTES QUE NADA TAMBIÉN.
+           `<html lang>` no es decorativo: decide con qué voz lee un lector de
+           pantalla —"Save" leído con fonética española no se entiende— y le
+           dice al navegador con qué reglas partir las palabras. Si se pusiera
+           desde React, el primer pintado saldría con el idioma equivocado.
+           La lógica es la misma que `detectarIdioma()` en src/lib/i18n. */
         var idioma = localStorage.getItem('anvil_idioma');
         if (idioma !== 'es' && idioma !== 'en') {
           idioma = 'es';
@@ -88,19 +91,16 @@
         }
         document.documentElement.setAttribute('lang', idioma);
 
-        // TEMA: Forzado a oscuro (Dark Mode only)
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.classList.add('dark');
-        document.documentElement.style.colorScheme = 'dark';
-        
-        var m = document.querySelector('meta[name="theme-color"]');
-        // Mismo valor que `theme_color` del manifest y `--surface-sunken`:
-        // si difieren, la barra cambia de tono al instalar la app.
-        if (m) m.setAttribute('content', '#0a0a0a');
-
+        var t = localStorage.getItem('anvil_tema');
+        var claro = t === 'claro' || (t !== 'oscuro' && window.matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.setAttribute('data-theme', claro ? 'light' : 'dark');
+        document.documentElement.style.colorScheme = claro ? 'light' : 'dark';
+        if (claro) {
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', '#f4f4f6');
+        }
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.classList.add('dark');
       }
     })();
   </script>
@@ -126,29 +126,38 @@
        titulares cortos. -->
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400..700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,800&display=swap"
   />
 
   <!-- SEO Primary -->
-  <title>Anvil Strength</title>
+  <title>Anvil Strength | Club de Powerlifting Online en España — Gratis</title>
   <meta name="description" content="Anvil Strength es el club de powerlifting digital de España. Gratis, sin sede física, afiliado AEP e IPF. Entrenadores de élite, app exclusiva y comunidad real. ¿Empezamos?" />
   <!-- `keywords` lo ignoran todos los buscadores desde hace años. Se mantiene
        porque no hace daño y documenta la intención de búsqueda del sitio. -->
   <meta name="keywords" content="powerlifting españa, club powerlifting online, powerlifting principiantes, federarse powerlifting AEP, club digital powerlifting, anvil strength" />
   <!-- Sin max-image-preview:large, Google recorta la miniatura de la portada a
        un cuadrado pequeño en resultados y en Discover. -->
-  <!-- SUBDOMINIO DE LA APP, NO DE LA WEB: `noindex`. La portada pública y el
-       SEO viven en anvilstrength.es (raíz). Si Google indexara también
-       ios.anvilstrength.es, las dos serían contenido duplicado y la que
-       pierde es la que importa. Ver también public/robots.txt. -->
-  <meta name="robots" content="noindex, nofollow" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="author" content="Anvil Strength" />
-  <!-- Sin canonical ni hreflang: con `noindex` no aplican. -->
+  <link rel="canonical" href="https://anvilstrength.es/" />
+  <!-- AQUÍ NO HAY UN `hreflang="en"`, Y ES DELIBERADO.
+       La aplicación habla inglés desde F8, así que la tentación es declararlo.
+       Pero el idioma vive en `localStorage`, no en la ruta: no existe una URL
+       inglesa distinta a la que apuntar. Un `hreflang="en"` hacia esta misma
+       dirección le promete a Google una versión que no puede indexar por
+       separado, y lo que consigue es que trate las dos como duplicadas.
 
-  <!-- Open Graph (Facebook, WhatsApp, LinkedIn): previsualización al compartir
-       el enlace de la app. -->
+       Decisión de Marc, 24/08/2026: el idioma se queda en el dispositivo. La
+       alternativa era `/en/competiciones` con rutas propias —lo único que da
+       SEO real en inglés— y sale cara: toca el enrutador, los enlaces internos
+       y el canonical. Si algún día se hace, la etiqueta vuelve aquí, y
+       entonces sí apuntando a otro sitio. -->
+  <link rel="alternate" hreflang="es-ES" href="https://anvilstrength.es/" />
+  <link rel="alternate" hreflang="x-default" href="https://anvilstrength.es/" />
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://ios.anvilstrength.es/" />
+  <meta property="og:url" content="https://anvilstrength.es/" />
   <meta property="og:title" content="Anvil Strength | Club de Powerlifting Online en España" />
   <meta property="og:description" content="Club digital de powerlifting, 100% gratuito, afiliado AEP + IPF. Entrenadores de élite, app exclusiva y comunidad real. El powerlifting es para todos." />
   <meta property="og:image" content="https://anvilstrength.es/portadaanvil2.jpg" />
@@ -200,7 +209,9 @@
        Lo genera FAQSection.tsx a partir del mismo array que pinta. -->
 
   <!-- Preload / Prefetch -->
-  <!-- Aquí no hay portada que precargar: la app abre en el login o en el panel. -->
+  <!-- La portada es el elemento LCP. `fetchpriority` la saca de la cola de
+       prioridad baja en la que el navegador mete las imágenes por defecto. -->
+  <link rel="preload" href="/portadaanvil2.jpg" as="image" fetchpriority="high" />
   <!-- La primera consulta a Supabase sale en cuanto monta la app; abrir la
        conexión TLS en paralelo con el JS ahorra el ida y vuelta del handshake. -->
   <link rel="preconnect" href="https://ihcyuoczbmjxfinxvzra.supabase.co" crossorigin />

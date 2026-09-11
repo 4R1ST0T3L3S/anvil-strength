@@ -175,7 +175,7 @@ function ScopeStatsPanel({ stats }: { stats: ScopeStats }) {
         <div className="space-y-4">
             {/* ---------------- PROGRAMADO ---------------- */}
             <section>
-                <h4 className="mb-2 flex items-center gap-2 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                <h4 className="mb-2 flex items-center gap-2 text-t-2xs font-semibold text-ink-subtle">
                     <CalendarDays size={12} aria-hidden="true" />
                     Programado · {stats.label}
                 </h4>
@@ -201,7 +201,7 @@ function ScopeStatsPanel({ stats }: { stats: ScopeStats }) {
                 {/* Básicos y accesorios, el reparto que de verdad se mira. */}
                 <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div className="rounded-field border border-[var(--border-subtle)] bg-surface-sunken p-2.5">
-                        <p className="text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">Básicos</p>
+                        <p className="text-t-2xs font-bold text-ink-subtle">Básicos</p>
                         <ul className="mt-1 space-y-0.5">
                             {planned.lifts.map(l => (
                                 <li key={l.lift} className="flex justify-between text-t-2xs tabular-nums">
@@ -215,7 +215,7 @@ function ScopeStatsPanel({ stats }: { stats: ScopeStats }) {
                     </div>
 
                     <div className="rounded-field border border-[var(--border-subtle)] bg-surface-sunken p-2.5">
-                        <p className="text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                        <p className="text-t-2xs font-bold text-ink-subtle">
                             Accesorios
                         </p>
                         {planned.accessories.buckets.length === 0 && planned.accessories.unclassified.sets === 0 ? (
@@ -244,7 +244,7 @@ function ScopeStatsPanel({ stats }: { stats: ScopeStats }) {
                 {/* Evolución. Solo en bloque y macro: un día no evoluciona. */}
                 {planned.weeks && planned.weeks.length > 1 && (
                     <div className="mt-2 rounded-field border border-[var(--border-subtle)] bg-surface-sunken p-2.5">
-                        <p className="mb-1.5 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                        <p className="mb-1.5 text-t-2xs font-bold text-ink-subtle">
                             Evolución del volumen
                         </p>
                         <WeekBars
@@ -262,7 +262,7 @@ function ScopeStatsPanel({ stats }: { stats: ScopeStats }) {
             {/* ---------------- REALIZADO ---------------- */}
             {executed && executed.contrast.plannedSets > 0 && (
                 <section>
-                    <h4 className="mb-2 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                    <h4 className="mb-2 text-t-2xs font-semibold text-ink-subtle">
                         Realizado
                     </h4>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -300,8 +300,8 @@ function ScopeStatsPanel({ stats }: { stats: ScopeStats }) {
 function Cell({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
     return (
         <div className="rounded-field border border-[var(--border-subtle)] bg-surface-sunken p-2.5">
-            <p className="truncate text-t-2xs uppercase tracking-wide text-ink-subtle">{label}</p>
-            <p className="mt-0.5 text-t-base font-black tabular-nums text-ink">{value}</p>
+            <p className="truncate text-t-2xs text-ink-subtle">{label}</p>
+            <p className="mt-0.5 text-t-base font-semibold tabular-nums text-ink">{value}</p>
             {hint && <p className="mt-0.5 truncate text-t-2xs text-ink-faint">{hint}</p>}
         </div>
     );

@@ -153,7 +153,7 @@ export function PersonalInfoSection({ athleteId, mode, coachId, editorId }: Pers
         <section className="overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised">
             <header className="flex items-center justify-between gap-3 border-b border-subtle px-4 py-3 md:px-5">
                 <div className="min-w-0">
-                    <h3 className="text-t-base font-black uppercase tracking-display text-ink">
+                    <h3 className="text-t-base font-semibold tracking-display text-ink">
                         Información personal
                     </h3>
                     {/* La edad se CALCULA de la fecha de nacimiento y no se
@@ -244,7 +244,7 @@ function FieldRow({
     if (!editable) {
         return (
             <div className="rounded-field bg-surface-sunken px-3 py-2.5">
-                <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <p className="text-t-2xs font-bold text-ink-subtle">
                     {field.label}
                 </p>
                 <p className="mt-1 break-words text-t-sm text-ink">
@@ -265,7 +265,7 @@ function FieldRow({
         <div>
             <label
                 htmlFor={id}
-                className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle"
+                className="block text-t-2xs font-bold text-ink-subtle"
             >
                 {field.label}
                 {field.unit && <span className="ml-1 normal-case text-ink-subtle">({field.unit})</span>}
@@ -371,7 +371,7 @@ function FieldEditor({
     return (
         <section className="overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised">
             <header className="flex items-center justify-between gap-3 border-b border-subtle px-4 py-3 md:px-5">
-                <h3 className="text-t-base font-black uppercase tracking-display text-ink">
+                <h3 className="text-t-base font-semibold tracking-display text-ink">
                     Qué le pido
                 </h3>
                 <button
@@ -404,7 +404,7 @@ function FieldEditor({
                             longitud de fémur la mide el entrenador con una
                             cinta, y ponerla como campo a rellenar en el móvil
                             del atleta solo consigue que se invente un número. */}
-                        <label className="flex shrink-0 items-center gap-1.5 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                        <label className="flex shrink-0 items-center gap-1.5 text-t-2xs font-bold text-ink-subtle">
                             <input
                                 type="checkbox"
                                 checked={field.athleteCanEdit}
@@ -428,7 +428,7 @@ function FieldEditor({
 
                 {available.length > 0 && (
                     <div className="pt-2">
-                        <p className="mb-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <p className="mb-2 text-t-2xs font-bold text-ink-subtle">
                             Añadir
                         </p>
                         <div className="flex flex-wrap gap-1.5">

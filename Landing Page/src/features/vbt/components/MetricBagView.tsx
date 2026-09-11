@@ -68,7 +68,7 @@ export function MetricBagView({
         <div className={cn('space-y-3', className)}>
             {groups.map(g => (
                 <div key={g.category}>
-                    <p className="mb-1 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                    <p className="mb-1 text-t-2xs font-semibold text-ink-subtle">
                         {g.label}
                     </p>
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">

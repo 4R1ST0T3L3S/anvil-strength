@@ -32,7 +32,7 @@ export function CardioVolumePanel({
 
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-3">
-            <h4 className="mb-2 flex items-center gap-1.5 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+            <h4 className="mb-2 flex items-center gap-1.5 text-t-2xs font-semibold text-ink-subtle">
                 <HeartPulse size={13} className="text-emerald-500" aria-hidden="true" />
                 Cardio — esta semana
             </h4>
@@ -47,7 +47,7 @@ export function CardioVolumePanel({
 function Stat({ label, duration, km }: { label: string; duration: number; km: number }) {
     return (
         <div className="rounded-field bg-surface-sunken px-2.5 py-2">
-            <p className="text-t-2xs uppercase tracking-wide text-ink-faint">{label}</p>
+            <p className="text-t-2xs text-ink-faint">{label}</p>
             <p className="text-t-sm font-bold tabular-nums text-ink">{formatCardioDuration(duration)}</p>
             {km > 0 && <p className="text-t-2xs tabular-nums text-ink-subtle">{formatCardioDistance(km)}</p>}
         </div>

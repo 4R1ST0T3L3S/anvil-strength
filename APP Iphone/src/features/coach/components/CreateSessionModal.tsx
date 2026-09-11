@@ -95,18 +95,18 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                    className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
                 />
 
                 <m.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-surface-sunken w-full max-w-sm rounded-card border border-[var(--border-default)] shadow-2xl overflow-hidden"
+                    className="relative bg-surface-sunken w-full max-w-sm rounded-card border border-[var(--border-default)] shadow-overlay overflow-hidden"
                 >
                     <div className="flex items-center justify-between p-6 border-b border-subtle bg-surface-sunken">
-                        <h2 className="text-xl font-black uppercase text-ink">Añadir Día</h2>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full text-ink-muted hover:text-ink transition-colors">
+                        <h2 className="text-xl font-semibold text-ink">Añadir Día</h2>
+                        <button onClick={onClose} className="p-2 hover:bg-[var(--fill-pressed)] rounded-full text-ink-muted hover:text-ink transition-colors">
                             <X size={20} />
                         </button>
                     </div>
@@ -115,7 +115,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
 
                         {/* Day Number */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                            <label className="text-xs font-bold text-ink-subtle block">
                                 Número de Día
                             </label>
                             <div className="relative">
@@ -134,7 +134,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
 
                         {/* Day of Week Selector */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                            <label className="text-xs font-bold text-ink-subtle block">
                                 Día de la Semana
                             </label>
                             <select
@@ -155,7 +155,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
 
                         {/* Name Input */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-ink-subtle uppercase tracking-wider block">
+                            <label className="text-xs font-bold text-ink-subtle block">
                                 Etiqueta (Opcional)
                             </label>
                             <input
@@ -163,7 +163,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ej: Torso Pesado, Pierna..."
-                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-ink placeholder-gray-600 focus:border-brand/50 transition-colors"
+                                className="w-full bg-surface-sunken border border-[var(--border-default)] rounded-xl px-4 py-3 text-ink placeholder:text-ink-subtle focus:border-brand/50 transition-colors"
                             />
                         </div>
 
@@ -182,7 +182,7 @@ export function CreateSessionModal({ isOpen, onClose, blockId, existingSessions,
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 rounded-xl bg-white text-black hover:bg-gray-200 font-black uppercase tracking-wider text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="w-full py-4 rounded-xl bg-ink text-surface-canvas hover:opacity-90 font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             {loading ? (
                                 <Loader className="animate-spin" size={18} />

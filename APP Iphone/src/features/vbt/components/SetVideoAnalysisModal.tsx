@@ -218,7 +218,7 @@ export function SetVideoAnalysisModal({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={transition(DURATION.fast)}
-                className="fixed inset-0 z-[245] flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center sm:p-4"
+                className="fixed inset-0 z-[245] flex items-end justify-center bg-[var(--scrim)] backdrop-blur-sm sm:items-center sm:p-4"
                 onClick={onClose}
             >
                 <m.div
@@ -314,7 +314,7 @@ export function SetVideoAnalysisModal({
 
                         {previewBag && (
                             <div>
-                                <p className="mb-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                                <p className="mb-2 text-t-2xs font-semibold text-ink-subtle">
                                     {blocked ? 'No se guardará nada de esto' : 'Se guardará en la serie'}
                                 </p>
                                 <div className={blocked ? 'opacity-50' : undefined}>

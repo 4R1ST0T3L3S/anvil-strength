@@ -137,14 +137,14 @@ export function BestMarksMini({
                                 <span className="min-w-0 truncate text-t-2xs font-bold text-ink" title={ref.exerciseName}>
                                     {ref.exerciseName}
                                 </span>
-                                <span className="shrink-0 text-t-2xs uppercase tracking-wide text-ink-faint">
+                                <span className="shrink-0 text-t-2xs text-ink-faint">
                                     {markLabel(ref.reps).replace('Mejor ', '')}
                                 </span>
                             </div>
 
                             {ref.mark ? (
                                 <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                                    <span className="text-t-sm font-black tabular-nums text-brand-text">
+                                    <span className="text-t-sm font-semibold tabular-nums text-brand-text">
                                         {ref.mark.load_kg} × {ref.mark.reps}
                                     </span>
                                     {ref.mark.rpe != null && (

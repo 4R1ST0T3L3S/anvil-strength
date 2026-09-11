@@ -213,7 +213,7 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
     return (
         <div className="mx-auto max-w-5xl space-y-6">
             <header className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="flex items-center gap-2 text-t-lg font-black uppercase tracking-tight text-ink">
+                <h3 className="flex items-center gap-2 text-t-lg font-semibold tracking-tight text-ink">
                     <Activity className="text-brand-text" size={20} aria-hidden="true" />
                     Velocidad
                 </h3>
@@ -695,9 +695,9 @@ function Metric({
 }) {
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
-            <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">{label}</p>
+            <p className="text-t-2xs font-bold text-ink-subtle">{label}</p>
             <p className={cn(
-                'mt-1.5 text-2xl font-black leading-none tabular-nums',
+                'mt-1.5 text-2xl font-semibold leading-none tabular-nums',
                 tone === 'good' ? 'text-success' : tone === 'warn' ? 'text-warning' : 'text-ink'
             )}>
                 {value}

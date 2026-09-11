@@ -169,7 +169,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <CalendarIcon className="h-6 w-6 text-brand-text" />
-                        <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-ink">
+                        <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-ink">
                             Calendario AEP 2026
                         </h2>
                     </div>
@@ -180,7 +180,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                     <button
                         onClick={() => load(true)}
                         disabled={refreshing || loading}
-                        className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-black uppercase tracking-widest text-ink-muted transition-colors hover:border-brand/40 hover:text-ink disabled:opacity-40"
+                        className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-semibold text-ink-muted transition-colors hover:border-brand/40 hover:text-ink disabled:opacity-40"
                     >
                         <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
                         {refreshing ? 'Actualizando' : 'Actualizar'}
@@ -200,17 +200,17 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
             </div>
 
             {loading ? (
-                <div className="flex h-64 items-center justify-center rounded-xl border border-subtle bg-surface-sunken font-black italic text-ink-subtle">CARGANDO...</div>
+                <div className="flex h-64 items-center justify-center rounded-xl border border-subtle bg-surface-sunken font-semibold text-ink-subtle">CARGANDO...</div>
             ) : competitions.length === 0 ? (
                 <div className="rounded-xl border border-subtle bg-surface-sunken p-12 text-center">
-                    <CalendarIcon size={40} className="mx-auto mb-4 text-gray-700" />
-                    <p className="font-black uppercase tracking-wider text-ink-muted">Sin competiciones</p>
-                    <p className="mx-auto mt-2 max-w-sm text-sm text-gray-600">
+                    <CalendarIcon size={40} className="mx-auto mb-4 text-ink-faint" />
+                    <p className="font-semibold text-ink-muted">Sin competiciones</p>
+                    <p className="mx-auto mt-2 max-w-sm text-sm text-ink-subtle">
                         No se ha podido leer el calendario de la federacion y no hay ninguna copia guardada.
                     </p>
                     <button
                         onClick={() => load(true)}
-                        className="mt-6 text-xs font-black uppercase tracking-widest text-brand-text transition-colors hover:text-danger-text"
+                        className="mt-6 text-xs font-semibold text-brand-text transition-colors hover:text-danger-text"
                     >
                         Reintentar &rarr;
                     </button>
@@ -229,19 +229,19 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                     {/* SECCIÓN SUPERIOR: Badges y Fecha */}
                                     <div className="flex justify-between items-start">
                                         <div className="flex flex-col gap-2">
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-t-2xs md:text-xs font-black uppercase tracking-widest ${bg} ${color}`}>
+                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-t-2xs md:text-xs font-semibold ${bg} ${color}`}>
                                                 {icon && icon}
                                                 {level}
                                             </div>
                                             {esInvitado && (
-                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-t-2xs font-black px-3 py-1.5 rounded-lg uppercase border border-subtle`}>
+                                                <div className={`flex items-center gap-1.5 ${bg} ${color} text-t-2xs font-semibold px-3 py-1.5 rounded-lg border border-subtle`}>
                                                     <Users size={12} /> Atleta Invitado
                                                 </div>
                                             )}
                                         </div>
 
                                         {/* CAJA DE FECHA ESTILO CLEAN */}
-                                        <div className="flex items-center gap-2 text-ink font-black uppercase tracking-widest bg-white/5 border border-subtle px-4 py-2.5 rounded-xl shrink-0 text-xs md:text-sm shadow-inner">
+                                        <div className="flex items-center gap-2 text-ink font-semibold bg-[var(--fill-muted)] border border-subtle px-4 py-2.5 rounded-xl shrink-0 text-xs md:text-sm shadow-inner">
                                             <CalendarIcon size={16} className={color.replace('text-', 'text-')} />
                                             <span>{comp.fecha}</span>
                                         </div>
@@ -249,16 +249,16 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
 
                                     {/* SECCIÓN CENTRAL: NOMBRE DEL CAMPEONATO */}
                                     <div className="mt-1">
-                                        <h3 className="text-2xl md:text-3xl font-black text-ink uppercase tracking-tighter leading-tight italic">
+                                        <h3 className="text-2xl md:text-3xl font-semibold text-ink tracking-tight leading-tight">
                                             {comp.campeonato}
                                         </h3>
                                     </div>
 
-                                    <div className="h-px w-full bg-white/5" />
+                                    <div className="h-px w-full bg-[var(--fill-muted)]" />
 
                                     {/* SECCIÓN INFERIOR: UBICACIÓN Y BOTÓN */}
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-0">
-                                        <div className="flex items-center gap-3 text-ink font-black uppercase text-xs md:text-sm tracking-widest">
+                                        <div className="flex items-center gap-3 text-ink font-semibold text-xs md:text-sm">
                                             <div className={`p-2 rounded-lg ${bg}`}>
                                                 <MapPin size={18} className={color} />
                                             </div>
@@ -269,7 +269,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                             {user?.role === 'coach' && (
                                                 <button
                                                     onClick={() => setSelectedCompetition(comp)}
-                                                    className="px-8 py-3 bg-brand text-ink text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-600 transition-[background-color,transform] shadow-lg active:scale-95"
+                                                    className="px-8 py-3 bg-brand text-ink text-xs font-semibold rounded-xl hover:bg-brand-hover transition-[background-color,transform] shadow-lg active:scale-95"
                                                 >
                                                     Asignar
                                                 </button>
@@ -278,7 +278,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                                 <button
                                                     onClick={() => handleAddSelfCompetition(comp, index)}
                                                     disabled={addingCompId === index}
-                                                    className="px-8 py-3 bg-white text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-200 transition-[background-color,opacity,transform] active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                                                    className="px-8 py-3 bg-ink text-surface-canvas text-xs font-semibold rounded-xl hover:opacity-90 transition-[background-color,opacity,transform] active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                                 >
                                                     {addingCompId === index ? <Loader size={14} className="animate-spin" /> : <Plus size={16} />}
                                                     Añadir

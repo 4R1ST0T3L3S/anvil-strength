@@ -97,10 +97,10 @@ export function PreviousWeekSummary({
                     {contrast && (
                         <div className="rounded-field bg-surface-sunken p-2.5">
                             <div className="flex items-center justify-between gap-2">
-                                <span className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle">
+                                <span className="text-t-2xs font-semibold text-ink-subtle">
                                     Cumplimiento
                                 </span>
-                                <span className={`text-t-sm font-black tabular-nums ${contrast.completionPct >= 85 ? 'text-success'
+                                <span className={`text-t-sm font-semibold tabular-nums ${contrast.completionPct >= 85 ? 'text-success'
                                     : contrast.completionPct >= 60 ? 'text-warning'
                                         : 'text-danger-text'
                                     }`}>
@@ -138,11 +138,11 @@ function ExecutedLiftRow({ lift }: { lift: ExecutedLiftWeek }) {
     return (
         <li className="rounded-field border border-[var(--border-subtle)] bg-surface-sunken p-2.5">
             <div className="flex items-baseline justify-between gap-2">
-                <span className="truncate text-t-xs font-black uppercase tracking-wide text-ink">
+                <span className="truncate text-t-xs font-semibold text-ink">
                     {lift.label}
                 </span>
                 {/* REALIZADO, dicho con todas las letras. Ver la cabecera. */}
-                <span className="shrink-0 rounded-chip bg-[var(--success-quiet)] px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide text-success">
+                <span className="shrink-0 rounded-chip bg-[var(--success-quiet)] px-1.5 py-0.5 text-t-2xs font-bold text-success">
                     Realizado
                 </span>
             </div>

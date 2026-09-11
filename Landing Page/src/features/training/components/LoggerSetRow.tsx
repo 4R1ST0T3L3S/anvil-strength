@@ -340,7 +340,7 @@ export function LoggerSetRow({
                 {/* Número de serie */}
                 <span
                     className={cn(
-                        'text-t-xs font-extrabold tabular-nums',
+                        'text-t-xs font-semibold tabular-nums',
                         done ? 'text-success' : 'text-ink-subtle'
                     )}
                 >
@@ -465,7 +465,7 @@ export function LoggerSetRow({
                 lee como una nota al pie de ESA serie. */}
             {setType && (
                 <div className="flex items-baseline gap-2 px-2.5 pb-2 pl-[1.75rem] sm:px-3 sm:pl-[2rem]">
-                    <span className="shrink-0 rounded-chip bg-[var(--warning-quiet)] px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wider text-warning">
+                    <span className="shrink-0 rounded-chip bg-[var(--warning-quiet)] px-1.5 py-0.5 text-t-2xs font-semibold text-warning">
                         {setType.short}
                     </span>
                     <span className="min-w-0 text-t-2xs leading-snug text-ink-subtle">
@@ -605,7 +605,7 @@ function SetInput({
                 // da un salto y se descoloca cada vez que el atleta toca una
                 // casilla. Es la mitad de por qué el registro se sentía "mal
                 // puesto" en móvil.
-                'h-11 w-full rounded-field border bg-surface-sunken px-0 text-center text-t-base font-extrabold tabular-nums transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                'h-11 w-full rounded-field border bg-surface-sunken px-0 text-center text-t-base font-semibold tabular-nums transition-colors duration-fast [appearance:textfield] focus:border-brand [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
                 filled
                     ? tone === 'brand'
                         ? 'border-[var(--brand-line)] text-brand-text'
@@ -613,7 +613,7 @@ function SetInput({
                     : 'border-subtle text-ink-muted',
                 !filled && bigPlaceholder
                     ? cn(
-                        'placeholder:text-t-2xl placeholder:font-black placeholder:tabular-nums',
+                        'placeholder:text-t-2xl placeholder:font-semibold placeholder:tabular-nums',
                         placeholderTone === 'over'
                             ? 'placeholder:text-warning/45'
                             : placeholderTone === 'under'

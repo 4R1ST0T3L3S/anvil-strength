@@ -101,7 +101,7 @@ export function WeeklyComparisonModal({
                             key={key}
                             onClick={() => setMovement(MAIN_LIFT_LABEL[key])}
                             aria-pressed={exerciseKey(movement) === exerciseKey(MAIN_LIFT_LABEL[key])}
-                            className={`rounded-chip px-3 py-1.5 text-t-xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap ${exerciseKey(movement) === exerciseKey(MAIN_LIFT_LABEL[key])
+                            className={`rounded-chip px-3 py-1.5 text-t-xs font-bold transition-colors duration-fast ease-snap ${exerciseKey(movement) === exerciseKey(MAIN_LIFT_LABEL[key])
                                 ? 'bg-brand text-brand-ink'
                                 : 'bg-surface-sunken text-ink-subtle hover:text-ink'
                                 }`}
@@ -193,7 +193,7 @@ function DeltaTile({ delta }: { delta: ReturnType<typeof compareWeeks>[number] }
     const down = delta.deltaPct != null && delta.deltaPct < 0;
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-2.5">
-            <p className="truncate text-t-2xs uppercase tracking-wide text-ink-faint">{delta.label}</p>
+            <p className="truncate text-t-2xs text-ink-faint">{delta.label}</p>
             <p className="mt-0.5 text-t-sm font-bold tabular-nums text-ink">
                 {delta.previous} → {delta.next}
                 {delta.unit ? ` ${delta.unit}` : ''}
@@ -222,7 +222,7 @@ function DayEditCard({
 }) {
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-3">
-            <h4 className="mb-2 text-t-2xs font-black uppercase tracking-widest text-ink-subtle">{dayLabel}</h4>
+            <h4 className="mb-2 text-t-2xs font-semibold text-ink-subtle">{dayLabel}</h4>
             <div className="space-y-1.5">
                 {exercise.sets.map((set, i) => (
                     <div key={set.id} className="grid grid-cols-[1.5rem_1fr_1fr_1fr] items-center gap-1.5">

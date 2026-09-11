@@ -32,19 +32,19 @@ function CustomSelect({
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className={`bg-black/40 border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between overflow-hidden hover:border-line ${className}`}>
-            <label className="block text-t-2xs font-black text-ink-subtle mb-1 uppercase tracking-widest group-hover:text-brand-text transition-colors truncate text-center w-full">
+        <div className={`bg-surface-sunken border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between overflow-hidden hover:border-line ${className}`}>
+            <label className="block text-t-2xs font-semibold text-ink-subtle mb-1 group-hover:text-brand-text transition-colors truncate text-center w-full">
                 {label}
             </label>
             <button
                 onClick={() => setIsOpen(true)}
                 className="w-full flex items-center justify-center text-center relative"
             >
-                <span className="text-4xl font-black text-ink italic truncate px-4">
+                <span className="text-4xl font-semibold text-ink truncate px-4">
                     {options.find(opt => opt.value === value)?.label || value}
                 </span>
                 <ChevronDown
-                    className="text-gray-600 group-hover:text-ink transition-colors shrink-0 w-4 h-4 absolute right-0"
+                    className="text-ink-subtle group-hover:text-ink transition-colors shrink-0 w-4 h-4 absolute right-0"
                 />
             </button>
 
@@ -57,7 +57,7 @@ function CustomSelect({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-md"
                         />
 
                         {/* Options List */}
@@ -65,11 +65,11 @@ function CustomSelect({
                             initial={{ opacity: 0, y: 100 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 100 }}
-                            className="relative w-full md:max-w-xs bg-[#121212] border-t md:border border-line rounded-t-[2rem] md:rounded-[2rem] shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+                            className="relative w-full md:max-w-xs bg-[#121212] border-t md:border border-line rounded-t-[2rem] md:rounded-card shadow-overlay overflow-hidden max-h-[80vh] flex flex-col"
                         >
                             <div className="p-5 border-b border-subtle bg-[#181818] flex items-center justify-between shrink-0">
-                                <h3 className="text-xs font-black text-ink-muted uppercase tracking-[0.2em]">{label}</h3>
-                                <button onClick={() => setIsOpen(false)} className="p-2 bg-white/5 rounded-full text-ink-muted hover:text-ink">
+                                <h3 className="text-xs font-semibold text-ink-muted">{label}</h3>
+                                <button onClick={() => setIsOpen(false)} className="p-2 bg-[var(--fill-muted)] rounded-full text-ink-muted hover:text-ink">
                                     <X size={16} />
                                 </button>
                             </div>
@@ -83,11 +83,11 @@ function CustomSelect({
                                             setIsOpen(false);
                                         }}
                                         className={`w-full flex items-center justify-between px-5 py-4 rounded-xl text-left transition-colors mb-1 last:mb-0 ${value === option.value
- ? 'bg-white text-black'
- : 'text-ink-muted hover:bg-white/5 hover:text-ink'
+ ? 'bg-ink text-surface-canvas'
+ : 'text-ink-muted hover:bg-[var(--fill-hover)] hover:text-ink'
  }`}
                                     >
-                                        <span className={`text-lg uppercase tracking-wider ${value === option.value ? 'font-black italic' : 'font-bold'}`}>
+                                        <span className={`text-lg ${value === option.value ? 'font-semibold' : 'font-bold'}`}>
                                             {option.label}
                                         </span>
                                         {value === option.value && <Check size={18} />}
@@ -133,35 +133,35 @@ function WheelSelector({
     }, [isOpen, value, options]);
 
     return (
-        <div className={`bg-black/40 border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between overflow-hidden hover:border-line ${className}`}>
-            <label className="block text-t-2xs font-black text-ink-subtle mb-1 uppercase tracking-widest group-hover:text-brand-text transition-colors truncate text-center w-full">
+        <div className={`bg-surface-sunken border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between overflow-hidden hover:border-line ${className}`}>
+            <label className="block text-t-2xs font-semibold text-ink-subtle mb-1 group-hover:text-brand-text transition-colors truncate text-center w-full">
                 {label}
             </label>
             <button
                 onClick={() => setIsOpen(true)}
                 className="w-full flex items-center justify-center text-center relative"
             >
-                <span className="text-4xl font-black text-ink italic truncate px-4">
+                <span className="text-4xl font-semibold text-ink truncate px-4">
                     {options.find(opt => opt.value === value)?.label || value}
                 </span>
                 <ChevronDown
-                    className="text-gray-600 group-hover:text-ink transition-colors shrink-0 w-4 h-4 absolute right-0"
+                    className="text-ink-subtle group-hover:text-ink transition-colors shrink-0 w-4 h-4 absolute right-0"
                 />
             </button>
 
             <AnimatePresence>
                 {isOpen && (
-                    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md">
+                    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-[var(--scrim)] backdrop-blur-md">
                         <m.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="relative w-full max-w-xs h-[60vh] flex flex-col items-center justify-center pointer-events-none"
                         >
-                            <h3 className="absolute top-10 text-xs font-black text-ink uppercase tracking-[0.2em]">{label}</h3>
+                            <h3 className="absolute top-10 text-xs font-semibold text-ink">{label}</h3>
 
                             {/* Selection Highlight / Center Line */}
-                            <div className="absolute top-1/2 left-0 right-0 h-16 -mt-8 bg-white/5 border-y border-line pointer-events-none z-0"></div>
+                            <div className="absolute top-1/2 left-0 right-0 h-16 -mt-8 bg-[var(--fill-muted)] border-y border-line pointer-events-none z-0"></div>
 
                             {/* Scrollable Wheel */}
                             <div
@@ -205,7 +205,7 @@ function WheelSelector({
                                         onClick={() => {
                                             itemRefs.current[index]?.scrollIntoView({ block: 'center', behavior: 'smooth' });
                                         }}
-                                        className="snap-center w-full h-16 flex items-center justify-center text-4xl font-black italic transition-colors duration-instant"
+                                        className="snap-center w-full h-16 flex items-center justify-center text-4xl font-semibold transition-colors duration-instant"
                                         style={{ opacity: 0.3, transform: 'scale(0.8)', color: 'gray' }}
                                     >
                                         {option.label}
@@ -215,7 +215,7 @@ function WheelSelector({
 
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="absolute bottom-10 px-8 py-3 bg-white text-black font-black uppercase text-xs tracking-widest rounded-full hover:bg-gray-200 pointer-events-auto shadow-xl"
+                                className="absolute bottom-10 px-8 py-3 bg-ink text-surface-canvas font-semibold text-xs rounded-full hover:opacity-90 pointer-events-auto shadow-xl"
                             >
                                 Cerrar
                             </button>
@@ -360,7 +360,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
             className="fixed inset-x-0 bottom-0 top-0 md:top-0 z-[20000] flex md:items-center md:justify-center bg-black/95 backdrop-blur-xl"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-[2rem] shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
+            <div className="bg-surface-sunken border-x-0 md:border-2 border-t-0 md:border-t border-line w-full h-full md:h-[90vh] md:w-[95vw] md:max-w-[1800px] md:rounded-card shadow-[0_0_100px_rgba(255,0,0,0.15)] overflow-hidden flex flex-col scale-in-center mt-0">
 
                 {/* Premium Header */}
                 <div className="p-4 md:px-6 md:py-3 border-b border-subtle flex justify-between items-center bg-surface-sunken shrink-0 h-16 md:h-20">
@@ -369,14 +369,14 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             <Calculator size={40} strokeWidth={1.5} className="md:w-12 md:h-12 w-8 h-8" />
                         </div>
                         <div>
-                            <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-ink italic">Calculadora</h2>
-                            <p className="text-t-2xs md:text-t-xs font-black text-brand-text uppercase tracking-[0.3em]">Anvil Lab Tools</p>
+                            <h2 className="text-2xl md:text-4xl font-semibold tracking-tight text-ink">Calculadora</h2>
+                            <p className="text-t-2xs md:text-t-xs font-semibold text-brand-text">Anvil Lab Tools</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
-                            className="w-12 h-12 md:w-14 md:h-14 bg-white/5 hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
+                            className="w-12 h-12 md:w-14 md:h-14 bg-[var(--fill-muted)] hover:bg-brand hover:text-ink rounded-2xl flex items-center justify-center text-ink-muted transition-colors"
                         >
                             <X className="w-6 h-6 md:w-7 md:h-7" />
                         </button>
@@ -391,16 +391,16 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                         <div className="col-span-12 md:col-span-6 space-y-6 md:space-y-8 order-2 md:order-1 flex flex-col justify-center">
 
                             {/* Method Toggle */}
-                            <div className="grid grid-cols-2 p-1.5 bg-black/60 rounded-[1.5rem] border border-subtle shrink-0 w-full">
+                            <div className="grid grid-cols-2 p-1.5 bg-surface-sunken rounded-[1.5rem] border border-subtle shrink-0 w-full">
                                 <button
                                     onClick={() => setMethod('rpe')}
-                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${method === 'rpe' ? 'bg-white text-black shadow-lg scale-[1.02]' : 'text-ink-subtle hover:text-ink'}`}
+                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-semibold transition-[background-color,box-shadow,color,transform] ${method === 'rpe' ? 'bg-ink text-surface-canvas shadow-lg scale-[1.02]' : 'text-ink-subtle hover:text-ink'}`}
                                 >
                                     <Activity className="w-4 h-4" /> Por RPE
                                 </button>
                                 <button
                                     onClick={() => setMethod('velocity')}
-                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-[background-color,box-shadow,color,transform] ${method === 'velocity' ? 'bg-white text-black shadow-lg scale-[1.02]' : 'text-ink-subtle hover:text-ink'}`}
+                                    className={`flex items-center justify-center gap-2 h-10 md:h-14 rounded-[1.2rem] text-xs font-semibold transition-[background-color,box-shadow,color,transform] ${method === 'velocity' ? 'bg-ink text-surface-canvas shadow-lg scale-[1.02]' : 'text-ink-subtle hover:text-ink'}`}
                                 >
                                     <Zap className="w-4 h-4" /> Velocidad
                                 </button>
@@ -410,8 +410,8 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                             <div className="space-y-4">
                                 <div className="grid grid-cols-12 gap-3 md:gap-4">
                                     {/* Peso */}
-                                    <div className="col-span-12 md:col-span-6 bg-black/40 border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-line">
-                                        <label className="block text-t-2xs font-black text-ink-subtle mb-1 uppercase tracking-widest group-hover:text-brand-text transition-colors">Peso ({unit})</label>
+                                    <div className="col-span-12 md:col-span-6 bg-surface-sunken border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-line">
+                                        <label className="block text-t-2xs font-semibold text-ink-subtle mb-1 group-hover:text-brand-text transition-colors">Peso ({unit})</label>
                                         <input
                                             type="number"
                                             inputMode="decimal"
@@ -419,13 +419,13 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             value={weight}
                                             onChange={(e) => setWeight(e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-transparent text-4xl font-black text-ink placeholder:text-gray-800 italic text-center"
+                                            className="w-full bg-transparent text-4xl font-semibold text-ink placeholder:text-ink-faint text-center"
                                         />
                                     </div>
 
                                     {/* Reps */}
-                                    <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-line">
-                                        <label className="block text-t-2xs font-black text-ink-subtle mb-1 uppercase tracking-widest group-hover:text-brand-text transition-colors">Reps</label>
+                                    <div className="col-span-6 md:col-span-3 bg-surface-sunken border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-line">
+                                        <label className="block text-t-2xs font-semibold text-ink-subtle mb-1 group-hover:text-brand-text transition-colors">Reps</label>
                                         <input
                                             type="number"
                                             inputMode="numeric"
@@ -433,7 +433,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             value={reps}
                                             onChange={(e) => setReps(e.target.value)}
                                             placeholder="0"
-                                            className="w-full bg-transparent text-4xl font-black text-ink text-center placeholder:text-gray-800 italic"
+                                            className="w-full bg-transparent text-4xl font-semibold text-ink text-center placeholder:text-ink-faint"
                                         />
                                     </div>
 
@@ -447,8 +447,8 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                             options={[10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5].map(v => ({ label: `${v}`, value: v }))}
                                         />
                                     ) : (
-                                        <div className="col-span-6 md:col-span-3 bg-black/40 border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-line">
-                                            <label className="block text-t-2xs font-black text-ink-subtle mb-1 uppercase tracking-widest group-hover:text-brand-text transition-colors">Velocidad (m/s)</label>
+                                        <div className="col-span-6 md:col-span-3 bg-surface-sunken border-2 border-subtle rounded-2xl p-4 transition-colors group flex flex-col justify-between text-center hover:border-line">
+                                            <label className="block text-t-2xs font-semibold text-ink-subtle mb-1 group-hover:text-brand-text transition-colors">Velocidad (m/s)</label>
                                             <input
                                                 type="number"
                                                 inputMode="decimal"
@@ -456,7 +456,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                                 value={velocity}
                                                 onChange={(e) => setVelocity(e.target.value)}
                                                 placeholder="0.0"
-                                                className="w-full bg-transparent text-3xl font-black text-ink placeholder:text-gray-800 italic text-center"
+                                                className="w-full bg-transparent text-3xl font-semibold text-ink placeholder:text-ink-faint text-center"
                                             />
                                         </div>
                                     )}
@@ -477,22 +477,22 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                         </div>
 
                         {/* RIGHT COLUMN: Result Display (Reduced Size) */}
-                        <div className="col-span-12 md:col-span-6 relative group shrink-0 order-1 md:order-2 flex flex-col items-center justify-center p-6 md:p-8 min-h-[250px] md:min-h-auto bg-[#181818] border-2 border-subtle rounded-[2rem] shadow-inner mb-8 md:mb-0">
-                            <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent rounded-[2rem]"></div>
+                        <div className="col-span-12 md:col-span-6 relative group shrink-0 order-1 md:order-2 flex flex-col items-center justify-center p-6 md:p-8 min-h-[250px] md:min-h-auto bg-[#181818] border-2 border-subtle rounded-card shadow-inner mb-8 md:mb-0">
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent rounded-card"></div>
                             <div className="relative flex flex-col items-center justify-center text-center z-10">
-                                <p className="text-ink-subtle text-xs md:text-sm font-black uppercase tracking-[0.3em] mb-2 md:mb-4">1RM Estimado</p>
+                                <p className="text-ink-subtle text-xs md:text-sm font-semibold mb-2 md:mb-4">1RM Estimado</p>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-7xl md:text-8xl lg:text-9xl font-black text-ink italic tracking-tighter leading-none drop-shadow-lg">
+                                    <span className="text-7xl md:text-8xl lg:text-9xl font-semibold text-ink tracking-tight leading-none drop-shadow-lg">
                                         {Math.floor(toDisplay(estimated1RM, unit) ?? 0)}
                                     </span>
-                                    <span className="text-2xl md:text-3xl font-black text-brand-text uppercase italic">{unit}</span>
+                                    <span className="text-2xl md:text-3xl font-semibold text-brand-text">{unit}</span>
                                 </div>
                                 <div className="mt-4 md:mt-6 opacity-60">
-                                    <p className="text-gray-600 text-t-2xs font-bold uppercase tracking-widest">
+                                    <p className="text-ink-subtle text-t-2xs font-bold">
                                         {exercise} • {method === 'rpe' ? 'Epley Base' : 'VBT Mixto'}
                                     </p>
                                     {currentPct && (
-                                        <p className="text-brand-text text-t-2xs font-bold uppercase tracking-widest mt-1">
+                                        <p className="text-brand-text text-t-2xs font-bold mt-1">
                                             Intensidad: ~{currentPct}%
                                         </p>
                                     )}
@@ -502,7 +502,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                     <div className="mt-6 flex flex-col items-center gap-3 w-full h-[60px]">
                                         <div className="flex items-center gap-2 text-warning bg-warning-quiet px-4 py-1.5 rounded-full border border-warning/20">
                                             <Trophy size={14} />
-                                            <span className="text-t-2xs md:text-xs font-black uppercase tracking-widest">PR Actual: {formatLoad(currentPR, unit)}</span>
+                                            <span className="text-t-2xs md:text-xs font-semibold">PR Actual: {formatLoad(currentPR, unit)}</span>
                                         </div>
                                         
                                         <AnimatePresence>
@@ -513,10 +513,10 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                                                     exit={{ opacity: 0, scale: 0.9 }}
                                                     onClick={handleSavePR}
                                                     disabled={isSaving}
-                                                    className={`absolute bottom-0 translate-y-16 flex items-center gap-2 px-6 py-2 rounded-xl font-black uppercase text-xs tracking-widest transition-[background-color,box-shadow,color,transform] ${
+                                                    className={`absolute bottom-0 translate-y-16 flex items-center gap-2 px-6 py-2 rounded-xl font-semibold text-xs transition-[background-color,box-shadow,color,transform] ${
  celebration 
  ? 'bg-green-500 text-black shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-110' 
- : 'bg-white text-black hover:bg-gray-200 shadow-xl'
+ : 'bg-ink text-surface-canvas hover:opacity-90 shadow-xl'
  }`}
                                                 >
                                                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : celebration ? <Trophy size={16} /> : <Save size={16} />}
@@ -536,7 +536,7 @@ export function OneRMCalculator({ isOpen, onClose }: OneRMCalculatorProps) {
                 <div className="p-4 md:px-6 md:py-4 bg-surface-sunken border-t border-subtle shrink-0">
                     <button
                         onClick={calculate1RM}
-                        className="group w-full max-w-4xl mx-auto bg-white text-black hover:bg-brand hover:text-ink py-6 md:py-6 rounded-[2rem] font-black text-lg md:text-2xl uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-[background-color,box-shadow,color,transform] active:scale-[0.98] shadow-2xl shadow-white/5 hover:shadow-brand/20"
+                        className="group w-full max-w-4xl mx-auto bg-ink text-brand-ink hover:bg-brand hover:text-ink py-6 md:py-6 rounded-card font-semibold text-lg md:text-2xl flex items-center justify-center gap-4 transition-[background-color,box-shadow,color,transform] active:scale-[0.98] shadow-overlay shadow-white/5 hover:shadow-brand/20"
                     >
                         <TrendingUp className="w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                         Calcular 1RM
