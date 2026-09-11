@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { useInView, useReducedMotion } from 'framer-motion';
+import { useTextosWeb } from '../textos';
 
 interface StatItemProps {
     value: number;
@@ -59,11 +60,12 @@ function StatCounter({ value, suffix, label, duration = 1400 }: StatItemProps) {
  * pantalla completa se delata solo.
  */
 export function StatsSection() {
+    const c = useTextosWeb().cifras;
     const stats = [
-        { value: 10, suffix: '+', label: 'Atletas activos' },
-        { value: 5, suffix: '+', label: 'Podios' },
-        { value: 2, suffix: '', label: 'Nacionales' },
-        { value: 0, suffix: '€', label: 'Cuota mensual' },
+        { value: 10, suffix: '+', label: c.atletas },
+        { value: 5, suffix: '+', label: c.podios },
+        { value: 2, suffix: '', label: c.nacionales },
+        { value: 0, suffix: '€', label: c.cuota },
     ];
 
     return (

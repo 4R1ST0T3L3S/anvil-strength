@@ -7,6 +7,7 @@ import { SelectorDeIdioma } from '../ui/SelectorDeIdioma';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 import { useUser } from '../../hooks/useUser';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTextosWeb, type TextosWeb } from '../../features/landing/textos';
 
 interface PublicHeaderProps {
     onLoginClick: () => void;
@@ -26,24 +27,29 @@ interface PublicHeaderProps {
  * hasta ese ancho: en un portátil de 1280 o 1440 la web pública se navegaba
  * con menú de hamburguesa. Cinco es el mismo tope que ya rige la barra
  * inferior del móvil (ver DashboardLayout), aplicado al otro extremo.
+ *
+ * El texto de cada enlace ya no va aquí: `clave` apunta a
+ * features/landing/textos.ts, que es lo que permite que la barra cambie de
+ * idioma con el selector. Antes eran cadenas fijas en español y por eso la
+ * cabecera se quedaba igual al elegir inglés.
  */
-const NAV_LINKS = [
+const NAV_LINKS: { clave: keyof TextosWeb['cabecera']['nav']; href: string; principal: boolean }[] = [
     // LA APP va la primera y es `principal`: desde que "entrar a entrenar"
     // subió justo debajo de la portada, es la primera sección de la página, y
     // esconderla en el menú "MÁS" sería volver a enterrar la puerta.
-    { name: 'LA APP', href: '#app', principal: true },
-    { name: 'FILOSOFÍA', href: '#filosofia', principal: true },
-    { name: 'SOFTWARE', href: '#software', principal: true },
-    { name: 'EQUIPO', href: '#entrenadores', principal: true },
+    { clave: 'app', href: '#app', principal: true },
+    { clave: 'filosofia', href: '#filosofia', principal: true },
+    { clave: 'software', href: '#software', principal: true },
+    { clave: 'equipo', href: '#entrenadores', principal: true },
     // COMPETICIONES sale de la barra al menú "MÁS" para dejar sitio a LA APP:
     // cinco es el tope, y es la única de las cinco que no es una sección de
     // esta página sino otra ruta.
-    { name: 'ATLETAS', href: '#atletas', principal: true },
-    { name: 'COMPETICIONES', href: '/competiciones', principal: false },
-    { name: 'LOGROS', href: '#logros', principal: false },
-    { name: 'OPINIONES', href: '#reviews', principal: false },
-    { name: 'AFÍLIATE', href: '#afiliacion', principal: false },
-    { name: 'CONTACTO', href: '#contacto', principal: false },
+    { clave: 'atletas', href: '#atletas', principal: true },
+    { clave: 'competiciones', href: '/competiciones', principal: false },
+    { clave: 'logros', href: '#logros', principal: false },
+    { clave: 'opiniones', href: '#reviews', principal: false },
+    { clave: 'afiliate', href: '#afiliacion', principal: false },
+    { clave: 'contacto', href: '#contacto', principal: false },
 ];
 
 const IDS_SECCION = NAV_LINKS.filter(l => l.href.startsWith('#')).map(l => l.href.slice(1));
@@ -122,6 +128,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
     const masRef = useRef<HTMLButtonElement>(null);
     const navigate = useNavigate();
     const location = useLocation();
+    const c = useTextosWeb().cabecera;
 
     const isHome = location.pathname === '/' || location.pathname === '/web';
     const isTransparentPage = isHome || location.pathname === '/competiciones';
@@ -228,7 +235,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     <a
                         href="/"
                         onClick={(e) => { e.preventDefault(); navigate('/'); }}
-                        aria-label="Anvil Strength — ir al inicio"
+                        aria-label={c.irAlInicio}
                         className="block rounded-field"
                     >
                         <img
@@ -247,12 +254,12 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     y botones, que no miden lo mismo, y el menú aparecía
                     desplazado a la derecha. */}
                 <nav
-                    aria-label="Secciones del sitio"
+                    aria-label={c.secciones}
                     className="pointer-events-none absolute inset-y-0 left-1/2 hidden -translate-x-1/2 items-center gap-x-1 whitespace-nowrap lg:flex"
                 >
                     {principales.map((link) => (
                         <a
-                            key={link.name}
+                            key={link.href}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
                             aria-current={esActivo(link.href) ? 'page' : undefined}
@@ -260,7 +267,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
  esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                         >
-                            {link.name}
+                            {c.nav[link.clave]}
                         </a>
                     ))}
 
@@ -273,7 +280,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
  hayActivoEnMas ? 'text-brand-text' : 'text-ink-muted'
  }`}
                     >
-                        MÁS
+                        {c.mas}
                         <ChevronDown
                             className={`h-3.5 w-3.5 transition-transform duration-fast ease-snap ${masAbierto ? 'rotate-180' : ''}`}
                             aria-hidden="true"
@@ -291,7 +298,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                 >
                     {secundarios.map((link) => (
                         <a
-                            key={link.name}
+                            key={link.href}
                             href={link.href}
                             role="menuitem"
                             onClick={(e) => handleNavClick(e, link.href)}
@@ -299,7 +306,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
  esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                         >
-                            {link.name}
+                            {c.nav[link.clave]}
                         </a>
                     ))}
                 </AnchoredMenu>
@@ -319,7 +326,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             onClick={onSignupClick}
                             className="hidden min-h-[44px] items-center justify-center rounded-field bg-brand px-4 font-bebas text-t-sm italic tracking-[0.08em] text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover sm:inline-flex"
                         >
-                            Crear cuenta
+                            {c.crearCuenta}
                         </button>
                     )}
 
@@ -340,7 +347,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     {/* Menú móvil. 44x44 reales: medía 40 con el relleno. */}
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
-                        aria-label="Abrir el menú"
+                        aria-label={c.abrirMenu}
                         aria-expanded={isMobileMenuOpen}
                         className="flex h-11 w-11 items-center justify-center rounded-field text-ink-muted transition-colors duration-fast ease-snap hover:bg-white/5 hover:text-ink lg:hidden"
                     >
@@ -355,7 +362,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                     <m.div
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Menú de navegación"
+                        aria-label={c.menu}
                         initial={{ x: '100%' }}
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
@@ -372,7 +379,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             />
                             <button
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                aria-label="Cerrar el menú"
+                                aria-label={c.cerrarMenu}
                                 className="flex h-11 w-11 items-center justify-center rounded-pill bg-white/5 text-ink transition-colors duration-fast ease-snap hover:bg-white/10"
                             >
                                 <X className="h-6 w-6" aria-hidden="true" />
@@ -383,10 +390,10 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             separación de 32px la lista no cabía en una pantalla
                             de 812px y había que desplazarse dentro del menú,
                             que es justo lo que un menú no debe pedir. */}
-                        <nav aria-label="Secciones del sitio" className="flex flex-1 flex-col justify-center gap-2 px-8 py-4">
+                        <nav aria-label={c.secciones} className="flex flex-1 flex-col justify-center gap-2 px-8 py-4">
                             {NAV_LINKS.map((link, index) => (
                                 <m.a
-                                    key={link.name}
+                                    key={link.href}
                                     href={link.href}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
@@ -397,7 +404,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
  esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                                 >
-                                    {link.name}
+                                    {c.nav[link.clave]}
                                 </m.a>
                             ))}
                         </nav>
@@ -410,13 +417,13 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         <div className="space-y-1 border-t border-subtle px-8 py-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
-                                    Idioma
+                                    {c.idioma}
                                 </span>
                                 <SelectorDeIdioma />
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
-                                    Tema
+                                    {c.tema}
                                 </span>
                                 <SelectorDeTema />
                             </div>
@@ -435,7 +442,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                                     onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
                                     className="w-full rounded-field border border-[var(--border-default)] py-4 font-bebas text-t-lg italic tracking-[0.1em] text-ink transition-colors duration-fast ease-snap hover:bg-white/5"
                                 >
-                                    Crear cuenta
+                                    {c.crearCuenta}
                                 </button>
                             )}
                         </div>

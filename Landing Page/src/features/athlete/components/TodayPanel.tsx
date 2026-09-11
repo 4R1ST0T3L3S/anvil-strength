@@ -58,7 +58,9 @@ export function TodayPanel({ athleteId, onOpenTraining, onOpenNutrition, locked 
     }, [athleteId]);
 
     return (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        // En el ordenador llena el hueco que le deja el inicio (ver
+        // InicioPanel.tsx); en el móvil manda su propio alto mínimo.
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pc:min-h-0 pc:flex-1">
             <TrainingCard
                 training={training}
                 loading={loading}
@@ -163,7 +165,7 @@ export function TrainingCard({
         <button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
         >
             <Dumbbell
                 size={128}
@@ -171,7 +173,12 @@ export function TrainingCard({
                 className="pointer-events-none absolute -right-6 -top-4 text-brand-ink opacity-[0.12] transition-transform duration-base ease-snap group-hover:scale-105"
             />
 
-            <div className="relative">
+            {/* En el ordenador el inicio va a pantalla completa y esta tarjeta
+                tiene el alto que le toque (unos 200px en un portátil de 768).
+                Lo que cede es ESTA parte —la lista de ejercicios, que se
+                desvanece si no cabe—; el título, el progreso y el botón de
+                abajo se ven siempre enteros. */}
+            <div className="relative pc:min-h-0 pc:flex-1 pc:overflow-hidden pc:[mask-image:linear-gradient(to_bottom,black_80%,transparent)]">
                 <div className="flex items-center gap-2">
                     <Dumbbell size={22} className="text-brand-ink" aria-hidden="true" />
                     {done && (
@@ -215,7 +222,7 @@ export function TrainingCard({
                 )}
             </div>
 
-            <div className="relative mt-4">
+            <div className="relative mt-4 shrink-0">
                 <span className="block truncate text-t-2xl font-black uppercase leading-none tracking-display text-brand-ink">
                     {loading
                         ? 'Cargando…'
@@ -299,7 +306,7 @@ function NutritionCard({
         <button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
         >
             <Utensils
                 size={128}

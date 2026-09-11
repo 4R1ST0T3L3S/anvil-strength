@@ -326,11 +326,14 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 title={TITLES[slug]}
                 onBack={slug === '' ? undefined : () => go('')}
                 hideHeaderOnDesktop={slug === ''}
+                // El inicio cabe entero en la pantalla del ordenador: ver
+                // components/layout/InicioPanel.tsx.
+                ajustarAPantalla={slug === ''}
             >
                 {/* La clave hace que el contenido se funda al cambiar de
                     pestaña. Sin ella el cambio es un salto seco y la pantalla
                     parece haberse recargado entera. */}
-                <ViewTransition transitionKey={slug}>{renderContent()}</ViewTransition>
+                <ViewTransition transitionKey={slug} llenar={slug === ''}>{renderContent()}</ViewTransition>
             </DashboardLayout>
         </>
     );

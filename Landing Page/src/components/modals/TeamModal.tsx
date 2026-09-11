@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { Athlete } from '../../data/athletes';
+import { useTextosWeb } from '../../features/landing/textos';
 
 interface TeamModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface TeamModalProps {
 }
 
 export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes, onAthleteClick }) => {
+  const c = useTextosWeb().modales;
+
   if (!isOpen) return null;
 
   return (
@@ -24,12 +27,13 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
         <div className="sticky top-0 z-10 bg-surface-sunken/95 backdrop-blur border-b border-line p-6 flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-black uppercase tracking-tighter text-ink">
-              Nuestro Equipo
+              {c.equipoTitulo}
             </h2>
             <div className="w-12 h-1 bg-brand mt-2" />
           </div>
           <button
             onClick={onClose}
+            aria-label={c.cerrar}
             className="p-2 text-ink-muted hover:text-ink transition-colors"
           >
             <X size={24} />

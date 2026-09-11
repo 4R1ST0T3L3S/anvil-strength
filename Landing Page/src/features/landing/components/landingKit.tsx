@@ -309,10 +309,13 @@ export function StaggerItem({
 export function BandaDeEntrada({
     texto,
     remate,
+    boton = 'Ficha de inscripción',
 }: {
     /** La frase, en dos partes: la segunda va en tinta apagada. */
     texto: string;
     remate: string;
+    /** El texto del botón, que sigue al idioma de la página. */
+    boton?: string;
 }) {
     return (
         <Fold tone="black" className="py-14 md:py-16">
@@ -321,7 +324,7 @@ export function BandaDeEntrada({
                     {texto} <span className="text-ink-muted">{remate}</span>
                 </p>
                 <PressButton href="https://typebot.co/lead-generation-hhwa24t" className="w-full shrink-0 sm:w-auto">
-                    Ficha de inscripción
+                    {boton}
                 </PressButton>
             </Reveal>
         </Fold>

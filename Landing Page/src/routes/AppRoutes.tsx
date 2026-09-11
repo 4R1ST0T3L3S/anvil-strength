@@ -24,8 +24,10 @@
  * tiene sesión y pasa a ser el panel en cuanto la tiene, en la MISMA
  * dirección. Ver src/lib/authRedirect.ts y docs/AUTENTICACION.md.
  */
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { IdiomaFijo } from '../hooks/useIdioma';
+import { detectarIdioma } from '../lib/i18n';
 import { UserProfile } from '../hooks/useUser';
 import { isStaff, isAdmin, isAthlete, puede } from '../lib/roles';
 import { useAuth } from '../context/AuthContext';
@@ -82,6 +84,15 @@ const SistemaPreview = import.meta.env.DEV
     ? lazy(() => import('../features/devtools/SistemaPreview').then(module => ({ default: module.SistemaPreview })))
     : null;
 
+/**
+ * Banco del INICIO del panel (atleta y entrenador) con un usuario de mentira,
+ * para medir que cabe en una pantalla de ordenador sin scroll. Mismo
+ * mecanismo de desaparición en producción; ver la nota de MobilePreview.
+ */
+const InicioPreview = import.meta.env.DEV
+    ? lazy(() => import('../features/devtools/InicioPreview').then(module => ({ default: module.InicioPreview })))
+    : null;
+
 
 
 interface AppRoutesProps {
@@ -102,6 +113,27 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
 
     const hasActiveSession = !!session;
 
+    /*
+     * EL IDIOMA ES DE LA WEB PÚBLICA; EL PANEL VA EN ESPAÑOL.
+     *
+     * El selector «ES / EN» vive en la cabecera pública. Si el panel lo
+     * siguiera, quedaría medio traducido —solo unas pocas piezas pasan por
+     * `t()`— y eso es lo que se veía: «cambian algunas cosas del panel y la
+     * portada no». Fuera de estas rutas, `IdiomaFijo` pone el español; dentro,
+     * manda lo que eligió quien visita. La elección se conserva: al volver a
+     * la web desde el panel («Ver la web»), sale otra vez en su idioma.
+     *
+     * `lang` del documento también: con `<html lang="en">` sobre un panel en
+     * español, el traductor del navegador ofrece traducir desde el inglés y
+     * los lectores de pantalla pronuncian con la fonética equivocada.
+     */
+    const esPublica = location.pathname === '/'
+        || ['/web', '/competiciones', '/legal/', '/invitacion/', '/reclamar/'].some(r => location.pathname.startsWith(r));
+
+    useEffect(() => {
+        document.documentElement.setAttribute('lang', esPublica ? detectarIdioma() : 'es');
+    }, [esPublica]);
+
     // Sin `key={location.pathname}` en <Routes>.
     //
     // Esa clave forzaba a React a DESMONTAR y volver a montar el árbol entero
@@ -110,6 +142,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
     // volviendo a pedir los datos y parpadeando— cada vez que se toca una
     // pestaña. El enrutador ya sabe qué tiene que cambiar.
     return (
+        <IdiomaFijo.Provider value={esPublica ? null : 'es'}>
         <Routes location={location}>
 
             {/* --- PORTADA (Siempre accesible) ---
@@ -150,6 +183,11 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             {SistemaPreview && (
                 <Route path="/dev/sistema" element={
                     <Suspense fallback={<PageSkeleton />}><SistemaPreview /></Suspense>
+                } />
+            )}
+            {InicioPreview && (
+                <Route path="/dev/inicio" element={
+                    <Suspense fallback={<PageSkeleton />}><InicioPreview /></Suspense>
                 } />
             )}
 
@@ -369,5 +407,6 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             {/* --- FALLBACK --- */}
             <Route path="*" element={<Navigate to="/" replace />} />
         </Routes >
+        </IdiomaFijo.Provider>
     );
 }

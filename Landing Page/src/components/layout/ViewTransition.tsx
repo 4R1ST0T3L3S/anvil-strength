@@ -6,6 +6,12 @@ interface ViewTransitionProps {
     /** Cambiar este valor dispara la transición. Normalmente, la ruta. */
     transitionKey: string;
     children: ReactNode;
+    /**
+     * La vista mide EXACTAMENTE el alto de `main` en el ordenador (el inicio,
+     * que se maqueta a pantalla completa). Solo para vistas que no llevan
+     * nada `sticky`: ver la nota de `min-h-full` más abajo.
+     */
+    llenar?: boolean;
 }
 
 /**
@@ -26,7 +32,7 @@ interface ViewTransitionProps {
  * `mode="wait"` y no un cruce: dos pantallas superpuestas a media opacidad
  * son ilegibles, y con contenido de altura distinta el scroll salta.
  */
-export function ViewTransition({ transitionKey, children }: ViewTransitionProps) {
+export function ViewTransition({ transitionKey, children, llenar = false }: ViewTransitionProps) {
     const reduced = prefersReducedMotion();
 
     return (
@@ -60,7 +66,7 @@ export function ViewTransition({ transitionKey, children }: ViewTransitionProps)
                 // ocupando la pantalla entera, sin franja vacía) y deja que lo
                 // largo crezca y haga scroll en `main`, que es quien lo
                 // gestiona.
-                className="min-h-full"
+                className={llenar ? 'min-h-full pc:h-full' : 'min-h-full'}
             >
                 {children}
             </m.div>
