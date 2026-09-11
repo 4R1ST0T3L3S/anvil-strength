@@ -101,7 +101,7 @@ export function DangerConfirmModal({
                         // Deshabilitado y no oculto: el usuario ve que el botón
                         // existe y qué le falta para poder pulsarlo.
                         disabled={!matches || working}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-field bg-danger py-2.5 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-30"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-field bg-danger py-2.5 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-danger-hover disabled:cursor-not-allowed disabled:opacity-30"
                     >
                         {working && <Loader size={15} className="animate-spin" aria-hidden="true" />}
                         {confirmLabel}

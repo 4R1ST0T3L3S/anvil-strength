@@ -106,7 +106,7 @@ export function CopyDayMenu({
                             <>
                                 <button
                                     onClick={() => setManyOpen(false)}
-                                    className="mb-1 flex w-full items-center gap-1.5 rounded-field px-2.5 py-1.5 text-left text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
+                                    className="mb-1 flex w-full items-center gap-1.5 rounded-field px-2.5 py-1.5 text-left text-t-2xs font-semibold text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
                                 >
                                     ← Elige los días destino
                                 </button>
@@ -114,13 +114,13 @@ export function CopyDayMenu({
                                 <div className="mb-2 flex gap-1 px-1">
                                     <button
                                         onClick={() => setMode('replace')}
-                                        className={`flex-1 rounded-field px-2 py-1.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap ${mode === 'replace' ? 'bg-brand text-brand-ink' : 'bg-surface-sunken text-ink-subtle'}`}
+                                        className={`flex-1 rounded-field px-2 py-1.5 text-t-2xs font-bold transition-colors duration-fast ease-snap ${mode === 'replace' ? 'bg-brand text-brand-ink' : 'bg-surface-sunken text-ink-subtle'}`}
                                     >
                                         Sustituir
                                     </button>
                                     <button
                                         onClick={() => setMode('append')}
-                                        className={`flex-1 rounded-field px-2 py-1.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast ease-snap ${mode === 'append' ? 'bg-brand text-brand-ink' : 'bg-surface-sunken text-ink-subtle'}`}
+                                        className={`flex-1 rounded-field px-2 py-1.5 text-t-2xs font-bold transition-colors duration-fast ease-snap ${mode === 'append' ? 'bg-brand text-brand-ink' : 'bg-surface-sunken text-ink-subtle'}`}
                                     >
                                         Añadir
                                     </button>
@@ -128,7 +128,7 @@ export function CopyDayMenu({
 
                                 <div className="max-h-64 space-y-0.5 overflow-y-auto">
                                     {otherDays.length === 0 && (
-                                        <p className="px-2.5 py-2 text-t-xs italic text-ink-subtle">
+                                        <p className="px-2.5 py-2 text-t-xs text-ink-subtle">
                                             No hay otros días en el bloque.
                                         </p>
                                     )}
@@ -154,7 +154,7 @@ export function CopyDayMenu({
                                 <button
                                     onClick={() => { onCopyToMany([...selected], mode); close(); }}
                                     disabled={selected.size === 0}
-                                    className="mt-2 flex w-full items-center justify-center rounded-field bg-brand px-3 py-2 text-t-xs font-black uppercase tracking-wide text-brand-ink transition-colors duration-fast hover:bg-brand-hover disabled:opacity-40"
+                                    className="mt-2 flex w-full items-center justify-center rounded-field bg-brand px-3 py-2 text-t-xs font-semibold text-brand-ink transition-colors duration-fast hover:bg-brand-hover disabled:opacity-40"
                                 >
                                     Copiar a {selected.size || ''} {selected.size === 1 ? 'día' : 'días'}
                                 </button>

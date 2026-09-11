@@ -22,17 +22,17 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative bg-surface-sunken w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-3xl border border-line shadow-2xl flex flex-col md:flex-row">
+      <div className="relative bg-surface-sunken w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-card border border-line shadow-overlay flex flex-col md:flex-row">
 
         {/* Close Button Mobile */}
         <button
           onClick={onClose}
           aria-label={c.cerrar}
-          className="absolute top-4 right-4 z-[80] p-2 bg-black/50 rounded-full text-ink md:hidden"
+          className="absolute top-4 right-4 z-[80] p-2 bg-surface-sunken rounded-full text-ink md:hidden"
         >
           <X size={24} />
         </button>
@@ -46,10 +46,10 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
           />
           <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-transparent to-transparent md:hidden" />
           <div className="absolute bottom-0 left-0 p-6 md:hidden">
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-ink leading-none mb-1 font-bebas italic">
+            <h2 className="text-3xl font-semibold tracking-tight text-ink leading-none mb-1 font-bebas">
               {coach.name}
             </h2>
-            <p className="text-brand-text font-bold uppercase tracking-wider text-xs">
+            <p className="text-brand-text font-bold text-xs">
               {coach.role}
             </p>
           </div>
@@ -62,24 +62,24 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
             <button
               onClick={onClose}
               aria-label={c.cerrar}
-              className="p-3 bg-white/5 hover:bg-white/10 text-ink-muted hover:text-ink transition-colors rounded-full border border-line"
+              className="p-3 bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink transition-colors rounded-full border border-line"
             >
               <X size={24} />
             </button>
           </div>
 
           <div className="hidden md:block mb-12">
-            <h2 className="text-6xl font-black uppercase tracking-tighter text-ink leading-[1.1] mb-2 font-bebas italic py-2">
+            <h2 className="text-6xl font-semibold tracking-tight text-ink leading-[1.1] mb-2 font-bebas py-2">
               {coach.name}
             </h2>
-            <p className="text-brand-text font-black uppercase tracking-widest text-lg">
+            <p className="text-brand-text font-semibold text-lg">
               {coach.role}
             </p>
           </div>
 
           {/* Bio */}
           <div className="mb-12">
-            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
+            <h3 className="text-t-2xs font-semibold text-ink-subtle mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-brand" />
               {c.presentacion}
             </h3>
@@ -90,7 +90,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
 
           {/* Contact */}
           <div className="mt-auto">
-            <h3 className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle mb-6 flex items-center gap-4">
+            <h3 className="text-t-2xs font-semibold text-ink-subtle mb-6 flex items-center gap-4">
               <span className="w-8 h-[1px] bg-brand" />
               {c.contactoDirecto}
             </h3>
@@ -102,7 +102,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                 className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
               >
                 <Instagram size={20} className="group-hover:scale-110 transition-transform" />
-                <span className="font-black uppercase text-xs tracking-widest">Instagram</span>
+                <span className="font-semibold text-xs">Instagram</span>
               </a>
               {coach.contactForm && (
                 <a
@@ -112,7 +112,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <FileText size={20} className="group-hover:scale-110 transition-transform" />
-                  <span className="font-black uppercase text-xs tracking-widest">{c.formulario}</span>
+                  <span className="font-semibold text-xs">{c.formulario}</span>
                 </a>
               )}
               {coach.email && (
@@ -121,7 +121,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
                   className="flex items-center gap-3 px-6 py-4 bg-surface-sunken hover:bg-brand text-ink transition-colors rounded-2xl group border border-subtle"
                 >
                   <Mail size={20} className="group-hover:scale-110 transition-transform" />
-                  <span className="font-black uppercase text-xs tracking-widest">Email</span>
+                  <span className="font-semibold text-xs">Email</span>
                 </a>
               )}
             </div>

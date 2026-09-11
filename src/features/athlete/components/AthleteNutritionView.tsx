@@ -32,7 +32,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
-                <p className="text-ink-subtle font-bold uppercase tracking-widest text-xs">Cargando Plan Nutricional...</p>
+                <p className="text-ink-subtle font-bold text-xs">Cargando Plan Nutricional...</p>
             </div>
         );
     }
@@ -41,22 +41,22 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
         return (
             <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade">
                 <header>
-                    <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-ink">Mi Nutrición</h1>
+                    <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mb-2 text-ink">Mi Nutrición</h1>
                     <p className="text-ink-muted text-lg">Tu plan de alimentación personalizado.</p>
                 </header>
 
                 <div className="bg-surface-sunken border border-subtle rounded-card p-12 text-center space-y-6">
-                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto text-ink-subtle">
+                    <div className="w-20 h-20 bg-[var(--fill-muted)] rounded-full flex items-center justify-center mx-auto text-ink-subtle">
                         <Apple size={40} />
                     </div>
                     <div className="max-w-md mx-auto">
-                        <h3 className="text-2xl font-black text-ink uppercase tracking-tighter mb-3">Sin Plan Nutricional</h3>
+                        <h3 className="text-2xl font-semibold text-ink tracking-tight mb-3">Sin Plan Nutricional</h3>
                         <p className="text-ink-muted text-sm leading-relaxed">
                             Tu nutricionista aún no ha cargado tu plan de alimentación. Esta sección se sincronizará automáticamente cuando el profesional lo publique.
                         </p>
                     </div>
                     <div className="pt-4 flex justify-center gap-4">
-                        <div className="px-6 py-3 bg-white/5 border border-[var(--border-default)] rounded-xl text-t-2xs font-black uppercase tracking-widest text-ink-subtle flex items-center gap-2">
+                        <div className="px-6 py-3 bg-[var(--fill-muted)] border border-[var(--border-default)] rounded-xl text-t-2xs font-semibold text-ink-subtle flex items-center gap-2">
                             <Clock size={14} /> Esperando nutricionista...
                         </div>
                     </div>
@@ -67,7 +67,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                     <div className="bg-surface-sunken border border-subtle p-6 rounded-card space-y-3">
                         <div className="flex items-center gap-2 text-brand-text">
                             <AlertCircle size={18} />
-                            <h4 className="font-bold uppercase tracking-widest text-xs text-ink">Importante</h4>
+                            <h4 className="font-bold text-xs text-ink">Importante</h4>
                         </div>
                         <p className="text-ink-muted text-xs leading-relaxed">
                             Asegúrate de haber completado tu perfil con tu peso y objetivos actuales para que el nutricionista pueda diseñar el plan adecuado.
@@ -76,7 +76,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                     <div className="bg-surface-sunken border border-subtle p-6 rounded-card space-y-3">
                         <div className="flex items-center gap-2 text-success">
                             <CheckCircle2 size={18} />
-                            <h4 className="font-bold uppercase tracking-widest text-xs text-ink">Sincronización</h4>
+                            <h4 className="font-bold text-xs text-ink">Sincronización</h4>
                         </div>
                         <p className="text-ink-muted text-xs leading-relaxed">
                             Una vez activo, podrás ver tus macros diarios, comidas recomendadas y suplementación directamente desde aquí.
@@ -121,12 +121,12 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
         <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade">
             <header className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 text-ink">Mi Nutrición</h1>
+                    <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mb-2 text-ink">Mi Nutrición</h1>
                     <p className="text-ink-muted text-lg">Objetivos diarios y planificación.</p>
                 </div>
                 <div className="hidden md:block text-right">
-                    <p className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle mb-1">Total Calorías</p>
-                    <p className="text-3xl font-black text-ink italic">
+                    <p className="text-t-2xs font-semibold text-ink-subtle mb-1">Total Calorías</p>
+                    <p className="text-3xl font-semibold text-ink">
                         {Math.round(currentMacros.kcal).toLocaleString()} <span className="text-xs not-italic text-ink-subtle">/ {plan.calories_target} kcal</span>
                     </p>
                 </div>
@@ -136,7 +136,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
             {plan.tags && plan.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {plan.tags.map((tag, i) => (
-                        <span key={i} className="bg-brand/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-brand/20 uppercase">
+                        <span key={i} className="bg-brand/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-brand/20">
                             {tag}
                         </span>
                     ))}
@@ -154,17 +154,17 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                         className="bg-surface-sunken border border-subtle p-5 rounded-card space-y-3 hover:border-[var(--border-default)] transition-colors"
                     >
                         <div className="flex justify-between items-center">
-                            <div className={`p-1.5 rounded-lg bg-white/5 ${macro.textColor}`}>
+                            <div className={`p-1.5 rounded-lg bg-[var(--fill-muted)] ${macro.textColor}`}>
                                 {macro.icon}
                             </div>
-                            <span className="text-t-2xs font-black uppercase tracking-widest text-ink-subtle">{macro.label}</span>
+                            <span className="text-t-2xs font-semibold text-ink-subtle">{macro.label}</span>
                         </div>
                         <div>
                             <div className="flex items-baseline gap-1 mb-2">
-                                <span className={`text-2xl font-black ${macro.textColor}`}>{macro.current}</span>
+                                <span className={`text-2xl font-semibold ${macro.textColor}`}>{macro.current}</span>
                                 <span className="text-xs text-ink-subtle">/ {macro.target}{macro.unit}</span>
                             </div>
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-[var(--fill-muted)] rounded-full overflow-hidden">
                                 <m.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${Math.min(100, (macro.current / (macro.target || 1)) * 100)}%` }}
@@ -180,7 +180,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
             {/* General Guidelines */}
             {plan.general_guidelines && plan.general_guidelines.length > 0 && (
                 <div className="bg-surface-sunken border border-subtle rounded-card p-5 space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-ink-subtle">📋 Pautas Generales</h3>
+                    <h3 className="text-xs font-semibold text-ink-subtle">📋 Pautas Generales</h3>
                     <div className="space-y-1.5">
                         {plan.general_guidelines.map((g, i) => (
                             <p key={i} className="text-sm text-ink-muted pl-2">• {g}</p>
@@ -192,7 +192,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
             {/* Supplements */}
             {plan.global_supplements && plan.global_supplements.length > 0 && (
                 <div className="bg-surface-sunken border border-blue-500/10 rounded-card p-5 space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-info/70 flex items-center gap-2">
+                    <h3 className="text-xs font-semibold text-info/70 flex items-center gap-2">
                         <Pill size={14} /> Suplementación
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -207,7 +207,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
 
             {/* Meals */}
             <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-ink-subtle flex items-center gap-2">
+                <h2 className="text-xs font-semibold text-ink-subtle flex items-center gap-2">
                     <Utensils size={16} /> Comidas del día
                 </h2>
 
@@ -239,11 +239,11 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                         className="w-full p-5 flex items-center justify-between text-left"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="text-ink-subtle font-black text-2xl italic">
+                                            <div className="text-ink-subtle font-semibold text-2xl">
                                                 {String(i + 1).padStart(2, '0')}
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-ink uppercase tracking-tight">{meal.name}</h3>
+                                                <h3 className="font-bold text-ink tracking-tight">{meal.name}</h3>
                                                 {meal.time && (
                                                     <p className="text-ink-subtle text-xs flex items-center gap-1">
                                                         <Clock size={10} /> {meal.time}

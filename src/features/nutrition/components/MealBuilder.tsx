@@ -99,7 +99,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-ink uppercase tracking-tight">Comidas</h3>
+                <h3 className="text-xl font-bold text-ink tracking-tight">Comidas</h3>
                 {!isAddingMeal && (
                     <button
                         onClick={() => setIsAddingMeal(true)}
@@ -118,7 +118,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                             <button
                                 key={mealName}
                                 onClick={() => setNewMealName(mealName)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === mealName ? 'bg-brand text-black border-brand' : 'bg-surface-raised text-ink border-strong hover:border-brand'}`}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors border ${newMealName === mealName ? 'bg-brand text-brand-ink border-brand' : 'bg-surface-raised text-ink border-strong hover:border-brand'}`}
                             >
                                 {mealName}
                             </button>
@@ -155,7 +155,7 @@ export function MealBuilder({ planId, athleteId, meals }: MealBuilderProps) {
                         <button
                             onClick={handleCreateMeal}
                             disabled={!newMealName.trim() || newMealName === 'Otros' || createMealMutation.isPending}
-                            className="bg-brand hover:bg-red-600 text-black font-black px-6 py-2 rounded-lg transition-colors disabled:opacity-50 text-sm uppercase"
+                            className="bg-brand hover:bg-brand-hover text-brand-ink font-semibold px-6 py-2 rounded-lg transition-colors disabled:opacity-50 text-sm"
                         >
                             Crear
                         </button>
@@ -267,7 +267,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
             <div className="bg-surface-sunken p-4 flex justify-between items-center cursor-pointer select-none border-b border-line" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="flex items-center gap-4">
                     {isExpanded ? <ChevronUp size={20} className="text-ink-muted" /> : <ChevronDown size={20} className="text-ink-muted" />}
-                    <h4 className="text-lg font-black text-ink">{meal.name}</h4>
+                    <h4 className="text-lg font-semibold text-ink">{meal.name}</h4>
                     {meal.meal_supplements && meal.meal_supplements.length > 0 && (
                         <span className="bg-info-quiet text-info text-xs px-2 py-0.5 rounded-full border border-info/20">
                             💊 {meal.meal_supplements.length}
@@ -285,7 +285,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={(e) => { e.stopPropagation(); setIsAdjusting(!isAdjusting); }}
-                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-brand text-black' : 'text-ink-muted hover:text-ink hover:bg-white/5'}`}
+                            className={`p-2 rounded-lg transition-colors ${isAdjusting ? 'bg-brand text-brand-ink' : 'text-ink-muted hover:text-ink hover:bg-[var(--fill-hover)]'}`}
                             title="Ajuste Inteligente"
                         >
                             <Wand2 size={18} />
@@ -314,15 +314,15 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                             >
                                 <div className="bg-surface-sunken border border-brand/30 rounded-xl p-4 space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h5 className="text-t-2xs font-black uppercase tracking-[0.2em] text-brand-text flex items-center gap-2">
+                                        <h5 className="text-t-2xs font-semibold text-brand-text flex items-center gap-2">
                                             <Calculator size={14} /> Smart Adjuster
                                         </h5>
-                                        <button onClick={() => { setIsAdjusting(false); setOptimizedProposals(null); setSelectedProposalId(null); }} className="text-zinc-600 hover:text-ink"><XIcon size={16} /></button>
+                                        <button onClick={() => { setIsAdjusting(false); setOptimizedProposals(null); setSelectedProposalId(null); }} className="text-ink-subtle hover:text-ink"><XIcon size={16} /></button>
                                     </div>
                                     
                                     <div className="grid grid-cols-3 gap-3">
                                         <div>
-                                            <label className="block text-t-2xs font-bold text-ink-subtle uppercase mb-1">Proteína Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-ink-subtle mb-1">Proteína Obj.</label>
                                             <input 
                                                 type="number"
                             inputMode="decimal" 
@@ -332,7 +332,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-t-2xs font-bold text-ink-subtle uppercase mb-1">Carbos Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-ink-subtle mb-1">Carbos Obj.</label>
                                             <input 
                                                 type="number"
                             inputMode="decimal" 
@@ -342,7 +342,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-t-2xs font-bold text-ink-subtle uppercase mb-1">Grasas Obj.</label>
+                                            <label className="block text-t-2xs font-bold text-ink-subtle mb-1">Grasas Obj.</label>
                                             <input 
                                                 type="number"
                             inputMode="decimal" 
@@ -354,7 +354,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                     </div>
 
                                     {adjustError && (
-                                        <p className="text-t-2xs font-bold text-brand-text uppercase animate-pulse">{adjustError}</p>
+                                        <p className="text-t-2xs font-bold text-brand-text animate-pulse">{adjustError}</p>
                                     )}
 
                                     {!optimizedProposals ? (
@@ -370,20 +370,20 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                     if (result.options.length > 0) setSelectedProposalId(result.options[0].id);
                                                 }
                                             }}
-                                            className="w-full bg-white text-black font-black py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                                            className="w-full bg-ink text-surface-canvas font-semibold py-2 rounded-lg text-xs hover:bg-zinc-200 transition-colors"
                                         >
                                             Calcular Cantidades
                                         </button>
                                     ) : (
                                         <div className="space-y-3">
-                                            <p className="text-t-2xs font-bold text-ink-muted uppercase italic">Revisa las opciones y aplica la que prefieras:</p>
+                                            <p className="text-t-2xs font-bold text-ink-muted">Revisa las opciones y aplica la que prefieras:</p>
                                             
                                             <div className="flex gap-2">
                                                 {optimizedProposals.map(opt => (
                                                     <button
                                                         key={opt.id}
                                                         onClick={() => setSelectedProposalId(opt.id)}
-                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold uppercase tracking-wider transition-colors border ${selectedProposalId === opt.id ? 'bg-brand/20 border-brand text-ink' : 'bg-surface-raised border-subtle text-ink-subtle hover:bg-white/5'}`}
+                                                        className={`flex-1 py-2 px-2 rounded-lg text-t-2xs font-bold transition-colors border ${selectedProposalId === opt.id ? 'bg-brand/20 border-brand text-ink' : 'bg-surface-raised border-subtle text-ink-subtle hover:bg-[var(--fill-hover)]'}`}
                                                     >
                                                         {opt.name}
                                                     </button>
@@ -404,14 +404,14 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                         setOptimizedProposals(null);
                                                         setSelectedProposalId(null);
                                                     }}
-                                                    className="flex-1 bg-green-500 text-ink font-black py-2 rounded-lg text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-green-600 transition-colors disabled:opacity-50"
+                                                    className="flex-1 bg-green-500 text-ink font-semibold py-2 rounded-lg text-xs flex items-center justify-center gap-2 hover:bg-green-600 transition-colors disabled:opacity-50"
                                                     disabled={!selectedProposalId}
                                                 >
                                                     <Check size={14} /> Aplicar Ajuste
                                                 </button>
                                                 <button 
                                                     onClick={() => { setOptimizedProposals(null); setSelectedProposalId(null); }}
-                                                    className="flex-1 bg-surface-raised text-ink font-black py-2 rounded-lg text-xs uppercase tracking-widest hover:bg-surface-overlay transition-colors"
+                                                    className="flex-1 bg-surface-raised text-ink font-semibold py-2 rounded-lg text-xs hover:bg-surface-overlay transition-colors"
                                                 >
                                                     Descartar
                                                 </button>
@@ -457,11 +457,11 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                         >
                                             {/* Category label */}
                                             <div className="px-3 py-1.5 flex justify-between items-center border-b border-line">
-                                                <span className={`text-xs font-bold uppercase ${CATEGORY_TEXT[group.category] || CATEGORY_TEXT['Otros']}`}>
+                                                <span className={`text-xs font-bold ${CATEGORY_TEXT[group.category] || CATEGORY_TEXT['Otros']}`}>
                                                     {group.category} {totalCatCounts[group.category] > 1 ? `(OPCIÓN ${group.catIndex})` : ''}
                                                 </span>
                                                 {group.items.length > 1 && (
-                                                    <span className="text-xs font-black text-success bg-success-quiet px-2 py-0.5 rounded border border-success/20">
+                                                    <span className="text-xs font-semibold text-success bg-success-quiet px-2 py-0.5 rounded border border-success/20">
                                                         ELIGE 1 OPCIÓN
                                                     </span>
                                                 )}
@@ -486,12 +486,12 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                                 {selectedProposalId && optimizedProposals && optimizedProposals.find(o => o.id === selectedProposalId)?.amounts[f.code] !== mf.amount_g && (
                                                                     <>
                                                                         <ChevronUp size={12} className="text-success rotate-90" />
-                                                                        <p className="text-xs font-black text-success">
+                                                                        <p className="text-xs font-semibold text-success">
                                                                             {optimizedProposals.find(o => o.id === selectedProposalId)?.amounts[f.code]}g
                                                                         </p>
                                                                     </>
                                                                 )}
-                                                                <span className="text-zinc-700">·</span>
+                                                                <span className="text-ink-faint">·</span>
                                                                 <p className="text-xs text-ink-subtle">{f.brands || ''}</p>
                                                             </div>
                                                         </div>
@@ -506,14 +506,14 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                                                                 <button 
                                                                     onClick={() => onAlternativeSearch(f, group.groupId)}
                                                                     title="Añadir alternativa"
-                                                                    className="text-zinc-600 hover:text-success transition-colors"
+                                                                    className="text-ink-subtle hover:text-success transition-colors"
                                                                 >
                                                                     <Copy size={14} />
                                                                 </button>
                                                             )}
                                                             <button 
                                                                 onClick={() => onRemoveFood(mf.id)}
-                                                                className="text-zinc-600 hover:text-danger-text transition-colors"
+                                                                className="text-ink-subtle hover:text-danger-text transition-colors"
                                                             >
                                                                 <Trash2 size={14} />
                                                             </button>
@@ -541,7 +541,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     {/* Supplements for this meal */}
                     {meal.meal_supplements && meal.meal_supplements.length > 0 && (
                         <div className="mb-4 bg-blue-500/5 border border-info/20 rounded-lg p-3">
-                            <p className="text-xs text-info font-bold uppercase mb-1">💊 Suplementación</p>
+                            <p className="text-xs text-info font-bold mb-1">💊 Suplementación</p>
                             <div className="flex flex-wrap gap-2">
                                 {meal.meal_supplements.map((s, i) => (
                                     <span key={i} className="text-xs text-blue-300 bg-info-quiet px-2 py-0.5 rounded">{s}</span>
@@ -565,7 +565,7 @@ function MealCard({ meal, onDelete, onCategorySearch, onRemoveFood, onAlternativ
                     ) : (
                         <div>
                             {/* Category quick-add buttons */}
-                            <p className="text-xs text-ink-subtle uppercase font-bold mb-2">Añadir por categoría:</p>
+                            <p className="text-xs text-ink-subtle font-bold mb-2">Añadir por categoría:</p>
                             <div className="flex flex-wrap gap-2">
                                 {FOOD_CATEGORIES.map(cat => (
                                     <button 

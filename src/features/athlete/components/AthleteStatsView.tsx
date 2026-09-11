@@ -110,14 +110,14 @@ export function AthleteStatsView({ user }: Props) {
     if (historial.isError) {
         return (
             <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
-                <p className="text-t-lg font-black uppercase text-ink">No se ha podido cargar tu historial</p>
+                <p className="text-t-lg font-semibold text-ink">No se ha podido cargar tu historial</p>
                 <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">
                     Tus datos están a salvo: es esta pantalla la que no ha podido leerlos.
                     Comprueba la conexión y vuelve a intentarlo.
                 </p>
                 <button
                     onClick={() => historial.refetch()}
-                    className="mt-6 rounded-pill bg-brand px-6 py-2.5 text-t-sm font-black uppercase tracking-wide text-brand-ink transition-opacity hover:opacity-90"
+                    className="mt-6 rounded-pill bg-brand px-6 py-2.5 text-t-sm font-semibold text-brand-ink transition-opacity hover:opacity-90"
                 >
                     Reintentar
                 </button>
@@ -146,7 +146,7 @@ export function AthleteStatsView({ user }: Props) {
 
             {/* 3: LOS TRES BÁSICOS */}
             <section>
-                <h2 className="mb-2.5 flex items-center gap-2 text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+                <h2 className="mb-2.5 flex items-center gap-2 text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                     <BarChart3 size={13} className="text-brand-text" aria-hidden="true" />
                     Tu fuerza
                 </h2>
@@ -211,7 +211,7 @@ export function TarjetaDeFase({
 }) {
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
-            <p className="flex items-center gap-1.5 text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+            <p className="flex items-center gap-1.5 text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                 <CalendarRange size={12} className="text-brand-text" aria-hidden="true" />
                 {movimiento ? `Fase · ${MAIN_LIFT_LABEL[movimiento]}` : 'Fase de la temporada'}
             </p>
@@ -220,7 +220,7 @@ export function TarjetaDeFase({
                 <p className="mt-3 text-t-sm text-ink-subtle">Cargando…</p>
             ) : !fase ? (
                 <>
-                    <p className="mt-3 text-t-lg font-black uppercase text-ink-faint">Sin definir</p>
+                    <p className="mt-3 text-t-lg font-semibold text-ink-faint">Sin definir</p>
                     <p className="mt-1.5 text-t-xs leading-relaxed text-ink-subtle">
                         Tu entrenador todavía no ha marcado en qué fase estás. No afecta a tu
                         entrenamiento: es solo la etiqueta de este tramo de la temporada.
@@ -228,7 +228,7 @@ export function TarjetaDeFase({
                 </>
             ) : (
                 <>
-                    <p className="mt-2.5 text-t-2xl font-black uppercase leading-none tracking-display text-ink">
+                    <p className="mt-2.5 text-t-2xl font-semibold leading-none tracking-display text-ink">
                         {fase.fase.name}
                     </p>
                     {fase.semanaActual != null && (
@@ -291,7 +291,7 @@ export function TarjetaDeCompeticion({
 
     return (
         <div className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
-            <p className="flex items-center gap-1.5 text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+            <p className="flex items-center gap-1.5 text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                 <Trophy size={12} className="text-brand-text" aria-hidden="true" />
                 Próxima competición
             </p>
@@ -300,14 +300,14 @@ export function TarjetaDeCompeticion({
                 <p className="mt-3 text-t-sm text-ink-subtle">Cargando…</p>
             ) : !competicion ? (
                 <>
-                    <p className="mt-3 text-t-lg font-black uppercase text-ink-faint">Sin fecha</p>
+                    <p className="mt-3 text-t-lg font-semibold text-ink-faint">Sin fecha</p>
                     <p className="mt-1.5 text-t-xs leading-relaxed text-ink-subtle">
                         Cuando tengas una competición asignada aparecerá aquí con su cuenta atrás.
                     </p>
                 </>
             ) : (
                 <>
-                    <p className="mt-2.5 truncate text-t-xl font-black uppercase leading-tight tracking-display text-ink">
+                    <p className="mt-2.5 truncate text-t-xl font-semibold leading-tight tracking-display text-ink">
                         {competicion.name}
                     </p>
                     <p className="mt-1 text-t-xs text-ink-muted">
@@ -318,8 +318,8 @@ export function TarjetaDeCompeticion({
                         <p className="mt-2.5 text-t-sm font-bold">
                             {dias > 0 ? (
                                 <>
-                                    <span className="text-t-2xl font-black tabular-nums text-brand-text">{dias}</span>
-                                    <span className="ml-1.5 uppercase tracking-wide text-ink-muted">
+                                    <span className="text-t-2xl font-semibold tabular-nums text-brand-text">{dias}</span>
+                                    <span className="ml-1.5 text-ink-muted">
                                         {dias === 1 ? 'día' : 'días'}
                                     </span>
                                 </>
@@ -382,7 +382,7 @@ export function TarjetaDeMovimiento({
         >
             <span className="flex items-center gap-2">
                 <span aria-hidden="true">{medalla}</span>
-                <span className="truncate text-t-xs font-black uppercase tracking-widest text-ink-subtle">
+                <span className="truncate text-t-xs font-semibold text-ink-subtle">
                     {resumen.label}
                 </span>
             </span>
@@ -392,12 +392,12 @@ export function TarjetaDeMovimiento({
             ) : (
                 <>
                     <span className="mt-2 flex items-baseline gap-1.5">
-                        <span className="text-t-3xl font-black leading-none tabular-nums text-ink">
+                        <span className="text-t-3xl font-semibold leading-none tabular-nums text-ink">
                             {formatearKg(resumen.actual!)}
                         </span>
                         <span className="text-t-sm font-bold text-ink-subtle">kg</span>
                     </span>
-                    <span className="mt-0.5 text-t-2xs uppercase tracking-wide text-ink-subtle">
+                    <span className="mt-0.5 text-t-2xs text-ink-subtle">
                         1RM estimado
                     </span>
 
@@ -480,12 +480,12 @@ export function DetalleDeMovimiento({
 
     return (
         <section className="rounded-card border border-[var(--brand-line)] bg-surface-raised p-4">
-            <h3 className="text-t-lg font-black uppercase tracking-display text-ink">
+            <h3 className="text-t-lg font-semibold tracking-display text-ink">
                 {MAIN_LIFT_LABEL[movimiento]}
             </h3>
 
             {/* EVOLUCIÓN DEL e1RM, a tamaño grande */}
-            <p className="mt-4 text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+            <p className="mt-4 text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                 Evolución del 1RM estimado
             </p>
             {resumen.puntos.length < 2 ? (
@@ -566,7 +566,7 @@ export function DetalleDeMovimiento({
             {/* VOLUMEN E INTENSIDAD por semana */}
             {semanas.length >= 2 && (
                 <>
-                    <p className="mt-6 text-t-2xs font-black uppercase tracking-[0.18em] text-ink-subtle">
+                    <p className="mt-6 text-t-2xs font-semibold tracking-[0.18em] text-ink-subtle">
                         Tu semana, en volumen e intensidad
                     </p>
                     <div className="mt-2 h-44 w-full">

@@ -121,17 +121,17 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                 <button
                     type="button"
                     onClick={() => navigateMonth('prev')}
-                    className="p-1 hover:bg-white/10 rounded-lg text-ink-muted hover:text-ink transition-colors"
+                    className="p-1 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-muted hover:text-ink transition-colors"
                 >
                     <ChevronLeft size={20} />
                 </button>
-                <div className="font-bold text-ink uppercase tracking-wider">
+                <div className="font-bold text-ink">
                     {MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}
                 </div>
                 <button
                     type="button"
                     onClick={() => navigateMonth('next')}
-                    className="p-1 hover:bg-white/10 rounded-lg text-ink-muted hover:text-ink transition-colors"
+                    className="p-1 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-muted hover:text-ink transition-colors"
                 >
                     <ChevronRight size={20} />
                 </button>
@@ -139,7 +139,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
 
             {/* Grid Header */}
             <div className="grid grid-cols-[30px_1fr] gap-2 mb-2 shrink-0">
-                <div className="text-t-2xs font-bold text-ink-subtle uppercase text-center self-center">Sem</div>
+                <div className="text-t-2xs font-bold text-ink-subtle text-center self-center">Sem</div>
                 <div className="grid grid-cols-7 text-center">
                     {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
                         <div key={d} className="text-t-2xs font-bold text-ink-subtle">{d}</div>
@@ -164,8 +164,8 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                                 onClick={() => handleWeekClick(weekNum)}
                                 className={`
  text-t-2xs font-bold rounded flex items-center justify-center transition-colors
- ${inRange ? 'text-ink' : 'text-gray-600 group-hover:text-ink'}
- ${inRange && !isStart && !isEnd ? 'bg-white/10' : ''}
+ ${inRange ? 'text-ink' : 'text-ink-subtle group-hover:text-ink'}
+ ${inRange && !isStart && !isEnd ? 'bg-[var(--fill-hover)]' : ''}
 `}
                                 style={isStart || isEnd ? { backgroundColor: selectedColor } : undefined}
                             >
@@ -176,7 +176,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                             <div
                                 className={`
  grid grid-cols-7 rounded-lg overflow-hidden cursor-pointer transition-colors border border-transparent
- ${inRange ? 'bg-white/5 border-subtle' : 'hover:bg-white/5 hover:border-line'}
+ ${inRange ? 'bg-[var(--fill-muted)] border-subtle' : 'hover:bg-[var(--fill-hover)] hover:border-line'}
 `}
                                 style={{
                                     ...(isStart || isEnd ? { borderColor: selectedColor, backgroundColor: `${selectedColor}20` } : {}),
@@ -189,7 +189,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
                                         key={dIndex}
                                         className={`
  h-8 flex items-center justify-center text-xs font-medium
- ${day.isCurrentMonth ? 'text-ink' : 'text-gray-700'}
+ ${day.isCurrentMonth ? 'text-ink' : 'text-ink-faint'}
  ${inRange ? 'text-ink' : ''}
 `}
                                     >
@@ -203,7 +203,7 @@ export function CalendarWeekPicker({ startWeek, endWeek, onChange, selectedColor
             </div>
 
             {/* Footer Helper */}
-            <div className="mt-4 flex items-center justify-between text-t-2xs text-ink-subtle uppercase font-bold tracking-wider shrink-0">
+            <div className="mt-4 flex items-center justify-between text-t-2xs text-ink-subtle font-bold shrink-0">
                 <div>Clic: Seleccionar / Rango</div>
                 <div>
                     Seleccionado: <span className="text-ink">{startWeek} - {endWeek}</span> ({endWeek - startWeek + 1} semanas)

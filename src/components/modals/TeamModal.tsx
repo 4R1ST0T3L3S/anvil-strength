@@ -18,15 +18,15 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative bg-surface-sunken w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-line shadow-2xl">
+      <div className="relative bg-surface-sunken w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-xl border border-line shadow-overlay">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-surface-sunken/95 backdrop-blur border-b border-line p-6 flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-black uppercase tracking-tighter text-ink">
+            <h2 className="text-3xl font-semibold tracking-tight text-ink">
               {c.equipoTitulo}
             </h2>
             <div className="w-12 h-1 bg-brand mt-2" />
@@ -55,8 +55,8 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-colors duration-slow"
                 />
                 <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-slow">
-                  <p className="text-ink font-bold uppercase tracking-wider text-lg">{athlete.name}</p>
-                  <p className="text-xs text-brand-text font-bold uppercase tracking-widest">{athlete.category}</p>
+                  <p className="text-ink font-bold text-lg">{athlete.name}</p>
+                  <p className="text-xs text-brand-text font-bold">{athlete.category}</p>
                 </div>
               </div>
             ))}

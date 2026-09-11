@@ -43,7 +43,7 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
         <div className="p-6 md:p-10 space-y-8 animate-fade">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-ink uppercase italic tracking-wider mb-2 flex items-center gap-3">
+                    <h1 className="text-3xl font-semibold text-ink mb-2 flex items-center gap-3">
                         <Users className="text-brand-text" size={32} />
                         MIS ATLETAS (NUTRICIÓN)
                     </h1>
@@ -121,11 +121,11 @@ export function NutritionAthletes({ user }: NutritionAthletesProps) {
                                         )}
                                     </div>
                                 </div>
-                                <ChevronRight className="text-zinc-600 group-hover:text-brand-text transition-colors" />
+                                <ChevronRight className="text-ink-subtle group-hover:text-brand-text transition-colors" />
                             </div>
                             
                             <div className="flex justify-between items-center pt-4 border-t border-line">
-                                <span className="text-xs text-ink-subtle uppercase tracking-wider">Plan Nutricional</span>
+                                <span className="text-xs text-ink-subtle">Plan Nutricional</span>
                                 {/* This will eventually show if they have an active plan */}
                                 <span className="text-xs bg-surface-raised text-ink px-2 py-1 rounded-md">
                                     Ver Plan

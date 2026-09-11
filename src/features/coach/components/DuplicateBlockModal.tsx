@@ -189,7 +189,7 @@ export function DuplicateBlockModal({
                         <button
                             onClick={handleCopy}
                             disabled={selected.size === 0 || working}
-                            className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {working
                                 ? <><Loader size={16} className="animate-spin" aria-hidden="true" /> Copiando…</>

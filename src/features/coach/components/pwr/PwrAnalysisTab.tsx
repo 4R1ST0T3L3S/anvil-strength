@@ -117,12 +117,12 @@ export function PwrAnalysisTab({
               {onBack && (
                   <button
                       onClick={onBack}
-                      className="flex items-center gap-2 text-xs font-bold text-ink-muted hover:text-ink uppercase tracking-wider bg-white/5 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                      className="flex items-center gap-2 text-xs font-bold text-ink-muted hover:text-ink bg-[var(--fill-muted)] px-3 py-2 rounded-lg hover:bg-[var(--fill-pressed)] transition-colors"
                   >
                       <ArrowLeft size={16} /> Dashboard
                   </button>
               )}
-              <h3 className="text-2xl font-black uppercase tracking-tight text-ink flex items-center gap-2">
+              <h3 className="text-2xl font-semibold tracking-tight text-ink flex items-center gap-2">
                   <Activity className="text-orange-500" />
                   PWR Análisis
                   <span className="text-xs font-bold bg-orange-500/10 text-orange-500 px-2 py-1 rounded ml-2">BETA</span>
@@ -145,7 +145,7 @@ export function PwrAnalysisTab({
                         : blocked ? 'La medición no alcanza la fiabilidad mínima'
                           : 'Guardar las métricas dentro de una serie del plan'
                     }
-                    className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40"
                   >
                      <Link2 size={16} /> Asociar serie
                   </button>
@@ -157,7 +157,7 @@ export function PwrAnalysisTab({
                         : blocked ? 'La medición no alcanza la fiabilidad mínima'
                           : 'Guardar en el historial del atleta, sin enlazar con ninguna serie'
                     }
-                    className="flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink-muted transition-colors hover:bg-white/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-lg bg-[var(--fill-muted)] px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-[var(--fill-pressed)] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
                      <Save size={16} /> Guardar suelto
                   </button>
@@ -171,13 +171,13 @@ export function PwrAnalysisTab({
                     onClick={() => setCalibrating(true)}
                     disabled={!result}
                     title={!result ? 'Todavía no hay métricas que contrastar' : 'Contrastar esta serie con un encoder'}
-                    className="flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-ink-muted transition-colors hover:bg-white/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-lg bg-[var(--fill-muted)] px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-[var(--fill-pressed)] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
                      <Ruler size={16} /> Calibrar
                   </button>
                   <button
                     onClick={handleReset}
-                    className="flex items-center gap-2 text-xs font-bold text-ink-muted hover:text-ink uppercase tracking-wider bg-white/5 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="flex items-center gap-2 text-xs font-bold text-ink-muted hover:text-ink bg-[var(--fill-muted)] px-4 py-2 rounded-lg hover:bg-[var(--fill-pressed)] transition-colors"
                   >
                      <ArrowLeft size={16} /> Analizar otro vídeo
                   </button>

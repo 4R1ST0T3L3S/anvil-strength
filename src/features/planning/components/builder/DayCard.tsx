@@ -108,7 +108,7 @@ export const DayCard = memo(function DayCard({
                     aria-expanded={pickerOpen}
                     aria-haspopup="menu"
                     title="Agendar en un día de la semana"
-                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
+                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs transition-colors duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${scheduled
  ? 'bg-brand-quiet font-semibold text-brand-text'
  : 'text-ink-subtle hover:text-ink'
  }`}
@@ -128,7 +128,7 @@ export const DayCard = memo(function DayCard({
                     onClose={() => setPickerOpen(false)}
                     anchorRef={pickerAnchor}
                 >
-                    <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle">
+                    <p className="px-2 pb-1 pt-0.5 text-t-2xs font-semibold text-ink-subtle">
                         Agendar en
                     </p>
                     {orderedWeekdays(firstWeekday).map(d => (
@@ -212,7 +212,7 @@ export const DayCard = memo(function DayCard({
  */
 const LIFT_THEMES: Record<LiftKey, { key: string; accent: string; border: string; bg: string; bar: string; gradient: string }> = {
     ACC: { key: 'ACC', accent: 'text-success', border: 'border-emerald-500/40', bg: 'bg-success-quiet', bar: 'bg-emerald-500', gradient: 'from-emerald-500/15 to-transparent' },
-    SQ: { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-red-500', gradient: 'from-red-500/15 to-transparent' },
+    SQ: { key: 'SQ', accent: 'text-danger-text', border: 'border-red-500/40', bg: 'bg-[var(--danger-quiet)]', bar: 'bg-brand', gradient: 'from-red-500/15 to-transparent' },
     BP: { key: 'BP', accent: 'text-info', border: 'border-sky-500/40', bg: 'bg-info-quiet', bar: 'bg-sky-500', gradient: 'from-sky-500/15 to-transparent' },
     DL: { key: 'DL', accent: 'text-purple-400', border: 'border-purple-500/40', bg: 'bg-purple-500/10', bar: 'bg-purple-500', gradient: 'from-purple-500/15 to-transparent' },
 };

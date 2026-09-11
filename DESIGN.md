@@ -2,16 +2,26 @@
 
 Registro: **producto**. El diseño sirve a la tarea, no es el producto. La
 referencia no es una landing bonita: es que un atleta entre a mitad de serie,
-encuentre lo que busca y salga, y que un coach programe cuatro semanas sin
-pelearse con la interfaz.
+encuentre lo que busca y salga, y que un coach revise diez entrenamientos y
+conteste por chat sin pelearse con la interfaz.
 
-Tema: **oscuro únicamente**. No por estética. El atleta consulta la sesión en
-el gimnasio, a menudo con poca luz; el coach programa por la noche. Un tema
-claro obligaría a mirar una pantalla en blanco en los dos casos.
+Principios (septiembre de 2026):
 
-Estrategia de color: **contenida**. El rojo marca acción primaria, selección
-actual y error. Nunca decora. *Si algo es rojo y no se puede pulsar ni indica
-un estado, sobra.*
+- **Minimalista y silencioso.** Blanco, negro y grises; el rojo de marca es el
+  ÚNICO acento y solo aparece en la acción principal, en la selección actual
+  y en los contadores de lo que espera. *Si algo es rojo y no se puede pulsar
+  ni indica un estado, sobra.*
+- **Dos temas reales.** Oscuro y claro, con los mismos tokens; el atleta
+  elige en Ajustes o sigue al sistema. Ningún componente sabe en qué tema
+  está: pinta con tokens y punto.
+- **Tipografía tranquila.** Una familia, pesos 400–600, títulos en frase.
+  Nada de mayúsculas con tracking, ni cursiva, ni peso 900: eso era el
+  lenguaje anterior y se ha retirado de toda la aplicación.
+- **Móvil primero.** El atleta usa la app de pie, entre series, con una mano.
+  Zona pulsable de 44 px, hojas inferiores, zonas seguras del iPhone y el
+  teclado en cuenta.
+- **Movimiento breve y con sentido.** 150–220 ms, curva de salida exponencial,
+  y `prefers-reduced-motion` lo colapsa todo.
 
 ---
 
@@ -19,110 +29,119 @@ un estado, sobra.*
 
 | Archivo | Contiene |
 |---|---|
-| [src/styles/tokens.css](src/styles/tokens.css) | **Fuente única de verdad.** Color, tipografía, elevación, radios, movimiento, capas. |
-| [tailwind.config.js](tailwind.config.js) | Expone los tokens como utilidades. No define valores propios. |
-| [src/index.css](src/index.css) | La **capa de respuesta** (ver abajo) y los reset globales. |
+| [src/styles/tokens.css](src/styles/tokens.css) | **Fuente única de verdad.** Color (dos temas), tipografía, elevación, radios, movimiento, capas, zona segura. |
+| [tailwind.config.js](tailwind.config.js) | Expone los tokens como utilidades (`token()` con `color-mix` para las opacidades). No define valores propios. |
+| [src/index.css](src/index.css) | La **capa de respuesta**, los reset globales, `.material-bar`. |
 | [src/lib/motion.ts](src/lib/motion.ts) | Espejo en JS de los tokens de movimiento, para framer-motion. |
-| [src/lib/roles.ts](src/lib/roles.ts) | Quién ve qué. Una sola definición de coach / staff / admin. |
-| [src/lib/offlineQueue.ts](src/lib/offlineQueue.ts) | Cola de escritura que sobrevive a quedarse sin cobertura. |
-| [src/components/ui/](src/components/ui) | Primitivas: `Button`, `Modal`, `Panel`, `EmptyState`, `SaveIndicator`. |
+| [src/lib/tema.ts](src/lib/tema.ts) · [src/hooks/useTema.ts](src/hooks/useTema.ts) | El tema: `data-theme` en `<html>`, preferencia guardada, `useTemaEnPantalla()` para quien necesite saber qué se está pintando (el `Toaster`). |
+| [src/components/layout/RegistroMarca.tsx](src/components/layout/RegistroMarca.tsx) | El **registro de marca** de la web pública: restaura los valores antiguos dentro de `.registro-marca` para que la portada no cambie. |
+| [src/components/ui/](src/components/ui) | Primitivas (ver abajo). |
+| [src/components/layout/](src/components/layout) | `DashboardLayout` (barra lateral / barra de pestañas), `PageHeader`, `InicioPanel`. |
 
-**Regla 1:** ningún componente nuevo escribe un hex a mano. Si un valor no está
-en `tokens.css`, o falta un token o el componente se está saliendo del sistema.
+**Regla 1:** ningún componente nuevo escribe un hex ni un `white/5` a mano. Si
+un valor no está en `tokens.css`, o falta un token o el componente se está
+saliendo del sistema. `bg-white/10` se ve en el tema oscuro y desaparece en
+el claro: por eso existen los rellenos (`--fill-*`).
 
 **Regla 2 — el sistema es ADITIVO.** Las utilidades nuevas usan nombres propios
-(`rounded-card`, `text-t-sm`, `ease-snap`) y jamás reutilizan claves que Tailwind
-ya define (`sm`, `md`, `lg`, `out`...). Redefinir esas claves no añade utilidades:
-cambia las 700 que ya hay en la app de una sola vez. La migración va pantalla por
-pantalla, no en un big bang.
+(`rounded-card`, `text-t-sm`, `ease-snap`, `bg-fill-hover`) y jamás reutilizan
+claves que Tailwind ya define.
+
+**Regla 3 — la portada juega con otras reglas.** La web pública (`/`, `/web`,
+`/competiciones`, `/legal/*`, el modal de acceso y el aviso de cookies) va
+envuelta en `.registro-marca`, que devuelve los tokens a sus valores de
+portada. Está fuera del alcance de este sistema a propósito.
 
 ---
 
 ## Color
 
-### Superficies — 4 pasos, no 7 grises
+### Superficies
 
-Antes convivían `#1c1c1c`, `#252525`, `#1a1a1a`, `#1f1f1f`, `#141414`,
-`#181818` y `#151515`: siete valores casi idénticos que no comunicaban nada.
+| Token | Oscuro | Claro | Uso |
+|---|---|---|---|
+| `--surface-sunken` | más oscuro | gris muy claro | Pozos, campos rellenos, letterbox de vídeo |
+| `--surface-canvas` | `oklch(0.155 0.003 286)` | `oklch(0.975 …)` | Fondo de la aplicación |
+| `--surface-sidebar` | un paso más | un paso menos | La barra lateral del ordenador |
+| `--surface-raised` | | | Tarjetas, listas agrupadas, paneles |
+| `--surface-overlay` | | | Menús, popovers, hojas, diálogos |
+
+Cada paso es un nivel de elevación real. Los bordes de tarjeta
+(`--card-border`) y los separadores de lista (`--separator`) son
+transparencias de la tinta, así funcionan sobre cualquier paso y en los dos
+temas.
+
+### Rellenos: los estados
 
 | Token | Uso |
 |---|---|
-| `--surface-sunken` | Pozos, bloques de código, letterbox de vídeo |
-| `--surface-canvas` | Fondo de la aplicación |
-| `--surface-raised` | Tarjetas, paneles, modales |
-| `--surface-overlay` | Menús, popovers, tooltips |
+| `--fill-hover` / `--fill-pressed` | Hover y pulsación sobre cualquier superficie |
+| `--fill-selected` | La pestaña o fila activa |
+| `--fill-input` | Campos de formulario (rellenos, sin borde) |
+| `--fill-muted` | Chips neutros, iconos en su chip, botón secundario |
+| `--fill-strong` | Un relleno con presencia (el pulgar del segmentado) |
 
-Cada paso es un nivel de elevación real. Si dudas entre dos, probablemente el
-componente no necesita elevarse.
+### Materiales
 
-Los bordes son transparencias del blanco (`--border-subtle/default/strong`),
-no grises opacos: así funcionan igual sobre cualquier paso de la rampa.
+`--material-bar` (barra de pestañas y cabeceras pegajosas, con desenfoque de
+fondo en `.material-bar`), `--material-sheet` (hojas) y `--scrim` (el fondo
+de un diálogo). El desenfoque va bajo `@supports`: sin él, un color opaco.
 
-### Tinta — contraste verificado
+### Tinta
 
-Medido contra `--surface-canvas`:
+| Token | Uso |
+|---|---|
+| `--ink` | Titulares, cifras, texto principal |
+| `--ink-muted` | Texto secundario, rótulos de sección |
+| `--ink-subtle` | Metadatos, placeholders — **suelo legible (≥ 4.5:1)** |
+| `--ink-faint` | **Nunca texto.** Chevrons, iconos decorativos, placeholders de cifras grandes |
+| `--ink-inverse` | Texto sobre un fondo de tinta (el botón negro) |
 
-| Token | Contraste | Uso |
-|---|---|---|
-| `--ink` | 21.0:1 | Titulares, cifras, texto principal |
-| `--ink-muted` | 7.0:1 | Texto secundario, labels |
-| `--ink-subtle` | 4.7:1 | Metadatos, placeholders — **suelo legible** |
-| `--ink-faint` | 2.6:1 | **Nunca texto.** Solo iconos decorativos |
+### Marca y semánticos
 
-> El antiguo `text-gray-500`, con **304 usos** en el proyecto, daba **3.4:1** y
-> no alcanzaba el mínimo AA de 4.5:1. Su reemplazo es `text-ink-subtle` o
-> `text-ink-muted`.
+`--brand` con `-hover`, `-active`, `-quiet` (fondo de un chip rojo),
+`-quiet-strong` (hover de ese chip), `-line`, `-ink` (texto sobre rojo) y
+`-text` (el rojo cuando ES el texto). Luminosidad 0,58: es el punto en que
+aguanta texto blanco encima y sigue leyéndose como texto sobre las dos
+superficies. En hover el rojo **se aclara** en el oscuro y se oscurece en el
+claro: siempre se acerca al usuario.
 
-### Marca
+`--success` / `--warning` / `--danger` / `--info`, cada uno con `-quiet`
+(fondo de badge) y `danger` además con `-text` y `-quiet-strong`. Menos
+saturados que el rojo de marca: el error se distingue por contexto e icono.
 
-`--brand` y sus estados. En hover el rojo **se aclara**, no se oscurece: sobre
-fondo oscuro, oscurecer aleja el elemento del usuario en vez de acercarlo.
-
-### Semánticos y esfuerzo
-
-`--success` / `--warning` / `--danger` / `--info`, cada uno con su variante
-`-quiet` para fondos de badge. Están deliberadamente menos saturados que el
-rojo de marca: en una app de fuerza el rojo ya está ocupado por la identidad,
-así que el error se distingue por contexto e icono, no por competir en color.
-
-`--effort-low/mid/high/max` codifica el RPE, que es el dato más leído de la
-app y merece escala propia.
+`--effort-low/mid/high/max` codifica el RPE.
 
 ---
 
 ## Tipografía
 
-Una sola familia: **Plus Jakarta Sans**, cargada desde Google Fonts en
-`index.html` y expuesta como `--font-sans`. El registro de producto no
-necesita pareja display + cuerpo: hay muchos niveles de texto y el contraste
-exagerado entre ellos genera ruido.
+Una familia: **Inter** (cargada en `index.html`) con la pila del sistema
+detrás (`--font-sans`), y `--font-mono` para cifras y código. Peso base
+**400**; `font-synthesis: none` para que ningún peso se invente.
 
-> **Inter nunca llegó a cargarse.** El CSS declaraba `font-family: Inter`
-> pero no había `@font-face` ni enlace en ninguna parte, así que toda la app
-> —portada incluida— venía cayendo a la fuente del sistema. Esa es la razón
-> de que se viera genérica, no la elección de familia.
+| Utilidad | px | Uso |
+|---|---|---|
+| `text-t-2xs` | 11 | Insignias, contadores. **Suelo.** |
+| `text-t-xs` | 12 | Metadatos |
+| `text-t-sm` | 14 | Interfaz |
+| `text-t-base` | 16 | Cuerpo |
+| `text-t-lg` | 18 | Subtítulos |
+| `text-t-xl` | 22 | h3 |
+| `text-t-2xl` | 28 | h2 |
+| `text-title` | 32 | El título grande de pantalla (`PageHeader`, el inicio) |
+| `text-metric` | — | Cifras grandes (pesos, cuenta atrás) |
 
-Plus Jakarta Sans tiene el asta más gruesa y una `a` de doble piso con más
-carácter, aguanta el peso 800 en los titulares en mayúsculas que usa la app
-y trae cifras tabulares, que aquí son obligatorias.
+Reglas:
 
-El peso base es **500**, no 400: sobre fondo oscuro el texto adelgaza
-ópticamente y a 400 esta familia se queda fina de más.
-
-`font-bebas` era una clase muerta —se usaba en 5 ficheros contra una clave
-que nunca existió en `tailwind.config.js`— y ahora apunta a la misma familia,
-para que esos ficheros hereden la fuente real sin tocarlos uno a uno.
-
-Escala **fija en rem** con prefijo `t-` (`text-t-sm`, `text-t-2xl`…), razón ~1.2.
-El prefijo existe para no pisar `text-sm`/`text-xl` de Tailwind. Nada de `clamp()`: la app se consume a DPI
-constante y un titular que encoge dentro de un panel se ve peor, no mejor.
-
-`text-metric` para cifras grandes (pesos, totales, cuenta atrás).
-`font-variant-numeric: tabular-nums` es global: sin él, un peso que pasa de
-97,5 a 100 desplaza la fila entera al re-renderizar.
-
-Suelo de tracking en titulares: **-0.03em**. Por debajo de -0.04em las letras
-se tocan.
+- Títulos en **frase** («Bandeja de entrada»), peso 600, tracking negativo
+  suave (`-0.01em` a `-0.02em`; el suelo es -0.04em).
+- Rótulos de sección: `text-t-sm font-semibold text-ink-muted`. **Sin
+  `uppercase`, sin `tracking-*`, sin `italic`, sin `font-black`.** El
+  codemod de septiembre de 2026 retiró más de 1.400 usos; que no vuelvan.
+- `tabular-nums` es global: un peso que pasa de 97,5 a 100 no desplaza la fila.
+- Nada de `text-[9px] md:text-xs`: 9 px en el móvil es al revés de lo que
+  hace falta.
 
 ---
 
@@ -130,140 +149,98 @@ se tocan.
 
 | Utilidad | px | Uso |
 |---|---|---|
-| `rounded-chip` | 4 | Badges, chips |
-| `rounded-field` | 8 | Inputs, botones |
-| `rounded-card` | 12 | Tarjetas, paneles |
-| `rounded-sheet` | 16 | Modales, hojas |
-| `rounded-pill` | 999 | Avatares, toggles |
+| `rounded-chip` | 6 | Badges, chips, miniaturas |
+| `rounded-field` | 10 | Campos, botones |
+| `rounded-card` | 14 | Tarjetas, listas agrupadas |
+| `rounded-sheet` | 20 | Hojas y diálogos. **Techo.** |
+| `rounded-pill` | 999 | Avatares, interruptores, contadores |
 
-`rounded-sm/md/lg/xl` siguen siendo los de Tailwind y no se han tocado.
-
-Los contenedores topan en **16px**. Los `rounded-[2rem]` y `rounded-[2.5rem]`
-sueltos que había leen como plantilla, no como marca.
+`rounded-3xl` / `rounded-[2rem]` leen como plantilla, no como marca: no se
+usan.
 
 ---
 
 ## Elevación
 
-Sombra **o** borde, nunca los dos a la vez como decoración. Las sombras en
-tema oscuro se apoyan en oscurecer, no en difuminar: los desenfoques grandes
-sobre negro no se ven y solo cuestan pintado.
+Sombra **o** borde, nunca los dos como decoración. `shadow-card` es la sombra
+de una tarjeta en reposo (casi nada en el oscuro, un velo en el claro);
+`shadow-overlay` la de menús y hojas. Los desenfoques grandes sobre negro no
+se ven y solo cuestan pintado.
 
 ---
 
 ## Movimiento
 
 Curva única de salida exponencial: `ease-snap` → `cubic-bezier(0.22, 1, 0.36, 1)`.
-Sin rebote ni elástico — esto es una herramienta de trabajo.
-(`ease-out` y `ease-in-out` siguen siendo los de Tailwind: son claves suyas.)
+Sin rebote ni elástico.
 
 | Token | ms | Uso |
 |---|---|---|
 | `--dur-instant` | 90 | Feedback de pulsación |
-| `--dur-fast` | 150 | Hover, foco, toggles |
-| `--dur-base` | 220 | Paneles, acordeones |
-| `--dur-slow` | 320 | Modales, transición de ruta |
+| `--dur-fast` | 150 | Hover, foco, interruptores, `animate-pop` de un menú |
+| `--dur-base` | 220 | Paneles, acordeones, `animate-tick` del check |
+| `--dur-slow` | 320 | Hojas, transición de ruta |
 
-Reglas:
-
-- El movimiento comunica **estado**. Si una animación se puede quitar sin que
-  el usuario pierda información, sobra.
-- **Sin secuencias orquestadas de carga de página.** El usuario entra a hacer
-  una tarea, no a ver cómo carga la interfaz.
-- El escalonado (`stagger`) es legítimo dentro de **una** lista — series de un
-  ejercicio, atletas del coach — porque ayuda a leer el orden. Aplicar la misma
-  entrada a todas las secciones de una pantalla es reflejo, no diseño.
-- `prefers-reduced-motion` colapsa todas las duraciones a 1ms, y se lee en cada
-  llamada porque la preferencia se puede cambiar con la pestaña abierta.
+- El movimiento comunica **estado**. Si se puede quitar sin perder
+  información, sobra.
+- Sin secuencias orquestadas de carga: el usuario entra a hacer una tarea.
+- El escalonado es legítimo dentro de **una** lista.
+- `prefers-reduced-motion` colapsa todas las duraciones a 1 ms en
+  `tokens.css`, y framer-motion lo lee en cada llamada.
 
 ### La capa de respuesta
 
-Seis reglas globales en [`src/index.css`](src/index.css) que hacen más por la
-sensación de velocidad que cualquier animación de pantalla, porque se aplican
-a toda la interfaz sin tocar un componente:
-
-| Regla | Qué arregla |
-|---|---|
-| `touch-action: manipulation` | El retardo de 300ms del navegador móvil. En una sesión de doce series son casi cuatro segundos de espera pura. |
-| `-webkit-tap-highlight-color: transparent` | El recuadro azul del sistema, que tapa el feedback propio. |
-| `:active { scale(0.97) }` | Acuse de recibo en el mismo frame, sin depender de la red. Escape: `data-no-press`. |
-| `font-size: max(16px, 1em)` en campos, en móvil | Safari amplía la página al enfocar un campo pequeño **y no vuelve atrás**. |
-| `:focus-visible` y no `:focus` | Anillo para quien navega con teclado, nada para quien usa el ratón. |
-| `-webkit-overflow-scrolling: touch` | Inercia de scroll en los paneles con scroll propio. |
-
-La velocidad que percibe una persona no es la que mide un cronómetro: es
-cuánto tarda la interfaz en acusar recibo. Una app que responde en 16ms y
-termina en 400 se siente más rápida que una que calla y termina en 200.
+Reglas globales en [`src/index.css`](src/index.css): `touch-action:
+manipulation`, sin resaltado de toque del sistema, `:active { scale(0.97) }`
+(escape: `data-no-press`), campos a `max(16px, 1em)` en móvil para que Safari
+no amplíe, `:focus-visible` y no `:focus`, inercia de scroll.
 
 ### Guardar sin conexión
 
-El gimnasio es un sótano de hormigón. Ninguna escritura del atleta va directa
-a la red: pasa por [`writeQueue`](src/lib/offlineQueue.ts), que persiste en
-`localStorage`, funde los cambios de una misma fila y reintenta al recuperar
-señal, al volver a la pestaña o en el siguiente arranque.
-
-`SaveIndicator` pinta ese estado con una regla: **el silencio es el estado
-bueno**. Solo aparece cuando acaba de guardar (y se va solo), cuando hay algo
-pendiente, o cuando no hay conexión — y ahí dice que el dato está a salvo en
-el dispositivo, en vez de asustar.
+Ninguna escritura del atleta va directa a la red: pasa por
+[`writeQueue`](src/lib/offlineQueue.ts). `SaveIndicator` solo aparece cuando
+hay algo que decir.
 
 ---
 
 ## Móvil
 
-El atleta usa esta app **de pie, entre series, con una mano y el móvil
-moviéndose**. No es un escritorio estrecho: es el contexto de uso principal.
+### Zona pulsable: 44 px
 
-### Zona pulsable: 44px
+Cualquier control mide 44 px de alto como mínimo; cuando el ancho no da, se
+estira la zona sensible con un pseudo-elemento.
 
-Cualquier control mide **44px de alto como mínimo**. Cuando el ancho no da
-—una fila de series en un móvil de 320px—, se estira la zona sensible con un
-pseudo-elemento en vez de engordar el botón:
+### Zona segura
 
-```
-before:absolute before:-inset-y-1 before:-left-1 before:-right-2.5
-```
+`index.html` lleva `viewport-fit=cover`; `pb-safe` y
+`env(safe-area-inset-bottom)` en toda barra o pie pegado abajo. La barra de
+pestañas mide `--tabbar-alto` (70 px; 0 a partir de 1024 px) y el contenido
+reserva ese alto más la zona segura para que nada quede debajo.
 
-Así el objetivo crece sin robarle sitio a las casillas donde se escribe.
+### La barra de pestañas: cuatro + «Más»
 
-> El registro de series tenía botones de 28 y 32px. Cada fallo de pulsación
-> ahí son tres segundos y una serie sin marcar.
+En el móvil hay **cuatro accesos** y un quinto, «Más», que abre una hoja con
+todo lo demás (secciones, tema, web, salir). En el ordenador, barra lateral
+de 248 px con la marca, el conmutador de panel y la cuenta. Los accesos
+llevan `badge` con lo que espera (bandeja, mensajes) y `hideOnMobileBar` los
+manda a «Más». `shortLabel` cuando una etiqueta no cabe.
 
-### Zona segura del dispositivo
+### Teclado y hojas
 
-`index.html` lleva **`viewport-fit=cover`**. Sin él, `env(safe-area-inset-*)`
-vale cero siempre y todas las reservas de espacio de la app no reservan nada:
-la barra de pestañas queda debajo del indicador de inicio del iPhone, donde el
-sistema se come el toque. Se nota sobre todo con la app instalada como PWA.
-
-`pb-safe` existe como utilidad (`spacing.safe` en `tailwind.config.js`). Se
-usaba desde hacía tiempo **sin estar definida en ninguna parte**.
-
-### Suelo de texto: 11px
-
-`text-t-2xs`. Y nunca `text-[9px] md:text-xs`: eso da 9px en el móvil y 12 en
-el escritorio, justo al revés de lo que hace falta. La pantalla pequeña es la
-que se mira a un brazo de distancia.
-
-### Cinco pestañas
-
-La barra inferior topa en cinco. Lo que sobra lleva `hideOnMobileBar` y
-aparece en el menú de cuenta, sin perder ningún acceso. Si una etiqueta no
-cabe en 73px, se le pone `shortLabel` a mano — recortar con puntos
-suspensivos no ayuda, "Competi…" no dice más que "Competir".
+Los diálogos entran como **hoja inferior** en el móvil; el pie de acciones
+se apila en columna inversa (la principal arriba, al alcance del pulgar) y
+respeta la zona segura. El compositor del chat crece con el texto y se queda
+sobre el teclado.
 
 ### Cómo se comprueba
 
-`/dev/movil` monta las pantallas críticas con datos falsos, solo en
-desarrollo (`import.meta.env.DEV`, así que el empaquetador la borra del build).
-Existe porque revisar la maquetación del registro de series a 375px obligaba
-a tener cuenta, datos y sesión: sin ella, ajustar espaciados es adivinar.
+`/dev/movil` monta las pantallas críticas con datos falsos; `/dev/sistema`
+enseña todas las primitivas en todos los estados y en los dos temas;
+`/dev/piezas`, las piezas sueltas. Solo en desarrollo.
 
 ---
 
 ## Capas
-
-Escala semántica, nunca `z-index: 9999`:
 
 `sticky 100` → `dropdown 200` → `backdrop 300` → `modal 400` → `toast 500` → `tooltip 600`
 
@@ -271,119 +248,49 @@ Escala semántica, nunca `z-index: 9999`:
 
 ## Primitivas
 
-### `Button`
-
-Cuatro variantes: `primary`, `secondary` (por defecto), `ghost`, `danger`.
-Tres tamaños. Los siete estados obligatorios están cubiertos, incluido
-`loading`, que mantiene el contenido en el flujo y solo lo hace invisible —
-así el botón no cambia de ancho al pulsar guardar.
+| Componente | Para qué |
+|---|---|
+| `Button` | `primary` (rojo, uno por pantalla), `secondary` (relleno), `tinted` (rojo suave), `ghost`, `danger`. Tres tamaños, `loading` sin cambiar de ancho, `type="button"` por defecto. |
+| `IconButton` | Circular, `tono` neutro/marca/peligro/relleno, `sm`/`md`. Siempre con `aria-label`. |
+| `Field` | Campos rellenos (`--fill-input`), chevron propio en los `select`, `controlBase(hayError)` para reutilizar el estilo en un `input` suelto. |
+| `SegmentedControl` | Filtros de una pantalla (todo / sin leer / archivados). Con `insignia` por segmento. |
+| `Switch` / `SwitchRow` | Interruptores de ajustes, con título y descripción. Se aplican al momento: sin botón de guardar. |
+| `Badge` / `Contador` / `Punto` | Estado en texto, número de pendientes, «sin leer». |
+| `Avatar` | Iniciales si no hay foto; `anillo` para apilarlos. |
+| `List` / `ListRow` | Listas agrupadas al estilo de Ajustes: icono o avatar, título, subtítulo, valor, chevron; separadores que empiezan donde empieza el texto. |
+| `PageHeader` / `Contenido` | Título grande, subtítulo, «atrás», acciones; `Contenido` fija el ancho de lectura. |
+| `Tabs` | Pestañas de una pantalla, indicador en tinta (no en rojo). |
+| `Modal` | Portal, trampa de foco, Escape, hoja inferior en móvil, `--scrim`. |
+| `AnchoredMenu` + `MenuItem` / `MenuSeparador` / `MenuEtiqueta` | Menús anclados a un botón. |
+| `Card` / `Panel` | Superficie elevada y panel plano. Nunca uno dentro de otro. |
+| `EmptyState` | `empty`, `filter`, `error`, `done` («todo revisado»). |
+| `Skeleton` | Carga sin salto de layout. |
+| `NotificationBell` | La campana: contador, panel con icono por categoría, navegación al pulsar. |
 
 **Un solo `primary` por pantalla.** Dos primarios significan que la pantalla
 no ha decidido qué quiere que hagas.
 
-`danger` es visualmente distinto de `primary` pese a compartir familia de
-color: borrar un bloque de entrenamiento no puede parecerse a guardarlo.
-
-### `Modal`
-
-Portal + trampa de foco + devolución del foco al cerrar + Escape + bloqueo de
-scroll con compensación de la barra (sin salto de layout).
-
-En móvil entra como **hoja inferior**: el pulgar está abajo, y un diálogo
-centrado obliga a estirar la mano para cerrarlo.
-
-### `Panel`
-
-Deliberadamente no se llama `Card`. Empieza **plano** (`tone="flat"`) y solo se
-eleva cuando hay una razón. Nunca un panel dentro de otro panel: si hace falta,
-la jerarquía está mal.
-
-### `EmptyState`
-
-Tres registros, porque no son lo mismo:
-
-- `empty` — todavía no hay datos. **Enseña la interfaz** y propone el primer
-  paso. "Aún no tienes bloques" por sí solo no sirve de nada.
-- `filter` — hay datos, el filtro los oculta. La salida es limpiar el filtro.
-- `error` — algo falló. La salida es reintentar, y se dice qué pasó.
-
 ---
 
-## Migración
+## Pantallas que fijan el patrón
 
-Los alias `anvil-black` / `anvil-red` / `anvil-gray` siguen en
-`tailwind.config.js` para no romper las ~700 utilidades ya escritas.
-`anvil-red` ya apunta a `--brand`.
-
-Se van pantalla por pantalla en F5 y se borran los alias al terminar.
-
-Orden de sustitución al migrar una pantalla:
-
-1. `text-gray-500` → `text-ink-subtle` (o `text-ink-muted` si es texto real)
-2. `text-gray-400` → `text-ink-muted`
-3. `bg-[#1c1c1c]` → `bg-surface-canvas`; `bg-[#252525]` → `bg-surface-raised`
-4. `bg-red-500` / `bg-red-600` / `bg-red-700` → `bg-brand`
-5. `rounded-2xl` / `rounded-[2rem]` → `rounded-card` o `rounded-sheet`
-6. `ease-out` → `ease-snap` en transiciones nuevas
-7. `<button className="...">` → `<Button variant=…>`
-8. `<img>` → `<SafeImage>` en cualquier foto que venga de datos
-
----
-
-## La portada juega con otras reglas
-
-Todo lo anterior describe la **aplicación**: tema oscuro y color contenido,
-porque ahí el diseño sirve a una tarea.
-
-La web pública es otro registro. Ahí el diseño **es** el producto, y su
-trabajo es que alguien que no nos conoce decida quedarse. Por eso tiene
-permitidas dos cosas que dentro de la app serían un error:
-
-| En la app | En la portada |
-|---|---|
-| Rojo solo en la acción primaria | Folds enteros drenados en rojo |
-| Tema oscuro únicamente | Alterna fondo oscuro y blanco (`--fold-*`) |
-| Escala de texto fija en rem | Display fluido con `clamp()` (`text-d-sm/md/lg`) |
-| Sin secuencias de entrada | Entrada orquestada en la primera pantalla |
-| Botones planos | Botón con canto físico que se hunde al pulsar |
-
-Los valores viven en la **sección 10** de `tokens.css`, separados y con
-prefijo propio para que no se cuelen en la rampa de la aplicación. Las piezas,
-en [`src/features/landing/components/landingKit.tsx`](src/features/landing/components/landingKit.tsx):
-`Fold`, `PressButton`, `Reveal` y `StaggerList`.
-
-El claro es un blanco **neutro** (croma 0), no un crema. El crema tibio es el
-fondo por defecto de medio internet generado con IA; un blanco limpio al lado
-del rojo de marca no se parece a nada.
-
-El techo de tamaño del display es **6rem** y el suelo de tracking sigue siendo
-**-0.03em**, igual que en la app.
+- **Inicio** (`InicioPanel`): título grande, fecha, dos columnas en el
+  ordenador sin scroll, una en el móvil. Tarjeta principal roja SOLO cuando
+  es la acción del día (entrenar; revisar si hay pendientes), neutra si no.
+- **Bandeja de entrada** (`features/inbox`): lista de atletas con contador,
+  tarjetas por entrenamiento con todos los datos, un único botón «Marcar como
+  revisado» (manual, nunca al abrir) y el feedback en hilo.
+- **Mensajes** (`features/chat`): dos columnas en el ordenador, un hilo a
+  pantalla completa en el móvil; burbujas sin borde, ✓ enviado / ✓✓
+  entregado (nunca «leído»), compositor con adjuntos y voz.
+- **Ajustes → Avisos** (`NotificationSettings`): `List` + `SwitchRow`, con el
+  estado real del permiso del navegador.
 
 ---
 
 ## Imágenes
 
 Usa siempre [`SafeImage`](src/components/ui/SafeImage.tsx) para fotos que
-provengan de datos (atletas, coaches, logros, avatares de la BD).
-
-Motivo: el `rewrite` de SPA devolvía `index.html` para toda ruta no encontrada,
-imágenes incluidas. Una foto que falta daba **200 con `text/html`**, no 404: el
-navegador dejaba un hueco sin error en consola ni en la pestaña de red.
-`vercel.json` ya excluye las extensiones de fichero del rewrite para que vuelvan
-a dar 404, y `SafeImage` se encarga de que el hueco se vea intencionado.
-
-### No simplifiques el `rewrite` de `vercel.json`
-
-```
-/((?!.*\.(?:jpg|jpeg|png|webp|...|woff2?)$).*)
-```
-
-Ese lookahead negativo es justo lo que hace que un asset ausente falle **de
-forma visible**. Cambiarlo por un `/(.*)` cómodo devuelve el bug de arriba: la
-imagen no sale y no hay ni un error que lo delate.
-
-La explicación vivía como una clave `_comment_rewrites` dentro del propio
-`vercel.json`, pero Vercel valida ese archivo contra un esquema cerrado y el
-despliegue fallaba con *"should NOT have additional property"*. **JSON no
-admite comentarios y `vercel.json` tampoco admite claves inventadas**: lo que
-haya que explicar de ese archivo se explica aquí.
+provengan de datos. `vercel.json` excluye las extensiones de fichero del
+rewrite para que un asset ausente dé 404 visible; no simplifiques ese
+`rewrite`.

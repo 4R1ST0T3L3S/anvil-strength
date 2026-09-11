@@ -133,7 +133,7 @@ export function SeasonPhasesEditor({
     return (
         <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4 md:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="flex items-center gap-2 text-t-lg font-black uppercase tracking-display text-ink">
+                <h3 className="flex items-center gap-2 text-t-lg font-semibold tracking-display text-ink">
                     <CalendarRange size={18} className="text-brand-text" aria-hidden="true" />
                     Fases de la temporada
                 </h3>
@@ -260,10 +260,10 @@ function FilaDeFase({
                                 if (v && v !== fase.name) onEditar({ name: v });
                             }}
                             aria-label="Nombre de la fase"
-                            className="min-w-0 flex-1 rounded-field border border-transparent bg-transparent px-1.5 py-1 text-t-sm font-black uppercase tracking-wide text-ink transition-colors hover:border-[var(--border-default)] focus:border-brand"
+                            className="min-w-0 flex-1 rounded-field border border-transparent bg-transparent px-1.5 py-1 text-t-sm font-semibold text-ink transition-colors hover:border-[var(--border-default)] focus:border-brand"
                         />
                         {estado === 'actual' && (
-                            <span className="shrink-0 rounded-chip bg-brand px-2 py-0.5 text-t-2xs font-black uppercase tracking-wide text-brand-ink">
+                            <span className="shrink-0 rounded-chip bg-brand px-2 py-0.5 text-t-2xs font-semibold text-brand-ink">
                                 Ahora
                             </span>
                         )}

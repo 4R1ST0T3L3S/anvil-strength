@@ -326,7 +326,7 @@ function Bench() {
     return (
         <div className="min-h-[100dvh] bg-surface-canvas p-4 text-ink">
             <div className="mx-auto max-w-4xl">
-                <h1 className="text-t-lg font-black">Banco de medición del bucle de análisis</h1>
+                <h1 className="text-t-lg font-semibold">Banco de medición del bucle de análisis</h1>
                 <p className="mt-1 text-t-2xs text-ink-subtle">
                     Genera un vídeo real de {WIDTH}×{HEIGHT} a {FPS} fps y cronometra las tres etapas
                     por separado. El coste de <code>seek</code> es un techo: el WebM de MediaRecorder

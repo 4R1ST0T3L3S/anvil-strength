@@ -463,7 +463,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     empujaba a la etiqueta de sección fuera de la tarjeta en un
                     móvil de 320px en vez de que fuera el nombre el que cediera. */}
                 <div className="flex items-center gap-2 mb-3">
-                    <h4 className="min-w-0 flex-1 truncate font-black text-gray-200 text-base leading-tight uppercase tracking-tight">{exerciseName}</h4>
+                    <h4 className="min-w-0 flex-1 truncate font-semibold text-ink text-base leading-tight tracking-tight">{exerciseName}</h4>
 
                     {/* ENLACE DE VÍDEO DE LA FICHA DEL EJERCICIO.
                         Era un icono azul y nada más: la columna existía, el
@@ -486,7 +486,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     {sessionExercise.vbt_file_url && (
                         <button
                             onClick={() => onOpenVbtChart(sessionExercise.vbt_file_url!, exerciseName)}
-                            className="shrink-0 bg-success-quiet text-success border border-success/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-green-500/20 transition-colors"
+                            className="shrink-0 bg-success-quiet text-success border border-success/20 px-2 py-0.5 rounded text-t-2xs font-bold flex items-center gap-1 hover:bg-success-quiet transition-colors"
                             title="Ver Gráfica VBT"
                         >
                             <Activity size={12} />
@@ -529,7 +529,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     aria-pressed={active}
                                     title={x.hint}
                                     className={cn(
-                                        'shrink-0 rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                        'shrink-0 rounded-chip border px-1.5 py-0.5 text-t-2xs font-bold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                                         active
                                             ? SECTION_STYLE[x.key].active
                                             : 'border-transparent text-ink-faint hover:border-[var(--border-default)] hover:text-ink'
@@ -560,7 +560,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     && (sessionExercise.section ?? 'main') !== 'warmup'
                     && (sessionExercise.section ?? 'main') !== 'cardio' && (
                         <div className="mb-3 flex items-center gap-2">
-                            <span className="shrink-0 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                            <span className="shrink-0 text-t-2xs font-bold text-ink-subtle">
                                 Apoya a
                             </span>
                             {/* `appearance-none` + fondo SÓLIDO (nunca
@@ -580,7 +580,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     ?? 'Sin clasificar: sus series no cuentan en ningún grupo de accesorios'
                                 }
                                 className={cn(
-                                    'min-w-0 cursor-pointer appearance-none rounded-chip border bg-surface-sunken px-2 py-0.5 text-t-2xs font-bold uppercase tracking-wide transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
+                                    'min-w-0 cursor-pointer appearance-none rounded-chip border bg-surface-sunken px-2 py-0.5 text-t-2xs font-bold transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
                                     sessionExercise.accessory_class
                                         ? 'border-[var(--border-default)] text-ink-muted'
                                         : 'border-dashed border-[var(--border-default)] text-ink-faint hover:text-ink'
@@ -601,7 +601,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                     primero del grupo y vale para todos, que es como se escribe
                     "Circuito A · 3 rondas" en una hoja de papel. */}
                 {(sessionExercise.section ?? 'main') === 'warmup' && isChained && (
-                    <label className="mb-3 flex items-center gap-2 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                    <label className="mb-3 flex items-center gap-2 text-t-2xs font-bold text-ink-subtle">
                         Rondas del circuito
                         <input
                             type="number"
@@ -652,18 +652,18 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             onChange={(e) => handleVariantChange(e.target.value)}
                             onBlur={handleVariantBlur}
                             placeholder="Variante (ej: Tempo 3&quot; · Gomas media)"
-                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-brand rounded-lg py-1.5 px-3 placeholder-gray-600 transition-colors font-bold"
+                            className="w-full bg-black/20 text-xs text-center text-brand-text border border-subtle focus:border-brand rounded-lg py-1.5 px-3 placeholder:text-ink-subtle transition-colors font-bold"
                         />
                         {pendingModifier ? (
                             <div className="flex items-center gap-2 justify-center">
-                                <span className="text-t-2xs font-black uppercase text-ink-subtle">{pendingModifier}:</span>
+                                <span className="text-t-2xs font-semibold text-ink-subtle">{pendingModifier}:</span>
                                 <input
                                     autoFocus
                                     type="text"
                                     value={modifierValue}
                                     onChange={(e) => setModifierValue(e.target.value)}
                                     placeholder={VARIANT_MODIFIERS.find(m => m.key === pendingModifier)?.prompt}
-                                    className="w-32 bg-black/40 text-xs text-center text-ink border border-brand/40 rounded-lg py-1 px-2 placeholder-gray-600"
+                                    className="w-32 bg-surface-sunken text-xs text-center text-ink border border-brand/40 rounded-lg py-1 px-2 placeholder:text-ink-subtle"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') applyModifier(pendingModifier, modifierValue);
                                         if (e.key === 'Escape') { setPendingModifier(null); setModifierValue(''); }
@@ -671,7 +671,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 />
                                 <button
                                     onClick={() => applyModifier(pendingModifier, modifierValue)}
-                                    className="text-t-2xs font-black uppercase text-brand-text hover:text-ink transition-colors"
+                                    className="text-t-2xs font-semibold text-brand-text hover:text-ink transition-colors"
                                 >
                                     OK
                                 </button>
@@ -682,7 +682,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     <button
                                         key={mod.key}
                                         onClick={() => setPendingModifier(mod.key)}
-                                        className="text-t-2xs font-black uppercase tracking-wide px-2 py-0.5 rounded bg-white/5 text-ink-subtle hover:bg-brand/10 hover:text-brand-text border border-transparent hover:border-brand/30 transition-colors"
+                                        className="text-t-2xs font-semibold px-2 py-0.5 rounded bg-[var(--fill-muted)] text-ink-subtle hover:bg-brand/10 hover:text-brand-text border border-transparent hover:border-brand/30 transition-colors"
                                     >
                                         + {mod.key}
                                     </button>
@@ -701,7 +701,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         igual entre todas sus series. */}
                     <div className="flex flex-wrap items-end justify-center gap-2">
                         <div className="w-28">
-                            <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Descanso</div>
+                            <div className="mb-1 text-center text-t-2xs text-ink-subtle">Descanso</div>
                             <RestInput
                                 seconds={sessionExercise.rest_seconds ?? null}
                                 onChange={handleRestChange}
@@ -725,7 +725,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             el RPE. */}
                         {isCardio ? (
                             <div className="w-32">
-                                <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">FC objetivo</div>
+                                <div className="mb-1 text-center text-t-2xs text-ink-subtle">FC objetivo</div>
                                 <HrTargetInput
                                     metrics={sessionExercise.sets[0]?.vbt_metrics ?? null}
                                     onCommit={(patch) => commitHrTarget(patch)}
@@ -733,7 +733,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                             </div>
                         ) : (
                             <div className="w-28">
-                                <div className="mb-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">Volumen</div>
+                                <div className="mb-1 text-center text-t-2xs text-ink-subtle">Volumen</div>
                                 <button
                                     onClick={() => setMusclesOpen(true)}
                                     title="Elegir a qué músculos cuenta este ejercicio como volumen directo e indirecto"
@@ -767,7 +767,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                         onChange={(e) => handleNotesChange(e.target.value)}
                         onBlur={handleNotesBlur}
                         placeholder="Notas técnicas..."
-                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-brand focus:text-gray-200 resize-none h-[40px] leading-tight transition-colors"
+                        className="w-full bg-black/20 text-xs text-ink-muted text-center border border-subtle rounded-lg p-2 focus:border-brand focus:text-ink resize-none h-[40px] leading-tight transition-colors"
                     />
                 </div>
             </div>
@@ -775,7 +775,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Sets Table */}
             <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-subtle">
                 {/* Header Row */}
-                <div className="mb-2 grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] items-center gap-2 px-1 text-center text-t-2xs uppercase tracking-wide text-ink-subtle">
+                <div className="mb-2 grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] items-center gap-2 px-1 text-center text-t-2xs text-ink-subtle">
                     <span>Series</span>
                     {/* "Intervalos" y no "Reps" en cardio: es lo que de verdad
                         cuenta esa cifra en "10 intervalos de 30 s" — ver la
@@ -800,7 +800,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 : 'Las series llevan unidades distintas. Elige una para igualarlas todas.'
                         }
                         className={cn(
-                            'w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs uppercase tracking-wide transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
+                            'w-full cursor-pointer appearance-none rounded-chip border border-transparent bg-transparent py-0.5 text-center text-t-2xs transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
                             metricaComun ? 'text-ink-subtle' : 'text-brand-text'
                         )}
                     >
@@ -898,7 +898,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     aria-label={`Unidad de la serie ${setIndex + 1}`}
                                     title={metricOptions.find(m => m.key === metricaDeEstaSerie)?.hint}
                                     className={cn(
-                                        'w-[34px] shrink-0 cursor-pointer appearance-none rounded border border-transparent bg-transparent py-1 text-center text-t-2xs uppercase transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
+                                        'w-[34px] shrink-0 cursor-pointer appearance-none rounded border border-transparent bg-transparent py-1 text-center text-t-2xs transition-colors duration-fast ease-snap hover:border-[var(--border-default)] hover:text-ink focus:border-brand',
                                         metricaComun === null ? 'font-bold text-brand-text' : 'text-ink-faint'
                                     )}
                                 >
@@ -965,7 +965,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                 <div className="mt-2 flex gap-2">
                     <button
                         onClick={() => onAddSet(sessionExercise.id)}
-                        className="flex flex-1 items-center justify-center gap-1.5 rounded-field bg-white/5 py-2 text-t-xs font-medium text-ink-subtle transition-colors duration-fast ease-snap hover:bg-white/10 hover:text-ink active:scale-95"
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-field bg-[var(--fill-muted)] py-2 text-t-xs font-medium text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--fill-pressed)] hover:text-ink active:scale-95"
                     >
                         <Plus size={12} aria-hidden="true" /> Añadir serie
                     </button>
@@ -1046,7 +1046,7 @@ function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
 
     return (
         <div className="mt-3 rounded-card border border-[var(--success-line,var(--border-subtle))] bg-[var(--success-quiet)] px-3 py-2">
-            <p className="mb-1.5 flex items-center gap-1.5 text-t-2xs font-black uppercase tracking-widest text-success">
+            <p className="mb-1.5 flex items-center gap-1.5 text-t-2xs font-semibold text-success">
                 <Check size={10} aria-hidden="true" />
                 Registrado · {done.length} {done.length === 1 ? 'serie' : 'series'}
             </p>
@@ -1093,7 +1093,7 @@ function ExecutedSummary({ sets }: { sets: TrainingSet[] }) {
                                 <span className="text-ink-subtle">{set.vbt_mean_velocity} m/s</span>
                             )}
                             {set.notes?.trim() && (
-                                <span className="min-w-0 truncate italic text-ink-subtle" title={set.notes}>
+                                <span className="min-w-0 truncate text-ink-subtle" title={set.notes}>
                                     “{set.notes.trim()}”
                                 </span>
                             )}
@@ -1337,9 +1337,9 @@ function SetTechniqueEditor({
                                     // eso, marcar una técnica por error no
                                     // tendría deshacer.
                                     onClick={() => onUpdateSet(set.id, 'set_type', on ? null : t.key)}
-                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold transition-colors duration-fast ease-snap ${on
  ? 'bg-warning text-[var(--surface-sunken)]'
- : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
  }`}
                                 >
                                     {t.short}
@@ -1359,9 +1359,9 @@ function SetTechniqueEditor({
                                     key={tag}
                                     title={`Encadenar con los ejercicios marcados ${tag} en este día`}
                                     onClick={() => onUpdateSet(set.id, 'group_tag', on ? null : tag)}
-                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-black uppercase tracking-wide transition-colors duration-fast ease-snap ${on
+                                    className={`rounded-chip px-1.5 py-0.5 text-t-2xs font-semibold transition-colors duration-fast ease-snap ${on
  ? 'bg-info text-[var(--surface-sunken)]'
- : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
  }`}
                                 >
                                     {tag}

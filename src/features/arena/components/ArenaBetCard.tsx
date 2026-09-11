@@ -34,34 +34,34 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
         <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="group relative bg-surface-sunken border border-subtle rounded-[2rem] overflow-hidden hover:border-brand/30 transition-colors duration-slow shadow-2xl"
+            className="group relative bg-surface-sunken border border-subtle rounded-card overflow-hidden hover:border-brand/30 transition-colors duration-slow shadow-overlay"
         >
             {/* Header / Type Badge */}
             <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 flex items-center gap-2">
                 <div className="p-1.5 md:p-2 bg-brand/10 rounded-lg text-brand-text border border-brand/20 shadow-[0_0_15px_rgba(220,38,38,0.2)]">
                     {getIcon()}
                 </div>
-                <span className="text-t-2xs font-black uppercase tracking-[0.2em] text-ink-subtle bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-subtle">
+                <span className="text-t-2xs font-semibold text-ink-subtle bg-surface-sunken backdrop-blur-md px-3 py-1.5 rounded-full border border-subtle">
                     {getTypeLabel()}
                 </span>
             </div>
 
             {/* Main Content Area */}
             <div className="p-6 md:p-8 pt-24 md:pt-28">
-                <h3 className="text-lg md:text-2xl font-black uppercase italic text-ink tracking-tighter mb-2 group-hover:text-brand-text transition-colors leading-tight">
+                <h3 className="text-lg md:text-2xl font-semibold text-ink tracking-tight mb-2 group-hover:text-brand-text transition-colors leading-tight">
                     {bet.title}
                 </h3>
                 {bet.description && (
-                    <p className="text-ink-subtle text-t-2xs md:text-t-xs font-bold uppercase tracking-widest mb-6">
+                    <p className="text-ink-subtle text-t-2xs md:text-t-xs font-bold mb-6">
                         {bet.description}
                     </p>
                 )}
 
                 {/* Pool Display */}
-                <div className="flex items-center gap-2 mb-8 bg-black/40 rounded-xl px-4 py-3 border border-subtle w-fit">
+                <div className="flex items-center gap-2 mb-8 bg-surface-sunken rounded-xl px-4 py-3 border border-subtle w-fit">
                     <TrendingUp size={14} className="text-warning" />
-                    <span className="text-t-2xs font-black text-ink-subtle uppercase tracking-widest">Bote Total:</span>
-                    <span className="text-sm font-black text-warning">{totalPool.toLocaleString()} AC</span>
+                    <span className="text-t-2xs font-semibold text-ink-subtle">Bote Total:</span>
+                    <span className="text-sm font-semibold text-warning">{totalPool.toLocaleString()} AC</span>
                 </div>
 
                 {/* Options Grid or Prediction Button */}
@@ -69,14 +69,14 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                     <button
                         onClick={() => bet.status === 'open' && onBetClick(bet, null)}
                         disabled={bet.status !== 'open'}
-                        className={`w-full py-6 rounded-[2rem] border-2 border-dashed transition-[background-color,border-color,color,opacity] duration-slow flex flex-col items-center gap-2 ${
+                        className={`w-full py-6 rounded-card border-2 border-dashed transition-[background-color,border-color,color,opacity] duration-slow flex flex-col items-center gap-2 ${
  bet.status === 'open'
  ? 'border-yellow-500/30 bg-yellow-500/5 hover:bg-warning-quiet hover:border-yellow-500/50 text-warning'
- : 'border-subtle bg-black/40 text-ink-subtle opacity-50 cursor-not-allowed'
+ : 'border-subtle bg-surface-sunken text-ink-subtle opacity-50 cursor-not-allowed'
  }`}
                     >
                         <TrendingUp size={24} />
-                        <span className="text-sm font-black uppercase italic tracking-tighter">
+                        <span className="text-sm font-semibold tracking-tight">
                             {bet.status === 'open' ? 'REALIZAR PREDICCIÓN' : 'PREDICCIONES CERRADAS'}
                         </span>
                         
@@ -86,14 +86,14 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                     e.stopPropagation();
                                     onAddToSlip(bet, null);
                                 }}
-                                className="mt-4 p-2 bg-white/5 hover:bg-white/10 text-ink-muted hover:text-ink rounded-xl transition-colors border border-subtle flex items-center gap-2 text-t-2xs font-black uppercase tracking-widest"
+                                className="mt-4 p-2 bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink rounded-xl transition-colors border border-subtle flex items-center gap-2 text-t-2xs font-semibold"
                             >
                                 <Plus size={14} /> Añadir al boleto
                             </button>
                         )}
 
                         {bet.status === 'resolved' && bet.target_value !== undefined && (
-                            <div className="mt-2 bg-yellow-500 text-black px-4 py-1 rounded-full text-xs font-black">
+                            <div className="mt-2 bg-yellow-500 text-black px-4 py-1 rounded-full text-xs font-semibold">
                                 RESULTADO: {bet.target_value}
                             </div>
                         )}
@@ -109,10 +109,10 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                     key={option.id}
                                     className={`relative group/option p-5 rounded-2xl border transition-[background-color,border-color,opacity,transform] duration-slow overflow-hidden ${
  bet.status === 'open' 
- ? 'bg-white/5 border-line hover:bg-white/10 hover:scale-[1.02] active:scale-95' 
+ ? 'bg-[var(--fill-muted)] border-line hover:bg-[var(--fill-pressed)] hover:scale-[1.02] active:scale-95' 
  : isWinner 
- ? 'bg-green-500/20 border-green-500/50 grayscale-0' 
- : 'bg-black/40 border-subtle opacity-50 grayscale'
+ ? 'bg-success-quiet border-green-500/50 grayscale-0' 
+ : 'bg-surface-sunken border-subtle opacity-50 grayscale'
  }`}
                                 >
                                     {/* Percentage bar background */}
@@ -123,11 +123,11 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
 
                                     <div className="relative z-10 flex flex-col items-center text-center gap-2">
                                         {isWinner && <Trophy size={16} className="text-warning mb-1" />}
-                                        <span className="text-xs font-black uppercase italic tracking-tight text-ink group-hover/option:text-brand-text transition-colors">
+                                        <span className="text-xs font-semibold tracking-tight text-ink group-hover/option:text-brand-text transition-colors">
                                             {option.name}
                                         </span>
-                                        <span className="text-lg font-black text-white/40 group-hover/option:text-ink transition-colors mb-2">
-                                            {option.total_pool} <span className="text-t-2xs italic">AC</span>
+                                        <span className="text-lg font-semibold text-ink-subtle group-hover/option:text-ink transition-colors mb-2">
+                                            {option.total_pool} <span className="text-t-2xs">AC</span>
                                         </span>
                                         
                                         <div className="flex gap-2 w-full">
@@ -136,7 +136,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                                     e.stopPropagation();
                                                     onBetClick(bet, option);
                                                 }}
-                                                className="flex-1 py-3 px-4 bg-white/5 hover:bg-brand text-ink font-black text-t-2xs uppercase tracking-widest rounded-xl transition-colors border border-subtle hover:border-brand shadow-lg"
+                                                className="flex-1 py-3 px-4 bg-[var(--fill-muted)] hover:bg-brand text-ink font-semibold text-t-2xs rounded-xl transition-colors border border-subtle hover:border-brand shadow-lg"
                                             >
                                                 Apostar
                                             </button>
@@ -146,7 +146,7 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                                                         e.stopPropagation();
                                                         onAddToSlip(bet, option);
                                                     }}
-                                                    className="p-3 bg-white/5 hover:bg-white/10 text-ink-muted hover:text-ink rounded-xl transition-colors border border-subtle"
+                                                    className="p-3 bg-[var(--fill-muted)] hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink rounded-xl transition-colors border border-subtle"
                                                     title="Añadir al boleto"
                                                 >
                                                     <Plus size={16} />
@@ -173,12 +173,12 @@ export const ArenaBetCard: React.FC<ArenaBetCardProps> = ({ bet, onBetClick, onA
                     <div className={`w-2 h-2 rounded-full ${
  bet.status === 'open' ? 'bg-brand animate-pulse' : 'bg-gray-600'
  }`} />
-                    <span className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-subtle">
+                    <span className="text-t-2xs font-semibold text-ink-subtle">
                         {bet.status === 'open' ? 'En Vivo / Abierta' : bet.status === 'resolved' ? 'Resuelta' : 'Cerrada'}
                     </span>
                 </div>
                 {bet.resolved_at && (
-                    <span className="text-t-2xs font-black uppercase tracking-[0.3em] text-ink-muted">
+                    <span className="text-t-2xs font-semibold text-ink-muted">
                         {new Date(bet.resolved_at).toLocaleDateString()}
                     </span>
                 )}

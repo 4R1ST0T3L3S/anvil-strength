@@ -88,7 +88,7 @@ export function ClaimAthletePage() {
                         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-[var(--success-quiet)]">
                             <Check size={26} className="text-success" strokeWidth={3} aria-hidden="true" />
                         </span>
-                        <h1 className="mt-4 text-t-xl font-black uppercase leading-tight tracking-display text-ink">
+                        <h1 className="mt-4 text-t-xl font-semibold leading-tight tracking-display text-ink">
                             ¡Ya es tuya!
                         </h1>
                         <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">
@@ -99,10 +99,10 @@ export function ClaimAthletePage() {
                     <ClaimFailure reason={preview.reason} onHome={() => navigate('/', { replace: true })} />
                 ) : (
                     <>
-                        <p className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <p className="text-t-xs font-bold text-ink-subtle">
                             {preview.coachName ? `${preview.coachName} te ha preparado tu ficha` : 'Tu entrenador te ha preparado tu ficha'}
                         </p>
-                        <h1 className="mt-1 text-t-2xl font-black uppercase leading-tight tracking-display text-ink">
+                        <h1 className="mt-1 text-t-2xl font-semibold leading-tight tracking-display text-ink">
                             {preview.athleteName ?? 'Bienvenido'}
                         </h1>
                         <p className="mt-3 text-t-sm leading-relaxed text-ink-muted">
@@ -150,7 +150,7 @@ export function ClaimAthletePage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-50"
+                                className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-50"
                             >
                                 {submitting ? <Loader size={16} className="animate-spin" aria-hidden="true" /> : null}
                                 {submitting ? 'Activando…' : 'Entrar a mi cuenta'}
@@ -189,7 +189,7 @@ function ClaimFailure({ reason, onHome }: { reason: ClaimPreview['reason']; onHo
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-[var(--warning-quiet)]">
                 <AlertCircle size={24} className="text-warning" aria-hidden="true" />
             </span>
-            <h1 className="mt-4 text-t-xl font-black uppercase leading-tight tracking-display text-ink">
+            <h1 className="mt-4 text-t-xl font-semibold leading-tight tracking-display text-ink">
                 {copy.title}
             </h1>
             <p className="mt-2 text-t-sm leading-relaxed text-ink-muted">{copy.body}</p>

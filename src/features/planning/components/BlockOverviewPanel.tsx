@@ -209,7 +209,7 @@ function SummaryRow({ analytics }: { analytics: BlockAnalytics }) {
         <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
             {items.map((it) => (
                 <div key={it.label}>
-                    <p className="text-t-2xs uppercase tracking-wide text-ink-subtle">
+                    <p className="text-t-2xs text-ink-subtle">
                         {it.label}
                     </p>
                     <p className="mt-1 text-t-2xl font-semibold text-ink">{it.value}</p>
@@ -313,7 +313,7 @@ function WeeklyChart({
     return (
         <section>
             <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-t-sm font-semibold uppercase tracking-wide text-ink-muted">
+                <h3 className="text-t-sm font-semibold text-ink-muted">
                     Progresión semanal
                 </h3>
 
@@ -325,7 +325,7 @@ function WeeklyChart({
                             aria-selected={metric.key === m.key}
                             onClick={() => setMetricKey(m.key)}
                             className={cn(
-                                'rounded-chip px-2.5 py-1 text-t-2xs font-semibold uppercase transition-colors duration-fast ease-snap',
+                                'rounded-chip px-2.5 py-1 text-t-2xs font-semibold transition-colors duration-fast ease-snap',
                                 metric.key === m.key
                                     ? 'bg-brand text-brand-ink'
                                     : 'text-ink-subtle hover:text-ink'
@@ -415,7 +415,7 @@ function IntensityBreakdown({ analytics }: { analytics: BlockAnalytics }) {
 
     return (
         <section>
-            <h3 className="mb-4 text-t-sm font-semibold uppercase tracking-wide text-ink-muted">
+            <h3 className="mb-4 text-t-sm font-semibold text-ink-muted">
                 Reparto de intensidad
             </h3>
 
@@ -533,7 +533,7 @@ function FrequencyBreakdown({ analytics }: { analytics: BlockAnalytics }) {
 
     return (
         <section>
-            <h3 className="mb-4 text-t-sm font-semibold uppercase tracking-wide text-ink-muted">
+            <h3 className="mb-4 text-t-sm font-semibold text-ink-muted">
                 Frecuencia semanal
             </h3>
 
@@ -604,7 +604,7 @@ function MuscleSummary({
 
     return (
         <section>
-            <h3 className="mb-4 text-t-sm font-semibold uppercase tracking-wide text-ink-muted">
+            <h3 className="mb-4 text-t-sm font-semibold text-ink-muted">
                 Series directas por músculo y semana
             </h3>
 
@@ -695,7 +695,7 @@ function WeekTable({
             <button
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
-                className="text-t-sm font-semibold uppercase tracking-wide text-ink-muted transition-colors duration-fast ease-snap hover:text-ink"
+                className="text-t-sm font-semibold text-ink-muted transition-colors duration-fast ease-snap hover:text-ink"
             >
                 Detalle semana a semana {open ? '−' : '+'}
             </button>
@@ -787,7 +787,7 @@ function Th({
         <th
             scope="col"
             className={cn(
-                'pb-2 text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle',
+                'pb-2 text-t-2xs font-semibold text-ink-subtle',
                 align === 'right' ? 'text-right' : 'text-left'
             )}
         >

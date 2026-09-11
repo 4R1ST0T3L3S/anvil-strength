@@ -77,7 +77,7 @@ export function TeamCard({
                 {/* `text-balance` y no `truncate`: el titular puede partirse en
                     dos líneas sin problema, pero cortarlo con puntos
                     suspensivos en la acción principal del panel sería raro. */}
-                <span className="block text-balance text-t-xl font-black uppercase leading-none tracking-display text-brand-ink sm:text-t-2xl">
+                <span className="block text-balance text-t-xl font-semibold leading-none tracking-display text-brand-ink sm:text-t-2xl">
                     Mis atletas
                 </span>
                 <span className="mt-1.5 block text-t-sm leading-snug text-brand-ink/80">
@@ -124,7 +124,7 @@ export function DietsCard({
             />
             <Apple size={24} className="relative shrink-0 text-brand-text" aria-hidden="true" />
             <span className="relative min-w-0">
-                <span className="block text-balance text-t-xl font-black uppercase leading-none tracking-display text-ink sm:text-t-2xl">
+                <span className="block text-balance text-t-xl font-semibold leading-none tracking-display text-ink sm:text-t-2xl">
                     Dietas
                 </span>
                 <span className="mt-1.5 block text-t-sm leading-snug text-ink-subtle">
@@ -177,11 +177,11 @@ export function NextCompCard({
                 }`}
         >
             <span className="shrink-0 text-center">
-                <span className={`block font-black leading-none tabular-nums text-brand-text ${compact ? 'text-t-2xl' : 'text-t-3xl sm:text-metric'
+                <span className={`block font-semibold leading-none tabular-nums text-brand-text ${compact ? 'text-t-2xl' : 'text-t-3xl sm:text-metric'
                     }`}>
                     {days}
                 </span>
-                <span className="mt-1 block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                <span className="mt-1 block text-t-2xs font-bold text-ink-subtle">
                     {days === 1 ? 'día' : 'días'}
                 </span>
             </span>
@@ -234,10 +234,10 @@ export function LessonsCard({ quote }: { quote: string }) {
                 aria-hidden="true"
                 className="pointer-events-none absolute -right-3 -top-2 text-ink opacity-[0.04]"
             />
-            <p className="relative text-balance text-t-base font-black uppercase leading-snug tracking-display text-ink sm:text-t-lg">
+            <p className="relative text-balance text-t-base font-semibold leading-snug tracking-display text-ink sm:text-t-lg">
                 {quote}
             </p>
-            <p className="relative mt-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+            <p className="relative mt-2 text-t-2xs font-bold text-ink-subtle">
                 Anvil Lessons
             </p>
         </div>

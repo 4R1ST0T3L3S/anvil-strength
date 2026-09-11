@@ -324,7 +324,7 @@ function Card({ icon: Icon, title, hint, children }: { icon: React.ComponentType
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div>
-            <label className="mb-1.5 block text-t-xs font-semibold uppercase tracking-wide text-ink-subtle">{label}</label>
+            <label className="mb-1.5 block text-t-xs font-semibold text-ink-subtle">{label}</label>
             {children}
         </div>
     );

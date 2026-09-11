@@ -178,7 +178,7 @@ function ChartCard({
                     onClick={() => void downloadChartPng(ref.current, filename)}
                     title="Descargar esta gráfica como PNG"
                     aria-label={`Descargar «${title}» como PNG`}
-                    className="shrink-0 rounded-md p-1 text-ink-faint transition hover:bg-white/5 hover:text-ink"
+                    className="shrink-0 rounded-md p-1 text-ink-faint transition hover:bg-[var(--fill-hover)] hover:text-ink"
                 >
                     <Download size={13} aria-hidden="true" />
                 </button>
@@ -420,20 +420,20 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                 --------------------------------------------------------- */}
             {report && (
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="mr-1 text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                    <span className="mr-1 text-t-2xs font-bold text-ink-subtle">
                         Exportar
                     </span>
                     <button
                         type="button"
                         onClick={() => downloadPwrCsv(report)}
-                        className="inline-flex items-center gap-1.5 rounded-card border border-subtle bg-surface-sunken px-2.5 py-1.5 text-t-2xs font-bold text-ink transition hover:bg-white/5"
+                        className="inline-flex items-center gap-1.5 rounded-card border border-subtle bg-surface-sunken px-2.5 py-1.5 text-t-2xs font-bold text-ink transition hover:bg-[var(--fill-hover)]"
                     >
                         <Table2 size={12} aria-hidden="true" /> CSV
                     </button>
                     <button
                         type="button"
                         onClick={() => downloadPwrXlsx(report)}
-                        className="inline-flex items-center gap-1.5 rounded-card border border-subtle bg-surface-sunken px-2.5 py-1.5 text-t-2xs font-bold text-ink transition hover:bg-white/5"
+                        className="inline-flex items-center gap-1.5 rounded-card border border-subtle bg-surface-sunken px-2.5 py-1.5 text-t-2xs font-bold text-ink transition hover:bg-[var(--fill-hover)]"
                     >
                         <FileSpreadsheet size={12} aria-hidden="true" /> Excel
                     </button>
@@ -441,7 +441,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                         type="button"
                         onClick={() => void exportPdf()}
                         disabled={exporting === 'pdf'}
-                        className="inline-flex items-center gap-1.5 rounded-card border border-subtle bg-surface-sunken px-2.5 py-1.5 text-t-2xs font-bold text-ink transition hover:bg-white/5 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 rounded-card border border-subtle bg-surface-sunken px-2.5 py-1.5 text-t-2xs font-bold text-ink transition hover:bg-[var(--fill-hover)] disabled:opacity-50"
                     >
                         <FileText size={12} aria-hidden="true" />
                         {exporting === 'pdf' ? 'Generando…' : 'PDF con gráficas'}
@@ -466,8 +466,8 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                     { label: 'Tiempo bajo tensión', value: fmt(series.timeUnderTensionS, 2), unit: 's' },
                 ].map(card => (
                     <div key={card.label} className="rounded-card border border-subtle bg-surface-sunken px-2.5 py-2">
-                        <p className="truncate text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">{card.label}</p>
-                        <p className="mt-0.5 text-t-sm font-black text-ink">
+                        <p className="truncate text-t-2xs font-bold text-ink-subtle">{card.label}</p>
+                        <p className="mt-0.5 text-t-sm font-semibold text-ink">
                             {card.value}
                             {card.unit && <span className="ml-1 text-t-2xs font-bold text-ink-subtle">{card.unit}</span>}
                         </p>
@@ -516,7 +516,7 @@ export function SeriesReport({ concentrics, eccentrics, series, dimmed, report }
                                     <tr
                                         key={rep.index}
                                         onClick={() => setFocused(f => (f === rep.index ? null : rep.index))}
-                                        className={`cursor-pointer border-b border-subtle/50 transition last:border-0 hover:bg-white/5 ${
+                                        className={`cursor-pointer border-b border-subtle/50 transition last:border-0 hover:bg-[var(--fill-hover)] ${
  focused === rep.index ? 'bg-white/[0.07]' : ''
  }`}
                                     >

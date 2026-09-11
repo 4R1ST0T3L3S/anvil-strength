@@ -211,25 +211,25 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
     return (
         <div className="min-h-[100dvh] bg-surface-sunken text-ink">
             {/* Header */}
-            <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-subtle px-4 md:px-6 py-4 flex items-center justify-between">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--scrim)] backdrop-blur-xl border-b border-subtle px-4 md:px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-brand rounded-lg text-black shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+                    <div className="p-2 bg-brand rounded-lg text-brand-ink shadow-[0_0_15px_rgba(220,38,38,0.4)]">
                         <Swords size={18} />
                     </div>
                     <div>
-                        <h1 className="text-lg md:text-xl font-black uppercase italic tracking-tighter leading-none">La Arena</h1>
-                        <p className="text-t-2xs font-bold text-ink-subtle uppercase tracking-widest mt-1">Anvil Strength</p>
+                        <h1 className="text-lg md:text-xl font-semibold tracking-tight leading-none">La Arena</h1>
+                        <p className="text-t-2xs font-bold text-ink-subtle mt-1">Anvil Strength</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-6">
                     <div className="hidden md:flex flex-col items-end">
-                        <span className="text-t-2xs font-black text-ink-subtle uppercase tracking-widest leading-none mb-1">Tu Saldo</span>
-                        <span className="text-lg font-black text-warning leading-none">
-                            {pointsData?.balance?.toLocaleString() || 0} <span className="text-xs italic">AC</span>
+                        <span className="text-t-2xs font-semibold text-ink-subtle leading-none mb-1">Tu Saldo</span>
+                        <span className="text-lg font-semibold text-warning leading-none">
+                            {pointsData?.balance?.toLocaleString() || 0} <span className="text-xs">AC</span>
                         </span>
                     </div>
-                    <Link to="/dashboard" className="p-2 hover:bg-white/10 rounded-full transition-colors text-ink-subtle hover:text-ink">
+                    <Link to="/dashboard" className="p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
                         <X size={24} />
                     </Link>
                 </div>
@@ -240,10 +240,10 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                     {/* Main Section */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Tab Selector */}
-                        <div className="flex gap-2 p-1.5 bg-white/5 rounded-2xl border border-subtle w-fit">
+                        <div className="flex gap-2 p-1.5 bg-[var(--fill-muted)] rounded-2xl border border-subtle w-fit">
                             <button 
                                 onClick={() => setActiveTab('active')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-t-2xs uppercase tracking-widest transition-[background-color,box-shadow,color] ${
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-t-2xs transition-[background-color,box-shadow,color] ${
  activeTab === 'active' ? 'bg-brand text-ink shadow-lg shadow-red-900/20' : 'text-ink-subtle hover:text-ink'
  }`}
                             >
@@ -252,7 +252,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             </button>
                             <button 
                                 onClick={() => setActiveTab('history')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-t-2xs uppercase tracking-widest transition-[background-color,box-shadow,color] ${
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-t-2xs transition-[background-color,box-shadow,color] ${
  activeTab === 'history' ? 'bg-brand text-ink shadow-lg shadow-red-900/20' : 'text-ink-subtle hover:text-ink'
  }`}
                             >
@@ -310,12 +310,12 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                     {/* Sidebar */}
                     <div className="space-y-6 w-full pr-4 md:pr-0">
                         {/* Mobile Balance Card */}
-                        <div className="md:hidden bg-gradient-to-br from-yellow-500/20 to-transparent border border-warning/20 p-6 rounded-[2rem] text-center">
-                            <span className="text-t-2xs font-black text-warning/60 uppercase tracking-widest block mb-1">TU SALDO</span>
-                            <div className="text-4xl font-black text-ink italic tracking-tighter mb-1">
+                        <div className="md:hidden bg-gradient-to-br from-yellow-500/20 to-transparent border border-warning/20 p-6 rounded-card text-center">
+                            <span className="text-t-2xs font-semibold text-warning/60 block mb-1">TU SALDO</span>
+                            <div className="text-4xl font-semibold text-ink tracking-tight mb-1">
                                 {pointsData?.balance?.toLocaleString() || 0}
                             </div>
-                            <span className="text-t-2xs font-black text-warning uppercase tracking-widest italic">Anvil Coins</span>
+                            <span className="text-t-2xs font-semibold text-warning">Anvil Coins</span>
                         </div>
 
                         {/* Trastienda de la Arena: crear, resolver y borrar
@@ -335,8 +335,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         )}
 
                         {/* Rules / Legend Card */}
-                        <div className="bg-surface-sunken border border-subtle p-8 rounded-[2rem] space-y-6">
-                            <h3 className="text-sm font-black uppercase italic text-ink flex items-center gap-2">
+                        <div className="bg-surface-sunken border border-subtle p-8 rounded-card space-y-6">
+                            <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
                                 <Info size={16} className="text-brand-text" /> Reglas de La Arena
                             </h3>
                             <div className="space-y-4">
@@ -381,9 +381,9 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                         exit={{ y: 100, opacity: 0 }}
                         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-full max-w-md px-4"
                     >
-                        <div className="bg-surface-sunken border border-brand/30 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                        <div className="bg-surface-sunken border border-brand/30 rounded-card shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
                             <div className="bg-brand px-6 py-3 flex justify-between items-center">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-ink flex items-center gap-2">
+                                <h3 className="text-xs font-semibold text-ink flex items-center gap-2">
                                     <Swords size={14} /> Boleto de Apuestas ({betSlip.length})
                                 </h3>
                                 <button onClick={() => setBetSlip([])} className="text-ink-subtle hover:text-ink">
@@ -393,10 +393,10 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             
                             <div className="p-4 max-h-60 overflow-y-auto space-y-2 scrollbar-hide">
                                 {betSlip.map(leg => (
-                                    <div key={leg.bet.id} className="bg-white/5 rounded-xl p-3 flex justify-between items-center border border-subtle">
+                                    <div key={leg.bet.id} className="bg-[var(--fill-muted)] rounded-xl p-3 flex justify-between items-center border border-subtle">
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-t-2xs font-black uppercase text-ink-subtle truncate">{leg.bet.title}</p>
-                                            <p className="text-xs font-bold text-ink uppercase italic">
+                                            <p className="text-t-2xs font-semibold text-ink-subtle truncate">{leg.bet.title}</p>
+                                            <p className="text-xs font-bold text-ink">
                                                 Gana: <span className="text-brand-text">{leg.option?.name || leg.predictionValue}</span>
                                             </p>
                                         </div>
@@ -407,23 +407,23 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                 ))}
                             </div>
 
-                            <div className="p-4 bg-black/40 border-t border-subtle">
+                            <div className="p-4 bg-surface-sunken border-t border-subtle">
                                 {betSlip.length >= 2 ? (
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center px-2">
-                                            <span className="text-t-2xs font-black text-ink-subtle uppercase tracking-widest">Multiplicador Estimado</span>
-                                            <span className="text-sm font-black text-warning italic">x{Math.pow(2, betSlip.length - 1).toFixed(1)}</span>
+                                            <span className="text-t-2xs font-semibold text-ink-subtle">Multiplicador Estimado</span>
+                                            <span className="text-sm font-semibold text-warning">x{Math.pow(2, betSlip.length - 1).toFixed(1)}</span>
                                         </div>
                                         <button 
                                             onClick={() => handlePlaceParlay(100)} // Valor por defecto o abrir modal de importe
-                                            className="w-full py-4 bg-brand hover:bg-red-700 text-ink font-black uppercase tracking-widest rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
+                                            className="w-full py-4 bg-brand hover:bg-brand-hover text-ink font-semibold rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
                                         >
                                             Realizar Combinada (100 AC)
                                             <Send size={16} />
                                         </button>
                                     </div>
                                 ) : (
-                                    <p className="text-center text-t-2xs font-black text-ink-subtle uppercase tracking-widest py-2">
+                                    <p className="text-center text-t-2xs font-semibold text-ink-subtle py-2">
                                         Añade {2 - betSlip.length} más para una combinada
                                     </p>
                                 )}
@@ -439,8 +439,8 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
 function RuleItem({ title, desc }: { title: string; desc: string }) {
     return (
         <div className="space-y-1">
-            <p className="text-t-2xs font-black text-brand-text uppercase italic tracking-widest">{title}</p>
-            <p className="text-t-2xs font-bold text-ink-subtle uppercase leading-relaxed tracking-wider">{desc}</p>
+            <p className="text-t-2xs font-semibold text-brand-text">{title}</p>
+            <p className="text-t-2xs font-bold text-ink-subtle leading-relaxed">{desc}</p>
         </div>
     );
 }

@@ -14,8 +14,6 @@ const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
 const NutritionDashboard = lazy(() => import('../features/nutrition/pages/NutritionDashboard').then(module => ({ default: module.NutritionDashboard })));
-const AthleteChatView = lazy(() => import('../features/chat/pages/AthleteChatView').then(module => ({ default: module.AthleteChatView })));
-const CoachChatManager = lazy(() => import('../features/chat/components/CoachChatManager').then(module => ({ default: module.CoachChatManager })));
 const AuthCallback = lazy(() => import('../features/auth/pages/AuthCallback').then(module => ({ default: module.AuthCallback })));
 const AnvilGamesHub = lazy(() => import('../features/games/pages/AnvilGamesHub').then(module => ({ default: module.AnvilGamesHub })));
 const InvitePage = lazy(() => import('../features/auth/pages/InvitePage').then(module => ({ default: module.InvitePage })));
@@ -222,22 +220,11 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 )
             } />
 
+            {/* El chat vive DENTRO de cada panel desde septiembre de 2026
+                (/dashboard/mensajes y /coach-dashboard/mensajes). La ruta
+                antigua sigue resolviendo para enlaces guardados. */}
             <Route path="/dashboard/chat" element={
-                hasActiveSession && user ? (
-                    <Suspense fallback={<AppShellSkeleton />}>
-                        {/* Quien llega a /dashboard/chat PUEDE gestionar
-                            atletas (es entrenador o nutricionista) pero quiso
-                            entrar por /dashboard: quiere su panel de atleta. El
-                            chat también. */}
-                        {isAthlete(user) ? (
-                            <AthleteChatView user={user} />
-                        ) : (
-                            <CoachChatManager coach={user} />
-                        )}
-                    </Suspense>
-                ) : (
-                    <Navigate to="/" replace />
-                )
+                <Navigate to={isAthlete(user) ? '/dashboard/mensajes' : '/coach-dashboard/mensajes'} replace />
             } />
 
             <Route path="/dashboard/games" element={
@@ -258,7 +245,7 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 segmento fijo (`/dashboard/chat`, `/dashboard/community`,
                 `/dashboard/games`) ganan por especificidad, así que siguen
                 resolviendo a sus páginas completas y no al panel. */}
-            {['/dashboard', '/dashboard/:view'].map(path => (
+            {['/dashboard', '/dashboard/:view', '/dashboard/mensajes/:chatId'].map(path => (
                 <Route key={path} path={path} element={
                     !user && !hasActiveSession ? (
                         <Navigate to="/" replace />
@@ -285,7 +272,13 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 La tercera ruta es la ficha de un atleta. Tener URL propia es
                 lo que permite volver con el botón atrás y compartir el enlace
                 de un atleta concreto. */}
-            {['/coach-dashboard', '/coach-dashboard/:view', '/coach-dashboard/atletas/:athleteId'].map(path => (
+            {[
+                '/coach-dashboard',
+                '/coach-dashboard/:view',
+                '/coach-dashboard/atletas/:athleteId',
+                '/coach-dashboard/bandeja/:inboxAthleteId',
+                '/coach-dashboard/mensajes/:chatId',
+            ].map(path => (
                 <Route key={path} path={path} element={
                     !user && !hasActiveSession ? (
                         <Navigate to="/" replace />

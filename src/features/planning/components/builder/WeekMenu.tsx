@@ -148,14 +148,14 @@ export function WeekMenu({
                             <>
                                 <button
                                     onClick={() => setCopyMode(false)}
-                                    className="mb-1 flex w-full items-center gap-1.5 rounded-field px-2.5 py-1.5 text-left text-t-2xs font-semibold uppercase tracking-wide text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
+                                    className="mb-1 flex w-full items-center gap-1.5 rounded-field px-2.5 py-1.5 text-left text-t-2xs font-semibold text-ink-subtle transition-colors duration-fast ease-snap hover:text-ink"
                                 >
                                     <ChevronDown size={12} className="rotate-90" aria-hidden="true" />
                                     Copiar {weekLabel} sobre…
                                 </button>
                                 <div className="max-h-64 space-y-0.5 overflow-y-auto">
                                     {otherWeeks.length === 0 && (
-                                        <p className="px-2.5 py-2 text-t-xs italic text-ink-subtle">
+                                        <p className="px-2.5 py-2 text-t-xs text-ink-subtle">
                                             No hay otra semana en el bloque.
                                         </p>
                                     )}

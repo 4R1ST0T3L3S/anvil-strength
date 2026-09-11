@@ -98,6 +98,36 @@ export const CLAVES = {
             ['cuestionarios', 'respuestas', athleteId, tipo] as const,
     },
 
+    // --- Bandejas y revisión de entrenamientos --------------------------
+    bandeja: {
+        raiz: ['bandeja'] as const,
+        /** Una fila por atleta con pendientes. La lee también el contador del menú. */
+        resumenCoach: (coachId: string) => ['bandeja', 'coach', coachId] as const,
+        pendientesDeAtleta: (coachId: string, athleteId: string) =>
+            ['bandeja', 'coach', coachId, 'atleta', athleteId] as const,
+        historial: (sessionIds: string) => ['bandeja', 'historial', sessionIds] as const,
+        feedback: (sessionIds: string) => ['bandeja', 'feedback', sessionIds] as const,
+        delAtleta: (athleteId: string) => ['bandeja', 'atleta', athleteId] as const,
+        sinLeerAtleta: (athleteId: string) => ['bandeja', 'atleta', athleteId, 'sin-leer'] as const,
+    },
+
+    // --- Chat -------------------------------------------------------------
+    chat: {
+        raiz: ['chat'] as const,
+        conversaciones: (userId: string) => ['chat', 'conversaciones', userId] as const,
+        hilo: (userId: string, otroId: string) => ['chat', 'hilo', userId, otroId] as const,
+        sinLeer: (userId: string) => ['chat', 'sin-leer', userId] as const,
+        /** URL firmada de un adjunto. Vive 50 minutos: la firma dura 60. */
+        adjunto: (path: string) => ['chat', 'adjunto', path] as const,
+    },
+
+    // --- Avisos -----------------------------------------------------------
+    avisos: {
+        raiz: ['avisos'] as const,
+        deUsuario: (userId: string) => ['avisos', userId] as const,
+        preferencias: (userId: string) => ['avisos', 'preferencias', userId] as const,
+    },
+
     // --- Otros ----------------------------------------------------------
     resenas: {
         raiz: ['resenas'] as const,

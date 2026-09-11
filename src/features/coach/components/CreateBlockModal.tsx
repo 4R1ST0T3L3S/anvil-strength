@@ -106,7 +106,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                 {/* Columna izquierda: datos */}
                 <div className="flex-1 space-y-6">
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="block text-t-2xs font-bold text-ink-subtle">
                             Nombre del bloque <span className="text-brand-text">*</span>
                         </span>
                         <input
@@ -120,7 +120,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                     </label>
 
                     <label className="block space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="block text-t-2xs font-bold text-ink-subtle">
                             Descripción y objetivos <span className="font-medium normal-case tracking-normal text-ink-subtle">· el atleta la verá</span>
                         </span>
                         <textarea
@@ -134,7 +134,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                     </label>
 
                     <div className="space-y-1.5">
-                        <span className="block text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Color del bloque</span>
+                        <span className="block text-t-2xs font-bold text-ink-subtle">Color del bloque</span>
                         <div className="flex items-center gap-2.5">
                             {BLOCK_COLORS.map((c) => (
                                 <button
@@ -165,7 +165,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-3 text-t-sm font-extrabold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
+                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
                         >
                             {loading ? <Loader size={17} className="animate-spin" /> : <><Save size={17} aria-hidden="true" /> Crear bloque</>}
                         </button>
@@ -175,7 +175,7 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                 {/* Columna derecha: calendario */}
                 <div className="flex-1">
                     <div className="flex h-full flex-col space-y-1.5">
-                        <span className="flex items-center gap-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
+                        <span className="flex items-center gap-2 text-t-2xs font-bold text-ink-subtle">
                             <CalendarIcon size={13} aria-hidden="true" /> Duración del bloque
                         </span>
                         <div className="min-h-[400px] flex-1">

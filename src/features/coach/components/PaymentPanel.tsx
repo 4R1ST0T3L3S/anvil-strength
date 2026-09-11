@@ -158,7 +158,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                 lado, y el «este no paga y lo digo yo» por el otro.
             */}
             <div className="space-y-1.5">
-                <span className="block text-t-2xs font-bold uppercase tracking-wide text-ink-subtle">
+                <span className="block text-t-2xs font-bold text-ink-subtle">
                     Estado de facturación
                 </span>
                 <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Estado de facturación">
@@ -190,7 +190,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                 <div className="space-y-3 rounded-field border border-[var(--border-default)] bg-surface-sunken p-4">
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <label className="block">
-                            <span className="mb-1 block text-t-xs font-semibold uppercase tracking-wide text-ink-subtle">Pagado hasta</span>
+                            <span className="mb-1 block text-t-xs font-semibold text-ink-subtle">Pagado hasta</span>
                             <input
                                 type="date"
                                 value={paidUntil}
@@ -199,7 +199,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                             />
                         </label>
                         <label className="block">
-                            <span className="mb-1 block text-t-xs font-semibold uppercase tracking-wide text-ink-subtle">Importe (opcional)</span>
+                            <span className="mb-1 block text-t-xs font-semibold text-ink-subtle">Importe (opcional)</span>
                             <input
                                 type="number"
                             inputMode="decimal"
@@ -211,7 +211,7 @@ export function PaymentPanel({ athleteId, coachId }: { athleteId: string; coachI
                         </label>
                     </div>
                     <label className="block">
-                        <span className="mb-1 block text-t-xs font-semibold uppercase tracking-wide text-ink-subtle">Nota (opcional)</span>
+                        <span className="mb-1 block text-t-xs font-semibold text-ink-subtle">Nota (opcional)</span>
                         <input
                             type="text"
                             value={note}

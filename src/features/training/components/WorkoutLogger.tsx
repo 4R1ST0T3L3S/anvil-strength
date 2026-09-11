@@ -624,17 +624,17 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
     if (!block) {
         return (
             <div className="h-full flex flex-col items-center justify-center bg-transparent text-ink-muted p-8 text-center space-y-6">
-                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center text-ink-subtle">
+                <div className="w-24 h-24 bg-[var(--fill-muted)] rounded-full flex items-center justify-center text-ink-subtle">
                     <AlertCircle size={64} />
                 </div>
                 <div className="max-w-xs">
-                    <h3 className="text-2xl font-black text-ink uppercase tracking-tighter mb-2">Sin Plan Activo</h3>
+                    <h3 className="text-2xl font-semibold text-ink tracking-tight mb-2">Sin Plan Activo</h3>
                     <p className="text-sm leading-relaxed">
                         Tu entrenador aún no ha activado tu próximo mesociclo. Contacta con él para empezar a registrar tus marcas.
                     </p>
                 </div>
                 <div className="pt-4">
-                    <div className="px-6 py-3 border border-[var(--border-default)] rounded-xl text-xs font-black uppercase tracking-widest text-ink-subtle">
+                    <div className="px-6 py-3 border border-[var(--border-default)] rounded-xl text-xs font-semibold text-ink-subtle">
                         Esperando programación...
                     </div>
                 </div>
@@ -748,7 +748,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 <span className="flex min-w-0 items-center gap-2">
                                     <CalendarDays size={14} className="shrink-0 text-brand-text" aria-hidden="true" />
                                     <span className="min-w-0">
-                                        <span className="block truncate text-t-2xs font-bold uppercase leading-tight tracking-widest text-brand-text">
+                                        <span className="block truncate text-t-2xs font-bold leading-tight text-brand-text">
                                             {block.name}
                                         </span>
                                         <span className="block truncate text-t-sm font-bold leading-tight">
@@ -812,7 +812,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         </div>
 
                         {objectivesOpen && block.description && (
-                            <p className="mt-1.5 whitespace-pre-wrap rounded-xl border border-subtle bg-white/[0.03] p-3 text-t-xs leading-relaxed text-ink-muted">
+                            <p className="mt-1.5 whitespace-pre-wrap rounded-xl border border-subtle bg-[var(--fill-muted)] p-3 text-t-xs leading-relaxed text-ink-muted">
                                 {block.description}
                             </p>
                         )}
@@ -855,7 +855,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 {semanasPorBloque.map(({ bloque, anio, semanas }) => (
                                     <div key={bloque.id}>
                                         {semanasPorBloque.length > 1 && (
-                                            <p className="px-2.5 pb-1 pt-2 text-t-2xs font-black uppercase tracking-widest text-brand-text first:pt-1">
+                                            <p className="px-2.5 pb-1 pt-2 text-t-2xs font-semibold text-brand-text first:pt-1">
                                                 {bloque.name}
                                             </p>
                                         )}
@@ -873,7 +873,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                                     onClick={() => irA(bloque.id, w)}
                                                     className={cn(
                                                         'flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left transition-colors',
-                                                        elegida ? 'bg-white/10 text-ink' : 'text-ink-muted hover:bg-white/5'
+                                                        elegida ? 'bg-[var(--fill-hover)] text-ink' : 'text-ink-muted hover:bg-[var(--fill-hover)]'
                                                     )}
                                                 >
                                                     <span className="min-w-0">
@@ -889,7 +889,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                                         </span>
                                                     </span>
                                                     {esAhora && (
-                                                        <span className="ml-2 shrink-0 rounded-full bg-brand/15 px-2 py-0.5 text-t-2xs font-black uppercase tracking-wider text-brand-text">
+                                                        <span className="ml-2 shrink-0 rounded-full bg-brand/15 px-2 py-0.5 text-t-2xs font-semibold text-brand-text">
                                                             Ahora
                                                         </span>
                                                     )}
@@ -902,7 +902,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         )}
                     </div>
                 ) : (
-                    <h1 className="px-3 pt-2 text-t-xs font-bold uppercase tracking-widest text-brand-text md:px-4 md:pt-3">
+                    <h1 className="px-3 pt-2 text-t-xs font-bold text-brand-text md:px-4 md:pt-3">
                         {block.name}
                     </h1>
                 )}
@@ -945,25 +945,25 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 className={cn(
                                     'relative flex h-11 min-w-[3.75rem] shrink-0 flex-col items-center justify-center rounded-xl border px-2.5 leading-none transition-colors duration-fast',
                                     active
-                                        ? 'border-white bg-white font-bold text-black'
+                                        ? 'border-white bg-ink font-bold text-surface-canvas'
                                         : 'border-transparent bg-surface-overlay text-ink-muted hover:text-ink',
                                     !active && isToday && 'border-brand/50'
                                 )}
                             >
                                 {label ? (
                                     <>
-                                        <span className="text-t-2xs uppercase tracking-widest opacity-60">
+                                        <span className="text-t-2xs opacity-60">
                                             {WEEKDAYS.find(d => d.key === s.day_of_week)?.short}
                                         </span>
                                         <span className="mt-0.5 text-t-sm font-bold">{date?.getDate()}</span>
                                     </>
                                 ) : s.name ? (
-                                    <span className="max-w-[6rem] truncate text-t-2xs font-black uppercase tracking-wider">
+                                    <span className="max-w-[6rem] truncate text-t-2xs font-semibold">
                                         {s.name}
                                     </span>
                                 ) : (
                                     <>
-                                        <span className="text-t-2xs uppercase tracking-widest opacity-60">Día</span>
+                                        <span className="text-t-2xs opacity-60">Día</span>
                                         <span className="mt-0.5 text-t-sm font-bold">{s.day_number}</span>
                                     </>
                                 )}
@@ -1003,7 +1003,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 transition={{ duration: prefersReducedMotion() ? 0 : DURATION.base, ease: EASE_OUT }}
                             />
                         </div>
-                        <span className="shrink-0 text-t-2xs font-bold uppercase tracking-widest tabular-nums text-ink-subtle">
+                        <span className="shrink-0 text-t-2xs font-bold tabular-nums text-ink-subtle">
                             {completedSets}/{totalSets}
                         </span>
                         <SaveIndicator />
@@ -1019,10 +1019,10 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
             <div className="space-y-5 p-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] md:pb-8">
                 {emptyWeek ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center text-ink-muted">
-                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-ink-subtle mb-4">
+                        <div className="w-16 h-16 bg-[var(--fill-muted)] rounded-full flex items-center justify-center text-ink-subtle mb-4">
                             <Check size={32} />
                         </div>
-                        <h3 className="text-xl font-black text-ink uppercase tracking-tighter mb-2">
+                        <h3 className="text-xl font-semibold text-ink tracking-tight mb-2">
                             {totalOpciones === 0 ? 'Aún no disponible' : 'Semana sin sesiones'}
                         </h3>
                         <p className="max-w-xs text-sm leading-relaxed">
@@ -1071,7 +1071,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                     texto libre de arriba: dos veces "Calentamiento"
                                     seguidas sobran. */}
                                 {!activeSession?.warmup?.trim() && (
-                                    <h3 className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">
+                                    <h3 className="text-t-2xs font-bold text-brand-text">
                                         Calentamiento
                                     </h3>
                                 )}
@@ -1111,7 +1111,7 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                         ))}
 
                         {activeSession?.exercises.length === 0 && !activeSession?.warmup && !activeSession?.extras && (
-                            <div className="py-12 text-center text-t-sm italic text-ink-subtle">
+                            <div className="py-12 text-center text-t-sm text-ink-subtle">
                                 Día de descanso o sin ejercicios programados.
                             </div>
                         )}
@@ -1134,6 +1134,8 @@ export function WorkoutLogger({ athleteId, athleteName }: WorkoutLoggerProps) {
                                 exercises={mainExercises}
                                 completedAt={activeSession.completed_at ?? null}
                                 athleteNotes={activeSession.athlete_notes ?? null}
+                                reviewedAt={activeSession.reviewed_at ?? null}
+                                modifiedAfterReview={activeSession.modified_after_review ?? false}
                                 onChange={patch => handleSessionPatch(activeSession.id, patch)}
                             />
                         )}
@@ -1195,7 +1197,7 @@ function AppendixBlock({
         <section className="relative overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised">
             <span className={cn('absolute inset-y-0 left-0 w-1', tone.bar)} aria-hidden="true" />
             <div className="py-3 pl-4 pr-3.5">
-                <h3 className={cn('text-t-2xs font-bold uppercase tracking-widest', tone.text)}>
+                <h3 className={cn('text-t-2xs font-bold', tone.text)}>
                     {label}
                 </h3>
                 {/* `RichText` respeta los saltos de línea —así escribe el coach
@@ -1560,7 +1562,7 @@ function LoggerExerciseCard({
                 el nombre y las notas, se leía como una etiqueta más. */}
             {chain && (
                 <div className="flex flex-wrap items-center gap-x-2 bg-[var(--info-quiet)] px-4 py-1.5">
-                    <span className="text-t-2xs font-black uppercase tracking-widest text-info">
+                    <span className="text-t-2xs font-semibold text-info">
                         {/* Un encadenado de calentamiento es un CIRCUITO, no
                             una superserie: se llama así en el gimnasio y las
                             rondas solo tienen sentido con ese nombre. */}
@@ -1590,10 +1592,10 @@ function LoggerExerciseCard({
                         {/* El número del ejercicio en el día. Sin él, seis
                             tarjetas iguales en una pantalla de móvil no dicen
                             por dónde va uno al volver de un descanso largo. */}
-                        <span className="mt-1 shrink-0 text-t-2xs font-black tabular-nums text-ink-subtle">
+                        <span className="mt-1 shrink-0 text-t-2xs font-semibold tabular-nums text-ink-subtle">
                             {position}
                         </span>
-                        <h3 className="font-bold text-lg leading-tight text-gray-100 group-hover:text-brand-text transition-colors">{exerciseName}</h3>
+                        <h3 className="font-bold text-lg leading-tight text-ink group-hover:text-brand-text transition-colors">{exerciseName}</h3>
                         <PlayCircle size={15} className="mt-1.5 text-ink-subtle group-hover:text-brand-text transition-colors shrink-0" />
                     </button>
 
@@ -1650,7 +1652,7 @@ function LoggerExerciseCard({
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading}
-                            className="flex items-center gap-1 text-t-2xs text-ink-muted hover:text-ink bg-black/40 hover:bg-black/60 px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
+                            className="flex items-center gap-1 text-t-2xs text-ink-muted hover:text-ink bg-surface-sunken hover:bg-surface-sunken px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
                         >
                             {uploading ? <Loader size={12} className="animate-spin" /> : <UploadCloud size={12} />}
                             {uploading ? "SUBIENDO..." : "+ VBT"}
@@ -1662,7 +1664,7 @@ function LoggerExerciseCard({
             {/* Selector: ¿a qué serie corresponde el archivo VBT? */}
             {pendingSetTag && (
                 <div className="px-4 py-3 bg-brand/5 border-b border-brand/20 animate-drop">
-                    <p className="text-t-2xs font-black uppercase tracking-wider text-brand-text mb-2">
+                    <p className="text-t-2xs font-semibold text-brand-text mb-2">
                         ¿A qué serie corresponde el archivo?
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -1670,14 +1672,14 @@ function LoggerExerciseCard({
                             <button
                                 key={s.id}
                                 onClick={() => tagSetWithVbt(s.id)}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-brand hover:text-ink text-ink-muted text-xs font-black uppercase transition-colors border border-[var(--border-default)]"
+                                className="px-3 py-1.5 rounded-lg bg-[var(--fill-muted)] hover:bg-brand hover:text-ink text-ink-muted text-xs font-semibold transition-colors border border-[var(--border-default)]"
                             >
                                 Serie {i + 1}
                             </button>
                         ))}
                         <button
                             onClick={() => tagSetWithVbt(null)}
-                            className="px-3 py-1.5 rounded-lg text-ink-subtle hover:text-ink text-xs font-bold uppercase transition-colors"
+                            className="px-3 py-1.5 rounded-lg text-ink-subtle hover:text-ink text-xs font-bold transition-colors"
                         >
                             Todo el ejercicio
                         </button>
@@ -1693,7 +1695,7 @@ function LoggerExerciseCard({
 
             {/* Prescription Summary Bar: vel_avg, rpe, rest */}
             {(sessionExercise.velocity_avg || sessionExercise.rpe || sessionExercise.rest_seconds) && (
-                <div className="flex items-center gap-4 px-4 py-2 bg-black/30 border-b border-subtle text-t-2xs text-ink-subtle">
+                <div className="flex items-center gap-4 px-4 py-2 bg-surface-sunken border-b border-subtle text-t-2xs text-ink-subtle">
                     {sessionExercise.velocity_avg && (
                         <span>
                             <span className="font-bold text-ink-muted">{sessionExercise.velocity_avg}</span>
@@ -1731,7 +1733,7 @@ function LoggerExerciseCard({
                 columnas — duración, FC, distancia — y no encaja en esta
                 cabecera de reps/kg/RPE, así que aquí no se pinta ninguna. */}
             {!isCardio && (
-                <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold uppercase tracking-wide text-ink-subtle sm:gap-1.5 sm:px-3">
+                <div className="grid grid-cols-[1rem_1fr_1fr_2.75rem_2.25rem_2.75rem] gap-1 border-b border-subtle bg-surface-overlay/40 px-2.5 py-2 text-center text-t-2xs font-bold text-ink-subtle sm:gap-1.5 sm:px-3">
                     <span className="text-left">#</span>
                     <span>Reps</span>
                     {/* Esta columna son SIEMPRE kilos movidos, porque la escribe el

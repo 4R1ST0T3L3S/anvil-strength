@@ -205,7 +205,7 @@ export function AdminDashboard() {
     // Render helpers
     const renderUserAvatar = (user: UserProfile) => (
         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-black/50 overflow-hidden border border-line flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-surface-sunken overflow-hidden border border-line flex items-center justify-center flex-shrink-0">
                 {user.avatar_url ? (
                     <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
                 ) : (
@@ -240,7 +240,7 @@ export function AdminDashboard() {
                 <div className="mb-8 border-b border-line pb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-black uppercase flex items-center gap-3">
+                            <h1 className="text-3xl font-semibold flex items-center gap-3">
                                 <ShieldAlert className="text-brand-text" size={32} />
                                 Panel de <span className="text-brand-text">Administración</span>
                             </h1>
@@ -252,7 +252,7 @@ export function AdminDashboard() {
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
                             <button
                                 onClick={() => navigate('/web')}
-                                className="flex items-center justify-center gap-2 bg-surface-sunken hover:bg-white/5 text-info border border-line px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg active:scale-95"
+                                className="flex items-center justify-center gap-2 bg-surface-sunken hover:bg-[var(--fill-hover)] text-info border border-line px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap shadow-lg active:scale-95"
                             >
                                 <Globe size={18} />
                                 Ver Web
@@ -261,7 +261,7 @@ export function AdminDashboard() {
                                 <button
                                     onClick={handleSaveChanges}
                                     disabled={isSaving}
-                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-ink px-4 py-2 rounded-lg font-bold uppercase transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50"
+                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-ink px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50"
                                 >
                                     {isSaving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
                                     Guardar Cambios ({pendingChanges.length})
@@ -290,7 +290,7 @@ export function AdminDashboard() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as TabType)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color] ${
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-[background-color,border-color,box-shadow,color] ${
  isActive 
  ? 'bg-brand text-ink shadow-lg shadow-brand/20' 
  : 'bg-surface-sunken text-ink-muted border border-subtle hover:border-strong hover:text-ink'
@@ -324,11 +324,11 @@ export function AdminDashboard() {
                         <Loader className="animate-spin text-brand-text h-12 w-12" />
                     </div>
                 ) : (
-                    <div className="bg-surface-sunken border border-line rounded-xl overflow-hidden shadow-2xl">
+                    <div className="bg-surface-sunken border border-line rounded-xl overflow-hidden shadow-overlay">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-black/40 border-b border-line text-sm font-bold text-ink-muted uppercase tracking-wider">
+                                    <tr className="bg-surface-sunken border-b border-line text-sm font-bold text-ink-muted">
                                         <th className="p-4 pl-6 w-1/4">Usuario</th>
                                         <th className="p-4 w-1/4">Email</th>
                                         
@@ -364,13 +364,13 @@ export function AdminDashboard() {
                                 <tbody className="divide-y divide-subtle">
                                     {filteredUsers.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="p-8 text-center text-ink-subtle italic">
+                                            <td colSpan={5} className="p-8 text-center text-ink-subtle">
                                                 No se encontraron usuarios
                                             </td>
                                         </tr>
                                     ) : (
                                         filteredUsers.map((user) => (
-                                            <tr key={user.id} className="hover:bg-white/5 transition-colors group">
+                                            <tr key={user.id} className="hover:bg-[var(--fill-hover)] transition-colors group">
                                                 <td className="p-4 pl-6">
                                                     {renderUserAvatar(user)}
                                                 </td>
@@ -386,7 +386,7 @@ export function AdminDashboard() {
                                                                 <select
                                                                     value={user.role}
                                                                     onChange={(e) => changeRole(user.id, e.target.value as 'coach' | 'athlete' | 'nutritionist')}
-                                                                    className={`w-full appearance-none bg-surface-sunken border rounded-lg px-3 py-1.5 text-sm font-bold uppercase cursor-pointer transition-colors ${user.role === 'coach'
+                                                                    className={`w-full appearance-none bg-surface-sunken border rounded-lg px-3 py-1.5 text-sm font-bold cursor-pointer transition-colors ${user.role === 'coach'
  ? 'border-indigo-500/30 text-indigo-400 hover:border-indigo-500/60'
  : user.role === 'nutritionist'
  ? 'border-emerald-500/30 text-success hover:border-emerald-500/60'
@@ -405,9 +405,9 @@ export function AdminDashboard() {
                                                         <td className="p-4">
                                                             <button
                                                                 onClick={() => toggleAccess(user.id, user.has_access)}
-                                                                className={`mx-auto flex items-center justify-center gap-2 px-4 py-2 w-full max-w-[120px] rounded-lg font-bold text-sm uppercase transition-[background-color,border-color,box-shadow,color,transform] shadow-md active:scale-95 ${user.has_access
- ? 'bg-success-quiet text-success border border-green-500/30 hover:bg-green-500/20 shadow-green-500/5'
- : 'bg-danger-quiet text-danger-text border border-red-500/30 hover:bg-red-500/20 shadow-red-500/5'
+                                                                className={`mx-auto flex items-center justify-center gap-2 px-4 py-2 w-full max-w-[120px] rounded-lg font-bold text-sm transition-[background-color,border-color,box-shadow,color,transform] shadow-md active:scale-95 ${user.has_access
+ ? 'bg-success-quiet text-success border border-green-500/30 hover:bg-success-quiet shadow-green-500/5'
+ : 'bg-danger-quiet text-danger-text border border-danger/30 hover:bg-danger-quiet shadow-red-500/5'
  }`}
                                                             >
                                                                 {user.has_access ? (
@@ -479,9 +479,9 @@ export function AdminDashboard() {
                                                         <td className="p-4">
                                                             <div className="flex items-center gap-2">
                                                                 {user.logo_url && (
-                                                                    <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-white/5 rounded flex-shrink-0" />
+                                                                    <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-[var(--fill-muted)] rounded flex-shrink-0" />
                                                                 )}
-                                                                <label className="text-t-2xs font-bold uppercase bg-surface-sunken hover:bg-white/10 px-2 py-1.5 border border-strong rounded cursor-pointer transition-colors whitespace-nowrap text-ink">
+                                                                <label className="text-t-2xs font-bold bg-surface-sunken hover:bg-[var(--fill-pressed)] px-2 py-1.5 border border-strong rounded cursor-pointer transition-colors whitespace-nowrap text-ink">
                                                                     Subir
                                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
                                                                 </label>
@@ -496,7 +496,7 @@ export function AdminDashboard() {
                                                                         </span>
                                                                     ))
                                                                 ) : (
-                                                                    <span className="text-ink-subtle text-sm italic">Ningún atleta asignado</span>
+                                                                    <span className="text-ink-subtle text-sm">Ningún atleta asignado</span>
                                                                 )}
                                                             </div>
                                                         </td>
@@ -514,7 +514,7 @@ export function AdminDashboard() {
                                                                     </span>
                                                                 ))
                                                             ) : (
-                                                                <span className="text-ink-subtle text-sm italic">Ningún atleta asignado</span>
+                                                                <span className="text-ink-subtle text-sm">Ningún atleta asignado</span>
                                                             )}
                                                         </div>
                                                     </td>

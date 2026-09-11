@@ -92,7 +92,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+                        className="absolute inset-0 bg-[var(--scrim)] backdrop-blur-sm"
                     />
 
                     {/* Modal Content */}
@@ -100,25 +100,25 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full h-full sm:h-[90vh] sm:max-w-5xl bg-surface-sunken sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col border sm:border-line"
+                        className="relative w-full h-full sm:h-[90vh] sm:max-w-5xl bg-surface-sunken sm:rounded-2xl shadow-overlay overflow-hidden flex flex-col border sm:border-line"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 bg-surface-sunken border-b border-line shrink-0 z-10">
-                            <h3 className="text-lg md:text-xl font-black text-ink uppercase italic tracking-wider truncate mr-4">
+                            <h3 className="text-lg md:text-xl font-semibold text-ink truncate mr-4">
                                 {title}
                             </h3>
                             <div className="flex items-center gap-2">
                                 <a
                                     href={pdfUrl}
                                     download="Normativa_Anvil_Strength.pdf"
-                                    className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-ink transition-colors"
+                                    className="p-2 rounded-full hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink transition-colors"
                                     title="Descargar PDF"
                                 >
                                     <Download size={20} />
                                 </a>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-ink transition-colors"
+                                    className="p-2 rounded-full hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink transition-colors"
                                 >
                                     <X size={24} />
                                 </button>
@@ -128,25 +128,25 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                         {/* Toolbar (Mobile & Desktop) */}
                         <div className="bg-surface-raised p-2 flex items-center justify-between border-b border-subtle shrink-0 px-4">
                             <div className="flex items-center gap-2 text-ink text-sm font-medium">
-                                <span className="hidden sm:inline text-gray-400">Página</span>
+                                <span className="hidden sm:inline text-ink-muted">Página</span>
                                 <span className="bg-surface-sunken px-2 py-1 rounded border border-line min-w-[30px] text-center">
                                     {pageNumber}
                                 </span>
-                                <span className="text-gray-400">de {numPages || '--'}</span>
+                                <span className="text-ink-muted">de {numPages || '--'}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setScale(s => Math.max(0.5, s - 0.1))}
-                                    className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-ink disabled:opacity-50"
+                                    className="p-1.5 rounded hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink disabled:opacity-50"
                                     disabled={scale <= 0.5}
                                 >
                                     <ZoomOut size={18} />
                                 </button>
-                                <span className="text-xs text-gray-400 w-12 text-center">{Math.round(scale * 100)}%</span>
+                                <span className="text-xs text-ink-muted w-12 text-center">{Math.round(scale * 100)}%</span>
                                 <button
                                     onClick={() => setScale(s => Math.min(2.0, s + 0.1))}
-                                    className="p-1.5 rounded hover:bg-white/10 text-gray-400 hover:text-ink disabled:opacity-50"
+                                    className="p-1.5 rounded hover:bg-[var(--fill-pressed)] text-ink-muted hover:text-ink disabled:opacity-50"
                                     disabled={scale >= 2.0}
                                 >
                                     <ZoomIn size={18} />
@@ -162,31 +162,31 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 loading={
                                     <div className="flex flex-col items-center justify-center h-64 text-ink">
                                         <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4"></div>
-                                        <p className="font-bold text-sm uppercase tracking-wider">Cargando documento...</p>
+                                        <p className="font-bold text-sm">Cargando documento...</p>
                                     </div>
                                 }
                                 error={
                                     <div className="flex flex-col items-center justify-center h-full text-ink p-8 text-center max-w-md">
-                                        <p className="mb-4 text-red-400 font-bold">No se pudo cargar el PDF.</p>
-                                        <p className="text-sm text-gray-400 mb-6">Puede que tu conexión sea inestable o el archivo no esté disponible.</p>
+                                        <p className="mb-4 text-danger-text font-bold">No se pudo cargar el PDF.</p>
+                                        <p className="text-sm text-ink-muted mb-6">Puede que tu conexión sea inestable o el archivo no esté disponible.</p>
                                         <a
                                             href={pdfUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="bg-brand text-ink py-3 px-6 rounded-lg font-bold uppercase tracking-wider text-sm hover:bg-red-700 transition-colors"
+                                            className="bg-brand text-ink py-3 px-6 rounded-lg font-bold text-sm hover:bg-brand-hover transition-colors"
                                         >
                                             Descargar y ver
                                         </a>
                                     </div>
                                 }
-                                className="flex flex-col items-center shadow-2xl"
+                                className="flex flex-col items-center shadow-overlay"
                             >
                                 <Page
                                     pageNumber={pageNumber}
                                     width={containerWidth ? Math.min(containerWidth - 32, 800) : undefined}
                                     scale={scale}
                                     loading={
-                                        <div className="h-[600px] w-full flex items-center justify-center text-gray-500">
+                                        <div className="h-[600px] w-full flex items-center justify-center text-ink-subtle">
                                             <div className="w-8 h-8 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
                                         </div>
                                     }
@@ -203,7 +203,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 <button
                                     disabled={pageNumber <= 1}
                                     onClick={previousPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand transition-colors border border-subtle"
+                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand transition-colors border border-subtle"
                                 >
                                     <ChevronLeft size={20} />
                                     <span className="hidden sm:inline">Anterior</span>
@@ -216,7 +216,7 @@ export function PDFModal({ isOpen, onClose, pdfUrl, title = "Documento" }: PDFMo
                                 <button
                                     disabled={pageNumber >= numPages}
                                     onClick={nextPage}
-                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand transition-colors border border-subtle"
+                                    className="flex items-center gap-2 px-6 py-3 bg-surface-sunken text-ink rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand transition-colors border border-subtle"
                                 >
                                     <span className="hidden sm:inline">Siguiente</span>
                                     <ChevronRight size={20} />

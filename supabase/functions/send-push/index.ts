@@ -1,143 +1,178 @@
 // Supabase Edge Function: send-push
-// Envía Web Push a las suscripciones del usuario cuando se inserta una notificación.
-// Se invoca desde el trigger de BD (ver database/push_reminders.sql).
-//
-// CONFIGURACIÓN (una vez):
-//   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:anvilstrengthclub@gmail.com
-//   supabase secrets set PUSH_HOOK_SECRET=<cadena larga y aleatoria>
-//   supabase functions deploy send-push --no-verify-jwt
-//
-// Usa la librería estándar web-push (npm) — cifra el payload correctamente (aes128gcm),
-// cosa que la implementación manual anterior no hacía.
-//
-//
-// POR QUÉ HAY UN SECRETO COMPARTIDO
 // =====================================================================
 //
-// Esta función se despliega con `--no-verify-jwt`, y tiene que ser así: quien
-// la llama es un disparador de la base de datos vía pg_net (ver
-// database/push_reminders.sql), que no tiene ninguna sesión de usuario que
-// presentar.
+// Envía Web Push a las suscripciones de un usuario. La llaman los
+// disparadores de la base (`public.push_send`, ver
+// database/NOTIFICACIONES_2026-09-11.sql) a través de pg_net.
 //
-// El problema es que "sin JWT" significa que la puede llamar CUALQUIERA. La
-// URL no es un secreto —es `<project-ref>.supabase.co/functions/v1/send-push`
-// y el project-ref va dentro del bundle del navegador—, así que sin esta
-// comprobación bastaba un POST desde cualquier sitio con
+// DESPLIEGUE: SIN verificación de JWT (quien llama es la base, que no tiene
+// sesión de usuario). La autenticación es el secreto compartido, y ese
+// secreto NO se configura a mano: lo genera Postgres y vive en Vault. Esta
+// función lo comprueba preguntándole a la base (`push_hook_secret_ok`).
 //
-//     { "user_id": "<uuid>", "title": "...", "link": "..." }
+// CLAVES VAPID: tampoco hay que configurarlas. Si Vault no tiene ninguna, la
+// primera llamada las genera (o adopta VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY si
+// existían como secretos de la función) y las guarda. La pública la sirve la
+// RPC `get_vapid_public_key()` o esta misma función con `action: 'public_key'`,
+// así que el navegador no depende de ninguna variable de entorno de Vercel.
 //
-// para hacerle llegar al móvil de cualquier usuario un aviso con el nombre y
-// el icono de Anvil Strength y un enlace elegido por quien lo manda. Eso no
-// es un aviso de más: es una notificación de confianza usada para llevar a
-// alguien donde no quiere ir.
+// POR QUÉ HAY UN SECRETO
 //
-// El secreto lo comparten solo la función y el disparador. Se compara byte a
-// byte y en tiempo constante para no filtrar por cuánto tarda en fallar.
-//
-// `link` se valida aparte, y no basta con el secreto: los avisos los escriben
-// las propias tablas de la aplicación, así que un texto que acabe en `link`
-// no debería poder sacar a nadie del dominio aunque venga de dentro.
+// "Sin JWT" significa que la puede llamar cualquiera: la URL no es secreta.
+// Sin el secreto bastaría un POST para hacerle llegar al móvil de cualquier
+// usuario un aviso con el nombre y el icono de Anvil y un enlace elegido por
+// quien lo manda. `link` se valida aparte: un aviso solo lleva DENTRO de la
+// aplicación.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-push-secret',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') ?? '';
-const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') ?? '';
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:anvilstrengthclub@gmail.com';
 
-const HOOK_SECRET = Deno.env.get('PUSH_HOOK_SECRET') ?? '';
+const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
+    auth: { autoRefreshToken: false, persistSession: false },
+});
 
-if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+        status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+interface VapidPair {
+    publicKey: string;
+    privateKey: string;
+}
+
+/** Vive lo que viva el aislamiento: una lectura de Vault por arranque en frío. */
+let vapidCache: VapidPair | null = null;
+
+async function vapidKeys(): Promise<VapidPair> {
+    if (vapidCache) return vapidCache;
+
+    const { data, error } = await admin.rpc('push_vapid_keys');
+    if (error) throw error;
+
+    let pair: VapidPair | null =
+        data && typeof data === 'object' && data.public_key && data.private_key
+            ? { publicKey: String(data.public_key), privateKey: String(data.private_key) }
+            : null;
+
+    if (!pair) {
+        const envPublic = Deno.env.get('VAPID_PUBLIC_KEY');
+        const envPrivate = Deno.env.get('VAPID_PRIVATE_KEY');
+        const seed = envPublic && envPrivate
+            ? { publicKey: envPublic, privateKey: envPrivate }
+            : webpush.generateVAPIDKeys();
+
+        // La base devuelve el par que QUEDE guardado: si otro arranque se
+        // adelantó, se usa el suyo y no el recién generado.
+        const { data: saved, error: saveError } = await admin.rpc('push_vapid_save', {
+            p_public: seed.publicKey,
+            p_private: seed.privateKey,
+        });
+        if (saveError) throw saveError;
+        pair = { publicKey: String(saved.public_key), privateKey: String(saved.private_key) };
+    }
+
+    webpush.setVapidDetails(VAPID_SUBJECT, pair.publicKey, pair.privateKey);
+    vapidCache = pair;
+    return pair;
 }
 
 /**
- * Comparación en tiempo constante.
- *
- * `a === b` corta en cuanto encuentra el primer byte distinto, así que cuánto
- * tarda en decir que no depende de cuántos caracteres se han acertado. Con
- * suficientes intentos eso permite ir adivinando el secreto letra a letra.
- */
-function mismoSecreto(a: string, b: string): boolean {
-    if (a.length !== b.length) return false;
-    let diff = 0;
-    for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    return diff === 0;
-}
-
-/**
- * Un enlace de aviso solo puede llevar a un sitio DENTRO de la aplicación.
- *
- * Se exige una ruta absoluta del propio dominio y se rechaza cualquier cosa
- * con esquema (`https:`, y sobre todo `javascript:`) o con doble barra
- * inicial (`//otro-dominio.com`, que el navegador entiende como externa aun
- * sin escribir el protocolo).
+ * Un enlace de aviso solo puede llevar a un sitio DENTRO de la aplicación:
+ * ruta absoluta propia, sin esquema (`javascript:`) ni doble barra
+ * (`//otro-dominio`).
  */
 function enlaceSeguro(valor: unknown): string {
     if (typeof valor !== 'string') return '/';
     const limpio = valor.trim();
-    if (!limpio.startsWith('/')) return '/';
-    if (limpio.startsWith('//')) return '/';
-    if (limpio.includes('\\')) return '/';
+    if (!limpio.startsWith('/') || limpio.startsWith('//') || limpio.includes('\\')) return '/';
     return limpio.slice(0, 300);
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const HEX_RE = /^[0-9a-f]{64}$/i;
+
+/** El testigo de entrega de un mensaje de chat, si viene bien formado. */
+function ackPayload(value: unknown) {
+    if (!value || typeof value !== 'object') return undefined;
+    const { id, token } = value as { id?: unknown; token?: unknown };
+    if (typeof id !== 'string' || !UUID_RE.test(id)) return undefined;
+    if (typeof token !== 'string' || !HEX_RE.test(token)) return undefined;
+    return { url: `${SUPABASE_URL}/functions/v1/chat-ack`, id, token };
+}
+
 Deno.serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders });
+    if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+    if (req.method !== 'POST') return json({ error: 'Método no permitido.' }, 405);
+    if (!SUPABASE_URL || !SERVICE_ROLE) return json({ error: 'La función no está configurada.' }, 500);
+
+    let body: Record<string, unknown> = {};
+    try {
+        body = await req.json();
+    } catch {
+        /* cuerpo vacío: se valida abajo */
     }
 
-    // Sin secreto configurado NO se abre la puerta: se cierra. Un despliegue
-    // al que se le olvidó el `supabase secrets set` tiene que quedarse sin
-    // avisos, no sin autenticación.
-    if (!HOOK_SECRET || !mismoSecreto(req.headers.get('x-push-secret') ?? '', HOOK_SECRET)) {
-        return new Response(
-            JSON.stringify({ error: 'No autorizado.' }),
-            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    // PÚBLICO: la clave pública VAPID no es un secreto. Es lo que el
+    // navegador necesita para suscribirse, y pedirla prepara el par si aún
+    // no existía.
+    if (body.action === 'public_key') {
+        try {
+            const keys = await vapidKeys();
+            return json({ public_key: keys.publicKey });
+        } catch (err) {
+            console.error('VAPID:', err);
+            return json({ error: 'No se pudo preparar el push.' }, 500);
+        }
     }
+
+    const secret = req.headers.get('x-push-secret') ?? '';
+    if (!secret) return json({ error: 'No autorizado.' }, 401);
+    const { data: ok, error: okError } = await admin.rpc('push_hook_secret_ok', { p_secret: secret });
+    if (okError || ok !== true) return json({ error: 'No autorizado.' }, 401);
+
+    const record = ((body.record ?? body) || {}) as Record<string, unknown>;
+    const userId = typeof record.user_id === 'string' ? record.user_id : '';
+    const title = typeof record.title === 'string' ? record.title.slice(0, 120) : '';
+    if (!UUID_RE.test(userId) || !title) {
+        return json({ error: 'user_id y title requeridos.' }, 400);
+    }
+    const message = typeof record.message === 'string' ? record.message.slice(0, 240) : '';
+    const link = enlaceSeguro(record.link);
+    const data = record.data && typeof record.data === 'object' ? (record.data as Record<string, unknown>) : {};
+    const category = typeof data.category === 'string' ? data.category : 'system';
 
     try {
-        const body = await req.json();
-        const record = body.record ?? body; // formato webhook o llamada directa
-        const { user_id, title, message } = record || {};
-        const link = enlaceSeguro(record?.link);
+        await vapidKeys();
 
-        if (!user_id || !title) {
-            return new Response(
-                JSON.stringify({ error: 'user_id y title requeridos' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-        }
-
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-        );
-
-        const { data: subscriptions, error } = await supabase
+        const { data: subscriptions, error } = await admin
             .from('push_subscriptions')
             .select('id, endpoint, p256dh, auth')
-            .eq('user_id', user_id);
-
+            .eq('user_id', userId);
         if (error) throw error;
 
         if (!subscriptions || subscriptions.length === 0) {
-            return new Response(
-                JSON.stringify({ sent: 0, reason: 'sin suscripciones' }),
-                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
+            return json({ sent: 0, reason: 'sin suscripciones' });
         }
 
         const payload = JSON.stringify({
-            title: title || 'Anvil Strength',
-            message: message || '',
-            link: link || '/'
+            title,
+            message,
+            link,
+            tag: typeof data.tag === 'string' ? data.tag.slice(0, 80) : undefined,
+            category,
+            ack: ackPayload(data.ack),
         });
 
         let sent = 0;
@@ -147,29 +182,26 @@ Deno.serve(async (req) => {
             try {
                 await webpush.sendNotification(
                     { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-                    payload
+                    payload,
+                    // Un mensaje de chat caduca pronto y va con prioridad; un
+                    // aviso de bloque nuevo puede esperar a que el móvil despierte.
+                    { TTL: category === 'message' ? 60 * 60 * 6 : 60 * 60 * 24 * 2, urgency: category === 'message' ? 'high' : 'normal' }
                 );
                 sent++;
             } catch (err) {
                 const status = (err as { statusCode?: number }).statusCode;
                 if (status === 404 || status === 410) expired.push(sub.id);
-                else console.error('Push error:', err);
+                else console.error('Push error:', status, err);
             }
         }));
 
         if (expired.length > 0) {
-            await supabase.from('push_subscriptions').delete().in('id', expired);
+            await admin.from('push_subscriptions').delete().in('id', expired);
         }
 
-        return new Response(
-            JSON.stringify({ sent, total: subscriptions.length, expired: expired.length }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return json({ sent, total: subscriptions.length, expired: expired.length });
     } catch (err) {
-        console.error('Edge function error:', err);
-        return new Response(
-            JSON.stringify({ error: String(err) }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        console.error('send-push:', err);
+        return json({ error: 'No se pudo enviar.' }, 500);
     }
 });

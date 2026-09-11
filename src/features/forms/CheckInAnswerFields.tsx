@@ -31,10 +31,10 @@ export function CheckInAnswerFields({
                                         key={i}
                                         type="button"
                                         onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
-                                        className={`aspect-square rounded-lg text-xs font-black transition-[background-color,box-shadow,color,transform] ${
+                                        className={`aspect-square rounded-lg text-xs font-semibold transition-[background-color,box-shadow,color,transform] ${
  values[q.id] === i
  ? 'bg-brand text-ink scale-110 shadow-lg shadow-brand/30'
- : 'bg-white/5 text-ink-subtle hover:bg-white/10 hover:text-ink'
+ : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
  }`}
                                     >
                                         {i}
@@ -42,7 +42,7 @@ export function CheckInAnswerFields({
                                 ))}
                             </div>
                             {(q.scale?.minLabel || q.scale?.maxLabel) && (
-                                <div className="mt-1.5 flex justify-between text-t-2xs text-gray-600">
+                                <div className="mt-1.5 flex justify-between text-t-2xs text-ink-subtle">
                                     <span>{q.scale?.minLabel}</span>
                                     <span>{q.scale?.maxLabel}</span>
                                 </div>

@@ -71,7 +71,7 @@ function Bloque({ titulo, nota, children }: { titulo: string; nota?: string; chi
     return (
         <section className="space-y-3">
             <div>
-                <h2 className="text-t-lg font-black uppercase tracking-display text-ink">{titulo}</h2>
+                <h2 className="text-t-lg font-semibold tracking-display text-ink">{titulo}</h2>
                 {nota && <p className="mt-1 text-t-xs text-ink-subtle">{nota}</p>}
             </div>
             <div className="rounded-card border border-dashed border-[var(--border-strong)] p-4">
@@ -94,10 +94,10 @@ export function PiezasPreview() {
         <div className="min-h-[100dvh] bg-surface-canvas px-4 py-8 md:px-8">
             <div className="mx-auto w-full max-w-3xl space-y-10">
                 <header>
-                    <p className="text-t-2xs font-bold uppercase tracking-widest text-brand-text">
+                    <p className="text-t-2xs font-bold text-brand-text">
                         Solo desarrollo
                     </p>
-                    <h1 className="mt-1 text-t-3xl font-black uppercase tracking-display text-ink">
+                    <h1 className="mt-1 text-t-3xl font-semibold tracking-display text-ink">
                         Banco de piezas
                     </h1>
                     <p className="mt-1.5 text-t-sm text-ink-muted">
@@ -175,7 +175,7 @@ export function PiezasPreview() {
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => setAbierto('managed')}
-                            className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-extrabold uppercase tracking-wide text-brand-ink"
+                            className="rounded-field bg-brand px-4 py-2.5 text-t-xs font-semibold text-brand-ink"
                         >
                             Atleta ficticio (3 opciones)
                         </button>
