@@ -153,8 +153,12 @@ function cajaMedia(w?: number, h?: number) {
 function Imagen({ mensaje }: { mensaje: MensajeEnPantalla }) {
     const a = mensaje.attachment!;
     const subiendo = mensaje.estadoLocal === 'subiendo';
-    const url = useAdjuntoUrl(a.path, !mensaje.previewUrl && !!a.path);
-    const src = mensaje.previewUrl ?? url.data ?? null;
+    // La vista previa local (un blob del navegador) vale mientras viva; si
+    // se ha liberado o falla, se pide el URL firmado del almacén.
+    const [previaRota, setPreviaRota] = useState(false);
+    const usarPrevia = !!mensaje.previewUrl && !previaRota;
+    const url = useAdjuntoUrl(a.path, !usarPrevia && !!a.path);
+    const src = usarPrevia ? mensaje.previewUrl! : (url.data ?? null);
     const [abierta, setAbierta] = useState(false);
     const caja = cajaMedia(a.width, a.height);
 
@@ -169,7 +173,7 @@ function Imagen({ mensaje }: { mensaje: MensajeEnPantalla }) {
                 aria-label="Ver la foto"
             >
                 {src ? (
-                    <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                    <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" onError={() => { if (usarPrevia) setPreviaRota(true); }} />
                 ) : url.isError ? (
                     <span className="flex h-full items-center justify-center text-t-xs text-ink">No se pudo cargar</span>
                 ) : (

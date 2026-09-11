@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { m } from 'framer-motion';
 import { ChevronRight, Dumbbell, Utensils, Check, Flame, Sparkles, Moon } from 'lucide-react';
+import { LEVANTAR, HUNDIR } from '../../../components/layout/InicioPanel';
 import { trainingService, type TodayTraining, type NoSessionReason } from '../../../services/trainingService';
 import { nutritionService } from '../../../services/nutritionService';
 import type { NutritionPlan } from '../../../types/nutrition';
@@ -162,10 +164,14 @@ export function TrainingCard({
             : 'Empezar entrenamiento';
 
     return (
-        <button
+        <m.button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
+            data-no-press
+            whileHover={locked ? undefined : LEVANTAR}
+            whileTap={locked ? undefined : HUNDIR}
+            transition={MUELLE}
+            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-[24px] bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
         >
             <Dumbbell
                 size={128}
@@ -283,9 +289,12 @@ export function TrainingCard({
                     className="pointer-events-none absolute -bottom-4 right-2 text-brand-ink opacity-[0.10]"
                 />
             )}
-        </button>
+        </m.button>
     );
 }
+
+/** El muelle de las tarjetas del inicio: corto y sin rebote visible. */
+const MUELLE = { type: 'spring', stiffness: 520, damping: 34, mass: 0.6 } as const;
 
 // =====================================================================
 // NUTRICIÓN
@@ -303,20 +312,18 @@ function NutritionCard({
     onOpen: () => void;
 }) {
     return (
-        <button
+        <m.button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
+            data-no-press
+            whileHover={locked ? undefined : LEVANTAR}
+            whileTap={locked ? undefined : HUNDIR}
+            transition={MUELLE}
+            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-[24px] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
         >
-            <Utensils
-                size={128}
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-6 -top-4 text-success opacity-[0.06] transition-transform duration-base ease-snap group-hover:scale-105"
-            />
-
             <div className="relative">
-                <span className="flex h-10 w-10 items-center justify-center rounded-field bg-success-quiet">
-                    <Utensils size={20} className="text-success" aria-hidden="true" />
+                <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[var(--tint-green)]">
+                    <Utensils size={21} strokeWidth={2.1} className="text-[var(--tint-green-ink)]" aria-hidden="true" />
                 </span>
 
                 {/* Los macros del día, del plan que ha escrito el
@@ -349,7 +356,7 @@ function NutritionCard({
                     )}
                 </span>
             </div>
-        </button>
+        </m.button>
     );
 }
 
@@ -368,7 +375,7 @@ function Tag({ icon: Icon, children }: { icon: typeof Flame; children: React.Rea
 
 function Macro({ label, value, unit = '' }: { label: string; value: number; unit?: string }) {
     return (
-        <div className="rounded-field bg-surface-sunken px-2 py-1.5 text-center">
+        <div className="rounded-[12px] bg-[var(--fill-muted)] px-2 py-1.5 text-center">
             <p className="text-t-base font-semibold tabular-nums leading-none text-ink">
                 {Math.round(value || 0)}
                 {unit && <span className="text-t-2xs font-bold text-ink-subtle">{unit}</span>}

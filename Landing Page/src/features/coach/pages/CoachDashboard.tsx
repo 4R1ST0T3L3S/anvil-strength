@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-    LayoutDashboard, Users, CalendarDays, Calendar, User, Activity, Dumbbell, SlidersHorizontal, Inbox, MessageSquare, Apple, Bell,
+    LayoutDashboard, Users, CalendarDays, Calendar, User, Activity, Dumbbell, SlidersHorizontal, Inbox, MessageSquare, Apple,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
@@ -16,6 +16,7 @@ import { ProfileSection } from '../../profile/components/ProfileSection';
 import { PreferencesPage } from './PreferencesPage';
 import { PdfThemeSettings } from '../../profile/components/PdfThemeSettings';
 import { NotificationSettings } from '../../profile/components/NotificationSettings';
+import { AjustesPage } from '../../profile/components/AjustesPage';
 import { UserProfile, useUser } from '../../../hooks/useUser';
 import { PwrAnalysisTab } from '../components/pwr/PwrAnalysisTab';
 import { FloatingChat } from '../../chat/components/FloatingChat';
@@ -50,6 +51,7 @@ const VIEWS = {
     agenda: 'schedule',
     calendario: 'calendar',
     pwr: 'pwr_analysis',
+    ajustes: 'settings',
     preferencias: 'preferences',
     notificaciones: 'notifications',
     perfil: 'profile',
@@ -97,8 +99,7 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
         // nutricionista le ocupa un hueco sin darle nada.
         ...(nutritionist ? [] : [{ icon: <Activity size={20} />, label: 'Análisis PWR', onClick: () => go('pwr'), isActive: slug === 'pwr', hideOnMobileBar: true }]),
         { icon: <User size={20} />, label: 'Perfil', onClick: () => go('perfil'), isActive: slug === 'perfil', hideOnMobileBar: true },
-        { icon: <Bell size={20} />, label: 'Avisos', onClick: () => go('notificaciones'), isActive: slug === 'notificaciones', hideOnMobileBar: true },
-        { icon: <SlidersHorizontal size={20} />, label: 'Preferencias', onClick: () => go('preferencias'), isActive: slug === 'preferencias' || slug === 'documento', hideOnMobileBar: true },
+        { icon: <SlidersHorizontal size={20} />, label: 'Preferencias y ajustes', shortLabel: 'Ajustes', onClick: () => go('ajustes'), isActive: ['ajustes', 'preferencias', 'documento', 'notificaciones'].includes(slug), hideOnMobileBar: true },
     ];
 
     // Quien entrena a gente y además se entrena necesita ir y volver.
@@ -162,12 +163,24 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                 return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => go('')} />;
             case 'pwr_analysis':
                 return <PwrAnalysisTab />;
+            case 'settings':
+                return (
+                    <AjustesPage
+                        user={user}
+                        esStaff
+                        esAtleta={isAthlete(user)}
+                        onBack={() => go('')}
+                        onLogout={onLogout}
+                        cambiarPanel={panelSwitch ? { label: panelSwitch.label, onClick: panelSwitch.onClick } : undefined}
+                        onNavegar={(v) => go(v === 'profile' ? 'perfil' : v === 'notifications' ? 'notificaciones' : v === 'pdf_theme' ? 'documento' : 'preferencias')}
+                    />
+                );
             case 'preferences':
                 return <PreferencesPage coachId={user.id} onOpenPdfTheme={() => go('documento')} isDeveloper={isDeveloper(user)} />;
             case 'notifications':
-                return <NotificationSettings userId={user.id} esStaff esAtleta={isAthlete(user)} onBack={() => go('')} />;
+                return <NotificationSettings userId={user.id} esStaff esAtleta={isAthlete(user)} onBack={() => go('ajustes')} />;
             case 'pdf_theme':
-                return <PdfThemeSettings user={user} onBack={() => go('preferencias')} />;
+                return <PdfThemeSettings user={user} onBack={() => go('ajustes')} />;
             case 'home':
             default:
                 return (
@@ -180,13 +193,13 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                                     <button
                                         onClick={panelSwitch.onClick}
                                         aria-label={panelSwitch.label}
-                                        className="flex h-9 items-center gap-1.5 rounded-pill bg-[var(--brand-quiet)] px-3 text-t-xs font-semibold text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet-strong)] lg:hidden"
+                                        className="flex h-9 items-center gap-1.5 rounded-pill bg-[var(--brand-quiet)] px-3 text-t-xs font-semibold text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet-strong)]"
                                     >
                                         <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
                                         <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
                                     </button>
                                 )}
-                                <NotificationBell userId={user.id} className="lg:hidden" />
+                                <NotificationBell userId={user.id} />
                                 <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
                             </div>
                         }

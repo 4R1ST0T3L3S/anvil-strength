@@ -51,9 +51,9 @@ const VARIANT: Record<Variant, string> = {
  * lo que se ve. `lg` ya mide 48.
  */
 const SIZE: Record<Size, string> = {
-    sm: "h-8 px-3 text-[13px] gap-1.5 rounded-[9px] before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']",
+    sm: "h-8 px-3 text-[13px] gap-1.5 rounded-[10px] before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']",
     md: "h-10 px-4 text-t-sm gap-2 rounded-field before:absolute before:-inset-y-0.5 before:inset-x-0 before:content-['']",
-    lg: 'h-12 px-5 text-t-base gap-2 rounded-[12px]',
+    lg: 'h-12 px-5 text-t-base gap-2 rounded-[14px]',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -83,7 +83,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
             className={cn(
                 'relative inline-flex items-center justify-center',
                 'font-semibold leading-none whitespace-nowrap select-none',
-                'transition-[background-color,color,transform] duration-fast ease-snap',
+                // Responde al ratón con un levantamiento de un píxel y un
+                // punto más de luz; al pulsar, se hunde (el `:active` global
+                // lo escala). Nada de sombras: el movimiento ya lo dice.
+                'transition-[background-color,color,transform,filter] duration-fast ease-snap',
+                'motion-safe:hover:-translate-y-px hover:brightness-[1.05] active:translate-y-0 active:brightness-100',
                 // Deshabilitado: se atenúa, no cambia de color. Cambiar el
                 // color haría pensar que es otro tipo de botón.
                 'disabled:cursor-not-allowed disabled:opacity-40',

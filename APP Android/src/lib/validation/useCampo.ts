@@ -134,10 +134,14 @@ export function useCampo<T extends string | number | boolean = string>(
     }, []);
 
     const onChange = useCallback(
-        (e: { target: { value: string; checked?: boolean } }) => {
+        (e: { target: { value: string; checked?: boolean; type?: string } }) => {
             const t = e.target;
             // Una casilla comunica por `checked`; todo lo demás por `value`.
-            setValor((typeof t.checked === 'boolean' ? t.checked : t.value) as T);
+            // Se decide por el TIPO del control: cualquier <input> tiene la
+            // propiedad `checked` (a `false` en un campo de texto), así que
+            // preguntar por su tipo guardaba `false` en vez del texto.
+            const esCasilla = t.type === 'checkbox' || t.type === 'radio';
+            setValor((esCasilla ? !!t.checked : t.value) as T);
         },
         []
     );

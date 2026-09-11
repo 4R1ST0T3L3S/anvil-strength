@@ -129,6 +129,16 @@
   --info: oklch(0.72 0.13 245);
   --info-quiet: oklch(0.72 0.13 245 / 0.14);
 
+  /* TINTES POR ÁREA — la paleta de los iconos del inicio (al estilo de los
+     ajustes de iOS: un chip de color por sección, todos a la misma
+     luminosidad y croma para que convivan). Relleno suave + tinta. */
+  --tint-red: oklch(0.66 0.19 25 / 0.16);      --tint-red-ink: oklch(0.76 0.17 25);
+  --tint-orange: oklch(0.74 0.16 60 / 0.16);   --tint-orange-ink: oklch(0.8 0.15 60);
+  --tint-green: oklch(0.72 0.16 150 / 0.16);   --tint-green-ink: oklch(0.78 0.15 150);
+  --tint-blue: oklch(0.7 0.14 245 / 0.16);     --tint-blue-ink: oklch(0.78 0.12 245);
+  --tint-purple: oklch(0.7 0.16 300 / 0.16);   --tint-purple-ink: oklch(0.78 0.14 300);
+  --tint-gray: oklch(1 0 0 / 0.09);            --tint-gray-ink: oklch(0.82 0.004 286);
+
   /* RPE / esfuerzo percibido: el dato más leído de la app. */
   --effort-low: oklch(0.74 0.16 152);
   --effort-mid: oklch(0.8 0.15 78);
@@ -157,10 +167,10 @@
   /* -------------------------------------------------------------------
      7. RADIOS — esquinas continuas, generosas sin llegar a infantiles
      ------------------------------------------------------------------- */
-  --radius-xs: 6px;   /* insignias, chips */
-  --radius-sm: 10px;  /* campos, botones */
-  --radius-md: 14px;  /* tarjetas, listas agrupadas */
-  --radius-lg: 20px;  /* hojas y diálogos — techo del sistema */
+  --radius-xs: 7px;   /* insignias, chips */
+  --radius-sm: 12px;  /* campos, botones */
+  --radius-md: 18px;  /* tarjetas, listas agrupadas */
+  --radius-lg: 24px;  /* hojas, diálogos y tarjetas grandes — techo */
   --radius-pill: 999px;
 
   /* -------------------------------------------------------------------
@@ -216,15 +226,9 @@
      La cápsula flotante mide 60px y deja 10px hasta el borde: 70px que todo
      lo que flota abajo (volver arriba, avisos) tiene que respetar. NO incluye
      la zona segura del iPhone, que se suma aparte con
-     `env(safe-area-inset-bottom)`. Desde `lg` manda la barra lateral y esto
-     vale cero. Si cambia la geometría de la cápsula, cambia AQUÍ. */
-  --tabbar-alto: 70px;
-}
-
-@media (min-width: 1024px) {
-  :root {
-    --tabbar-alto: 0px;
-  }
+     `env(safe-area-inset-bottom)`. La barra flota en TODOS los tamaños (no
+     hay barra lateral). Si cambia la geometría de la cápsula, cambia AQUÍ. */
+  --tabbar-alto: 74px;
 }
 
 /* ===================================================================
@@ -288,6 +292,13 @@
   --info: oklch(0.5 0.15 250);
   --info-quiet: oklch(0.5 0.15 250 / 0.11);
 
+  --tint-red: oklch(0.6 0.19 25 / 0.12);       --tint-red-ink: oklch(0.55 0.2 25);
+  --tint-orange: oklch(0.68 0.16 60 / 0.14);   --tint-orange-ink: oklch(0.58 0.16 60);
+  --tint-green: oklch(0.62 0.16 150 / 0.13);   --tint-green-ink: oklch(0.5 0.15 150);
+  --tint-blue: oklch(0.6 0.15 245 / 0.13);     --tint-blue-ink: oklch(0.52 0.16 245);
+  --tint-purple: oklch(0.6 0.17 300 / 0.13);   --tint-purple-ink: oklch(0.52 0.18 300);
+  --tint-gray: oklch(0 0 0 / 0.06);            --tint-gray-ink: oklch(0.42 0.006 286);
+
   --effort-low: oklch(0.5 0.14 152);
   --effort-mid: oklch(0.54 0.13 70);
   --effort-high: oklch(0.56 0.17 45);
@@ -295,7 +306,9 @@
 
   --focus-ring: oklch(0.21 0.005 286);
 
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.045), 0 0 0 0.5px oklch(0 0 0 / 0.05);
+  /* Sin sombra en las tarjetas tampoco en claro: el blanco sobre el lienzo
+     gris ya las separa. La sombra queda para lo que flota (menús, hojas). */
+  --shadow-card: none;
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.06);
   --shadow-md: 0 6px 18px -6px oklch(0 0 0 / 0.14), 0 1px 3px oklch(0 0 0 / 0.05);
   --shadow-lg: 0 22px 50px -14px oklch(0 0 0 / 0.24), 0 2px 6px oklch(0 0 0 / 0.06);

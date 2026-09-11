@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ChevronRight, Dumbbell, Utensils, Moon } from 'lucide-react';
+import { m } from 'framer-motion';
+import { ChevronRight, Dumbbell, Utensils, Check, Flame, Sparkles, Moon } from 'lucide-react';
+import { LEVANTAR, HUNDIR } from '../../../components/layout/InicioPanel';
 import { trainingService, type TodayTraining, type NoSessionReason } from '../../../services/trainingService';
 import { nutritionService } from '../../../services/nutritionService';
 import type { NutritionPlan } from '../../../types/nutrition';
@@ -58,7 +60,9 @@ export function TodayPanel({ athleteId, onOpenTraining, onOpenNutrition, locked 
     }, [athleteId]);
 
     return (
-        <div className="grid grid-cols-2 gap-2">
+        // En el ordenador llena el hueco que le deja el inicio (ver
+        // InicioPanel.tsx); en el móvil manda su propio alto mínimo.
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pc:min-h-0 pc:flex-1">
             <TrainingCard
                 training={training}
                 loading={loading}
@@ -91,7 +95,31 @@ const NO_SESSION_TEXT: Record<NoSessionReason, { title: string; hint: string }> 
     empty: { title: 'Entrenar', hint: 'Tu entrenador aún no te ha pautado nada' },
 };
 
+/**
+ * Cabecera de contexto: "Viernes · Semana 6 de 12 · Día 3".
+ *
+ * Es la respuesta a "¿dónde estoy?", que hasta ahora había que deducir
+ * entrando en la planificación y mirando el selector de semana. Cada pieza se
+ * omite si no se puede afirmar: un bloque sin `start_week` no tiene ordinal de
+ * semana, y un día sin agendar no tiene día de la semana.
+ */
+function contextLine(training: TodayTraining): string | null {
+    const parts: string[] = [];
 
+    if (training.session?.weekday) parts.push(training.session.weekday);
+
+    if (training.programWeek !== null && training.programWeek >= 1) {
+        parts.push(
+            training.totalWeeks
+                ? `Semana ${training.programWeek} de ${training.totalWeeks}`
+                : `Semana ${training.programWeek}`
+        );
+    }
+
+    if (training.session) parts.push(`Día ${training.session.dayNumber}`);
+
+    return parts.length > 0 ? parts.join(' · ') : null;
+}
 
 /**
  * Se exporta para el banco de pruebas de maquetación (`/dev/movil`).
@@ -114,33 +142,145 @@ export function TrainingCard({
     onOpen: () => void;
 }) {
     const session = training?.session ?? null;
+    const done = session?.completed ?? false;
+    const started = (session?.completedSets ?? 0) > 0;
+    const progress = session && session.totalSets > 0
+        ? Math.round((session.completedSets / session.totalSets) * 100)
+        : 0;
     const noSession = training && !session ? NO_SESSION_TEXT[training.reason ?? 'empty'] : null;
+    const context = training && !loading ? contextLine(training) : null;
+
+    /**
+     * El botón dice lo que va a pasar al pulsarlo.
+     *
+     * "Entrenar" valía para las tres situaciones y no distinguía ninguna:
+     * empezar de cero, retomar un día a medias y volver a mirar uno cerrado no
+     * son la misma acción.
+     */
+    const action = done
+        ? 'Ver entrenamiento'
+        : started
+            ? 'Continuar entrenamiento'
+            : 'Empezar entrenamiento';
 
     return (
-        <button
+        <m.button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex h-full min-h-[96px] xl:min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay active:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-surface-raised group-hover:border-[var(--brand-line)]"
+            data-no-press
+            whileHover={locked ? undefined : LEVANTAR}
+            whileTap={locked ? undefined : HUNDIR}
+            transition={MUELLE}
+            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-[24px] bg-brand p-5 text-left transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
         >
             <Dumbbell
-                size={72}
+                size={128}
                 aria-hidden="true"
-                className="pointer-events-none absolute -right-4 -top-3 text-ink opacity-[0.04] transition-transform duration-base ease-snap group-hover:scale-110"
+                className="pointer-events-none absolute -right-6 -top-4 text-brand-ink opacity-[0.12] transition-transform duration-base ease-snap group-hover:scale-105"
             />
-            <span className="flex h-8 w-8 xl:h-7 xl:w-7 shrink-0 items-center justify-center rounded-field bg-brand-quiet">
-                <Dumbbell size={16} className="text-brand-text" aria-hidden="true" />
-            </span>
-            <span className="relative mt-1.5 xl:mt-1 flex flex-col min-h-0 overflow-hidden">
-                <span className="block text-t-sm xl:text-t-base font-bold leading-tight text-ink truncate">
-                    {loading ? 'Cargando.' : noSession ? noSession.title : session?.title ?? 'Entrenar'}
+
+            {/* En el ordenador el inicio va a pantalla completa y esta tarjeta
+                tiene el alto que le toque (unos 200px en un portátil de 768).
+                Lo que cede es ESTA parte —la lista de ejercicios, que se
+                desvanece si no cabe—; el título, el progreso y el botón de
+                abajo se ven siempre enteros. */}
+            <div className="relative pc:min-h-0 pc:flex-1 pc:overflow-hidden pc:[mask-image:linear-gradient(to_bottom,black_80%,transparent)]">
+                <div className="flex items-center gap-2">
+                    <Dumbbell size={22} className="text-brand-ink" aria-hidden="true" />
+                    {done && (
+                        <span className="flex items-center gap-1 rounded-chip bg-brand-ink/15 px-2 py-0.5 text-t-2xs font-bold text-brand-ink">
+                            <Check size={11} strokeWidth={3} aria-hidden="true" /> Hecho
+                        </span>
+                    )}
+                </div>
+
+                {/* DÓNDE ESTÁ EL ATLETA, en un renglón.
+                    Antes había que entrar en la planificación y leer el
+                    selector de semana para saberlo. */}
+                {context && (
+                    <p className="mt-2 truncate text-t-2xs font-bold text-brand-ink/70">
+                        {context}
+                    </p>
+                )}
+
+                {/* La lista de ejercicios es LO IMPORTANTE de esta tarjeta:
+                    responde a "¿qué toca hoy?" sin abrir nada. */}
+                {!loading && session && session.exerciseNames.length > 0 && (
+                    <ul className="mt-2 space-y-0.5">
+                        {session.exerciseNames.slice(0, 3).map((name, i) => (
+                            <li key={i} className="truncate text-t-sm font-medium text-brand-ink/90">
+                                {name}
+                            </li>
+                        ))}
+                        {session.exerciseNames.length > 3 && (
+                            <li className="text-t-xs text-brand-ink/60">
+                                +{session.exerciseNames.length - 3} más
+                            </li>
+                        )}
+                    </ul>
+                )}
+
+                {!loading && session && (session.hasWarmup || session.considerations) && (
+                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                        {session.considerations && <Tag icon={Sparkles}>Consideraciones</Tag>}
+                        {session.hasWarmup && <Tag icon={Flame}>Calentamiento</Tag>}
+                    </div>
+                )}
+            </div>
+
+            <div className="relative mt-4 shrink-0">
+                <span className="block truncate text-t-2xl font-semibold leading-none tracking-display text-brand-ink">
+                    {loading
+                        ? 'Cargando…'
+                        : noSession
+                            ? noSession.title
+                            : session?.title ?? 'Entrenar'}
                 </span>
-                <span className="mt-0.5 flex items-center gap-1 text-t-2xs xl:text-t-xs text-ink-subtle truncate">
+
+                <span className="mt-1.5 flex items-center gap-1 text-t-sm text-brand-ink/80">
                     <span className="truncate">
-                        {loading ? 'Tu sesión de hoy' : locked ? 'Necesitas acceso completo' : noSession ? noSession.hint : session ? `${session.completedSets} de ${session.totalSets} series • ${training?.blockName}` : 'Tu entrenador aún no te ha pautado nada'}
+                        {loading
+                            ? 'Tu sesión de hoy'
+                            : locked
+                                ? 'Necesitas acceso completo'
+                                : noSession
+                                    ? noSession.hint
+                                    : session
+                                        ? `${session.completedSets} de ${session.totalSets} series · ${training?.blockName}`
+                                        : 'Tu entrenador aún no te ha pautado nada'}
                     </span>
-                    <ChevronRight size={12} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                    {/* La flecha solo cuando NO hay botón: con los dos, la
+                        tarjeta señala dos veces al mismo sitio. */}
+                    {!locked && !session && (
+                        <ChevronRight size={14} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                    )}
                 </span>
-            </span>
+
+                {/* Barra de progreso, PEGADA al renglón de series que mide.
+                    Solo cuando hay algo que medir: en un día de descanso una
+                    barra al 0% se lee como trabajo pendiente. */}
+                {!loading && session && session.totalSets > 0 && (
+                    <div className="mt-2 h-1 overflow-hidden rounded-pill bg-brand-ink/20">
+                        <div
+                            className="h-full rounded-pill bg-brand-ink transition-[width] duration-base ease-snap"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                )}
+
+                {/* LLAMADA A LA ACCIÓN.
+                    La tarjeta entera ya era pulsable, pero nada lo decía: era
+                    un bloque de información con aspecto de bloque de
+                    información. Un botón dentro de un botón no es válido, así
+                    que esto es un `span` con aspecto de botón — el clic lo
+                    sigue recogiendo la tarjeta. */}
+                {!loading && !locked && session && (
+                    <span className="mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-field bg-brand-ink/15 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap group-hover:bg-brand-ink/25">
+                        {action}
+                        <ChevronRight size={15} aria-hidden="true" />
+                    </span>
+                )}
+            </div>
 
             {training?.reason === 'rest' && (
                 <Moon
@@ -149,9 +289,12 @@ export function TrainingCard({
                     className="pointer-events-none absolute -bottom-4 right-2 text-brand-ink opacity-[0.10]"
                 />
             )}
-        </button>
+        </m.button>
     );
 }
+
+/** El muelle de las tarjetas del inicio: corto y sin rebote visible. */
+const MUELLE = { type: 'spring', stiffness: 520, damping: 34, mass: 0.6 } as const;
 
 // =====================================================================
 // NUTRICIÓN
@@ -169,36 +312,75 @@ function NutritionCard({
     onOpen: () => void;
 }) {
     return (
-        <button
+        <m.button
             onClick={onOpen}
             disabled={locked}
-            className="group relative flex h-full min-h-[96px] xl:min-h-0 w-full flex-col justify-between overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised p-3 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay active:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-surface-raised group-hover:border-lime-500/50"
+            data-no-press
+            whileHover={locked ? undefined : LEVANTAR}
+            whileTap={locked ? undefined : HUNDIR}
+            transition={MUELLE}
+            className="group relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-[24px] bg-surface-raised p-5 text-left transition-colors duration-fast ease-snap hover:bg-surface-overlay disabled:cursor-not-allowed disabled:opacity-60 pc:h-full pc:min-h-0"
         >
-            <Utensils
-                size={72}
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-4 -top-3 text-ink opacity-[0.04] transition-transform duration-base ease-snap group-hover:scale-110"
-            />
-            <span className="flex h-8 w-8 xl:h-7 xl:w-7 shrink-0 items-center justify-center rounded-field bg-lime-500/10">
-                <Utensils size={16} className="text-lime-500" aria-hidden="true" />
-            </span>
-            <span className="relative mt-1.5 xl:mt-1 flex flex-col min-h-0 overflow-hidden">
-                <span className="block text-t-sm xl:text-t-base font-bold leading-tight text-ink truncate">
-                    {loading ? 'Cargando.' : 'Mi dieta'}
+            <div className="relative">
+                <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[var(--tint-green)]">
+                    <Utensils size={21} strokeWidth={2.1} className="text-[var(--tint-green-ink)]" aria-hidden="true" />
                 </span>
-                <span className="mt-0.5 flex items-center gap-1 text-t-2xs xl:text-t-xs text-ink-subtle truncate">
-                    <span className="truncate">
-                        {loading ? 'Tu plan nutricional' : locked ? 'Necesitas acceso completo' : plan ? `${plan.calories_target} kcal • ${plan.protein_target}g P` : 'Todavía no tienes plan asignado'}
-                    </span>
-                    <ChevronRight size={12} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+
+                {/* Los macros del día, del plan que ha escrito el
+                    nutricionista. Es el dato que el atleta mira varias veces
+                    al día y para el que antes había que cambiar de pantalla. */}
+                {!loading && plan && (
+                    <div className="mt-3 grid grid-cols-4 gap-2">
+                        <Macro label="kcal" value={plan.calories_target} />
+                        <Macro label="prot" value={plan.protein_target} unit="g" />
+                        <Macro label="carb" value={plan.carbs_target} unit="g" />
+                        <Macro label="gras" value={plan.fats_target} unit="g" />
+                    </div>
+                )}
+            </div>
+
+            <div className="relative mt-4">
+                <span className="block text-t-2xl font-semibold leading-none tracking-display text-ink">
+                    Mi dieta
                 </span>
-            </span>
-        </button>
+                <span className="mt-1.5 flex items-center gap-1 text-t-sm text-ink-subtle">
+                    {loading
+                        ? 'Cargando…'
+                        : locked
+                            ? 'Necesitas acceso completo'
+                            : plan
+                                ? `${plan.meals?.length ?? 0} comidas pautadas`
+                                : 'Todavía no tienes plan asignado'}
+                    {!locked && (
+                        <ChevronRight size={14} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                    )}
+                </span>
+            </div>
+        </m.button>
     );
 }
 
+// =====================================================================
+// PIEZAS
+// =====================================================================
 
+function Tag({ icon: Icon, children }: { icon: typeof Flame; children: React.ReactNode }) {
+    return (
+        <span className="flex items-center gap-1 rounded-chip bg-brand-ink/15 px-2 py-0.5 text-t-2xs font-bold text-brand-ink">
+            <Icon size={10} aria-hidden="true" />
+            {children}
+        </span>
+    );
+}
 
-
-
-
+function Macro({ label, value, unit = '' }: { label: string; value: number; unit?: string }) {
+    return (
+        <div className="rounded-[12px] bg-[var(--fill-muted)] px-2 py-1.5 text-center">
+            <p className="text-t-base font-semibold tabular-nums leading-none text-ink">
+                {Math.round(value || 0)}
+                {unit && <span className="text-t-2xs font-bold text-ink-subtle">{unit}</span>}
+            </p>
+            <p className="mt-0.5 text-t-2xs font-bold text-ink-subtle">{label}</p>
+        </div>
+    );
+}

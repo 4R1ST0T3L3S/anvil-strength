@@ -1,5 +1,5 @@
 import {
-    LayoutDashboard, FileText, Utensils, Calendar, Trophy, User, ShoppingBag, Medal, Activity, Users, TrendingUp, Inbox, MessageSquare, Bell,
+    LayoutDashboard, FileText, Utensils, Calendar, Trophy, User, ShoppingBag, Medal, Activity, Users, TrendingUp, Inbox, MessageSquare, SlidersHorizontal,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout, AccountMenu } from '../../../components/layout/DashboardLayout';
@@ -11,6 +11,7 @@ import { ProfileSection } from '../../profile/components/ProfileSection';
 import { AnvilStore } from '../../profile/components/AnvilStore';
 import { NotificationBell } from '../../../components/ui/NotificationBell';
 import { NotificationSettings } from '../../profile/components/NotificationSettings';
+import { AjustesPage } from '../../profile/components/AjustesPage';
 import { AthleteHome } from '../components/AthleteHome';
 import { AthleteNutritionView } from '../components/AthleteNutritionView';
 import { AthleteCompetitionsView } from '../components/AthleteCompetitionsView';
@@ -51,6 +52,7 @@ const VIEWS = {
     competiciones: 'competitions',
     calendario: 'calendar',
     ranking: 'ranking',
+    ajustes: 'settings',
     notificaciones: 'notifications',
     perfil: 'profile',
     tienda: 'store',
@@ -94,7 +96,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         { icon: <Activity size={20} />, label: t('nav.velocidad'), onClick: () => go('velocidad'), isActive: slug === 'velocidad', hideOnMobileBar: true },
         { icon: <Calendar size={20} />, label: t('nav.calendarioAep'), onClick: () => go('calendario'), isActive: slug === 'calendario', hideOnMobileBar: true },
         { icon: <Medal size={20} />, label: t('nav.ranking'), onClick: () => go('ranking'), isActive: slug === 'ranking', hideOnMobileBar: true },
-        { icon: <Bell size={20} />, label: 'Avisos', onClick: () => go('notificaciones'), isActive: slug === 'notificaciones', hideOnMobileBar: true },
+        { icon: <SlidersHorizontal size={20} />, label: 'Preferencias y ajustes', shortLabel: 'Ajustes', onClick: () => go('ajustes'), isActive: slug === 'ajustes' || slug === 'notificaciones', hideOnMobileBar: true },
         // La Tienda Anvil está apagada (ver src/lib/features.ts).
         ...(FEATURES.anvilStore
             ? [{ icon: <ShoppingBag size={20} />, label: t('nav.tienda'), onClick: () => go('tienda'), isActive: slug === 'tienda', hideOnMobileBar: true }]
@@ -157,8 +159,20 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 );
             case 'ranking':
                 return <AnvilRanking user={user} onBack={() => go('')} />;
+            case 'settings':
+                return (
+                    <AjustesPage
+                        user={user}
+                        esStaff={false}
+                        esAtleta
+                        onBack={() => go('')}
+                        onLogout={onLogout}
+                        cambiarPanel={panelSwitch ? { label: panelSwitch.label, onClick: panelSwitch.onClick } : undefined}
+                        onNavegar={(v) => go(v === 'notifications' ? 'notificaciones' : 'perfil')}
+                    />
+                );
             case 'notifications':
-                return <NotificationSettings userId={user.id} esStaff={isStaff(user)} esAtleta onBack={() => go('')} />;
+                return <NotificationSettings userId={user.id} esStaff={isStaff(user)} esAtleta onBack={() => go('ajustes')} />;
             case 'profile':
                 return <ProfileSection user={user} onUpdate={() => refetch()} onBack={() => go('')} />;
             case 'store':
@@ -176,13 +190,13 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                                     <button
                                         onClick={panelSwitch.onClick}
                                         aria-label={panelSwitch.label}
-                                        className="flex h-9 items-center gap-1.5 rounded-pill bg-[var(--brand-quiet)] px-3 text-t-xs font-semibold text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet-strong)] lg:hidden"
+                                        className="flex h-9 items-center gap-1.5 rounded-pill bg-[var(--brand-quiet)] px-3 text-t-xs font-semibold text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet-strong)]"
                                     >
                                         <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">{panelSwitch.icon}</span>
                                         <span className="max-w-[92px] truncate">{panelSwitch.shortLabel ?? panelSwitch.label}</span>
                                     </button>
                                 )}
-                                <NotificationBell userId={user.id} className="lg:hidden" />
+                                <NotificationBell userId={user.id} />
                                 <AccountMenu onLogout={onLogout} userName={user.full_name} items={menuItems.filter(i => i.hideOnMobileBar)} />
                             </div>
                         }

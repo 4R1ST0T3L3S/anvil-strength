@@ -5,7 +5,7 @@ import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
 import {
     Users, Trophy, CalendarDays, Weight, List, Calculator, Swords, Fish, Loader,
-    Apple, BookOpen, LayoutDashboard, FlaskConical, Activity, User, Inbox, MessageSquare,
+    Apple, BookOpen, LayoutDashboard, FlaskConical, Activity, User, Inbox, MessageSquare, SlidersHorizontal,
 } from 'lucide-react';
 import { fetchRosterIds } from '../hooks/useCoachRoster';
 import { CountdownWidget } from '../../../components/ui/CountdownWidget';
@@ -186,14 +186,15 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                         <RejillaAccesos>
                             <Acceso area="entreno" icono={MessageSquare} titulo="Mensajes" pista="Chat con tus atletas" insignia={sinLeer} onClick={() => onNavigate('messages')} />
                             <Acceso area="comida" icono={Apple} titulo="Dietas" pista="Planes nutricionales del equipo" onClick={() => onNavigate('diets')} />
-                            <Acceso area="entreno" icono={CalendarDays} titulo="Agenda" pista="Las sesiones del equipo" onClick={() => onNavigate('schedule')} />
-                            <Acceso area="entreno" icono={Trophy} titulo="Competiciones" pista="Calendario del año" onClick={() => onNavigate('calendar')} />
+                            <Acceso area="datos" icono={CalendarDays} titulo="Agenda" pista="Las sesiones del equipo" onClick={() => onNavigate('schedule')} />
+                            <Acceso area="club" icono={Trophy} titulo="Competiciones" pista="Calendario del año" onClick={() => onNavigate('calendar')} />
                             {!nutritionist && (
-                                <Acceso area="entreno" icono={Activity} titulo="Análisis PWR" pista="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
+                                <Acceso area="datos" icono={Activity} titulo="Análisis PWR" pista="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
                             )}
-                            <Acceso icono={User} titulo="Mi perfil" pista="Marca, logo y datos" onClick={() => onNavigate('profile')} />
+                            <Acceso area="ajustes" icono={User} titulo="Mi perfil" pista="Marca, logo y datos" onClick={() => onNavigate('profile')} />
                             <Acceso area="club" icono={Swords} titulo="La Arena" pista="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
                             <Acceso area="club" icono={Users} titulo="Ranking" pista="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
+                            <Acceso area="ajustes" icono={SlidersHorizontal} titulo="Preferencias y ajustes" pista="Programación, avisos, tema y cuenta" onClick={() => onNavigate('settings')} />
                         </RejillaAccesos>
                     </Seccion>
                 }

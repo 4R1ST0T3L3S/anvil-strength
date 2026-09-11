@@ -77,10 +77,15 @@ function PrepararFoto({ file, onCancelar, onEnviar }: { file: File; onCancelar: 
         return () => { viva = false; };
     }, [file]);
 
-    useEffect(() => () => { if (lista) URL.revokeObjectURL(lista.previewUrl); }, [lista]);
+    // El `previewUrl` pasa a ser DEL MENSAJE al enviar: es lo que pinta la
+    // burbuja del remitente mientras sube y después. Solo se libera si se
+    // cancela; liberarlo al cerrar dejaba la foto en negro para quien la manda.
+    const enviada = useRef(false);
+    useEffect(() => () => { if (lista && !enviada.current) URL.revokeObjectURL(lista.previewUrl); }, [lista]);
 
     const enviar = async () => {
         if (!lista) return;
+        enviada.current = true;
         setFase('enviando');
         await onEnviar({ file: lista.file, kind: 'image', caption: pie.trim() || undefined, width: lista.width, height: lista.height, previewUrl: lista.previewUrl });
     };

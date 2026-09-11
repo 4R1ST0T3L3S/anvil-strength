@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { m } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import { ChevronRight, Lock, Quote } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -14,20 +15,29 @@ import { Contador } from '../ui/Badge';
  *   scroll, dos columnas que se reparten el alto con `flex`.
  *   MÓVIL: una columna, tarjetas compactas, texto que envuelve.
  *
- * SISTEMA DE SEPTIEMBRE DE 2026: título grande en frase, secciones con su
- * rótulo en seminegrita (sin mayúsculas ni tracking), superficies de
- * tarjeta sin bordes gruesos ni marcas de agua, un solo acento —el rojo—
- * en la acción principal y en los contadores.
+ * EL LENGUAJE (septiembre 2026): el de los Ajustes de iOS y de Duolingo.
+ * Superficies planas sin borde ni sombra, esquinas generosas, un chip de
+ * color por área con su icono, y respuesta física al ratón y al dedo: la
+ * tarjeta se levanta dos píxeles al pasar por encima y se hunde al pulsar,
+ * con un muelle corto. El rojo de marca solo en la acción del día.
  */
 
+/** La paleta de los chips: un color por área, todos a la misma luz. */
 export const AREA = {
-    entreno: { icono: 'text-brand-text', chip: 'bg-[var(--brand-quiet)]' },
-    comida: { icono: 'text-success', chip: 'bg-success-quiet' },
-    club: { icono: 'text-warning', chip: 'bg-warning-quiet' },
-    herramienta: { icono: 'text-ink-muted', chip: 'bg-[var(--fill-muted)]' },
+    entreno: { chip: 'bg-[var(--tint-red)]', icono: 'text-[var(--tint-red-ink)]' },
+    comida: { chip: 'bg-[var(--tint-green)]', icono: 'text-[var(--tint-green-ink)]' },
+    club: { chip: 'bg-[var(--tint-orange)]', icono: 'text-[var(--tint-orange-ink)]' },
+    datos: { chip: 'bg-[var(--tint-blue)]', icono: 'text-[var(--tint-blue-ink)]' },
+    ajustes: { chip: 'bg-[var(--tint-purple)]', icono: 'text-[var(--tint-purple-ink)]' },
+    herramienta: { chip: 'bg-[var(--tint-gray)]', icono: 'text-[var(--tint-gray-ink)]' },
 } as const;
 
 export type Area = keyof typeof AREA;
+
+/** El muelle de las tarjetas: corto y sin rebote visible. */
+const MUELLE = { type: 'spring', stiffness: 520, damping: 34, mass: 0.6 } as const;
+export const LEVANTAR = { y: -2 };
+export const HUNDIR = { scale: 0.975, y: 0 };
 
 interface ArmazonProps {
     antetitulo?: ReactNode;
@@ -44,14 +54,14 @@ interface ArmazonProps {
 
 export function InicioArmazon({ antetitulo, titulo, acciones, aviso, principal, contexto, accesos, herramientas }: ArmazonProps) {
     return (
-        <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 pb-6 pt-4 sm:px-6 lg:px-8 lg:pt-6 pc:h-full pc:min-h-0 pc:gap-5 pc:overflow-hidden pc:py-6">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-7 px-4 pb-6 pt-5 sm:px-6 lg:px-8 lg:pt-8 pc:h-full pc:min-h-0 pc:gap-6 pc:overflow-hidden pc:py-7">
             <header className="flex shrink-0 items-start justify-between gap-3">
                 <div className="min-w-0">
                     {antetitulo}
-                    <h1 className="text-t-2xl font-bold tracking-[-0.02em] text-ink md:text-title">
+                    <h1 className="text-[28px] font-bold leading-tight tracking-[-0.025em] text-ink md:text-[34px]">
                         {titulo}
                     </h1>
-                    <p className="mt-1 text-t-sm capitalize text-ink-muted">
+                    <p className="mt-1 text-t-base capitalize text-ink-subtle">
                         {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
                 </div>
@@ -60,12 +70,12 @@ export function InicioArmazon({ antetitulo, titulo, acciones, aviso, principal, 
 
             {aviso}
 
-            <div className="grid gap-6 pc:min-h-0 pc:flex-1 pc:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] pc:gap-5">
-                <div className="flex min-w-0 flex-col gap-6 pc:min-h-0 pc:gap-5">
+            <div className="grid gap-7 pc:min-h-0 pc:flex-1 pc:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] pc:gap-6">
+                <div className="flex min-w-0 flex-col gap-7 pc:min-h-0 pc:gap-6">
                     <div className="flex min-w-0 flex-col pc:min-h-0 pc:flex-[3]">{principal}</div>
                     <div className="flex min-w-0 flex-col pc:min-h-0 pc:flex-[2]">{contexto}</div>
                 </div>
-                <div className="flex min-w-0 flex-col gap-6 pc:min-h-0 pc:gap-5">
+                <div className="flex min-w-0 flex-col gap-7 pc:min-h-0 pc:gap-6">
                     <div className="flex min-w-0 flex-col pc:min-h-0 pc:flex-[3]">{accesos}</div>
                     <div className="flex min-w-0 flex-col pc:min-h-0 pc:flex-[2]">{herramientas}</div>
                 </div>
@@ -90,9 +100,9 @@ export function Seccion({
 }) {
     return (
         <section className={cn('flex min-w-0 flex-col pc:min-h-0 pc:flex-1', className)}>
-            <div className="mb-2.5 flex shrink-0 items-center justify-between gap-2 px-0.5">
-                <h2 className="flex items-center gap-2 text-t-sm font-semibold text-ink-muted">
-                    {Icono && <Icono size={15} aria-hidden="true" className="text-ink-subtle" />}
+            <div className="mb-3 flex shrink-0 items-center justify-between gap-2 px-1">
+                <h2 className="flex items-center gap-2 text-t-lg font-semibold tracking-[-0.01em] text-ink">
+                    {Icono && <Icono size={17} aria-hidden="true" className="text-ink-subtle" />}
                     {titulo}
                 </h2>
                 {accion}
@@ -105,13 +115,13 @@ export function Seccion({
 /** Rejilla de accesos: dos columnas; en el ordenador las filas llenan el alto. */
 export function RejillaAccesos({ children }: { children: ReactNode }) {
     return (
-        <div className="grid grid-cols-2 gap-2.5 pc:min-h-0 pc:flex-1 pc:auto-rows-fr">
+        <div className="grid grid-cols-2 gap-3 pc:min-h-0 pc:flex-1 pc:auto-rows-fr">
             {children}
         </div>
     );
 }
 
-/** Un acceso de la rejilla: icono en su chip, título y pista. Contador si hay pendientes. */
+/** Un acceso de la rejilla: chip de color con el icono, título y pista. Contador si hay pendientes. */
 export function Acceso({
     icono: Icono,
     titulo,
@@ -131,38 +141,41 @@ export function Acceso({
 }) {
     const a = AREA[area];
     return (
-        <button
+        <m.button
             type="button"
             onClick={onClick}
             disabled={bloqueado}
             data-no-press
+            whileHover={bloqueado ? undefined : LEVANTAR}
+            whileTap={bloqueado ? undefined : HUNDIR}
+            transition={MUELLE}
             className={cn(
-                'group relative flex min-h-[88px] min-w-0 flex-col justify-between gap-2 rounded-card border border-[var(--card-border)] bg-surface-raised p-3.5 text-left shadow-card',
-                'transition-[background-color,transform] duration-fast ease-snap hover:bg-surface-overlay active:scale-[0.985]',
+                'group relative flex min-h-[96px] min-w-0 flex-col justify-between gap-3 rounded-[20px] bg-surface-raised p-4 text-left',
+                'transition-[background-color] duration-fast ease-snap hover:bg-surface-overlay',
                 'disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-surface-raised',
-                'pc:min-h-0 pc:flex-row pc:items-center pc:justify-start pc:gap-3 pc:p-4'
+                'pc:min-h-0 pc:flex-row pc:items-center pc:justify-start pc:gap-3.5 pc:p-4'
             )}
         >
-            <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]', a.chip)}>
+            <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]', bloqueado ? 'bg-[var(--tint-gray)]' : a.chip)}>
                 {bloqueado
-                    ? <Lock size={16} className="text-ink-faint" aria-hidden="true" />
-                    : <Icono size={18} className={a.icono} aria-hidden="true" />}
+                    ? <Lock size={18} className="text-ink-faint" aria-hidden="true" />
+                    : <Icono size={21} strokeWidth={2.1} className={a.icono} aria-hidden="true" />}
             </span>
             <span className="relative min-w-0 flex-1">
-                <span className="flex items-center gap-1.5 text-t-sm font-semibold leading-tight text-ink xl:text-t-base">
+                <span className="flex items-center gap-1.5 text-t-base font-semibold leading-tight tracking-[-0.01em] text-ink">
                     <span className="min-w-0 truncate">{titulo}</span>
                     {insignia != null && insignia > 0 && <Contador n={insignia} aria-label={`${insignia} pendientes`} />}
-                    {!bloqueado && (
-                        <ChevronRight
-                            size={14}
-                            aria-hidden="true"
-                            className="ml-auto hidden shrink-0 text-ink-faint transition-transform duration-fast ease-snap group-hover:translate-x-0.5 pc:block"
-                        />
-                    )}
                 </span>
                 <span className="mt-0.5 line-clamp-2 block text-t-xs leading-snug text-ink-subtle">{pista}</span>
             </span>
-        </button>
+            {!bloqueado && (
+                <ChevronRight
+                    size={16}
+                    aria-hidden="true"
+                    className="hidden shrink-0 text-ink-faint transition-transform duration-fast ease-snap group-hover:translate-x-0.5 pc:block"
+                />
+            )}
+        </m.button>
     );
 }
 
@@ -190,38 +203,41 @@ export function TarjetaPrincipal({
 }) {
     const marca = tono === 'marca';
     return (
-        <button
+        <m.button
             type="button"
             onClick={onClick}
             data-no-press
+            whileHover={LEVANTAR}
+            whileTap={HUNDIR}
+            transition={MUELLE}
             className={cn(
-                'group relative flex min-h-[150px] min-w-0 flex-col justify-between rounded-card p-5 text-left transition-[background-color,transform] duration-fast ease-snap active:scale-[0.99] pc:h-full pc:min-h-0',
+                'group relative flex min-h-[160px] min-w-0 flex-col justify-between rounded-[24px] p-5 text-left transition-[background-color] duration-fast ease-snap pc:h-full pc:min-h-0',
                 marca
                     ? 'bg-brand text-brand-ink hover:bg-brand-hover'
-                    : 'border border-[var(--card-border)] bg-surface-raised shadow-card hover:bg-surface-overlay'
+                    : 'bg-surface-raised hover:bg-surface-overlay'
             )}
         >
             <span className="flex items-center justify-between">
-                <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px]', marca ? 'bg-brand-ink/15' : tono === 'comida' ? 'bg-success-quiet' : 'bg-[var(--fill-muted)]')}>
-                    <Icono size={20} className={marca ? 'text-brand-ink' : tono === 'comida' ? 'text-success' : 'text-ink-muted'} aria-hidden="true" />
+                <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]', marca ? 'bg-brand-ink/18' : tono === 'comida' ? AREA.comida.chip : AREA.herramienta.chip)}>
+                    <Icono size={21} strokeWidth={2.1} className={marca ? 'text-brand-ink' : tono === 'comida' ? AREA.comida.icono : AREA.herramienta.icono} aria-hidden="true" />
                 </span>
                 {insignia != null && insignia > 0 && (
-                    <span className={cn('inline-flex h-7 min-w-7 items-center justify-center rounded-pill px-2 text-t-sm font-semibold tabular-nums', marca ? 'bg-brand-ink text-brand' : 'bg-brand text-brand-ink')}>
+                    <span className={cn('inline-flex h-7 min-w-7 items-center justify-center rounded-pill px-2.5 text-t-sm font-semibold tabular-nums', marca ? 'bg-brand-ink text-brand' : 'bg-brand text-brand-ink')}>
                         {insignia > 99 ? '99+' : insignia}
                     </span>
                 )}
             </span>
             <span className="relative mt-4 min-w-0">
-                <span className={cn('block text-t-xl font-semibold leading-tight tracking-[-0.01em]', marca ? 'text-brand-ink' : 'text-ink')}>
+                <span className={cn('block text-[22px] font-semibold leading-tight tracking-[-0.015em]', marca ? 'text-brand-ink' : 'text-ink')}>
                     {titulo}
                 </span>
                 <span className={cn('mt-1 flex items-center gap-1 text-t-sm', marca ? 'text-brand-ink/80' : 'text-ink-subtle')}>
                     <span className="min-w-0">{pista}</span>
-                    <ChevronRight size={14} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
+                    <ChevronRight size={15} aria-hidden="true" className="shrink-0 transition-transform duration-fast ease-snap group-hover:translate-x-0.5" />
                 </span>
                 {children}
             </span>
-        </button>
+        </m.button>
     );
 }
 
@@ -237,8 +253,10 @@ export function ParDePrincipales({ children }: { children: ReactNode }) {
 /** La frase del día. Serena, no gritada. */
 export function FraseDelDia({ frase }: { frase: string }) {
     return (
-        <div className="relative flex min-h-[124px] flex-col justify-center rounded-card border border-[var(--card-border)] bg-surface-raised p-5 shadow-card pc:min-h-0 pc:flex-1 pc:p-6">
-            <Quote size={18} aria-hidden="true" className="mb-2 text-brand-text" />
+        <div className="relative flex min-h-[124px] flex-col justify-center rounded-[20px] bg-surface-raised p-5 pc:min-h-0 pc:flex-1 pc:p-6">
+            <span className={cn('mb-3 flex h-8 w-8 items-center justify-center rounded-[10px]', AREA.entreno.chip)}>
+                <Quote size={15} aria-hidden="true" className={AREA.entreno.icono} />
+            </span>
             <p className="line-clamp-4 text-t-base font-medium leading-snug text-ink xl:text-t-lg">{frase}</p>
             <p className="mt-2.5 shrink-0 text-t-xs text-ink-subtle">Anvil Strength Club</p>
         </div>
@@ -248,7 +266,7 @@ export function FraseDelDia({ frase }: { frase: string }) {
 /** Frase + competición, lado a lado desde `sm`. */
 export function FilaDeContexto({ children }: { children: ReactNode }) {
     return (
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] pc:min-h-0 pc:flex-1 pc:gap-3">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] pc:min-h-0 pc:flex-1">
             {children}
         </div>
     );
