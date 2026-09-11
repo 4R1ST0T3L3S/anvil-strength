@@ -433,4 +433,49 @@ criterio que la decisión U1 del 23/08).
 
 # PARTE B — REGISTRO DE EJECUCIÓN
 
-_(Se completa al terminar.)_
+Cerrado el 11 de septiembre de 2026. Commits en `main` (única rama, local y
+remota): `b42857d4` (auditoría) · `d499e9cd` (limpieza y worktree) ·
+`703d0382` (bandeja, chat, avisos, diseño) · `a85c77af` (copias por producto).
+
+## B.1 Qué se ha hecho, por fase
+
+| Fase | Estado | Resumen |
+|---|---|---|
+| 1–2 Auditoría y plan | ✅ | Parte A de este documento. Estado real de la base sondeado por SQL, no por los `.sql` del repo. |
+| 3 Git | ✅ | `overhaul/ux-2026-08` fusionada y borrada (local y remota). Solo queda `main`. |
+| 4 Chat antiguo | ✅ | Recuperado del historial (guardado aparte), estudiado y sustituido: la nueva implementación conserva sus decisiones útiles (`chat_messages`, canal por usuario) y retira `ChatComponents`, `CoachChatManager`, `AthleteChatView`, `NotificationsPopover`, `useNotifications`, `AnvilToast`. |
+| 5 Bandeja del entrenador | ✅ | `database/BANDEJA_REVISION_2026-09-11.sql` (aplicada). `training_sessions.athlete_updated_at / reviewed_at / reviewed_by` + generadas `review_pending` y `modified_after_review`; disparadores que solo dejan tocar esos campos a las funciones de servicio; `training_session_reviews` (snapshot, `was_modified`, `undone_at`); `inbox_items` para el atleta; RPCs `coach_inbox_summary`, `review_session`, `unreview_session`, `send_session_feedback`, `delete_session_feedback`, `inbox_set_state`, `inbox_mark_all_read`. UI: `features/inbox` (`CoachInbox`, `CoachInboxAthlete`, `SessionReviewCard`, `AthleteInbox`), rutas `/coach-dashboard/bandeja[/:atleta]` y `/dashboard/bandeja`, contadores en la barra y en el inicio. Marcar revisado es SOLO manual. |
+| 5b Bandeja del atleta | ✅ | Feedback y «revisado» llegan a `inbox_items`; el atleta lo ve en su bandeja y en la propia sesión (`SessionFinish`: pendiente / revisado / modificado tras revisión + hilo de feedback). |
+| 6 Modificación tras revisión | ✅ | Cualquier cambio del ATLETA (cierre, notas, series, vídeo, VBT) mueve `athlete_updated_at` → vuelve a pendiente y `modified_after_review = true`; la tarjeta enseña qué cambió respecto al snapshot; sin duplicados, con historial; los cambios del entrenador no cuentan. Probado en producción dentro de una transacción deshecha (ver B.4). |
+| 7 Chat | ✅ | `database/CHAT_MENSAJERIA_2026-09-11.sql` (aplicada): `client_id` (idempotencia), `delivered_at`, `attachment`, `media_expires_at`, RLS entrenador↔atleta propio (`chat_can_message`), bucket privado `chat-media` con políticas por carpeta, RPCs `chat_ack_delivered`, `chat_mark_read`, `chat_conversations`. Cliente: `features/chat` (lista, hilo, burbujas con ✓/✓✓, compositor con foto/vídeo/archivo/voz, preparador con recorte a 2 min y recodificación 720p/30 fps, subida con progreso), tiempo real con reconexión y refresco al volver, `FloatingChat` sobre el mismo hilo. Estados solo «Enviado» y «Entregado». |
+| 7b Retención 15 días | ✅ | `chat_media_expired` + `chat-media-cleanup` (Edge Function, cron `17 * * * *`): borra el objeto y deja `media_deleted_at`; la burbuja pinta «Vídeo eliminado por antigüedad». |
+| 7c Avisos | ✅ | `database/NOTIFICACIONES_2026-09-11.sql` (aplicada): categorías, `notification_preferences` filtrado EN EL SERVIDOR, VAPID en Vault (`get_vapid_public_key`), `send-push` y `chat-ack` (Edge Functions), acuse de entrega desde `push-sw.js`. Pantalla Ajustes → Avisos (`NotificationSettings`) en los dos paneles; campana rehecha. |
+| 8–11 Diseño | ✅ | `tokens.css` con tema oscuro y claro, `tailwind.config.js` con los tokens nuevos, primitivas nuevas (`List`, `Switch`, `SegmentedControl`, `Badge`, `Avatar`, `PageHeader`, `IconButton`) y las existentes rehechas; `DashboardLayout` (barra lateral 248 px / barra de pestañas 4 + «Más» con zona segura); inicios rehechos; codemod `scripts/codemod-diseno-2026-09.mjs` que retiró la tipografía gritada y los colores sin tema en 178 ficheros. `DESIGN.md` reescrito. Portada intacta (`.registro-marca`). |
+| 12–13 Pruebas y cierre | ✅ | Ver B.4. |
+
+## B.2 Ficheros
+
+- **Base de datos** (`database/`): `BANDEJA_REVISION_2026-09-11.sql`, `CHAT_MENSAJERIA_2026-09-11.sql`, `NOTIFICACIONES_2026-09-11.sql`. Las tres APLICADAS en `ihcyuoczbmjxfinxvzra`. Aditivas: no borran datos ni columnas.
+- **Edge Functions** (`supabase/functions/`): `send-push`, `chat-ack`, `chat-media-cleanup`. DESPLEGADAS.
+- **Servicios**: `reviewService`, `inboxService`, `chatService`, `chatMediaService`, `notificationPrefsService`; `notificationsService` con `category`.
+- **Lib**: `lib/media/{limites,imagen,video,audio}.ts`, `lib/tiempo.ts`, `lib/realtimeCompartido.ts`, `lib/queryKeys.ts` (claves `bandeja`, `chat`, `avisos`).
+- **UI**: `features/inbox/**`, `features/chat/**` (rehecho), `components/ui/{NotificationBell,NotificationProvider,ErrorFallback}` rehechos, `features/profile/components/NotificationSettings.tsx`, `components/layout/{DashboardLayout,InicioPanel,PageHeader,RegistroMarca}`, `CoachHome`, `AthleteHome`, `CoachDashboard`, `UserDashboard`, `AppRoutes`, `SessionFinish`, `WorkoutLogger`, `usePushNotifications`, `public/push-sw.js`, `index.html`, `src/index.css`, `src/styles/tokens.css`, `tailwind.config.js`.
+- **Copias por producto**: `Landing Page/` (anvilstrength.es, construye), `APP Iphone/` (tsc limpio) y `APP Android/` (tsc limpio salvo los tipos de `@capacitor/*`, que no están en el `node_modules` compartido) sincronizadas. **`APP Windows/` sin tocar** (118 divergencias propias de Electron): pendiente de fusión a mano.
+
+## B.3 Pruebas
+
+- `npm test`: **547** pruebas, 0 fallos (28 nuevas de `lib/media/limites`, 12 de `lib/tiempo`).
+- `tsc --noEmit`: limpio en raíz, Landing Page y APP Iphone.
+- `eslint`: 0 errores en `src/` (quedan avisos `react-refresh` preexistentes).
+- `npm run build`: raíz 21 s; Landing Page 24 s.
+- `node scripts/sonda-rls.mjs`: ninguna tabla sensible se lee sin sesión.
+- Flujo de revisión, en producción dentro de una transacción deshecha (RLS activa, `SET LOCAL ROLE authenticated`): cierra el atleta → pendiente + aviso al coach ✓ · el atleta no puede auto-revisar ✓ · el coach revisa con feedback → deja de estar pendiente, snapshot, bandeja del atleta ✓ · el atleta edita una serie → pendiente y modificado ✓ · el coach re-revisa y toca una serie → no vuelve a pendiente, 2 revisiones, 1 marcada como modificada ✓ · deshacer → pendiente otra vez ✓ · `reviewed_at` a mano desde el cliente → el disparador lo revierte ✓.
+- Advisors de seguridad de Supabase: sin hallazgos nuevos de nivel error; las funciones nuevas son `SECURITY DEFINER` con comprobación de `auth.uid()` dentro (intencionado).
+
+## B.4 Lo que queda y cómo seguir
+
+1. **APP Windows**: fusionar a mano (mismo procedimiento que iPhone/Android: sincronizar lo que va por detrás, conservar lo de Electron, copiar `features/landing/textos.ts`).
+2. **Verificación visual con sesión**: las pantallas con datos reales (bandeja, chat con adjuntos, ajustes de avisos) se han comprobado por tipos, pruebas y SQL; falta una pasada con cuenta de entrenador y de atleta en móvil real (iPhone: cámara/galería, teclado sobre el compositor, notas de voz en Safari).
+3. **Push en iOS**: exige la app instalada en pantalla de inicio (iOS ≥ 16.4); la pantalla de Avisos lo explica cuando el navegador no lo admite.
+4. **Codec de vídeo**: se prefiere MP4/H.264 si el navegador lo graba; si no, WebM. Un iPhone recibiendo WebM de un Android lo reproduce en Safari ≥ 17; en versiones anteriores se ofrece la descarga.
+5. **`/dev/inicio`** existe solo en la copia Landing (banco del inicio); portarlo a la raíz si se quiere medir ahí.
