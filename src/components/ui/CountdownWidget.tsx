@@ -382,7 +382,7 @@ function CountdownSettings({
                     </div>
 
                     {/* Footer */}
-                    <div className="p-5 border-t border-subtle shrink-0 flex justify-end gap-3">
+                    <div className="p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] border-t border-subtle shrink-0 flex justify-end gap-3">
                         <button
                             onClick={onClose}
                             className="px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-ink font-bold uppercase tracking-wider text-xs transition-colors"

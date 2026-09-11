@@ -41,7 +41,7 @@ export const TeamModal: React.FC<TeamModalProps> = ({ isOpen, onClose, athletes,
         </div>
 
         {/* Grid */}
-        <div className="p-6 md:p-10">
+        <div className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:p-10">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {athletes.map((athlete) => (
               <div

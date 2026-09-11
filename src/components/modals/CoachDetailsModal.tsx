@@ -56,7 +56,7 @@ export const CoachDetailsModal: React.FC<CoachDetailsModalProps> = ({ isOpen, on
         </div>
 
         {/* Details Section - Scrollable on Desktop */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar bg-gradient-to-b from-surface-sunken to-surface-sunken">
+        <div className="flex-1 overflow-y-auto p-8 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] md:p-16 custom-scrollbar bg-gradient-to-b from-surface-sunken to-surface-sunken">
           {/* Close Button Desktop */}
           <div className="hidden md:flex justify-end mb-12">
             <button

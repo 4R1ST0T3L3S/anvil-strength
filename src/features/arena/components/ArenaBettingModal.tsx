@@ -142,7 +142,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                         </div>
 
                         {/* Footer */}
-                        <div className="p-8 pt-0 space-y-3">
+                        <div className="p-8 pt-0 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] space-y-3">
                             <button
                                 onClick={handleConfirm}
                                 disabled={loading || amount <= 0 || amount > balance}
