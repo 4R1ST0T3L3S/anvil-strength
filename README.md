@@ -84,7 +84,7 @@ Sigue estos pasos para levantar el proyecto en tu máquina:
 
 ### 2. Clonar e Instalar
 ```bash
-git clone https://github.com/tu-usuario/anvil-strength.git
+git clone https://github.com/4R1ST0T3L3S/anvil-strength.git
 cd anvil-strength
 npm install
 ```
@@ -109,23 +109,22 @@ El servidor arrancará en `http://localhost:5173`.
 
 *   `npm run dev`: Inicia el servidor de desarrollo.
 *   `npm run build`: Compila la aplicación para producción.
+*   `npm run preview`: Sirve el build de producción en local.
 *   `npm run lint`: Busca problemas en el código.
+*   `npm test`: Tests unitarios.
+*   `npm run test:e2e`: Tests end-to-end con Playwright.
+*   `npm run verify`: Comprobaciones del motor de cálculo (1RM, encoder, calibración).
+*   `npm run db:check`: Verifica que las migraciones aplicadas coinciden con el esquema.
 *   `npm run update-types`: Sincroniza los tipos con tu base de datos Supabase.
+
+---
+
+## 📅 Changelog
+
+El historial de cambios vive en [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
 <div align="center">
   <p>Desarrollado con 💪 para Anvil Strength</p>
 </div>
-
----
-
-## 📅 Changelog (25-02-2026)
-* **Refactor de Acceso y Rutas (`AppRoutes.tsx`, `SmartAuthButton.tsx`)**: Los usuarios sin acceso a la aplicación (`has_access === false`) ahora pueden permanecer en la web pública visualizando la publicidad, en lugar de ser forzosamente redirigidos a la página de pendiente.
-* **Nueva Pagina de Perfil (`ProfilePage.tsx`)**: Al hacer clic en "Mi perfil", los usuarios pendientes de validación son dirigidos a una nueva vista donde pueden revisar su estado ("Cuenta en Revisión") y modificar libremente todos sus datos personales, sin acceder al resto de áreas privadas del Coach o Atleta.
-* **Limpieza de Código (Linter & TS)**: Se resolvieron 7 errores y advertencias de TypeScript y react-hooks en toda la web, incluyendo `App.tsx`, `PDFModal.tsx`, `AuthModal.tsx` y `CompetitionsPage.tsx`. El proyecto compila limpiamente a nivel estricto.
-
-## 📅 Changelog (24-02-2026)
-* **Autenticación Restaurada**: Se ha vuelto a habilitar el inicio de sesión y registro en toda la plataforma (`App.tsx`, `AppRoutes.tsx`, y vistas públicas).
-* **Google Login**: Integración del botón oficial de "Continuar con Google" en el `AuthModal` utilizando OAuth de Supabase.
-* **Acceso Restringido (Gated Registration)**: Todos los usuarios pueden registrarse, pero el acceso a las funciones internas queda pendiente hasta que el administrador otorgue acceso manual cambiando la propiedad `has_access` a `TRUE` en la tabla `profiles` de Supabase. Añadida nueva interfaz de "Cuenta Pendiente" (`PendingApprovalPage.tsx`).

@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Tipos estrictos. Hoy pasa limpio: si deja de pasar, es un cambio real.
+      - name: Comprobacion de tipos
+        run: npx tsc --noEmit
+
+      # 547 tests unitarios, ~1s. No hay excusa para no ejecutarlos en cada push.
+      - name: Tests unitarios
+        run: npm test

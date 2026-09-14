@@ -58,3 +58,19 @@ assets-originales/
 supabase/.temp/cli-latest
 .vercel
 .env*
+
+# Volcados de terminal y reportes de herramientas. Se regeneran con un comando
+# y envejecen mal: un `lint_errors.txt` de hace tres meses solo miente. Se miran
+# en local y se tiran.
+git_log.txt
+git_status*.txt
+lint_errors.*
+lint_output.*
+build_output.log
+ts_errors.log
+eslint_report.json
+
+# Scripts de un solo uso (codemods ya aplicados, sondas de depuracion).
+fix_*.cjs
+find_*.cjs
+live_site.js
