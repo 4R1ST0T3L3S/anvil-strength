@@ -33,18 +33,16 @@ interface PublicHeaderProps {
  * cabecera se quedaba igual al elegir inglés.
  */
 const NAV_LINKS: { clave: keyof TextosWeb['cabecera']['nav']; href: string; principal: boolean }[] = [
-    // LA APP va la primera y es `principal`: desde que "entrar a entrenar"
-    // subió justo debajo de la portada, es la primera sección de la página, y
-    // esconderla en el menú "MÁS" sería volver a enterrar la puerta.
-    { clave: 'app', href: '#app', principal: true },
-    // OCTUBRE DE 2026: el equipo pasa delante. COMPETICIONES vuelve a la barra
-    // (es donde vive la convocatoria) y SOFTWARE baja al menú "MÁS": la app ya
-    // tiene su puerta en LA APP, y dos enlaces a lo mismo en cinco huecos era
-    // gastar uno.
-    { clave: 'competiciones', href: '/competiciones', principal: true },
-    { clave: 'atletas', href: '#atletas', principal: true },
-    { clave: 'equipo', href: '#entrenadores', principal: true },
+    // OCTUBRE DE 2026: en el orden de la página, de arriba abajo. La
+    // filosofía sube justo debajo de la portada y la app va después;
+    // COMPETICIONES (su propia página, donde vive la convocatoria) se queda
+    // en tercer lugar, entre la app y el equipo. SOFTWARE sigue en "MÁS":
+    // la app ya tiene su puerta en LA APP.
     { clave: 'filosofia', href: '#filosofia', principal: true },
+    { clave: 'app', href: '#app', principal: true },
+    { clave: 'competiciones', href: '/competiciones', principal: true },
+    { clave: 'equipo', href: '#entrenadores', principal: true },
+    { clave: 'atletas', href: '#atletas', principal: true },
     { clave: 'software', href: '#software', principal: false },
     { clave: 'logros', href: '#logros', principal: false },
     { clave: 'opiniones', href: '#reviews', principal: false },

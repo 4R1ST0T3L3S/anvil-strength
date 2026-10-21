@@ -51,6 +51,9 @@ export function RegistroPorRuta({ haySesion, children }: { haySesion: boolean; c
         (pathname === '/' && !haySesion && !session) ||
         pathname === '/web' ||
         pathname === '/competiciones' ||
+        // La zona común de la app enseña las competiciones de la web: se
+        // pinta con el mismo registro para que se vean igual dentro y fuera.
+        pathname === '/dashboard/club' ||
         pathname.startsWith('/legal/');
 
     return <RegistroMarca activo={publica}>{children}</RegistroMarca>;

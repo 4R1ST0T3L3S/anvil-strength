@@ -62,6 +62,11 @@ interface ConvocatoriaProps {
     onClose: () => void;
     /** Avisa del atleta en pantalla, para tenerlo en la URL. */
     onCambio?: (slugAtleta: string | null) => void;
+    /**
+     * Solo dentro de la app (zona del club): al terminar la presentación, la
+     * puerta a las apuestas de la Arena para esta competición.
+     */
+    onArena?: () => void;
 }
 
 type Fase = { tipo: 'intro' } | { tipo: 'atleta'; i: number } | { tipo: 'final' };
@@ -85,7 +90,7 @@ const SALIDA_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const claveDeFase = (f: Fase) => (f.tipo === 'atleta' ? `a${f.i}` : f.tipo);
 
-export function Convocatoria({ competicion, atletaInicial, onClose, onCambio }: ConvocatoriaProps) {
+export function Convocatoria({ competicion, atletaInicial, onClose, onCambio, onArena }: ConvocatoriaProps) {
     const t = useTextosWeb().convocatoria;
     const { idioma } = useIdioma();
     const reduce = useReducedMotion() ?? false;
@@ -274,6 +279,7 @@ export function Convocatoria({ competicion, atletaInicial, onClose, onCambio }: 
                             reduce={reduce}
                             onAtleta={(i) => irA({ tipo: 'atleta', i })}
                             onRepetir={() => irA({ tipo: 'intro' })}
+                            onArena={onArena}
                         />
                     )}
                 </m.div>
@@ -738,43 +744,58 @@ function EscenaFinal({
     reduce,
     onAtleta,
     onRepetir,
+    onArena,
 }: {
     competicion: Competicion;
     reduce: boolean;
     onAtleta: (i: number) => void;
     onRepetir: () => void;
+    onArena?: () => void;
 }) {
     const t = useTextosWeb().convocatoria;
     const { idioma } = useIdioma();
     const { cartel } = nombreDeCartel(competicion, idioma);
     const convocados = competicion.convocados;
 
-    return (
-        <div className="absolute inset-0 flex flex-col items-center justify-end px-4 pb-36 pt-24 md:pb-40">
-            {/* El posicionamiento va en un envoltorio quieto: si el `translate`
-                del centrado estuviera en el mismo elemento que anima `y`,
-                framer-motion lo pisaría y el título acabaría descolocado. */}
-            <div className="absolute inset-x-0 top-[12svh] flex justify-center px-6">
-                <m.h2
-                    {...(reduce
-                        ? {}
-                        : {
-                            initial: { opacity: 0, y: 16 },
-                            animate: { opacity: 1, y: 0 },
-                            transition: { duration: 0.7, delay: 0.1, ease: SALIDA_EXPO },
-                        })}
-                    className="max-w-[22ch] text-center font-display text-[clamp(2.25rem,5.5vw,4.5rem)] uppercase leading-[0.92] text-balance text-ink"
-                >
-                    {t.alineacion}
-                    <span className="mt-2 block font-sans text-t-sm font-bold uppercase tracking-[0.12em] text-ink-muted md:text-t-base">
-                        {cartel}
-                    </span>
-                </m.h2>
-            </div>
+    // Lo que se ve de cada recorte por encima del suelo: la escala menos lo
+    // que su ficha esconde por debajo (`bajar`). El más alto llena el hueco
+    // y los demás se miden contra él.
+    const visible = (c: (typeof convocados)[number]) => {
+        const r = c.ficha?.recorte;
+        return r ? (r.encuadre?.escala ?? 1) * (1 - (r.encuadre?.bajar ?? 0)) : 0.8;
+    };
+    const masAlto = Math.max(0.01, ...convocados.map(visible));
 
-            <div className="flex w-full max-w-[1200px] items-end justify-center">
+    /*
+     * Octubre de 2026: el título iba en posición absoluta y las figuras se
+     * apilaban desde abajo con la altura ENTERA del recorte (46svh × escala;
+     * Pau Rodríguez, con escala 1,42, pedía 65svh). En cuanto había un recorte
+     * alto, la fila crecía hacia arriba y las fotos se montaban encima del
+     * título. Ahora el título va en el flujo y las figuras viven en el hueco
+     * que queda (`flex-1`), escaladas a ese hueco: no pueden subir más.
+     */
+    return (
+        <div className="absolute inset-0 flex flex-col items-center px-4 pb-36 pt-20 md:pb-40 md:pt-24">
+            <m.h2
+                {...(reduce
+                    ? {}
+                    : {
+                        initial: { opacity: 0, y: 16 },
+                        animate: { opacity: 1, y: 0 },
+                        transition: { duration: 0.7, delay: 0.1, ease: SALIDA_EXPO },
+                    })}
+                className="relative z-[1] max-w-[22ch] shrink-0 px-2 text-center font-display text-[clamp(2.25rem,5.5vw,4.5rem)] uppercase leading-[0.92] text-balance text-ink"
+            >
+                {t.alineacion}
+                <span className="mt-2 block font-sans text-t-sm font-bold uppercase tracking-[0.12em] text-ink-muted md:text-t-base">
+                    {cartel}
+                </span>
+            </m.h2>
+
+            <div className="mt-4 flex min-h-0 w-full max-w-[1200px] flex-1 items-stretch justify-center md:mt-6">
                 {convocados.map((c, i) => {
                     const r = c.ficha?.recorte;
+                    const escala = r?.encuadre?.escala ?? 1;
                     const { apellidos, nombre } = partirNombre(c.ficha?.name ?? c.nombre);
                     return (
                         <m.button
@@ -793,19 +814,26 @@ function EscenaFinal({
                             style={{ maxWidth: `${Math.min(34, 100 / Math.max(convocados.length, 1) + 8)}vw` }}
                         >
                             <div
-                                className="relative w-full transition-transform duration-slow ease-snap group-hover/fig:-translate-y-2"
+                                className="relative min-h-0 w-full flex-1 transition-transform duration-slow ease-snap group-hover/fig:-translate-y-2"
                                 style={{
-                                    height: `calc(46svh * ${r?.encuadre?.escala ?? 1})`,
+                                    // Recorta por debajo del suelo, nunca por los lados.
+                                    overflowX: 'visible',
+                                    overflowY: 'clip',
                                     maskImage: 'linear-gradient(to top, transparent 0%, black 22%)',
                                     WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 22%)',
                                 }}
                             >
                                 {r ? (
+                                    // `top` deja asomar solo la parte visible; lo que
+                                    // la ficha esconde bajo el suelo lo corta el clip.
                                     <img
                                         src={r.src800}
                                         alt=""
-                                        className="absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-bottom"
-                                        style={{ transform: `translate(-50%, ${(r.encuadre?.bajar ?? 0) * 100}%)` }}
+                                        className="absolute left-1/2 w-auto max-w-none -translate-x-1/2 object-contain object-top"
+                                        style={{
+                                            top: `${(1 - visible(c) / masAlto) * 100}%`,
+                                            height: `${(escala / masAlto) * 100}%`,
+                                        }}
                                         draggable={false}
                                     />
                                 ) : (
@@ -825,15 +853,20 @@ function EscenaFinal({
                 })}
             </div>
 
-            <m.button
-                type="button"
-                onClick={onRepetir}
+            <m.div
                 {...(reduce ? {} : { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { delay: 0.8 } })}
-                className="mt-8 inline-flex min-h-[44px] items-center gap-2 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast ease-snap hover:text-ink hover:underline"
+                className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:gap-6"
             >
-                <RotateCcw size={15} aria-hidden="true" />
-                {t.repetir}
-            </m.button>
+                {onArena && <PressButton onClick={onArena} size="md">{t.apostar}</PressButton>}
+                <button
+                    type="button"
+                    onClick={onRepetir}
+                    className="inline-flex min-h-[44px] items-center gap-2 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast ease-snap hover:text-ink hover:underline"
+                >
+                    <RotateCcw size={15} aria-hidden="true" />
+                    {t.repetir}
+                </button>
+            </m.div>
         </div>
     );
 }

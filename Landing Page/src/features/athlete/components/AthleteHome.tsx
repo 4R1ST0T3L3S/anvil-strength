@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Calendar, Trophy, Weight, List, Calculator, Users, Swords,
+    Calendar, Trophy, Weight, List, Calculator, Users, Swords, Flag,
     FileText, User, Fish, Dumbbell, Loader, BookOpen, FlaskConical, Inbox, MessageSquare, TrendingUp, SlidersHorizontal,
 } from 'lucide-react';
 import { UserProfile } from '../../../hooks/useUser';
@@ -136,6 +136,7 @@ export function AthleteHome({ user, onNavigate, headerActions }: AthleteHomeProp
                             <Acceso area="entreno" icono={MessageSquare} titulo="Mensajes" pista="Chat con tu entrenador" insignia={sinLeerChat} onClick={() => onNavigate('messages')} />
                             <Acceso area="entreno" icono={FileText} titulo={t('inicio.planificacion')} pista={t('inicio.planificacionPista')} onClick={() => onNavigate('planning')} />
                             <Acceso area="datos" icono={TrendingUp} titulo="Estadísticas" pista="Progreso, e1RM y fases" onClick={() => onNavigate('stats')} />
+                            <Acceso area="club" icono={Flag} titulo="El club" pista="Competiciones, Arena, ranking y sushi" onClick={() => navigate('/dashboard/club')} />
                             <Acceso area="club" icono={Trophy} titulo={t('nav.competiciones')} pista={t('inicio.competicionesPista')} onClick={() => onNavigate('competitions')} />
                             <Acceso area="datos" icono={Calendar} titulo={t('nav.calendario')} pista={t('inicio.calendarioPista')} onClick={() => onNavigate('calendar')} />
                             <Acceso area="ajustes" icono={User} titulo={t('inicio.miPerfil')} pista={t('inicio.miPerfilPista')} onClick={() => onNavigate('profile')} />

@@ -192,7 +192,19 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
 // LA SIGUIENTE
 // =====================================================================
 
-function LaSiguiente({ competicion, onAbrir }: { competicion: Competicion; onAbrir: () => void }) {
+export function LaSiguiente({
+    competicion,
+    onAbrir,
+    onArena,
+    titulo,
+}: {
+    competicion: Competicion;
+    onAbrir: () => void;
+    /** Dentro de la app: la llamada principal pasa a ser apostar en la Arena. */
+    onArena?: () => void;
+    /** El antetítulo; por defecto, el de la página pública. */
+    titulo?: string;
+}) {
     const textos = useTextosWeb();
     const c = textos.competiciones;
     const { idioma } = useIdioma();
@@ -278,7 +290,7 @@ function LaSiguiente({ competicion, onAbrir }: { competicion: Competicion; onAbr
             <div className="mx-auto w-full max-w-[1180px] px-6 md:px-10">
                 <div className="max-w-[40rem]">
                     <m.h1 {...entra(0)} className="font-display text-t-2xl uppercase leading-none text-ink-muted md:text-t-3xl">
-                        {c.titulo}
+                        {titulo ?? c.titulo}
                     </m.h1>
                     <m.p {...entra(0.1)} className="mt-8 text-t-xs font-bold uppercase tracking-[0.28em] text-brand-text">
                         {c.laSiguiente}
@@ -304,7 +316,18 @@ function LaSiguiente({ competicion, onAbrir }: { competicion: Competicion; onAbr
                     </m.div>
 
                     <m.div {...entra(0.55)} className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center">
-                        {n > 0 && <PressButton onClick={onAbrir}>{c.verConvocatoria}</PressButton>}
+                        {onArena && <PressButton onClick={onArena}>{c.apostar}</PressButton>}
+                        {n > 0 && (onArena ? (
+                            <button
+                                type="button"
+                                onClick={onAbrir}
+                                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-pill border border-[var(--border-strong)] px-6 text-t-sm font-bold uppercase tracking-wide text-ink transition-colors duration-fast ease-snap hover:border-ink hover:bg-ink hover:text-surface-sunken"
+                            >
+                                {c.verConvocatoria}
+                            </button>
+                        ) : (
+                            <PressButton onClick={onAbrir}>{c.verConvocatoria}</PressButton>
+                        ))}
                         {n > 0 && (
                             <p className="text-t-sm font-bold uppercase tracking-wide text-ink-muted">
                                 {n === 1 ? c.convocado : rellenar(c.convocados, { n })}
@@ -325,7 +348,7 @@ function LaSiguiente({ competicion, onAbrir }: { competicion: Competicion; onAbr
  * cada una. Los segundos cambian, así que el contenedor NO es una región
  * viva: leerle a alguien la hora cada segundo sería insoportable.
  */
-function Marcador({ fecha, fin }: { fecha: string; fin: string | null }) {
+export function Marcador({ fecha, fin }: { fecha: string; fin: string | null }) {
     const c = useTextosWeb().competiciones;
     const [ahora, setAhora] = useState(() => Date.now());
     useEffect(() => {
@@ -365,7 +388,17 @@ function Marcador({ fecha, fin }: { fecha: string; fin: string | null }) {
 // UNA JORNADA DEL CALENDARIO
 // =====================================================================
 
-function FilaJornada({ competicion, idioma, onAbrir }: { competicion: Competicion; idioma: 'es' | 'en'; onAbrir: () => void }) {
+export function FilaJornada({
+    competicion,
+    idioma,
+    onAbrir,
+    onArena,
+}: {
+    competicion: Competicion;
+    idioma: 'es' | 'en';
+    onAbrir: () => void;
+    onArena?: () => void;
+}) {
     const c = useTextosWeb().competiciones;
     const d = new Date(`${competicion.fecha}T12:00:00`);
     const loc = idioma === 'en' ? 'en-GB' : 'es-ES';
@@ -399,16 +432,25 @@ function FilaJornada({ competicion, idioma, onAbrir }: { competicion: Competicio
                     </p>
                 )}
             </div>
-            {n > 0 && (
-                <div className="col-span-2 md:col-span-1">
-                    <button
+            {(n > 0 || onArena) && (
+                <div className="col-span-2 flex flex-wrap gap-2 md:col-span-1 md:justify-end">
+                    {onArena && (
+                        <button
+                            type="button"
+                            onClick={onArena}
+                            className="inline-flex min-h-[44px] items-center gap-2 rounded-pill bg-brand px-5 text-t-sm font-bold uppercase tracking-wide text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover"
+                        >
+                            {c.apostar}
+                        </button>
+                    )}
+                    {n > 0 && <button
                         type="button"
                         onClick={onAbrir}
                         className="group inline-flex min-h-[44px] items-center gap-2 rounded-pill border border-[var(--border-default)] px-5 text-t-sm font-bold uppercase tracking-wide text-ink transition-colors duration-fast ease-snap hover:border-brand hover:bg-brand hover:text-brand-ink"
                     >
                         {c.verConvocatoria}
                         <ArrowRight size={16} className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" aria-hidden="true" />
-                    </button>
+                    </button>}
                 </div>
             )}
         </div>
@@ -419,7 +461,7 @@ function FilaJornada({ competicion, idioma, onAbrir }: { competicion: Competicio
 // SIN COMPETICIONES, CARGANDO O CON ERROR
 // =====================================================================
 
-function CabeceraVacia({ titulo, texto, accion, cargando }: { titulo: string; texto: string; accion?: ReactNode; cargando?: boolean }) {
+export function CabeceraVacia({ titulo, texto, accion, cargando }: { titulo: string; texto: string; accion?: ReactNode; cargando?: boolean }) {
     return (
         <section className="relative isolate flex min-h-[70svh] items-end overflow-hidden pb-16 pt-36">
             <div

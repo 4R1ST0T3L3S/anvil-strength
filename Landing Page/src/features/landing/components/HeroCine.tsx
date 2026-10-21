@@ -32,8 +32,15 @@ import { rellenar, useTextosWeb } from '../textos';
  * orden de `ALINEACION`. Para cambiar quién sale, se cambia esa lista.
  */
 
-/** Quién sale en la portada, de izquierda a derecha. El centro va delante. */
-const ALINEACION = ['pau-camacho', 'pau-rodriguez', 'alejandro-hermosilla', 'marc-alonso'];
+/**
+ * Quién sale en la portada, de izquierda a derecha. El centro va delante.
+ *
+ * Octubre de 2026: solo los dos con foto buena y reciente. Los recortes de
+ * Pau Camacho y Alejandro salían de fotos pequeñas y se veían pixelados al
+ * lado de los otros; vuelven cuando haya fotos de calidad (siguen en la
+ * convocatoria, donde salen de uno en uno).
+ */
+const ALINEACION = ['pau-rodriguez', 'marc-alonso'];
 
 const SALIDA_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -92,6 +99,9 @@ export function HeroCine({ user, onLoginClick, onSignupClick, onYaTengoCuenta }:
                     role="img"
                     aria-label={t.equipoAlt}
                     className="pointer-events-none absolute inset-x-0 top-0 -z-10 flex h-[64svh] items-end justify-center md:h-[100svh]"
+                    // En el móvil, con dos (que no se esconden como los
+                    // extremos de cuatro), a 46svh no caben de ancho.
+                    style={{ ['--alto-movil' as string]: plantilla.length <= 2 ? '38svh' : '46svh' }}
                 >
                     {plantilla.map((a, i) => {
                         const r = a.recorte!;
@@ -116,7 +126,7 @@ export function HeroCine({ user, onLoginClick, onSignupClick, onYaTengoCuenta }:
                                         animate: { opacity: 1, y: 0, filter: `blur(0px) brightness(${brillo})` },
                                         transition: { duration: 1.2, delay: 0.25 + distancia * 0.18, ease: SALIDA_EXPO },
                                     })}
-                                className={`relative -mx-[3.5vw] h-[calc(46svh*var(--escala))] w-auto max-w-none object-contain object-bottom mb-[calc(-46svh*var(--escala)*var(--bajar))] md:-mx-[0.6vw] md:h-[calc(64svh*var(--escala))] md:mb-[calc(-64svh*var(--escala)*var(--bajar))] ${lateral ? 'hidden sm:block' : ''}`}
+                                className={`relative -mx-[3.5vw] h-[calc(var(--alto-movil)*var(--escala))] w-auto max-w-none object-contain object-bottom mb-[calc(-1*var(--alto-movil)*var(--escala)*var(--bajar))] md:-mx-[0.6vw] md:h-[calc(64svh*var(--escala))] md:mb-[calc(-64svh*var(--escala)*var(--bajar))] ${lateral ? 'hidden sm:block' : ''}`}
                                 style={{
                                     ['--escala' as string]: (r.encuadre?.escala ?? 1) * paso,
                                     ['--bajar' as string]: r.encuadre?.bajar ?? 0,

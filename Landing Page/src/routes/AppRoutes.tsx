@@ -37,6 +37,7 @@ import { useScrollRestoration } from '../hooks/useScrollRestoration';
 import { PageSkeleton } from '../components/skeletons/PageSkeleton';
 // Lazy Load Pages
 const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
+const ClubPage = lazy(() => import('../features/club/pages/ClubPage').then(module => ({ default: module.ClubPage })));
 const CompetitionsPage = lazy(() => import('../features/landing/pages/CompetitionsPage').then(module => ({ default: module.CompetitionsPage })));
 const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const AdminWebPage = lazy(() => import('../features/admin/pages/AdminWebPage').then(module => ({ default: module.AdminWebPage })));
@@ -319,6 +320,22 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             } />
 
             <Route path="/dashboard/arena" element={<Navigate to="/dashboard/community" replace />} />
+
+            {/* --- EL CLUB: la zona común (competiciones, Arena, ranking,
+                sushi). Mismas condiciones que la Arena. Ver ClubPage.tsx. */}
+            <Route path="/dashboard/club" element={
+                hasActiveSession && user ? (
+                    user.has_access === false ? (
+                        <Navigate to="/pending" replace />
+                    ) : (
+                        <Suspense fallback={<AppShellSkeleton />}>
+                            <ClubPage user={user} />
+                        </Suspense>
+                    )
+                ) : (
+                    <Navigate to="/" replace />
+                )
+            } />
 
             {/* --- DASHBOARD ATLETA ---
                 Dos rutas al mismo elemento en vez de un parámetro opcional:

@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
-import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { Trophy, FileText, Mail, Instagram, ChevronRight, ChevronDown, MessageCircle, Camera, ArrowUpRight } from 'lucide-react';
 import { leerCategoria, partirNombre } from '../../../lib/atletas';
 import { AccesoAppSection, VolverAlAcceso } from '../components/AccesoAppSection';
 import { TeamModal } from '../../../components/modals/TeamModal';
@@ -13,6 +13,7 @@ import { BandaDeEntrada, Fold, PressButton, Reveal, StaggerList, StaggerItem } f
 import { HowItWorksSection } from '../components/HowItWorksSection';
 import { HeroCine } from '../components/HeroCine';
 import { FAQSection } from '../components/FAQSection';
+import { FichaDeLogro } from '../components/FichaDeLogro';
 import type { Athlete } from '../../../data/athletes';
 import { useClubWeb } from '../../../services/clubWebService';
 import { coaches, Coach } from '../../../data/coaches';
@@ -37,6 +38,9 @@ import { coachEn, logroEn, nutricionistaEn, rellenar, useTextosWeb } from '../te
 const Bubble = lazy(() =>
     import("@typebot.io/react").then((m) => ({ default: m.Bubble }))
 );
+
+/** Cuántos atletas se ven antes de pulsar "ver más": una fila en escritorio. */
+const ATLETAS_DE_ENTRADA = 4;
 
 interface LandingPageProps {
     onLoginClick: () => void;
@@ -85,6 +89,9 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
     const [mascotaVisible, setMascotaVisible] = useState(false);
     const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
     const [isAllAchievementsModalOpen, setIsAllAchievementsModalOpen] = useState(false);
+    // La plantilla arranca con cuatro: los trece de golpe eran un muro de
+    // fotos antes de saber siquiera quién es quién.
+    const [verTodosAtletas, setVerTodosAtletas] = useState(false);
 
     // Los datos del club (cargos, presentaciones, logros) en el idioma de la
     // página. Los nombres propios no cambian. Ver ../textos.ts.
@@ -170,19 +177,11 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             />
 
             {/* =====================================================
-                2. ENTRAR A LA APP
+                2. QUÉ ES ANVIL — fold claro
                 =====================================================
-                Inmediatamente después de la portada, y no a media página
-                dentro del fold de "qué trae la app". Ver la cabecera de
-                AccesoAppSection.tsx.                                    */}
-            <AccesoAppSection
-                user={user}
-                onLoginClick={onLoginClick}
-                onSignupClick={onSignupClick}
-            />
-
-            {/* =====================================================
-                3. QUÉ ES ANVIL — fold claro
+                Octubre de 2026: va ANTES que la app, en el mismo orden que
+                la cabecera (Filosofía · La app · Competiciones…). Primero
+                quiénes somos, después la puerta.
                 =====================================================
                 Sustituye a las dos rejillas de tarjetas que había aquí
                 (cuatro "pilares" + seis "beneficios"): dieciséis cajas
@@ -231,6 +230,18 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     </Reveal>
                 </div>
             </Fold>
+
+            {/* =====================================================
+                3. ENTRAR A LA APP
+                =====================================================
+                Inmediatamente después de la portada, y no a media página
+                dentro del fold de "qué trae la app". Ver la cabecera de
+                AccesoAppSection.tsx.                                    */}
+            <AccesoAppSection
+                user={user}
+                onLoginClick={onLoginClick}
+                onSignupClick={onSignupClick}
+            />
 
             {/* 3. CIFRAS — banda estrecha, no un fold entero. Son un dato
                    de apoyo, no el argumento. */}
@@ -400,8 +411,12 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 Era un carrusel infinito que se movía solo cada tres
                 segundos: obligaba a esperar para ver a alguien y no
                 dejaba ver a todo el equipo de un vistazo. Ahora es una
-                plantilla, como la de cualquier club: todos a la vez,
-                con su categoría y su total, y la ficha al pulsar. */}
+                plantilla, como la de cualquier club, con su categoría y su
+                total, y la ficha al pulsar.
+
+                Octubre de 2026: arranca con UNA fila de cuatro y un
+                "ver los N atletas" que despliega el resto ahí mismo, sin
+                modal. Los trece de golpe eran demasiado. */}
             <section id="atletas" className="bg-surface-canvas py-24 md:py-32">
                 <div className="mx-auto w-full max-w-[1180px] px-6 md:px-10">
                     <Reveal className="flex flex-wrap items-end justify-between gap-6">
@@ -418,13 +433,22 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     </Reveal>
 
                     <StaggerList className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
-                        {athletes.map((athlete) => {
+                        {(verTodosAtletas ? athletes : athletes.slice(0, ATLETAS_DE_ENTRADA)).map((athlete, i) => {
                             const { nombre, apellidos } = partirNombre(athlete.name);
                             const { peso, division } = leerCategoria(athlete.category);
                             const total = athlete.stats?.total ?? 0;
                             return (
                                 <StaggerItem key={athlete.id}>
-                                    <button
+                                    <m.button
+                                        // Los que se despliegan entran en cascada corta;
+                                        // los cuatro de entrada ya los anima la lista.
+                                        {...(i >= ATLETAS_DE_ENTRADA && !reduceMotion
+                                            ? {
+                                                initial: { opacity: 0, y: 24 },
+                                                animate: { opacity: 1, y: 0 },
+                                                transition: { duration: 0.5, delay: (i - ATLETAS_DE_ENTRADA) * 0.05, ease: [0.16, 1, 0.3, 1] },
+                                            }
+                                            : {})}
                                         onClick={() => setSelectedAthlete(athlete)}
                                         className="group relative block aspect-[3/4] w-full overflow-hidden rounded-card bg-surface-raised text-left"
                                     >
@@ -453,11 +477,34 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                                                 </span>
                                             )}
                                         </div>
-                                    </button>
+                                    </m.button>
                                 </StaggerItem>
                             );
                         })}
                     </StaggerList>
+
+                    {athletes.length > ATLETAS_DE_ENTRADA && (
+                        <div className="mt-10 flex justify-center">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    // Al plegar, vuelve al principio de la sección:
+                                    // si no, la página se queda a media plantilla.
+                                    if (verTodosAtletas) document.getElementById('atletas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    setVerTodosAtletas((v) => !v);
+                                }}
+                                aria-expanded={verTodosAtletas}
+                                className="group inline-flex min-h-[48px] items-center gap-2 rounded-pill border border-[var(--border-default)] px-6 text-t-sm font-bold uppercase tracking-wide text-ink transition-colors duration-fast ease-snap hover:border-ink hover:bg-ink hover:text-surface-canvas"
+                            >
+                                {verTodosAtletas ? t.atletas.verMenos : rellenar(t.atletas.verMas, { n: athletes.length })}
+                                <ChevronDown
+                                    size={16}
+                                    aria-hidden="true"
+                                    className={`transition-transform duration-base ease-snap ${verTodosAtletas ? 'rotate-180' : ''}`}
+                                />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -481,33 +528,56 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 </div>
 
                 {/* Con foto: un podio se enseña, no se ilustra con un trofeo
-                    dibujado. Si la foto de un logro no está, queda el trofeo
-                    sobre la superficie, que es lo que había. */}
-                <StaggerList className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {logros.slice(0, 3).map((item) => (
-                        <StaggerItem key={item.id}>
+                    dibujado. Octubre de 2026: el primero, grande (es el último
+                    que ha ganado el club) y los otros dos apilados a su lado;
+                    el resultado manda y el título va debajo, como en la ficha. */}
+                <StaggerList className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-[1.25fr_1fr] md:grid-rows-2">
+                    {logros.slice(0, 3).map((item, i) => (
+                        <StaggerItem key={item.id} className={i === 0 ? 'md:row-span-2' : ''}>
                             <button
                                 onClick={() => setSelectedAchievement(item)}
-                                className="group relative block aspect-[4/5] w-full overflow-hidden rounded-sheet bg-surface-canvas text-left"
+                                className={`group relative block w-full overflow-hidden rounded-sheet bg-surface-canvas text-left ${i === 0 ? 'aspect-[4/5] md:aspect-auto md:h-full md:min-h-[36rem]' : 'aspect-[16/10] md:aspect-auto md:h-full'}`}
                             >
                                 <SafeImage
                                     src={item.images[0]}
                                     alt=""
                                     loading="lazy"
-                                    className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
                                     fallback={
                                         <div className="flex h-full w-full items-start p-8">
                                             <Trophy className="h-8 w-8 text-brand-text" aria-hidden="true" />
                                         </div>
                                     }
                                 />
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/75 to-transparent p-7 pt-24">
-                                    <p className="font-display text-t-3xl uppercase leading-none text-brand-text">
-                                        {item.result}
-                                    </p>
-                                    <h3 className="mt-2 text-t-base font-bold leading-snug text-ink">
-                                        {item.title}
-                                    </h3>
+                                <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/40 to-transparent" />
+
+                                <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 md:p-6">
+                                    <span className="font-mono text-t-2xs font-semibold tracking-[0.16em] text-ink/80">
+                                        {String(i + 1).padStart(2, '0')}
+                                    </span>
+                                    {item.images.length > 1 && (
+                                        <span className="inline-flex items-center gap-1.5 rounded-pill bg-surface-sunken/60 px-2.5 py-1 text-t-2xs font-semibold text-ink backdrop-blur-md">
+                                            <Camera size={12} aria-hidden="true" />
+                                            {item.images.length}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 md:p-7">
+                                    <div className="min-w-0">
+                                        <p className={`font-display uppercase leading-[0.9] text-ink text-balance ${i === 0 ? 'text-[clamp(2.25rem,4.4vw,3.75rem)]' : 'text-t-3xl'}`}>
+                                            {item.result}
+                                        </p>
+                                        <h3 className="mt-2 text-t-sm font-bold uppercase tracking-[0.08em] text-ink-muted">
+                                            {item.title}
+                                        </h3>
+                                    </div>
+                                    <span
+                                        aria-hidden="true"
+                                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-white/10 text-ink backdrop-blur-md transition-colors duration-fast ease-snap group-hover:bg-brand group-hover:text-brand-ink"
+                                    >
+                                        <ArrowUpRight size={18} />
+                                    </span>
                                 </div>
                             </button>
                         </StaggerItem>
@@ -627,10 +697,9 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 coach={selectedCoach}
             />
 
-            <AchievementModal
-                isOpen={!!selectedAchievement}
+            <FichaDeLogro
+                logro={selectedAchievement}
                 onClose={() => setSelectedAchievement(null)}
-                achievement={selectedAchievement}
             />
 
             <AllAchievementsModal
@@ -693,132 +762,6 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
 }
 
 
-
-/**
- * FICHA DE UN LOGRO
- *
- * Antes era un lightbox propio: fondo negro al 90% con desenfoque, `z-[300]`
- * a mano (que es la capa del BACKDROP, no la del modal), sin trampa de foco,
- * sin Escape y sin bloqueo de scroll. Y dentro, el registro visual de otra
- * página — `bg-surface-canvas`, `text-gray-400`, cursiva, `tracking-tighter` y un
- * trofeo de 48px de adorno. Ahora usa el `Modal` del sistema, que ya trae los
- * tres comportamientos, y el color sale de los tokens.
- *
- * El trofeo se ha ido: la tarjeta desde la que se abre ya lleva uno, así que
- * repetirlo aquí a tamaño grande no informa de nada. Lo que sí necesita sitio
- * es la foto — un podio se enseña, no se ilustra.
- */
-function AchievementModal({ isOpen, onClose, achievement }: { isOpen: boolean; onClose: () => void; achievement: Achievement | null }) {
-    const [imgIndex, setImgIndex] = useState(0);
-    const reduce = useReducedMotion();
-    const c = useTextosWeb().logros;
-
-    // Se retiene el último logro para que el modal siga teniendo contenido
-    // durante su animación de salida. Al cerrar, el estado del padre pasa a
-    // `null` en el mismo instante: sin esto el panel se queda vacío y la
-    // salida se ve como un parpadeo en vez de como un cierre.
-    const [shown, setShown] = useState<Achievement | null>(achievement);
-    // Ajuste durante el render: al abrir el modal sobre otro logro, con el
-    // efecto se veia un frame con la foto del logro anterior.
-    const [logroAnterior, setLogroAnterior] = useState(achievement);
-    if (logroAnterior !== achievement) {
-        setLogroAnterior(achievement);
-        if (achievement) { setShown(achievement); setImgIndex(0); }
-    }
-
-    const images = shown?.images ?? [];
-    const many = images.length > 1;
-    const go = (dir: 1 | -1) => setImgIndex((i) => (i + dir + images.length) % images.length);
-
-    return (
-        <Modal open={isOpen} onClose={onClose} title={shown?.title} size="xl">
-            {shown && (
-                <>
-                    <figure className="group/img relative aspect-[16/10] overflow-hidden rounded-card bg-surface-sunken">
-                        <AnimatePresence initial={false} mode="popLayout">
-                            <m.div
-                                key={imgIndex}
-                                className="absolute inset-0"
-                                initial={reduce ? false : { opacity: 0, x: 40 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={reduce ? { opacity: 0 } : { opacity: 0, x: -40 }}
-                                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                                drag={many ? 'x' : false}
-                                dragConstraints={{ left: 0, right: 0 }}
-                                dragElastic={0.12}
-                                onDragEnd={(_, info) => {
-                                    if (info.offset.x < -50) go(1);
-                                    if (info.offset.x > 50) go(-1);
-                                }}
-                            >
-                                <SafeImage
-                                    src={images[imgIndex]}
-                                    alt={`${shown.title} — ${shown.result}`}
-                                    className={`h-full w-full object-cover ${many ? 'cursor-grab active:cursor-grabbing' : ''}`}
-                                    fallbackClassName="bg-surface-sunken"
-                                    draggable={false}
-                                />
-                            </m.div>
-                        </AnimatePresence>
-
-                        {/* Flechas solo en escritorio: en móvil se arrastra. */}
-                        {many && (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => go(-1)}
-                                    aria-label={c.fotoAnterior}
-                                    className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill bg-surface-sunken/70 text-ink opacity-0 transition-opacity duration-fast ease-snap hover:bg-brand group-hover/img:opacity-100 focus-visible:opacity-100 sm:flex"
-                                >
-                                    <ChevronLeft size={20} />
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => go(1)}
-                                    aria-label={c.fotoSiguiente}
-                                    className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill bg-surface-sunken/70 text-ink opacity-0 transition-opacity duration-fast ease-snap hover:bg-brand group-hover/img:opacity-100 focus-visible:opacity-100 sm:flex"
-                                >
-                                    <ChevronRight size={20} />
-                                </button>
-                            </>
-                        )}
-                    </figure>
-
-                    {/* Indicadores fuera de la foto: sobre la superficie tienen
-                        contraste garantizado, y encima de la imagen dependían
-                        de que esa esquina saliera oscura. Barras y no puntos —
-                        el mismo lenguaje que el resto de la página.
-                        La zona pulsable mide 44px aunque la barra mida 3. */}
-                    {many && (
-                        <div className="mt-1 flex justify-center gap-1">
-                            {images.map((src, i) => (
-                                <button
-                                    key={src}
-                                    type="button"
-                                    onClick={() => setImgIndex(i)}
-                                    aria-label={rellenar(c.verFoto, { i: i + 1, n: images.length })}
-                                    aria-current={i === imgIndex}
-                                    className="flex h-11 w-8 items-center justify-center"
-                                >
-                                    <span
-                                        className={`h-[3px] w-full rounded-pill transition-colors duration-fast ease-snap ${i === imgIndex ? 'bg-brand' : 'bg-[var(--border-strong)]'}`}
-                                    />
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    <p className={`text-t-lg font-black uppercase tracking-display text-brand-text ${many ? 'mt-4' : 'mt-6'}`}>
-                        {shown.result}
-                    </p>
-                    <p className="mt-3 max-w-[62ch] text-t-base leading-relaxed text-ink-muted">
-                        {shown.desc}
-                    </p>
-                </>
-            )}
-        </Modal>
-    );
-}
 
 /**
  * HISTORIAL COMPLETO

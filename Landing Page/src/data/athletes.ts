@@ -59,9 +59,9 @@ export interface Athlete {
   video?: VideoAtleta;
 }
 
-const recorte = (slug: string, ancho: number, alto: number, encuadre?: RecorteAtleta['encuadre']): RecorteAtleta => ({
-  src: `/athletes/roster/${slug}.webp`,
-  src800: `/athletes/roster/${slug}-800.webp`,
+const recorte = (fichero: string, ancho: number, alto: number, encuadre?: RecorteAtleta['encuadre']): RecorteAtleta => ({
+  src: `/athletes/roster/${fichero}.webp`,
+  src800: `/athletes/roster/${fichero}-800.webp`,
   ancho,
   alto,
   encuadre,
@@ -106,19 +106,20 @@ export const athletes: Athlete[] = [
     id: 3,
     name: "Marc Alonso",
     slug: "marc-alonso",
-    recorte: recorte("marc-alonso", 1064, 1600, { escala: 0.86, bajar: 0 }),
+    // Campeonato de España Junior 2026. El recorte anterior era de la SBD Cup.
+    recorte: recorte("marc-alonso-jnr26", 1215, 1600, { escala: 1.12, bajar: 0.06 }),
     category: "-105kg JNR",
-    image: "/athletes/marc.png",
+    image: "/athletes/marc-jnr26.jpg",
     competitionDate: "Sábado 16 de Mayo, 12:45",
     description: "Compitiendo al más alto nivel por el club Anvil Strength. Superando límites y forjando una nueva historia de éxito en la plataforma.",
     instagram: "https://www.instagram.com/mar_alonsoo_",
     stats: {
-      lastCompetition: "SBD Cup 2025",
+      lastCompetition: "Campeonato de España Junior 2026",
       glPoints: 100.06,
-      total: 800,
-      squat: 295,
-      bench: 192.5,
-      deadlift: 312.5
+      total: 825,
+      squat: 307.5,
+      bench: 197.5,
+      deadlift: 320
     }
   },
   {
@@ -129,12 +130,12 @@ export const athletes: Athlete[] = [
     category: "-105kg SBJ",
     image: "/athletes/Pau.png",
     stats: {
-      lastCompetition: "SBD Cup 2025",
+      lastCompetition: "Campeonato de España Subjunior 2026",
       glPoints: 79.65,
-      total: 640,
+      total: 662.5,
       squat: 270,
-      bench: 140,
-      deadlift: 230
+      bench: 150,
+      deadlift: 242.5
     }
   },
   {

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { Swords, X, TrendingUp, History, Info, Trash2, Send } from 'lucide-react';
+import { Swords, X, TrendingUp, History, Info, Trash2, Send, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAnvilPoints } from '../../profile/hooks/useAnvilPoints';
 import { ArenaBet, ArenaOption } from '../../../types/database';
 import { ArenaBetCard } from '../components/ArenaBetCard';
@@ -14,6 +14,9 @@ import { puede } from '../../../lib/roles';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { EstadoDeDatos } from '../../../components/ui/EstadoDeDatos';
 import { SkeletonCard } from '../../../components/ui/Skeleton';
+import { useCompeticionesPublicas } from '../../landing/hooks/useCompeticionesPublicas';
+import { nombreDeCartel } from '../../landing/lib/competiciones';
+import { esDeLaCompeticion } from '../lib/apuestasDeCompeticion';
 
 interface ExtendedProfile extends UserProfile {
     is_developer?: boolean;
@@ -92,8 +95,27 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
      * aparezcan mientras se mira.
      */
 
-    const activeBets = bets.filter(b => b.status === 'open' || b.status === 'locked');
-    const historyBets = bets.filter(b => b.status === 'resolved' || b.status === 'cancelled');
+    /*
+     * DESDE LA ZONA DEL CLUB: `?competicion=<slug>` llega al pulsar "Apostar
+     * en la Arena" en una competición. Se enseñan primero (y solo, mientras
+     * no se pida ver todas) las apuestas de ese campeonato. Ver
+     * ../lib/apuestasDeCompeticion.ts para cómo se casan.
+     */
+    const [params, setParams] = useSearchParams();
+    const slugCompeticion = params.get('competicion');
+    const { data: competiciones } = useCompeticionesPublicas();
+    const competicion = slugCompeticion ? competiciones?.find(c => c.slug === slugCompeticion) ?? null : null;
+    const cartel = competicion ? nombreDeCartel(competicion, 'es').cartel : null;
+    const [verTodas, setVerTodas] = useState(false);
+    const deLaCompeticion = (b: ArenaBet) =>
+        !competicion || verTodas || esDeLaCompeticion(b, [competicion.nombre, cartel]);
+    const quitarFiltro = () => setParams(p => { const n = new URLSearchParams(p); n.delete('competicion'); return n; }, { replace: true });
+
+    const activeBets = bets.filter(b => (b.status === 'open' || b.status === 'locked') && deLaCompeticion(b));
+    const historyBets = bets.filter(b => (b.status === 'resolved' || b.status === 'cancelled') && deLaCompeticion(b));
+    const abiertasDeLaCompeticion = competicion
+        ? bets.filter(b => (b.status === 'open' || b.status === 'locked') && esDeLaCompeticion(b, [competicion.nombre, cartel])).length
+        : 0;
 
     const handlePlaceSingleBet = async (amount: number, predictionValue?: number) => {
         if (!bettingModal.bet) return;
@@ -229,7 +251,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             {pointsData?.balance?.toLocaleString() || 0} <span className="text-xs">AC</span>
                         </span>
                     </div>
-                    <Link to="/dashboard" className="p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
+                    <Link to={slugCompeticion ? '/dashboard/club' : '/dashboard'} aria-label="Cerrar la Arena" className="p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
                         <X size={24} />
                     </Link>
                 </div>
@@ -239,6 +261,45 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Section */}
                     <div className="lg:col-span-2 space-y-8">
+                        {competicion && (
+                            <div className="flex flex-col gap-4 rounded-card border border-brand/30 bg-[var(--brand-quiet)] p-5 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-brand text-brand-ink">
+                                        <Trophy size={16} aria-hidden="true" />
+                                    </span>
+                                    <div className="min-w-0">
+                                        <p className="text-t-2xs font-semibold text-brand-text">Apuestas del campeonato</p>
+                                        <p className="truncate text-t-lg font-semibold text-ink">{cartel}</p>
+                                        <p className="mt-0.5 text-t-xs text-ink-subtle">
+                                            {abiertasDeLaCompeticion === 0
+                                                ? 'Todavía no hay apuestas abiertas para este campeonato.'
+                                                : abiertasDeLaCompeticion === 1
+                                                    ? '1 apuesta abierta.'
+                                                    : `${abiertasDeLaCompeticion} apuestas abiertas.`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex shrink-0 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setVerTodas(v => !v)}
+                                        aria-pressed={verTodas}
+                                        className="min-h-[40px] rounded-pill border border-subtle px-4 text-t-xs font-semibold text-ink transition-colors hover:bg-[var(--fill-pressed)]"
+                                    >
+                                        {verTodas ? 'Solo este campeonato' : 'Ver todas'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={quitarFiltro}
+                                        aria-label="Quitar el filtro del campeonato"
+                                        className="flex h-10 w-10 items-center justify-center rounded-pill text-ink-subtle transition-colors hover:bg-[var(--fill-pressed)] hover:text-ink"
+                                    >
+                                        <X size={16} aria-hidden="true" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Tab Selector */}
                         <div className="flex gap-2 p-1.5 bg-[var(--fill-muted)] rounded-2xl border border-subtle w-fit">
                             <button 
@@ -282,10 +343,12 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                 </div>
                             }
                             vacioIcono={<Info size={20} aria-hidden="true" />}
-                            vacioTitulo={activeTab === 'active' ? 'No hay combates abiertos' : 'El historial está vacío'}
+                            vacioTitulo={activeTab === 'active' ? (competicion && !verTodas ? 'Sin apuestas para este campeonato' : 'No hay combates abiertos') : 'El historial está vacío'}
                             vacioCuerpo={
                                 activeTab === 'active'
-                                    ? 'Cuando alguien abra una apuesta, aparecerá aquí.'
+                                    ? (competicion && !verTodas
+                                        ? 'En cuanto se abra una, aparecerá aquí. Mientras, puedes ver el resto de la Arena.'
+                                        : 'Cuando alguien abra una apuesta, aparecerá aquí.')
                                     : 'Aquí irán quedando los combates que ya se hayan resuelto.'
                             }
                         >

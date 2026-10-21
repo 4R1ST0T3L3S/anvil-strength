@@ -1,5 +1,5 @@
 import {
-    LayoutDashboard, FileText, Utensils, Calendar, Trophy, User, ShoppingBag, Medal, Activity, Users, TrendingUp, Inbox, MessageSquare, SlidersHorizontal,
+    LayoutDashboard, FileText, Utensils, Calendar, Trophy, User, ShoppingBag, Medal, Activity, Users, TrendingUp, Inbox, MessageSquare, SlidersHorizontal, Flag,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout, AccountMenu } from '../../../components/layout/DashboardLayout';
@@ -96,6 +96,8 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         { icon: <Activity size={20} />, label: t('nav.velocidad'), onClick: () => go('velocidad'), isActive: slug === 'velocidad', hideOnMobileBar: true },
         { icon: <Calendar size={20} />, label: t('nav.calendarioAep'), onClick: () => go('calendario'), isActive: slug === 'calendario', hideOnMobileBar: true },
         { icon: <Medal size={20} />, label: t('nav.ranking'), onClick: () => go('ranking'), isActive: slug === 'ranking', hideOnMobileBar: true },
+        // La zona común es una página propia (como la Arena), no una vista del panel.
+        { icon: <Flag size={20} />, label: 'El club', onClick: () => navigate('/dashboard/club'), isActive: false, hideOnMobileBar: true },
         { icon: <SlidersHorizontal size={20} />, label: 'Preferencias y ajustes', shortLabel: 'Ajustes', onClick: () => go('ajustes'), isActive: slug === 'ajustes' || slug === 'notificaciones', hideOnMobileBar: true },
         // La Tienda Anvil está apagada (ver src/lib/features.ts).
         ...(FEATURES.anvilStore
