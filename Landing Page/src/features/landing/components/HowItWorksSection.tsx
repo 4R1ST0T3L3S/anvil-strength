@@ -20,7 +20,7 @@ export function HowItWorksSection() {
 
     return (
         <Fold tone="dark" className="py-24 md:py-32">
-            <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink text-balance">
+            <h2 className="font-display text-[clamp(2.75rem,7vw,5rem)] uppercase leading-[0.9] tracking-[0.005em] text-ink text-balance">
                 {c.titulo}
             </h2>
             <p className="mt-5 max-w-[52ch] text-t-lg leading-relaxed text-ink-muted">

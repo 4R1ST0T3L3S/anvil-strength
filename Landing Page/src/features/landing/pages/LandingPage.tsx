@@ -1,7 +1,8 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { AnvilMascot } from '../../../components/ui/AnvilMascot';
 import { Trophy, FileText, Mail, Instagram, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { leerCategoria, partirNombre } from '../../../lib/atletas';
 import { AccesoAppSection, VolverAlAcceso } from '../components/AccesoAppSection';
 import { TeamModal } from '../../../components/modals/TeamModal';
 import { AthleteDetailsModal } from '../../../components/modals/AthleteDetailsModal';
@@ -10,8 +11,8 @@ import { ReviewsSection } from '../../reviews/components/ReviewsSection';
 import { StatsSection } from '../components/StatsSection';
 import { BandaDeEntrada, Fold, PressButton, Reveal, StaggerList, StaggerItem } from '../components/landingKit';
 import { HowItWorksSection } from '../components/HowItWorksSection';
+import { HeroCine } from '../components/HeroCine';
 import { FAQSection } from '../components/FAQSection';
-import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import { athletes, Athlete } from '../../../data/athletes';
 import { coaches, Coach } from '../../../data/coaches';
 import { nutritionists } from '../../../data/nutritionists';
@@ -78,13 +79,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
     // que el primer clic no se pierda.
     const [isBotMounted, setIsBotMounted] = useState(false);
     const [pendingOpen, setPendingOpen] = useState(false);
-    // Carousel State
-    const [carouselIndex, setCarouselIndex] = useState(0);
-    const [isTransitioning, setIsTransitioning] = useState(true);
-    const [isPaused, setIsPaused] = useState(false);
-    const [isManualMode, setIsManualMode] = useState(false);
-    const [lastInteraction, setLastInteraction] = useState(() => Date.now());
-        // Dentro de la función LandingPage, junto a los otros useState:
+    // La mascota espera a que se deje atrás la portada: encima del escenario
+    // tapaba la próxima competición en escritorio y el botón de crear cuenta
+    // en el móvil. Ver la nota de MASCOTA, abajo.
+    const [mascotaVisible, setMascotaVisible] = useState(false);
     const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
     const [isAllAchievementsModalOpen, setIsAllAchievementsModalOpen] = useState(false);
 
@@ -122,6 +120,21 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
         return () => window.clearTimeout(timer);
     }, []);
 
+    useEffect(() => {
+        let pendiente = false;
+        const alHacerScroll = () => {
+            if (pendiente) return;
+            pendiente = true;
+            requestAnimationFrame(() => {
+                setMascotaVisible(window.scrollY > window.innerHeight * 0.6);
+                pendiente = false;
+            });
+        };
+        window.addEventListener('scroll', alHacerScroll, { passive: true });
+        alHacerScroll();
+        return () => window.removeEventListener('scroll', alHacerScroll);
+    }, []);
+
     // Abre el chat en cuanto está disponible, aunque el clic ocurriera antes
     // de que el chunk terminase de descargarse: así no se pierde el primer clic.
     useEffect(() => {
@@ -137,153 +150,23 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
         return () => clearInterval(timer);
     }, [pendingOpen, isBotMounted]);
 
-    useEffect(() => {
-        if (isPaused || isManualMode) return;
-        const timer = setInterval(() => {
-            setIsTransitioning(true);
-            setCarouselIndex((prev) => prev + 1);
-        }, 3000);
-        return () => clearInterval(timer);
-    }, [isPaused, isManualMode]);
-
-    useEffect(() => {
-        if (!isManualMode) return;
-        const checkIdle = setInterval(() => {
-            const now = Date.now();
-            if (now - lastInteraction > 30000 && !selectedAthlete) {
-                setIsManualMode(false);
-            }
-        }, 1000);
-        return () => clearInterval(checkIdle);
-    }, [isManualMode, lastInteraction, selectedAthlete]);
-
-    const handleManualNav = (direction: 'prev' | 'next') => {
-        setIsManualMode(true);
-        setLastInteraction(Date.now());
-        if (direction === 'next') {
-            setIsTransitioning(true);
-            setCarouselIndex((prev) => prev + 1);
-        } else {
-            if (carouselIndex === 0) {
-                setIsTransitioning(false);
-                setCarouselIndex(athletes.length);
-                setTimeout(() => {
-                    setIsTransitioning(true);
-                    setCarouselIndex(athletes.length - 1);
-                }, 10);
-            } else {
-                setIsTransitioning(true);
-                setCarouselIndex((prev) => prev - 1);
-            }
-        }
-    };
-
-    useEffect(() => {
-        if (carouselIndex === athletes.length) {
-            const timer = setTimeout(() => {
-                setIsTransitioning(false);
-                setCarouselIndex(0);
-            }, 800);
-            return () => clearTimeout(timer);
-        }
-    }, [carouselIndex]);
-
-
-    const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-        e.preventDefault();
-        const element = document.querySelector(id);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    };
 
     return (
         <div className="font-sans bg-surface-canvas">
             <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
             {/* =====================================================
-                1. PORTADA
+                1. PORTADA — el escenario
                 =====================================================
-                Una sola idea: quién somos y qué se hace aquí. La foto
-                ocupa el fold entero porque un club se vende enseñando
-                gente levantando, no describiéndolo.
-
-                El degradado inferior no es decoración: sin él, el texto
-                blanco se apoya en la zona clara de la foto y deja de
-                leerse. Va del color del siguiente fold para que el corte
-                entre secciones no se vea.                              */}
-            <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
-                <div className="absolute inset-0">
-                    <img
-                        src="/portadaanvil2.jpg"
-                        alt={t.portada.fotoAlt}
-                        className="h-full w-full object-cover"
-                        fetchPriority="high"
-                    />
-                    <div className="absolute inset-0 bg-surface-sunken/55" />
-                    <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-surface-sunken to-transparent" />
-                </div>
-
-                <div className="relative z-10 mx-auto w-full max-w-[1180px] px-6 pb-24 pt-32 text-center md:px-10">
-                    {/* Aquí iba el yunque en SVG encima del nombre. Se quita:
-                        el trazado es más ancho que alto y a 112px se veía
-                        aplastado, compitiendo con el logo de la cabecera. La
-                        marca ya está arriba a la izquierda. */}
-                    <m.h1
-                        initial={{ opacity: 0, y: 24 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                        className="text-d-lg font-black uppercase text-ink"
-                    >
-                        Anvil Strength
-                    </m.h1>
-
-                    {/* LEMA, en la fuente display — el único contraste
-                        tipográfico deliberado de toda la portada. La frase
-                        descriptiva ("club de powerlifting digital...") no
-                        desaparece: vive en el fold siguiente, que es donde
-                        de verdad se explica qué es el club. Aquí solo hace
-                        falta una idea, no un resumen. */}
-                    <m.p
-                        initial={{ opacity: 0, y: 18 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                        className="mt-5 font-display text-[clamp(1.75rem,5vw,3rem)] uppercase leading-[0.95] tracking-[0.01em] text-white/90"
-                    >
-                        {t.portada.lema}
-                    </m.p>
-
-                    <m.div
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.65, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                        className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-                    >
-                        {/* CTA PRINCIPAL.
-                            Se había quitado al separar esta carpeta como "solo
-                            promocional": una portada sin ninguna acción, cuya
-                            única salida era un enlace de texto a la filosofía.
-                            Vuelve, y `SmartAuthButton` hace que sirva también a
-                            quien ya tiene sesión —dice "Ir a mi panel" y va—,
-                            que ahora es posible porque este dominio sirve la
-                            aplicación entera. */}
-                        {!user ? (
-                            <PressButton onClick={onSignupClick ?? onLoginClick} className="w-full sm:w-auto">
-                                {t.portada.crearCuenta}
-                            </PressButton>
-                        ) : (
-                            <SmartAuthButton variant="primary" onLoginClick={onLoginClick} className="w-full sm:w-auto" />
-                        )}
-                        <a
-                            href="#app"
-                            onClick={(e) => scrollToSection(e, '#app')}
-                            className="text-t-sm font-bold uppercase tracking-wide text-white/70 underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
-                        >
-                            {t.portada.yaTengoCuenta}
-                        </a>
-                    </m.div>
-                </div>
-            </section>
+                Ver HeroCine.tsx: los atletas recortados en un escenario
+                negro, el nombre del club detrás y la próxima competición
+                en la esquina. */}
+            <HeroCine
+                user={user}
+                onLoginClick={onLoginClick}
+                onSignupClick={onSignupClick}
+                onYaTengoCuenta={() => document.getElementById('app')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            />
 
             {/* =====================================================
                 2. ENTRAR A LA APP
@@ -309,7 +192,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             <Fold id="filosofia" tone="black" className="py-24 md:py-32">
                 <div className="grid gap-14 md:grid-cols-[1fr_0.85fr] md:items-start md:gap-20">
                     <div>
-                        <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink text-balance">
+                        <h2 className="font-display text-[clamp(2.75rem,7vw,5rem)] uppercase leading-[0.9] tracking-[0.005em] text-ink text-balance">
                             {t.filosofia.titulo1}
                             <br />
                             {t.filosofia.titulo2}
@@ -370,7 +253,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     <div className="bg-brand/10 border border-brand/30 text-brand-text text-t-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full w-max mb-6">
                         {t.software.etiqueta}
                     </div>
-                    <h2 className="text-d-sm font-black uppercase leading-[1.02] text-ink text-balance">
+                    <h2 className="font-display text-[clamp(2.25rem,5.5vw,3.75rem)] uppercase leading-[0.95] tracking-[0.005em] text-ink text-balance">
                         {t.software.titulo}
                     </h2>
                     <p className="mt-5 text-t-lg leading-relaxed text-ink-muted">
@@ -404,7 +287,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 ===================================================== */}
             <Fold id="entrenadores" tone="black" className="py-24 md:py-32">
                 <Reveal>
-                    <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink">
+                    <h2 className="font-display text-[clamp(2.75rem,7vw,5rem)] uppercase leading-[0.9] tracking-[0.005em] text-ink">
                         {t.equipo.titulo}
                     </h2>
                     <p className="mt-5 max-w-[52ch] text-t-lg leading-relaxed text-ink-muted">
@@ -511,74 +394,69 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
             />
 
             {/* =====================================================
-                7. ATLETAS — carrusel infinito
-                ===================================================== */}
-            <section id="atletas" className="overflow-hidden bg-surface-canvas py-24 md:py-28">
-                <div className="mx-auto mb-12 flex max-w-[1180px] items-end justify-between gap-6 px-6 md:px-10">
-                    <h2 className="text-d-sm font-black uppercase leading-none text-ink">
-                        {t.atletas.titulo}
-                    </h2>
-                    <button
-                        onClick={() => setIsTeamModalOpen(true)}
-                        className="shrink-0 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
-                    >
-                        {t.atletas.verEquipo}
-                    </button>
-                </div>
-
-                <div className="group/carousel relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-surface-canvas to-transparent md:w-28" />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-surface-canvas to-transparent md:w-28" />
-
-                    <button
-                        onClick={() => handleManualNav('prev')}
-                        aria-label={t.atletas.anteriores}
-                        className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-pill bg-surface-sunken/80 p-3 text-ink opacity-0 transition-opacity duration-fast hover:bg-brand group-hover/carousel:opacity-100 focus-visible:opacity-100 md:block"
-                    >
-                        <ChevronLeft size={22} />
-                    </button>
-                    <button
-                        onClick={() => handleManualNav('next')}
-                        aria-label={t.atletas.siguientes}
-                        className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-pill bg-surface-sunken/80 p-3 text-ink opacity-0 transition-opacity duration-fast hover:bg-brand group-hover/carousel:opacity-100 focus-visible:opacity-100 md:block"
-                    >
-                        <ChevronRight size={22} />
-                    </button>
-
-                    <div
-                        className="flex overflow-hidden"
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                    >
-                        <m.div
-                            className="flex gap-4 px-4"
-                            animate={{ x: -(carouselIndex * (280 + 16)) }}
-                            transition={isTransitioning ? { duration: 0.8, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}
+                7. ATLETAS — la plantilla
+                =====================================================
+                Era un carrusel infinito que se movía solo cada tres
+                segundos: obligaba a esperar para ver a alguien y no
+                dejaba ver a todo el equipo de un vistazo. Ahora es una
+                plantilla, como la de cualquier club: todos a la vez,
+                con su categoría y su total, y la ficha al pulsar. */}
+            <section id="atletas" className="bg-surface-canvas py-24 md:py-32">
+                <div className="mx-auto w-full max-w-[1180px] px-6 md:px-10">
+                    <Reveal className="flex flex-wrap items-end justify-between gap-6">
+                        <h2 className="font-display text-[clamp(2.75rem,6vw,5rem)] uppercase leading-[0.9] text-ink">
+                            {t.atletas.titulo}
+                        </h2>
+                        <button
+                            onClick={() => setIsTeamModalOpen(true)}
+                            className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast hover:text-ink hover:underline"
                         >
-                            {[...athletes, ...athletes, ...athletes, ...athletes].map((athlete, index) => (
-                                <button
-                                    key={`${athlete.id}-${index}`}
-                                    onClick={() => setSelectedAthlete(athlete)}
-                                    className="group relative aspect-[4/5] w-[280px] shrink-0 overflow-hidden rounded-sheet bg-surface-raised text-left"
-                                >
-                                    <SafeImage
-                                        src={athlete.image}
-                                        alt={rellenar(t.atletas.fotoAlt, { nombre: athlete.name, categoria: athlete.category })}
-                                        className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
-                                        loading="lazy"
-                                    />
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-sunken to-transparent p-4 pt-12">
-                                        <p className="text-t-base font-black uppercase leading-tight text-ink">
-                                            {athlete.name}
-                                        </p>
-                                        <p className="text-t-xs uppercase tracking-wide text-white/60">
-                                            {athlete.category}
-                                        </p>
-                                    </div>
-                                </button>
-                            ))}
-                        </m.div>
-                    </div>
+                            {t.atletas.verEquipo}
+                            <ChevronRight size={16} aria-hidden="true" />
+                        </button>
+                    </Reveal>
+
+                    <StaggerList className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+                        {athletes.map((athlete) => {
+                            const { nombre, apellidos } = partirNombre(athlete.name);
+                            const { peso, division } = leerCategoria(athlete.category);
+                            const total = athlete.stats?.total ?? 0;
+                            return (
+                                <StaggerItem key={athlete.id}>
+                                    <button
+                                        onClick={() => setSelectedAthlete(athlete)}
+                                        className="group relative block aspect-[3/4] w-full overflow-hidden rounded-card bg-surface-raised text-left"
+                                    >
+                                        <SafeImage
+                                            src={athlete.image}
+                                            alt={rellenar(t.atletas.fotoAlt, { nombre: athlete.name, categoria: athlete.category })}
+                                            className="h-full w-full object-cover grayscale-[40%] transition-[transform,filter] duration-slow ease-snap group-hover:scale-[1.04] group-hover:grayscale-0"
+                                            loading="lazy"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/30 to-transparent" />
+                                        <div className="absolute inset-x-0 bottom-0 p-4 md:p-5">
+                                            <span className="block text-t-2xs font-bold uppercase tracking-[0.16em] text-brand-text">
+                                                {[division, peso ? `${peso.replace('-', '−')} kg` : null].filter(Boolean).join(' · ') || athlete.category}
+                                            </span>
+                                            {nombre && (
+                                                <span className="mt-1 block text-t-xs font-bold uppercase tracking-[0.08em] text-ink-muted">
+                                                    {nombre}
+                                                </span>
+                                            )}
+                                            <span className="block font-display text-[clamp(1.5rem,2.6vw,2.1rem)] uppercase leading-[0.95] text-ink">
+                                                {apellidos}
+                                            </span>
+                                            {total > 0 && (
+                                                <span className="mt-1.5 block text-t-xs font-semibold text-ink-subtle">
+                                                    {rellenar(t.atletas.total, { n: String(total).replace('.', ',') })}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
+                                </StaggerItem>
+                            );
+                        })}
+                    </StaggerList>
                 </div>
             </section>
 
@@ -587,7 +465,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 ===================================================== */}
             <Fold id="logros" tone="black" className="py-24 md:py-32">
                 <div className="flex flex-wrap items-end justify-between gap-6">
-                    <h2 className="text-d-md font-black uppercase leading-[0.95] text-ink">
+                    <h2 className="font-display text-[clamp(2.75rem,7vw,5rem)] uppercase leading-[0.9] tracking-[0.005em] text-ink">
                         {t.logros.titulo1}
                         <br />
                         {t.logros.titulo2}
@@ -601,20 +479,35 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                     </button>
                 </div>
 
+                {/* Con foto: un podio se enseña, no se ilustra con un trofeo
+                    dibujado. Si la foto de un logro no está, queda el trofeo
+                    sobre la superficie, que es lo que había. */}
                 <StaggerList className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
                     {logros.slice(0, 3).map((item) => (
                         <StaggerItem key={item.id}>
                             <button
                                 onClick={() => setSelectedAchievement(item)}
-                                className="flex h-full w-full flex-col rounded-sheet bg-surface-canvas p-8 text-left transition-transform duration-base ease-snap hover:-translate-y-1"
+                                className="group relative block aspect-[4/5] w-full overflow-hidden rounded-sheet bg-surface-canvas text-left"
                             >
-                                <Trophy className="h-8 w-8 text-brand-text" aria-hidden="true" />
-                                <h3 className="mt-8 text-t-2xl font-black uppercase leading-tight tracking-display text-ink">
-                                    {item.title}
-                                </h3>
-                                <p className="mt-auto pt-8 text-t-lg font-black uppercase tracking-display text-brand-text">
-                                    {item.result}
-                                </p>
+                                <SafeImage
+                                    src={item.images[0]}
+                                    alt=""
+                                    loading="lazy"
+                                    className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.04]"
+                                    fallback={
+                                        <div className="flex h-full w-full items-start p-8">
+                                            <Trophy className="h-8 w-8 text-brand-text" aria-hidden="true" />
+                                        </div>
+                                    }
+                                />
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/75 to-transparent p-7 pt-24">
+                                    <p className="font-display text-t-3xl uppercase leading-none text-brand-text">
+                                        {item.result}
+                                    </p>
+                                    <h3 className="mt-2 text-t-base font-bold leading-snug text-ink">
+                                        {item.title}
+                                    </h3>
+                                </div>
                             </button>
                         </StaggerItem>
                     ))}
@@ -636,7 +529,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                         <p className="text-t-sm font-black uppercase tracking-widest text-brand-ink/70">
                             {t.afiliacion.antetitulo}
                         </p>
-                        <h2 className="mt-5 text-d-md font-black uppercase leading-[0.95] text-brand-ink text-balance">
+                        <h2 className="mt-5 font-display text-[clamp(2.75rem,7vw,5rem)] uppercase leading-[0.9] tracking-[0.005em] text-brand-ink text-balance">
                             {t.afiliacion.titulo}
                         </h2>
                         <p className="mx-auto mt-6 max-w-[48ch] text-t-lg leading-relaxed text-brand-ink/85">
@@ -690,7 +583,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 escribirnos; envolverlas en cajas con icono y borde no
                 añadía ninguna información.                             */}
             <Fold id="contacto" tone="dark" className="border-t border-subtle py-20">
-                <h2 className="text-d-sm font-black uppercase leading-none text-ink">{t.contacto.titulo}</h2>
+                <h2 className="font-display text-[clamp(2.25rem,5.5vw,3.75rem)] uppercase leading-[0.95] tracking-[0.005em] text-ink">{t.contacto.titulo}</h2>
 
                 <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-sheet bg-[var(--border-subtle)] sm:grid-cols-3">
                     {[
@@ -760,10 +653,16 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 eso puede permitírselo: es el punto de entrada al chat y
                 tiene que pedir el clic. El balanceo se para con
                 `prefers-reduced-motion` — una animación infinita es
-                justo la que peor sienta a quien la desactiva.          */}
+                justo la que peor sienta a quien la desactiva.
+
+                No aparece hasta pasar la portada (o mientras el chat está
+                abierto): la primera pantalla es del escenario.          */}
+            <AnimatePresence>
+            {(mascotaVisible || isBotMounted) && (
             <m.button
                 type="button"
                 aria-label={t.mascota.abrir}
+                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1, y: [0, -8, 0] }}
                 whileHover={{ scale: 1.06 }}
@@ -784,8 +683,10 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
                 <span className="absolute -top-12 right-0 whitespace-nowrap rounded-card rounded-br-none bg-white px-3.5 py-2 text-t-2xs font-black uppercase text-fold-light-ink shadow-overlay transition-colors duration-fast group-hover:bg-brand group-hover:text-brand-ink">
                     {t.mascota.burbuja}
                 </span>
-                <AnvilMascot className="h-24 w-24 md:h-28 md:w-28" />
+                <AnvilMascot className="h-20 w-20 md:h-28 md:w-28" />
             </m.button>
+            )}
+            </AnimatePresence>
         </div>
     );
 }

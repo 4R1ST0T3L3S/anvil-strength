@@ -60,7 +60,7 @@ export function AccesoAppSection({
                 <p className="text-t-xs font-black uppercase tracking-widest text-brand-text">
                     {c.antetitulo}
                 </p>
-                <h2 className="mt-4 text-d-sm font-black uppercase leading-[1.02] text-ink text-balance">
+                <h2 className="mt-4 font-display text-[clamp(2.25rem,5.5vw,3.75rem)] uppercase leading-[0.95] tracking-[0.005em] text-ink text-balance">
                     {c.titulo}
                 </h2>
                 <p className="mt-5 text-t-lg leading-relaxed text-ink-muted">

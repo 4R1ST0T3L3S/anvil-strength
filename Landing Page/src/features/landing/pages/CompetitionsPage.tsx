@@ -1,31 +1,45 @@
-import { useEffect, useState, useCallback } from 'react';
-import { VISTA_REVELADO } from '../components/landingKit';
-import { m, AnimatePresence, useMotionValue } from 'framer-motion';
+import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion';
+import { ArrowRight, MapPin, Trophy } from 'lucide-react';
 import { PublicHeader } from '../../../components/layout/PublicHeader';
 import { PublicFooter } from '../../../components/layout/PublicFooter';
-import { Calendar, MapPin, Instagram, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { SafeImage } from '../../../components/ui/SafeImage';
 import { UserProfile } from '../../../hooks/useUser';
-import { competitionsService } from '../../../services/competitionsService';
-import { LiveCountdown } from '../../../components/ui/CompetitionCountdown';
-import { athletes as athletesData } from '../../../data/athletes';
-import { getCompetitionMeta, getAthleteRosterPhoto } from '../../../data/competitions';
+import { useSeo } from '../../../hooks/useSeo';
+import { useIdioma } from '../../../hooks/useIdioma';
+import { achievements } from '../../../data/achievements';
+import { partirNombre } from '../../../lib/atletas';
+import { Humo } from '../components/Humo';
+import { PressButton, Reveal, StaggerItem, StaggerList } from '../components/landingKit';
+import { Convocatoria } from '../components/convocatoria/Convocatoria';
+import { useCompeticionesPublicas } from '../hooks/useCompeticionesPublicas';
+import {
+    cuentaAtras,
+    formatearFechas,
+    nombreDeCartel,
+    type Competicion,
+} from '../lib/competiciones';
+import { logroEn, rellenar, useTextosWeb } from '../textos';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-const formatDate = (dateStr: string): string => {
-    try {
-        const date = new Date(dateStr);
-        return new Intl.DateTimeFormat('es-ES', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        }).format(date);
-    } catch {
-        return dateStr;
-    }
-};
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+/**
+ * COMPETICIONES — dónde compite el equipo y quién va
+ * =====================================================================
+ *
+ * La página tiene tres piezas, en este orden de importancia:
+ *
+ *   1. LA SIGUIENTE. A pantalla casi completa: los atletas convocados
+ *      recortados sobre el escenario, el nombre de la competición, la
+ *      cuenta atrás y la puerta a la convocatoria. Es lo que se viene a ver.
+ *   2. DESPUÉS. El resto del calendario como una lista de jornadas — fecha,
+ *      competición, lugar, quién va—, no como tarjetas apiladas: es un
+ *      calendario y se lee como un calendario.
+ *   3. RESULTADOS. Lo último que ha ganado el club, con foto.
+ *
+ * La convocatoria se abre con `?convocatoria=<slug>` y el atleta en pantalla
+ * va en `&atleta=<slug>`: el enlace se puede compartir y abre justo ahí.
+ */
 
 interface CompetitionsPageProps {
     onLoginClick: () => void;
@@ -33,277 +47,139 @@ interface CompetitionsPageProps {
     user?: UserProfile | null;
 }
 
-interface GroupedCompetition {
-    name: string;
-    date: string;        // Earliest date
-    location: string;
-    level: string;
-    athletes: { full_name: string; avatar_url: string | null }[];
-}
-
-// ─── Main Component ──────────────────────────────────────────────────────────
-
 export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPageProps) {
-    const [upcomingEvents, setUpcomingEvents] = useState<GroupedCompetition[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedEvent, setSelectedEvent] = useState<GroupedCompetition | null>(null);
+    const textos = useTextosWeb();
+    const c = textos.competiciones;
+    const { idioma } = useIdioma();
 
-    useEffect(() => {
-        const fetchCompetitions = async () => {
-            try {
-                const data = await competitionsService.getPublicCompetitions();
-                if (!data) return;
+    useSeo({
+        title: c.seoTitulo,
+        description: c.seoDescripcion,
+        canonical: 'https://anvilstrength.es/competiciones',
+    });
 
-                // ── Group ONLY by name (not name+date) ──────────────────────
-                // This ensures that the same competition with different dates
-                // (one per athlete) appears only ONCE with all athletes merged.
-                const groupedMap = new Map<string, GroupedCompetition>();
+    const consulta = useCompeticionesPublicas();
+    const competiciones = consulta.data ?? [];
+    const [siguiente, ...despues] = competiciones;
 
-                data.forEach((assignment: {
-                    name: string;
-                    date: string;
-                    location?: string;
-                    level?: string;
-                    athlete_full_name: string;
-                    athlete_avatar_url: string | null;
-                }) => {
-                    if (!assignment.athlete_full_name) return;
+    const [params, setParams] = useSearchParams();
+    const slugAbierta = params.get('convocatoria');
+    const abierta = slugAbierta ? competiciones.find((x) => x.slug === slugAbierta) ?? null : null;
 
-                    // Normalize key: only by name (case-insensitive, trimmed)
-                    const key = assignment.name.trim().toLowerCase();
+    const abrir = (slug: string) => {
+        setParams((p) => {
+            const n = new URLSearchParams(p);
+            n.set('convocatoria', slug);
+            n.delete('atleta');
+            return n;
+        });
+    };
+    const cerrar = useCallback(() => {
+        setParams((p) => {
+            const n = new URLSearchParams(p);
+            n.delete('convocatoria');
+            n.delete('atleta');
+            return n;
+        }, { replace: true });
+    }, [setParams]);
+    const alCambiarAtleta = useCallback((slug: string | null) => {
+        setParams((p) => {
+            if ((p.get('atleta') ?? null) === slug) return p;
+            const n = new URLSearchParams(p);
+            if (slug) n.set('atleta', slug); else n.delete('atleta');
+            return n;
+        }, { replace: true });
+    }, [setParams]);
 
-                    if (!groupedMap.has(key)) {
-                        groupedMap.set(key, {
-                            name: assignment.name,
-                            date: assignment.date,        // Will keep the earliest
-                            location: assignment.location || 'Ubicación por confirmar',
-                            level: assignment.level || 'Competición',
-                            athletes: [],
-                        });
-                    }
-
-                    const group = groupedMap.get(key)!;
-
-                    // Keep the earliest date across all assignments for this competition
-                    if (assignment.date < group.date) {
-                        group.date = assignment.date;
-                    }
-
-                    const athlete = { full_name: assignment.athlete_full_name, avatar_url: assignment.athlete_avatar_url };
-
-                    // Add athlete if not already present
-                    if (!group.athletes.some(a => a.full_name === athlete.full_name)) {
-                        group.athletes.push(athlete);
-                    }
-                });
-
-                setUpcomingEvents(Array.from(groupedMap.values()));
-            } catch (error) {
-                console.error('Error fetching competitions:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCompetitions();
-    }, []);
-
-    const pastResults = [
-        { id: 1, title: 'SBD CUP 2025', result: '2 Platas', image: '/filosofia-competition.jpg' },
-        { id: 2, title: 'AEP3 Las Torres de Cotillas', result: '2 Oros (Alejandro -83kg, Gema -63kg)', image: '/portadaanvil2.jpg' },
-    ];
+    const resultados = achievements.map((a) => logroEn(a, idioma)).slice(0, 6);
 
     return (
-        <div className="font-sans min-h-[100dvh] bg-surface-sunken text-ink selection:bg-brand selection:text-ink overflow-x-hidden">
+        <div className="min-h-[100dvh] overflow-x-hidden bg-surface-sunken font-sans text-ink">
             <PublicHeader onLoginClick={onLoginClick} onSignupClick={onSignupClick} />
 
-            {/* ── HERO ─────────────────────────────────────────────────────── */}
-            <section className="relative pt-48 pb-24 flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-surface-sunken">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.07)_0%,transparent_70%)]" />
-                    <div className="absolute inset-0 opacity-[0.03]"
-                        style={{
-                            backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-                            backgroundSize: '60px 60px',
-                        }}
+            <main>
+                {consulta.isPending ? (
+                    <CabeceraVacia titulo={c.titulo} texto={c.cargando} cargando />
+                ) : consulta.isError ? (
+                    <CabeceraVacia
+                        titulo={c.titulo}
+                        texto={c.error}
+                        accion={<PressButton onClick={() => consulta.refetch()} size="md">{c.reintentar}</PressButton>}
                     />
-                </div>
-                <div className="relative z-10 text-center px-4">
-                    <m.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-                        <div className="inline-flex items-center gap-2 bg-brand/10 border border-brand/20 text-brand-text text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full mb-8">
-                            <Calendar className="w-3.5 h-3.5" />
-                            Temporada 2025 – 2026
-                        </div>
-                        <h1 className="text-6xl sm:text-8xl md:text-[11rem] font-black uppercase italic mb-6 font-bebas leading-none tracking-tight">
-                            PRÓXIMAS{' '}
-                            <span className="text-brand-text drop-shadow-[0_0_40px_rgba(220,38,38,0.4)]">
-                                COMPETICIONES
-                            </span>
-                        </h1>
-                        <p className="text-gray-500 text-base sm:text-lg font-bold tracking-[0.3em] uppercase max-w-xl mx-auto">
-                            Donde la preparación se encuentra con la plataforma.
-                        </p>
-                    </m.div>
-                </div>
-            </section>
+                ) : !siguiente ? (
+                    <CabeceraVacia titulo={c.vacioTitulo} texto={c.vacioTexto} />
+                ) : (
+                    <LaSiguiente competicion={siguiente} onAbrir={() => abrir(siguiente.slug)} />
+                )}
 
-            {/* ── PRÓXIMAS COMPETICIONES ────────────────────────────────────── */}
-            <section className="pb-20 pt-4 bg-surface-sunken">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    {loading ? (
-                        <div className="flex justify-center py-20">
-                            <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : upcomingEvents.length > 0 ? (
-                        <div className="space-y-8">
-                            {upcomingEvents.map((event, index) => {
-                                const meta = getCompetitionMeta(event.name);
-                                return (
-                                    <m.div
-                                        key={event.name}
-                                        initial={{ opacity: 0, x: -30 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        viewport={VISTA_REVELADO}
-                                        transition={{ delay: index * 0.1 }}
-                                        whileHover={{ scale: 1.01 }}
-                                        onClick={() => setSelectedEvent(event)}
-                                        className="flex flex-col lg:flex-row bg-surface-sunken rounded-[2.5rem] overflow-hidden border border-subtle cursor-pointer group shadow-2xl min-h-[350px] transition-colors hover:border-brand/30"
-                                    >
-                                        {/* Cover Image */}
-                                        <div className="w-full lg:w-[480px] h-64 lg:h-auto shrink-0 relative overflow-hidden">
-                                            <img
-                                                src={meta.coverImage}
-                                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-transform duration-slow group-hover:scale-110"
-                                                alt={event.name}
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = '/portadaanvil2.jpg';
-                                                }}
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
-                                            <div className="absolute top-6 left-6">
-                                                <span className="bg-brand text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full shadow-lg">
-                                                    {event.level}
-                                                </span>
-                                            </div>
-                                        </div>
+                {despues.length > 0 && (
+                    <section aria-labelledby="calendario" className="mx-auto w-full max-w-[1180px] px-6 py-20 md:px-10 md:py-28">
+                        <Reveal>
+                            <h2 id="calendario" className="font-display text-[clamp(2.5rem,5vw,4rem)] uppercase leading-none text-ink">
+                                {c.calendario}
+                            </h2>
+                        </Reveal>
+                        <StaggerList className="mt-10 border-t border-[var(--border-default)]">
+                            {despues.map((comp) => (
+                                <StaggerItem key={comp.slug}>
+                                    <FilaJornada competicion={comp} idioma={idioma} onAbrir={() => abrir(comp.slug)} />
+                                </StaggerItem>
+                            ))}
+                        </StaggerList>
+                    </section>
+                )}
 
-                                        {/* Content */}
-                                        <div className="p-8 lg:p-12 flex-1 flex flex-col justify-center">
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                                                <div>
-                                                    <h3 className="text-4xl md:text-6xl font-black uppercase font-bebas italic leading-none mb-4 group-hover:text-brand-text transition-colors duration-slow">
-                                                        {event.name}
-                                                    </h3>
-                                                    <div className="flex flex-wrap gap-6 text-gray-500 font-bold uppercase tracking-widest text-xs">
-                                                        <div className="flex items-center gap-2">
-                                                            <Calendar size={13} className="text-brand-text" />
-                                                            {formatDate(event.date)}
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <MapPin size={13} className="text-brand-text" />
-                                                            {event.location}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="shrink-0 bg-surface-sunken backdrop-blur-md rounded-2xl p-4 border border-subtle">
-                                                    <LiveCountdown targetDate={event.date} />
-                                                </div>
-                                            </div>
-
-                                            {/* Athletes preview */}
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex -space-x-3">
-                                                        {event.athletes.slice(0, 4).map((athlete, i) => (
-                                                            <div key={i} className="w-10 h-10 rounded-full border-2 border-surface-sunken overflow-hidden bg-gray-800 shadow-lg">
-                                                                {athlete.avatar_url ? (
-                                                                    <img src={athlete.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex items-center justify-center text-xs font-black text-gray-400 uppercase bg-surface-sunken">
-                                                                        {athlete.full_name.charAt(0)}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        {event.athletes.length > 4 && (
-                                                            <div className="w-10 h-10 rounded-full border-2 border-surface-sunken bg-brand flex items-center justify-center text-t-2xs font-black text-ink">
-                                                                +{event.athletes.length - 4}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <span className="text-xs font-black uppercase tracking-widest text-gray-500">
-                                                        {event.athletes.length} {event.athletes.length === 1 ? 'Atleta convocado' : 'Atletas convocados'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-brand-text font-black uppercase tracking-widest text-xs opacity-0 group-hover:opacity-100 transition-[opacity,transform] translate-x-4 group-hover:translate-x-0 duration-slow">
-                                                    Ver Roster <ChevronRight size={16} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </m.div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <div className="relative text-center py-32 px-6 border border-dashed border-line rounded-[2.5rem] overflow-hidden">
-                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.05)_0%,transparent_70%)]" />
-                            <p className="relative text-4xl sm:text-6xl font-black font-bebas italic text-gray-700 uppercase tracking-wide mb-3">
-                                No Upcoming Meets
-                            </p>
-                            <p className="relative text-gray-600 text-xs sm:text-sm font-bold uppercase tracking-[0.25em]">
-                                El equipo está entrenando para la próxima convocatoria.
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* ── RESULTADOS ANTERIORES ─────────────────────────────────────── */}
-            <section className="py-24 bg-surface-sunken">
-                <div className="max-w-[1400px] mx-auto px-6">
-                    <m.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={VISTA_REVELADO}
-                        className="flex justify-between items-end mb-16"
-                    >
-                        <h2 className="text-5xl md:text-9xl font-black uppercase font-bebas italic leading-none tracking-tight">
-                            Resultados <span className="text-brand-text">Anteriores</span>
-                        </h2>
-                    </m.div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {pastResults.map((result, i) => (
-                            <m.div
-                                key={result.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={VISTA_REVELADO}
-                                transition={{ delay: i * 0.1 }}
-                                className="relative aspect-video bg-surface-sunken rounded-3xl overflow-hidden group cursor-pointer border border-subtle hover:border-brand/30 transition-colors shadow-2xl"
+                <section aria-labelledby="resultados" className="border-t border-[var(--border-subtle)] bg-surface-canvas">
+                    <div className="mx-auto w-full max-w-[1180px] px-6 py-20 md:px-10 md:py-28">
+                        <Reveal className="flex flex-wrap items-end justify-between gap-6">
+                            <h2 id="resultados" className="max-w-[16ch] font-display text-[clamp(2.5rem,5vw,4rem)] uppercase leading-[0.95] text-ink text-balance">
+                                {c.resultados}
+                            </h2>
+                            <a
+                                href="/#logros"
+                                className="inline-flex min-h-[44px] items-center gap-1.5 text-t-sm font-bold uppercase tracking-wide text-ink-muted underline-offset-8 transition-colors duration-fast ease-snap hover:text-ink hover:underline"
                             >
-                                <img
-                                    src={result.image}
-                                    alt={result.title}
-                                    className="w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-[opacity,transform] duration-slow"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-8 flex flex-col justify-end">
-                                    <h3 className="text-4xl font-black uppercase font-bebas italic text-ink mb-1">{result.title}</h3>
-                                    <p className="text-brand-text font-black uppercase tracking-widest text-sm">{result.result}</p>
-                                </div>
-                            </m.div>
-                        ))}
+                                {c.verHistorial}
+                                <ArrowRight size={16} aria-hidden="true" />
+                            </a>
+                        </Reveal>
+                        <StaggerList className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {resultados.map((r) => (
+                                <StaggerItem key={r.id}>
+                                    <article className="group relative aspect-[4/5] overflow-hidden rounded-sheet bg-surface-raised">
+                                        <SafeImage
+                                            src={r.images[0]}
+                                            alt={`${r.title} — ${r.result}`}
+                                            loading="lazy"
+                                            className="h-full w-full object-cover transition-transform duration-slow ease-snap group-hover:scale-[1.03]"
+                                            fallback={
+                                                <div className="flex h-full w-full items-center justify-center bg-surface-raised">
+                                                    <Trophy className="h-10 w-10 text-ink-faint" aria-hidden="true" />
+                                                </div>
+                                            }
+                                        />
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-sunken via-surface-sunken/70 to-transparent p-6 pt-20">
+                                            <p className="font-display text-t-2xl uppercase leading-none text-brand-text">{r.result}</p>
+                                            <h3 className="mt-2 text-t-base font-bold leading-snug text-ink">{r.title}</h3>
+                                        </div>
+                                    </article>
+                                </StaggerItem>
+                            ))}
+                        </StaggerList>
                     </div>
-                </div>
-            </section>
+                </section>
+            </main>
 
             <PublicFooter />
 
-            {/* ── ROSTER MODAL ──────────────────────────────────────────────── */}
             <AnimatePresence>
-                {selectedEvent && (
-                    <RosterModal
-                        event={selectedEvent}
-                        onClose={() => setSelectedEvent(null)}
+                {abierta && (
+                    <Convocatoria
+                        key={abierta.slug}
+                        competicion={abierta}
+                        atletaInicial={params.get('atleta')}
+                        onClose={cerrar}
+                        onCambio={alCambiarAtleta}
                     />
                 )}
             </AnimatePresence>
@@ -311,255 +187,254 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
     );
 }
 
-// ─── Roster Modal ─────────────────────────────────────────────────────────────
+// =====================================================================
+// LA SIGUIENTE
+// =====================================================================
 
-interface RosterModalProps {
-    event: GroupedCompetition;
-    onClose: () => void;
-}
+function LaSiguiente({ competicion, onAbrir }: { competicion: Competicion; onAbrir: () => void }) {
+    const textos = useTextosWeb();
+    const c = textos.competiciones;
+    const { idioma } = useIdioma();
+    const reduce = useReducedMotion() ?? false;
+    const n = competicion.convocados.length;
+    const conRecorte = competicion.convocados.filter((x) => x.ficha?.recorte);
+    const { cartel, oficial } = nombreDeCartel(competicion, idioma);
 
-function RosterModal({ event, onClose }: RosterModalProps) {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [_direction, setDirection] = useState(0);
-    const dragX = useMotionValue(0);
-
-    const athletes = event.athletes;
-    const total = athletes.length;
-
-    // Close on Escape key
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-        window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [onClose]);
-
-    const goTo = useCallback((newIndex: number, dir: number) => {
-        setDirection(dir);
-        setActiveIndex((_prev) => (newIndex + total) % total);
-    }, [total]);
-
-    const handleDragEnd = useCallback((_: unknown, info: { offset: { x: number } }) => {
-        if (info.offset.x < -80) {
-            goTo(activeIndex + 1, 1);
-        } else if (info.offset.x > 80) {
-            goTo(activeIndex - 1, -1);
-        }
-        dragX.set(0);
-    }, [activeIndex, goTo, dragX]);
-
-    // Helper to get relative position in the carousel
-    const getRelativeIndex = (index: number) => {
-        let diff = index - activeIndex;
-        if (diff > total / 2) diff -= total;
-        if (diff < -total / 2) diff += total;
-        return diff;
-    };
+    const entra = (retraso: number) =>
+        reduce
+            ? {}
+            : {
+                initial: { opacity: 0, y: 22 },
+                animate: { opacity: 1, y: 0 },
+                transition: { duration: 0.85, delay: retraso, ease: [0.16, 1, 0.3, 1] as const },
+            };
 
     return (
-        <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[500] flex flex-col bg-[#050505] overflow-hidden"
-        >
-            {/* Background elements */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-brand/[0.03] rounded-full blur-[150px]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(220,38,38,0.15),transparent_70%)]" />
-            </div>
+        <section className="relative isolate flex min-h-[100svh] items-start overflow-hidden pb-14 pt-[46svh] md:items-center md:pb-0 md:pt-24">
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 -z-10"
+                style={{
+                    background:
+                        'radial-gradient(48% 62% at 70% -6%, var(--cine-foco), transparent 72%),' +
+                        'radial-gradient(70% 40% at 68% 108%, var(--cine-brasa-suave), transparent 70%)',
+                }}
+            />
+            <Humo densidad={0.6} altura={0.45} className="absolute inset-0 -z-10 h-full w-full" />
 
-            {/* Header bar */}
-            <div className="relative z-[60] flex items-center justify-between px-8 py-6 flex-shrink-0">
-                <m.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
-                    <p className="text-brand-text text-t-2xs font-black uppercase tracking-[0.4em] mb-1">Roster Oficial</p>
-                    <h2 className="text-2xl md:text-5xl font-black uppercase font-bebas italic text-ink leading-none tracking-tight">{event.name}</h2>
-                </m.div>
-                <m.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-6">
-                    <div className="hidden md:flex items-center gap-2 text-gray-500 text-t-2xs font-black uppercase tracking-widest">
-                        <Calendar size={12} className="text-brand-text" />
-                        {formatDate(event.date)}
+            {/* Los convocados, de pie en el escenario: arriba en el móvil (el
+                texto va debajo), a la derecha en escritorio. La altura sale de
+                dos variables por atleta (`--escala`, `--bajar`, de su ficha)
+                para que todos tengan la cabeza a un tamaño parecido aunque
+                unas fotos sean de cuerpo entero y otras de medio cuerpo. */}
+            {conRecorte.length > 0 && (
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 top-0 -z-10 flex h-[60svh] items-end justify-center md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[52%] md:pr-[2vw]"
+                >
+                    {conRecorte.slice(0, 4).map((x, i) => {
+                        const r = x.ficha!.recorte!;
+                        return (
+                            <m.img
+                                key={x.clave}
+                                src={r.src800}
+                                srcSet={`${r.src800} 800w, ${r.src} 1600w`}
+                                sizes="(max-width: 767px) 50vw, 30vw"
+                                alt=""
+                                draggable={false}
+                                {...(reduce
+                                    ? {}
+                                    : {
+                                        initial: { opacity: 0, y: 40, filter: 'blur(10px) brightness(1.6)' },
+                                        animate: { opacity: 1, y: 0, filter: 'blur(0px) brightness(1)' },
+                                        transition: { duration: 1.1, delay: 0.35 + i * 0.15, ease: [0.16, 1, 0.3, 1] },
+                                    })}
+                                className="relative -mx-[4%] h-[calc(46svh*var(--escala))] w-auto max-w-none object-contain object-bottom mb-[calc(-46svh*var(--escala)*var(--bajar))] md:h-[calc(62svh*var(--escala))] md:mb-[calc(-62svh*var(--escala)*var(--bajar))]"
+                                style={{
+                                    ['--escala' as string]: r.encuadre?.escala ?? 1,
+                                    ['--bajar' as string]: r.encuadre?.bajar ?? 0,
+                                    maskImage: 'linear-gradient(to top, transparent 0%, black 30%)',
+                                    WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 30%)',
+                                    zIndex: conRecorte.length - i,
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+            )}
+            {/* Velo para que el texto se lea siempre, pase lo que pase detrás. */}
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 -z-10 md:hidden"
+                style={{ background: 'linear-gradient(to top, var(--surface-sunken) 52%, transparent 66%)' }}
+            />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 -z-10 hidden md:block"
+                style={{ background: 'linear-gradient(90deg, var(--surface-sunken) 34%, transparent 60%)' }}
+            />
+
+            <div className="mx-auto w-full max-w-[1180px] px-6 md:px-10">
+                <div className="max-w-[40rem]">
+                    <m.h1 {...entra(0)} className="font-display text-t-2xl uppercase leading-none text-ink-muted md:text-t-3xl">
+                        {c.titulo}
+                    </m.h1>
+                    <m.p {...entra(0.1)} className="mt-8 text-t-xs font-bold uppercase tracking-[0.28em] text-brand-text">
+                        {c.laSiguiente}
+                    </m.p>
+                    <m.h2 {...entra(0.18)} className="mt-3 max-w-[14ch] font-display text-[clamp(3rem,6.6vw,5.75rem)] uppercase leading-[0.9] text-ink text-balance">
+                        {cartel}
+                    </m.h2>
+                    {oficial && (
+                        <m.p {...entra(0.24)} className="mt-3 max-w-[46ch] text-t-sm font-medium text-ink-subtle">
+                            {oficial}
+                        </m.p>
+                    )}
+                    <m.p {...entra(0.3)} className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-t-base font-bold uppercase tracking-[0.1em] text-ink-muted">
+                        <span className="inline-flex items-center gap-1.5">
+                            <MapPin size={16} className="text-brand-text" aria-hidden="true" />
+                            {competicion.lugar ?? c.lugarPendiente}
+                        </span>
+                        <span>{formatearFechas(competicion.fecha, competicion.fin, idioma)}</span>
+                    </m.p>
+
+                    <m.div {...entra(0.42)} className="mt-8">
+                        <Marcador fecha={competicion.fecha} fin={competicion.fin} />
+                    </m.div>
+
+                    <m.div {...entra(0.55)} className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center">
+                        {n > 0 && <PressButton onClick={onAbrir}>{c.verConvocatoria}</PressButton>}
+                        {n > 0 && (
+                            <p className="text-t-sm font-bold uppercase tracking-wide text-ink-muted">
+                                {n === 1 ? c.convocado : rellenar(c.convocados, { n })}
+                                <span className="mt-1 block font-sans text-t-sm normal-case tracking-normal text-ink-subtle">
+                                    {competicion.convocados.map((x) => x.ficha?.name ?? x.nombre).join(' · ')}
+                                </span>
+                            </p>
+                        )}
+                    </m.div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/**
+ * La cuenta atrás como un marcador: cifras grandes, sin cajas alrededor de
+ * cada una. Los segundos cambian, así que el contenedor NO es una región
+ * viva: leerle a alguien la hora cada segundo sería insoportable.
+ */
+function Marcador({ fecha, fin }: { fecha: string; fin: string | null }) {
+    const c = useTextosWeb().competiciones;
+    const [ahora, setAhora] = useState(() => Date.now());
+    useEffect(() => {
+        const id = window.setInterval(() => setAhora(Date.now()), 1000);
+        return () => window.clearInterval(id);
+    }, []);
+    const r = cuentaAtras(fecha, ahora);
+    if (r.total === 0) {
+        const hoy = new Date(ahora).toISOString().slice(0, 10);
+        const enCurso = !fin || hoy <= fin;
+        return enCurso ? <p className="font-display text-t-3xl uppercase text-brand-text">{c.hoy}</p> : null;
+    }
+    const celdas: [number, string][] = [
+        [r.dias, r.dias === 1 ? c.dia : c.dias],
+        [r.horas, c.horas],
+        [r.minutos, c.minutos],
+        [r.segundos, c.segundos],
+    ];
+    return (
+        <div>
+            <p className="text-t-xs font-bold uppercase tracking-[0.24em] text-ink-subtle">{c.faltan}</p>
+            <div className="mt-2 flex flex-wrap items-end gap-x-5 gap-y-2 md:gap-x-7">
+                {celdas.map(([v, etiqueta], i) => (
+                    <div key={i} className="flex items-baseline gap-1.5">
+                        <span className={`font-display leading-none tabular-nums ${i === 0 ? 'text-[clamp(3rem,6vw,4.5rem)] text-ink' : 'text-[clamp(1.75rem,3.4vw,2.6rem)] text-ink-muted'}`}>
+                            {i === 0 ? v : String(v).padStart(2, '0')}
+                        </span>
+                        <span className="text-t-xs font-bold uppercase tracking-wide text-ink-subtle">{etiqueta}</span>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-4 bg-white/5 hover:bg-white/10 border border-line hover:border-brand/40 rounded-full transition-colors group"
-                    >
-                        <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                    </button>
-                </m.div>
+                ))}
             </div>
+        </div>
+    );
+}
 
-            {/* Main Stage */}
-            <div className="relative flex-1 flex flex-col items-center justify-start pt-10">
-                
-                {/* Spiral Carousel Container */}
-                <div className="relative w-full h-[55vh] md:h-[60vh] flex items-center justify-center perspective-[1500px]">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <AnimatePresence mode="popLayout" initial={false}>
-                            {athletes.map((athlete, index) => {
-                                const relIndex = getRelativeIndex(index);
-                                if (Math.abs(relIndex) > 1) return null;
+// =====================================================================
+// UNA JORNADA DEL CALENDARIO
+// =====================================================================
 
-                                const isCenter = relIndex === 0;
-                                const rosterPhoto = getAthleteRosterPhoto(athlete.full_name);
+function FilaJornada({ competicion, idioma, onAbrir }: { competicion: Competicion; idioma: 'es' | 'en'; onAbrir: () => void }) {
+    const c = useTextosWeb().competiciones;
+    const d = new Date(`${competicion.fecha}T12:00:00`);
+    const loc = idioma === 'en' ? 'en-GB' : 'es-ES';
+    const mes = new Intl.DateTimeFormat(loc, { month: 'short' }).format(d).replace('.', '');
+    const [dias] = useState(() => cuentaAtras(competicion.fecha).dias);
+    const n = competicion.convocados.length;
+    const { cartel } = nombreDeCartel(competicion, idioma);
 
-                                return (
-                                    <m.div
-                                        key={athlete.full_name}
-                                        initial={{ opacity: 0, x: relIndex * 400, scale: 0.5, filter: 'blur(10px)' }}
-                                        animate={{ 
-                                            opacity: isCenter ? 1 : 0.15, 
-                                            x: relIndex * (window.innerWidth > 768 ? 550 : 320), 
-                                            scale: isCenter ? 1 : 0.6,
-                                            z: isCenter ? 0 : -300,
-                                            rotateY: relIndex * -30,
-                                            filter: isCenter ? 'blur(0px)' : 'blur(12px)',
-                                        }}
-                                        exit={{ opacity: 0, scale: 0.5, filter: 'blur(10px)' }}
-                                        transition={{ type: 'spring', stiffness: 250, damping: 35 }}
-                                        drag={isCenter ? "x" : false}
-                                        dragConstraints={{ left: 0, right: 0 }}
-                                        onDragEnd={handleDragEnd}
-                                        className={`absolute w-full max-w-[600px] h-full flex flex-col items-center justify-end pointer-events-none ${isCenter ? 'z-40 pointer-events-auto cursor-grab active:cursor-grabbing' : 'z-10'}`}
-                                    >
-                                        <div className="relative w-full h-full flex flex-col items-center justify-end pb-0">
-                                            {/* Athlete Image */}
-                                            <div 
-                                                className="relative w-full h-full flex items-end justify-center"
-                                                style={{ maskImage: isCenter ? 'linear-gradient(to top, transparent 0%, black 10%)' : 'none', WebkitMaskImage: isCenter ? 'linear-gradient(to top, transparent 0%, black 10%)' : 'none' }}
-                                            >
-                                                {rosterPhoto ? (
-                                                    <img
-                                                        src={rosterPhoto}
-                                                        alt={athlete.full_name}
-                                                        className="w-auto h-full md:h-[115%] object-contain object-bottom relative z-20 transition-transform duration-slow hover:scale-[1.02]"
-                                                        draggable={false}
-                                                    />
-                                                ) : (
-                                                    <div className="w-64 h-64 rounded-full bg-gradient-to-br from-white/5 to-transparent border border-line flex items-center justify-center text-8xl font-black text-gray-800 font-bebas italic mb-10">
-                                                        {athlete.full_name.charAt(0)}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Center-only lighting/smoke */}
-                                            {isCenter && (
-                                                <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[250%] h-[70%] pointer-events-none z-10">
-                                                    {/* Primary Floor Glow */}
-                                                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[60%] h-40 bg-brand/30 blur-[90px] rounded-full" />
-                                                    
-                                                    {/* Central Bright Spot */}
-                                                    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[30%] h-20 bg-brand/50 blur-[50px] rounded-full" />
-
-                                                    {/* Animated Smoke Layers */}
-                                                    <m.div 
-                                                        animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.2, 1], y: [0, -15, 0] }}
-                                                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                                                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.2),transparent_70%)] blur-[50px]" 
-                                                    />
-                                                    
-                                                    <m.div 
-                                                        animate={{ opacity: [0.1, 0.3, 0.1], scale: [1.3, 1, 1.3], x: [-30, 30, -30] }}
-                                                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                                                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140%] h-[90%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.03),transparent_60%)] blur-[40px]" 
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </m.div>
-                                );
-                            })}
-                        </AnimatePresence>
-                    </div>
-                </div>
-
-                {/* Nav Arrows */}
-                <div className="absolute inset-x-0 top-[40%] -translate-y-1/2 px-4 md:px-10 flex justify-between pointer-events-none z-[70]">
+    return (
+        <div className="grid grid-cols-[4.5rem_1fr] items-center gap-x-5 gap-y-3 border-b border-[var(--border-default)] py-6 md:grid-cols-[6rem_1fr_auto] md:gap-x-8">
+            <div className="text-center">
+                <span className="block font-display text-[2.75rem] leading-none text-ink md:text-[3.5rem]">{d.getDate()}</span>
+                <span className="block text-t-xs font-bold uppercase tracking-[0.2em] text-brand-text">{mes}</span>
+            </div>
+            <div className="min-w-0">
+                <h3 className="font-display text-t-2xl uppercase leading-tight text-ink text-balance md:text-t-3xl">{cartel}</h3>
+                <p className="mt-1 flex flex-wrap items-center gap-x-3 text-t-sm text-ink-muted">
+                    <span className="inline-flex items-center gap-1">
+                        <MapPin size={14} aria-hidden="true" />
+                        {competicion.lugar ?? c.lugarPendiente}
+                    </span>
+                    <span>{formatearFechas(competicion.fecha, competicion.fin, idioma)}</span>
+                    {dias > 0 && <span className="text-ink-subtle">· {dias} {dias === 1 ? c.dia : c.dias}</span>}
+                </p>
+                {n > 0 && (
+                    <p className="mt-2 text-t-sm text-ink-subtle">
+                        {competicion.convocados.map((x) => {
+                            const { nombre, apellidos } = partirNombre(x.ficha?.name ?? x.nombre);
+                            return nombre ? `${nombre} ${apellidos}` : apellidos;
+                        }).join(' · ')}
+                    </p>
+                )}
+            </div>
+            {n > 0 && (
+                <div className="col-span-2 md:col-span-1">
                     <button
-                        onClick={() => goTo(activeIndex - 1, -1)}
-                        className="p-5 bg-white/5 hover:bg-brand/20 border border-line hover:border-brand/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
+                        type="button"
+                        onClick={onAbrir}
+                        className="group inline-flex min-h-[44px] items-center gap-2 rounded-pill border border-[var(--border-default)] px-5 text-t-sm font-bold uppercase tracking-wide text-ink transition-colors duration-fast ease-snap hover:border-brand hover:bg-brand hover:text-brand-ink"
                     >
-                        <ChevronLeft className="w-8 h-8 group-hover:scale-110 transition-transform" />
-                    </button>
-                    <button
-                        onClick={() => goTo(activeIndex + 1, 1)}
-                        className="p-5 bg-white/5 hover:bg-brand/20 border border-line hover:border-brand/40 rounded-full transition-colors group pointer-events-auto backdrop-blur-md"
-                    >
-                        <ChevronRight className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                        {c.verConvocatoria}
+                        <ArrowRight size={16} className="transition-transform duration-fast ease-snap group-hover:translate-x-0.5" aria-hidden="true" />
                     </button>
                 </div>
+            )}
+        </div>
+    );
+}
 
-                {/* Description & Info Panel */}
-                <div className="relative z-[80] w-full max-w-5xl px-6 pb-16 -mt-8 md:-mt-12 flex flex-col items-center">
-                    <AnimatePresence mode="wait">
-                        <m.div
-                            key={activeIndex}
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -20, opacity: 0 }}
-                            className="text-center w-full flex flex-col items-center"
-                        >
-                            {/* Giant Name */}
-                            <h3 className="text-6xl md:text-[7rem] font-black uppercase font-bebas italic text-ink leading-none mb-6 tracking-wide drop-shadow-2xl">
-                                {athletes[activeIndex].full_name}
-                            </h3>
-                            
-                            {/* Badges / Stats */}
-                            <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-                                <div className="inline-flex items-center gap-2 bg-brand text-ink text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] border border-line">
-                                    {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.category || 'Atleta Anvil'}
-                                </div>
-                                
-                                {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.competitionDate && (
-                                    <div className="inline-flex items-center gap-2 bg-surface-sunken/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
-                                        <Calendar size={14} className="text-brand-text" />
-                                        {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.competitionDate}
-                                    </div>
-                                )}
+// =====================================================================
+// SIN COMPETICIONES, CARGANDO O CON ERROR
+// =====================================================================
 
-                                {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.stats?.total ? (
-                                    <div className="inline-flex items-center gap-2 bg-surface-sunken/80 backdrop-blur-xl text-gray-300 text-t-2xs font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-full border border-line shadow-xl">
-                                        Total: <span className="text-ink text-sm">{athletesData.find(a => a.name === athletes[activeIndex].full_name)!.stats!.total} KG</span>
-                                    </div>
-                                ) : null}
-                            </div>
-
-                            {/* Description and Action */}
-                            <div className="relative mx-auto max-w-3xl flex flex-col items-center">
-                                <p className="text-lg md:text-xl text-gray-400 font-medium italic leading-relaxed mb-8 px-4 text-center">
-                                    "{athletesData.find(a => a.name === athletes[activeIndex].full_name)?.description || 'Compitiendo al más alto nivel por el club Anvil Strength. Superando límites y forjando una nueva historia de éxito en la plataforma.'}"
-                                </p>
-                                
-                                {athletesData.find(a => a.name === athletes[activeIndex].full_name)?.instagram && (
-                                    <m.a
-                                        whileHover={{ scale: 1.05, backgroundColor: '#dc2626', borderColor: '#dc2626', color: 'white' }}
-                                        whileTap={{ scale: 0.95 }}
-                                        href={athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 text-gray-300 bg-surface-sunken/80 backdrop-blur-xl border border-line px-8 py-4 rounded-2xl transition-colors font-black uppercase tracking-[0.2em] text-xs shadow-xl"
-                                    >
-                                        <Instagram size={20} />
-                                        {athletesData.find(a => a.name === athletes[activeIndex].full_name)!.instagram!.replace('https://www.instagram.com/', '@').replace('/', '')}
-                                    </m.a>
-                                )}
-                            </div>
-                        </m.div>
-                    </AnimatePresence>
-                </div>
+function CabeceraVacia({ titulo, texto, accion, cargando }: { titulo: string; texto: string; accion?: ReactNode; cargando?: boolean }) {
+    return (
+        <section className="relative isolate flex min-h-[70svh] items-end overflow-hidden pb-16 pt-36">
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 -z-10"
+                style={{ background: 'radial-gradient(50% 60% at 50% -10%, var(--cine-foco), transparent 72%)' }}
+            />
+            <div className="mx-auto w-full max-w-[1180px] px-6 md:px-10">
+                <h1 className="max-w-[18ch] font-display text-[clamp(2.75rem,6vw,5.5rem)] uppercase leading-[0.92] text-ink text-balance">
+                    {titulo}
+                </h1>
+                <p className="mt-5 max-w-[52ch] text-t-lg leading-relaxed text-ink-muted" aria-live={cargando ? 'polite' : undefined}>
+                    {texto}
+                </p>
+                {accion && <div className="mt-8">{accion}</div>}
             </div>
-
-            {/* Pagination dots */}
-            <div className="relative z-[90] flex flex-col items-center gap-4 pb-12">
-                <div className="flex items-center gap-3">
-                    {athletes.map((_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => goTo(i, i > activeIndex ? 1 : -1)}
-                            className={`h-1.5 transition-[background-color,box-shadow] duration-slow rounded-full ${i === activeIndex ? 'w-16 bg-brand shadow-[0_0_15px_rgba(220,38,38,0.8)]' : 'w-2.5 bg-white/10 hover:bg-white/30'}`}
-                        />
-                    ))}
-                </div>
-            </div>
-        </m.div>
+        </section>
     );
 }

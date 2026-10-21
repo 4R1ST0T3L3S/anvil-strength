@@ -41,7 +41,7 @@ function StatCounter({ value, suffix, label, duration = 1400 }: StatItemProps) {
 
     return (
         <div ref={ref} className="px-6 py-8 text-center">
-            <div className="text-[clamp(2.5rem,6vw,3.5rem)] font-black leading-none tracking-display text-ink">
+            <div className="font-display text-[clamp(3rem,7vw,4.75rem)] leading-none text-ink tabular-nums">
                 {count}
                 {suffix}
             </div>
@@ -69,13 +69,18 @@ export function StatsSection() {
     ];
 
     return (
-        <section className="bg-surface-canvas">
-            <div className="mx-auto grid max-w-[1180px] grid-cols-2 gap-px bg-[var(--border-subtle)] px-6 md:grid-cols-4 md:px-10">
-                {stats.map((stat) => (
-                    <div key={stat.label} className="bg-surface-canvas">
-                        <StatCounter value={stat.value} suffix={stat.suffix} label={stat.label} />
-                    </div>
-                ))}
+        <section className="border-y border-[var(--border-subtle)] bg-surface-canvas">
+            {/* El relleno lateral va en un envoltorio aparte: puesto en la
+                rejilla, el gris de los separadores (`gap-px` sobre fondo de
+                borde) asomaba en los márgenes como dos bloques a los lados. */}
+            <div className="mx-auto max-w-[1180px] px-6 md:px-10">
+                <div className="grid grid-cols-2 gap-px bg-[var(--border-subtle)] md:grid-cols-4">
+                    {stats.map((stat) => (
+                        <div key={stat.label} className="bg-surface-canvas">
+                            <StatCounter value={stat.value} suffix={stat.suffix} label={stat.label} />
+                        </div>
+                    ))}
+                </div>
             </div>
         </section>
     );

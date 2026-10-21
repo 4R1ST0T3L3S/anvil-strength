@@ -1,6 +1,46 @@
+/**
+ * EL RECORTE DE UN ATLETA — la foto sin fondo de la convocatoria y de la
+ * portada.
+ *
+ * Se sirve en WebP con transparencia y en dos alturas (1600px y 800px): la
+ * grande para pantallas de alta densidad, la pequeña para el móvil. Cómo se
+ * generan: public/athletes/roster/README.md.
+ *
+ * `encuadre` corrige fotos que no están cortadas igual: no es lo mismo un
+ * atleta de cuerpo entero que uno cortado por la cintura. `escala` multiplica
+ * la altura en escena (1 = alto completo del escenario) y `bajar` lo desplaza
+ * hacia abajo en tanto por uno de su propia altura.
+ */
+export interface RecorteAtleta {
+  src: string;
+  src800: string;
+  ancho: number;
+  alto: number;
+  encuadre?: { escala?: number; bajar?: number };
+}
+
+/**
+ * VÍDEO DE PRESENTACIÓN (opcional) — el atleta cruzando los brazos.
+ *
+ * Si existe, la convocatoria lo reproduce UNA vez en lugar del recorte y se
+ * queda en el último fotograma. Con fondo transparente hacen falta dos
+ * ficheros, porque no hay un formato que lean todos los navegadores:
+ *
+ *   · `webm` — VP9 con canal alfa (Chrome, Edge, Firefox, Android).
+ *   · `mov`  — HEVC con canal alfa (Safari, iPhone).
+ *
+ * Sin `mov`, Safari enseña el recorte, que es exactamente lo que se quiere.
+ */
+export interface VideoAtleta {
+  webm?: string;
+  mov?: string;
+}
+
 export interface Athlete {
   id: number;
   name: string;
+  /** Identificador en la URL de la convocatoria. Sin tildes ni espacios. */
+  slug?: string;
   category: string;
   image: string;
   stats: {
@@ -14,7 +54,17 @@ export interface Athlete {
   description?: string;
   instagram?: string;
   competitionDate?: string;
+  recorte?: RecorteAtleta;
+  video?: VideoAtleta;
 }
+
+const recorte = (slug: string, ancho: number, alto: number, encuadre?: RecorteAtleta['encuadre']): RecorteAtleta => ({
+  src: `/athletes/roster/${slug}.webp`,
+  src800: `/athletes/roster/${slug}-800.webp`,
+  ancho,
+  alto,
+  encuadre,
+});
 
 export const athletes: Athlete[] = [
   {
@@ -36,6 +86,8 @@ export const athletes: Athlete[] = [
   {
     id: 2,
     name: "Alejandro Hermosilla",
+    slug: "alejandro-hermosilla",
+    recorte: recorte("alejandro-hermosilla", 882, 1600, { escala: 1.08, bajar: 0.04 }),
     category: "-83kg Open",
     image: "/athletes/alejandro.jpg",
     stats: {
@@ -52,7 +104,9 @@ export const athletes: Athlete[] = [
   {
     id: 3,
     name: "Marc Alonso",
-    category: "-105kg",
+    slug: "marc-alonso",
+    recorte: recorte("marc-alonso", 1064, 1600, { escala: 0.86, bajar: 0 }),
+    category: "-105kg JNR",
     image: "/athletes/marc.png",
     competitionDate: "Sábado 16 de Mayo, 12:45",
     description: "Compitiendo al más alto nivel por el club Anvil Strength. Superando límites y forjando una nueva historia de éxito en la plataforma.",
@@ -69,6 +123,8 @@ export const athletes: Athlete[] = [
   {
     id: 4,
     name: "Pau Rodriguez",
+    slug: "pau-rodriguez",
+    recorte: recorte("pau-rodriguez", 763, 1600, { escala: 1.42, bajar: 0.24 }),
     category: "-105kg SBJ",
     image: "/athletes/Pau.png",
     stats: {
@@ -139,6 +195,8 @@ export const athletes: Athlete[] = [
   {
     id: 9,
     name: "Pau Camacho",
+    slug: "pau-camacho",
+    recorte: recorte("pau-camacho", 526, 1600, { escala: 1.3, bajar: 0.2 }),
     category: "-83kg JNR",
     image: "/athletes/pauca.jpg",
     stats: {

@@ -300,3 +300,13 @@ button:not([data-no-press]),
   width: 90vw !important;
   max-width: 400px !important;
 }
+/* ===================================================================
+   CONVOCATORIA — la barra de progreso de cada atleta
+   ===================================================================
+   Es una animación CSS y no un temporizador: la barra que se llena y el
+   avance al siguiente atleta son la misma cosa (`animationend`), y pausar es
+   `animation-play-state: paused`. Ver Convocatoria.tsx. */
+@keyframes llenar-barra {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

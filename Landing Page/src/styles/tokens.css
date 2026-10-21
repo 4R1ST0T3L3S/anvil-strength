@@ -318,27 +318,52 @@
 }
 
 /* ===================================================================
-   REGISTRO DE MARCA — LA PORTADA, TAL COMO SE DISEÑÓ
+   REGISTRO DE MARCA — LA WEB PÚBLICA, "NEGRO CINE"
    ===================================================================
-   La web pública queda fuera del rediseño de septiembre de 2026. Todo lo
-   que cuelga de `.registro-marca` (las páginas públicas, y los modales que
-   abren, por portal, vía `RegistroMarca`) recupera los valores anteriores de
-   superficie, tinta, radios, sombras y tipografía. Así el sistema nuevo
-   puede cambiar sin tocar un píxel de la portada. */
+   La web pública queda fuera del sistema de la aplicación. Todo lo que
+   cuelga de `.registro-marca` (las páginas públicas, y los modales que
+   abren, por portal, vía `RegistroMarca`) usa estos valores.
+
+   OCTUBRE DE 2026 — NEGRO CINE. La portada pasa de "oscura con folds" a
+   un escenario: negro casi puro, la luz cae de arriba como en una
+   plataforma de competición, los atletas recortados son el producto y el
+   rojo es la única carga de color. Referencias: el negro de Figura, los
+   titulares en bloque de Wise y la foto-como-producto de Apple.
+
+   SIEMPRE OSCURA. Ya no hay variante clara del registro de marca: un
+   escenario iluminado no existe en blanco, y la portada es lo primero que
+   ve alguien que no nos conoce. El tema claro sigue mandando dentro de la
+   aplicación. La franja de galería clara (`--fold-light`) es una decisión
+   de sección, no un tema.
+
+   El negro lleva un pelo de croma hacia el rojo de marca (h 25, C ≤ 0.006):
+   al lado de las fotos con luz cálida de pabellón, un negro neutro se ve
+   azulado. */
 .registro-marca {
-  --surface-sunken: oklch(0.145 0 0);
-  --surface-canvas: oklch(0.226 0 0);
-  --surface-raised: oklch(0.265 0 0);
-  --surface-overlay: oklch(0.31 0 0);
-  --border-subtle: oklch(1 0 0 / 0.06);
-  --border-default: oklch(1 0 0 / 0.1);
-  --border-strong: oklch(1 0 0 / 0.18);
-  --ink: oklch(0.985 0 0);
-  --ink-muted: oklch(0.76 0 0);
-  --ink-subtle: oklch(0.68 0 0);
-  --ink-faint: oklch(0.48 0 0);
-  --ink-inverse: oklch(0.145 0 0);
-  --brand-text: oklch(0.66 0.21 25);
+  color-scheme: dark;
+  --surface-sunken: oklch(0.1 0.004 25);
+  --surface-canvas: oklch(0.13 0.005 25);
+  --surface-raised: oklch(0.185 0.006 25);
+  --surface-overlay: oklch(0.235 0.006 25);
+  --border-subtle: oklch(1 0 0 / 0.07);
+  --border-default: oklch(1 0 0 / 0.12);
+  --border-strong: oklch(1 0 0 / 0.2);
+  /*                 pozo    lienzo   tarjeta
+       ink           19,4     18,5     16,1
+       ink-muted      9,6      9,1      7,9
+       ink-subtle     7,0      6,7      5,8   <- suelo
+       ink-faint      2,9      2,8      2,4   nunca texto              */
+  --ink: oklch(0.985 0.002 25);
+  --ink-muted: oklch(0.79 0.006 25);
+  --ink-subtle: oklch(0.71 0.006 25);
+  --ink-faint: oklch(0.46 0.006 25);
+  --ink-inverse: oklch(0.1 0.004 25);
+  --brand-text: oklch(0.68 0.21 25);
+  /* La luz de plataforma: el foco que cae sobre el atleta. Va en alfa
+     porque siempre se pinta encima de negro. */
+  --cine-foco: oklch(0.97 0.01 60 / 0.16);
+  --cine-brasa: oklch(0.58 0.21 25 / 0.55);
+  --cine-brasa-suave: oklch(0.58 0.21 25 / 0.18);
   --success: oklch(0.72 0.17 150);
   --warning: oklch(0.78 0.16 78);
   --danger-text: oklch(0.7 0.2 25);
@@ -355,28 +380,6 @@
   font-weight: 500;
 }
 
-:root[data-theme="light"] .registro-marca {
-  --surface-sunken: oklch(0.9 0 0);
-  --surface-canvas: oklch(0.95 0 0);
-  --surface-raised: oklch(1 0 0);
-  --surface-overlay: oklch(1 0 0);
-  --border-subtle: oklch(0 0 0 / 0.07);
-  --border-default: oklch(0 0 0 / 0.13);
-  --border-strong: oklch(0 0 0 / 0.24);
-  --ink: oklch(0.22 0 0);
-  --ink-muted: oklch(0.42 0 0);
-  --ink-subtle: oklch(0.49 0 0);
-  --ink-faint: oklch(0.68 0 0);
-  --ink-inverse: oklch(0.985 0 0);
-  --brand-text: oklch(0.52 0.21 25);
-  --success: oklch(0.47 0.15 150);
-  --warning: oklch(0.5 0.13 78);
-  --danger-text: oklch(0.52 0.2 25);
-  --info: oklch(0.48 0.15 240);
-  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.08);
-  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.1);
-  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.14);
-}
 
 /* Quien desactiva animaciones en su sistema recibe transiciones
    instantáneas, no animaciones "un poco más rápidas". */

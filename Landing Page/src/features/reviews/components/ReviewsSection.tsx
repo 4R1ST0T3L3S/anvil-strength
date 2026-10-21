@@ -43,12 +43,17 @@ export function ReviewsSection({ isAuthenticated }: ReviewsSectionProps) {
         return acc;
     }, {} as Record<number, number>);
 
+    // Sin reseñas, a quien no tiene sesión no se le enseña la sección: un
+    // "Aún no hay reseñas" en la portada de un club es prueba social en
+    // contra. Quien tiene sesión sí la ve, porque puede escribir la primera.
+    if (!isAuthenticated && !isLoading && !isError && reviews.length === 0) return null;
+
     return (
         <section id="reviews" className="bg-surface-canvas px-6 py-24">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">
+                    <h2 className="mb-4 font-display text-[clamp(2.75rem,7vw,5rem)] uppercase leading-[0.9] tracking-[0.005em]">
                         {c.titulo1} <span className="text-brand-text">{c.titulo2}</span>
                     </h2>
                     <p className="text-ink-muted text-lg max-w-2xl mx-auto">

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { SmartAuthButton } from '../ui/SmartAuthButton';
-import { SelectorDeTema } from '../ui/SelectorDeTema';
 import { SelectorDeIdioma } from '../ui/SelectorDeIdioma';
 import { AnchoredMenu } from '../ui/AnchoredMenu';
 import { useUser } from '../../hooks/useUser';
@@ -38,14 +37,15 @@ const NAV_LINKS: { clave: keyof TextosWeb['cabecera']['nav']; href: string; prin
     // subió justo debajo de la portada, es la primera sección de la página, y
     // esconderla en el menú "MÁS" sería volver a enterrar la puerta.
     { clave: 'app', href: '#app', principal: true },
-    { clave: 'filosofia', href: '#filosofia', principal: true },
-    { clave: 'software', href: '#software', principal: true },
-    { clave: 'equipo', href: '#entrenadores', principal: true },
-    // COMPETICIONES sale de la barra al menú "MÁS" para dejar sitio a LA APP:
-    // cinco es el tope, y es la única de las cinco que no es una sección de
-    // esta página sino otra ruta.
+    // OCTUBRE DE 2026: el equipo pasa delante. COMPETICIONES vuelve a la barra
+    // (es donde vive la convocatoria) y SOFTWARE baja al menú "MÁS": la app ya
+    // tiene su puerta en LA APP, y dos enlaces a lo mismo en cinco huecos era
+    // gastar uno.
+    { clave: 'competiciones', href: '/competiciones', principal: true },
     { clave: 'atletas', href: '#atletas', principal: true },
-    { clave: 'competiciones', href: '/competiciones', principal: false },
+    { clave: 'equipo', href: '#entrenadores', principal: true },
+    { clave: 'filosofia', href: '#filosofia', principal: true },
+    { clave: 'software', href: '#software', principal: false },
     { clave: 'logros', href: '#logros', principal: false },
     { clave: 'opiniones', href: '#reviews', principal: false },
     { clave: 'afiliate', href: '#afiliacion', principal: false },
@@ -317,14 +317,14 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         <SmartAuthButton
                             variant="ghost"
                             onLoginClick={onLoginClick}
-                            className="!font-bebas !italic !tracking-[0.08em] !text-t-sm !min-h-[44px] !py-1.5 !px-4 !border !border-[var(--border-default)] !rounded-field hover:!border-[var(--border-strong)] hover:!bg-white/5"
+                            className="!font-display !uppercase !tracking-[0.06em] !text-t-sm !min-h-[44px] !py-1.5 !px-4 !border !border-[var(--border-default)] !rounded-pill hover:!border-[var(--border-strong)] hover:!bg-white/5"
                         />
                     </div>
 
                     {onSignupClick && !currentUser && (
                         <button
                             onClick={onSignupClick}
-                            className="hidden min-h-[44px] items-center justify-center rounded-field bg-brand px-4 font-bebas text-t-sm italic tracking-[0.08em] text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover sm:inline-flex"
+                            className="hidden min-h-[44px] items-center justify-center rounded-pill bg-brand px-5 font-display text-t-sm uppercase tracking-[0.06em] text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover sm:inline-flex"
                         >
                             {c.crearCuenta}
                         </button>
@@ -336,13 +336,11 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                         Un control que parece pulsable y no hace nada cuesta
                         más que no tenerlo. Cuando la tienda exista, vuelve. */}
 
-                    {/* El tema, también en la web pública: quien llega desde
-                        Google con el móvil en claro se merece la misma
-                        cortesía que quien ya tiene cuenta. Se esconde por
-                        debajo de lg porque ahí el sitio del icono lo ocupa el
-                        menú, y dentro del menú vuelve a salir. */}
+                    {/* Sin selector de tema: desde octubre de 2026 la web
+                        pública es siempre oscura ("negro cine", ver
+                        tokens.css). El tema se sigue eligiendo dentro de la
+                        aplicación, que es donde cambia algo. */}
                     <SelectorDeIdioma className="hidden lg:flex" />
-                    <SelectorDeTema className="hidden lg:flex" />
 
                     {/* Menú móvil. 44x44 reales: medía 40 con el relleno. */}
                     <button
@@ -400,7 +398,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                                     transition={{ delay: Math.min(index, 8) * 0.04 }}
                                     onClick={(e) => handleNavClick(e, link.href)}
                                     aria-current={esActivo(link.href) ? 'page' : undefined}
-                                    className={`flex min-h-[44px] items-center font-bebas text-[clamp(1.75rem,7vw,2.5rem)] font-black uppercase italic leading-none tracking-tighter transition-colors duration-fast ease-snap hover:text-brand-text ${
+                                    className={`flex min-h-[44px] items-center font-display text-[clamp(1.75rem,7vw,2.5rem)] uppercase leading-none tracking-[0.01em] transition-colors duration-fast ease-snap hover:text-brand-text ${
  esActivo(link.href) ? 'text-brand-text' : 'text-ink-muted'
  }`}
                                 >
@@ -409,23 +407,16 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             ))}
                         </nav>
 
-                        {/* El tema, también aquí. En la barra el icono está
-                            oculto por debajo de `lg` porque ese sitio lo ocupa
-                            el botón del menú, así que si no estuviera dentro
-                            del menú no habría forma de cambiarlo en móvil — que
-                            es justo donde el sistema cambia solo al anochecer. */}
+                        {/* El idioma, también aquí: en la barra está oculto por
+                            debajo de `lg` porque ese sitio lo ocupa el botón
+                            del menú. El tema ya no: la web pública es siempre
+                            oscura. */}
                         <div className="space-y-1 border-t border-subtle px-8 py-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
                                     {c.idioma}
                                 </span>
                                 <SelectorDeIdioma />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-t-xs font-bold uppercase tracking-widest text-ink-subtle">
-                                    {c.tema}
-                                </span>
-                                <SelectorDeTema />
                             </div>
                         </div>
 
@@ -440,7 +431,7 @@ export function PublicHeader({ onLoginClick, onSignupClick }: PublicHeaderProps)
                             {onSignupClick && !currentUser && (
                                 <button
                                     onClick={() => { setIsMobileMenuOpen(false); onSignupClick(); }}
-                                    className="w-full rounded-field border border-[var(--border-default)] py-4 font-bebas text-t-lg italic tracking-[0.1em] text-ink transition-colors duration-fast ease-snap hover:bg-white/5"
+                                    className="w-full rounded-pill border border-[var(--border-default)] py-4 font-display text-t-lg uppercase tracking-[0.06em] text-ink transition-colors duration-fast ease-snap hover:bg-white/5"
                                 >
                                     {c.crearCuenta}
                                 </button>
