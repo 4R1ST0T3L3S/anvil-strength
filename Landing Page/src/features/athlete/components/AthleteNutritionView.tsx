@@ -196,7 +196,7 @@ export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
                                                                 <span className={`truncate text-t-sm ${i > 0 ? 'text-ink-muted' : 'text-ink'}`}>{f.food.product_name}</span>
                                                             </span>
                                                             <span className={`shrink-0 text-t-sm font-semibold tabular-nums ${i > 0 ? 'text-ink-muted' : 'text-ink'}`}>{formatear(gramos)} g</span>
-                                                            <span className="hidden w-16 shrink-0 text-right text-t-xs tabular-nums text-ink-subtle sm:block">{formatear(m.kcal)} kcal</span>
+                                                            <span className="shrink-0 text-right text-t-xs tabular-nums text-ink-subtle sm:w-20">{formatear(m.kcal)} kcal</span>
                                                         </div>
                                                     );
                                                 })}

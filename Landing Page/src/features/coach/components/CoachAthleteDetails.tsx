@@ -307,7 +307,7 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                 dejan de competir por la misma línea. */}
             <div className="flex items-center justify-between gap-3 p-4 md:p-6 border-b border-subtle bg-surface-sunken shrink-0">
                 <div className="flex min-w-0 items-center gap-2 md:gap-3">
-                    <button onClick={onBack} className="p-2 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-muted hover:text-ink transition-colors shrink-0">
+                    <button onClick={onBack} aria-label="Volver" className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center p-2 hover:bg-[var(--fill-pressed)] rounded-lg text-ink-muted hover:text-ink transition-colors shrink-0">
                         <ArrowLeft size={20} />
                     </button>
 
@@ -458,13 +458,13 @@ export function CoachAthleteDetails({ athleteId, onOpenChat, onBack }: CoachAthl
                                     role="tab"
                                     aria-selected={active}
                                     onClick={() => confirmLeaveBuilder(() => setActiveTab(key))}
-                                    className={`flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-field px-4 text-t-sm font-bold transition-colors duration-fast ease-snap md:px-6 ${
+                                    className={`flex h-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-field px-2.5 text-t-xs font-bold transition-colors duration-fast ease-snap sm:gap-2 sm:px-4 sm:text-t-sm md:px-6 ${
  active
  ? 'bg-brand text-brand-ink'
  : 'text-ink-subtle hover:bg-surface-raised hover:text-ink'
  }`}
                                 >
-                                    <Icon size={17} aria-hidden="true" className="shrink-0" />
+                                    <Icon size={16} aria-hidden="true" className="shrink-0 sm:h-[17px] sm:w-[17px]" />
                                     {label}
                                 </button>
                             );

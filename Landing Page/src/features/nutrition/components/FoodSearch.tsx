@@ -115,11 +115,11 @@ export function FoodSearch({ onAddFood, onClose, referenceFood, referenceGrams, 
                             onClick={() => setIsEditingBrands((v) => !v)}
                             aria-label="Marcas favoritas"
                             aria-pressed={isEditingBrands}
-                            className={`flex h-8 w-8 items-center justify-center rounded-field transition-colors duration-fast ease-snap ${favoriteBrands.length > 0 || isEditingBrands ? 'text-warning' : 'text-ink-subtle hover:text-ink'}`}
+                            className={`flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-field transition-colors duration-fast ease-snap ${favoriteBrands.length > 0 || isEditingBrands ? 'text-warning' : 'text-ink-subtle hover:text-ink'}`}
                         >
                             <Star size={16} fill={favoriteBrands.length > 0 ? 'currentColor' : 'none'} />
                         </button>
-                        <button type="button" onClick={onClose} aria-label="Cerrar el buscador" className="flex h-8 w-8 items-center justify-center rounded-field text-ink-subtle hover:text-ink">
+                        <button type="button" onClick={onClose} aria-label="Cerrar el buscador" className="flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-field text-ink-subtle hover:text-ink">
                             <X size={16} />
                         </button>
                     </div>
@@ -244,7 +244,7 @@ export function FoodSearch({ onAddFood, onClose, referenceFood, referenceGrams, 
                                 type="button"
                                 onClick={() => setGrams(g)}
                                 aria-pressed={grams === g}
-                                className={`h-8 rounded-pill px-3 text-t-xs font-semibold transition-colors duration-fast ease-snap ${grams === g ? 'bg-brand text-brand-ink' : 'bg-[var(--fill-input)] text-ink hover:bg-[var(--fill-strong)]'}`}
+                                className={`inline-flex min-h-[44px] md:min-h-0 md:h-8 min-w-[44px] items-center justify-center rounded-pill px-3.5 text-t-xs font-semibold transition-colors duration-fast ease-snap ${grams === g ? 'bg-brand text-brand-ink' : 'bg-[var(--fill-input)] text-ink hover:bg-[var(--fill-strong)]'}`}
                             >
                                 {g} g
                             </button>

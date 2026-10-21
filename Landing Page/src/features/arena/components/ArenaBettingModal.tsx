@@ -10,7 +10,7 @@ interface ArenaBettingModalProps {
     option: ArenaOption | null;
     balance: number;
     onConfirm: (amount: number, predictionValue?: number) => Promise<void>;
-    onAddToSlip?: (bet: ArenaBet, option: ArenaOption | null) => void;
+    onAddToSlip?: (bet: ArenaBet, option: ArenaOption | null, predictionValue?: number) => void;
 }
 
 export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({ 
@@ -59,13 +59,14 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-md bg-surface-sunken border border-line rounded-[2.5rem] overflow-hidden shadow-overlay max-h-[90vh] overflow-y-auto custom-scrollbar"
+                        className="relative w-full max-w-md bg-surface-sunken border border-line rounded-3xl sm:rounded-[2.5rem] overflow-hidden shadow-overlay max-h-[90dvh] flex flex-col"
                     >
                         {/* Header */}
-                        <div className="p-8 border-b border-subtle relative">
+                        <div className="p-5 sm:p-8 border-b border-subtle relative shrink-0">
                             <button 
                                 onClick={onClose}
-                                className="absolute top-8 right-8 text-ink-subtle hover:text-ink transition-colors"
+                                className="absolute top-5 right-5 sm:top-8 sm:right-8 h-11 w-11 sm:h-auto sm:w-auto flex items-center justify-center text-ink-subtle hover:text-ink transition-colors"
+                                aria-label="Cerrar"
                             >
                                 <X size={24} />
                             </button>
@@ -78,7 +79,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                         </div>
 
                         {/* Content */}
-                        <div className="p-8 space-y-6">
+                        <div className="p-5 sm:p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                             <div className="bg-surface-sunken border border-subtle rounded-2xl p-6">
                                 <span className="text-t-2xs font-semibold text-ink-subtle block mb-2 text-center">
                                     {bet.type === 'prediction' ? 'ESTÁS PREDICIENDO UN VALOR' : 'ESTÁS APOSTANDO POR'}
@@ -142,7 +143,7 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                         </div>
 
                         {/* Footer */}
-                        <div className="p-8 pt-0 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] space-y-3">
+                        <div className="p-5 sm:p-8 pt-4 sm:pt-0 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(2rem+env(safe-area-inset-bottom,0px))] border-t border-subtle sm:border-t-0 bg-surface-sunken shrink-0 space-y-3">
                             <button
                                 onClick={handleConfirm}
                                 disabled={loading || amount <= 0 || amount > balance}
@@ -153,8 +154,14 @@ export const ArenaBettingModal: React.FC<ArenaBettingModalProps> = ({
                             
                             {onAddToSlip && (
                                 <button
-                                    onClick={() => onAddToSlip(bet, option)}
-                                    className="w-full py-4 bg-[var(--fill-muted)] text-ink-muted hover:text-ink font-semibold text-t-2xs rounded-2xl transition-colors border border-subtle hover:border-line"
+                                    onClick={() => {
+                                        const parsedPrediction = bet.type === 'prediction' && predictionValue.trim() !== '' ? Number(predictionValue) : undefined;
+                                        if (bet.type === 'prediction' && (predictionValue.trim() === '' || Number.isNaN(parsedPrediction))) return;
+                                        onAddToSlip(bet, option, parsedPrediction);
+                                    }}
+                                    disabled={bet.type === 'prediction' && (predictionValue.trim() === '' || Number.isNaN(Number(predictionValue)))}
+                                    className="w-full py-4 bg-[var(--fill-muted)] text-ink-muted hover:text-ink font-semibold text-t-2xs rounded-2xl transition-colors border border-subtle hover:border-line disabled:opacity-50 disabled:cursor-not-allowed"
+
                                 >
                                     O AÑADIR AL BOLETO (COMBINADA)
                                 </button>

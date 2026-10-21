@@ -90,18 +90,20 @@ function Fila({ foto, titulo, subtitulo, visible, primero, ultimo, onSubir, onBa
 }) {
     const boton = 'flex h-10 w-10 items-center justify-center rounded-field text-ink-subtle hover:bg-[var(--fill-hover)] hover:text-ink disabled:opacity-30';
     return (
-        <li className={`flex items-center gap-3 rounded-card border border-[var(--border-default)] bg-surface-raised p-2.5 ${visible ? '' : 'opacity-60'}`}>
+        <li className={`flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 rounded-card border border-[var(--border-default)] bg-surface-raised p-2.5 sm:p-3 ${visible ? '' : 'opacity-60'}`}>
+            <div className="flex min-w-0 flex-1 items-center gap-3">
             <SafeImage
                 src={foto ?? undefined}
                 alt=""
                 className="h-14 w-12 shrink-0 rounded-field object-cover"
                 fallback={<span className="flex h-14 w-12 shrink-0 items-center justify-center rounded-field bg-surface-overlay text-ink-faint"><Trophy size={18} /></span>}
             />
-            <button type="button" onClick={onEditar} className="min-w-0 flex-1 text-left">
+            <button type="button" onClick={onEditar} className="min-w-0 flex-1 text-left min-h-[44px] py-1">
                 <span className="block truncate text-t-sm font-semibold text-ink">{titulo}</span>
                 <span className="block truncate text-t-xs text-ink-subtle">{subtitulo}</span>
             </button>
-            <div className="flex shrink-0 items-center">
+            </div>
+            <div className="flex w-full sm:w-auto shrink-0 items-center justify-end border-t border-[var(--separator)] sm:border-t-0 pt-1.5 sm:pt-0">
                 <button type="button" className={boton} onClick={onSubir} disabled={primero} aria-label="Subir"><ArrowUp size={16} /></button>
                 <button type="button" className={boton} onClick={onBajar} disabled={ultimo} aria-label="Bajar"><ArrowDown size={16} /></button>
                 <button type="button" className={boton} onClick={onVisible} aria-label={visible ? 'Ocultar en la web' : 'Mostrar en la web'} title={visible ? 'Visible en la web' : 'Oculto'}>

@@ -164,7 +164,7 @@ export function DuplicateBlockModal({
                                         <button
                                             onClick={() => toggle(candidate.id)}
                                             aria-pressed={checked}
-                                            className={`flex w-full items-center gap-3 rounded-field px-3 py-2.5 text-left transition-colors duration-fast ease-snap active:scale-[0.99] ${
+                                            className={`flex w-full min-h-[44px] items-center gap-3 rounded-field px-3 py-2.5 text-left transition-colors duration-fast ease-snap active:scale-[0.99] ${
  checked ? 'bg-[var(--brand-quiet)]' : 'hover:bg-surface-overlay'
  }`}
                                         >
@@ -189,11 +189,13 @@ export function DuplicateBlockModal({
                         <button
                             onClick={handleCopy}
                             disabled={selected.size === 0 || working}
-                            className="flex w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-field bg-brand py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {working
                                 ? <><Loader size={16} className="animate-spin" aria-hidden="true" /> Copiando…</>
-                                : <><Copy size={16} aria-hidden="true" /> Copiar a {selected.size || 'ningún'} {selected.size === 1 ? 'atleta' : 'atletas'}</>}
+                                : selected.size === 0
+                                    ? 'Selecciona al menos un atleta'
+                                    : <><Copy size={16} aria-hidden="true" /> Copiar a {selected.size} {selected.size === 1 ? 'atleta' : 'atletas'}</>}
                         </button>
                     </>
                 )}

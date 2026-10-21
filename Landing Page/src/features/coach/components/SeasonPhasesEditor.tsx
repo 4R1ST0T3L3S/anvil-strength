@@ -237,7 +237,7 @@ function FilaDeFase({
                         onClick={onSubir}
                         disabled={primera}
                         aria-label={`Subir ${fase.name}`}
-                        className="rounded p-0.5 text-ink-faint transition-colors hover:text-ink disabled:opacity-25"
+                        className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-auto md:w-auto items-center justify-center rounded p-2 md:p-0.5 text-ink-faint transition-colors hover:text-ink disabled:opacity-25"
                     >
                         <ChevronUp size={14} aria-hidden="true" />
                     </button>
@@ -245,7 +245,7 @@ function FilaDeFase({
                         onClick={onBajar}
                         disabled={ultima}
                         aria-label={`Bajar ${fase.name}`}
-                        className="rounded p-0.5 text-ink-faint transition-colors hover:text-ink disabled:opacity-25"
+                        className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-auto md:w-auto items-center justify-center rounded p-2 md:p-0.5 text-ink-faint transition-colors hover:text-ink disabled:opacity-25"
                     >
                         <ChevronDown size={14} aria-hidden="true" />
                     </button>
@@ -274,6 +274,7 @@ function FilaDeFase({
                             Semanas
                             <input
                                 type="number"
+                                inputMode="numeric"
                                 min={1}
                                 max={52}
                                 defaultValue={fase.weeks}
@@ -323,7 +324,7 @@ function FilaDeFase({
                     onClick={onBorrar}
                     aria-label={`Eliminar ${fase.name}`}
                     title="Eliminar fase"
-                    className="shrink-0 rounded p-1 text-ink-faint transition-colors hover:text-danger-text"
+                    className="shrink-0 flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-auto md:w-auto items-center justify-center rounded p-2 md:p-1 text-ink-faint transition-colors hover:text-danger-text"
                 >
                     <Trash2 size={14} aria-hidden="true" />
                 </button>
@@ -369,6 +370,7 @@ function FormularioDeFase({
                 />
                 <input
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={52}
                     value={weeks}

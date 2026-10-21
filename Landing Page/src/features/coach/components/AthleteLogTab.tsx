@@ -800,7 +800,7 @@ function SetRow({
                             onClick={handleSave}
                             disabled={saving}
                             aria-label="Guardar corrección"
-                            className="flex h-7 w-7 items-center justify-center rounded-chip bg-success text-[var(--surface-sunken)] transition-colors duration-fast ease-snap hover:opacity-90 disabled:opacity-50"
+                            className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-7 md:w-7 items-center justify-center rounded-chip bg-success text-[var(--surface-sunken)] transition-colors duration-fast ease-snap hover:opacity-90 disabled:opacity-50"
                         >
                             <Check size={13} strokeWidth={3} />
                         </button>
@@ -808,7 +808,7 @@ function SetRow({
                             onClick={() => setEditing(false)}
                             disabled={saving}
                             aria-label="Cancelar"
-                            className="flex h-7 w-7 items-center justify-center rounded-chip text-ink-faint transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
+                            className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-7 md:w-7 items-center justify-center rounded-chip text-ink-faint transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
                         >
                             <X size={13} strokeWidth={3} />
                         </button>
@@ -855,14 +855,14 @@ function SetRow({
                     )}
                 </span>
             </td>
-            <td className="w-6 px-0.5 py-1 text-right">
+            <td className="w-11 md:w-6 px-0.5 py-1 text-right">
                 <button
                     onClick={startEditing}
                     aria-label={`Corregir la serie ${index + 1}`}
                     // Siempre presente y a baja opacidad —no solo al pasar el
                     // ratón—: en un móvil no hay hover, y ocultarlo del todo
                     // hasta ese gesto lo habría dejado indescubrible ahí.
-                    className="flex h-6 w-6 items-center justify-center rounded-chip text-ink-subtle/40 transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
+                    className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-6 md:w-6 items-center justify-center rounded-chip text-ink-subtle/40 transition-colors duration-fast ease-snap hover:bg-surface-overlay hover:text-ink"
                 >
                     <Pencil size={11} />
                 </button>

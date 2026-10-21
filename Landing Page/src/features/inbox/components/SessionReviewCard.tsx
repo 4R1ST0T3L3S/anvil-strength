@@ -424,7 +424,7 @@ function Serie({ set, indice, conVbt }: { set: LoggedSet; indice: number; conVbt
                         target="_blank"
                         rel="noreferrer"
                         aria-label={`Ver el vídeo de la serie ${indice}`}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-pill text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet)]"
+                        className="inline-flex h-9 w-9 md:h-7 md:w-7 relative before:absolute before:-inset-1.5 md:before:hidden items-center justify-center rounded-pill text-brand-text transition-colors duration-fast hover:bg-[var(--brand-quiet)]"
                     >
                         {set.videoUrl.includes('youtu') ? <Play className="h-4 w-4" aria-hidden="true" /> : <Video className="h-4 w-4" aria-hidden="true" />}
                     </a>

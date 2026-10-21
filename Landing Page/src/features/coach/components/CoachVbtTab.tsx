@@ -575,7 +575,8 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                                                 <button
                                                                     onClick={() => setChartUrl({ url: m.file_url!, name: m.exercise_name })}
                                                                     title="Ver la gráfica del archivo"
-                                                                    className="p-1 text-ink-faint transition-colors hover:text-brand-text"
+                                                                    aria-label="Ver la gráfica del archivo"
+                                                                    className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-auto md:w-auto items-center justify-center p-2.5 md:p-1 text-ink-faint transition-colors hover:text-brand-text"
                                                                 >
                                                                     <Activity size={12} />
                                                                 </button>
@@ -583,7 +584,8 @@ export default function CoachVbtTab({ athleteId }: { athleteId: string }) {
                                                             <button
                                                                 onClick={() => remove(m.id)}
                                                                 title="Borrar medición"
-                                                                className="p-1 text-ink-faint transition-colors hover:text-danger-text"
+                                                                aria-label="Borrar medición"
+                                                                className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-auto md:w-auto items-center justify-center p-2.5 md:p-1 text-ink-faint transition-colors hover:text-danger-text"
                                                             >
                                                                 <Trash2 size={12} />
                                                             </button>

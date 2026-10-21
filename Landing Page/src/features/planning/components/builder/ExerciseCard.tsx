@@ -404,7 +404,9 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Delete Exercise Button (Absolute Top Right) */}
             <button
                 onClick={onRemoveExercise}
-                className="absolute top-3 right-3 text-ink-subtle hover:text-danger-text opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                aria-label={`Eliminar ${exerciseName}`}
+                title="Eliminar ejercicio"
+                className="absolute top-3 right-3 text-ink-subtle hover:text-danger-text opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-2 md:p-1"
             >
                 <Trash2 size={14} />
             </button>
@@ -775,7 +777,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
             {/* Sets Table */}
             <div className="space-y-1 bg-black/20 p-2 rounded-xl border border-subtle">
                 {/* Header Row */}
-                <div className="mb-2 grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] items-center gap-2 px-1 text-center text-t-2xs text-ink-subtle">
+                <div className="mb-2 grid grid-cols-[0.8fr_0.8fr_1.6fr_auto] md:grid-cols-[0.85fr_0.85fr_1.7fr_40px] items-center gap-2 px-1 text-center text-t-2xs text-ink-subtle">
                     <span>Series</span>
                     {/* "Intervalos" y no "Reps" en cardio: es lo que de verdad
                         cuenta esa cifra en "10 intervalos de 30 s" — ver la
@@ -829,7 +831,7 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 de series y reps encogen: el sufijo de unidad se
                                 come 34px, y sin rebalancear la casilla de kilos
                                 se quedaba en menos de 50px en el móvil. */}
-                            <div className="grid grid-cols-[0.85fr_0.85fr_1.7fr_40px] gap-2 items-center">
+                            <div className="grid grid-cols-[0.8fr_0.8fr_1.6fr_auto] md:grid-cols-[0.85fr_0.85fr_1.7fr_40px] gap-2 items-center">
                             <CompactInput
                                 value={seriesVal}
                                 onChange={(v) => onUpdateSet(set.id, 'target_reps', formatTargetReps(v as string, repsVal))}
@@ -927,12 +929,13 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                     cargas, donde faltan puntos casi siempre. */}
                                 <button
                                     onClick={() => setVbtSet({ set, number: setIndex + 1 })}
+                                    aria-label="Velocidad de la serie (VBT)"
                                     title={set.vbt_mean_velocity != null
                                         ? `Velocidad registrada: ${set.vbt_mean_velocity} m/s`
                                         : 'Añadir datos de velocidad (VBT) a esta serie'}
-                                    className={`p-0.5 transition-colors ${set.vbt_mean_velocity != null
+                                    className={`flex h-9 w-9 md:h-auto md:w-auto items-center justify-center rounded p-2 md:p-0.5 transition-colors ${set.vbt_mean_velocity != null
  ? 'text-success hover:text-green-300'
- : 'text-ink-faint opacity-100 hover:text-brand-text md:opacity-0 group-hover/row:opacity-100'
+ : 'text-ink-faint opacity-100 hover:text-brand-text md:opacity-0 md:group-hover/row:opacity-100'
  }`}
                                 >
                                     <Activity size={11} />
@@ -940,15 +943,16 @@ export function ExerciseCard({ sessionExercise, athleteId, coachId, referenceMax
                                 {set.vbt_file_url && (
                                     <button
                                         onClick={() => onOpenVbtChart(set.vbt_file_url!, `${exerciseName} · Serie ${setIndex + 1}`)}
-                                        className="p-0.5 text-success hover:text-green-300"
+                                        aria-label="Ver la gráfica VBT de esta serie"
+                                        className="flex h-9 w-9 md:h-auto md:w-auto items-center justify-center rounded p-2 md:p-0.5 text-success hover:text-green-300"
                                         title="Ver la gráfica del archivo de esta serie"
                                     >
                                         <BarChart3 size={11} />
                                     </button>
                                 )}
-                                <span className="flex gap-0.5 opacity-100 md:opacity-0 group-hover/row:opacity-100 transition-opacity">
-                                    <button onClick={() => onDuplicateSet(set.id)} className="text-ink-faint hover:text-info p-0.5" title="Duplicar serie"><Copy size={11} /></button>
-                                    <button onClick={() => onRemoveSet(set.id)} className="text-ink-faint hover:text-danger-text p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
+                                <span className="flex gap-0.5 opacity-100 md:opacity-0 md:group-hover/row:opacity-100 transition-opacity">
+                                    <button onClick={() => onDuplicateSet(set.id)} aria-label="Duplicar serie" className="flex h-9 w-9 md:h-auto md:w-auto items-center justify-center rounded text-ink-faint hover:text-info p-2 md:p-0.5" title="Duplicar serie"><Copy size={11} /></button>
+                                    <button onClick={() => onRemoveSet(set.id)} aria-label="Eliminar serie" className="flex h-9 w-9 md:h-auto md:w-auto items-center justify-center rounded text-ink-faint hover:text-danger-text p-2 md:p-0.5" title="Eliminar serie"><Trash2 size={12} /></button>
                                 </span>
                             </div>
                             </div>
@@ -1320,7 +1324,7 @@ function SetTechniqueEditor({
             {!open ? (
                 <button
                     onClick={() => setOpen(true)}
-                    className="ml-1 text-t-2xs text-ink-faint opacity-0 transition-opacity duration-fast group-hover/row:opacity-100 hover:text-ink-muted focus-visible:opacity-100"
+                    className="ml-1 py-1 md:py-0 text-t-2xs text-ink-faint opacity-100 md:opacity-0 transition-opacity duration-fast md:group-hover/row:opacity-100 hover:text-ink-muted focus-visible:opacity-100"
                 >
                     + técnica
                 </button>

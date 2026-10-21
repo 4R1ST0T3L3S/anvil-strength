@@ -5,7 +5,7 @@ import {
     LayoutTemplate, CopyPlus, GripVertical, ChevronDown, Sparkles, Wand2,
     Flame as FlameIcon,
 } from 'lucide-react';
-import { m, AnimatePresence, Reorder, useReducedMotion } from 'framer-motion';
+import { m, AnimatePresence, Reorder, useDragControls, useReducedMotion } from 'framer-motion';
 import { type ParsedWarmupExercise } from '../../../../lib/planning/warmupParser';
 import { VolumePanel } from '../VolumePanel';
 import { CardioVolumePanel } from '../CardioVolumePanel';
@@ -284,13 +284,14 @@ export function DayEditorModal({
                     <div className="relative">
                         <button
                             onClick={() => { setOpenMenu(openMenu === 'copy' ? null : 'copy'); setCopySourceId(null); }}
-                            className={`hidden md:flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-semibold transition-colors border ${openMenu === 'copy' ? 'bg-brand/10 border-brand/40 text-brand-text' : 'bg-[var(--fill-muted)] border-[var(--border-default)] text-ink-muted hover:text-ink'}`}
+                            aria-label="Copiar ejercicio de otro día"
+                            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-t-2xs font-semibold transition-colors border ${openMenu === 'copy' ? 'bg-brand/10 border-brand/40 text-brand-text' : 'bg-[var(--fill-muted)] border-[var(--border-default)] text-ink-muted hover:text-ink'}`}
                             title="Copiar ejercicio de otro día"
                         >
-                            <CopyPlus size={14} /> Copiar de otro día
+                            <CopyPlus size={14} /> <span className="hidden md:inline">Copiar de otro día</span>
                         </button>
                         {openMenu === 'copy' && (
-                            <div className="absolute right-0 top-full mt-2 z-40 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-overlay p-3 w-72 max-h-80 overflow-y-auto">
+                            <div className="absolute right-0 top-full mt-2 z-40 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-overlay p-3 w-72 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto">
                                 {!copySourceId ? (
                                     <>
                                         <p className="text-t-2xs font-semibold text-ink-subtle mb-2">Elige el día origen</p>
@@ -348,7 +349,7 @@ export function DayEditorModal({
                             <LayoutTemplate size={14} /> <span className="hidden md:inline">Plantillas</span>
                         </button>
                         {openMenu === 'templates' && (
-                            <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 z-40 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-overlay p-3 w-[calc(100vw-2rem)] md:w-72 mx-4 md:mx-0">
+                            <div className="absolute right-0 top-full mt-2 z-40 bg-surface-raised border border-[var(--border-default)] rounded-xl shadow-overlay p-3 w-72 max-w-[calc(100vw-2rem)]">
                                 {session.exercises.length > 0 && (
                                     <div className="mb-3 pb-3 border-b border-subtle">
                                         <p className="text-t-2xs font-semibold text-ink-subtle mb-2">Guardar este día como plantilla</p>
@@ -398,7 +399,8 @@ export function DayEditorModal({
                                             </button>
                                             <button
                                                 onClick={() => onDeleteTemplate(tpl.id)}
-                                                className="p-1.5 text-ink-faint hover:text-danger-text opacity-0 group-hover/tpl:opacity-100 transition-opacity shrink-0"
+                                                aria-label={`Eliminar plantilla ${tpl.name}`}
+                                                className="p-2 md:p-1.5 text-ink-faint hover:text-danger-text opacity-100 md:opacity-0 md:group-hover/tpl:opacity-100 transition-opacity shrink-0"
                                                 title="Eliminar plantilla"
                                             >
                                                 <Trash2 size={13} />
@@ -603,58 +605,16 @@ export function DayEditorModal({
                             onReorder={(ids: string[]) => onReorder(ids)}
                             className="flex flex-col gap-2"
                         >
-                            {session.exercises.map((ex, i) => {
-                                const theme = getLiftTheme(ex.exercise?.name || '');
-                                const isSelected = ex.id === selectedExId;
-                                const spark = historyByExercise[ex.exercise?.name || ''] || [];
-                                return (
-                                    <Reorder.Item
-                                        key={ex.id}
-                                        value={ex.id}
-                                        as="div"
-                                        whileDrag={{ scale: 1.03, boxShadow: '0 12px 24px rgba(0,0,0,0.5)', zIndex: 10 }}
-                                        className={`relative shrink-0 w-full rounded-card border overflow-hidden cursor-grab active:cursor-grabbing ${
-                                            isSelected
-                                                ? `${theme.border} bg-gradient-to-r ${theme.gradient} shadow-lg`
-                                                : 'border-subtle bg-surface-raised hover:border-[var(--border-strong)]'
-                                        }`}
-                                    >
-                                        <button
-                                            onClick={() => pickExercise(ex.id)}
-                                            className="w-full text-left p-3.5 pl-8"
-                                        >
-                                            <span className={`absolute left-0 top-0 bottom-0 w-1 ${isSelected ? theme.bar : 'bg-transparent'}`} />
-                                            <GripVertical size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-ink-faint" />
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className={`text-t-2xs font-semibold px-1.5 py-0.5 rounded ${theme.bg} ${theme.accent}`}>{theme.key}</span>
-                                                <span className="text-t-2xs font-bold text-ink-subtle">#{i + 1}</span>
-                                                {/* Punto de color por parte del día — calentamiento,
-                                                    principal, accesorio, cardio—, para que se distingan
-                                                    de un vistazo en la lista sin abrir cada ejercicio. */}
-                                                <span
-                                                    aria-hidden="true"
-                                                    title={EXERCISE_SECTIONS.find(s => s.key === (ex.section ?? 'main'))?.label}
-                                                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${SECTION_STYLE[ex.section ?? 'main'].dot}`}
-                                                />
-                                                {ex.vbt_file_url && <Activity size={10} className="text-success" />}
-                                                <span className="ml-auto"><Sparkline values={spark} /></span>
-                                            </div>
-                                            <p className={`font-semibold text-sm leading-tight truncate ${isSelected ? 'text-ink' : 'text-ink-muted'}`}>
-                                                {ex.exercise?.name || 'Ejercicio'}
-                                            </p>
-                                            {ex.variant_name && (
-                                                <p className={`text-t-2xs font-bold truncate ${theme.accent}`}>{ex.variant_name}</p>
-                                            )}
-                                            <div className="flex items-center justify-between mt-1 gap-2">
-                                                <p className="text-t-2xs text-ink-subtle font-mono truncate">{summarizeSets(ex.sets)}</p>
-                                                {spark.length >= 2 && (
-                                                    <p className="text-t-2xs font-bold text-ink-subtle shrink-0">últ. {spark[spark.length - 1]}kg</p>
-                                                )}
-                                            </div>
-                                        </button>
-                                    </Reorder.Item>
-                                );
-                            })}
+                            {session.exercises.map((ex, i) => (
+                                <ReorderableExerciseRow
+                                    key={ex.id}
+                                    ex={ex}
+                                    index={i}
+                                    isSelected={ex.id === selectedExId}
+                                    spark={historyByExercise[ex.exercise?.name || ''] || []}
+                                    onSelect={() => pickExercise(ex.id)}
+                                />
+                            ))}
                         </Reorder.Group>
 
                         {/* Añadir ejercicio */}
@@ -883,5 +843,87 @@ export function DayEditorModal({
             )}
             </m.div>
         </>
+    );
+}
+
+/**
+ * FILA REORDENABLE CON ASA DEDICADA.
+ *
+ * `dragListener={false}` + `useDragControls` limita el gesto de arrastre al
+ * icono lateral (`GripVertical`) con `touch-none`. En móvil, si toda la
+ * tarjeta escuchara el arrastre dentro de un contenedor `overflow-y-auto`, el
+ * desplazamiento vertical de la lista competiría con reordenar el ejercicio.
+ */
+function ReorderableExerciseRow({
+    ex,
+    index,
+    isSelected,
+    spark,
+    onSelect,
+}: {
+    ex: ExtendedSessionExercise;
+    index: number;
+    isSelected: boolean;
+    spark: number[];
+    onSelect: () => void;
+}) {
+    const dragControls = useDragControls();
+    const theme = getLiftTheme(ex.exercise?.name || '');
+
+    return (
+        <Reorder.Item
+            value={ex.id}
+            as="div"
+            dragListener={false}
+            dragControls={dragControls}
+            whileDrag={{ scale: 1.03, boxShadow: '0 12px 24px rgba(0,0,0,0.5)', zIndex: 10 }}
+            className={`relative shrink-0 w-full rounded-card border overflow-hidden flex items-stretch ${
+                isSelected
+                    ? `${theme.border} bg-gradient-to-r ${theme.gradient} shadow-lg`
+                    : 'border-subtle bg-surface-raised hover:border-[var(--border-strong)]'
+            }`}
+        >
+            <span className={`absolute left-0 top-0 bottom-0 w-1 pointer-events-none ${isSelected ? theme.bar : 'bg-transparent'}`} />
+            <div
+                onPointerDown={(e) => dragControls.start(e)}
+                aria-label={`Reordenar ${ex.exercise?.name || 'ejercicio'}`}
+                title="Arrastra para reordenar"
+                className="flex w-11 md:w-8 shrink-0 items-center justify-center pl-1 text-ink-faint hover:text-ink cursor-grab active:cursor-grabbing touch-none select-none"
+            >
+                <GripVertical size={14} aria-hidden="true" />
+            </div>
+            <button
+                type="button"
+                onClick={onSelect}
+                className="min-w-0 flex-1 text-left p-3.5 pl-0.5"
+            >
+                <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-t-2xs font-semibold px-1.5 py-0.5 rounded ${theme.bg} ${theme.accent}`}>{theme.key}</span>
+                    <span className="text-t-2xs font-bold text-ink-subtle">#{index + 1}</span>
+                    {/* Punto de color por parte del día — calentamiento,
+                        principal, accesorio, cardio—, para que se distingan
+                        de un vistazo en la lista sin abrir cada ejercicio. */}
+                    <span
+                        aria-hidden="true"
+                        title={EXERCISE_SECTIONS.find(s => s.key === (ex.section ?? 'main'))?.label}
+                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${SECTION_STYLE[ex.section ?? 'main'].dot}`}
+                    />
+                    {ex.vbt_file_url && <Activity size={10} className="text-success" />}
+                    <span className="ml-auto"><Sparkline values={spark} /></span>
+                </div>
+                <p className={`font-semibold text-sm leading-tight truncate ${isSelected ? 'text-ink' : 'text-ink-muted'}`}>
+                    {ex.exercise?.name || 'Ejercicio'}
+                </p>
+                {ex.variant_name && (
+                    <p className={`text-t-2xs font-bold truncate ${theme.accent}`}>{ex.variant_name}</p>
+                )}
+                <div className="flex items-center justify-between mt-1 gap-2">
+                    <p className="text-t-2xs text-ink-subtle font-mono truncate">{summarizeSets(ex.sets)}</p>
+                    {spark.length >= 2 && (
+                        <p className="text-t-2xs font-bold text-ink-subtle shrink-0">últ. {spark[spark.length - 1]}kg</p>
+                    )}
+                </div>
+            </button>
+        </Reorder.Item>
     );
 }

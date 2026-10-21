@@ -3,6 +3,7 @@ import { Calendar as CalendarIcon, MapPin, Users, Star, Award, Plus, RefreshCw, 
 import { fetchCompetitionsDetailed, Competition, CompetitionSource } from '../../../services/aepService';
 import { AssignCompetitionModal } from './AssignCompetitionModal';
 import { useUser } from '../../../hooks/useUser';
+import { isAthlete, isCoach } from '../../../lib/roles';
 import { toast } from 'sonner';
 import { competitionsService } from '../../../services/competitionsService';
 import { Loader } from 'lucide-react';
@@ -161,7 +162,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="self-start flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-2"
+                        className="self-start flex items-center gap-2 min-h-[44px] md:min-h-0 text-ink-muted hover:text-ink transition-colors mb-2"
                     >
                         ← Volver al Dashboard
                     </button>
@@ -180,7 +181,7 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                     <button
                         onClick={() => load(true)}
                         disabled={refreshing || loading}
-                        className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-semibold text-ink-muted transition-colors hover:border-brand/40 hover:text-ink disabled:opacity-40"
+                        className="flex items-center gap-2 min-h-[44px] md:min-h-0 rounded-xl border border-line px-3.5 py-2 text-t-2xs font-semibold text-ink-muted transition-colors hover:border-brand/40 hover:text-ink disabled:opacity-40"
                     >
                         <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
                         {refreshing ? 'Actualizando' : 'Actualizar'}
@@ -265,20 +266,21 @@ export function CalendarSection({ onBack }: { onBack?: () => void }) {
                                             <span>{comp.sede}</span>
                                         </div>
 
-                                        <div className="flex items-center gap-2 self-end md:self-auto">
-                                            {user?.role === 'coach' && (
+                                        {/* Doble rol (entrenador y atleta): mostrar ambas acciones si corresponde */}
+                                        <div className="flex flex-wrap items-center gap-2 self-end md:self-auto">
+                                            {isCoach(user) && (
                                                 <button
                                                     onClick={() => setSelectedCompetition(comp)}
-                                                    className="px-8 py-3 bg-brand text-ink text-xs font-semibold rounded-xl hover:bg-brand-hover transition-[background-color,transform] shadow-lg active:scale-95"
+                                                    className="min-h-[44px] md:min-h-0 px-8 py-3 bg-brand text-ink text-xs font-semibold rounded-xl hover:bg-brand-hover transition-[background-color,transform] shadow-lg active:scale-95"
                                                 >
                                                     Asignar
                                                 </button>
                                             )}
-                                            {user?.role === 'athlete' && (
+                                            {isAthlete(user) && (
                                                 <button
                                                     onClick={() => handleAddSelfCompetition(comp, index)}
                                                     disabled={addingCompId === index}
-                                                    className="px-8 py-3 bg-ink text-surface-canvas text-xs font-semibold rounded-xl hover:opacity-90 transition-[background-color,opacity,transform] active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                                                    className="min-h-[44px] md:min-h-0 px-8 py-3 bg-ink text-surface-canvas text-xs font-semibold rounded-xl hover:opacity-90 transition-[background-color,opacity,transform] active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                                                 >
                                                     {addingCompId === index ? <Loader size={14} className="animate-spin" /> : <Plus size={16} />}
                                                     Añadir

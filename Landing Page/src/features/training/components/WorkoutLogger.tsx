@@ -1623,7 +1623,7 @@ function LoggerExerciseCard({
                     {sessionExercise.notes && (
                         <button
                             onClick={() => setNoteOpen(!noteOpen)}
-                            className="text-xs text-brand-text mt-1 flex items-center gap-1 hover:underline"
+                            className="text-xs text-brand-text mt-1 flex items-center gap-1 hover:underline min-h-[36px] md:min-h-0 py-1"
                         >
                             {noteOpen ? 'Ocultar notas' : 'Ver notas'} {noteOpen ? '▲' : '▼'}
                         </button>
@@ -1640,7 +1640,7 @@ function LoggerExerciseCard({
                         accept=".csv,.xlsx,.txt,.vbt"
                     />
                     {vbtUrl ? (
-                         <div className="flex items-center gap-1 text-t-2xs text-success font-bold bg-green-400/10 px-2 py-1 rounded border border-green-400/20">
+                         <div className="flex items-center gap-1 text-t-2xs text-success font-bold bg-green-400/10 min-h-[36px] md:min-h-0 px-2.5 py-1.5 md:px-2 md:py-1 rounded border border-green-400/20">
                             <FileCheck size={12} /> VBT SUBIDO
                             {taggedSetId && (
                                 <span className="text-green-300/70 normal-case font-medium">
@@ -1652,7 +1652,9 @@ function LoggerExerciseCard({
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={uploading}
-                            className="flex items-center gap-1 text-t-2xs text-ink-muted hover:text-ink bg-surface-sunken hover:bg-surface-sunken px-2 py-1 rounded border border-[var(--border-default)] transition-colors"
+                            type="button"
+                            aria-label="Subir archivo VBT"
+                            className="relative flex items-center gap-1 text-t-2xs text-ink-muted hover:text-ink bg-surface-sunken hover:bg-surface-sunken min-h-[36px] px-3 py-1.5 md:min-h-0 md:px-2 md:py-1 rounded border border-[var(--border-default)] transition-colors active:scale-95 before:absolute before:-inset-1 before:content-[''] md:before:hidden"
                         >
                             {uploading ? <Loader size={12} className="animate-spin" /> : <UploadCloud size={12} />}
                             {uploading ? "SUBIENDO..." : "+ VBT"}

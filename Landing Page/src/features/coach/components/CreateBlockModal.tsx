@@ -101,8 +101,33 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
     };
 
     return (
-        <Modal open={isOpen} onClose={onClose} title="Nuevo bloque" size="xl" dismissible={!loading}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-8 md:flex-row">
+        <Modal
+            open={isOpen}
+            onClose={onClose}
+            title="Nuevo bloque"
+            size="xl"
+            dismissible={!loading}
+            footer={
+                <>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-field px-4 py-3 text-t-sm font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink min-h-[44px]"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        form="create-block-form"
+                        disabled={loading}
+                        className="flex items-center justify-center gap-2 rounded-field bg-brand px-5 py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40 min-h-[44px]"
+                    >
+                        {loading ? <Loader size={17} className="animate-spin" /> : <><Save size={17} aria-hidden="true" /> Crear bloque</>}
+                    </button>
+                </>
+            }
+        >
+            <form id="create-block-form" onSubmit={handleSubmit} className="flex flex-col gap-8 md:flex-row">
                 {/* Columna izquierda: datos */}
                 <div className="flex-1 space-y-6">
                     <label className="block space-y-1.5">
@@ -144,31 +169,14 @@ export function CreateBlockModal({ isOpen, onClose, athleteId, onBlockCreated }:
                                     aria-label={c.label}
                                     title={c.label}
                                     className={`h-9 w-9 rounded-pill border-2 transition-[border-color,box-shadow,transform] duration-fast ease-snap ${
- color === c.hex
- ? 'scale-110 border-ink shadow-raise'
- : 'border-transparent hover:scale-105 hover:border-[var(--border-strong)]'
- }`}
+                                        color === c.hex
+                                            ? 'scale-110 border-ink shadow-raise'
+                                            : 'border-transparent hover:scale-105 hover:border-[var(--border-strong)]'
+                                    }`}
                                     style={{ backgroundColor: c.hex }}
                                 />
                             ))}
                         </div>
-                    </div>
-
-                    <div className="flex gap-2.5 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 rounded-field px-4 py-3 text-t-sm font-bold text-ink-muted transition-colors duration-fast hover:bg-surface-raised hover:text-ink"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-field bg-brand px-4 py-3 text-t-sm font-semibold text-brand-ink transition-colors duration-fast ease-snap hover:bg-brand-hover disabled:opacity-40"
-                        >
-                            {loading ? <Loader size={17} className="animate-spin" /> : <><Save size={17} aria-hidden="true" /> Crear bloque</>}
-                        </button>
                     </div>
                 </div>
 

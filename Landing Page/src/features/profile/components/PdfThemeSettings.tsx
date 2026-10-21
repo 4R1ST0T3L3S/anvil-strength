@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FileUp, Loader, Plus, Save, Trash2, Undo2, Upload, X } from 'lucide-react';
+import { ExternalLink, FileUp, Loader, Plus, Save, Trash2, Undo2, Upload, X } from 'lucide-react';
+import { cn } from '../../../lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile } from '../../../hooks/useUser';
@@ -75,6 +76,27 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [saving, setSaving] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    // En pantallas estrechas (< lg) separamos formulario y vista previa para no obligar a scroll vertical kilométrico
+    const [tabMovil, setTabMovil] = useState<'ajustes' | 'preview'>('ajustes');
+
+    const abrirPdfEnPestana = () => {
+        if (!previewUrl) return;
+        try {
+            const arr = previewUrl.split(',');
+            const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            const blob = new Blob([u8arr], { type: mime });
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+        } catch {
+            window.open(previewUrl, '_blank');
+        }
+    };
 
     // El escaneo de una plantilla ajena. `undo` guarda lo que había antes
     // para que probar un PDF no sea una decisión irreversible. Va en estado
@@ -255,7 +277,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                 <div className="min-w-0">
                     <button
                         onClick={onBack}
-                        className="mb-2 text-t-xs font-bold uppercase tracking-widest text-ink-subtle transition-colors hover:text-ink"
+                        className="mb-2 inline-flex min-h-[44px] items-center text-t-xs font-bold uppercase tracking-widest text-ink-subtle transition-colors hover:text-ink"
                     >
                         ← Mi perfil
                     </button>
@@ -274,15 +296,44 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                 </button>
             </header>
 
+            {/* Conmutador en móvil para alternar entre formulario y vista previa sin scroll kilométrico */}
+            <div className="mb-6 flex rounded-field bg-surface-sunken p-1 lg:hidden">
+                <button
+                    type="button"
+                    onClick={() => setTabMovil('ajustes')}
+                    className={cn(
+                        'flex-1 rounded-[6px] py-2.5 text-center text-t-sm font-semibold transition-colors min-h-[44px]',
+                        tabMovil === 'ajustes'
+                            ? 'bg-surface-raised text-ink shadow-sm'
+                            : 'text-ink-muted hover:text-ink'
+                    )}
+                >
+                    Ajustes
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setTabMovil('preview')}
+                    className={cn(
+                        'flex-1 rounded-[6px] py-2.5 text-center text-t-sm font-semibold transition-colors min-h-[44px]',
+                        tabMovil === 'preview'
+                            ? 'bg-surface-raised text-ink shadow-sm'
+                            : 'text-ink-muted hover:text-ink'
+                    )}
+                >
+                    Vista previa
+                </button>
+            </div>
+
             <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
                 {/* ------------------------------------------------- Ajustes */}
-                <div className="space-y-5 lg:order-1">
+                <div className={cn('space-y-5 lg:order-1', tabMovil === 'preview' && 'hidden lg:block')}>
                     <Section title="Copiar un PDF que ya usas">
                         <p className="-mt-1 text-t-xs leading-relaxed text-ink-muted">
                             Sube la hoja que ya le mandas a tus atletas y Anvil la mide: sus colores, su
                             tipografía, su logotipo y las columnas de su tabla. A partir de ahí, cada semana
                             que descargues sale con ese diseño.
                         </p>
+
 
                         <div className="flex flex-wrap items-center gap-2.5">
                             <button
@@ -320,6 +371,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                             descarta. La tipografía se sustituye por la más parecida de las tres que admite el
                             formato.
                         </p>
+
                     </Section>
 
                     <Section title="Punto de partida">
@@ -671,11 +723,23 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                 </div>
 
                 {/* ------------------------------------------------- Vista previa */}
-                <div className="lg:order-2">
+                <div className={cn('lg:order-2', tabMovil === 'ajustes' && 'hidden lg:block')}>
                     <div className="lg:sticky lg:top-6">
-                        <p className="mb-2 text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">
-                            Vista previa
-                        </p>
+                        <div className="mb-2 flex items-center justify-between">
+                            <p className="text-t-2xs font-bold uppercase tracking-widest text-ink-subtle">Vista previa</p>
+                            {previewUrl && (
+                                <button
+                                    type="button"
+                                    onClick={abrirPdfEnPestana}
+                                    className="flex items-center gap-1.5 text-t-xs font-semibold text-brand-text hover:underline min-h-[44px] px-2"
+                                >
+                                    <ExternalLink size={14} aria-hidden="true" />
+                                    <span>Abrir en pestaña</span>
+                                </button>
+                            )}
+                        </div>
+
+
                         <div
                             className="overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-sunken"
                             style={{ aspectRatio: `${pageDimensions(resolved).w} / ${pageDimensions(resolved).h}` }}
@@ -695,6 +759,7 @@ export function PdfThemeSettings({ user, onBack }: { user: UserProfile; onBack: 
                         <p className="mt-2 text-t-xs leading-relaxed text-ink-subtle">
                             Es el mismo documento que descargará el atleta, con datos de ejemplo.
                         </p>
+
                     </div>
                 </div>
             </div>

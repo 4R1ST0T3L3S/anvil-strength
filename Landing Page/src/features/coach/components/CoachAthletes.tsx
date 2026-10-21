@@ -359,7 +359,9 @@ export function CoachAthletes({ user, onSelectAthlete, onOpenChat, onBack }: Coa
 
                         <button
                             onClick={() => setIsInviteOpen(true)}
-                            className="flex items-center gap-2 rounded-field border border-[var(--border-default)] px-3 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
+                            aria-label="Invitar con enlace"
+                            title="Invitar con enlace"
+                            className="flex min-h-[44px] min-w-[44px] justify-center sm:min-h-0 sm:min-w-0 items-center gap-2 rounded-field border border-[var(--border-default)] px-3 py-2.5 text-t-sm font-bold text-ink-muted transition-colors duration-fast ease-snap hover:border-[var(--border-strong)] hover:text-ink"
                         >
                             <Link2 size={16} aria-hidden="true" />
                             <span className="hidden sm:inline">Enlace</span>
@@ -632,7 +634,7 @@ function AthleteCard({
                             <button
                                 onClick={(e) => { e.stopPropagation(); onChat(); }}
                                 aria-label={`Escribir a ${athlete.full_name}`}
-                                className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-sunken hover:text-ink"
+                                className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-8 md:w-8 items-center justify-center rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-surface-sunken hover:text-ink"
                             >
                                 <MessageSquare size={16} aria-hidden="true" />
                             </button>
@@ -642,7 +644,7 @@ function AthleteCard({
                                     onClick={(e) => { e.stopPropagation(); onInvite(); }}
                                     aria-label={`Enviar el acceso por correo a ${athlete.full_name}`}
                                     title="Mandarle el acceso por correo"
-                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand-text disabled:opacity-40"
+                                    className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-8 md:w-8 items-center justify-center rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand-text disabled:opacity-40"
                                 >
                                     <Mail size={16} aria-hidden="true" />
                                 </button>
@@ -655,7 +657,7 @@ function AthleteCard({
                                     disabled={copyingClaimLink}
                                     aria-label={`Copiar enlace de acceso de ${athlete.full_name}`}
                                     title="Copiar enlace de acceso"
-                                    className="rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand-text disabled:opacity-40"
+                                    className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-8 md:w-8 items-center justify-center rounded-field p-2 text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--brand-quiet)] hover:text-brand-text disabled:opacity-40"
                                 >
                                     {copyingClaimLink
                                         ? <Loader size={16} className="animate-spin" aria-hidden="true" />
@@ -675,7 +677,7 @@ function AthleteCard({
                             onClick={(e) => { e.stopPropagation(); onRemove(); }}
                             aria-label={`Quitar a ${athlete.full_name} del equipo`}
                             title="Quitar del equipo"
-                            className="rounded-field p-2 text-ink-faint opacity-100 transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger-text [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100"
+                            className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-8 md:w-8 items-center justify-center rounded-field p-2 text-ink-faint opacity-100 transition-colors duration-fast ease-snap hover:bg-[var(--danger-quiet)] hover:text-danger-text md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
                         >
                             <UserMinus size={16} aria-hidden="true" />
                         </button>

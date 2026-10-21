@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, HeartPulse } from 'lucide-react';
 import { TrainingSet } from '../../../types/training';
 import { writeQueue } from '../../../lib/offlineQueue';
@@ -42,18 +42,42 @@ function formatDuration(seconds: number): string {
     return `${h} h ${min} min`;
 }
 
+/** Convierte métricas de cardio guardadas en vbt_metrics a valores para los inputs. */
+function parseInitialCardio(metrics?: Record<string, number> | null) {
+    if (!metrics) return { duration: '', hr: '', distance: '' };
+    const durMin = metrics.duration_actual_seconds != null
+        ? Math.round((metrics.duration_actual_seconds / 60) * 100) / 100
+        : null;
+    return {
+        duration: durMin != null ? String(durMin) : '',
+        hr: metrics.hr_avg != null ? String(metrics.hr_avg) : '',
+        distance: metrics.distance_km != null ? String(metrics.distance_km) : '',
+    };
+}
+
 export function LoggerCardioRow({
     set, displayIndex, needsExpansion = false, onExpand, groupIndex = 0, onChange,
 }: LoggerCardioRowProps) {
-    const [duration, setDuration] = useState('');
-    const [hr, setHr] = useState('');
-    const [distance, setDistance] = useState('');
+    // Se arranca con lo ya guardado en vbt_metrics: al reabrir el entrenamiento
+    // los campos no salen vacíos. No se resincroniza al cambiar `set.id`, porque
+    // ese id cambia al expandir la serie plantilla mientras se escribe y
+    // borraría lo tecleado.
+    const initial = parseInitialCardio(set.vbt_metrics);
+    const [duration, setDuration] = useState(initial.duration);
+    const [hr, setHr] = useState(initial.hr);
+    const [distance, setDistance] = useState(initial.distance);
     const [done, setDone] = useState(!!set.is_completed);
     const [saving, setSaving] = useState(false);
 
     const targetId = useRef(set.id);
     const expanding = useRef<Promise<string | null> | null>(null);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timer.current) clearTimeout(timer.current);
+        };
+    }, []);
 
     const targetIsDuration = set.target_metric === 'duracion_seg';
     const targetIsDistance = set.target_metric === 'distancia_km';
@@ -141,7 +165,7 @@ export function LoggerCardioRow({
                 onChange={(e) => scheduleField(setDuration, e.target.value)}
                 placeholder="min"
                 aria-label="Duración realizada, en minutos"
-                className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-brand"
+                className="h-11 md:h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-brand"
             />
             <input
                 type="text"
@@ -150,7 +174,7 @@ export function LoggerCardioRow({
                 onChange={(e) => scheduleField(setHr, e.target.value)}
                 placeholder="ppm"
                 aria-label="Frecuencia cardíaca media"
-                className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-brand"
+                className="h-11 md:h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-brand"
             />
             <input
                 type="text"
@@ -159,7 +183,7 @@ export function LoggerCardioRow({
                 onChange={(e) => scheduleField(setDistance, e.target.value)}
                 placeholder="km"
                 aria-label="Distancia recorrida"
-                className="h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-brand"
+                className="h-11 md:h-9 w-16 rounded-field border border-[var(--border-default)] bg-surface-sunken text-center text-t-sm tabular-nums text-ink placeholder:text-ink-faint focus:border-brand"
             />
 
             <button
@@ -167,7 +191,7 @@ export function LoggerCardioRow({
                 disabled={saving}
                 aria-pressed={done}
                 aria-label={done ? 'Serie hecha' : 'Marcar como hecha'}
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-field border transition-colors duration-fast ease-snap disabled:opacity-60 ${done
+                className={`relative flex h-11 w-11 md:h-9 md:w-9 shrink-0 items-center justify-center rounded-field border transition-colors duration-fast ease-snap active:scale-[0.95] disabled:opacity-60 before:absolute before:-inset-1 before:content-[''] md:before:hidden ${done
                     ? 'border-success/40 bg-[var(--success-quiet)] text-success'
                     : 'border-[var(--border-default)] bg-surface-sunken text-ink-faint hover:text-ink'
                     }`}

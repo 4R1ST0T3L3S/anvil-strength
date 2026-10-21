@@ -115,7 +115,7 @@ export function CampoGramos({
                     if (e.key === 'Enter') { e.currentTarget.blur(); }
                     if (e.key === 'Escape') { cancelado.current = true; setTexto(String(valor)); e.currentTarget.blur(); }
                 }}
-                className="h-9 w-14 bg-transparent px-2 text-right text-t-sm font-semibold tabular-nums text-ink focus-visible:outline-none disabled:opacity-60"
+                className="h-11 md:h-9 w-14 bg-transparent px-2 text-right text-t-sm font-semibold tabular-nums text-ink focus-visible:outline-none disabled:opacity-60"
             />
             <span className="text-t-xs text-ink-subtle">g</span>
         </span>

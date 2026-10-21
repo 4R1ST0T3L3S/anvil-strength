@@ -41,7 +41,11 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         bet: ArenaBet;
         option: ArenaOption | null;
         predictionValue?: number;
+
+
     }[]>([]);
+    const [parlayAmount, setParlayAmount] = useState<number>(100);
+
 
     /**
      * Las apuestas de la Arena, con sondeo cada tres segundos.
@@ -168,13 +172,17 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
         }
     };
 
-    const addToSlip = (bet: ArenaBet & { options: ArenaOption[] }, option: ArenaOption | null) => {
+    const addToSlip = (bet: ArenaBet & { options: ArenaOption[] }, option: ArenaOption | null, predictionValue?: number) => {
+        if (bet.type === 'prediction' && (predictionValue === undefined || Number.isNaN(predictionValue))) {
+            setBettingModal({ isOpen: true, bet, option: null });
+            return;
+        }
         // Check if bet already in slip
         if (betSlip.find(s => s.bet.id === bet.id)) {
             toast.error('Ya tienes una apuesta de este combate en el boleto');
             return;
         }
-        setBetSlip(prev => [...prev, { bet, option }]);
+        setBetSlip(prev => [...prev, { bet, option, predictionValue }]);
         toast.success('Añadido al boleto');
     };
 
@@ -245,13 +253,13 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                 </div>
 
                 <div className="flex items-center gap-6">
-                    <div className="hidden md:flex flex-col items-end">
+                    <div className="flex flex-col items-end">
                         <span className="text-t-2xs font-semibold text-ink-subtle leading-none mb-1">Tu Saldo</span>
                         <span className="text-lg font-semibold text-warning leading-none">
                             {pointsData?.balance?.toLocaleString() || 0} <span className="text-xs">AC</span>
                         </span>
                     </div>
-                    <Link to={slugCompeticion ? '/dashboard/club' : '/dashboard'} aria-label="Cerrar la Arena" className="p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
+                    <Link to={slugCompeticion ? '/dashboard/club' : '/dashboard'} aria-label="Cerrar la Arena" className="h-11 w-11 md:h-auto md:w-auto flex items-center justify-center p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
                         <X size={24} />
                     </Link>
                 </div>
@@ -429,8 +437,9 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                 option={bettingModal.option}
                 balance={pointsData?.balance || 0}
                 onConfirm={handlePlaceSingleBet}
-                onAddToSlip={(b, o) => {
-                    addToSlip(b as any, o);
+                onAddToSlip={(b, o, predictionValue) => {
+                    addToSlip(b as any, o, predictionValue);
+
                     setBettingModal({ isOpen: false, bet: null, option: null });
                 }}
             />
@@ -449,7 +458,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                 <h3 className="text-xs font-semibold text-ink flex items-center gap-2">
                                     <Swords size={14} /> Boleto de Apuestas ({betSlip.length})
                                 </h3>
-                                <button onClick={() => setBetSlip([])} className="text-ink-subtle hover:text-ink">
+                                <button onClick={() => setBetSlip([])} aria-label="Vaciar boleto" className="h-11 w-11 md:h-auto md:w-auto flex items-center justify-center -mr-2 md:mr-0 text-ink-subtle hover:text-ink">
                                     <Trash2 size={16} />
                                 </button>
                             </div>
@@ -463,7 +472,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                                 Gana: <span className="text-brand-text">{leg.option?.name || leg.predictionValue}</span>
                                             </p>
                                         </div>
-                                        <button onClick={() => removeFromSlip(leg.bet.id)} className="p-2 text-ink-subtle hover:text-brand-text transition-colors">
+                                        <button onClick={() => removeFromSlip(leg.bet.id)} aria-label="Quitar del boleto" className="h-11 w-11 md:h-auto md:w-auto flex items-center justify-center p-2 text-ink-subtle hover:text-brand-text transition-colors">
                                             <X size={14} />
                                         </button>
                                     </div>
@@ -477,11 +486,33 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                                             <span className="text-t-2xs font-semibold text-ink-subtle">Multiplicador Estimado</span>
                                             <span className="text-sm font-semibold text-warning">x{Math.pow(2, betSlip.length - 1).toFixed(1)}</span>
                                         </div>
+                                        <div className="flex items-center justify-between gap-3 px-2">
+                                            <label htmlFor="parlay-amount-input" className="text-t-2xs font-semibold text-ink-subtle">
+                                                Importe a apostar
+                                            </label>
+                                            <div className="relative flex-1 max-w-[160px]">
+                                                <input
+                                                    id="parlay-amount-input"
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    min={1}
+                                                    value={parlayAmount || ''}
+                                                    onChange={(e) => setParlayAmount(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                                                    placeholder="100"
+                                                    aria-label="Cantidad de Anvil Coins para la combinada"
+                                                    className="w-full min-h-[44px] bg-black border border-line px-3 py-2 pr-9 rounded-xl font-semibold text-sm text-ink text-right focus:border-yellow-500/50 transition-colors"
+                                                />
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-t-2xs font-semibold text-warning pointer-events-none">
+                                                    AC
+                                                </span>
+                                            </div>
+                                        </div>
                                         <button 
-                                            onClick={() => handlePlaceParlay(100)} // Valor por defecto o abrir modal de importe
-                                            className="w-full py-4 bg-brand hover:bg-brand-hover text-ink font-semibold rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
+                                            onClick={() => handlePlaceParlay(parlayAmount)}
+                                            disabled={parlayAmount <= 0}
+                                            className="w-full py-4 bg-brand hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed text-ink font-semibold rounded-2xl transition-colors shadow-lg flex items-center justify-center gap-3"
                                         >
-                                            Realizar Combinada (100 AC)
+                                            Realizar Combinada ({parlayAmount} AC)
                                             <Send size={16} />
                                         </button>
                                     </div>

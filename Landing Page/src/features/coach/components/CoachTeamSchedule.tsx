@@ -127,15 +127,15 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
         });
     };
 
-    if (loading) return <div className="p-8 text-center">Cargando agenda...</div>;
+    if (loading) return <div className="p-4 md:p-8 text-center">Cargando agenda...</div>;
 
     return (
-        <div className="p-8">
+        <div className="p-4 md:p-8">
             <header className="mb-6">
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="flex items-center gap-2 text-ink-muted hover:text-ink transition-colors mb-3 text-xs font-bold"
+                        className="flex items-center gap-2 min-h-[44px] md:min-h-0 text-ink-muted hover:text-ink transition-colors mb-3 text-xs font-bold"
                     >
                         ← Volver al Dashboard
                     </button>
@@ -203,7 +203,8 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                                             </div>
                                             <button
                                                 onClick={() => handleUnassign(entry.id, entry.profiles?.full_name || 'Atleta', comp.name)}
-                                                className="p-1.5 text-ink-subtle hover:text-danger-text rounded-md transition-colors"
+                                                className="h-11 w-11 md:h-9 md:w-9 flex items-center justify-center shrink-0 text-ink-subtle hover:text-danger-text rounded-md transition-colors"
+                                                aria-label="Desasignar atleta"
                                                 title="Desasignar atleta"
                                             >
                                                 <Trash2 size={14} />
@@ -214,9 +215,10 @@ export function CoachTeamSchedule({ user, onBack }: { user: UserProfile, onBack?
                             </div>
                             
                             {/* Side tag */}
-                            <div className="absolute right-0 top-0 h-full w-14 bg-surface-sunken hidden md:flex flex-col items-center justify-center border-l border-subtle">
-                                <span className="text-xl font-semibold text-brand-text">{comp.entries.length}</span>
-                                <span className="text-t-2xs font-bold text-ink-subtle mt-1">Convoc.</span>
+                            {/* Contador de convocados: fila compacta en móvil, banda lateral fija desde md: */}
+                            <div className="flex items-center justify-between px-4 py-2.5 border-t border-subtle bg-surface-sunken md:absolute md:right-0 md:top-0 md:h-full md:w-14 md:flex-col md:justify-center md:border-t-0 md:border-l md:p-0">
+                                <span className="text-sm md:text-xl font-semibold text-brand-text">{comp.entries.length}</span>
+                                <span className="text-t-2xs font-bold text-ink-subtle md:mt-1">Convoc.</span>
                             </div>
                         </m.div>
                     ))

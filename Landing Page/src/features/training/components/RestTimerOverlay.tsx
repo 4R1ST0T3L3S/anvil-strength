@@ -36,8 +36,6 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-
-
     return (
         <div className="fixed bottom-24 left-4 right-4 z-[100] animate-rise">
             <div className={cn(
@@ -70,24 +68,30 @@ export function RestTimerOverlay({ endTime, onClose, onAddSeconds }: RestTimerOv
                     {!isFinished && (
                         <>
                             <button
+                                type="button"
                                 onClick={() => onAddSeconds(-10)}
-                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
+                                aria-label="Restar 10 segundos"
+                                className="relative flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-full border border-subtle bg-surface-sunken text-ink-muted transition-[color,transform] hover:text-ink active:scale-95 before:absolute before:-inset-1 before:content-[''] md:before:hidden"
                             >
-                                <Minus size={14} />
+                                <Minus size={16} className="md:h-3.5 md:w-3.5" />
                             </button>
                             <button
+                                type="button"
                                 onClick={() => onAddSeconds(10)}
-                                className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
+                                aria-label="Añadir 10 segundos"
+                                className="relative flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-full border border-subtle bg-surface-sunken text-ink-muted transition-[color,transform] hover:text-ink active:scale-95 before:absolute before:-inset-1 before:content-[''] md:before:hidden"
                             >
-                                <Plus size={14} />
+                                <Plus size={16} className="md:h-3.5 md:w-3.5" />
                             </button>
                         </>
                     )}
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="ml-2 w-8 h-8 rounded-full bg-[var(--fill-muted)] flex items-center justify-center text-ink-muted hover:text-ink border border-subtle active:scale-95 transition-[color,transform]"
+                        aria-label="Cerrar temporizador de descanso"
+                        className="relative ml-2 flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-full border border-subtle bg-[var(--fill-muted)] text-ink-muted transition-[color,transform] hover:text-ink active:scale-95 before:absolute before:-inset-1 before:content-[''] md:before:hidden"
                     >
-                        <X size={16} />
+                        <X size={16} className="md:h-4 md:w-4" />
                     </button>
                 </div>
             </div>

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useUser, UserProfile } from '../../../hooks/useUser';
 import { adminService } from '../services/adminService';
 import { isAdmin } from '../../../lib/roles';
-import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe, Trophy } from 'lucide-react';
+import { ArrowLeft, Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLAVES } from '../../../lib/queryKeys';
@@ -236,6 +236,15 @@ export function AdminDashboard() {
         <div className="min-h-[100dvh] bg-surface-sunken text-ink pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
 
+                {/* Botón para volver al panel principal de la app */}
+                <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    className="mb-4 inline-flex min-h-[44px] items-center gap-2 text-t-sm font-semibold text-ink-subtle hover:text-ink transition-colors"
+                >
+                    <ArrowLeft size={16} aria-hidden="true" /> Volver al panel
+                </button>
+
                 {/* Header Section */}
                 <div className="mb-8 border-b border-line pb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -252,14 +261,14 @@ export function AdminDashboard() {
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
                             <button
                                 onClick={() => navigate('/web')}
-                                className="flex items-center justify-center gap-2 bg-surface-sunken hover:bg-[var(--fill-hover)] text-info border border-line px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap shadow-lg active:scale-95"
+                                className="flex items-center justify-center gap-2 bg-surface-sunken hover:bg-[var(--fill-hover)] text-info border border-line px-4 py-2.5 rounded-lg font-bold transition-colors whitespace-nowrap shadow-lg active:scale-95 min-h-[44px] w-full sm:w-auto"
                             >
                                 <Globe size={18} />
                                 Ver Web
                             </button>
                             <button
                                 onClick={() => navigate('/admin/web')}
-                                className="flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover text-brand-ink px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap active:scale-95"
+                                className="flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover text-brand-ink px-4 py-2.5 rounded-lg font-bold transition-colors whitespace-nowrap active:scale-95 min-h-[44px] w-full sm:w-auto"
                             >
                                 <Trophy size={18} />
                                 Atletas y logros de la web
@@ -268,7 +277,7 @@ export function AdminDashboard() {
                                 <button
                                     onClick={handleSaveChanges}
                                     disabled={isSaving}
-                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-ink px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50"
+                                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-ink px-4 py-2.5 rounded-lg font-bold transition-colors whitespace-nowrap shadow-lg shadow-green-900/20 disabled:opacity-50 min-h-[44px] w-full sm:w-auto"
                                 >
                                     {isSaving ? <Loader className="animate-spin" size={18} /> : <Save size={18} />}
                                     Guardar Cambios ({pendingChanges.length})
@@ -280,7 +289,7 @@ export function AdminDashboard() {
                                     placeholder="Buscar por nombre o email..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-2 rounded-lg focus:border-brand transition-colors"
+                                    className="w-full bg-surface-sunken border border-line text-ink pl-10 pr-4 py-2.5 min-h-[44px] rounded-lg focus:border-brand transition-colors text-sm"
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={18} />
                             </div>
@@ -297,7 +306,7 @@ export function AdminDashboard() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as TabType)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-[background-color,border-color,box-shadow,color] ${
+                                className={`flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-lg font-bold text-sm transition-[background-color,border-color,box-shadow,color] ${
  isActive 
  ? 'bg-brand text-ink shadow-lg shadow-brand/20' 
  : 'bg-surface-sunken text-ink-muted border border-subtle hover:border-strong hover:text-ink'
@@ -332,7 +341,178 @@ export function AdminDashboard() {
                     </div>
                 ) : (
                     <div className="bg-surface-sunken border border-line rounded-xl overflow-hidden shadow-overlay">
-                        <div className="overflow-x-auto">
+                        {/* Vista móvil: tarjetas apiladas para gestionar sin requerir scroll horizontal */}
+                        <div className="md:hidden divide-y divide-subtle">
+                            {filteredUsers.length === 0 ? (
+                                <div className="p-8 text-center text-ink-subtle">
+                                    No se encontraron usuarios
+                                </div>
+                            ) : (
+                                filteredUsers.map((user) => (
+                                    <div key={user.id} className="p-4 space-y-3 bg-surface-sunken">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                {renderUserAvatar(user)}
+                                                <p className="mt-1 text-xs text-ink-subtle truncate">
+                                                    {user.email || 'Sin correo'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {activeTab === 'todos' && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-subtle">
+                                                <div>
+                                                    <label className="block text-2xs font-bold text-ink-subtle mb-1">Rol</label>
+                                                    <div className="relative">
+                                                        <select
+                                                            value={user.role}
+                                                            onChange={(e) => changeRole(user.id, e.target.value as 'coach' | 'athlete' | 'nutritionist')}
+                                                            className={`w-full appearance-none bg-surface-sunken border rounded-lg px-3 py-2.5 text-sm font-bold cursor-pointer transition-colors min-h-[44px] ${user.role === 'coach'
+                                                                ? 'border-indigo-500/30 text-indigo-400'
+                                                                : user.role === 'nutritionist'
+                                                                ? 'border-emerald-500/30 text-success'
+                                                                : 'border-line text-ink'
+                                                            }`}
+                                                        >
+                                                            <option value="athlete">Atleta</option>
+                                                            <option value="coach">Entrenador</option>
+                                                            <option value="nutritionist">Nutricionista</option>
+                                                        </select>
+                                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink-subtle">
+                                                            <Shield size={14} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-2xs font-bold text-ink-subtle mb-1">Acceso</label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleAccess(user.id, user.has_access)}
+                                                        className={`flex items-center justify-center gap-2 px-4 py-2.5 w-full rounded-lg font-bold text-sm transition-all shadow-md min-h-[44px] ${user.has_access
+                                                            ? 'bg-success-quiet text-success border border-green-500/30'
+                                                            : 'bg-danger-quiet text-danger-text border border-danger/30'
+                                                        }`}
+                                                    >
+                                                        {user.has_access ? (
+                                                            <>
+                                                                <UserCheck size={16} /> Alta
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <UserX size={16} /> Baja
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'atletas' && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-subtle">
+                                                <div>
+                                                    <label className="block text-2xs font-bold text-ink-subtle mb-1">Entrenador</label>
+                                                    <div className="relative">
+                                                        <select
+                                                            value={user.coach_id || 'unassigned'}
+                                                            onChange={(e) => changeCoach(user.id, e.target.value)}
+                                                            className="w-full appearance-none bg-surface-sunken border border-line rounded-lg px-3 py-2.5 text-sm text-ink font-semibold cursor-pointer min-h-[44px]"
+                                                        >
+                                                            <option value="unassigned" className="text-ink-subtle">Sin asignar</option>
+                                                            {coaches.map(c => (
+                                                                <option key={c.id} value={c.id} className="text-indigo-400">{c.full_name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink-subtle">
+                                                            <Dumbbell size={14} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-2xs font-bold text-ink-subtle mb-1">Nutricionista</label>
+                                                    <div className="relative">
+                                                        <select
+                                                            value={user.nutritionist_id || 'unassigned'}
+                                                            onChange={(e) => changeNutritionist(user.id, e.target.value)}
+                                                            className="w-full appearance-none bg-surface-sunken border border-line rounded-lg px-3 py-2.5 text-sm text-ink font-semibold cursor-pointer min-h-[44px]"
+                                                        >
+                                                            <option value="unassigned" className="text-ink-subtle">Sin asignar</option>
+                                                            {nutritionists.map(n => (
+                                                                <option key={n.id} value={n.id} className="text-success">{n.full_name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-ink-subtle">
+                                                            <Apple size={14} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'entrenadores' && (
+                                            <div className="space-y-3 pt-2 border-t border-subtle">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-bold text-ink-subtle">Color:</span>
+                                                        <input
+                                                            type="color"
+                                                            value={user.brand_color || '#dc2626'}
+                                                            onChange={(e) => setUsers(users.map(u => u.id === user.id ? { ...u, brand_color: e.target.value } : u))}
+                                                            onBlur={(e) => updateBrandColor(user.id, e.target.value)}
+                                                            aria-label="Color de marca"
+                                                            className="w-10 h-10 rounded cursor-pointer border-0 p-0 bg-transparent flex-shrink-0"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-bold text-ink-subtle">Logo:</span>
+                                                        {user.logo_url && (
+                                                            <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-[var(--fill-muted)] rounded flex-shrink-0" />
+                                                        )}
+                                                        <label className="text-xs font-bold bg-surface-sunken hover:bg-[var(--fill-pressed)] px-3 py-2 border border-strong rounded cursor-pointer transition-colors whitespace-nowrap text-ink min-h-[40px] flex items-center justify-center">
+                                                            Subir
+                                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-2xs font-bold text-ink-subtle mb-1">Atletas Asignados:</span>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {users.filter(u => u.coach_id === user.id).length > 0 ? (
+                                                            users.filter(u => u.coach_id === user.id).map(athlete => (
+                                                                <span key={athlete.id} className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded text-xs font-bold">
+                                                                    {athlete.full_name}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-ink-subtle text-xs">Ningún atleta asignado</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'nutricionistas' && (
+                                            <div className="pt-2 border-t border-subtle">
+                                                <span className="block text-2xs font-bold text-ink-subtle mb-1">Atletas Asignados:</span>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {users.filter(u => u.nutritionist_id === user.id).length > 0 ? (
+                                                        users.filter(u => u.nutritionist_id === user.id).map(athlete => (
+                                                            <span key={athlete.id} className="bg-success-quiet text-success border border-success/20 px-2 py-1 rounded text-xs font-bold">
+                                                                {athlete.full_name}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-ink-subtle text-xs">Ningún atleta asignado</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Vista escritorio: tabla completa */}
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-surface-sunken border-b border-line text-sm font-bold text-ink-muted">
@@ -480,7 +660,8 @@ export function AdminDashboard() {
                                                                 value={user.brand_color || '#dc2626'} 
                                                                 onChange={(e) => setUsers(users.map(u => u.id === user.id ? { ...u, brand_color: e.target.value } : u))}
                                                                 onBlur={(e) => updateBrandColor(user.id, e.target.value)}
-                                                                className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent flex-shrink-0"
+                                                                aria-label="Color de marca"
+                                                                className="w-10 h-10 md:w-8 md:h-8 rounded cursor-pointer border-0 p-0 bg-transparent flex-shrink-0"
                                                             />
                                                         </td>
                                                         <td className="p-4">
@@ -488,7 +669,7 @@ export function AdminDashboard() {
                                                                 {user.logo_url && (
                                                                     <img src={user.logo_url} alt="Logo" className="w-8 h-8 object-contain bg-[var(--fill-muted)] rounded flex-shrink-0" />
                                                                 )}
-                                                                <label className="text-t-2xs font-bold bg-surface-sunken hover:bg-[var(--fill-pressed)] px-2 py-1.5 border border-strong rounded cursor-pointer transition-colors whitespace-nowrap text-ink">
+                                                                <label className="text-t-xs md:text-t-2xs font-bold bg-surface-sunken hover:bg-[var(--fill-pressed)] px-3 py-2 md:px-2 md:py-1.5 border border-strong rounded cursor-pointer transition-colors whitespace-nowrap text-ink min-h-[38px] md:min-h-0 flex items-center justify-center">
                                                                     Subir
                                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleLogoUpload(user.id, e.target.files[0])} />
                                                                 </label>

@@ -295,7 +295,7 @@ export function AthleteHistoryTab({ athleteId }: AthleteHistoryTabProps) {
                                         <button
                                             onClick={() => handleDelete(mark)}
                                             aria-label={`Eliminar ${markLabel(mark.reps).toLowerCase()} de ${ex.name}`}
-                                            className="shrink-0 rounded-field p-2 text-ink-faint opacity-0 transition-opacity duration-fast ease-snap hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand group-hover:opacity-100"
+                                            className="shrink-0 flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 items-center justify-center rounded-field p-2 text-ink-faint opacity-100 md:opacity-0 transition-opacity duration-fast ease-snap hover:bg-danger-quiet hover:text-danger-text focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand md:group-hover:opacity-100"
                                         >
                                             <Trash2 size={14} aria-hidden="true" />
                                         </button>

@@ -282,7 +282,7 @@ function Audio({ mensaje, propia }: { mensaje: MensajeEnPantalla; propia: boolea
                 onClick={alternar}
                 disabled={!src || subiendo}
                 aria-label={tocando ? 'Pausar' : 'Reproducir nota de voz'}
-                className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-pill', propia ? 'bg-brand-ink/20' : 'bg-[var(--fill-muted)]', tinta)}
+                className={cn('flex h-10 w-10 md:h-9 md:w-9 relative before:absolute before:-inset-1 md:before:hidden shrink-0 items-center justify-center rounded-pill', propia ? 'bg-brand-ink/20' : 'bg-[var(--fill-muted)]', tinta)}
             >
                 {subiendo ? <Mic className="h-4 w-4 animate-pulse" aria-hidden="true" /> : tocando ? <Pause className="h-4 w-4" fill="currentColor" aria-hidden="true" /> : <Play className="ml-0.5 h-4 w-4" fill="currentColor" aria-hidden="true" />}
             </button>

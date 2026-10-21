@@ -84,7 +84,7 @@ export function ComidaCard(props: ComidaCardProps) {
                     onClick={() => setAbierta((v) => !v)}
                     aria-expanded={abierta}
                     aria-controls={`cuerpo-${meal.id}`}
-                    className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-field text-ink-subtle hover:bg-[var(--fill-hover)] hover:text-ink"
+                    className="-ml-1 flex h-11 w-11 md:h-9 md:w-9 shrink-0 items-center justify-center rounded-field text-ink-subtle hover:bg-[var(--fill-hover)] hover:text-ink"
                 >
                     <ChevronDown size={18} className={`transition-transform duration-fast ease-snap ${abierta ? '' : '-rotate-90'}`} aria-hidden="true" />
                     <span className="sr-only">{abierta ? 'Plegar' : 'Desplegar'} {meal.name}</span>
@@ -140,7 +140,7 @@ export function ComidaCard(props: ComidaCardProps) {
                             aria-label={`Más acciones de ${meal.name}`}
                             aria-haspopup="menu"
                             aria-expanded={menu}
-                            className="flex h-9 w-9 items-center justify-center rounded-field text-ink-subtle hover:bg-[var(--fill-hover)] hover:text-ink"
+                            className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-field text-ink-subtle hover:bg-[var(--fill-hover)] hover:text-ink"
                         >
                             <MoreHorizontal size={18} />
                         </button>
@@ -248,7 +248,7 @@ export function ComidaCard(props: ComidaCardProps) {
                                             key={cat}
                                             type="button"
                                             onClick={() => setBusqueda({ tipo: 'nuevo', categoria: cat })}
-                                            className={`inline-flex h-8 items-center gap-1 rounded-pill bg-[var(--fill-muted)] px-3 text-t-xs font-semibold transition-colors duration-fast ease-snap hover:bg-[var(--fill-strong)] ${TONO_CATEGORIA[cat]}`}
+                                            className={`inline-flex min-h-[44px] md:min-h-0 md:h-8 py-2 md:py-0 items-center gap-1 rounded-pill bg-[var(--fill-muted)] px-3 text-t-xs font-semibold transition-colors duration-fast ease-snap hover:bg-[var(--fill-strong)] ${TONO_CATEGORIA[cat]}`}
                                         >
                                             <Plus size={12} aria-hidden="true" />
                                             {cat}
@@ -332,8 +332,8 @@ function FilaGrupo({
                                 {/* Las alternativas no tienen candado ni "+":
                                     huecos del mismo ancho para que su columna
                                     de gramos case con la del principal. */}
-                                {!soloLectura && esAlt && puedeBloquear && <span className="w-9" aria-hidden="true" />}
-                                {!soloLectura && esAlt && <span className="w-9" aria-hidden="true" />}
+                                {!soloLectura && esAlt && puedeBloquear && <span className="w-11 md:w-9" aria-hidden="true" />}
+                                {!soloLectura && esAlt && <span className="w-11 md:w-9" aria-hidden="true" />}
                                 {!soloLectura && !esAlt && puedeBloquear && (
                                     <button
                                         type="button"
@@ -341,7 +341,7 @@ function FilaGrupo({
                                         aria-pressed={!!f.is_locked}
                                         aria-label={f.is_locked ? 'Desbloquear: el ajuste automático podrá cambiarlo' : 'Bloquear: el ajuste automático no lo tocará'}
                                         title={f.is_locked ? 'Bloqueado para el ajuste' : 'Bloquear para el ajuste'}
-                                        className={`flex h-9 w-9 items-center justify-center rounded-field transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] ${f.is_locked ? 'text-brand-text' : 'text-ink-faint hover:text-ink'}`}
+                                        className={`flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-field transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] ${f.is_locked ? 'text-brand-text' : 'text-ink-faint hover:text-ink'}`}
                                     >
                                         {f.is_locked ? <Lock size={15} /> : <Unlock size={15} />}
                                     </button>
@@ -352,7 +352,7 @@ function FilaGrupo({
                                         onClick={onAlternativa}
                                         aria-label={`Añadir alternativa a ${food.product_name}`}
                                         title="Añadir alternativa"
-                                        className="flex h-9 w-9 items-center justify-center rounded-field text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] hover:text-success"
+                                        className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-field text-ink-subtle transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] hover:text-success"
                                     >
                                         <Plus size={15} />
                                     </button>
@@ -363,7 +363,7 @@ function FilaGrupo({
                                         onClick={() => onQuitar(f.id)}
                                         disabled={temporal}
                                         aria-label={`Quitar ${food.product_name}`}
-                                        className="flex h-9 w-9 items-center justify-center rounded-field text-ink-faint transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] hover:text-danger-text"
+                                        className="flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-field text-ink-faint transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)] hover:text-danger-text"
                                     >
                                         <Trash2 size={15} />
                                     </button>

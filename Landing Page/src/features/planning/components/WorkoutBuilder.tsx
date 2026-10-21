@@ -2162,7 +2162,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 8 }}
                         transition={transition(DURATION.fast)}
-                        className="fixed bottom-6 right-6 z-toast"
+                        className="fixed bottom-[calc(var(--tabbar-alto,64px)+1rem+env(safe-area-inset-bottom,0px))] right-6 z-toast md:bottom-6"
                     >
                         <Button
                             variant="primary"
@@ -2308,7 +2308,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                                     // siendo pulsable, y sin `hover` en el móvil era un
                                                     // botón invisible pegado al título de la semana que
                                                     // abría el renombrado en vez de plegar el acordeón.
-                                                    className="shrink-0 text-ink-faint transition-opacity duration-fast ease-snap hover:text-ink focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                                    className="shrink-0 flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-auto md:w-auto items-center justify-center p-2 md:p-0 text-ink-faint transition-opacity duration-fast ease-snap hover:text-ink focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
                                                 </button>
@@ -2325,7 +2325,7 @@ export function WorkoutBuilder({ athleteId, blockId, athleteName, onDirtyChange 
                                             vistazo, que es justo para lo que
                                             sirve. Las cifras secundarias solo
                                             aparecen a partir de `sm`. */}
-                                        <div className="mt-0.5 flex items-center gap-x-2 gap-y-0.5 overflow-hidden whitespace-nowrap text-t-xs text-ink-subtle sm:mt-1 sm:flex-wrap sm:whitespace-normal">
+                                        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-t-xs text-ink-subtle sm:mt-1">
                                             <span>
                                                 {formatDateRange(
                                                     getDateRangeFromWeek(week).start,

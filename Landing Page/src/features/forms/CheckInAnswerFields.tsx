@@ -25,17 +25,20 @@ export function CheckInAnswerFields({
 
                     {q.qtype === 'scale' && (
                         <>
-                            <div className="grid grid-cols-11 gap-1">
+                            {/* En móvil se distribuye en 2 filas (6 columnas) con min-h-[40px] para facilitar el toque táctil */}
+                            <div className="grid grid-cols-6 sm:grid-cols-11 gap-1.5 sm:gap-1">
                                 {Array.from({ length: 11 }, (_, i) => (
                                     <button
                                         key={i}
                                         type="button"
                                         onClick={() => onChange(q.id, values[q.id] === i ? null : i)}
-                                        className={`aspect-square rounded-lg text-xs font-semibold transition-[background-color,box-shadow,color,transform] ${
- values[q.id] === i
- ? 'bg-brand text-ink scale-110 shadow-lg shadow-brand/30'
- : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
- }`}
+                                        aria-pressed={values[q.id] === i}
+                                        aria-label={`Puntuación ${i}`}
+                                        className={`min-h-[40px] aspect-square rounded-lg text-xs font-semibold flex items-center justify-center transition-[background-color,box-shadow,color,transform] ${
+                                            values[q.id] === i
+                                                ? 'bg-brand text-ink scale-105 sm:scale-110 shadow-lg shadow-brand/30'
+                                                : 'bg-[var(--fill-muted)] text-ink-subtle hover:bg-[var(--fill-pressed)] hover:text-ink'
+                                        }`}
                                     >
                                         {i}
                                     </button>

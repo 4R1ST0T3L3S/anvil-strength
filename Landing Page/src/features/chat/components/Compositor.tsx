@@ -168,7 +168,8 @@ export function Compositor({
                 aria-haspopup="menu"
                 aria-expanded={menu}
                 className={cn(
-                    'mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-[var(--fill-muted)] text-ink-muted transition-[background-color,transform] duration-fast hover:bg-[var(--fill-strong)] hover:text-ink disabled:opacity-40',
+                    // En móvil 40px con área táctil >= 44px; en escritorio mantiene 36px (h-9 w-9)
+                    'mb-0.5 flex h-10 w-10 md:h-9 md:w-9 relative before:absolute before:-inset-1 md:before:hidden shrink-0 items-center justify-center rounded-pill bg-[var(--fill-muted)] text-ink-muted transition-[background-color,transform] duration-fast hover:bg-[var(--fill-strong)] hover:text-ink disabled:opacity-40',
                     menu && 'rotate-45 text-ink'
                 )}
             >
@@ -202,7 +203,7 @@ export function Compositor({
                     onClick={enviar}
                     disabled={disabled}
                     aria-label="Enviar"
-                    className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-brand text-brand-ink transition-[background-color,transform] duration-fast hover:bg-brand-hover disabled:opacity-40"
+                    className="mb-0.5 flex h-10 w-10 md:h-9 md:w-9 relative before:absolute before:-inset-1 md:before:hidden shrink-0 items-center justify-center rounded-pill bg-brand text-brand-ink transition-[background-color,transform] duration-fast hover:bg-brand-hover disabled:opacity-40"
                 >
                     <ArrowUp className="h-5 w-5" strokeWidth={2.6} aria-hidden="true" />
                 </button>
@@ -212,7 +213,7 @@ export function Compositor({
                     onClick={empezarVoz}
                     disabled={disabled}
                     aria-label="Grabar una nota de voz"
-                    className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-[var(--fill-muted)] text-ink-muted transition-colors duration-fast hover:bg-[var(--fill-strong)] hover:text-ink disabled:opacity-40"
+                    className="mb-0.5 flex h-10 w-10 md:h-9 md:w-9 relative before:absolute before:-inset-1 md:before:hidden shrink-0 items-center justify-center rounded-pill bg-[var(--fill-muted)] text-ink-muted transition-colors duration-fast hover:bg-[var(--fill-strong)] hover:text-ink disabled:opacity-40"
                 >
                     <Mic className="h-5 w-5" aria-hidden="true" />
                 </button>

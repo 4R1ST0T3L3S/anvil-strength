@@ -233,7 +233,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 </span>
                             )}
                         </div>
-                        <label className="absolute -bottom-0.5 -right-0.5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-pill bg-brand text-brand-ink shadow-raise transition-colors duration-fast hover:bg-brand-hover">
+                        <label className="absolute -bottom-0.5 -right-0.5 flex h-10 w-10 md:h-9 md:w-9 relative before:absolute before:-inset-1 md:before:hidden cursor-pointer items-center justify-center rounded-pill bg-brand text-brand-ink shadow-raise transition-colors duration-fast hover:bg-brand-hover">
                             <Camera size={16} aria-hidden="true" />
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
@@ -242,7 +242,7 @@ export function ProfileSection({ user, onUpdate, onBack }: ProfileSectionProps) 
                                 type="button"
                                 onClick={removePhoto}
                                 aria-label="Quitar foto"
-                                className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-pill bg-surface-overlay text-ink-muted shadow-raise transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text"
+                                className="absolute -top-1 -right-1 flex h-9 w-9 md:h-7 md:w-7 relative before:absolute before:-inset-1.5 md:before:hidden items-center justify-center rounded-pill bg-surface-overlay text-ink-muted shadow-raise transition-colors duration-fast hover:bg-[var(--danger-quiet)] hover:text-danger-text"
                             >
                                 <Trash2 size={13} aria-hidden="true" />
                             </button>
