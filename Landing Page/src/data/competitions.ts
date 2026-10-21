@@ -29,7 +29,7 @@ export const competitionsMeta: CompetitionMeta[] = [
         coincide: 'european sub junior junior',
         // El guion lleva detrás una unión de palabra (U+2060): sin ella, a tamaño
         // de cartel el nombre se partía en "SUB-" / "JUNIOR".
-        nombreCorto: { es: 'Europeo Sub-⁠junior y Junior', en: 'European Sub-⁠junior & Junior' },
+        nombreCorto: { es: 'Europeo Sub-\u2060junior y Junior', en: 'European Sub-\u2060junior & Junior' },
     },
     {
         coincide: 'world open equipped',

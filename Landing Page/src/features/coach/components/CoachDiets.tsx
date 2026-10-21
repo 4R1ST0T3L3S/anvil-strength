@@ -135,7 +135,7 @@ export function CoachDiets({ user, onBack }: CoachDietsProps) {
                     </div>
                 </header>
 
-                <NutritionPlanEditor athleteId={selected.id} />
+                <NutritionPlanEditor athleteId={selected.id} athleteName={selected.full_name} />
             </div>
         );
     }

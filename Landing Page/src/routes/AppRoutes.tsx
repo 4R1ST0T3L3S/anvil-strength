@@ -91,6 +91,11 @@ const InicioPreview = import.meta.env.DEV
     ? lazy(() => import('../features/devtools/InicioPreview').then(module => ({ default: module.InicioPreview })))
     : null;
 
+/** El editor de nutrición con un plan de mentira. Solo en desarrollo. */
+const NutricionPreview = import.meta.env.DEV
+    ? lazy(() => import('../features/devtools/NutricionPreview').then(module => ({ default: module.NutricionPreview })))
+    : null;
+
 
 
 interface AppRoutesProps {
@@ -186,6 +191,11 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
             {InicioPreview && (
                 <Route path="/dev/inicio" element={
                     <Suspense fallback={<PageSkeleton />}><InicioPreview /></Suspense>
+                } />
+            )}
+            {NutricionPreview && (
+                <Route path="/dev/nutricion" element={
+                    <Suspense fallback={<PageSkeleton />}><NutricionPreview /></Suspense>
                 } />
             )}
 

@@ -3,7 +3,7 @@ import { LayoutDashboard, Users, Apple, User, LogOut, Globe } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../../../components/layout/DashboardLayout';
 import { UserProfile, useUser } from '../../../hooks/useUser';
-import { NutritionAthletes } from '../components/NutritionAthletes';
+import { CoachDiets } from '../../coach/components/CoachDiets';
 import { NutritionAnalytics } from '../components/NutritionAnalytics';
 import { ProfileSection } from '../../profile/components/ProfileSection';
 
@@ -88,8 +88,11 @@ export function NutritionDashboard({ user, onLogout }: NutritionDashboardProps) 
                         </div>
                     </div>
                 );
-            case 'athletes': 
-                return <NutritionAthletes user={user} />;
+            case 'athletes':
+                // La misma lista que el panel del entrenador ("Dietas"): sale de
+                // `coach_athletes` y abre el editor. La de antes consultaba
+                // `profiles.nutritionist_id` y sus tarjetas no abrían nada.
+                return <CoachDiets user={user} onBack={() => setCurrentView('home')} />;
             case 'analytics': 
                 return <NutritionAnalytics />;
             case 'profile': 

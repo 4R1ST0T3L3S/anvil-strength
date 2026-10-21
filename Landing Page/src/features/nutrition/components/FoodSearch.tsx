@@ -1,34 +1,54 @@
 import { useState } from 'react';
-import { Search, Check, Star, X } from 'lucide-react';
+import { AlertTriangle, BadgeCheck, Search, Star, X } from 'lucide-react';
 import { useSearchFoodItems } from '../../../hooks/useNutrition';
 import { FoodItem } from '../../../types/nutrition';
+import { Button } from '../../../components/ui/Button';
+import { etiquetaDudosa, gramosEquivalentes, macrosDe, por100 } from '../../../lib/nutricion/macros';
+import { COLOR_MACRO, LineaMacros, formatear } from './editor/comun';
+
+/**
+ * BUSCADOR DE ALIMENTOS
+ * =====================================================================
+ *
+ * Dos fuentes, en este orden:
+ *
+ *   1. GENÉRICOS VERIFICADOS (BEDCA): "Arroz blanco, crudo", "Pollo,
+ *      pechuga". Valores de tabla oficial. Llevan el sello de verificado.
+ *   2. PRODUCTOS DE MARCA (Open Food Facts): etiquetas reales, pero escritas
+ *      por voluntarios. Los que tienen unas calorías que no casan con sus
+ *      macros llevan un aviso, y en los totales se usan las calculadas (ver
+ *      lib/nutricion/macros.ts).
+ *
+ * Buscando una ALTERNATIVA, los resultados se ordenan por parecido en
+ * macros y la cantidad sale ya calculada para que sea equivalente al
+ * alimento que sustituye.
+ */
 
 interface FoodSearchProps {
     onAddFood: (food: FoodItem, grams: number) => void;
     onClose: () => void;
+    /** Alimento al que se busca alternativa, con sus gramos y su hueco. */
     referenceFood?: FoodItem;
+    referenceGrams?: number;
+    category?: string;
 }
 
-export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProps) {
+const CLAVE_MARCAS = 'anvil_favorite_brands';
+
+export function FoodSearch({ onAddFood, onClose, referenceFood, referenceGrams, category }: FoodSearchProps) {
     const [query, setQuery] = useState('');
     const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
     const [grams, setGrams] = useState<number>(100);
-    
+
     /**
-     * Las marcas favoritas se leen AL INICIALIZAR el estado, no en un efecto.
-     *
-     * Con el efecto: primer render con la lista vacía, efecto, segundo render
-     * con la lista. Se veía el hueco de las marcas parpadear en cada apertura.
-     * Con el inicializador perezoso —la función que se le pasa a useState— la
-     * lectura ocurre UNA vez, antes del primer pintado.
-     *
-     * El `try` se queda y ahora explica por qué: si alguien manoseó el
-     * almacenamiento del navegador, la aplicación arranca sin marcas en vez
-     * de romperse.
+     * Las marcas favoritas se leen AL INICIALIZAR el estado, no en un efecto:
+     * con el efecto se veía el hueco de las marcas parpadear en cada apertura.
+     * El `try` está porque el almacenamiento del navegador puede venir roto o
+     * bloqueado, y entonces se arranca sin marcas en vez de romperse.
      */
     const [favoriteBrands, setFavoriteBrands] = useState<string[]>(() => {
         try {
-            const guardadas = localStorage.getItem('anvil_favorite_brands');
+            const guardadas = localStorage.getItem(CLAVE_MARCAS);
             return guardadas ? JSON.parse(guardadas) : [];
         } catch {
             return [];
@@ -39,21 +59,21 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
 
     const saveBrands = (brands: string[]) => {
         setFavoriteBrands(brands);
-        localStorage.setItem('anvil_favorite_brands', JSON.stringify(brands));
+        try { localStorage.setItem(CLAVE_MARCAS, JSON.stringify(brands)); } catch { /* modo privado */ }
     };
-
     const addBrand = () => {
-        if (newBrand.trim() && !favoriteBrands.includes(newBrand.trim())) {
-            saveBrands([...favoriteBrands, newBrand.trim()]);
-            setNewBrand('');
-        }
+        const b = newBrand.trim();
+        if (b && !favoriteBrands.includes(b)) saveBrands([...favoriteBrands, b]);
+        setNewBrand('');
     };
 
-    const removeBrand = (b: string) => {
-        saveBrands(favoriteBrands.filter(brand => brand !== b));
-    };
+    const { data: results, isFetching } = useSearchFoodItems(query, favoriteBrands, referenceFood);
 
-    const { data: results, isLoading } = useSearchFoodItems(query, favoriteBrands, referenceFood);
+    const elegir = (food: FoodItem) => {
+        setSelectedFood(food);
+        // Alternativa: la cantidad equivalente; si no, 100 g.
+        setGrams(referenceFood && referenceGrams ? gramosEquivalentes(referenceFood, referenceGrams, food, category) : 100);
+    };
 
     const handleAdd = () => {
         if (selectedFood && grams > 0) {
@@ -64,180 +84,191 @@ export function FoodSearch({ onAddFood, onClose, referenceFood }: FoodSearchProp
         }
     };
 
+    const buscando = query.trim().length > 1;
+
     return (
-        <div className="bg-surface-sunken border border-line rounded-xl p-4 w-full flex flex-col gap-4 max-h-[500px]">
-            {/* Smart Search Indicator */}
+        <div className="flex max-h-[min(70vh,560px)] w-full flex-col gap-3 rounded-card border border-[var(--border-default)] bg-surface-overlay p-3 md:p-4">
             {referenceFood && (
-                <div className="bg-success-quiet border border-green-500/30 rounded-lg p-3 flex items-center gap-3">
-                    <span className="text-success text-xs font-bold">🔍 Buscando alternativas a:</span>
-                    <span className="text-ink text-sm font-medium">{referenceFood.product_name}</span>
-                    <span className="text-xs text-ink-muted ml-auto">{referenceFood['energy-kcal_100g']} kcal/100g</span>
+                <p className="rounded-field bg-[var(--success-quiet)] px-3 py-2 text-t-sm text-ink">
+                    <span className="font-semibold text-success">Alternativa a </span>
+                    {referenceFood.product_name}
+                    {referenceGrams ? <span className="text-ink-subtle"> · {formatear(referenceGrams)} g</span> : null}
+                    <span className="block text-t-xs text-ink-subtle">Salen primero los más parecidos en macros, y la cantidad ya viene calculada para que sea equivalente.</span>
+                </p>
+            )}
+
+            {!selectedFood && (
+                <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={18} aria-hidden="true" />
+                    <input
+                        type="search"
+                        placeholder="Buscar alimento: arroz, pechuga de pollo, avena…"
+                        aria-label="Buscar alimento"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        autoFocus
+                        className="h-11 w-full rounded-field bg-[var(--fill-input)] pl-10 pr-24 text-t-sm text-ink placeholder:text-ink-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    />
+                    <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditingBrands((v) => !v)}
+                            aria-label="Marcas favoritas"
+                            aria-pressed={isEditingBrands}
+                            className={`flex h-8 w-8 items-center justify-center rounded-field transition-colors duration-fast ease-snap ${favoriteBrands.length > 0 || isEditingBrands ? 'text-warning' : 'text-ink-subtle hover:text-ink'}`}
+                        >
+                            <Star size={16} fill={favoriteBrands.length > 0 ? 'currentColor' : 'none'} />
+                        </button>
+                        <button type="button" onClick={onClose} aria-label="Cerrar el buscador" className="flex h-8 w-8 items-center justify-center rounded-field text-ink-subtle hover:text-ink">
+                            <X size={16} />
+                        </button>
+                    </div>
                 </div>
             )}
-            {/* Header / Search Input */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle" size={18} />
-                <input
-                    type="text"
-                    placeholder="Buscar alimento (ej. Pollo, Arroz...)"
-                    value={query}
-                    onChange={(e) => {
-                        setQuery(e.target.value);
-                        setSelectedFood(null);
-                    }}
-                    autoFocus
-                    className="w-full bg-surface-raised text-ink pl-10 pr-12 py-3 rounded-lg border border-line focus:border-brand focus:ring-1 focus:ring-brand transition-[border-color,box-shadow]"
-                />
-                <button 
-                    onClick={() => setIsEditingBrands(!isEditingBrands)}
-                    title="Marcas Favoritas"
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-colors ${isEditingBrands || favoriteBrands.length > 0 ? 'text-warning bg-warning-quiet' : 'text-ink-subtle hover:text-ink'}`}
-                >
-                    <Star size={18} fill={favoriteBrands.length > 0 ? "currentColor" : "none"} />
-                </button>
-            </div>
 
-            {/* Favorite Brands Manager */}
-            {isEditingBrands && (
-                <div className="bg-surface-raised border border-line rounded-lg p-3 animate-fade">
-                    <p className="text-xs text-ink-muted mb-2 font-bold flex items-center gap-1">
-                        <Star size={12} /> Marcas Prioritarias
-                    </p>
-                    <div className="flex gap-2 mb-2">
+            {isEditingBrands && !selectedFood && (
+                <div className="rounded-field bg-[var(--fill-muted)] p-3">
+                    <p className="mb-2 text-t-xs font-semibold text-ink-muted">Marcas que salen primero</p>
+                    <div className="mb-2 flex gap-2">
                         <input
                             type="text"
                             value={newBrand}
                             onChange={(e) => setNewBrand(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addBrand()}
-                            placeholder="Ej. Hacendado, Prozis..."
-                            className="flex-1 bg-surface-canvas text-sm text-ink px-3 py-1.5 rounded border border-line focus:border-brand"
+                            placeholder="Hacendado, Prozis…"
+                            className="h-9 flex-1 rounded-field bg-[var(--fill-input)] px-3 text-t-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                         />
-                        <button onClick={addBrand} className="bg-surface-raised hover:bg-surface-overlay text-ink px-3 rounded text-sm transition-colors">
-                            Añadir
-                        </button>
+                        <Button size="sm" variant="secondary" onClick={addBrand}>Añadir</Button>
                     </div>
                     {favoriteBrands.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
-                            {favoriteBrands.map((brand, idx) => (
-                                <span key={idx} className="bg-warning-quiet text-warning border border-warning/20 text-xs px-2 py-1 rounded flex items-center gap-1">
+                            {favoriteBrands.map((brand) => (
+                                <span key={brand} className="flex items-center gap-1 rounded-pill bg-[var(--warning-quiet)] px-2.5 py-1 text-t-xs text-warning">
                                     {brand}
-                                    <button onClick={() => removeBrand(brand)} className="hover:text-ink"><X size={12} /></button>
+                                    <button type="button" onClick={() => saveBrands(favoriteBrands.filter((b) => b !== brand))} aria-label={`Quitar ${brand}`} className="hover:text-ink">
+                                        <X size={12} />
+                                    </button>
                                 </span>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-xs text-ink-subtle">No hay marcas fijadas. Las marcas que añadas saldrán primero en la búsqueda.</p>
+                        <p className="text-t-xs text-ink-subtle">Sin marcas fijadas.</p>
                     )}
                 </div>
             )}
 
-            {/* Results List */}
+            {/* RESULTADOS */}
             {!selectedFood && (
-                <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                    {isLoading && query.length > 2 && (
-                        <div className="text-center py-4 text-ink-subtle flex justify-center">
-                            <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
-                        </div>
+                <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
+                    {!buscando && (
+                        <p className="py-6 text-center text-t-sm text-ink-subtle">
+                            Escribe al menos dos letras. Los alimentos con <BadgeCheck size={14} className="inline align-[-2px] text-success" aria-hidden="true" /> son genéricos verificados (BEDCA).
+                        </p>
                     )}
-                    
-                    {!isLoading && query.length > 2 && results?.length === 0 && (
-                        <div className="text-center py-4 text-ink-subtle">
-                            No se encontraron alimentos
-                        </div>
+                    {buscando && isFetching && !results && (
+                        <p className="py-6 text-center text-t-sm text-ink-subtle">Buscando…</p>
                     )}
-
-                    {results?.map((food) => (
-                        <button
-                            key={food.code}
-                            onClick={() => setSelectedFood(food)}
-                            className="w-full text-left bg-surface-raised hover:bg-surface-raised border border-line hover:border-brand/50 rounded-lg p-3 transition-colors flex justify-between items-center group"
-                        >
-                            <div>
-                                <h4 className="text-ink font-medium group-hover:text-brand-text transition-colors">{food.product_name}</h4>
-                                {food.brands && <p className="text-xs text-ink-subtle">{food.brands}</p>}
-                            </div>
-                            <div className="text-right text-xs text-ink-muted">
-                                <span className="block">{food['energy-kcal_100g']} kcal</span>
-                                <span className="flex gap-2">
-                                    <span className="text-info">{food.proteins_100g}g P</span>
-                                    <span className="text-warning">{food.carbohydrates_100g}g HC</span>
-                                    <span className="text-orange-400">{food.fat_100g}g G</span>
-                                </span>
-                            </div>
-                        </button>
-                    ))}
+                    {buscando && results?.length === 0 && !isFetching && (
+                        <p className="py-6 text-center text-t-sm text-ink-subtle">Nada con «{query.trim()}». Prueba con menos palabras.</p>
+                    )}
+                    <ul className="space-y-1">
+                        {results?.map((food) => {
+                            const m = por100(food);
+                            const dudoso = etiquetaDudosa(food);
+                            return (
+                                <li key={food.code}>
+                                    <button
+                                        type="button"
+                                        onClick={() => elegir(food)}
+                                        className="flex w-full items-center gap-3 rounded-field px-3 py-2.5 text-left transition-colors duration-fast ease-snap hover:bg-[var(--fill-hover)]"
+                                    >
+                                        <span className="min-w-0 flex-1">
+                                            <span className="flex items-center gap-1.5">
+                                                {food.is_generic && <BadgeCheck size={15} className="shrink-0 text-success" aria-label="Genérico verificado" />}
+                                                <span className="truncate text-t-sm font-medium text-ink">{food.product_name}</span>
+                                            </span>
+                                            <span className="flex items-center gap-1.5 text-t-xs text-ink-subtle">
+                                                {food.brands || food.food_group || (food.is_generic ? 'BEDCA' : '')}
+                                                {dudoso && (
+                                                    <span className="inline-flex items-center gap-0.5 text-warning">
+                                                        <AlertTriangle size={11} aria-hidden="true" /> etiqueta dudosa
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </span>
+                                        <span className="shrink-0 text-right text-t-xs tabular-nums">
+                                            <span className="block font-semibold text-ink">{formatear(m.kcal)} kcal</span>
+                                            <span className="flex gap-2">
+                                                <span className={COLOR_MACRO.proteina}>{formatear(m.proteina, 1)} P</span>
+                                                <span className={COLOR_MACRO.carbos}>{formatear(m.carbos, 1)} HC</span>
+                                                <span className={COLOR_MACRO.grasas}>{formatear(m.grasas, 1)} G</span>
+                                            </span>
+                                        </span>
+                                    </button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    {buscando && results && results.length > 0 && (
+                        <p className="px-3 pb-1 pt-2 text-t-xs text-ink-subtle">Valores por 100 g.</p>
+                    )}
                 </div>
             )}
 
-            {/* Add Grams Form */}
+            {/* CANTIDAD */}
             {selectedFood && (
-                <div className="animate-fade bg-surface-raised p-4 rounded-lg border border-brand/30">
-                    <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 className="text-lg font-bold text-ink">{selectedFood.product_name}</h3>
-                            {selectedFood.brands && <p className="text-sm text-ink-subtle">{selectedFood.brands}</p>}
+                <div className="rounded-card bg-[var(--fill-muted)] p-4">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="flex items-center gap-1.5 text-t-base font-semibold text-ink">
+                                {selectedFood.is_generic && <BadgeCheck size={16} className="shrink-0 text-success" aria-label="Genérico verificado" />}
+                                <span className="truncate">{selectedFood.product_name}</span>
+                            </h3>
+                            {selectedFood.brands && <p className="text-t-xs text-ink-subtle">{selectedFood.brands}</p>}
+                            {etiquetaDudosa(selectedFood) && (
+                                <p className="mt-1 flex items-start gap-1 text-t-xs text-warning">
+                                    <AlertTriangle size={13} className="mt-px shrink-0" aria-hidden="true" />
+                                    Las calorías de la etiqueta no casan con sus macros: se usan las calculadas.
+                                </p>
+                            )}
                         </div>
-                        <button 
-                            onClick={() => setSelectedFood(null)}
-                            className="text-xs text-ink-subtle hover:text-ink underline"
-                        >
-                            Cambiar
-                        </button>
+                        <Button size="sm" variant="ghost" onClick={() => setSelectedFood(null)}>Cambiar</Button>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2 mb-4 text-center">
-                        <div className="bg-surface-canvas p-2 rounded">
-                            <span className="block text-xs text-ink-subtle">Kcal</span>
-                            <span className="font-bold text-ink">{Math.round(selectedFood['energy-kcal_100g'] * (grams / 100))}</span>
-                        </div>
-                        <div className="bg-surface-canvas p-2 rounded border-b-2 border-blue-500">
-                            <span className="block text-xs text-ink-subtle">Prot</span>
-                            <span className="font-bold text-ink">{Math.round(selectedFood.proteins_100g * (grams / 100))}g</span>
-                        </div>
-                        <div className="bg-surface-canvas p-2 rounded border-b-2 border-yellow-500">
-                            <span className="block text-xs text-ink-subtle">Carb</span>
-                            <span className="font-bold text-ink">{Math.round(selectedFood.carbohydrates_100g * (grams / 100))}g</span>
-                        </div>
-                        <div className="bg-surface-canvas p-2 rounded border-b-2 border-orange-500">
-                            <span className="block text-xs text-ink-subtle">Grasa</span>
-                            <span className="font-bold text-ink">{Math.round(selectedFood.fat_100g * (grams / 100))}g</span>
-                        </div>
-                    </div>
+                    <LineaMacros m={macrosDe(selectedFood, grams)} className="text-t-sm" />
 
-                    <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="text-xs text-ink-subtle self-center">Rápido:</span>
-                        {[50, 100, 150, 200].map(g => (
-                            <button key={g} onClick={() => setGrams(g)}
-                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${grams === g ? 'bg-brand text-brand-ink' : 'bg-surface-raised text-ink hover:bg-surface-overlay'}`}>
-                                {g}g
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                        {[30, 50, 100, 150, 200].map((g) => (
+                            <button
+                                key={g}
+                                type="button"
+                                onClick={() => setGrams(g)}
+                                aria-pressed={grams === g}
+                                className={`h-8 rounded-pill px-3 text-t-xs font-semibold transition-colors duration-fast ease-snap ${grams === g ? 'bg-brand text-brand-ink' : 'bg-[var(--fill-input)] text-ink hover:bg-[var(--fill-strong)]'}`}
+                            >
+                                {g} g
                             </button>
                         ))}
-                        <button onClick={() => setGrams(150)}
-                            className={`px-3 py-1 rounded text-xs font-bold transition-colors border ${grams === 150 ? 'bg-pink-500/20 text-pink-400 border-pink-500/40' : 'bg-surface-raised text-ink border-strong hover:border-pink-500/40'}`}>
-                            🍎 1 pieza
-                        </button>
                     </div>
 
-                    <div className="flex gap-2">
-                        <div className="flex-1 relative">
+                    <div className="mt-3 flex gap-2">
+                        <label className="flex h-11 flex-1 items-center rounded-field bg-[var(--fill-input)] px-3 focus-within:ring-2 focus-within:ring-brand">
+                            <span className="sr-only">Gramos</span>
                             <input
                                 type="number"
-                            inputMode="decimal"
-                                min="1"
+                                inputMode="decimal"
+                                min={1}
                                 value={grams || ''}
-                                onChange={(e) => setGrams(parseInt(e.target.value) || 0)}
-                                className="w-full bg-surface-canvas text-ink font-bold text-lg px-4 py-3 rounded-lg border border-strong focus:border-brand text-center"
+                                onChange={(e) => setGrams(Math.max(0, Number(e.target.value) || 0))}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                                autoFocus
+                                className="w-full bg-transparent text-t-lg font-semibold tabular-nums text-ink focus-visible:outline-none"
                             />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-subtle">gramos</span>
-                        </div>
-                        <button
-                            onClick={handleAdd}
-                            disabled={grams <= 0}
-                            className="bg-brand hover:bg-brand-hover text-brand-ink font-semibold px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                            <Check size={20} />
-                            AÑADIR
-                        </button>
+                            <span className="text-t-sm text-ink-subtle">gramos</span>
+                        </label>
+                        <Button variant="primary" size="lg" disabled={grams <= 0} onClick={handleAdd}>
+                            Añadir
+                        </Button>
                     </div>
                 </div>
             )}

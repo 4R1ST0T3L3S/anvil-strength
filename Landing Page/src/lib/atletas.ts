@@ -22,7 +22,7 @@ import { athletes, type Athlete } from '../data/athletes';
 export function normalizarNombre(nombre: string): string {
     return nombre
         .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
+        .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/[^a-z0-9ñ]+/g, ' ')
         .trim();

@@ -1,328 +1,228 @@
-import {
-    Utensils,
-    Zap,
-    Droplets,
-    Flame,
-    Apple,
-    Clock,
-    AlertCircle,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    Pill
-} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Apple, BadgeCheck, ChevronDown, ClipboardList, Clock, FileDown, Pill } from 'lucide-react';
+import { toast } from 'sonner';
 import { UserProfile } from '../../../hooks/useUser';
 import { useAthleteNutritionPlan } from '../../../hooks/useNutrition';
-import { useState } from 'react';
-import { m } from 'framer-motion';
+import { Button } from '../../../components/ui/Button';
+import { SegmentedControl } from '../../../components/ui/SegmentedControl';
+import { diasDelPlan, gramosEnDia, totalesDeComida, totalesDelDia } from '../../../lib/nutricion/dias';
+import { agruparAlimentos, macrosDe } from '../../../lib/nutricion/macros';
+import { BARRA_MACRO, COLOR_MACRO, ETIQUETA_MACRO, formatear, LineaMacros } from '../../nutrition/components/editor/comun';
+
+/**
+ * MI NUTRICIÓN — LO QUE VE EL ATLETA
+ * =====================================================================
+ *
+ * Lo que el atleta necesita mirando el móvil en la cocina: qué come hoy y
+ * cuánto. Por eso:
+ *
+ *   · Si el plan tiene tipos de día (entreno, descanso…), se elige arriba y
+ *     todo lo de debajo cambia a ese día.
+ *   · Cada hueco enseña el alimento principal y sus alternativas con «ó»,
+ *     ya en su cantidad equivalente. Antes salían todas las filas seguidas,
+ *     como si hubiera que comérselas todas, y además se sumaban.
+ *   · El total del día cuenta solo los principales.
+ *   · El PDF se puede descargar desde aquí, igual que lo exporta el
+ *     nutricionista.
+ */
 
 interface AthleteNutritionViewProps {
     user: UserProfile;
 }
 
+const BASE = '__base__';
+
 export function AthleteNutritionView({ user }: AthleteNutritionViewProps) {
     const { data: plan, isLoading } = useAthleteNutritionPlan(user.id);
-    const [expandedMeals, setExpandedMeals] = useState<Record<string, boolean>>({});
+    const [diaElegido, setDiaElegido] = useState<string>(BASE);
+    const [plegadas, setPlegadas] = useState<Record<string, boolean>>({});
+    const [exportando, setExportando] = useState(false);
 
-    const toggleMeal = (mealId: string) => {
-        setExpandedMeals(prev => ({ ...prev, [mealId]: !prev[mealId] }));
-    };
+    const dias = useMemo(() => (plan ? diasDelPlan(plan) : []), [plan]);
+    const dia = diaElegido !== BASE && dias.some((d) => d.id === diaElegido) ? diaElegido : null;
+    const diaActual = dias.find((d) => d.id === dia) ?? dias[0];
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand"></div>
-                <p className="text-ink-subtle font-bold text-xs">Cargando Plan Nutricional...</p>
+            <div className="mx-auto max-w-3xl space-y-3 p-4 md:p-8" aria-busy="true">
+                <div className="h-10 w-48 animate-pulse rounded-field bg-surface-raised" />
+                <div className="h-24 animate-pulse rounded-card bg-surface-raised" />
+                <div className="h-48 animate-pulse rounded-card bg-surface-raised" />
             </div>
         );
     }
 
     if (!plan) {
         return (
-            <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade">
-                <header>
-                    <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mb-2 text-ink">Mi Nutrición</h1>
-                    <p className="text-ink-muted text-lg">Tu plan de alimentación personalizado.</p>
-                </header>
-
-                <div className="bg-surface-sunken border border-subtle rounded-card p-12 text-center space-y-6">
-                    <div className="w-20 h-20 bg-[var(--fill-muted)] rounded-full flex items-center justify-center mx-auto text-ink-subtle">
-                        <Apple size={40} />
-                    </div>
-                    <div className="max-w-md mx-auto">
-                        <h3 className="text-2xl font-semibold text-ink tracking-tight mb-3">Sin Plan Nutricional</h3>
-                        <p className="text-ink-muted text-sm leading-relaxed">
-                            Tu nutricionista aún no ha cargado tu plan de alimentación. Esta sección se sincronizará automáticamente cuando el profesional lo publique.
-                        </p>
-                    </div>
-                    <div className="pt-4 flex justify-center gap-4">
-                        <div className="px-6 py-3 bg-[var(--fill-muted)] border border-[var(--border-default)] rounded-xl text-t-2xs font-semibold text-ink-subtle flex items-center gap-2">
-                            <Clock size={14} /> Esperando nutricionista...
-                        </div>
-                    </div>
-                </div>
-
-                {/* Info Cards while waiting */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-surface-sunken border border-subtle p-6 rounded-card space-y-3">
-                        <div className="flex items-center gap-2 text-brand-text">
-                            <AlertCircle size={18} />
-                            <h4 className="font-bold text-xs text-ink">Importante</h4>
-                        </div>
-                        <p className="text-ink-muted text-xs leading-relaxed">
-                            Asegúrate de haber completado tu perfil con tu peso y objetivos actuales para que el nutricionista pueda diseñar el plan adecuado.
-                        </p>
-                    </div>
-                    <div className="bg-surface-sunken border border-subtle p-6 rounded-card space-y-3">
-                        <div className="flex items-center gap-2 text-success">
-                            <CheckCircle2 size={18} />
-                            <h4 className="font-bold text-xs text-ink">Sincronización</h4>
-                        </div>
-                        <p className="text-ink-muted text-xs leading-relaxed">
-                            Una vez activo, podrás ver tus macros diarios, comidas recomendadas y suplementación directamente desde aquí.
-                        </p>
-                    </div>
+            <div className="mx-auto max-w-3xl p-4 md:p-8">
+                <h1 className="text-t-2xl font-semibold tracking-display text-ink md:text-t-3xl">Mi nutrición</h1>
+                <div className="mt-6 rounded-card border border-[var(--border-default)] bg-surface-raised p-8 text-center">
+                    <Apple className="mx-auto text-ink-faint" size={28} aria-hidden="true" />
+                    <p className="mt-3 text-t-base font-semibold text-ink">Todavía no tienes plan</p>
+                    <p className="mx-auto mt-1 max-w-sm text-t-sm text-ink-subtle">
+                        Cuando tu nutricionista lo publique aparecerá aquí, con tus comidas, tus cantidades y la suplementación. Mientras tanto, revisa que tu peso y tus objetivos estén al día en tu perfil.
+                    </p>
                 </div>
             </div>
         );
     }
 
-    // Compute current macros from meals
-    const currentMacros = plan.meals?.reduce((acc, meal) => {
-        const mealTotals = (meal.foods || []).reduce((mAcc, mf) => {
-            if (!mf.food) return mAcc;
-            const mult = mf.amount_g / 100;
-            return {
-                kcal: mAcc.kcal + (mf.food['energy-kcal_100g'] * mult),
-                prot: mAcc.prot + (mf.food.proteins_100g * mult),
-                carbs: mAcc.carbs + (mf.food.carbohydrates_100g * mult),
-                fats: mAcc.fats + (mf.food.fat_100g * mult)
-            };
-        }, { kcal: 0, prot: 0, carbs: 0, fats: 0 });
+    const total = totalesDelDia(plan, dia);
+    const comidas = plan.meals ?? [];
 
-        return {
-            kcal: acc.kcal + mealTotals.kcal,
-            prot: acc.prot + mealTotals.prot,
-            carbs: acc.carbs + mealTotals.carbs,
-            fats: acc.fats + mealTotals.fats,
-        };
-    }, { kcal: 0, prot: 0, carbs: 0, fats: 0 }) || { kcal: 0, prot: 0, carbs: 0, fats: 0 };
-
-    const sortedMeals = [...(plan.meals || [])].sort((a, b) => a.order_index - b.order_index);
-
-    const macroCards = [
-        { label: 'Calorías', current: Math.round(currentMacros.kcal), target: plan.calories_target, unit: 'kcal', color: 'bg-white', textColor: 'text-ink', icon: <Zap size={16} /> },
-        { label: 'Proteína', current: Math.round(currentMacros.prot), target: plan.protein_target, unit: 'g', color: 'bg-blue-500', textColor: 'text-info', icon: <Flame size={16} /> },
-        { label: 'Carbohidratos', current: Math.round(currentMacros.carbs), target: plan.carbs_target, unit: 'g', color: 'bg-yellow-500', textColor: 'text-warning', icon: <Zap size={16} /> },
-        { label: 'Grasas', current: Math.round(currentMacros.fats), target: plan.fats_target, unit: 'g', color: 'bg-orange-500', textColor: 'text-orange-400', icon: <Droplets size={16} /> },
-    ];
+    const descargar = async () => {
+        setExportando(true);
+        try {
+            const { descargarPdfPlan } = await import('../../../lib/nutricion/pdf');
+            await descargarPdfPlan(plan, { atleta: user.full_name ?? user.nickname ?? null });
+        } catch {
+            toast.error('No se pudo generar el PDF');
+        } finally {
+            setExportando(false);
+        }
+    };
 
     return (
-        <div className="p-4 md:p-8 max-w-4xl mx-auto space-y-8 animate-fade">
-            <header className="flex justify-between items-end">
+        <div className="mx-auto max-w-3xl space-y-5 p-4 pb-28 md:p-8">
+            <header className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mb-2 text-ink">Mi Nutrición</h1>
-                    <p className="text-ink-muted text-lg">Objetivos diarios y planificación.</p>
+                    <h1 className="text-t-2xl font-semibold tracking-display text-ink md:text-t-3xl">Mi nutrición</h1>
+                    {plan.training_block_id && <p className="mt-1 text-t-sm text-ink-muted">Bloque: {plan.training_block_id}</p>}
                 </div>
-                <div className="hidden md:block text-right">
-                    <p className="text-t-2xs font-semibold text-ink-subtle mb-1">Total Calorías</p>
-                    <p className="text-3xl font-semibold text-ink">
-                        {Math.round(currentMacros.kcal).toLocaleString()} <span className="text-xs not-italic text-ink-subtle">/ {plan.calories_target} kcal</span>
-                    </p>
-                </div>
+                <Button size="sm" variant="secondary" icon={<FileDown size={14} />} loading={exportando} onClick={descargar}>
+                    PDF
+                </Button>
             </header>
 
-            {/* Tags */}
-            {plan.tags && plan.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                    {plan.tags.map((tag, i) => (
-                        <span key={i} className="bg-brand/10 text-brand-text text-xs font-bold px-3 py-1 rounded-full border border-brand/20">
-                            {tag}
-                        </span>
+            {dias.length > 1 && (
+                <SegmentedControl
+                    segmentos={dias.map((d) => ({ id: d.id ?? BASE, label: d.nombre }))}
+                    activo={dia ?? BASE}
+                    onChange={setDiaElegido}
+                    aria-label="Tipo de día"
+                    block
+                />
+            )}
+
+            {(plan.tags?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                    {plan.tags!.map((t, i) => (
+                        <span key={i} className="rounded-pill bg-[var(--brand-quiet)] px-2.5 py-0.5 text-t-xs font-semibold text-brand-text">{t}</span>
                     ))}
                 </div>
             )}
 
-            {/* Macros Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {macroCards.map((macro, i) => (
-                    <m.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="bg-surface-sunken border border-subtle p-5 rounded-card space-y-3 hover:border-[var(--border-default)] transition-colors"
-                    >
-                        <div className="flex justify-between items-center">
-                            <div className={`p-1.5 rounded-lg bg-[var(--fill-muted)] ${macro.textColor}`}>
-                                {macro.icon}
+            {/* OBJETIVO DEL DÍA */}
+            <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4" aria-label={`Objetivo: ${diaActual.nombre}`}>
+                <p className="text-t-xs font-semibold text-ink-subtle">{diaActual.nombre}</p>
+                <div className="mt-2 grid grid-cols-4 gap-3">
+                    {(['kcal', 'proteina', 'carbos', 'grasas'] as const).map((k) => {
+                        const objetivo = diaActual.objetivo[k];
+                        const pct = objetivo > 0 ? Math.min(100, (total[k] / objetivo) * 100) : 0;
+                        return (
+                            <div key={k} className="min-w-0">
+                                <p className={`text-t-lg font-semibold tabular-nums ${COLOR_MACRO[k]}`}>{formatear(objetivo || total[k])}</p>
+                                <p className="truncate text-t-2xs text-ink-subtle">{ETIQUETA_MACRO[k].larga}{k === 'kcal' ? '' : ' (g)'}</p>
+                                <div className="mt-1 h-1 overflow-hidden rounded-pill bg-[var(--fill-muted)]">
+                                    <div className={`h-full ${BARRA_MACRO[k]}`} style={{ width: `${pct}%` }} />
+                                </div>
                             </div>
-                            <span className="text-t-2xs font-semibold text-ink-subtle">{macro.label}</span>
-                        </div>
-                        <div>
-                            <div className="flex items-baseline gap-1 mb-2">
-                                <span className={`text-2xl font-semibold ${macro.textColor}`}>{macro.current}</span>
-                                <span className="text-xs text-ink-subtle">/ {macro.target}{macro.unit}</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-[var(--fill-muted)] rounded-full overflow-hidden">
-                                <m.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(100, (macro.current / (macro.target || 1)) * 100)}%` }}
-                                    transition={{ duration: 1, delay: i * 0.1, ease: "easeOut" }}
-                                    className={`h-full ${macro.color} rounded-full`}
-                                />
-                            </div>
-                        </div>
-                    </m.div>
-                ))}
-            </div>
-
-            {/* General Guidelines */}
-            {plan.general_guidelines && plan.general_guidelines.length > 0 && (
-                <div className="bg-surface-sunken border border-subtle rounded-card p-5 space-y-3">
-                    <h3 className="text-xs font-semibold text-ink-subtle">📋 Pautas Generales</h3>
-                    <div className="space-y-1.5">
-                        {plan.general_guidelines.map((g, i) => (
-                            <p key={i} className="text-sm text-ink-muted pl-2">• {g}</p>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
+            </section>
+
+            {(plan.general_guidelines?.length ?? 0) > 0 && (
+                <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
+                    <h2 className="flex items-center gap-1.5 text-t-sm font-semibold text-ink"><ClipboardList size={15} aria-hidden="true" />Pautas</h2>
+                    <ul className="mt-2 space-y-1.5 text-t-sm text-ink-muted">
+                        {plan.general_guidelines!.map((g, i) => <li key={i} className="flex gap-2"><span aria-hidden="true">·</span>{g}</li>)}
+                    </ul>
+                </section>
             )}
 
-            {/* Supplements */}
-            {plan.global_supplements && plan.global_supplements.length > 0 && (
-                <div className="bg-surface-sunken border border-blue-500/10 rounded-card p-5 space-y-3">
-                    <h3 className="text-xs font-semibold text-info/70 flex items-center gap-2">
-                        <Pill size={14} /> Suplementación
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        {plan.global_supplements.map((s, i) => (
-                            <span key={i} className="bg-info-quiet text-blue-300 text-xs px-3 py-1.5 rounded-lg border border-info/20">
-                                {s}
-                            </span>
+            {(plan.global_supplements?.length ?? 0) > 0 && (
+                <section className="rounded-card border border-[var(--border-default)] bg-surface-raised p-4">
+                    <h2 className="flex items-center gap-1.5 text-t-sm font-semibold text-ink"><Pill size={15} className="text-info" aria-hidden="true" />Suplementación diaria</h2>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                        {plan.global_supplements!.map((s, i) => (
+                            <span key={i} className="rounded-pill bg-[var(--info-quiet)] px-2.5 py-1 text-t-xs text-info">{s}</span>
                         ))}
                     </div>
-                </div>
+                </section>
             )}
 
-            {/* Meals */}
-            <div className="space-y-4">
-                <h2 className="text-xs font-semibold text-ink-subtle flex items-center gap-2">
-                    <Utensils size={16} /> Comidas del día
-                </h2>
-
-                {sortedMeals.length === 0 ? (
-                    <div className="bg-surface-sunken border border-subtle rounded-card p-8 text-center">
-                        <p className="text-ink-subtle text-sm">Tu nutricionista aún no ha añadido comidas al plan.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {sortedMeals.map((meal, i) => {
-                            const isExpanded = expandedMeals[meal.id] ?? true;
-                            const mealFoods = meal.foods || [];
-                            const mealMacros = mealFoods.reduce((acc, mf) => {
-                                if (!mf.food) return acc;
-                                const mult = mf.amount_g / 100;
-                                return {
-                                    kcal: acc.kcal + (mf.food['energy-kcal_100g'] * mult),
-                                    prot: acc.prot + (mf.food.proteins_100g * mult),
-                                    carbs: acc.carbs + (mf.food.carbohydrates_100g * mult),
-                                    fats: acc.fats + (mf.food.fat_100g * mult),
-                                };
-                            }, { kcal: 0, prot: 0, carbs: 0, fats: 0 });
-
-                            return (
-                                <div key={meal.id} className="bg-surface-sunken border border-subtle rounded-card overflow-hidden hover:border-[var(--border-default)] transition-colors">
-                                    {/* Meal Header */}
-                                    <button
-                                        onClick={() => toggleMeal(meal.id)}
-                                        className="w-full p-5 flex items-center justify-between text-left"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-ink-subtle font-semibold text-2xl">
-                                                {String(i + 1).padStart(2, '0')}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-ink tracking-tight">{meal.name}</h3>
-                                                {meal.time && (
-                                                    <p className="text-ink-subtle text-xs flex items-center gap-1">
-                                                        <Clock size={10} /> {meal.time}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="hidden md:flex gap-3 text-xs text-ink-subtle">
-                                                <span>{Math.round(mealMacros.kcal)} kcal</span>
-                                                <span className="text-info/60">{Math.round(mealMacros.prot)}P</span>
-                                                <span className="text-warning/60">{Math.round(mealMacros.carbs)}C</span>
-                                                <span className="text-orange-400/60">{Math.round(mealMacros.fats)}G</span>
-                                            </div>
-                                            {isExpanded ? (
-                                                <ChevronUp size={18} className="text-ink-subtle" />
-                                            ) : (
-                                                <ChevronDown size={18} className="text-ink-subtle" />
-                                            )}
-                                        </div>
-                                    </button>
-
-                                    {/* Meal Foods */}
-                                    {isExpanded && mealFoods.length > 0 && (
-                                        <div className="border-t border-subtle px-5 pb-4">
-                                            <div className="divide-y divide-[var(--border-subtle)]">
-                                                {mealFoods.map((mf) => {
-                                                    if (!mf.food) return null;
-                                                    const mult = mf.amount_g / 100;
+            {/* COMIDAS */}
+            <div className="space-y-3">
+                {comidas.length === 0 && (
+                    <p className="rounded-card border border-dashed border-[var(--border-default)] p-8 text-center text-t-sm text-ink-subtle">Tu nutricionista aún no ha añadido comidas.</p>
+                )}
+                {comidas.map((meal) => {
+                    const plegada = !!plegadas[meal.id];
+                    const grupos = agruparAlimentos(meal.foods ?? []).filter((g) => g.principal.food);
+                    const tot = totalesDeComida(meal, dia);
+                    return (
+                        <section key={meal.id} className="overflow-hidden rounded-card border border-[var(--border-default)] bg-surface-raised">
+                            <button
+                                type="button"
+                                onClick={() => setPlegadas((p) => ({ ...p, [meal.id]: !plegada }))}
+                                aria-expanded={!plegada}
+                                className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                            >
+                                <span className="min-w-0 flex-1">
+                                    <span className="flex items-baseline gap-2">
+                                        <span className="truncate text-t-base font-semibold text-ink">{meal.name}</span>
+                                        {meal.time && <span className="inline-flex shrink-0 items-center gap-1 text-t-xs text-ink-subtle"><Clock size={11} aria-hidden="true" />{meal.time.slice(0, 5)}</span>}
+                                    </span>
+                                    <LineaMacros m={tot} className="mt-0.5 text-t-xs" />
+                                </span>
+                                <ChevronDown size={18} className={`shrink-0 text-ink-subtle transition-transform duration-fast ease-snap ${plegada ? '-rotate-90' : ''}`} aria-hidden="true" />
+                            </button>
+                            {!plegada && (
+                                <div className="border-t border-[var(--separator)] px-4 py-2">
+                                    {grupos.length === 0 && <p className="py-3 text-center text-t-sm text-ink-subtle">Sin alimentos.</p>}
+                                    <ul className="divide-y divide-[var(--separator)]">
+                                        {grupos.map((g) => (
+                                            <li key={g.id} className="py-2.5">
+                                                {[g.principal, ...g.alternativas].map((f, i) => {
+                                                    if (!f.food) return null;
+                                                    const gramos = gramosEnDia(f, dia);
+                                                    const m = macrosDe(f.food, gramos);
                                                     return (
-                                                        <div key={mf.id} className="py-3 flex items-center justify-between gap-4">
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-sm text-ink font-medium truncate">
-                                                                    {mf.food.product_name}
-                                                                </p>
-                                                                <div className="flex items-center gap-2 mt-0.5">
-                                                                    <span className="text-xs text-ink-subtle font-bold">{mf.amount_g}g</span>
-                                                                    {mf.food.brands && (
-                                                                        <span className="text-t-2xs text-ink-subtle">({mf.food.brands})</span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex gap-3 text-t-2xs font-bold shrink-0">
-                                                                <span className="text-ink-muted">{Math.round(mf.food['energy-kcal_100g'] * mult)}</span>
-                                                                <span className="text-info/80">{Math.round(mf.food.proteins_100g * mult)}P</span>
-                                                                <span className="text-warning/80">{Math.round(mf.food.carbohydrates_100g * mult)}C</span>
-                                                                <span className="text-orange-400/80">{Math.round(mf.food.fat_100g * mult)}G</span>
-                                                            </div>
+                                                        <div key={f.id} className={`flex items-center gap-3 ${i > 0 ? 'mt-1 pl-4' : ''}`}>
+                                                            <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                                                                {i > 0 && <span className="font-bold text-success" aria-label="o bien">ó</span>}
+                                                                {f.food.is_generic && <BadgeCheck size={13} className="shrink-0 text-success" aria-hidden="true" />}
+                                                                <span className={`truncate text-t-sm ${i > 0 ? 'text-ink-muted' : 'text-ink'}`}>{f.food.product_name}</span>
+                                                            </span>
+                                                            <span className={`shrink-0 text-t-sm font-semibold tabular-nums ${i > 0 ? 'text-ink-muted' : 'text-ink'}`}>{formatear(gramos)} g</span>
+                                                            <span className="hidden w-16 shrink-0 text-right text-t-xs tabular-nums text-ink-subtle sm:block">{formatear(m.kcal)} kcal</span>
                                                         </div>
                                                     );
                                                 })}
-                                            </div>
-
-                                            {/* Meal supplements */}
-                                            {meal.meal_supplements && meal.meal_supplements.length > 0 && (
-                                                <div className="mt-3 pt-3 border-t border-subtle">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {meal.meal_supplements.map((s, idx) => (
-                                                            <span key={idx} className="bg-info-quiet text-blue-300 text-t-2xs px-2 py-1 rounded border border-info/20 flex items-center gap-1">
-                                                                <Pill size={10} /> {s}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {isExpanded && mealFoods.length === 0 && (
-                                        <div className="border-t border-subtle px-5 py-4">
-                                            <p className="text-ink-subtle text-xs text-center">Sin alimentos asignados a esta comida.</p>
-                                        </div>
+                                                {g.alternativas.length > 0 && <p className="mt-1 pl-4 text-t-2xs text-ink-subtle">Elige una opción.</p>}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {(meal.meal_supplements?.length ?? 0) > 0 && (
+                                        <p className="flex flex-wrap items-center gap-1.5 border-t border-[var(--separator)] py-2.5 text-t-xs text-info">
+                                            <Pill size={12} aria-hidden="true" />
+                                            {meal.meal_supplements!.join(' · ')}
+                                        </p>
                                     )}
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
+                            )}
+                        </section>
+                    );
+                })}
             </div>
+
+            {comidas.length > 0 && (
+                <p className="rounded-card bg-[var(--fill-muted)] px-4 py-3 text-t-sm text-ink">
+                    <span className="font-semibold">Total del día: </span>
+                    <LineaMacros m={total} />
+                </p>
+            )}
         </div>
     );
 }
