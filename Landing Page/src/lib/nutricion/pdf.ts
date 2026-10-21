@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import type { NutritionPlan } from '../../types/nutrition';
+import type { FoodItem, Meal, NutritionPlan } from '../../types/nutrition';
 import { diasDelPlan, gramosEnDia, totalesDeComida, totalesDelDia } from './dias';
 import { agruparAlimentos, macrosDe, type Macros } from './macros';
 
@@ -63,6 +63,76 @@ function limpiar(t: string): string {
         .replace(/\u2212/g, '-')
         .replace(/[\u2060\u200b]/g, '')
         .replace(/[^\x20-\x7E\u00A0-\u00FF\u2013\u2014\u2018\u2019\u201C\u201D\u2022\u2026\u20AC]/g, '');
+}
+
+// =====================================================================
+// GEOMETRÍA Y ALTURAS DE LAS COMIDAS
+// =====================================================================
+// La medida previa y el dibujo comparten exactamente las mismas constantes
+// y funciones de corte y cálculo de alturas, para que nunca se desincronicen
+// si alguien cambia fuentes, márgenes o espaciados.
+export const ALTO_BARRA_COMIDA = 13;
+export const ALTO_CABECERA_TABLA = 6;
+export const ALTO_SIN_ALIMENTOS = 6;
+export const ESPACIADO_COMIDA = 4;
+
+/** Líneas partidas del nombre del alimento según la tipografía y columna. */
+export function lineasAlimento(doc: jsPDF, food: FoodItem, esAlt: boolean): string[] {
+    const sangria = esAlt ? 6 : 2;
+    doc.setFont('helvetica', esAlt ? 'normal' : 'bold');
+    doc.setFontSize(9);
+    const nombre = `${food.product_name}${food.brands ? ` (${food.brands})` : ''}`;
+    return doc.splitTextToSize(limpiar(nombre), COL.alimento - sangria - 3) as string[];
+}
+
+/** Altura de una fila de alimento en mm. */
+export function altoFilaAlimento(lineas: string[]): number {
+    return Math.max(5.5, lineas.length * 4 + 1.5);
+}
+
+/** Líneas del bloque de suplementación de una comida. */
+export function lineasSuplementacion(doc: jsPDF, suplementos: string[]): string[] {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    return doc.splitTextToSize(limpiar(`Suplementación: ${suplementos.join(' · ')}`), ANCHO - 4) as string[];
+}
+
+/** Altura del bloque de suplementación en mm. */
+export function altoSuplementacion(lineas: string[]): number {
+    return lineas.length * 4 + 1;
+}
+
+/**
+ * Calcula la altura total EXACTA de una comida en mm:
+ * barra superior + cabecera de tabla + todas sus filas (con idéntico corte de
+ * texto que el dibujo) + suplementos + espaciado inferior.
+ */
+export function calcularAlturaComida(doc: jsPDF, meal: Meal, conAlternativas = true): number {
+    const grupos = agruparAlimentos(meal.foods ?? []).filter((g) => g.principal.food);
+    let h = ALTO_BARRA_COMIDA + ALTO_CABECERA_TABLA;
+
+    if (grupos.length === 0) {
+        h += ALTO_SIN_ALIMENTOS;
+    } else {
+        for (const g of grupos) {
+            const filas = conAlternativas ? [g.principal, ...g.alternativas] : [g.principal];
+            for (let i = 0; i < filas.length; i++) {
+                const f = filas[i];
+                if (!f.food) continue;
+                const esAlt = i > 0;
+                const lineas = lineasAlimento(doc, f.food, esAlt);
+                h += altoFilaAlimento(lineas);
+            }
+        }
+    }
+
+    if (meal.meal_supplements?.length) {
+        const lineasSup = lineasSuplementacion(doc, meal.meal_supplements);
+        h += altoSuplementacion(lineasSup);
+    }
+
+    h += ESPACIADO_COMIDA;
+    return h;
 }
 
 async function imagenComoDataUrl(url: string): Promise<string | null> {
@@ -230,23 +300,26 @@ export async function generarPdfPlan(plan: NutritionPlan, opciones: OpcionesPdf 
         comidas.forEach((meal) => {
             const grupos = agruparAlimentos(meal.foods ?? []).filter((g) => g.principal.food);
             const tot = totalesDeComida(meal, dia.id);
-            // Que una comida no empiece con menos de cabecera + 2 filas.
-            asegurar(9 + 6 + 2 * 6);
+            const alturaTotal = calcularAlturaComida(doc, meal, conAlternativas);
+            const alturaDisponiblePagina = limite() - MARGEN;
 
-            // Barra de la comida
-            relleno(acento);
-            doc.roundedRect(MARGEN, y, ANCHO, 8, 1.5, 1.5, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            texto(`${meal.name}${meal.time ? `  ·  ${meal.time.slice(0, 5)}` : ''}`, MARGEN + 3, y + 5.4);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
-            texto(
-                `${formatear(tot.kcal)} kcal  ·  ${formatear(tot.proteina)} P  ·  ${formatear(tot.carbos)} HC  ·  ${formatear(tot.grasas)} G`,
-                MARGEN + ANCHO - 3, y + 5.4, { align: 'right' }
-            );
-            y += 13;
+            // Barra de cabecera de la comida (principal o repetida con "(cont.)")
+            const dibujarBarraComida = (esContinuacion = false) => {
+                relleno(acento);
+                doc.roundedRect(MARGEN, y, ANCHO, 8, 1.5, 1.5, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(10);
+                const nombre = esContinuacion ? `${meal.name} (cont.)` : meal.name;
+                texto(`${nombre}${meal.time ? `  ·  ${meal.time.slice(0, 5)}` : ''}`, MARGEN + 3, y + 5.4);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8.5);
+                texto(
+                    `${formatear(tot.kcal)} kcal  ·  ${formatear(tot.proteina)} P  ·  ${formatear(tot.carbos)} HC  ·  ${formatear(tot.grasas)} G`,
+                    MARGEN + ANCHO - 3, y + 5.4, { align: 'right' }
+                );
+                y += ALTO_BARRA_COMIDA;
+            };
 
             const cabeceraTabla = () => {
                 doc.setFont('helvetica', 'bold');
@@ -267,6 +340,23 @@ export async function generarPdfPlan(plan: NutritionPlan, opciones: OpcionesPdf 
                 doc.line(MARGEN, y, MARGEN + ANCHO, y);
                 y += 4;
             };
+
+            // Regla de saltos:
+            // 1. Si la comida cabe entera en una página limpia (alturaTotal <= alturaDisponiblePagina),
+            //    NUNCA se parte: si no cabe en lo que queda de la página actual, salta a página nueva.
+            // 2. Si la comida sola es más alta que una página entera, se parte fila a fila como
+            //    antes, pero asegurando antes de empezar que quepan cabecera + 2 filas para no
+            //    dejar una cabecera huérfana al pie de la página.
+            if (alturaTotal <= alturaDisponiblePagina) {
+                if (y + alturaTotal > limite()) {
+                    doc.addPage();
+                    y = MARGEN;
+                }
+            } else {
+                asegurar(ALTO_BARRA_COMIDA + ALTO_CABECERA_TABLA + 2 * 6);
+            }
+
+            dibujarBarraComida(false);
             cabeceraTabla();
 
             if (grupos.length === 0) {
@@ -274,7 +364,7 @@ export async function generarPdfPlan(plan: NutritionPlan, opciones: OpcionesPdf 
                 doc.setFontSize(9);
                 color(TENUE);
                 texto('Sin alimentos', MARGEN + 2, y);
-                y += 6;
+                y += ALTO_SIN_ALIMENTOS;
             }
 
             grupos.forEach((g) => {
@@ -286,27 +376,34 @@ export async function generarPdfPlan(plan: NutritionPlan, opciones: OpcionesPdf 
                     const gramos = gramosEnDia(f, dia.id);
                     const m = macrosDe(food, gramos);
                     const sangria = esAlt ? 6 : 2;
-                    doc.setFont('helvetica', esAlt ? 'normal' : 'bold');
-                    doc.setFontSize(9);
-                    const nombre = `${food.product_name}${food.brands ? ` (${food.brands})` : ''}`;
-                    const lineas = doc.splitTextToSize(limpiar(nombre), COL.alimento - sangria - 3) as string[];
-                    const alto = Math.max(5.5, lineas.length * 4 + 1.5);
-                    if (asegurar(alto)) cabeceraTabla();
+                    const lineas = lineasAlimento(doc, food, esAlt);
+                    const alto = altoFilaAlimento(lineas);
+
+                    // Si la fila no cabe, saltamos de página y repetimos la barra
+                    // con el nombre de la comida seguido de " (cont.)" y la cabecera.
+                    if (asegurar(alto)) {
+                        dibujarBarraComida(true);
+                        cabeceraTabla();
+                    }
 
                     if (esAlt) {
                         doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(9);
                         color([30, 140, 70]);
                         texto('ó', MARGEN + 2, y);
-                        doc.setFont('helvetica', 'normal');
                     }
+                    doc.setFont('helvetica', esAlt ? 'normal' : 'bold');
+                    doc.setFontSize(9);
                     color(esAlt ? TENUE : TINTA);
                     doc.text(lineas, MARGEN + sangria, y);
 
                     doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9);
                     color(esAlt ? TENUE : TINTA);
                     let x = MARGEN + COL.alimento;
                     texto(`${formatear(gramos)} g`, x + COL.cantidad, y, { align: 'right' });
                     doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
                     x += COL.cantidad;
                     color(esAlt ? TENUE : TINTA);
                     texto(formatear(m.kcal), x + COL.kcal, y, { align: 'right' }); x += COL.kcal;
@@ -330,15 +427,18 @@ export async function generarPdfPlan(plan: NutritionPlan, opciones: OpcionesPdf 
             });
 
             if (meal.meal_supplements?.length) {
-                asegurar(6);
+                const lineasSup = lineasSuplementacion(doc, meal.meal_supplements);
+                const altoSup = altoSuplementacion(lineasSup);
+                if (asegurar(altoSup)) {
+                    dibujarBarraComida(true);
+                }
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8.5);
                 color(COLOR.proteina);
-                const t = doc.splitTextToSize(limpiar(`Suplementación: ${meal.meal_supplements.join(' · ')}`), ANCHO - 4) as string[];
-                doc.text(t, MARGEN + 2, y);
-                y += t.length * 4 + 1;
+                doc.text(lineasSup, MARGEN + 2, y);
+                y += altoSup;
             }
-            y += 4;
+            y += ESPACIADO_COMIDA;
         });
 
         // Sin caja de total al final: el planificado del día ya está arriba,
