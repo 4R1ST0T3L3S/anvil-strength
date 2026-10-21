@@ -70,7 +70,7 @@ export function slugCompeticion(nombre: string, fecha: string): string {
     return `${aSlug(nombre)}-${anio}`;
 }
 
-export function agruparCompeticiones(filas: FilaPublica[]): Competicion[] {
+export function agruparCompeticiones(filas: FilaPublica[], atletas?: Athlete[]): Competicion[] {
     const grupos = new Map<string, Competicion>();
 
     for (const f of filas) {
@@ -102,7 +102,7 @@ export function agruparCompeticiones(filas: FilaPublica[]): Competicion[] {
         if (!nombre) continue;
         const clave = f.athlete_id ?? normalizarNombre(nombre);
         if (g.convocados.some((c) => c.clave === clave)) continue;
-        const ficha = buscarAtleta(nombre);
+        const ficha = buscarAtleta(nombre, atletas);
         g.convocados.push({
             clave,
             nombre,

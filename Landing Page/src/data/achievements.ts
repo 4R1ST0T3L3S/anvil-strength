@@ -1,5 +1,6 @@
 export interface Achievement {
-    id: number;
+    /** Número en los datos de respaldo (y `legacy_id`); uuid si es nuevo. */
+    id: number | string;
     title: string;
     result: string;
     images: string[];

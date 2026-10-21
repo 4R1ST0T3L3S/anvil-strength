@@ -9,7 +9,7 @@ import { SafeImage } from '../../../components/ui/SafeImage';
 import { UserProfile } from '../../../hooks/useUser';
 import { useSeo } from '../../../hooks/useSeo';
 import { useIdioma } from '../../../hooks/useIdioma';
-import { achievements } from '../../../data/achievements';
+import { useClubWeb } from '../../../services/clubWebService';
 import { partirNombre } from '../../../lib/atletas';
 import { Humo } from '../components/Humo';
 import { PressButton, Reveal, StaggerItem, StaggerList } from '../components/landingKit';
@@ -91,6 +91,7 @@ export function CompetitionsPage({ onLoginClick, onSignupClick }: CompetitionsPa
         }, { replace: true });
     }, [setParams]);
 
+    const { achievements } = useClubWeb();
     const resultados = achievements.map((a) => logroEn(a, idioma)).slice(0, 6);
 
     return (

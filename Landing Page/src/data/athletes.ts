@@ -37,7 +37,8 @@ export interface VideoAtleta {
 }
 
 export interface Athlete {
-  id: number;
+  /** Número en los datos de respaldo; uuid cuando viene de `club_athletes`. */
+  id: number | string;
   name: string;
   /** Identificador en la URL de la convocatoria. Sin tildes ni espacios. */
   slug?: string;

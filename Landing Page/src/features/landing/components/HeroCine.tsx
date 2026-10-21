@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { m, useReducedMotion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { athletes } from '../../../data/athletes';
+import { useClubWeb } from '../../../services/clubWebService';
 import { SmartAuthButton } from '../../../components/ui/SmartAuthButton';
 import type { UserProfile } from '../../../hooks/useUser';
 import { useIdioma } from '../../../hooks/useIdioma';
@@ -47,6 +47,7 @@ interface HeroCineProps {
 export function HeroCine({ user, onLoginClick, onSignupClick, onYaTengoCuenta }: HeroCineProps) {
     const t = useTextosWeb().portada;
     const reduce = useReducedMotion() ?? false;
+    const { athletes } = useClubWeb();
 
     const plantilla = ALINEACION
         .map((slug) => athletes.find((a) => a.slug === slug))

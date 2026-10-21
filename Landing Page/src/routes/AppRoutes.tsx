@@ -39,6 +39,7 @@ import { PageSkeleton } from '../components/skeletons/PageSkeleton';
 const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
 const CompetitionsPage = lazy(() => import('../features/landing/pages/CompetitionsPage').then(module => ({ default: module.CompetitionsPage })));
 const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
+const AdminWebPage = lazy(() => import('../features/admin/pages/AdminWebPage').then(module => ({ default: module.AdminWebPage })));
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
 const CoachDashboard = lazy(() => import('../features/coach/pages/CoachDashboard').then(module => ({ default: module.CoachDashboard })));
 const NutritionDashboard = lazy(() => import('../features/nutrition/pages/NutritionDashboard').then(module => ({ default: module.NutritionDashboard })));
@@ -403,6 +404,19 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                 ) : (
                     <Suspense fallback={<AppShellSkeleton />}>
                         <AdminDashboard />
+                    </Suspense>
+                )
+            } />
+
+            {/* --- ATLETAS Y LOGROS DE LA WEB --- administración y desarrollo */}
+            <Route path="/admin/web" element={
+                !user && !hasActiveSession ? (
+                    <Navigate to="/" replace />
+                ) : !puede(user, 'administrar') ? (
+                    <Navigate to="/" replace />
+                ) : (
+                    <Suspense fallback={<AppShellSkeleton />}>
+                        <AdminWebPage />
                     </Suspense>
                 )
             } />

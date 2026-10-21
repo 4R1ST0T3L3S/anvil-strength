@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useUser, UserProfile } from '../../../hooks/useUser';
 import { adminService } from '../services/adminService';
 import { isAdmin } from '../../../lib/roles';
-import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe } from 'lucide-react';
+import { Loader, UserCheck, UserX, Shield, ShieldAlert, Check, X, Search, Save, Users, Activity, Dumbbell, Apple, Globe, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CLAVES } from '../../../lib/queryKeys';
@@ -256,6 +256,13 @@ export function AdminDashboard() {
                             >
                                 <Globe size={18} />
                                 Ver Web
+                            </button>
+                            <button
+                                onClick={() => navigate('/admin/web')}
+                                className="flex items-center justify-center gap-2 bg-brand hover:bg-brand-hover text-brand-ink px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap active:scale-95"
+                            >
+                                <Trophy size={18} />
+                                Atletas y logros de la web
                             </button>
                             {hasChanges && (
                                 <button

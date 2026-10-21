@@ -36,14 +36,14 @@ const palabras = (nombre: string) => normalizarNombre(nombre).split(' ').filter(
  * Si varias fichas casan, gana la que tiene más palabras en común: "Pau
  * Rodriguez" le gana a un hipotético "Pau" a secas.
  */
-export function buscarAtleta(nombreCompleto: string | null | undefined): Athlete | undefined {
+export function buscarAtleta(nombreCompleto: string | null | undefined, lista: Athlete[] = athletes): Athlete | undefined {
     if (!nombreCompleto) return undefined;
     const buscadas = new Set(palabras(nombreCompleto));
     if (buscadas.size === 0) return undefined;
 
     let mejor: Athlete | undefined;
     let mejorPeso = 0;
-    for (const atleta of athletes) {
+    for (const atleta of lista) {
         const suyas = palabras(atleta.name);
         // Una sola palabra en la ficha ("Masoko", "Alejandro") solo casa si el
         // nombre buscado es exactamente esa palabra.

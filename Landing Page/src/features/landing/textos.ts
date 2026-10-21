@@ -737,6 +737,6 @@ export function nutricionistaEn<T extends Nutritionist>(nutri: T, idioma: Idioma
 }
 
 export function logroEn<T extends Achievement>(logro: T, idioma: Idioma): T {
-    const en = idioma === 'en' ? LOGROS_EN[logro.id] : undefined;
+    const en = idioma === 'en' && typeof logro.id === 'number' ? LOGROS_EN[logro.id] : undefined;
     return en ? { ...logro, ...en } : logro;
 }

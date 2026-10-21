@@ -13,10 +13,11 @@ import { BandaDeEntrada, Fold, PressButton, Reveal, StaggerList, StaggerItem } f
 import { HowItWorksSection } from '../components/HowItWorksSection';
 import { HeroCine } from '../components/HeroCine';
 import { FAQSection } from '../components/FAQSection';
-import { athletes, Athlete } from '../../../data/athletes';
+import type { Athlete } from '../../../data/athletes';
+import { useClubWeb } from '../../../services/clubWebService';
 import { coaches, Coach } from '../../../data/coaches';
 import { nutritionists } from '../../../data/nutritionists';
-import { achievements as allAchievements, Achievement } from '../../../data/achievements';
+import type { Achievement } from '../../../data/achievements';
 import { SafeImage } from '../../../components/ui/SafeImage';
 import { Modal } from '../../../components/ui/Modal';
 
@@ -46,7 +47,6 @@ interface LandingPageProps {
     noindex?: boolean;
 }
 
-const featuredAchievements = allAchievements;
 
 
 
@@ -88,6 +88,7 @@ export function LandingPage({ onLoginClick, onSignupClick, user, noindex }: Land
 
     // Los datos del club (cargos, presentaciones, logros) en el idioma de la
     // página. Los nombres propios no cambian. Ver ../textos.ts.
+    const { athletes, achievements: featuredAchievements } = useClubWeb();
     const logros = featuredAchievements.map((a) => logroEn(a, idioma));
 
 
