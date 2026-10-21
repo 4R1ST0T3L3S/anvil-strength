@@ -1,6 +1,7 @@
 import {
     LayoutDashboard, FileText, Utensils, Calendar, Trophy, User, ShoppingBag, Medal, Activity, Users, TrendingUp, Inbox, MessageSquare, SlidersHorizontal, Flag,
 } from 'lucide-react';
+import { lazy, Suspense } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { DashboardLayout, AccountMenu } from '../../../components/layout/DashboardLayout';
 import { ViewTransition } from '../../../components/layout/ViewTransition';
@@ -31,6 +32,8 @@ import { UserProfile, useUser } from '../../../hooks/useUser';
 import { isAthlete, isCoach, isStaff, tieneAmbosPaneles } from '../../../lib/roles';
 import { FEATURES } from '../../../lib/features';
 
+const ClubPage = lazy(() => import('../../club/pages/ClubPage').then(module => ({ default: module.ClubPage })));
+
 interface UserDashboardProps {
     user: UserProfile;
     onLogout: () => void;
@@ -44,6 +47,7 @@ interface UserDashboardProps {
 const VIEWS = {
     '': 'home',
     planificacion: 'planning',
+    club: 'club',
     bandeja: 'inbox',
     mensajes: 'messages',
     estadisticas: 'stats',
@@ -82,11 +86,12 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
     // Quien no tiene entrenamiento propio no pinta nada aquí: redirección,
     // no error. `!isAthlete` y no `isStaff`: los roles se suman.
-    if (!isAthlete(user)) return <Navigate to="/coach-dashboard" replace />;
+    if (!isAthlete(user)) return <Navigate to={slug === 'club' ? '/coach-dashboard/club' : '/coach-dashboard'} replace />;
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: t('nav.inicio'), onClick: () => go(''), isActive: slug === '' },
         { icon: <FileText size={20} />, label: t('nav.entrenar'), onClick: () => go('planificacion'), isActive: slug === 'planificacion' },
+        { icon: <Flag size={20} />, label: 'El club', shortLabel: 'Club', onClick: () => go('club'), isActive: slug === 'club' },
         { icon: <Inbox size={20} />, label: 'Bandeja', onClick: () => go('bandeja'), isActive: slug === 'bandeja', badge: sinLeerBandeja },
         { icon: <MessageSquare size={20} />, label: 'Mensajes', onClick: () => go('mensajes'), isActive: slug === 'mensajes', badge: sinLeerChat },
         { icon: <TrendingUp size={20} />, label: 'Estadísticas', shortLabel: 'Progreso', onClick: () => go('estadisticas'), isActive: slug === 'estadisticas', hideOnMobileBar: true },
@@ -96,8 +101,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
         { icon: <Activity size={20} />, label: t('nav.velocidad'), onClick: () => go('velocidad'), isActive: slug === 'velocidad', hideOnMobileBar: true },
         { icon: <Calendar size={20} />, label: t('nav.calendarioAep'), onClick: () => go('calendario'), isActive: slug === 'calendario', hideOnMobileBar: true },
         { icon: <Medal size={20} />, label: t('nav.ranking'), onClick: () => go('ranking'), isActive: slug === 'ranking', hideOnMobileBar: true },
-        // La zona común es una página propia (como la Arena), no una vista del panel.
-        { icon: <Flag size={20} />, label: 'El club', onClick: () => navigate('/dashboard/club'), isActive: false, hideOnMobileBar: true },
         { icon: <SlidersHorizontal size={20} />, label: 'Preferencias y ajustes', shortLabel: 'Ajustes', onClick: () => go('ajustes'), isActive: slug === 'ajustes' || slug === 'notificaciones', hideOnMobileBar: true },
         // La Tienda Anvil está apagada (ver src/lib/features.ts).
         ...(FEATURES.anvilStore
@@ -127,6 +130,12 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                     return <BloqueoDePago resultado={puerta.resultado} queSeHaBloqueado="Tu entrenamiento" />;
                 }
                 return <WorkoutLogger athleteId={user.id} athleteName={user.full_name} />;
+            case 'club':
+                return (
+                    <Suspense fallback={null}>
+                        <ClubPage user={user} />
+                    </Suspense>
+                );
             case 'inbox':
                 return <AthleteInbox user={user} onOpenTraining={() => go('planificacion')} />;
             case 'messages':

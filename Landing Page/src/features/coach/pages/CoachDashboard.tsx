@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
-    LayoutDashboard, Users, CalendarDays, Calendar, User, Activity, Dumbbell, SlidersHorizontal, Inbox, MessageSquare, Apple,
+    LayoutDashboard, Users, CalendarDays, Calendar, User, Activity, Dumbbell, SlidersHorizontal, Inbox, MessageSquare, Apple, Flag,
 } from 'lucide-react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { CoachHome } from '../components/CoachHome';
@@ -27,6 +27,8 @@ import { ChatPage } from '../../chat/pages/ChatPage';
 import { useChatSinLeer } from '../../chat/hooks/useChat';
 import { isStaff, isNutritionist, isDeveloper, isAthlete, tieneAmbosPaneles } from '../../../lib/roles';
 
+const ClubPage = lazy(() => import('../../club/pages/ClubPage').then(module => ({ default: module.ClubPage })));
+
 interface CoachDashboardProps {
     user: UserProfile;
     onLogout: () => void;
@@ -45,6 +47,7 @@ interface CoachDashboardProps {
 const VIEWS = {
     '': 'home',
     atletas: 'athletes',
+    club: 'club',
     bandeja: 'inbox',
     mensajes: 'messages',
     dietas: 'diets',
@@ -83,13 +86,14 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
 
     // AppRoutes manda aquí a TODO el que gestiona atletas, nutricionistas
     // incluidos; quien no pinta aquí se redirige en vez de quedarse encallado.
-    if (!isStaff(user)) return <Navigate to="/dashboard" replace />;
+    if (!isStaff(user)) return <Navigate to={slug === 'club' ? '/dashboard/club' : '/dashboard'} replace />;
 
     const nutritionist = isNutritionist(user);
 
     const menuItems = [
         { icon: <LayoutDashboard size={20} />, label: 'Inicio', onClick: () => go(''), isActive: slug === '' && !athleteId },
         { icon: <Users size={20} />, label: 'Atletas', onClick: () => go('atletas'), isActive: slug === 'atletas' || !!athleteId },
+        { icon: <Flag size={20} />, label: 'El club', shortLabel: 'Club', onClick: () => go('club'), isActive: slug === 'club' },
         { icon: <Inbox size={20} />, label: 'Bandeja', onClick: () => go('bandeja'), isActive: slug === 'bandeja', badge: bandeja.totalPendientes },
         { icon: <MessageSquare size={20} />, label: 'Mensajes', onClick: () => go('mensajes'), isActive: slug === 'mensajes', badge: sinLeer },
         { icon: <CalendarDays size={20} />, label: 'Agenda', onClick: () => go('agenda'), isActive: slug === 'agenda', hideOnMobileBar: true },
@@ -140,6 +144,12 @@ export function CoachDashboard({ user, onLogout }: CoachDashboardProps) {
                         onOpenChat={abrirChat}
                         onBack={() => go('')}
                     />
+                );
+            case 'club':
+                return (
+                    <Suspense fallback={null}>
+                        <ClubPage user={user} />
+                    </Suspense>
                 );
             case 'inbox':
                 return <CoachInbox user={user} onOpenAthlete={(id) => navigate(`/coach-dashboard/bandeja/${id}`)} />;

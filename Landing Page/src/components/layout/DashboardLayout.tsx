@@ -17,7 +17,7 @@ import { cn } from '../../lib/utils';
  *
  * Una sola disposición para todos los tamaños, la del iPhone: el contenido
  * ocupa la pantalla y abajo flota una barra de pestañas translúcida con
- * cuatro accesos y «Más». No hay barra lateral: el INICIO es el mapa de la
+ * cinco accesos y «Más». No hay barra lateral: el INICIO es el mapa de la
  * aplicación —todas las secciones están en su rejilla— y la barra solo
  * lleva lo que se toca decenas de veces al día. En el ordenador la barra se
  * centra y se estrecha; lo demás es igual.
@@ -85,11 +85,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     panelSwitch,
 }) => {
     const visibles = menuItems.filter(item => item.label !== 'QA: Test DB');
-    const enBarra = visibles.filter(item => !item.hideOnMobileBar).slice(0, 4);
+    const enBarra = visibles.filter(item => !item.hideOnMobileBar).slice(0, 5);
     const enMas = visibles.filter(item => !enBarra.includes(item));
     const [masAbierto, setMasAbierto] = useState(false);
 
-    // «Más» es la quinta pestaña, y la única que no navega: abre la hoja.
+    // «Más» es la sexta pestaña, y la única que no navega: abre la hoja.
     // Se pinta con contador si algo de lo que esconde lo tiene.
     const pendientesEnMas = enMas.reduce((n, i) => n + (i.badge ?? 0), 0);
     const masActivo = enMas.some(i => i.isActive);
@@ -176,14 +176,14 @@ function Pestana({
             aria-label={badge ? `${label}, ${badge} pendientes` : label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-[20px] px-1',
+                'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-[20px] px-0.5',
                 'transition-colors duration-fast ease-snap',
                 active ? 'text-brand-text' : 'text-ink-subtle hover:text-ink'
             )}
         >
             {/* La píldora de fondo de la pestaña activa se desliza entre
                 pestañas (mismo `layoutId`): es lo que hace sentir la barra
-                como un objeto y no como cinco botones. */}
+                como un objeto y no como seis botones. */}
             {active && (
                 <m.span
                     layoutId="tabbar-activa"
@@ -203,7 +203,7 @@ function Pestana({
                     </span>
                 )}
             </span>
-            <span className={cn('relative max-w-full truncate text-[10.5px] leading-none', active ? 'font-semibold' : 'font-medium')}>
+            <span className={cn('relative max-w-full truncate text-[10px] leading-none', active ? 'font-semibold' : 'font-medium')}>
                 {label}
             </span>
         </m.button>

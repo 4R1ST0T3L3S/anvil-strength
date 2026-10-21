@@ -10,7 +10,7 @@ import { ArenaBetCard } from '../components/ArenaBetCard';
 import { ArenaBettingModal } from '../components/ArenaBettingModal';
 import { ArenaAdminPanel } from '../components/ArenaAdminPanel';
 import { m, AnimatePresence } from 'framer-motion';
-import { puede } from '../../../lib/roles';
+import { isAthlete, puede } from '../../../lib/roles';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { EstadoDeDatos } from '../../../components/ui/EstadoDeDatos';
 import { SkeletonCard } from '../../../components/ui/Skeleton';
@@ -259,7 +259,7 @@ export function ArenaView({ user }: { user: ExtendedProfile }) {
                             {pointsData?.balance?.toLocaleString() || 0} <span className="text-xs">AC</span>
                         </span>
                     </div>
-                    <Link to={slugCompeticion ? '/dashboard/club' : '/dashboard'} aria-label="Cerrar la Arena" className="h-11 w-11 md:h-auto md:w-auto flex items-center justify-center p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
+                    <Link to={slugCompeticion ? (!user || isAthlete(user) ? '/dashboard/club' : '/coach-dashboard/club') : '/dashboard'} aria-label="Cerrar la Arena" className="h-11 w-11 md:h-auto md:w-auto flex items-center justify-center p-2 hover:bg-[var(--fill-pressed)] rounded-full transition-colors text-ink-subtle hover:text-ink">
                         <X size={24} />
                     </Link>
                 </div>

@@ -193,7 +193,7 @@ export function CoachHome({ user, onNavigate, headerActions }: { user: UserProfi
                                 <Acceso area="datos" icono={Activity} titulo="Análisis PWR" pista="Velocidad y perfiles de barra" onClick={() => onNavigate('pwr_analysis')} />
                             )}
                             <Acceso area="ajustes" icono={User} titulo="Mi perfil" pista="Marca, logo y datos" onClick={() => onNavigate('profile')} />
-                            <Acceso area="club" icono={Flag} titulo="El club" pista="Competiciones, Arena, ranking y sushi" onClick={() => navigate('/dashboard/club')} />
+                            <Acceso area="club" icono={Flag} titulo="El club" pista="Competiciones, Arena, ranking y sushi" onClick={() => onNavigate('club')} />
                             <Acceso area="club" icono={Swords} titulo="La Arena" pista="Comunidad del club" onClick={() => navigate('/dashboard/community')} />
                             <Acceso area="club" icono={Users} titulo="Ranking" pista="Clasificación de atletas" onClick={() => setIsRankingOpen(true)} />
                             <Acceso area="ajustes" icono={SlidersHorizontal} titulo="Preferencias y ajustes" pista="Programación, avisos, tema y cuenta" onClick={() => onNavigate('settings')} />

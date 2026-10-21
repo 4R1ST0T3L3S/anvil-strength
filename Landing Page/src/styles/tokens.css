@@ -348,6 +348,14 @@
   --border-subtle: oklch(1 0 0 / 0.07);
   --border-default: oklch(1 0 0 / 0.12);
   --border-strong: oklch(1 0 0 / 0.2);
+  /* La barra de pestañas del panel también se pinta aquí cuando la vista
+     es de marca (El club): en el material claro, sobre negro, las
+     pestañas apagadas no se leían. */
+  --material-bar: oklch(0.155 0.004 25 / 0.78);
+  --material-sheet: oklch(0.22 0.006 25 / 0.92);
+  --card-border: oklch(1 0 0 / 0.07);
+  --fill-pressed: oklch(1 0 0 / 0.09);
+  --fill-selected: oklch(1 0 0 / 0.08);
   /*                 pozo    lienzo   tarjeta
        ink           19,4     18,5     16,1
        ink-muted      9,6      9,1      7,9
