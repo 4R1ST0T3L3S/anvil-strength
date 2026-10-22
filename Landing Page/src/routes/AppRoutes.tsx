@@ -38,6 +38,7 @@ import { PageSkeleton } from '../components/skeletons/PageSkeleton';
 // Lazy Load Pages
 const ArenaView = lazy(() => import('../features/arena/pages/ArenaView').then(module => ({ default: module.ArenaView })));
 const CompetitionsPage = lazy(() => import('../features/landing/pages/CompetitionsPage').then(module => ({ default: module.CompetitionsPage })));
+const RegionPage = lazy(() => import('../features/landing/pages/RegionPage').then(module => ({ default: module.RegionPage })));
 const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard').then(module => ({ default: module.AdminDashboard })));
 const AdminWebPage = lazy(() => import('../features/admin/pages/AdminWebPage').then(module => ({ default: module.AdminWebPage })));
 const UserDashboard = lazy(() => import('../features/athlete/pages/UserDashboard').then(module => ({ default: module.UserDashboard })));
@@ -284,6 +285,28 @@ export function AppRoutes({ user, onLoginClick, onSignupClick, onLogout }: AppRo
                     <CompetitionsPage onLoginClick={onLoginClick} user={user} />
                 </Suspense>
             } />
+
+            {/* --- PÁGINAS TERRITORIALES SEO (Solo en español) ---
+                Las búsquedas objetivo ("powerlifting valencia", "powerlifting murcia",
+                "powerlifting baleares") son en español y el idioma no tiene ruta
+                propia; al no entrar en `esPublica`, `IdiomaFijo` y `<html lang="es">`
+                quedan fijados en castellano. */}
+            {(['powerlifting-valencia', 'powerlifting-murcia', 'powerlifting-baleares'] as const).map(slug => (
+                <Route key={slug} path={`/${slug}`} element={
+                    <Suspense fallback={
+                        <div className="min-h-[100dvh] bg-surface-sunken flex items-center justify-center">
+                            <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    }>
+                        <RegionPage
+                            slug={slug}
+                            onLoginClick={onLoginClick}
+                            onSignupClick={onSignupClick}
+                            user={user}
+                        />
+                    </Suspense>
+                } />
+            ))}
 
             {/* --- 2. RUTA DEDICADA: LA ARENA --- */}
             {/* Importante: ArenaView suele requerir la prop 'user', se la pasamos aquí */}

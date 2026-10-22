@@ -63,8 +63,8 @@ export function rellenar(frase: string, valores: Record<string, string | number>
 const WEB = textos(
     {
         seo: {
-            titulo: 'Anvil Strength | Club de Powerlifting Online en España — Gratis',
-            descripcion: 'Anvil Strength es el club de powerlifting digital de España. Gratis, sin sede física, afiliado AEP e IPF. Entrenadores de élite, app exclusiva y comunidad real. ¿Empezamos?',
+            titulo: 'Club de Powerlifting en Valencia, Murcia y Baleares | Anvil Strength',
+            descripcion: 'Club de powerlifting con base en Valencia para atletas de Comunidad Valenciana, Murcia y Baleares. Entrenamiento online, gratis y afiliado a AEP e IPF.',
         },
         cabecera: {
             nav: {
@@ -101,7 +101,7 @@ const WEB = textos(
             lema: 'Where champions are forged',
             crearCuenta: 'Crear cuenta gratis',
             yaTengoCuenta: 'Ya tengo cuenta',
-            subtitulo: 'Club de powerlifting · Federado AEP e IPF · Gratis',
+            subtitulo: 'Club de powerlifting en Valencia, Murcia y Baleares · AEP e IPF · Gratis',
             proxima: 'Próxima cita',
             verConvocatoria: 'Ver convocatoria',
             enDias: 'en {n} días',
@@ -134,7 +134,7 @@ const WEB = textos(
             titulo2: 'puerta de entrada',
             intro: 'Anvil Strength nació de una idea sencilla: el powerlifting no debería ser un deporte cerrado. Si quieres competir, ya tienes sitio. No hace falta que muevas ningún número concreto ni que vengas de ningún lado.',
             puntos: [
-                { t: 'No tiene sede, y es a propósito', d: 'Entrenas en tu gimnasio, estés donde estés, y compites bajo el nombre del club. Nadie se muda por entrenar.' },
+                { t: 'Base en Valencia; el gimnasio, el tuyo', d: 'Entrenas en tu gimnasio, estés donde estés de la zona (Comunidad Valenciana, Murcia y Baleares) y compites bajo el nombre del club. Nadie se muda por entrenar.' },
                 { t: 'Cuesta cero euros', d: 'Unirse no tiene coste. Solo pagas las tasas oficiales de federación y las inscripciones a cada competición, que van íntegras a la AEP.' },
                 { t: 'Federados en AEP e IPF', d: 'Compites en campeonatos oficiales, con marcas homologadas y ranking que cuenta.' },
                 { t: 'Entrenador y nutricionista', d: 'Asignados de verdad, con la programación dentro de la app y contacto directo por chat.' },
@@ -224,7 +224,8 @@ const WEB = textos(
             preguntas: [
                 { q: '¿Necesito un nivel mínimo para unirme?', a: 'No. En Anvil Strength llevamos atletas desde su primera competición hasta el nivel nacional. Lo único que pedimos es ganas de competir y compromiso con el proceso.' },
                 { q: '¿Cuánto cuesta unirse al club?', a: 'Unirse al club es completamente gratuito: no hay cuota. Los costes que sí tendrás son las tasas oficiales de la AEP para federarte (una vez al año) y las inscripciones a competiciones, que van por tu cuenta. Aparte de eso, el entrenamiento personalizado con tu entrenador es un servicio de pago que acuerdas directamente con él — el club no cobra ninguna comisión sobre eso.' },
-                { q: '¿Necesito entrenar en un gimnasio específico?', a: 'No. Somos un club 100% digital. Puedes estar en cualquier punto de España y entrenar en el gimnasio que prefieras. Tu entrenador trabaja contigo de forma remota con la misma calidad que si estuviera a tu lado.' },
+                { q: '¿Necesito entrenar en un gimnasio específico?', a: 'No. Somos un club con base en Valencia y entrenamiento online: entrenas en tu gimnasio, estés donde estés de la zona (Comunidad Valenciana, Región de Murcia o Islas Baleares). Tu entrenador trabaja contigo a distancia con la misma calidad que si estuviera a tu lado.' },
+                { q: 'Soy de Murcia o de Baleares, ¿puedo unirme?', a: 'Sí. Aunque el club tiene su base en Valencia, nuestra zona de competición abarca la Comunidad Valenciana, la Región de Murcia y las Islas Baleares. Entrenas a distancia en tu propio gimnasio y compites bajo el nombre de Anvil Strength en las competiciones oficiales de la zona.' },
                 { q: '¿Qué son la AEP y la IPF?', a: 'La AEP (Asociación Española de Powerlifting) es la federación nacional que organiza los campeonatos en España. La IPF (International Powerlifting Federation) es la federación mundial. Anvil Strength está afiliado a ambas, lo que te permite competir en todos sus campeonatos oficiales.' },
                 { q: '¿Cómo me federo para poder competir?', a: 'Una vez que formes parte del equipo, te guiamos en todo el proceso de federación con la AEP. Es más sencillo de lo que parece y el proceso se hace una vez al año. Tu entrenador te acompaña en cada paso.' },
                 { q: '¿Qué incluye el acceso a la app del club?', a: 'La app incluye tu bloque de entrenamiento personalizado, chat directo con tu entrenador y nutricionista, seguimiento de tus marcas personales, calendario de competiciones del equipo, análisis de velocidad de barra (VBT), y acceso a la comunidad de atletas.' },
@@ -240,7 +241,7 @@ const WEB = textos(
             burbuja: '¿Hablamos?',
         },
         pie: {
-            lema: 'Club de powerlifting digital de España. Afiliado AEP e IPF. Gratuito, para toda España.',
+            lema: 'Club de powerlifting con base en Valencia para atletas de Comunidad Valenciana, Murcia y Baleares. Entrenamiento online, afiliado AEP e IPF, gratuito.',
             instagram: 'Instagram de Anvil Strength',
             email: 'Email de Anvil Strength',
             whatsapp: 'WhatsApp de Anvil Strength',
@@ -363,8 +364,8 @@ const WEB = textos(
     },
     {
         seo: {
-            titulo: 'Anvil Strength | Online Powerlifting Club in Spain — Free',
-            descripcion: 'Anvil Strength is Spain’s digital powerlifting club. Free, no physical gym, affiliated with the AEP and IPF. Elite coaches, our own app and a real community. Shall we start?',
+            titulo: 'Powerlifting Club in Valencia, Murcia & the Balearics | Anvil Strength',
+            descripcion: 'Powerlifting club based in Valencia for athletes in the Valencian Community, Murcia and the Balearic Islands. Online coaching, free to join, AEP & IPF affiliated.',
         },
         cabecera: {
             nav: {
@@ -401,7 +402,7 @@ const WEB = textos(
             lema: 'Where champions are forged',
             crearCuenta: 'Create a free account',
             yaTengoCuenta: 'I already have an account',
-            subtitulo: 'Powerlifting club · AEP & IPF registered · Free',
+            subtitulo: 'Powerlifting club in Valencia, Murcia & Balearic Islands · AEP & IPF · Free',
             proxima: 'Next up',
             verConvocatoria: 'See the line-up',
             enDias: 'in {n} days',
@@ -434,7 +435,7 @@ const WEB = textos(
             titulo2: 'no entry bar',
             intro: 'Anvil Strength was born from a simple idea: powerlifting shouldn’t be a closed sport. If you want to compete, there’s already a place for you. You don’t need to lift any particular number or come from anywhere in particular.',
             puntos: [
-                { t: 'No gym of its own, on purpose', d: 'You train at your own gym, wherever you are, and compete under the club’s name. Nobody has to move to train.' },
+                { t: 'Based in Valencia; the gym is your own', d: 'You train at your own gym, wherever you are in the area (Valencian Community, Murcia and the Balearic Islands) and compete under the club’s name. Nobody has to move to train.' },
                 { t: 'It costs zero euros', d: 'Joining is free. You only pay the official federation fees and the entry fee for each competition, which go straight to the AEP.' },
                 { t: 'Registered with the AEP and IPF', d: 'You compete in official championships, with ratified lifts and a ranking that counts.' },
                 { t: 'A coach and a nutritionist', d: 'Genuinely assigned to you, with your programme inside the app and direct contact by chat.' },
@@ -524,7 +525,8 @@ const WEB = textos(
             preguntas: [
                 { q: 'Do I need a minimum level to join?', a: 'No. At Anvil Strength we coach athletes from their very first competition up to national level. All we ask for is the drive to compete and commitment to the process.' },
                 { q: 'How much does it cost to join the club?', a: 'Joining the club is completely free: there is no fee. The costs you will have are the official AEP fees to register (once a year) and competition entries, which you pay yourself. Apart from that, personalised coaching with your coach is a paid service you agree directly with them — the club takes no commission on it.' },
-                { q: 'Do I have to train at a specific gym?', a: 'No. We are a 100% digital club. You can be anywhere in Spain and train at whichever gym you like. Your coach works with you remotely, with the same quality as if they were standing next to you.' },
+                { q: 'Do I have to train at a specific gym?', a: 'No. We are a club based in Valencia with online coaching: you train at your own gym, wherever you are in the area (Valencian Community, Region of Murcia or the Balearic Islands). Your coach works with you remotely, with the same quality as if they were standing next to you.' },
+                { q: 'I’m from Murcia or the Balearic Islands, can I join?', a: 'Yes. Although the club is based in Valencia, our competition area covers the Valencian Community, the Region of Murcia and the Balearic Islands. You train remotely at your own gym and compete under the Anvil Strength name at the official championships in the area.' },
                 { q: 'What are the AEP and the IPF?', a: 'The AEP (Asociación Española de Powerlifting) is the national federation that runs the championships in Spain. The IPF (International Powerlifting Federation) is the world federation. Anvil Strength is affiliated with both, so you can compete in all of their official championships.' },
                 { q: 'How do I register so I can compete?', a: 'Once you are part of the team, we guide you through the whole AEP registration process. It is simpler than it looks and it is done once a year. Your coach is with you every step of the way.' },
                 { q: 'What does access to the club app include?', a: 'The app includes your personalised training block, direct chat with your coach and nutritionist, tracking of your personal bests, the team’s competition calendar, bar velocity analysis (VBT), and access to the athlete community.' },
@@ -540,7 +542,7 @@ const WEB = textos(
             burbuja: 'Let’s talk?',
         },
         pie: {
-            lema: 'Spain’s digital powerlifting club. Affiliated with the AEP and IPF. Free, for all of Spain.',
+            lema: 'Powerlifting club based in Valencia for athletes in the Valencian Community, Murcia and the Balearic Islands. Online coaching, AEP & IPF affiliated, free to join.',
             instagram: 'Anvil Strength on Instagram',
             email: 'Email Anvil Strength',
             whatsapp: 'Anvil Strength on WhatsApp',

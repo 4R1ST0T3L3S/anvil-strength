@@ -1,5 +1,6 @@
 import { Instagram, Mail, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { REGIONES_SEO, TITULO_PIE_REGIONES } from '../../data/regionesSeo';
 import { useTextosWeb } from '../../features/landing/textos';
 
 export function PublicFooter() {
@@ -66,6 +67,21 @@ export function PublicFooter() {
                                 >
                                     {link.label}
                                 </a>
+                            ))}
+                        </nav>
+
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600 mt-8 mb-3">
+                            {TITULO_PIE_REGIONES}
+                        </p>
+                        <nav aria-label={TITULO_PIE_REGIONES} className="flex flex-col gap-2">
+                            {REGIONES_SEO.map((region) => (
+                                <Link
+                                    key={region.slug}
+                                    to={`/${region.slug}`}
+                                    className="text-ink-subtle hover:text-ink text-sm font-medium transition-colors"
+                                >
+                                    {region.etiquetaEnlace}
+                                </Link>
                             ))}
                         </nav>
                     </div>

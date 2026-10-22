@@ -119,11 +119,11 @@
   />
 
   <!-- SEO Primary -->
-  <title>Anvil Strength | Club de Powerlifting Online en España — Gratis</title>
-  <meta name="description" content="Anvil Strength es el club de powerlifting digital de España. Gratis, sin sede física, afiliado AEP e IPF. Entrenadores de élite, app exclusiva y comunidad real. ¿Empezamos?" />
+  <title>Club de Powerlifting en Valencia, Murcia y Baleares | Anvil Strength</title>
+  <meta name="description" content="Club de powerlifting con base en Valencia para atletas de Comunidad Valenciana, Murcia y Baleares. Entrenamiento online, gratis y afiliado a AEP e IPF." />
   <!-- `keywords` lo ignoran todos los buscadores desde hace años. Se mantiene
        porque no hace daño y documenta la intención de búsqueda del sitio. -->
-  <meta name="keywords" content="powerlifting españa, club powerlifting online, powerlifting principiantes, federarse powerlifting AEP, club digital powerlifting, anvil strength" />
+  <meta name="keywords" content="powerlifting valencia, club powerlifting valencia, club powerlifting murcia, club powerlifting baleares, club de powerlifting, powerlifting, federarse powerlifting AEP, entrenamiento powerlifting online, anvil strength" />
   <!-- Sin max-image-preview:large, Google recorta la miniatura de la portada a
        un cuadrado pequeño en resultados y en Discover. -->
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -147,8 +147,8 @@
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://anvilstrength.es/" />
-  <meta property="og:title" content="Anvil Strength | Club de Powerlifting Online en España" />
-  <meta property="og:description" content="Club digital de powerlifting, 100% gratuito, afiliado AEP + IPF. Entrenadores de élite, app exclusiva y comunidad real. El powerlifting es para todos." />
+  <meta property="og:title" content="Club de Powerlifting en Valencia, Murcia y Baleares | Anvil Strength" />
+  <meta property="og:description" content="Club de powerlifting con base en Valencia para atletas de Comunidad Valenciana, Murcia y Baleares. Entrenamiento online, 100% gratuito, afiliado AEP + IPF." />
   <meta property="og:image" content="https://anvilstrength.es/portadaanvil2.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -158,22 +158,47 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Anvil Strength | Club de Powerlifting Online en España" />
-  <meta name="twitter:description" content="Club digital de powerlifting, 100% gratuito, afiliado AEP + IPF. El powerlifting es para todos." />
+  <meta name="twitter:title" content="Club de Powerlifting en Valencia, Murcia y Baleares | Anvil Strength" />
+  <meta name="twitter:description" content="Club de powerlifting con base en Valencia para atletas de Comunidad Valenciana, Murcia y Baleares. Entrenamiento online, gratis, afiliado AEP + IPF." />
   <meta name="twitter:image" content="https://anvilstrength.es/portadaanvil2.jpg" />
   <meta name="twitter:image:alt" content="Atletas de Anvil Strength entrenando powerlifting" />
 
-  <!-- Schema.org: Organization -->
+  <!-- Schema.org: SportsOrganization + SportsClub.
+       El domicilio del club está en Puerto de Sagunto (Valencia) y sus atletas
+       compiten en la zona de Comunidad Valenciana, Región de Murcia e Illes
+       Balears. Va sin calle ni código postal porque no es un gimnasio abierto
+       al público (cada atleta entrena en el suyo), pero declarar `address` y
+       `areaServed` le da a Google la señal geográfica real del club. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "SportsOrganization",
+    "@type": ["SportsOrganization", "SportsClub"],
     "name": "Anvil Strength",
     "url": "https://anvilstrength.es",
     "logo": "https://anvilstrength.es/logo.svg",
-    "description": "Club de powerlifting digital afiliado a la AEP e IPF. Gratuito, para toda España.",
+    "description": "Club de powerlifting con base en Valencia para atletas de la Comunidad Valenciana, Región de Murcia e Islas Baleares. Entrenamiento online, gratuito, afiliado a la AEP e IPF.",
     "sport": "Powerlifting",
     "email": "anvilstrengthclub@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Puerto de Sagunto",
+      "addressRegion": "Valencia",
+      "addressCountry": "ES"
+    },
+    "areaServed": [
+      {
+        "@type": "AdministrativeArea",
+        "name": "Comunidad Valenciana"
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Región de Murcia"
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Illes Balears"
+      }
+    ],
     "sameAs": [
       "https://www.instagram.com/anvilstrength_"
     ],
@@ -211,4 +236,4 @@
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
-</html>
+</html>
