@@ -1,4 +1,9 @@
 import { test, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 const BASE_URL = 'http://localhost:5173';
 
@@ -18,9 +23,10 @@ test('Scenario A: Coach Flow (Start to Finish)', async ({ page }) => {
     await page.getByTestId('login-button').click();
 
     // 2. Login as Coach
-    // Note: Using the credentials verified earlier
-    await page.fill('input[type="email"]', 'jotabou@protonmail.com');
-    await page.fill('input[type="password"]', 'k47nZKQ!&UQYgg3Qx$H5');
+    // Credentials from TEST_EMAIL / TEST_PASSWORD in .env.local
+    test.skip(!process.env.TEST_EMAIL || !process.env.TEST_PASSWORD, 'Skipping: TEST_EMAIL or TEST_PASSWORD not set in .env.local');
+    await page.fill('input[type="email"]', process.env.TEST_EMAIL ?? '');
+    await page.fill('input[type="password"]', process.env.TEST_PASSWORD ?? '');
     await page.getByRole('button', { name: 'Entrar' }).click();
 
     // 3. Verify Dashboard Redirect

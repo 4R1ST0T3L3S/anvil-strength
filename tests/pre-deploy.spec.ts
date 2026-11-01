@@ -1,15 +1,22 @@
 import { test, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 /**
  * PRE-DEPLOYMENT E2E TEST SUITE
  * Critical scenarios for production readiness
  */
 
-// Test credentials - Actual Supabase account
+// Test credentials from TEST_EMAIL / TEST_PASSWORD in .env.local
 const TEST_USER = {
-    email: 'jotabou@protonmail.com',
-    password: 'k47nZKQ!&UQYgg3Qx$H5'
+    email: process.env.TEST_EMAIL ?? '',
+    password: process.env.TEST_PASSWORD ?? ''
 };
+
+test.skip(!TEST_USER.email || !TEST_USER.password, 'Skipping: TEST_EMAIL or TEST_PASSWORD not set in .env.local');
 
 // Same account for all tests (role determined by database)
 const TEST_COACH = TEST_USER;

@@ -1,15 +1,22 @@
 import { test, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 /**
  * FULL AUDIT E2E TEST SUITE - "FUEGO REAL"
  * Uses real production credentials for comprehensive validation
  */
 
-// Real credentials for testing
+// Credentials from TEST_EMAIL / TEST_PASSWORD in .env.local
 const TEST_CREDENTIALS = {
-    email: 'jotabou@protonmail.com',
-    password: 'k47nZKQ!&UQYgg3Qx$H5'
+    email: process.env.TEST_EMAIL ?? '',
+    password: process.env.TEST_PASSWORD ?? ''
 };
+
+test.skip(!TEST_CREDENTIALS.email || !TEST_CREDENTIALS.password, 'Skipping: TEST_EMAIL or TEST_PASSWORD not set in .env.local');
 
 const BASE_URL = 'http://localhost:5173';
 
@@ -298,8 +305,8 @@ test.describe('V2 Critical Features Audit', () => {
     test('Profile page shows Success Toast on save', async ({ page }) => {
         await page.goto('http://localhost:5173');
         await page.getByText('Iniciar Sesión').first().click();
-        await page.fill('input[type="email"]', 'jotabou@protonmail.com');
-        await page.fill('input[type="password"]', 'k47nZKQ!&UQYgg3Qx$H5');
+        await page.fill('input[type="email"]', TEST_CREDENTIALS.email);
+        await page.fill('input[type="password"]', TEST_CREDENTIALS.password);
         await page.click('button:has-text("Iniciar Sesión")');
 
         await page.waitForTimeout(3000);
@@ -337,8 +344,8 @@ test.describe('V2 Critical Features Audit', () => {
 
         await page.goto('http://localhost:5173');
         await page.getByText('Iniciar Sesión').first().click();
-        await page.fill('input[type="email"]', 'jotabou@protonmail.com');
-        await page.fill('input[type="password"]', 'k47nZKQ!&UQYgg3Qx$H5');
+        await page.fill('input[type="email"]', TEST_CREDENTIALS.email);
+        await page.fill('input[type="password"]', TEST_CREDENTIALS.password);
         await page.click('button:has-text("Iniciar Sesión")');
 
         await page.waitForTimeout(3000);
