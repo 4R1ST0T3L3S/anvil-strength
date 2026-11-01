@@ -1,4 +1,9 @@
 import { test, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env.local
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 /**
  * PRODUCTION-READY E2E TEST SUITE (FIXED)
@@ -16,14 +21,15 @@ import { test, expect } from '@playwright/test';
  * - Explicit wait for modal visibility before interaction
  */
 
-// Test credentials
-const ATHLETE_EMAIL = 'jotabou@protonmail.com';
-const ATHLETE_PASSWORD = 'k47nZKQ!&UQYgg3Qx$H5';
+// Test credentials (athlete from TEST_EMAIL / TEST_PASSWORD in .env.local)
+const ATHLETE_EMAIL = process.env.TEST_EMAIL ?? '';
+const ATHLETE_PASSWORD = process.env.TEST_PASSWORD ?? '';
 const HACKER_EMAIL = 'hacker@test.com';
 const HACKER_PASSWORD = 'tryingtohack123';
 
 // Helper function: Login
 async function loginAsAthlete(page) {
+    test.skip(!ATHLETE_EMAIL || !ATHLETE_PASSWORD, 'Skipping: TEST_EMAIL or TEST_PASSWORD not set in .env.local');
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
